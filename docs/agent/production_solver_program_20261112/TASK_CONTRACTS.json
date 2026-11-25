@@ -606,6 +606,1417 @@
           "per-arm isolated RSS"
         ]
       }
+    },
+    {
+      "id": "V00_LOOP_BOOTSTRAP",
+      "depends": [],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "Open loop L1: isolated branch, baseline receipt, owner decisions, pre-registered discriminators, loop checkpoint.",
+      "write_allowlist": [
+        "docs/agent/production_solver_program_20261112/**",
+        "research/production_loop_20261116/**",
+        "crates/rodas5p-integrators/src/lib.rs",
+        "crates/rodas5p-integrators/src/stage_clients/**",
+        "crates/rodas5p-integrators/src/mol/**",
+        "research/LEDGER.jsonl"
+      ],
+      "equations_and_design": [
+        "Branch research/production-loop-20261116 from 074a5699; toolchain 1.94.1.",
+        "Module stubs only; no numerical code."
+      ],
+      "acceptance_checks": [
+        "validate_program.py passes.",
+        "Loop check_checkpoint.py passes.",
+        "Baseline numbers are parsed from raw logs."
+      ],
+      "completion_requires": [
+        "pre-registration pushed before any V-node run"
+      ],
+      "failure_action": "Stop before any run.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/PREREGISTRATION.md",
+        "research/production_loop_20261116/BASELINE_RESULTS.json",
+        "research/production_loop_20261116/CHECKPOINT.json"
+      ],
+      "scope_completed": "Bootstrap only. The release-mode baseline is not green with default test threads (two thread-raced assertions in sp02_workspace_charge)."
+    },
+    {
+      "id": "V01_AUDIT_RGATE",
+      "depends": [
+        "V00_LOOP_BOOTSTRAP"
+      ],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "Adversarially verify the recorded claims of U01-U11 and of the unmerged switcher lineage, and judge release readiness per axis.",
+      "write_allowlist": [
+        "research/production_loop_20261116/audit/**",
+        "docs/agent/production_solver_program_20261112/RELEASE_GATE_MATRIX.json"
+      ],
+      "equations_and_design": [
+        "Evidence authenticity: an evaluation counts only if it executes a solver binary and reads numbers from raw output.",
+        "Holdout design: arm choice, per-step cost at equal implementation maturity, controller caps and regime coverage are judged separately from the verdict.",
+        "lineage.json is hash-pinned evidence: corrections go to an addendum, not into the file."
+      ],
+      "acceptance_checks": [
+        "Each finding carries reproduction command, evidence path, impact and minimal correction.",
+        "A finding is listed only after an independent verifier reproduced it.",
+        "R-gate matrix filled per axis with receipts or NOT_RUN."
+      ],
+      "completion_requires": [
+        "AUDIT_KO.md",
+        "audit_findings.json",
+        "RELEASE_GATE_MATRIX.json updated"
+      ],
+      "failure_action": "Unverified findings are kept as leads, not as findings. No source mutation in this node.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/audit/AUDIT_KO.md",
+        "research/production_loop_20261116/audit/audit_findings.json",
+        "research/production_loop_20261116/audit/R_GATE_PROPOSAL.json",
+        "research/production_loop_20261116/audit/LINEAGE_ADDENDUM.md"
+      ],
+      "scope_completed": "Audit executed: 30 findings, 9 of 9 verified findings confirmed, 12 leads kept as leads. Release gate judged per axis: 6 NOT_MET, 2 PARTIAL, 0 MET."
+    },
+    {
+      "id": "V03G_DEFAULT_PATH_GOLDEN",
+      "depends": [
+        "V00_LOOP_BOOTSTRAP"
+      ],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "Bitwise oracle of the default-facing entry points, used as neutrality test for the trial merge and for frontend work.",
+      "write_allowlist": [
+        "crates/vigilode/tests/default_path_golden.rs",
+        "crates/vigilode/tests/golden/default_path/**"
+      ],
+      "equations_and_design": [
+        "Entry points: Rodas5p::solve (dense, banded, dense-output, matrix-free, mass/sequential routes), Dopri5::solve, GeneralOde::solve, default ProductionSolver::solve, AutomaticOde::solve.",
+        "States compared as f64 bit patterns; counters compared exactly.",
+        "Exhaustive GeneralOde::select decision grid with zero callbacks."
+      ],
+      "acceptance_checks": [
+        "Two consecutive runs reproduce every golden file bit for bit.",
+        "Golden files are generated from 074a5699 sources only."
+      ],
+      "completion_requires": [
+        "test file",
+        "golden files",
+        "receipt log"
+      ],
+      "failure_action": "If a route is not bit-reproducible on this host, record it and exclude it with the reason; do not loosen to a tolerance.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/golden_oracle/RECEIPT.json",
+        "crates/vigilode/tests/default_path_golden.rs"
+      ],
+      "scope_completed": "260 cases and a 221184-entry decision grid; debug and release agree bit for bit; merged into the loop branch."
+    },
+    {
+      "id": "V02_TRIAL_MERGE",
+      "depends": [
+        "V00_LOOP_BOOTSTRAP",
+        "V03G_DEFAULT_PATH_GOLDEN"
+      ],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "Trial merge of the switcher lineage (93392249) on a separate branch and conditional adoption (owner decision OD-L1-1).",
+      "write_allowlist": [
+        "research/production_loop_20261116/trial_merge/**"
+      ],
+      "equations_and_design": [
+        "Trial happens on research/production-loop-20261116-trial, never on the loop branch.",
+        "Fix-ups are separate commits after the merge commit; no -s ours and no reverts inside the merge commit.",
+        "Adoption is a --no-ff merge of the trial branch; rejection keeps the trial branch as evidence and ports additive leaf modules blob-identically."
+      ],
+      "acceptance_checks": [
+        "T1 cargo check --workspace --all-targets --locked under 1.94.1 with fix-ups limited to toolchain lines, post-1.94 std APIs, the Jacobian::SparseJvp match arm and lint expectations.",
+        "T2 the suites of 074a5699 and the new tests of 93392249 pass.",
+        "T3 bitwise equality of states and counters on the V03G oracle between 074a5699 and the merged tree.",
+        "T5 no new clippy warnings.",
+        "T6 ledger ids do not collide and rows backed by simulation scripts are superseded by INVALID rows."
+      ],
+      "completion_requires": [
+        "trial branch pushed",
+        "blob delta table",
+        "T1-T6 verdict"
+      ],
+      "failure_action": "Any T3 difference that cannot be removed by excluding its hunk rejects the merge. Protected paths are never changed on the loop branch without a passed trial.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/trial_merge/T_GATES.json",
+        "research/production_loop_20261116/trial_merge/MERGE_FACTS.json",
+        "research/production_loop_20261116/trial_merge/SENTINEL_REPIN.json",
+        "research/production_loop_20261116/adoption/ADOPTION_VERIFICATION.json"
+      ],
+      "scope_completed": "Adopted on the loop branch under owner decision OD-L1-5 although gates T2, T3 (strict) and T6 failed: sentinels re-pinned, one golden file regenerated for added keys, six ledger rows superseded as INVALID. Open: unified router defects (V03), merged gate hooks, research/qualification without ledger row, flaky leja_setup_work_contract."
+    },
+    {
+      "id": "V15_STAGE_CLIENT_KIT",
+      "depends": [
+        "V00_LOOP_BOOTSTRAP"
+      ],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "Reference stage linear-system clients for the protected fast driver, so later levers need no kernel duplication and no protected edit.",
+      "write_allowlist": [
+        "crates/rodas5p-integrators/src/stage_clients/**",
+        "crates/rodas5p-integrators/tests/stage_clients_*.rs"
+      ],
+      "equations_and_design": [
+        "Clients implement the existing StageLinearSystem trait (client_stage.rs) and run through integrate_rodas5p_fast_client_observed_with_atol.",
+        "Dense LU reference client and a timing wrapper that records linearize, factor and solve phases."
+      ],
+      "acceptance_checks": [
+        "States and step counts bit-identical to the protected dense driver on HIRES, Robertson and Brusselator for in-place and faer LU.",
+        "Zero allocations per step.",
+        "Wall time at most 1.05x the protected driver at n >= 64."
+      ],
+      "completion_requires": [
+        "client files",
+        "identity test",
+        "receipt"
+      ],
+      "failure_action": "If bit identity cannot be reached through the trait, fall back to the sibling-driver pattern of rodas5p_lagged.rs and record why.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/client_kit/RECEIPT.json",
+        "research/production_loop_20261116/adoption/ADOPTION_VERIFICATION.json"
+      ],
+      "scope_completed": "Merged into the loop branch after owner decision OD-L1-6; identity and allocation tests pass on the adopted tree. The wall discriminator stays undecided on the loaded host."
+    },
+    {
+      "id": "V05_STAGE_THEORY",
+      "depends": [
+        "V00_LOOP_BOOTSTRAP"
+      ],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "Machine-checked statements about the Rodas5P stage structure and their consequences for parallel or inexact-Jacobian execution.",
+      "write_allowlist": [
+        "research/production_loop_20261116/theory/**"
+      ],
+      "equations_and_design": [
+        "Exact rational arithmetic on the represented tableau decimals; each statement tagged exact, zero-by-design-within-representation, or conjecture.",
+        "Statements: f-evaluation depth 8; nilpotency index 7 of beta-gamma*I; sweep amplification norms; W-order 2 of the main weights and not of the embedded weights; orders of the stage arguments g7 and g8; Amdahl bounds per lever; band of (J+LU)/chain in which next-step Jacobian speculation can reach 1.15x; Schwarz locality bound.",
+        "Feasibility count for a level-structured order-5 ROW tableau (go/no-go only)."
+      ],
+      "acceptance_checks": [
+        "Two independent implementations agree.",
+        "Primary literature compared by equation number where available; otherwise UNVERIFIED."
+      ],
+      "completion_requires": [
+        "THEORY.md",
+        "verification scripts with exit 0"
+      ],
+      "failure_action": "A statement that cannot be verified is labelled conjecture and is not used as a gate.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/theory/THEORY.md",
+        "research/production_loop_20261116/theory/RESULTS.json"
+      ],
+      "scope_completed": "Two independent scripts agree on 1040 values. Literature formulas of the Rodas5P paper remain UNVERIFIED; the level-structured tableau count is a counting argument."
+    },
+    {
+      "id": "V04_STAGE_COST_ANATOMY",
+      "depends": [
+        "V15_STAGE_CLIENT_KIT"
+      ],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "Per-phase cost of a RODAS5P step across regimes, to bound every lever before it is built.",
+      "write_allowlist": [
+        "research/production_loop_20261116/cost_anatomy/**"
+      ],
+      "equations_and_design": [
+        "Phases: Jacobian build, factorisation, eight RHS evaluations, eight solves, vector work, controller and output.",
+        "Regimes: dense n in {8,32,128,512,2048}; banded 1D n in {1e3,1e4,1e5}; 2D/3D MOL; RHS cost multiplier {1,10,100}; Jacobian analytic, finite-difference, JVP.",
+        "Timing through the V15 timed client; callgrind for small n."
+      ],
+      "acceptance_checks": [
+        "Instrumented/plain wall <= 1.02 and phases sum to 0.90-1.00 of the total at n >= 128.",
+        "Trajectory bit-identical to the protected driver."
+      ],
+      "completion_requires": [
+        "RESULTS.json",
+        "Amdahl table per lever"
+      ],
+      "failure_action": "Regimes that cannot be measured admissibly are reported as diagnostic_only.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/cost_anatomy/RESULTS.json",
+        "research/production_loop_20261116/cost_anatomy/AMDAHL.json",
+        "research/production_loop_20261116/cost_anatomy/REVIEW.json",
+        "research/production_loop_20261116/cost_anatomy/REVIEW_OVERLAY.json",
+        "research/production_loop_20261116/cost_anatomy/REPORT_KO.md"
+      ],
+      "scope_completed": "59 of 60 pre-declared cells timed, bit identity in 526 of 526 run pairs. 16 rows are authoritative after the review overlay (builder: 29); the others are diagnostic_only. Runs are attempt-budget limited and use one tolerance per problem. The chain of eight stages dominates in 1D banded, expensive-RHS and matrix-free regimes and not in dense n >= 128, 2D/3D banded direct or finite-difference Jacobian regimes."
+    },
+    {
+      "id": "V06_SHARED_KRYLOV_BASIS",
+      "depends": [
+        "V15_STAGE_CLIENT_KIT",
+        "V02_TRIAL_MERGE"
+      ],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "Real measurement of one Krylov basis shared by the eight stage solves (same W), then removal of the per-stage re-factorisation.",
+      "write_allowlist": [
+        "crates/rodas5p-integrators/src/stage_clients/**",
+        "crates/rodas5p-krylov/src/shared_basis_v2.rs",
+        "crates/rodas5p-krylov/tests/shared_basis_v2_*.rs",
+        "research/production_loop_20261116/shared_krylov/**"
+      ],
+      "equations_and_design": [
+        "Three arms with an identical stopping test: protected matrix-free driver, per-stage GMRES client, shared-basis client.",
+        "v2: reflectors and R stored incrementally (append O(nk), new right-hand side O(nk+k^2)); basis kept across a rejected attempt; flexible right preconditioning.",
+        "The original stage residual is always checked."
+      ],
+      "acceptance_checks": [
+        "Stage a: JVP ratio >= 1.5 at step ratio <= 1.05 on at least 2 of 3 families; median below 1.2 cancels v2.",
+        "Final PASS: at matched error JVP <= 0.5x and instructions <= 0.8x of per-stage GMRES with the same preconditioner on 3 of 4 families.",
+        "KILL: no family improves instructions, or a residual check fails."
+      ],
+      "completion_requires": [
+        "code",
+        "RESULTS.json from executed runs"
+      ],
+      "failure_action": "Opt-in only. The blob-locked matrix-free driver is not edited.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/shared_krylov/RESULTS.json",
+        "research/production_loop_20261116/shared_krylov/REVIEW.json",
+        "research/production_loop_20261116/shared_krylov/REPORT_KO.md"
+      ],
+      "scope_completed": "Stage a executed: FAIL as frozen (1 of 3 nonlinear families; JVP ratios 1.12-1.78 at step ratio 1.000). The v2 kernel was not built and the final discriminator is NOT_RUN. Clients for per-stage GMRES and for the merged shared basis exist as opt-in stage clients. Linear families, strong preconditioners and strongly stiff problems were not measured."
+    },
+    {
+      "id": "V07_SPECULATIVE_JACOBIAN",
+      "depends": [
+        "V15_STAGE_CLIENT_KIT",
+        "V05_STAGE_THEORY",
+        "V04_STAGE_COST_ANATOMY"
+      ],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "Evaluate the next step Jacobian at the stage-7 or stage-8 argument, overlapped with the tail stages.",
+      "write_allowlist": [
+        "crates/rodas5p-integrators/src/stage_clients/**",
+        "crates/rodas5p-integrators/tests/stage_clients_*.rs",
+        "research/production_loop_20261116/speculative_jacobian/**"
+      ],
+      "equations_and_design": [
+        "Stage a (sequential emulation): order retention with J at g7 or g8.",
+        "Stage b (threaded) only if V04 shows a pre-registered regime with (J+LU)/chain in [0.15,0.92] and per-step wall >= 500 microseconds; the bound of the speed-up is 1.25x."
+      ],
+      "acceptance_checks": [
+        "Stage a PASS: step ratio <= 1.02 median and <= 1.05 max, error ratio in [0.67,1.5], observed order >= 4.8.",
+        "Stage b PASS: wall >= 1.15x at matched error with step ratio <= 1.05.",
+        "KILL: any step ratio > 1.10 for g7, or wall < 1.05x."
+      ],
+      "completion_requires": [
+        "client",
+        "order-retention results",
+        "timing only if stage b runs"
+      ],
+      "failure_action": "A distinct driver id; never routed by default.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/speculative_jacobian/RESULTS.json",
+        "research/production_loop_20261116/speculative_jacobian/REVIEW.json",
+        "research/production_loop_20261116/speculative_jacobian/REPORT_KO.md"
+      ],
+      "scope_completed": "Stage a executed: FAIL as frozen for g8 and g7 under the pre-declared per-cell reading of the error-ratio criterion (step ratio and observed order pass; the criterion does not isolate the Jacobian). Stage b was not started: stage a did not pass and the bound of the gain is 1.19 in the two authoritative regimes of V04. Scope: n <= 200, dense storage, analytic Jacobians."
+    },
+    {
+      "id": "V08_JACOBIAN_ASSEMBLY",
+      "depends": [
+        "V15_STAGE_CLIENT_KIT"
+      ],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "Exact threaded and coloured Jacobian assembly.",
+      "write_allowlist": [
+        "crates/rodas5p-integrators/src/stage_clients/**",
+        "crates/rodas5p-integrators/tests/stage_clients_*.rs",
+        "research/production_loop_20261116/jacobian_assembly/**"
+      ],
+      "equations_and_design": [
+        "Columns evaluated concurrently with per-worker scratch; Curtis-Powell-Reid colouring for declared sparsity.",
+        "faer threading is not enabled: it would edit protected Cargo.toml/Cargo.lock and change global parallelism."
+      ],
+      "acceptance_checks": [
+        "Jacobian and trajectory bitwise equal to sequential assembly.",
+        "RHS calls = colours + 1 for the coloured route; a wrong pattern fails closed.",
+        "PASS: wall >= 1.5x on finite-difference problems with n >= 64 and RHS cost >= 50 microseconds. KILL: < 1.1x."
+      ],
+      "completion_requires": [
+        "code",
+        "RESULTS.json"
+      ],
+      "failure_action": "Opt-in execution policy only.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/jacobian_assembly/RESULTS.json",
+        "research/production_loop_20261116/jacobian_assembly/REVIEW.json"
+      ],
+      "state_note": "Identity, right-hand-side count and the seven declared fail-closed controls PASS (ledger L-0330); wall FAIL under the pre-declared strict rule: dense cell PASS, wide band NOT_DECIDABLE, narrow band FAIL (ledger L-0331). Reviewer corrections in REVIEW.json; the default check of 8 sampled columns is not fail-closed in general (finding F-01; whether the full check becomes the default is an owner item)."
+    },
+    {
+      "id": "V09_LAGGED_LARGE_N",
+      "depends": [
+        "V00_LOOP_BOOTSTRAP"
+      ],
+      "status": "PLANNED",
+      "purpose": "Evaluate the existing lagged-LU driver in the LU-dominated regime where it was never measured.",
+      "write_allowlist": [
+        "research/production_loop_20261116/lagged_large_n/**"
+      ],
+      "equations_and_design": [
+        "Existing rodas5p_lagged.rs (exact J, lagged LU as preconditioner) against the fast dense driver on dense n in {256,512,1024}; 2D MOL only up to the dense-storage limit."
+      ],
+      "acceptance_checks": [
+        "PASS: wall >= 1.15x at matched error in at least one size class with LU per step <= 0.5 and step ratio <= 1.05.",
+        "KILL: LU per step > 0.8 or steps > 1.2x in every class."
+      ],
+      "completion_requires": [
+        "preregistered runner",
+        "RESULTS.json"
+      ],
+      "failure_action": "No source change in this node.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "V10_PPSW1_DECISION",
+      "depends": [
+        "V01_AUDIT_RGATE"
+      ],
+      "status": "PLANNED",
+      "purpose": "One decision experiment for the Peer-W track (owner decision OD-L1-2).",
+      "write_allowlist": [
+        "research/production_loop_20261116/ppsw1_decision/**"
+      ],
+      "equations_and_design": [
+        "Research copy of ppsw1.rs for sigma arms {1.2,1.3,1.5}; the crate constant 1.10 is not changed.",
+        "Stability with the independent oracle; per-step cost after caching tableau(sigma); new problems, not the consumed holdout."
+      ],
+      "acceptance_checks": [
+        "Unstable for sigma > 1.1: freeze.",
+        "Continue only if the matched-error step ratio is <= 1.5 and a pre-registered regime shows measured wall >= 1.15x."
+      ],
+      "completion_requires": [
+        "REPORT_KO.md",
+        "RESULTS.json"
+      ],
+      "failure_action": "Freeze as opt-in comparator.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "V11_GEOMETRY_MOL",
+      "depends": [
+        "V00_LOOP_BOOTSTRAP"
+      ],
+      "status": "PLANNED",
+      "purpose": "2D, 3D and sphere method-of-lines operators as public structured clients and a regime-stratified battery.",
+      "write_allowlist": [
+        "crates/rodas5p-integrators/src/mol/**",
+        "crates/rodas5p-integrators/src/stage_clients/**",
+        "crates/rodas5p-integrators/tests/mol_*.rs",
+        "research/production_loop_20261116/battery_v4/**"
+      ],
+      "equations_and_design": [
+        "Operators with apply_into, quadrature weights, declared stencil radius and JVP; sparse-LU stage client over the existing SparseDirectSolver; line-tridiagonal right preconditioner.",
+        "Layout3(q,mu,phi) is not Cartesian 3D."
+      ],
+      "acceptance_checks": [
+        "Second-order spatial convergence; conservation <= 1e-12.",
+        "Battery v4 pre-registered, matched achieved error with reference uncertainty, external comparators where available."
+      ],
+      "completion_requires": [
+        "operators",
+        "contracts",
+        "battery tables"
+      ],
+      "failure_action": "No promotion; pole-ring first-order behaviour is stated, not hidden.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "V14_SCHWARZ_BLOCK",
+      "depends": [
+        "V05_STAGE_THEORY"
+      ],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "Spatial restricted additive Schwarz on the whole stage system: each subdomain runs the eight-stage chain locally.",
+      "write_allowlist": [
+        "research/production_loop_20261116/schwarz_screen/**"
+      ],
+      "equations_and_design": [
+        "Screen in Python with the exact tableau on 2D heat, Brusselator and Gray-Scott at accuracy-controlled steps; halo values from the previous sweep or a predictor.",
+        "Honest baseline for a native stage is a per-stage parallel solve, not sequential RODAS5P."
+      ],
+      "acceptance_checks": [
+        "PASS: median sweeps <= 2 at overlap <= 4*sqrt(gamma*h*D)/dx with predictor, endpoint error indistinguishable from the exact solve at tolerance, and median halo <= subdomain width/8.",
+        "KILL: sweeps > 4."
+      ],
+      "completion_requires": [
+        "screen results from executed runs"
+      ],
+      "failure_action": "Native prototype only after the screen passes; distinct method id.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/schwarz_screen/README.md",
+        "research/production_loop_20261116/schwarz_screen/RESULTS.json"
+      ],
+      "scope_completed": "Screen executed: 17 PASS / 31 FAIL / 12 KILL of 60 configurations; passes only at a diffusion length of about one cell. No native prototype."
+    },
+    {
+      "id": "V16_LEVEL_TABLEAU_SEARCH",
+      "depends": [
+        "V05_STAGE_THEORY"
+      ],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "Search for an order-5(4), stiffly accurate Rosenbrock-Wanner tableau whose stage graph has depth 5 or 6 on two processors, as a candidate successor of the depth-8 RODAS5P chain. Prototype only.",
+      "write_allowlist": [
+        "research/production_loop_20261116/level_tableau/**"
+      ],
+      "equations_and_design": [
+        "Layouts of theory S9: 1-2-2-2-1 (8 stages, depth 5, gamma pinned to the A-stable root 0.2780538411) and 1-2-2-2-2-1 (10 stages, depth 6, gamma in [0.18391465, 0.33414237]).",
+        "Order conditions generated from rooted trees for Rosenbrock methods and validated on the protected RODAS5P coefficients before any search result counts; nonlinear least squares with multi-start, refinement in multiprecision.",
+        "Python prototype of the method with exact Jacobian and the controller formula of the protected driver, applied to both the new tableau and the RODAS5P coefficients. No Rust code, no change to protected sources.",
+        "Literature check of parallel and level-structured Rosenbrock methods from primary sources; no novelty claim."
+      ],
+      "acceptance_checks": [
+        "Tool validation: every generated condition of order <= 5 vanishes on the RODAS5P coefficients to <= 1e-12.",
+        "FOUND per layout: residual <= 1e-12 in double precision and <= 1e-25 after refinement on the 17 order-5 conditions; stiff accuracy; R(infinity) = 0; A-stability; embedded weights of order 4; sum b_i gamma_i = 0; every coefficient of magnitude <= 100.",
+        "Observed order >= 4.8 on three smooth problems at fixed step with exact Jacobian.",
+        "Pay-off screen at matched achieved error on three stiff problems, attempts of the new method over attempts of RODAS5P: depth 5 passes at <= 1.25 on at least 2 of 3; depth 6 passes at <= 1.10 on at least 2 of 3.",
+        "KILL: not found within the declared budget (at least 2000 starts per layout) for both layouts, or found with an attempt ratio >= the depth gain (1.6 for depth 5, 1.33 for depth 6) on all three problems."
+      ],
+      "completion_requires": [
+        "coefficient file with residuals",
+        "RESULTS.json from executed runs",
+        "report"
+      ],
+      "failure_action": "A found tableau is a new method with its own id; it is not routed and needs its own qualification. Not found within the budget is reported as not found, not as impossible.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/level_tableau/RESULTS.json",
+        "research/production_loop_20261116/level_tableau/REVIEW.json"
+      ],
+      "state_note": "Depth 5 and depth 6 found, pay-off FAIL, node FAIL (ledger L-0319)."
+    },
+    {
+      "id": "V17_MATRIX_FREE_STAGE_SOLVE",
+      "depends": [
+        "V04_STAGE_COST_ANATOMY",
+        "V06_SHARED_KRYLOV_BASIS"
+      ],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "Confirm on new problems whether a residual test after every Arnoldi column, and a linear tolerance tied to the step tolerance, cut the cost of the eight matrix-free stage solves at matched achieved error.",
+      "write_allowlist": [
+        "crates/rodas5p-integrators/src/stage_clients/krylov.rs",
+        "crates/rodas5p-integrators/src/stage_clients/krylov/**",
+        "crates/rodas5p-integrators/tests/stage_clients_krylov_*.rs",
+        "research/production_loop_20261116/mf_stage_solve/**"
+      ],
+      "equations_and_design": [
+        "Arms: A protected matrix-free driver; B per-stage GMRES client with a residual test after every Arnoldi column at the protected linear threshold; C like B with one linear tolerance policy tied to the step tolerance, fixed before the runs.",
+        "Four families declared before the runs, n >= 1000, at least two families and every size different from the V06 cells, at least one 3D problem; work-precision curves over at least four tolerances, interpolation at equal achieved error.",
+        "Every stage solve of every arm is checked against the original residual with its own JVP."
+      ],
+      "acceptance_checks": [
+        "Validity: residual check passes in every solve; attempts of B within 1.05 of A at every tolerance.",
+        "Cadence PASS (B): at matched achieved error instructions <= 0.67x and wall >= 1.3x of A on at least 3 of 4 families.",
+        "Policy PASS (C): at matched achieved error instructions <= 0.5x of A with attempts <= 1.10 of A on at least 3 of 4 families.",
+        "KILL: B below 1.10x wall on every family, or any residual-check failure in B."
+      ],
+      "completion_requires": [
+        "PREDECLARED.json before the runs",
+        "RESULTS.json from executed runs",
+        "report"
+      ],
+      "failure_action": "Opt-in client only. The protected matrix-free driver and its linear tolerance are not edited.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/mf_stage_solve/RESULTS.json",
+        "research/production_loop_20261116/mf_stage_solve/REVIEW.json"
+      ],
+      "state_note": "Cadence PASS and policy PASS on 4 of 4 families (ledger L-0318); reviewer corrections in REVIEW.json."
+    },
+    {
+      "id": "V18_DENSE_LU_CLIENT",
+      "depends": [
+        "V04_STAGE_COST_ANATOMY",
+        "V15_STAGE_CLIENT_KIT"
+      ],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "A dense stage client that reuses the factorisation storage, and an opt-in threaded factorisation, for the regime where the factorisation dominates the step.",
+      "write_allowlist": [
+        "crates/rodas5p-integrators/src/stage_clients/**",
+        "crates/rodas5p-integrators/tests/stage_clients_*.rs",
+        "research/production_loop_20261116/dense_lu_client/**"
+      ],
+      "equations_and_design": [
+        "Reuse arm: the faer factorisation writes into storage owned by the client; results must equal the protected dense driver bit for bit.",
+        "Threaded arm: 2, 4, 6 workers through a parallelism argument of the factorisation call, opt-in, no global setting and no manifest change.",
+        "Heap-layout variants as in the V04 review (invocation paths of 93, 108 and 124 characters)."
+      ],
+      "acceptance_checks": [
+        "Reuse PASS: bit identity on the client-kit identity set extended to n in {128, 512, 2048}; zero heap allocations and at most 1 minor page fault per attempt after warm-up; wall >= 1.10x of the protected dense driver at n = 512 in each of the three variants.",
+        "Reuse KILL: bit identity cannot be reached, or wall below 1.03x in all three variants.",
+        "Threaded PASS: at n >= 512 with 6 workers wall >= 1.5x at matched achieved error, attempts within 1% and achieved error within [0.9, 1.1] of the protected arm. KILL: below 1.15x at n = 2048 with 6 workers. NOT_RUN if threads would need a protected manifest change."
+      ],
+      "completion_requires": [
+        "client and tests",
+        "PREDECLARED.json before the runs",
+        "RESULTS.json from executed runs"
+      ],
+      "failure_action": "Opt-in client only; the protected dense driver is not edited.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/dense_lu_client/RESULTS.json",
+        "research/production_loop_20261116/dense_lu_client/REVIEW.json"
+      ],
+      "state_note": "Reuse arm: identity, allocations and page faults PASS (ledger L-0332); wall NOT_DECIDABLE under the frozen quality rule (ledger L-0333, INCONCLUSIVE). Threaded arm through the parallelism argument of faer: NOT_RUN (needs a protected manifest change). Client-side threaded arm, ruled to be the threaded arm of addendum A2: NOT_DECIDABLE, kill not triggered, every n = 512 value below the pass level. Reviewer corrections in REVIEW.json. A decidable wall test needs a new pre-registration."
+    },
+    {
+      "id": "V03_UNIFIED_FRONTEND",
+      "depends": [
+        "V02_TRIAL_MERGE",
+        "V03G_DEFAULT_PATH_GOLDEN",
+        "V15_STAGE_CLIENT_KIT"
+      ],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "Make the registry the routing authority behind one entry point while every existing frontend keeps working (owner decision OD-L1-3).",
+      "write_allowlist": [
+        "crates/vigilode/src/selection.rs",
+        "crates/vigilode/src/selection/**",
+        "crates/vigilode/src/solve.rs",
+        "crates/vigilode/tests/unified_frontend_contracts.rs",
+        "crates/vigilode/src/unified/**",
+        "crates/vigilode/src/registry.rs",
+        "crates/vigilode/tests/unified_router_contracts.rs",
+        "crates/vigilode/tests/unified_production_solver_contracts.rs",
+        "crates/vigilode/examples/unified_production_solver.rs"
+      ],
+      "equations_and_design": [
+        "MethodChoice {General, Auto, Explicit}; pure MethodRegistry::route; MethodRegistry::solve; borrowed SolutionView that carries the output grid.",
+        "Phase A: route(General) delegates to GeneralOde::select. Phase B (select expressed through the registry) only after exact descriptors and the exhaustive grid show equality; the old body stays as test oracle.",
+        "Adapters share one lowering; Auto and typed fallback are opt-in."
+      ],
+      "acceptance_checks": [
+        "100% decision equality on the exhaustive grid with zero callbacks.",
+        "Each adapter bitwise equal to the direct integrator call.",
+        "Refusal before any callback; default route golden unchanged."
+      ],
+      "completion_requires": [
+        "code",
+        "contract tests"
+      ],
+      "failure_action": "Default routing is not changed. An adapter may stay unavailable.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/unified_frontend/RECEIPT.json",
+        "research/production_loop_20261116/unified_frontend/REVIEW.json",
+        "research/production_loop_20261116/unified_router/RECEIPT.json",
+        "research/production_loop_20261116/unified_router/REVIEW.json"
+      ],
+      "state_note": "Part A (registry-routed entry point): frozen criteria D1 to D4 PASS (ledger L-0317). Part B (truthful unified router): acceptance criteria A1 to A4 PASS (ledger L-0329), merged with cfbd2b18; reviewer corrections in unified_router/REVIEW.json. Open owner items of part B: the Auto routing constants, a supplied derivative runs RODAS5P unless regime(Nonstiff) is declared, a fatal callback at a probe point of the stiffness screen ends the solve, unread options kept as inert, exact status of a switching stop needs the protected switching.rs."
+    },
+    {
+      "id": "V12_PORT_PLAN",
+      "depends": [
+        "V02_TRIAL_MERGE"
+      ],
+      "status": "IN_PROGRESS",
+      "purpose": "Contract table for mathematics that is not yet ported.",
+      "write_allowlist": [
+        "research/production_loop_20261116/port_plan/**"
+      ],
+      "equations_and_design": [
+        "Per item: source commit and path, target module, invariants, minimal discriminating experiment, priority."
+      ],
+      "acceptance_checks": [
+        "Every item has an executable discriminator."
+      ],
+      "completion_requires": [
+        "PORT_PLAN_KO.md",
+        "port_contracts.json"
+      ],
+      "failure_action": "Plan only; no claim of benefit.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/port_plan/port_contracts.json"
+      ],
+      "state_note": "Draft of 20 contracts; final after the V02 decision."
+    },
+    {
+      "id": "V13_CLOSEOUT",
+      "depends": [
+        "V01_AUDIT_RGATE"
+      ],
+      "status": "PLANNED",
+      "purpose": "Wave reports, ledger rows from executed measurements, final R-gate and G0 statement, next plan.",
+      "write_allowlist": [
+        "research/production_loop_20261116/**",
+        "research/LEDGER.jsonl"
+      ],
+      "equations_and_design": [
+        "Ledger ids L-0300 and above for this loop.",
+        "Reports separate executed, not run and planned."
+      ],
+      "acceptance_checks": [
+        "validate_program.py and the loop check_checkpoint.py pass.",
+        "Remote readback of pushed heads."
+      ],
+      "completion_requires": [
+        "REPORT_KO.md",
+        "ledger rows",
+        "remote hashes"
+      ],
+      "failure_action": "A wave that cannot be verified is reported as such.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "V19_BANDED_SOLVE_KERNEL",
+      "depends": [
+        "V04_STAGE_COST_ANATOMY",
+        "V15_STAGE_CLIENT_KIT"
+      ],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "Kernels for the banded stage solve in the one-dimensional narrow-band regime, where the eight stage solves take 61-70% of the step: a sequential back substitution with a shorter dependent chain, and a partition of the unknowns into blocks whose recurrences run in lockstep.",
+      "write_allowlist": [
+        "research/production_loop_20261116/banded_solve/**",
+        "crates/rodas5p-integrators/src/stage_clients/**",
+        "crates/rodas5p-integrators/tests/stage_clients_*.rs"
+      ],
+      "equations_and_design": [
+        "Arms A0 (protected client BandedStageLu), A1 (reference kernel, same operation order), B (sequential, newest unknown last, reciprocal pivots), C(P) for P in {2, 4, 8} (blocks, explicit spikes, dense reduced system on the separators, lockstep recurrences), BV and CV(P) (with a residual check of the original system after every solve).",
+        "Cost unit: one factorisation and eight solves (the stage pattern of one RODAS5P attempt); metric: user-mode cycles of the pinned single-threaded process with set-up subtraction.",
+        "Stage a runs in a standalone measurement program; stage b (an opt-in stage client with fail-closed fallback) only after stage a passes."
+      ],
+      "acceptance_checks": [
+        "Validity: A1 equals A0 bit for bit; on the target family no error and backward error <= 1e-14; on the adversarial suites no silent failure (backward error above 1e-12 without an error).",
+        "Stage a PASS: at n = 1e4 and n = 1e5 the best valid arm needs at most 0.50 of the cycles of A0 and at most 0.67 of A1 per stage pattern. KILL: every valid arm above 0.77 of A1 at both sizes. Partitioning is kept only if the best C arm needs at most 0.77 of the best B arm at both sizes.",
+        "Stage b PASS: whole run at matched achieved error at most 0.77 of the cycles of the protected banded driver (default kernel) and at most 0.83 of its fastest bit-identical kernel on two families; KILL: above 0.91 of the default kernel on both.",
+        "Timing cells are authoritative only under the loop's quality rule; otherwise the verdict is NOT_DECIDABLE."
+      ],
+      "completion_requires": [
+        "PREDECLARED.json before the runs",
+        "measurement program with validity tests",
+        "RESULTS.json from executed runs"
+      ],
+      "failure_action": "Opt-in only; the protected banded driver, its kernels and its default are not edited.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/banded_solve/RESULTS.json"
+      ],
+      "state_note": "Stage a KILL on authoritative cells (ledger L-0320); stage b not built. The observation that led to V21 is recorded in PROGRESS.md."
+    },
+    {
+      "id": "V21_BANDED_TIGHT_KERNEL",
+      "depends": [
+        "V19_BANDED_SOLVE_KERNEL",
+        "V15_STAGE_CLIENT_KIT"
+      ],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "Banded kernels with identical bits and fewer instructions: tight loops for narrow bands, and the existing Slices kernel against the Indexed kernel on the wide bands of two- and three-dimensional grids; then an opt-in stage client.",
+      "write_allowlist": [
+        "research/production_loop_20261116/banded_solve/**",
+        "crates/rodas5p-integrators/src/stage_clients/**",
+        "crates/rodas5p-integrators/tests/stage_clients_*.rs"
+      ],
+      "equations_and_design": [
+        "Stage a1 (kernel level): arms A0, TA, TD on the cost unit of V19; primary measure user-mode instructions per stage pattern, cycles under the quality rule.",
+        "Stage a2 (whole runs): the protected banded driver with its Indexed and Slices kernels on problems of V04; validity by equal counts and equal state hashes.",
+        "Stage b: an opt-in stage client whose runs equal the protected banded driver bit for bit."
+      ],
+      "acceptance_checks": [
+        "a1 PASS-I: TA at most 0.40 of the instructions of A0 at n = 1e4 and 1e5; PASS-C: at most 0.60 of the cycles on authoritative cells; KILL: above 0.77 in instructions at both sizes.",
+        "a2 PASS-I: Slices at most 0.50 of the instructions of Indexed on each of three wide-band problems; PASS-C: at most 0.67 of the cycles on authoritative cells; KILL: above 0.90 on all three.",
+        "b PASS: bit identity of end state, counts and counters with the protected banded driver; no allocation per step; whole-run instructions at most 0.60 on the one-dimensional cells with n >= 1e4."
+      ],
+      "completion_requires": [
+        "PREDECLARED_V21.json before the timing runs",
+        "RESULTS_V21.json from executed runs"
+      ],
+      "failure_action": "Opt-in only; the protected driver, its kernels and the default route are not edited. A change of the facade's kernel is an owner decision.",
+      "protected": [
+        "original RODAS tableau/drivers",
+        "official G0",
+        "reference/holdout bytes",
+        "default routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/banded_solve/RESULTS_V21.json"
+      ],
+      "state_note": "a1 PASS-I and PASS-C (L-0321); a2 PASS-I, cycles NOT_DECIDABLE for one of three problems (L-0322); stage b PASS, opt-in client merged (L-0323). Independent review pending with group 3."
+    },
+    {
+      "id": "V22_FACADE_BANDED_KERNEL",
+      "depends": [
+        "V21_BANDED_TIGHT_KERNEL",
+        "V03G_DEFAULT_PATH_GOLDEN"
+      ],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "The facade's banded route uses the Slices kernel of the protected banded driver from a measured half band width on, with identical bits and no slower narrow band (owner decision OD-L1-9).",
+      "write_allowlist": [
+        "research/production_loop_20261116/banded_kernel_route/**",
+        "research/production_loop_20261116/banded_solve/runner/**",
+        "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+        "crates/rodas5p-integrators/src/rodas5p_fast_dense.rs",
+        "crates/rodas5p-integrators/src/lib.rs",
+        "crates/rodas5p-integrators/tests/banded_kernel_entry_identity.rs",
+        "crates/vigilode/src/solve.rs",
+        "crates/vigilode/src/solution.rs",
+        "crates/vigilode/src/lib.rs",
+        "crates/vigilode/tests/banded_kernel_route_contracts.rs",
+        "crates/vigilode/tests/golden/banded_kernel_route/**"
+      ],
+      "equations_and_design": [
+        "Stage a: whole runs of the protected banded driver with its Indexed and Slices kernels on two strip families whose half band width is the free parameter (about 8192 unknowns); per-attempt instructions and cycles with set-up subtraction.",
+        "Rule: W is the smallest scanned half band width such that every scanned width from W on needs at most 0.95 of the instructions and of the cycles of Indexed; the facade uses Slices if lower >= W and upper >= W, otherwise Indexed.",
+        "Stage b: twins of three banded entry points that take the kernel; the facade calls them only when the rule selects Slices; the route record names the entry point and the driver that ran."
+      ],
+      "acceptance_checks": [
+        "Validity: equal counts, counted band operations and state hashes of the two kernels in every run of the scan.",
+        "W exists and the small-n confirmation holds (ratios at most 1.00).",
+        "D1: twins equal the existing entry points bit for bit. D2: wide-band facade golden recorded before the edit passes after it with only the label fields changed. D3: default-path golden oracle unchanged, sentinels and suites pass, clippy and rustfmt clean. D4: facade at most 0.60 of the per-attempt instructions of the direct Indexed call on Allen-Cahn 2D 64."
+      ],
+      "completion_requires": [
+        "banded_kernel_route/PREDECLARED.json before any count of the strip families",
+        "banded_kernel_route/RESULTS.json from executed runs",
+        "checkpoint pins of the edited protected files with the decision id"
+      ],
+      "failure_action": "KILL or HOLD: the facade keeps the Indexed kernel and nothing in the drivers is merged; the result is reported to the owner.",
+      "protected": [
+        "original RODAS tableau/drivers except the additions named in the pre-registration (OD-L1-9)",
+        "official G0",
+        "reference/holdout bytes",
+        "default method routing",
+        "tolerances/controller constants"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/banded_kernel_route/RESULTS.json"
+      ],
+      "state_note": "Frozen verdict PASS (ledger L-0334): W = 6, the small-n confirmation holds, D1 to D4 hold. Run by the orchestrator session. The independent review of this node has NOT run: the owner asked for a pause on 2026-11-23 23:29 KST before it was launched; it is the first step when the loop resumes (orchestration/wave2_group5.js with review_v22 = true). Independent review (wave 4 group B, 2026-11-25): accept_with_corrections, verdict PASS reproduced; record-level corrections F1-F7 in banded_kernel_route/REVIEW.json.",
+      "post_review_exceptions": [
+        "OD-L1-9 exception recorded after the independent review (2026-11-25, REVIEW.json F2): commit a2e8e430 edited the protected sentinel crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs (allowed-block list of g3), which this write_allowlist and the protected-file list of the pre-registration do not name; OD-L1-9 authorizes re-pinning sentinels, the hashes are in research/production_loop_20261116/banded_kernel_route/SENTINEL_REPIN.json, and g3 passes at the head"
+      ]
+    },
+    {
+      "id": "V23_CAPABILITIES_TRUTH",
+      "depends": [
+        "V03_UNIFIED_FRONTEND"
+      ],
+      "status": "PLANNED",
+      "purpose": "Rodas5p::capabilities gives a plan only to requests that the named driver family runs; what cannot run is refused with a typed reason before any callback (owner decision OD-L1-10).",
+      "write_allowlist": [
+        "research/production_loop_20261116/capabilities_fix/**",
+        "crates/vigilode/src/capabilities.rs",
+        "crates/vigilode/src/solve.rs",
+        "crates/vigilode/src/error.rs",
+        "crates/vigilode/tests/capabilities_contracts.rs",
+        "crates/vigilode/tests/capabilities_truth_contracts.rs",
+        "crates/vigilode/tests/golden/capabilities_truth/**",
+        "crates/vigilode/tests/unified_frontend_contracts.rs",
+        "crates/vigilode/tests/default_path_golden.rs",
+        "crates/vigilode/tests/golden/default_path/**"
+      ],
+      "equations_and_design": [
+        "One decision function serves the capability query and the validation of the solve.",
+        "A general sparse-JVP provider on the sequential dense route is refused before any callback; other classes found by execution are treated the same way and listed."
+      ],
+      "acceptance_checks": [
+        "D1: every plan of the 9216-request grid runs on the planned driver family at n = 8; plans that cannot run: 0.",
+        "D2: records of all other requests equal before and after the fix. D3: golden files change only in the listed records. D4: registry and unified router agree with the query; suites, clippy and rustfmt pass."
+      ],
+      "completion_requires": [
+        "capabilities_fix/PREDECLARED.json before any edit",
+        "capabilities_fix/RESULTS.json from executed runs",
+        "independent review"
+      ],
+      "failure_action": "Not merged; the defect stays listed for the owner.",
+      "protected": [
+        "official G0",
+        "reference/holdout bytes",
+        "default method routing",
+        "tolerances/controller constants",
+        "drivers of rodas5p-integrators"
+      ],
+      "evidence": [],
+      "state_note": "Pre-registered 2026-11-23 (addendum A6). Builder node, launched after the unified-router node V03 part B is merged."
+    },
+    {
+      "id": "V24_MF_ADAPTIVE_STAGE_SOLVE",
+      "depends": [
+        "V17_MATRIX_FREE_STAGE_SOLVE"
+      ],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "The protected matrix-free stage solve tests the residual after every Arnoldi column and ends a cycle at convergence, so that restart length and test cadence follow the solve (owner decision OD-L1-11).",
+      "write_allowlist": [
+        "research/production_loop_20261116/mf_adaptive/**",
+        "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+        "crates/rodas5p-integrators/src/routing.rs",
+        "crates/rodas5p-integrators/src/lib.rs",
+        "crates/rodas5p-krylov/src/gmres_staged.rs",
+        "crates/rodas5p-integrators/tests/mf_adaptive_*.rs",
+        "crates/rodas5p-krylov/tests/gmres_staged_column_test_*.rs",
+        "crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs",
+        "crates/vigilode/src/solve.rs",
+        "crates/vigilode/src/solution.rs",
+        "crates/vigilode/tests/default_path_golden.rs",
+        "crates/vigilode/tests/golden/default_path/**",
+        "crates/rodas5p-integrators/tests/ptsw2b_contracts.rs"
+      ],
+      "equations_and_design": [
+        "After every Arnoldi column the projected residual is compared with the stage threshold; at the first column that meets it the cycle ends and the true residual of the iterate is tested against the same threshold.",
+        "Two variants of the upper bound of a cycle, fixed before any run; the variant is chosen on two development problems outside the deciding grid.",
+        "The shipped policy stays selectable and keeps its driver identifier; the adaptive policy becomes the default of the matrix-free route under a new identifier."
+      ],
+      "acceptance_checks": [
+        "D0: the shipped policy equals the driver before the edit bit for bit. V: true residual within the threshold in every solve.",
+        "A: achieved error at most 3 times the shipped driver. P: instructions at matched achieved error at most 0.50 per family, no cell above 1.00. S: attempts at most 1.05 per family. B: no more budget-exhausting solves.",
+        "G: golden records of the matrix-free route re-pinned with a difference report inside the tolerance band. R: sentinels re-pinned with recorded pins; suites pass."
+      ],
+      "completion_requires": [
+        "mf_adaptive/PREDECLARED.json before any edit",
+        "the chosen variant committed before the deciding grid",
+        "mf_adaptive/RESULTS.json from executed runs",
+        "independent review"
+      ],
+      "failure_action": "FAIL: the adaptive policy stays opt-in and the default is unchanged. KILL: nothing is merged.",
+      "protected": [
+        "official G0",
+        "reference/holdout bytes",
+        "default method routing",
+        "tolerances/controller constants",
+        "stage threshold of the linear solve",
+        "every driver other than the matrix-free fast driver"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/mf_adaptive/RESULTS.json",
+        "research/production_loop_20261116/mf_adaptive/REVIEW.json"
+      ],
+      "state_note": "Frozen verdict FAIL by the budget rule B (ledger L-0335): the adaptive policy is merged as an opt-in policy (MfStageSolvePolicy), the default of the matrix-free route and every golden file are unchanged; D0, V, A, P and S hold. Sentinels h2 and g3 re-pinned by the orchestrator at the merge (SENTINEL_REPIN_MERGE.json). Reviewer corrections in REVIEW.json. Owner items: whether the default switches despite B, or variant P1 is tested on unseen problems under a new pre-registration; the identifier v2 of an opt-in variant."
+    },
+    {
+      "id": "V25_MF_P1_CONFIRMATION",
+      "depends": [
+        "V24_MF_ADAPTIVE_STAGE_SOLVE"
+      ],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "Confirm the adaptive policy P1 of the matrix-free stage solve on families no earlier node used, and switch the default of the matrix-free route to it if it is as safe as the shipped policy and cheaper at matched achieved error (owner decision OD-L1-15).",
+      "write_allowlist": [
+        "research/production_loop_20261116/mf_p1_confirm/**",
+        "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+        "crates/rodas5p-integrators/src/routing.rs",
+        "crates/rodas5p-integrators/src/lib.rs",
+        "crates/rodas5p-integrators/tests/mf_confirm_*.rs",
+        "crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs",
+        "crates/rodas5p-integrators/tests/ptsw2b_contracts.rs",
+        "crates/vigilode/src/solve.rs",
+        "crates/vigilode/src/solution.rs",
+        "crates/vigilode/tests/default_path_golden.rs",
+        "crates/vigilode/tests/golden/default_path/**",
+        "crates/vigilode/tests/capabilities_contracts.rs",
+        "crates/vigilode/tests/facade_contracts.rs",
+        "crates/vigilode/tests/unified_router_contracts.rs"
+      ],
+      "equations_and_design": [
+        "Arms: S (shipped policy), P1 (residual test after every Arnoldi column, cycle bound = configured restart length), P2 reported only.",
+        "Families ac3d, robertson_rd1d, schnakenberg2d, porous2d (n >= 1000), five tolerances; reference, error metric, matched-error statistic and timing of node V17.",
+        "If the default switches, P1 reports the driver identifier rodas5p-mf-fast-transformed-v3; the shipped policy keeps v1 and stays selectable."
+      ],
+      "acceptance_checks": [
+        "D0: S and P1 unchanged by the edits. V: 0 residual violations. B: no cell with more budget-exhausting solves than S.",
+        "A: error at most 3 times S. S: attempts at most 1.05 per family, 1.15 per cell (thresholds of A6). E: fewer instructions than S at matched error in every family, not more in any cell. W: no authoritative wall cell slower than S.",
+        "After a switch: G (golden records of the route within the bounds of A6, other routes byte-identical) and R (suites, sentinels re-pinned)."
+      ],
+      "completion_requires": [
+        "mf_p1_confirm/PREDECLARED.json before any run",
+        "PROTOCOL.json with the final spans before any run of P1",
+        "mf_p1_confirm/RESULTS.json from executed runs",
+        "independent review"
+      ],
+      "failure_action": "KEEP: the shipped policy stays the default and P1 stays opt-in. KILL (a residual violation): no default changes.",
+      "protected": [
+        "official G0",
+        "reference/holdout bytes",
+        "default method routing",
+        "tolerances/controller constants",
+        "stage threshold of the linear solve"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/mf_p1_confirm/RESULTS.json",
+        "research/production_loop_20261116/mf_p1_confirm/REVIEW.json"
+      ],
+      "state_note": "Frozen verdict KEEP (ledger L-0336): rule B fails on robertson_rd1d (budget-exhausting stage solves S/P1 11/12, 9/10, 0/1 in three cells); V, A, S, E and W hold (0 violations in 9287 P1 solves; instructions at matched error 0.198, 0.791, 0.516, 0.470; wall 6.47, 1.25, 2.05, 2.25 times faster, 20 of 20 cells authoritative). P1 stays opt-in; no default changed. Review accept_with_corrections (mf_p1_confirm/REVIEW.json). Owner decision open: a pre-registered follow-up test of rule B."
+    },
+    {
+      "id": "V26_ASSEMBLY_FULL_CHECK",
+      "depends": [
+        "V08_JACOBIAN_ASSEMBLY"
+      ],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "Test whether the full pattern check of the assembly client (n right-hand sides) can be parallelized or vectorized, and test an exact multi-colouring check that needs far fewer evaluations (owner decision OD-L1-16). The default of the check is decided by the owner after the report.",
+      "write_allowlist": [
+        "research/production_loop_20261116/assembly_check/**",
+        "crates/rodas5p-integrators/src/stage_clients/assembly.rs",
+        "crates/rodas5p-integrators/src/stage_clients/assembly/**",
+        "crates/rodas5p-integrators/tests/stage_clients_assembly_*.rs"
+      ],
+      "equations_and_design": [
+        "Arms S8 (default), FA (all columns), FA_P (all columns on the pool, P = 2, 4, 6), MC and MC_P (multi-colouring check), exploratory MC at every build and a batched right-hand side for the dense cell.",
+        "Multi-colouring check: valid colourings whose colour tuples identify every column; declared entries compared bit for bit across colourings and the uncovered-row test in every group; no tolerance and no tunable parameter."
+      ],
+      "acceptance_checks": [
+        "E: parallel arms decide as their sequential arms; Jacobians and trajectories bit-identical with and without a check.",
+        "D: FA detects every corpus case that is not rounding-limited; MC misses no case FA detects unless rounding-limited for MC. F: no false alarm. C: cost per arm reported."
+      ],
+      "completion_requires": [
+        "assembly_check/PREDECLARED.json before any edit",
+        "the corpus decisions of FA and S8 recorded before the new arms are implemented",
+        "assembly_check/RESULTS.json from executed runs",
+        "independent review"
+      ],
+      "failure_action": "Descriptive node: the default of the check does not change in this node.",
+      "protected": [
+        "official G0",
+        "reference/holdout bytes",
+        "default method routing",
+        "tolerances/controller constants",
+        "stage threshold of the linear solve"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/assembly_check/RESULTS.json",
+        "research/production_loop_20261116/assembly_check/REVIEW.json"
+      ],
+      "state_note": "Descriptive (ledger L-0337 PASS on the frozen corpus, L-0338 FAIL of the general claim): FA, FA_P (2, 4, 6 workers), MC and MC_P keep E, D and F on 4846 corpus cases; the default Sample(8) misses 576 wrong declarations; MC needs 150 instead of 4096 and 59 instead of 131072 right-hand sides; the review refuted the general exactness of MC with constructed rows whose undeclared couplings cancel in pairs and with entry collapse (assembly_check/review_probe). Default unchanged (Sample(8)); the owner decides the default."
+    },
+    {
+      "id": "V27_ROUTER_HYPERPARAMETER_FREE",
+      "depends": [
+        "V03_UNIFIED_FRONTEND"
+      ],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "Auto route of the unified router with as few hyperparameters as possible (owner decision OD-L1-17): a census of every constant and rule of the route, a design that removes or replaces the tunable ones, presented to the owner before implementation.",
+      "write_allowlist": [
+        "research/production_loop_20261116/router_hyperparameter_free/**",
+        "crates/vigilode/src/session.rs",
+        "crates/vigilode/src/unified/**",
+        "crates/vigilode/tests/unified_breakeven_*.rs",
+        "crates/vigilode/tests/unified_router_contracts.rs"
+      ],
+      "equations_and_design": [
+        "Design phase: read-only design agents and a judge (run wf_c957bd0e-1ed); design router_hyperparameter_free/DESIGN_RECOMMENDED.md approved by OD-L1-22.",
+        "Implementation: forward break-even pilots (sections 3 and 7 of the design); evaluation frozen in router_hyperparameter_free/PREDECLARED.json (addendum A8)."
+      ],
+      "acceptance_checks": [
+        "A design document with the census, the proposed algorithm, the hyperparameters that remain and why, and an evaluation plan for pre-registration.",
+        "Implementation: failing-first tests fail on the base sources by assertion and pass after the change; default-path golden files unchanged; full facade suite, clippy, fmt.",
+        "Evaluation: E1-E10 of router_hyperparameter_free/PREDECLARED.json; the Auto route changes iff all pass."
+      ],
+      "completion_requires": [
+        "design document",
+        "owner approval before any implementation (OD-L1-22, 2026-11-24)",
+        "PREDECLARED.json on origin before any run of the deciding set",
+        "RESULTS.json from executed runs",
+        "independent review"
+      ],
+      "failure_action": "Today's Auto route stays; the implementation stays on its builder branch and is not merged.",
+      "protected": [
+        "official G0",
+        "reference/holdout bytes",
+        "default method routing",
+        "tolerances/controller constants",
+        "stage threshold of the linear solve"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/router_hyperparameter_free/RESULTS.json",
+        "research/production_loop_20261116/router_hyperparameter_free/REVIEW.json"
+      ],
+      "state_note": "Frozen decision KEEP today's Auto route (ledger L-0339): E1, E3 and E7 fail, E2, E4, E5, E6, E8, E9 and E10 pass; independent review accept_with_corrections. E1 fails on a tie of both maxima at a declared case (robertson_40 declared Nonstiff, 522.8) although the geometric means are 0.526 (callbacks) and 0.443 (operations) and the worst ratio over undeclared cases is 1.98 against 54.2; E3 fails only on N2, where it contradicts owner decision D1 and E8; E7 fails on P_scalar_fd (50.6 and 3.53 times the error of Rodas5p::solve, within tolerance). The FBP code stays on branch w3-v27 (60d67729) and as fbp_implementation.patch."
+    },
+    {
+      "id": "V28_MF_P1_BUDGET_FOLLOWUP",
+      "depends": [
+        "V25_MF_P1_CONFIRMATION"
+      ],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "Rule B of the matrix-free stage solve P1 tested alone (owner decision OD-L1-23): replay of identical stage systems (K) and perturbed trajectory ensembles (T) on the 40 deciding cells of V25 and V24; SWITCH of the default to P1 if K, V and T hold, then G and R as in V25.",
+      "write_allowlist": [
+        "research/production_loop_20261116/mf_p1_budget/**",
+        "crates/rodas5p-integrators/tests/mf_budget_*.rs",
+        "on SWITCH only: the protected edits listed in mf_p1_budget/PREDECLARED.json"
+      ],
+      "equations_and_design": [
+        "mf_p1_budget/PREDECLARED.json (addendum A9)"
+      ],
+      "acceptance_checks": [
+        "K, V, T of mf_p1_budget/PREDECLARED.json; on SWITCH also D0, G and R of mf_p1_confirm/PREDECLARED.json"
+      ],
+      "completion_requires": [
+        "PREDECLARED.json on origin before any run",
+        "RESULTS.json from executed runs",
+        "independent review"
+      ],
+      "failure_action": "KEEP: the shipped policy stays the default and P1 stays opt-in.",
+      "protected": [
+        "official G0",
+        "reference/holdout bytes",
+        "default method routing",
+        "tolerances/controller constants",
+        "stage threshold of the linear solve"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/mf_p1_budget/RESULTS.json",
+        "research/production_loop_20261116/mf_p1_budget/REVIEW.json"
+      ],
+      "state_note": "Frozen verdict KEEP (ledger L-0340): K PASS (0 of 94126 replayed stage systems on which only P1 exhausts the Krylov budget, 0 the other way, 377 exhausted by both), V PASS (0 violations in 93749 completed P1 solves, largest residual/threshold 0.999991), T FAIL (320 perturbed pairs, W = 25 of n = 30 non-zero pairs, all in robertson_rd1d, P = 1.62e-4 < 0.05). D0, G and R not run. P1 stays opt-in; no default, protected or library file changed. Independent review accept_with_corrections (F1-F5 minor, notice in REPORT_KO.md). Merged (2f214eb1)."
+    },
+    {
+      "id": "V29_ASSEMBLY_DEFAULT_MC",
+      "depends": [
+        "V26_ASSEMBLY_FULL_CHECK"
+      ],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "Owner decision OD-L1-24: the default first-use pattern check of the opt-in AssemblyStageClient becomes the multi-colouring check on the routes where it applies; the dense route keeps Sample(8); FA, FA_P and MC_P stay selectable; the documentation states the limits of MC (L-0338).",
+      "write_allowlist": [
+        "crates/rodas5p-integrators/src/stage_clients/assembly.rs",
+        "crates/rodas5p-integrators/src/stage_clients/assembly/**",
+        "crates/rodas5p-integrators/tests/stage_clients_assembly_*.rs",
+        "research/production_loop_20261116/assembly_default/**"
+      ],
+      "equations_and_design": [
+        "Implementation of an owner decision; no experiment. The arithmetic of the assembled Jacobian does not change."
+      ],
+      "acceptance_checks": [
+        "The Jacobian and trajectory bits of the V08 identity cells are unchanged.",
+        "Existing tests pass; lines that pin the default check or its counts are edited only with a listed reason.",
+        "New tests: the default per route; the default detects the corpus cases that MC detects.",
+        "clippy -D warnings and fmt."
+      ],
+      "completion_requires": [
+        "independent review"
+      ],
+      "failure_action": "The default stays Sample(8).",
+      "protected": [
+        "official G0",
+        "reference/holdout bytes",
+        "default method routing",
+        "tolerances/controller constants",
+        "stage threshold of the linear solve"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/assembly_default/RESULTS.json",
+        "research/production_loop_20261116/assembly_default/REVIEW.json"
+      ],
+      "state_note": "PASS (ledger L-0341): the default first-use check of the assembly client is MultiColouring on the coloured route (band back ends included, any execution) and Sample(8) on the dense route; the 36 identity runs of node V08 keep their Jacobian, state and output bits, only the first-use check counters change (18, 59, 150 right-hand sides, +1 threaded); on the V26 corpus the default decides as MC in 9693 of 9693 decisions; suites, clippy and fmt pass. Independent review accept_with_corrections (F1-F7 minor; F4: MC can cost more than n right-hand sides on wide declared bands, stated in the rustdoc by 0b24be8c; taking All there is an owner decision). Merged (2eb2aeed)."
+    },
+    {
+      "id": "V30_ROUTER_BREAKEVEN_V27B",
+      "depends": [
+        "V27_ROUTER_HYPERPARAMETER_FREE"
+      ],
+      "status": "PLANNED",
+      "purpose": "Owner decision OD-L1-26: corrected re-evaluation of the forward break-even pilots (FBP) Auto route of V27: E1 over undeclared cases only, E3 without the runs that D1 ends, a diagnosis of E7 (P_scalar_fd) with a design correction if its cause is in the route, and a fresh problem set disjoint from the 35 problems of V27.",
+      "write_allowlist": [
+        "research/production_loop_20261116/router_breakeven_v27b/**",
+        "crates/vigilode/src/session.rs",
+        "crates/vigilode/src/unified/**",
+        "crates/vigilode/tests/unified_breakeven_*.rs",
+        "crates/vigilode/tests/unified_router_contracts.rs"
+      ],
+      "equations_and_design": [
+        "router_hyperparameter_free/DESIGN_RECOMMENDED.md (FBP) and fbp_implementation.patch (branch w3-v27); corrections and the fresh set frozen in router_breakeven_v27b/PREDECLARED.json before any run of the deciding set"
+      ],
+      "acceptance_checks": [
+        "E7 diagnosis recorded with executed runs",
+        "E1-E10 as corrected in PREDECLARED.json on the fresh set; the Auto route changes iff all pass",
+        "default-path golden files unchanged; facade suite, clippy, fmt"
+      ],
+      "completion_requires": [
+        "PREDECLARED.json on origin before any run of the deciding set",
+        "RESULTS.json from executed runs",
+        "independent review"
+      ],
+      "failure_action": "Today's Auto route stays; the FBP code stays on its builder branch.",
+      "protected": [
+        "official G0",
+        "reference/holdout bytes",
+        "default method routing",
+        "tolerances/controller constants",
+        "stage threshold of the linear solve"
+      ],
+      "evidence": [],
+      "state_note": "Recorded 2026-11-25 (OD-L1-26)."
+    },
+    {
+      "id": "V31_ASSEMBLY_DEFAULT_WIDE_BAND",
+      "depends": [
+        "V29_ASSEMBLY_DEFAULT_MC"
+      ],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "Owner decision OD-L1-27: the default first-use check of the coloured route is CheckColumns::All where CheckColourings::total_groups >= n, MultiColouring otherwise.",
+      "write_allowlist": [
+        "crates/rodas5p-integrators/src/stage_clients/assembly.rs",
+        "crates/rodas5p-integrators/src/stage_clients/assembly/**",
+        "crates/rodas5p-integrators/tests/stage_clients_assembly_*.rs",
+        "research/production_loop_20261116/assembly_wide_band/**"
+      ],
+      "equations_and_design": [
+        "Implementation of an owner decision; the arithmetic of the assembled Jacobian does not change."
+      ],
+      "acceptance_checks": [
+        "V08 identity cells bit-identical with unchanged check counters (their total_groups < n)",
+        "on the V26 corpus every wrong declaration detected by the V29 default stays detected; the cases where the rule picks All are listed",
+        "tests: a wide band picks All, the equality case picks All, a narrow band keeps MultiColouring; no allocation after new() on the sequential routes",
+        "clippy -D warnings, fmt, stage_clients_* and the sentinels"
+      ],
+      "completion_requires": [
+        "independent review"
+      ],
+      "failure_action": "The V29 default stays.",
+      "protected": [
+        "official G0",
+        "reference/holdout bytes",
+        "default method routing",
+        "tolerances/controller constants",
+        "stage threshold of the linear solve"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/assembly_wide_band/RESULTS.json",
+        "research/production_loop_20261116/assembly_wide_band/REVIEW.json"
+      ],
+      "state_note": "PASS (ledger L-0342): the default first-use check of the coloured route is All where CheckColourings::total_groups_of(pattern) >= n, MultiColouring otherwise; the 36 V08 identity runs are unchanged in every field; on the V26 corpus the rule fires on 6 correct ring patterns at equality (same cost) and no detection is lost on the corpus or a 799-case supplement. Independent review accept_with_corrections (F1: All is not a superset of MultiColouring under rounding, a constructed counterexample; rustdoc corrected at merge). Merged bb2e6dd9."
+    },
+    {
+      "id": "V32_STAGE_BATCH_PROBE",
+      "depends": [],
+      "status": "COMPLETE_SCOPED",
+      "purpose": "Owner decision OD-L1-28: the concurrency probe of the protected stage_batch.rs waits, with a bound, until a second task is active, so that parallel-observed and the scientific checksum do not depend on the scheduler; the checksum composition stays.",
+      "write_allowlist": [
+        "crates/rodas5p-integrators/src/stage_batch.rs",
+        "crates/rodas5p-integrators/tests/stage_batch_probe_*.rs",
+        "research/production_loop_20261116/stage_batch_probe/**"
+      ],
+      "equations_and_design": [
+        "CI triage section 12.1 (ci/v3_first_hosted/checksum_flip.py): the hosted second run differed only in parallel-observed."
+      ],
+      "acceptance_checks": [
+        "the smoke-profile scientific checksum on the owner host equals 4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950 (unchanged composition)",
+        "a test that starts the probe while the pool's workers are delayed still observes >= 2",
+        "rodas5p-cli cli_contracts and the stage_batch tests pass; clippy, fmt"
+      ],
+      "completion_requires": [
+        "independent review",
+        "CHECKPOINT protected blob of stage_batch.rs re-pinned under OD-L1-28 at merge"
+      ],
+      "failure_action": "The protected file stays; the flaky test is documented.",
+      "protected": [
+        "official G0",
+        "reference/holdout bytes",
+        "default method routing",
+        "tolerances/controller constants",
+        "stage threshold of the linear solve"
+      ],
+      "evidence": [
+        "research/production_loop_20261116/stage_batch_probe/RESULTS.json",
+        "research/production_loop_20261116/stage_batch_probe/REVIEW.json"
+      ],
+      "state_note": "PASS (ledger L-0343): the concurrency probe of the protected stage_batch.rs waits (2 s bound, 100 us steps) until two tasks are active together; old probe 6/680 provoked runs without observed concurrency (checksum 577161eb), new probe 0/400; the smoke checksum stays 4079849b with the same composition; protected blob re-pinned under OD-L1-28. The same mechanism in stage_batch_contracts.rs received the same wait at merge. Independent review accept_with_corrections. Merged 01c33a8c."
+    },
+    {
+      "id": "V33_CI_IGNORED_LIVENESS",
+      "depends": [],
+      "status": "PLANNED",
+      "purpose": "Owner decision OD-L1-29: a full selection that cannot finish inside the job limit still seeds the next run (per-target incremental outcome and input map, self time budget, save on cancellation, baselines from incomplete outcomes for the targets they measured).",
+      "write_allowlist": [
+        "tools/ci/**",
+        ".github/workflows/ignored-tests.yml",
+        ".github/workflows/production.yml",
+        "research/production_loop_20261116/ci/**"
+      ],
+      "equations_and_design": [
+        "CI triage sections 12.2 and 12.3"
+      ],
+      "acceptance_checks": [
+        "self-test: a run stopped by its budget writes an incomplete outcome with its measured targets; the next selection uses them as mapped and selects the rest as unmapped; complete baselines select as before (all earlier self-test cases pass)",
+        "the save steps run on cancellation; YAML valid; reachability of ignored tests unchanged",
+        "after merge: the hosted ignored run leaves a baseline (recorded when available)"
+      ],
+      "completion_requires": [
+        "independent review (soundness and mechanics)"
+      ],
+      "failure_action": "The v3 workflows stay; the liveness defect stays documented.",
+      "protected": [
+        "official G0",
+        "reference/holdout bytes",
+        "default method routing",
+        "tolerances/controller constants",
+        "stage threshold of the linear solve"
+      ],
+      "evidence": [],
+      "state_note": "Recorded 2026-11-25 (OD-L1-29)."
+    },
+    {
+      "id": "V34_JVP_CALLS_COUNTER",
+      "depends": [
+        "V23_CAPABILITIES_TRUTH"
+      ],
+      "status": "PLANNED",
+      "purpose": "Owner decision OD-L1-30 (paused node of 2026-11-24): Stats::counters.jvp_calls reads 0 on the facade's banded sparse-JVP route although products are evaluated; count them truthfully.",
+      "write_allowlist": [
+        "crates/vigilode/src/solve.rs",
+        "crates/vigilode/src/capabilities.rs",
+        "crates/vigilode/tests/capabilities_*.rs",
+        "crates/vigilode/tests/jvp_counter_*.rs",
+        "research/production_loop_20261116/jvp_counter/**"
+      ],
+      "equations_and_design": [
+        "Counter truthfulness; no arithmetic change."
+      ],
+      "acceptance_checks": [
+        "a failing-first test shows jvp_calls = 0 on the base and the true count after the change",
+        "state bits and other counters of the route unchanged; default-path golden files unchanged",
+        "facade suite, clippy, fmt"
+      ],
+      "completion_requires": [
+        "independent review"
+      ],
+      "failure_action": "The counter defect stays documented.",
+      "protected": [
+        "official G0",
+        "reference/holdout bytes",
+        "default method routing",
+        "tolerances/controller constants",
+        "stage threshold of the linear solve"
+      ],
+      "evidence": [],
+      "state_note": "Recorded 2026-11-25 (OD-L1-30)."
     }
   ],
   "execution_policy": "Resume ready bounded tasks; research/implementation may overlap only with disjoint writes. Qualification dependencies restrict promotion, not safe opt-in refactoring.",
@@ -620,5 +2031,11 @@
     "U03_PEER_INDEPENDENT_QUALIFICATION",
     "U06_UNIFIED_CAPABILITY_REGISTRY",
     "U08_STRUCTURE_CERTIFICATES"
-  ]
+  ],
+  "loop_20261116": {
+    "base_commit": "074a5699a348abd15fe8a235ec5a695354e8cd8c",
+    "branch": "research/production-loop-20261116",
+    "preregistration": "research/production_loop_20261116/PREREGISTRATION.md",
+    "owner_decisions": "docs/agent/production_solver_program_20261112/OWNER_DECISIONS_20261116.json"
+  }
 }

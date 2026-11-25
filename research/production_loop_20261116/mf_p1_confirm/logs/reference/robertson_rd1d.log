@@ -1,0 +1,40 @@
+# V25_REFERENCE_BEGIN {"family": "robertson_rd1d", "date": "2026-11-24T18:08:27+0900", "git_head": "43d0880a902b816069e46cfd3a18a7f6fa3318a9", "command": "OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 taskset -c 0-5,12-17 python3 -I reference/make_reference.py --family robertson_rd1d --out reference/robertson_rd1d.json", "loadavg": "16.98 16.04 9.50 6/6104 3808012"}
+family robertson_rd1d n 1200 span [0.0, 320.0] (PROTOCOL.json families (final spans after the sizing pilot))
+reference {'method': 'DOP853', 'rtol': 1e-13, 'atol': 1e-13, 'rhs_evaluations': 3405245, 'nfev': 3405245, 'njev': 0, 'nlu': 0, 'wall_seconds': 130.942134141922}
+/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v25/research/production_loop_20261116/mf_p1_confirm/reference/families.py:130: RuntimeWarning: overflow encountered in multiply
+  out[0::3] = -0.04 * y1 + 1.0e4 * y2 * y3 + laplace(y1)
+/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v25/research/production_loop_20261116/mf_p1_confirm/reference/families.py:131: RuntimeWarning: overflow encountered in multiply
+  out[1::3] = 0.04 * y1 - 1.0e4 * y2 * y3 - 3.0e7 * y2 * y2 + laplace(y2)
+/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v25/research/production_loop_20261116/mf_p1_confirm/reference/families.py:131: RuntimeWarning: invalid value encountered in subtract
+  out[1::3] = 0.04 * y1 - 1.0e4 * y2 * y3 - 3.0e7 * y2 * y2 + laplace(y2)
+/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v25/research/production_loop_20261116/mf_p1_confirm/reference/families.py:132: RuntimeWarning: overflow encountered in multiply
+  out[2::3] = 3.0e7 * y2 * y2 + laplace(y3)
+/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v25/research/production_loop_20261116/mf_p1_confirm/reference/families.py:125: RuntimeWarning: invalid value encountered in subtract
+  return dd * (left + right - 2.0 * w)
+cross-check 1 {'method': 'DOP853', 'rtol': 1e-11, 'atol': 1e-11, 'rhs_evaluations': 3405149, 'nfev': 3405149, 'njev': 0, 'nlu': 0, 'wall_seconds': 119.15973472595215, 'difference': {'max_abs': 1.0106526726616494e-10, 'max_scaled_1_plus_abs': 9.178878963872436e-11, 'rms': 7.552787971488273e-12}}
+cross-check 2 {'method': 'Radau', 'rtol': 1e-11, 'atol': 1e-11, 'rhs_evaluations': 4734, 'nfev': 4635, 'njev': 10, 'nlu': 114, 'wall_seconds': 0.46251678466796875, 'difference': {'max_abs': 1.0942913242217855e-11, 'max_scaled_1_plus_abs': 7.404931216840557e-12, 'rms': 5.0434994280842844e-12}}
+wrote reference/robertson_rd1d.json: uncertainty 9.179e-11
+	Command being timed: "taskset -c 0-5,12-17 python3 -I reference/make_reference.py --family robertson_rd1d --out reference/robertson_rd1d.json"
+	User time (seconds): 250.65
+	System time (seconds): 0.05
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 4:10.77
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 71756
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 1
+	Minor (reclaiming a frame) page faults: 16782
+	Voluntary context switches: 180
+	Involuntary context switches: 1644
+	Swaps: 0
+	File system inputs: 608
+	File system outputs: 136
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+# V25_REFERENCE_END {"exit_code": 0, "date": "2026-11-24T18:12:37+0900"}

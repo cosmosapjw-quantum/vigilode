@@ -1,0 +1,58 @@
+# python3 -I research/production_loop_20261116/check_checkpoint.py (worktree root, HEAD bf8fed5b + uncommitted node files), 2026-11-25T02:50:18Z
+Traceback (most recent call last):
+  File "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v30/research/production_loop_20261116/check_checkpoint.py", line 95, in <module>
+    main()
+  File "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v30/research/production_loop_20261116/check_checkpoint.py", line 82, in main
+    require(hashlib.sha256((ROOT / path).read_bytes()).hexdigest() == expected,
+  File "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v30/research/production_loop_20261116/check_checkpoint.py", line 28, in require
+    raise ValueError(message)
+ValueError: implementation changed; rerun affected tests/update checkpoint: crates/vigilode/src/unified/analyzer.rs
+# exit 1
+# the same checks with every complaint collected instead of stopping at the first (module loaded, require replaced):
+PASS: strict JSON, task/DAG structure, ancestry, protected and evidence identities
+Scope: checkpoint reproducibility. Production HOLD; no new numerical qualification.
+complaints: 10
+implementation changed; rerun affected tests/update checkpoint: crates/vigilode/src/unified/analyzer.rs
+implementation changed; rerun affected tests/update checkpoint: crates/vigilode/src/unified/fallback.rs
+implementation changed; rerun affected tests/update checkpoint: crates/vigilode/src/unified/legs.rs
+implementation changed; rerun affected tests/update checkpoint: crates/vigilode/src/unified/mod.rs
+implementation changed; rerun affected tests/update checkpoint: crates/vigilode/src/unified/options.rs
+implementation changed; rerun affected tests/update checkpoint: crates/vigilode/src/unified/router.rs
+implementation changed; rerun affected tests/update checkpoint: crates/vigilode/src/unified/solution.rs
+implementation changed; rerun affected tests/update checkpoint: crates/vigilode/src/unified/workspace.rs
+implementation changed; rerun affected tests/update checkpoint: crates/vigilode/tests/unified_router_contracts.rs
+implementation changed; rerun affected tests/update checkpoint: crates/vigilode/examples/unified_production_solver.rs
+# files changed by this node against the merge base 91e9e582:
+#   research/production_loop_20261116/router_breakeven_v27b/E7_DIAGNOSIS.json
+#   research/production_loop_20261116/router_breakeven_v27b/NOTES.txt
+#   research/production_loop_20261116/router_breakeven_v27b/PREDECLARED.json
+#   research/production_loop_20261116/router_breakeven_v27b/analyze_e7.py
+#   research/production_loop_20261116/router_breakeven_v27b/check_fresh_set.py
+#   research/production_loop_20261116/router_breakeven_v27b/draft_predeclared.py
+#   research/production_loop_20261116/router_breakeven_v27b/e7_diag/Cargo.lock
+#   research/production_loop_20261116/router_breakeven_v27b/e7_diag/Cargo.toml
+#   research/production_loop_20261116/router_breakeven_v27b/e7_diag/build.sh
+#   research/production_loop_20261116/router_breakeven_v27b/e7_diag/src/main.rs
+#   research/production_loop_20261116/router_breakeven_v27b/fresh_set.py
+#   research/production_loop_20261116/router_breakeven_v27b/logs/draft_predeclared.stdout.log
+#   research/production_loop_20261116/router_breakeven_v27b/logs/e7/RUNS_INDEX.jsonl
+#   research/production_loop_20261116/router_breakeven_v27b/logs/e7/analyze_e7.stdout.log
+#   research/production_loop_20261116/router_breakeven_v27b/logs/e7/build.log
+#   research/production_loop_20261116/router_breakeven_v27b/logs/e7/build2.log
+#   research/production_loop_20261116/router_breakeven_v27b/logs/e7/raw/P_scalar_fd__A.stderr.log
+#   research/production_loop_20261116/router_breakeven_v27b/logs/e7/raw/P_scalar_fd__A.stdout.jsonl
+#   research/production_loop_20261116/router_breakeven_v27b/logs/e7/raw/P_scalar_fd__L.stderr.log
+#   research/production_loop_20261116/router_breakeven_v27b/logs/e7/raw/P_scalar_fd__L.stdout.jsonl
+#   research/production_loop_20261116/router_breakeven_v27b/logs/e7/raw/P_scalar_fd__S.stderr.log
+#   research/production_loop_20261116/router_breakeven_v27b/logs/e7/raw/P_scalar_fd__S.stdout.jsonl
+#   research/production_loop_20261116/router_breakeven_v27b/logs/e7/raw_95d0389c7a04/P_scalar_fd__A.stderr.log
+#   research/production_loop_20261116/router_breakeven_v27b/logs/e7/raw_95d0389c7a04/P_scalar_fd__A.stdout.jsonl
+#   research/production_loop_20261116/router_breakeven_v27b/logs/e7/raw_95d0389c7a04/P_scalar_fd__L.stderr.log
+#   research/production_loop_20261116/router_breakeven_v27b/logs/e7/raw_95d0389c7a04/P_scalar_fd__L.stdout.jsonl
+#   research/production_loop_20261116/router_breakeven_v27b/logs/e7/raw_95d0389c7a04/P_scalar_fd__S.stderr.log
+#   research/production_loop_20261116/router_breakeven_v27b/logs/e7/raw_95d0389c7a04/P_scalar_fd__S.stdout.jsonl
+#   research/production_loop_20261116/router_breakeven_v27b/logs/e7/raw_95d0389c7a04/P_scalar_fd__tau.stderr.log
+#   research/production_loop_20261116/router_breakeven_v27b/logs/e7/raw_95d0389c7a04/P_scalar_fd__tau.stdout.jsonl
+#   research/production_loop_20261116/router_breakeven_v27b/logs/fresh_set_checks.json
+#   research/production_loop_20261116/router_breakeven_v27b/logs/fresh_set_checks.stdout.log
+#   research/production_loop_20261116/router_breakeven_v27b/run_e7.py

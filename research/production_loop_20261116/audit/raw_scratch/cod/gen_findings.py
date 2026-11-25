@@ -1,0 +1,365 @@
+#!/usr/bin/env python3
+"""Build findings_code.json for loop L1 audit dimension CODE.
+
+Every number is parsed from raw output files in this scratch directory (perf stat, valgrind,
+callgrind, probe JSONL, the recorded U11 rows). Text fields are the auditor's statements.
+"""
+import json
+import os
+import re
+import sys
+
+S = "/tmp/claude-1000/cod-audit"
+LOOP = "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116"
+OUT = LOOP + "/research/production_loop_20261116/audit/findings_code.json"
+
+
+def stat(path):
+    out = {}
+    for line in open(os.path.join(S, path)):
+        if line.startswith("#") or not line.strip():
+            continue
+        f = line.strip().split(",")
+        out[f[2]] = int(f[0])
+    return out
+
+
+def jl(path):
+    return [json.loads(l) for l in open(os.path.join(S, path)) if l.strip()]
+
+
+# --- tableau standalone -------------------------------------------------------------------
+t20, t40 = stat("stat_tableau1_20000.txt"), stat("stat_tableau1_40000.txt")
+tab_instr = (t40["instructions:u"] - t20["instructions:u"]) / 20000
+tab_cycles = (t40["cycles:u"] - t20["cycles:u"]) / 20000
+r2, r4 = stat("stat_radau_200.txt"), stat("stat_radau_400.txt")
+radau_instr = (r4["instructions:u"] - r2["instructions:u"]) / 200
+
+# --- single-arm probe ---------------------------------------------------------------------
+tm = {(r["arm"], r["reps"]): r for r in jl("probe_time.jsonl")}
+p20, p40 = stat("stat_time_ppsw1_t1_20.txt"), stat("stat_time_ppsw1_t1_40.txt")
+q2, q4 = stat("stat_time_rodas5p_200.txt"), stat("stat_time_rodas5p_400.txt")
+datt = tm[("ppsw1_t1", 40)]["attempts_total"] - tm[("ppsw1_t1", 20)]["attempts_total"]
+ppsw1_instr = (p40["instructions:u"] - p20["instructions:u"]) / datt
+ppsw1_cycles = (p40["cycles:u"] - p20["cycles:u"]) / datt
+datt_r = tm[("rodas5p", 400)]["attempts_total"] - tm[("rodas5p", 200)]["attempts_total"]
+rodas_instr = (q4["instructions:u"] - q2["instructions:u"]) / datt_r
+
+
+def allocs(path):
+    m = re.search(r"total heap usage: ([\d,]+) allocs", open(os.path.join(S, path)).read())
+    return int(m.group(1).replace(",", ""))
+
+
+def attempts(path):
+    return json.loads(open(os.path.join(S, path)).read().strip())["attempts_total"]
+
+
+ppsw1_allocs = (allocs("vg_mem_ppsw1_2.err") - allocs("vg_mem_ppsw1_1.err")) / (
+    attempts("vg_mem_ppsw1_2.out") - attempts("vg_mem_ppsw1_1.out"))
+rodas_allocs = (allocs("vg_mem_rodas_2.err") - allocs("vg_mem_rodas_1.err")) / (
+    attempts("vg_mem_rodas_2.out") - attempts("vg_mem_rodas_1.out"))
+
+# --- callgrind inclusive ------------------------------------------------------------------
+cg = {}
+cg_total = None
+for line in open(os.path.join(S, "cg_ppsw1_inclusive.txt")):
+    m = re.match(r"\s*([\d,]+) \(\s*([\d.]+)%\)\s+(.*)$", line)
+    if not m:
+        continue
+    ir = int(m.group(1).replace(",", ""))
+    name = m.group(3)
+    if "PROGRAM TOTALS" in name:
+        cg_total = ir
+        continue
+    name = re.sub(r"\s*\[/.*\]$", "", name)
+    name = re.sub(r"^.*?:", "", name, count=1) if name.startswith("???:") or name.startswith("./") else name
+    cg.setdefault(name, ir)
+cg_attempts = json.loads(open(os.path.join(S, "cg_ppsw1.stdout")).read().strip())["attempts_total"]
+
+
+def share(key):
+    for name, ir in cg.items():
+        if name.endswith(key):
+            return {"function": key, "inclusive_ir": ir, "share_of_total": round(ir / cg_total, 4),
+                    "ir_per_attempt": round(ir / cg_attempts, 1)}
+    raise KeyError(key)
+
+
+cg_rows = [share(k) for k in [
+    "vigilode::selection::PeerOde::solve",
+    "rodas5p_integrators::ppsw1::Session::try_step",
+    "rodas5p_integrators::ppsw1::stage_inputs_unchecked",
+    "rodas5p_integrators::ppsw1::tableau",
+    "rodas5p_integrators::ppsw1::mm",
+    "rodas5p_integrators::ppsw1::solve_stages",
+    "rodas5p_core::matrix::LuFactorization::solve",
+    "rodas5p_core::matrix::LuFactorization::new",
+    "__rustc::__rust_alloc",
+    "__rustc::__rust_dealloc",
+]]
+cgd = {r["function"]: r for r in cg_rows}
+non_step_share = round((cgd["vigilode::selection::PeerOde::solve"]["inclusive_ir"]
+                        - cgd["rodas5p_integrators::ppsw1::Session::try_step"]["inclusive_ir"]) / cg_total, 5)
+
+# --- U11 rerun identity and ratios --------------------------------------------------------
+orig = [json.loads(l) for l in open(LOOP + "/research/production_unification_20261115/production_holdout/logs/holdout_runs.jsonl")]
+rerun = jl("u11_rerun.jsonl")
+identical = sum(1 for a, b in zip(orig, rerun)
+                if (a["problem"], a["tol"], a["arm"]) == (b["problem"], b["tol"], b["arm"]) and a["result"] == b["result"])
+ratios = json.load(open(os.path.join(S, "u11_ratios_recomputed.json")))
+per_attempt = {}
+for arm in ["rodas5p", "ppsw1_t1", "ppsw1_t6"]:
+    for p in ["oregonator", "hires", "brusselator_mol32"]:
+        v = [r["wall_median_s"] * 1e6 / (r["result"]["accepted"] + r["result"]["rejected"])
+             for r in orig if r["arm"] == arm and r["problem"] == p]
+        per_attempt[f"{arm}/{p}"] = [round(min(v), 2), round(max(v), 2)]
+
+perf_syms = []
+for line in open(os.path.join(S, "perf_u11_symbols.txt")):
+    m = re.match(r"\s*([\d.]+)%\s+\[(.)\]\s+(.*)$", line.rstrip())
+    if m and len(perf_syms) < 6:
+        perf_syms.append({"share_pct": float(m.group(1)), "symbol": m.group(3).strip()})
+perf_comm = []
+for line in open(os.path.join(S, "perf_u11_comm.txt")):
+    m = re.match(r"\s*([\d.]+)%\s+(\S+)", line)
+    if m:
+        perf_comm.append({"share_pct": float(m.group(1)), "thread": m.group(2)})
+
+sel = jl("probe_select.jsonl")
+peer = jl("probe_peer.jsonl")
+for r in peer:
+    f = r["result"].get("failure")
+    if f and len(f) > 240:
+        r["result"]["failure"] = f[:240] + "..."
+mods = json.load(open(os.path.join(S, "mod_categories.json")))
+mod_summary = {c: {"mod_lines": len(v), "loc": sum(x["loc"] for x in v)} for c, v in mods.items()}
+mod_summary["total_mod_lines"] = sum(len(v) for v in mods.values())
+gate_named = [x["mod"] for x in mods["unconditional_campaign_or_gate_named"]]
+
+peer_by = {r["case"]: r for r in peer}
+p3 = peer_by["p3_forcing_20cos20t_rtol1e-6"]
+p3_err = abs(p3["result"]["y_last"][0] - p3["extra"]["exact_y_end"])
+p3b = peer_by["p3b_forcing_200cos200t_rtol1e-6"]
+p3b_err = abs(p3b["result"]["y_last"][0] - p3b["extra"]["exact_y_end"])
+p4 = peer_by["p4_recoverable_jacobian_from_first_peer_step"]
+p1 = peer_by["p1_jvp_provider_without_provided_jvp_permission"]
+p2a = peer_by["p2a_span_0.3_0.9"]
+
+tab_share_instr = round(tab_instr / ppsw1_instr, 4)
+SW = "/home/cosmosapjw/vigilode/crates/vigilode/src"
+L = "crates/vigilode/src"
+PP = "crates/rodas5p-integrators/src/ppsw1.rs"
+
+measure = {
+    "host_note": "shared host, load average about 20 during the runs; wall figures are diagnostic_only, instruction counts (perf stat instructions:u, callgrind Ir) and allocation counts (valgrind) are primary",
+    "tableau_standalone": {
+        "source": "ppsw1.rs lines 60-284 and 1041-1081 copied verbatim by sed into tableau_bench.rs, rustc 1.94.1 -C opt-level=3",
+        "instructions_per_tableau_call": round(tab_instr, 1),
+        "cycles_per_tableau_call": round(tab_cycles, 1),
+        "instructions_per_radau_nodes_call": round(radau_instr, 1),
+    },
+    "oregonator_n3_tol1e-6_single_arm": {
+        "ppsw1_t1_instructions_per_attempt": round(ppsw1_instr, 1),
+        "ppsw1_t1_cycles_per_attempt": round(ppsw1_cycles, 1),
+        "rodas5p_instructions_per_attempt": round(rodas_instr, 1),
+        "instruction_ratio_ppsw1_over_rodas5p": round(ppsw1_instr / rodas_instr, 2),
+        "tableau_share_of_ppsw1_instructions": tab_share_instr,
+        "ppsw1_instructions_per_attempt_without_tableau": round(ppsw1_instr - tab_instr, 1),
+        "ratio_without_tableau": round((ppsw1_instr - tab_instr) / rodas_instr, 2),
+        "ppsw1_heap_allocations_per_attempt": round(ppsw1_allocs, 2),
+        "rodas5p_heap_allocations_per_attempt": round(rodas_allocs, 3),
+    },
+    "callgrind_ppsw1_one_solve": {"total_ir": cg_total, "attempts": cg_attempts,
+                                  "ir_per_attempt": round(cg_total / cg_attempts, 1), "rows": cg_rows,
+                                  "share_outside_try_step_starter_h0_output": non_step_share},
+    "u11_recorded_rows": {"per_attempt_wall_us_min_max": per_attempt, "ratios": ratios},
+    "u11_rerun_of_recorded_binary": {
+        "binary_sha256": "0ef2e44a669c55d99fd4a53ef58c9c46c917d28d6a0b55a6c12f951b49bb27d2",
+        "rows": len(rerun), "result_objects_identical_to_recorded": identical,
+        "perf_cycles_u_top_symbols_all_arms_all_threads": perf_syms,
+        "perf_cycles_u_by_thread": perf_comm,
+    },
+}
+
+findings = [
+    {
+        "id": "COD-01", "severity": "major", "is_new": True,
+        "title": "PPSW1 recomputes the 6x6 double-double tableau on every step attempt: 80% of its per-step cost",
+        "claim": "stage_inputs_unchecked calls tableau(sigma) on every attempt (ppsw1.rs:408). tableau builds V, V^-1 (Gauss-Jordan in double-double, :137-165) and 12 double-double 6x6 products (:241-263) with fma through a libm call. It depends only on sigma, which the controller holds at exactly 1.0 for most steps (:946-952), and it is a degree-5 polynomial in sigma, so it can be precomputed once per session. The premise that Vec allocation in ParallelExecution::map_ordered explains the 1-thread cost is wrong: with threads==1 map_ordered is never called (ppsw1.rs:492, :587).",
+        "evidence": f"callgrind, one PeerOde solve of Oregonator n=3 tol 1e-6 ({cg_attempts} attempts, {cg_total} Ir): ppsw1::tableau inclusive {cgd['rodas5p_integrators::ppsw1::tableau']['share_of_total']*100:.2f}% = {cgd['rodas5p_integrators::ppsw1::tableau']['ir_per_attempt']:.0f} Ir/attempt; solve_stages {cgd['rodas5p_integrators::ppsw1::solve_stages']['share_of_total']*100:.2f}% (LuFactorization::solve {cgd['rodas5p_core::matrix::LuFactorization::solve']['share_of_total']*100:.2f}%, ::new {cgd['rodas5p_core::matrix::LuFactorization::new']['share_of_total']*100:.2f}%); __rust_alloc+__rust_dealloc {(cgd['__rustc::__rust_alloc']['share_of_total']+cgd['__rustc::__rust_dealloc']['share_of_total'])*100:.2f}%; starter+h0 rule+output {non_step_share*100:.2f}%. perf stat: PPSW1 {ppsw1_instr:.0f} instr/attempt vs RODAS5P {rodas_instr:.0f} ({ppsw1_instr/rodas_instr:.1f}x); standalone tableau {tab_instr:.0f} instr/call, {tab_cycles:.0f} cycles/call; without it PPSW1 would be {(ppsw1_instr-tab_instr)/rodas_instr:.1f}x. valgrind: {ppsw1_allocs:.1f} heap allocations per PPSW1 attempt vs {rodas_allocs:.2f} for RODAS5P. Allocation sites: ppsw1.rs:413-427 (12 Vec), selection.rs:881 (n*n), ppsw1.rs:470 (n*n), matrix.rs:259 to_faer + faer LU, ppsw1.rs:478-487 (7), matrix.rs:332-336 (3-4 per solve x6), problem.rs:571 (6), ppsw1.rs:797/:872 (1), selection.rs:1024 (1). JVP provider adds problem.rs:858-875: 3 Vec and n JVP callbacks per step.",
+        "impact": "Limits scope, does not invalidate HOLD: the U11 G0 step criterion fails on its own (matched-error step ratio 1.91-7.11 against <=1.2). It does invalidate the U11 per-step wall ratios (7.8-24.4x at n=3,8) and speed_vs_production values as method-level numbers: four fifths of the PPSW1 step time is one avoidable function. V10 'equal implementation level' cannot be met before this is removed.",
+        "minimal_fix": "In a new opt-in session type (ppsw1.rs is not protected, but keep the default path bit-identical): cache the last (sigma, Tableau) pair, or precompute the six sigma-coefficient matrices of B, A, Gamma once and evaluate by Horner; verify bitwise equality of Tableau against tableau(sigma) for the sigma values of a recorded run before using it in V10.",
+        "reproduce_cmd": "valgrind --tool=callgrind <probe> time ppsw1_t1 1 1e-6 && callgrind_annotate --inclusive=yes callgrind.out.* | grep -E 'tableau|solve_stages|try_step'   # probe source embedded in this file under probe_sources",
+    },
+    {
+        "id": "COD-02", "severity": "major", "is_new": True,
+        "title": "PeerOde returns success=true with an error 1e6-1e7 times the tolerance: the starter interval has no error control",
+        "claim": "ppsw1::start integrates [t0, t0+2*h0] with one 5-stage Radau IIA step and no error estimate (ppsw1.rs:1125-1256); h0 = min(h_max, 1/||J||_inf) (ppsw1.rs:1023-1035, selection.rs:959-979) ignores rtol/atol and any time scale of f(t, .). When 2*h0 reaches the span (selection.rs:959 caps h0 at half the span), the whole solve is that single step: zero Peer steps, success == true (selection.rs:1028). Option h0 = NaN is silently replaced by the cap (f64::min at :961).",
+        "evidence": f"Executed probe p3: y' = 20 cos(20 t), dense Jacobian 0, span (0,1), rtol 1e-6, atol 1e-8 -> success={p3['result']['success']}, accepted Peer steps={p3['result']['accepted']}, y_end={p3['result']['y_last'][0]!r}, exact sin(20)={p3['extra']['exact_y_end']!r}, |error|={p3_err:.3f}. p3b (200 cos 200 t): y_end={p3b['result']['y_last'][0]!r}, |error|={p3b_err:.2f}, success={p3b['result']['success']}. p5b: h0=NaN -> success={peer_by['p5b_h0_nan']['result']['success']}, h0 used {peer_by['p5b_h0_nan']['result']['h0']}.",
+        "impact": "Correctness defect of the U07 adapter that the registry admits as ScopedCalibration without admit_unqualified. U11 HOLD is not affected (autonomous problems, h0 <= t_end/100). It limits every matched-error PPSW1 number: the achieved error of a run contains an uncontrolled starter contribution, which V10 must separate or bound. V03 must not copy this adapter pattern unchanged.",
+        "minimal_fix": "Opt-in adapter change (selection.rs is not protected): reject non-finite or non-positive options.h0; estimate the starter error (for example compare the Radau step against two half steps or use the PPSW1 estimator on the first Peer step with rejection shrinking h0) and refuse or shrink h0 when it exceeds the tolerance; report zero-Peer-step solves as a distinct outcome.",
+        "reproduce_cmd": "<probe> peer | grep p3   # probe source embedded under probe_sources",
+    },
+    {
+        "id": "COD-03", "severity": "major", "is_new": False,
+        "title": "MethodRegistry admission and GeneralOde::select disagree in both directions (9 executed cases)",
+        "claim": "The plan states that the registry is not used for routing; executed cases show it also cannot reproduce select. Constraints that select (selection.rs:176-227) and Rodas5p::capabilities (capabilities.rs:66-141) enforce and descriptors/MethodRequest lack: (1) regime (Unknown/Nonstiff -> DOPRI5 only); (2) band storage exemption from max_dense_dimension (:214-220; the rodas5p descriptor has no banded variant, :532-551); (3) the provider form actually present (from_problem_and_policy grants finite_difference for any provider, :311-314, so a JVP problem is admitted as 'finite-difference-dense'); (4) MatrixFreeNotEnabled as a route property; (5) MissingTimeDerivative for ProvidedOnly non-autonomous problems; (6) Options: vector atol refusals, dense_output, InteriorError::Enforce; (7) events require dense output; (8) select refuses mass, events and dense output outright while the rodas5p descriptor advertises all three; (9) Dense provider with declared band counted as dense. Variant labels also differ from the executed route (banded n=10 is admitted as 'explicit-jacobian-dense', route BandedFast).",
+        "evidence": "Executed probe 'select' (rows in raw_evidence.registry_vs_select): c01 banded provider n=1000: select Ok(Rodas5p, BandedFast), registry Refused(Permission x3); c02 FD + declared band n=1000: same split; c03 JVP n=3 AllowFiniteDifference without matrix-free: select Err(MatrixFreeNotEnabled), registry Admitted 'finite-difference-dense'; c04 non-autonomous ProvidedOnly: select Err(MissingTimeDerivative), registry Admitted; c05 events: select Err(Events), capabilities Err(EventsWithoutDenseOutput), registry Admitted; c06 mass, c08 dense output: select Err, registry Admitted; c07 regime Unknown: select Dopri5, registry admits both; c09 vector atol on JVP: select Err(Implicit(VectorAtolOnMatrixFreeRoute)), registry Admitted 'jvp-matrix-free'. No test compares the two: tests/unified_method_capabilities.rs:243 discards the query result.",
+        "impact": "Limits scope of U06 ('unified capability registry') to a descriptive table. The V03 discriminator 'registry is the only routing authority and the 1024-combination selection table is identical' is unreachable with the current MethodRequest/descriptor schema.",
+        "minimal_fix": "Before V03 routing: extend the request with regime, dimension, declared band, provider form, autonomy/time-derivative, atol kind, interior-error mode; add banded and sequential-dense variants to the rodas5p descriptor; add a contract test asserting select == registry-derived selection over the full combination table.",
+        "reproduce_cmd": "<probe> select   # 13 JSON rows; source embedded under probe_sources",
+    },
+    {
+        "id": "COD-04", "severity": "major", "is_new": True,
+        "title": "PeerOde: permission bypass, untyped and replaced failure reasons, failure without a reason",
+        "claim": "(a) PeerOde::admission checks only the caller's CapabilitySet, never the provider form (selection.rs:851-864); lower() then uses whatever the problem has (:876-898). (b) success is 'failure.is_none() && t == t_end' (:1028); when the starter endpoint t0 + 2*h0 rounds above t_end the loop is skipped and the result is success=false with failure=None. (c) callback_to_core (:837-847) maps Recoverable to CoreError::NonFinite and Fatal to CoreError::InvalidInput; try_step turns every NonFinite into a halving rejection (ppsw1.rs:786-794) although the Jacobian is re-evaluated at the same (t_m, y_m), so the run ends with an unrelated reason. (d) failure is an Option<String> of a Debug rendering (:815, :966, :985, :1018), not a typed reason. (e) a declared band is admitted by the registry and refused afterwards by lower() (:870).",
+        "evidence": f"Executed probe 'peer': p1 JVP provider with allowed={{explicit_jacobian,dense_matrix,newton}} -> admission variant 'explicit-jacobian-dense', user JVP callbacks={p1['extra']['user_jvp_callbacks']}, success={p1['result']['success']}; p2a span (0.3,0.9), zero Jacobian -> success={p2a['result']['success']}, failure={p2a['result']['failure']!r}, t_last={p2a['result']['t_last']}; p4 Jacobian returning Recoverable('user says shrink') from the first Peer step -> rejected={p4['result']['rejected']}, Jacobian callbacks={p4['extra']['user_jacobian_callbacks']}, failure={p4['result']['failure']!r}; p6 Fatal RHS -> failure={peer_by['p6_fatal_rhs_during_steps']['result']['failure']!r}; p7 declared band -> admission Admitted, solve Err(UnsupportedJacobian).",
+        "impact": "Limits scope of the U07 claims 'typed refusal before callbacks' and 'capability constraint': a caller that forbids JVPs still gets JVP callbacks. No recorded verdict depends on it. Blocks reuse of this adapter as the V03 template for typed fallback.",
+        "minimal_fix": "Derive the required variant from problem.jacobian and admit that variant; make failure an enum carrying the original CallbackError; treat a Recoverable Jacobian/starter error as a stop with that reason; land the endpoint by setting t = t_end when hh == t_end - t and define success by the landing flag.",
+        "reproduce_cmd": "<probe> peer   # rows p1, p2a, p4, p6, p7",
+    },
+    {
+        "id": "COD-05", "severity": "major", "is_new": False,
+        "title": "Switcher unified frontend: labels and docs claim engines that are never dispatched",
+        "claim": "Read-only review of 93392249. unified/router.rs:63-75 sends Tier2MatrixFreeKrylov, Tier3Exponential, Tier4StagedRodas5p and TierProtectedReference to the same dispatch_rodas5p_tier -> Rodas5p::solve (:193); only the string differs (:175-180). Tier3Exponential is never produced by the analyzer. Doc claims without code behind them: router.rs:3-5 ('matrix-free Krylov, L^8=0 staged sweep'); analyzer.rs:15-21 ('staged GMRES with subspace recycling', 'Fused exponential / Leja', 'Staged vectorized L^8=0 causal sweep'); a JVP problem with n<16 is labelled TierProtectedReference 'direct-LU reference driver' (analyzer.rs:121-125) while Rodas5p::solve runs its matrix-free route; mod.rs:3-9 ('Nilpotent homotopy sweep', 'GCRO-DR', 'Newton-Raphson-Free Homotopy / Exponential Actions', 'Zero-Allocation Hot Loops'); options.rs:25-36 and :47-52: profile, max_krylov_restarts and invariant_drift_tol are never read, max_krylov_dim only sizes an unused buffer; workspace.rs:15-30 buffers are never passed to a driver and step_into (:123-144) is a Heun step, yet it carries the VG-1 zero-allocation claim; solution.rs:37 documents max_t |I(y(t)) - I(y0)| while router.rs:316-329 computes the endpoint difference only (fallback.rs:63-68 from the checkpoint, not y0). registry.rs:874/:897: PexprbWindowDriver records method Rodas5p and wraps its counters in Rodas5p stats. tests/unified_production_solver_contracts.rs:232 asserts the label string, not the driver.",
+        "evidence": "grep -n 'dispatch_rodas5p_tier\\|Rodas5p::solve' " + SW + "/unified/router.rs; grep -rn '\\.profile\\|max_krylov_restarts\\|invariant_drift_tol' crates/vigilode/src (hits only in options.rs); grep -rn 'krylov_basis\\|stage_vectors\\|linear_scratch' crates/vigilode/src (workspace.rs only).",
+        "impact": "Confirms plan 1.3 and extends it. Any switcher evidence that reports a tier name as the executed method is label-only; it limits the scope of the 'unified production frontend' claim of commit 93392249 to: DOPRI5, Rodas5p::solve, SwitchingSolver. V03 must remove or implement the labels, as planned.",
+        "minimal_fix": "On adoption (V02/V03) drop SelectedTier values without a driver, the unread options and the workspace buffers; record the executed route from Stats.route instead of a tier string; make the unified tests assert Stats.route.driver_id.",
+        "reproduce_cmd": "sed -n '60,76p;175,193p' " + SW + "/unified/router.rs",
+    },
+    {
+        "id": "COD-06", "severity": "major", "is_new": True,
+        "title": "Switcher line: failure reasons replaced, work dropped, fallbacks uncharged or not what they claim",
+        "claim": "Failure reason replaced: router.rs:285-291 (every unsuccessful SwitchingSolution -> MaxStepsReached, message dropped; plan item); router.rs:142 (fixed text instead of the DOPRI5 stop reason); analyzer.rs:116 and :165 (callback error -> InvalidInput); registry.rs:176 WindowDriver::run -> Result<_, String> (:255-256, :265, :494, :504, :759-814); registry.rs:281 and :522 BatchStop::Fatal(\"callback failure\") without the callback message, then discarded at switching.rs:2702; registry.rs:509-529 any RODAS5P failure other than callback/budget/ceiling (step-size underflow, linear failure) becomes BatchStop::Completed, likewise DOPRI5 :277-288; registry.rs:691-749 Pexprb maps Recoverable to FatalCallback; solution.rs:103-106 generic Driver text. Work dropped: router.rs:267-273 copies 7 of the switching counters (factorizations, iterations, attempts, segments, discarded-pilot detail lost) and :277 leaves stats.accepted_steps/attempts at 0; fallback.rs:46 '?' returns the error and drops the charged explicit prefix and route_history; fallback.rs:56 stats.accepted_steps/attempts cover only the fallback leg and inner_solution holds only that leg; registry.rs:296, :548 and :857 work_units omits factorizations. Silent or uncharged: analyzer.rs:113-116 one RHS, :162-172 one dense Jacobian plus an O(n^3) eigen solve at preflight, none charged; router.rs:260-263 escalates to DerivativeFallback::AllowFiniteDifference without a user permission; fallback.rs:44-46 restarts the full max_steps budget; router.rs:222-235 'fall back to protected direct solve' calls the identical Rodas5p::solve(problem, ...) on the same JVP problem, so it is a repeat, not a different route; hybrid_automaton.rs:315-320 accounting_complete() compares a sum with the same sum and is always true. registry.rs SolverState/next_solver_state and HybridRouteAutomaton have no caller in src (the module doc says so).",
+        "evidence": "File:line reading of commit 933922495045796c99c530b0f1f1efd8fec83ed0 at /home/cosmosapjw/vigilode (not executed: building there is outside this task). grep -rn 'next_solver_state\\|HybridRouteAutomaton' crates/vigilode/src returns only registry.rs, hybrid_automaton.rs, lib.rs re-exports and doc comments.",
+        "impact": "Limits scope: the switcher's claims 'fail-closed', 'strictly conserving all accumulated WorkCounters' (fallback.rs:3-5) and 'complete work accounting' hold only on the success path of SwitchingSolver itself, not for the unified wrapper. Counter-based evidence produced through VigilODE::solve under-reports work. Relevant to the V03 plan to reuse WindowDriver as the execution layer: it needs a typed error first.",
+        "minimal_fix": "WindowDriver::run -> Result<BatchOutcome, DriverError> with the driver FailureReason preserved in BatchStop; map SwitchingSolution failures through message/segment stop reasons; return a partial VigilodeSolution on fallback error; charge preflight callbacks; share one attempt budget across legs; delete the tautological accounting check.",
+        "reproduce_cmd": "sed -n '260,291p' " + SW + "/unified/router.rs; sed -n '40,47p' " + SW + "/unified/fallback.rs; sed -n '505,529p' " + SW + "/registry.rs; sed -n '313,321p' " + SW + "/hybrid_automaton.rs",
+    },
+    {
+        "id": "COD-07", "severity": "major", "is_new": True,
+        "title": "Switcher preflight classifies contractive (for example diffusion) problems as non-stiff and allocates n*n for every problem",
+        "claim": "analyzer.rs:174-187 sets is_contracting = mu2(J(t0,y0)) <= 0 with mu2 = lambda_max((J+J^T)/2) (rodas5p-core nonnormal_observers.rs:313) and routes contracting problems with span <= 100 to DOPRI5, reporting is_stiff = !is_contracting (:191). Contractivity is not non-stiffness: every symmetric negative definite Jacobian (heat equation, y' = -1e6 y) has mu2 < 0 and is the standard stiff case. Such a run spends DOPRI5 attempts up to Options::max_steps (default 100000, options.rs:131) before the fallback at router.rs:124-146. analyzer.rs:210-221 sends every finite-difference problem with n <= 10 to DOPRI5 first (Robertson included). unified/workspace.rs:47 allocates vec![0.0; n*n] and :46 (m+1)*n in VigilODE::solve (mod.rs:47) for every problem, including matrix-free ones: n = 1e5 requests 80 GB, n = 1e6 8 TB, before any integration.",
+        "evidence": "File:line reading; mu2 definition from the observer source. Hand check: J = diag(-1e6) gives mu2 = -1e6 <= 0, span 100 -> Tier1Explicit; DOPRI5 stability limit h <= about 3.3e-6 needs about 3e7 steps > 100000.",
+        "impact": "Limits scope of the switcher's 'proactive stiffness detection' claim (mod.rs:7) and of any switcher benchmark on MOL problems routed through VigilODE::solve with a dense Jacobian; blocks the large-n regimes that loop L1 targets (V04, V11) through this frontend. No recorded verdict in the unification branch depends on it.",
+        "minimal_fix": "Do not adopt PreflightAnalyzer as a router. If a stiffness screen is wanted use a spectral-radius times span estimate, charged, with a preregistered threshold; size the workspace lazily per route.",
+        "reproduce_cmd": "sed -n '162,198p' " + SW + "/unified/analyzer.rs; sed -n '39,56p' " + SW + "/unified/workspace.rs",
+    },
+    {
+        "id": "COD-08", "severity": "minor", "is_new": False,
+        "title": "PPSW1 6-thread arm: two rayon pool round trips per attempt and a pool built inside the timed solve",
+        "claim": "With threads > 1 every attempt runs pool.install twice (ppsw1.rs:502 solves, :597 RHS; parallel.rs:62-63) and PeerOde::solve builds a new rayon pool per call (selection.rs:945). The parallelised work at n=3..8 is about 6 solves and 6 RHS (LuFactorization::solve " + f"{cgd['rodas5p_core::matrix::LuFactorization::solve']['ir_per_attempt']:.0f}" + " Ir per attempt), far below one wake/join.",
+        "evidence": f"Recorded U11 rows, recomputed: t6/t1 wall {min(v['t6_over_t1_wall'][0] for v in ratios.values())}-{max(v['t6_over_t1_wall'][1] for v in ratios.values())}; per attempt t1 {per_attempt['ppsw1_t1/oregonator']} us vs t6 {per_attempt['ppsw1_t6/oregonator']} us (Oregonator), {per_attempt['ppsw1_t1/hires']} vs {per_attempt['ppsw1_t6/hires']} (HIRES). perf cycles:u of the rerun: main thread {perf_comm[0]['share_pct']}%, the six rayon workers {sum(c['share_pct'] for c in perf_comm[1:]):.2f}%.",
+        "impact": "Confirms plan 1.2(a): G0 speed judged on the 6-thread arm at n <= 64 measures thread wake-up, not the method. Does not change HOLD.",
+        "minimal_fix": "For V10 use the 1-thread arm at small n and a persistent pool with one fork-join per step (solve and RHS fused) where threads are tested.",
+        "reproduce_cmd": "python3 over research/production_unification_20261115/production_holdout/logs/holdout_runs.jsonl: wall_median_s / (accepted + rejected) per arm",
+    },
+    {
+        "id": "COD-09", "severity": "minor", "is_new": False,
+        "title": "Hygiene: tracked reject files, research modules compiled unconditionally, crates outside the workspace",
+        "claim": f"Tracked: crates/rodas5p-integrators/src/dense_output_v2.rs.rej (12 lines, a rejected hunk adding DenseErrorControl::VerifiedResidual) and research/production_reaudit_20261021/evidence/port/dense_patch_context.rej. crates/rodas5p-integrators/src/lib.rs has {mod_summary['total_mod_lines']} mod lines: {mod_summary['feature_gated_research']['mod_lines']} behind a cargo feature ({mod_summary['feature_gated_research']['loc']} LOC), {mod_summary['unconditional_campaign_or_gate_named']['mod_lines']} unconditional modules named after a gate, campaign or candidate ({mod_summary['unconditional_campaign_or_gate_named']['loc']} LOC), {mod_summary['unconditional_other']['mod_lines']} other unconditional modules ({mod_summary['unconditional_other']['loc']} LOC; these still include research drivers such as homotopy, sabr, transactional_q1_q2, packet_*). crates/vigilode-bench and crates/vigilode-hybrid carry their own [workspace] and Cargo.lock and are not in the root members list, so workspace build, test, clippy and fmt never see them.",
+        "evidence": "git ls-files | grep -E '\\.rej$'; grep -cE '^(pub(\\(crate\\))? )?mod [a-z0-9_]+;' crates/rodas5p-integrators/src/lib.rs; classification script output in raw_evidence.lib_rs_mod_categories (name-pattern based: a1_, g<digit>_, n01_, pr101, bound_, v38d, policy_redesign, scientific_, unified_gates/screen, *_gate, *_experiments, *_candidate, fourier_path, comparator_fidelity); Cargo.toml:3-11.",
+        "impact": "Packaging axis of the R-gate: the production crate compiles gate and campaign code unconditionally (at least 21k LOC); two crates are untested by the workspace commands. No numerical verdict affected.",
+        "minimal_fix": "git rm the two .rej files (their content is already recorded in history); move gate/campaign modules behind a 'research' feature in a later node with a bit-identity check of the protected drivers; add both crates to CI as separate jobs or to workspace.exclude with a documented build command.",
+        "reproduce_cmd": "cd " + LOOP + " && git ls-files | grep -E '\\.rej$' && grep -cE '^(pub(\\(crate\\))? )?mod [a-z0-9_]+;' crates/rodas5p-integrators/src/lib.rs",
+    },
+    {
+        "id": "COD-10", "severity": "minor", "is_new": True,
+        "title": "README and crate docs contradict the code surface",
+        "claim": "crates/vigilode/README.md:3-4, src/lib.rs:3-5 and Cargo.toml:7 say 'One problem type, one options type, one solver and one result'; the crate exports 10 solver entry types (Rodas5p, Dopri5, GeneralOde, AutomaticOde, SwitchingSolver, ProductionSolver, PeerOde, LawsonDopri5, ExplicitSession, Dopri5Ensemble), 6 result types and 18 'pub fn solve*'. Top-level README.md:43-52 describes a 'protected matrix-free Rosenbrock path' and 'Jacobian-free' integration, while the facade default routes are dense and banded direct LU (lib.rs:47-58) and GeneralOde defaults to DOPRI5 (selection.rs:190-196). README.md never mentions PeerOde, MethodRegistry, AutomaticOde or ProductionSolver. README.md:67 calls the internal BDF1/BDF2 and Radau solvers reference implementations, while the registry labels BDF ImplementedUnqualified and only Radau ReferenceImplementationOnly (selection.rs:633, :660). The first 41 README lines are dated notices; there is no quick start for the facade. Tier::Performance is documented honestly as executing Protected (options.rs:42-50, solve.rs:593, capabilities.rs:100).",
+        "evidence": "grep -nE '^pub struct (Rodas5p|Dopri5|GeneralOde|AutomaticOde|SwitchingSolver|ProductionSolver|PeerOde|LawsonDopri5|ExplicitSession|Dopri5Ensemble)' crates/vigilode/src/*.rs (10 hits); grep -nE 'pub fn solve[a-z_]*\\(' crates/vigilode/src/*.rs | wc -l (18); grep -n 'PeerOde\\|MethodRegistry\\|ProductionSolver\\|AutomaticOde' README.md (0 hits).",
+        "impact": "API and packaging axes of the R-gate; no numerical verdict affected.",
+        "minimal_fix": "Rewrite both READMEs in V13 from the registry descriptors after V03; until then replace 'one solver' by the list of entry points and their status.",
+        "reproduce_cmd": "cd " + LOOP + " && grep -n 'PeerOde\\|MethodRegistry\\|ProductionSolver\\|AutomaticOde' README.md; grep -nE 'pub fn solve[a-z_]*\\(' crates/vigilode/src/*.rs | wc -l",
+    },
+]
+
+plan_items = [
+    {"item": "1.3 ten or more frontends coexist with different option and result types", "verdict": "confirmed",
+     "note": "10 solver entry structs, 6 result structs, 18 pub fn solve* in crates/vigilode/src."},
+    {"item": "1.3 MethodRegistry describes 6 methods but is not used for routing; GeneralOde::select (selection.rs:176) hardcodes DOPRI5/RODAS5P; default policy is DOPRI5", "verdict": "confirmed",
+     "note": "6 descriptors (selection.rs:509-665); only PeerOde::admission (:859-863) and tests call it. Extended by COD-03: admission also disagrees with select in 9 executed cases."},
+    {"item": "1.3 BDF, Radau, PEXPRB54s4, lagged, small/batch, SABR, homotopy, transactional, PTSW2B, PPSW1 matrix-free and vigilode-coupled are unreachable from the facade; Tier::Performance is the Protected path", "verdict": "confirmed",
+     "note": "No reference in crates/vigilode/src except registry route strings; vigilode/Cargo.toml has no vigilode-coupled dependency; PeerOde never calls with_linear_backend; solve.rs:593 and capabilities.rs:100 set tier_executed = Protected (documented)."},
+    {"item": "1.3 facade RODAS5P paths are sequential and have no per-phase timers", "verdict": "confirmed",
+     "note": "No ParallelExecution, rayon, threads or Instant in solve.rs; only PeerOde takes threads (selection.rs:945)."},
+    {"item": "1.3 switcher unified/router.rs: Tier2/3/4/Protected all call the same Rodas5p::solve; switching failure always maps to MaxStepsReached", "verdict": "confirmed",
+     "note": "router.rs:63-75, :193, :285-291. Tier3Exponential is never produced by the analyzer. Extended by COD-05/06/07."},
+    {"item": "1.3 3D and sphere operators exist only in test files; vigilode-bench and vigilode-hybrid are not workspace members", "verdict": "confirmed",
+     "note": "sphere/lat-lon hits only under tests/; src/mol/mod.rs is a 3-line stub; both crates have their own [workspace] and Cargo.lock."},
+    {"item": "1.2(a) the 6-thread PPSW1 arm is 1.6-2.9x slower than the 1-thread arm at n=3/8/64", "verdict": "confirmed",
+     "note": "Recomputed from the recorded rows: 1.59-2.94. Cause located (COD-08)."},
+    {"item": "1.2(b) PPSW1 1-thread per-step wall is 8-24x RODAS5P at n=3,8 and 2.1-2.5x at n=64; implementation maturity; the timer includes the Radau/Newton starter", "verdict": "corrected",
+     "note": f"Ratios reproduce (7.77-24.38 and 2.12-2.51). The cause is specific, not general maturity: tableau(sigma) recomputation is {tab_share_instr*100:.1f}% of PPSW1 instructions per attempt; allocations are {(cgd['__rustc::__rust_alloc']['share_of_total']+cgd['__rustc::__rust_dealloc']['share_of_total'])*100:.1f}%; the starter, h0 rule and output together are {non_step_share*100:.2f}% of one solve, so the starter in the timer is negligible."},
+    {"item": "1.2(c) ACCEPTED_STEP_SIGMA_MAX = 1.10 at ppsw1.rs:57 with a 6-step hysteresis", "verdict": "confirmed",
+     "note": "ppsw1.rs:57, HYSTERESIS_HISTORY = 6 at :841, keep-h rule at :946-952. Whether 1.10 is needed for stability is not a code question (V10)."},
+    {"item": "1.2 U11 matched-error step ratio 1.9-7.1x", "verdict": "confirmed",
+     "note": "EVALUATION.json g0.steps_le_1_2x: evidence min 1.911, max 7.108. Raw equal-tolerance accepted-step ratios are 1.79-11.15. All 45 recorded result objects reproduce bit-identically on rerun of the recorded binary (sha256 matches)."},
+    {"item": "1.2 dense_output_v2.rs.rej is tracked", "verdict": "confirmed", "note": "Plus research/production_reaudit_20261021/evidence/port/dense_patch_context.rej."},
+    {"item": "1.1 only crates/rodas5p-integrators/src/lib.rs is modified on both sides; switcher moved the toolchain to stable", "verdict": "confirmed",
+     "note": "comm of git diff --name-only against merge-base 569ce026 over crates, Cargo.toml, Cargo.lock, rust-toolchain.toml gives that single file; 93392249:rust-toolchain.toml has channel = \"stable\"."},
+    {"item": "3.1 V02: zero public name collisions; one semantic conflict, Jacobian::SparseJvp makes the match at selection.rs:306 non-exhaustive", "verdict": "confirmed",
+     "note": "None of the 15 public names added by LOOP selection.rs occurs in the switcher crate; the match at selection.rs:306-310 has no wildcard arm. PeerOde::lower (:876-898) has one and would silently refuse SparseJvp as UnsupportedJacobian."},
+    {"item": "1.1 switcher edited protected files sequential.rs, rodas5p_fast.rs, adaptive.rs", "verdict": "not_checked", "note": "Lineage dimension."},
+]
+
+doc = {
+    "schema": "vigilode.loop-l1.audit-findings.v1",
+    "dimension": "CODE",
+    "id_prefix": "COD",
+    "date": "2026-11-16",
+    "loop_commit": "2dc9a2c5778ac5b3ac960b0f6741aa5916122384",
+    "switcher_commit": "933922495045796c99c530b0f1f1efd8fec83ed0",
+    "sources_edited": False,
+    "method": [
+        "File:line reading of the named LOOP and switcher sources.",
+        "Executed: rerun of the recorded U11 runner binary under perf record (results compared with the recorded rows).",
+        "Executed: standalone copy of ppsw1::tableau and radau_nodes (sed-extracted, rustc 1.94.1 -O) under perf stat.",
+        "Executed: scratch probe binary (package name and lock file of the U11 runner, path dependency on the U11 clean clone at commit 891044d7 whose selection.rs, capabilities.rs, solve.rs, ppsw1.rs, ppsw1_linear_backend.rs, problem.rs and rodas5p-core matrix.rs are byte-identical to LOOP 2dc9a2c5; private copy of the U11 target directory; cargo +1.94.1 build --release --locked --offline -j 6) under perf stat, valgrind memcheck and callgrind.",
+        "The switcher line was read only; nothing there was built or run.",
+    ],
+    "limitations": [
+        "Raw outputs live in /tmp/claude-1000/cod-audit (volatile). The probe sources are embedded below so every executed number can be regenerated.",
+        "Wall-clock values were taken at load average about 20 and are diagnostic_only.",
+        "The probe links the vigilode crate of commit 891044d7, not LOOP HEAD; equality of the seven files that carry the audited behaviour was checked with cmp.",
+        "Module categories in COD-09 are by name pattern, not by a dependency analysis.",
+        "Switcher findings COD-05..07 are derived by reading, not by execution.",
+    ],
+    "measurements": measure,
+    "findings": findings,
+    "plan_items_checked": plan_items,
+    "raw_evidence": {
+        "registry_vs_select": sel,
+        "peer_probes": peer,
+        "lib_rs_mod_categories": {"summary": mod_summary, "unconditional_campaign_or_gate_named": gate_named},
+    },
+    "probe_sources": {
+        "probe/Cargo.toml": open(os.path.join(S, "probe/Cargo.toml")).read(),
+        "probe/src/main.rs": open(os.path.join(S, "probe/src/main.rs")).read(),
+        "tableau_bench_recipe": "{ header with CoreError/CoreResult stubs; sed -n '60,284p' ppsw1.rs; sed -n '1041,1081p' ppsw1.rs; main looping tableau(black_box(1.0)) or radau_nodes() } > tableau_bench.rs; rustc +1.94.1 --edition 2024 -C opt-level=3 -C codegen-units=1 -C panic=abort tableau_bench.rs; perf stat -x, -e instructions:u,cycles:u ./tableau_bench tableau1 20000 (and 40000); per-call value = difference / 20000",
+        "commands": [
+            "perf record -e cycles:u -F 4999 -- <recorded u11-holdout-runner>   # 45 rows, results compared with holdout_runs.jsonl",
+            "perf stat -x, -e instructions:u,cycles:u -- <probe> time ppsw1_t1 20|40 1e-6 ; <probe> time rodas5p 200|400 1e-6   # per-attempt = difference / attempts difference",
+            "valgrind --tool=memcheck --leak-check=no <probe> time ppsw1_t1 1|2 1e-6 ; same for rodas5p   # allocations per attempt = difference / attempts difference",
+            "valgrind --tool=callgrind <probe> time ppsw1_t1 1 1e-6 ; callgrind_annotate --inclusive=yes",
+            "<probe> select ; <probe> peer",
+        ],
+    },
+}
+
+os.makedirs(os.path.dirname(OUT), exist_ok=True)
+text = json.dumps(doc, indent=1, allow_nan=False, ensure_ascii=False)
+json.loads(text)
+with open(OUT, "w") as f:
+    f.write(text + "\n")
+compact = {
+    "tab_share": tab_share_instr, "ppsw1_instr": round(ppsw1_instr), "rodas_instr": round(rodas_instr),
+    "tab_instr": round(tab_instr), "tab_cycles": round(tab_cycles), "allocs": round(ppsw1_allocs, 1),
+    "rodas_allocs": round(rodas_allocs, 3), "identical": identical, "non_step": non_step_share,
+    "p3_err": p3_err, "p3b_err": p3b_err, "mods": mod_summary, "radau_instr": round(radau_instr),
+    "cg": {r["function"].split("::")[-1]: r["share_of_total"] for r in cg_rows},
+    "ratio": round(ppsw1_instr / rodas_instr, 2), "ratio_wo": round((ppsw1_instr - tab_instr) / rodas_instr, 2),
+}
+print(json.dumps(compact, indent=1))
+print("wrote", OUT, len(text), "bytes", file=sys.stderr)

@@ -1,0 +1,184 @@
+V18_DENSE_LU_CLIENT - working notes (builder, loop L1 wave 2 group 3)
+worktree /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v18, branch research/production-loop-20261116-w2-v18
+base commit 587a139501729bbe886bb2b8c49b0ef893705d08; CARGO_TARGET_DIR=/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v18
+
+== 2026-11-23 21:12 KST: state at start ==
+No earlier run of this node in the worktree (git log ends at the base commit, dense_lu_client/ did not exist,
+dense_lu_reuse.rs is the one-line stub).
+
+== Read so far (file:line) ==
+- research/production_loop_20261116/PREREGISTRATION.md:90-97  addendum A2, frozen row of V18.
+- docs/agent/production_solver_program_20261112/TASK_CONTRACTS.json tasks[27] V18_DENSE_LU_CLIENT:
+  "Threaded arm: 2, 4, 6 workers through a parallelism argument of the factorisation call, opt-in, no global
+  setting and no manifest change."
+- crates/rodas5p-integrators/src/stage_clients/dense_lu.rs:188-224 (client-kit factor: W = -J, diag += inv_h_gamma,
+  counters.direct_factorizations += 1, LuFactorization::new(&w)); :230-261 (solve through
+  LuFactorization::solve_in_place_with_workspace); :55-68 protected_choice (faer iff n > 64 AND density > 0.1).
+- crates/rodas5p-core/src/matrix.rs:198-200 to_faer = Mat::from_fn(n, n, |i, j| a[(i, j)]) (allocation 1, n x n);
+  :251-261 LuFactorization::new = a.to_faer().partial_piv_lu(); :232-243 LuSolveWorkspace (rhs Mat n x 1 and
+  a MemBuffer of solve_in_place_scratch::<usize, f64>(n, 1, par)); :273-306 solve_in_place_with_workspace
+  (finite check of the rhs, copy into the Mat, faer solve_in_place_with_conj(L, U, P, Conj::No, rhs, par, stack),
+  copy back, finite check -> CoreError::LinearSolve("LU produced NaN/Inf")).
+- faer 0.24.4 (~/.cargo/registry/src/*/faer-0.24.4):
+  src/linalg/solvers.rs:984-987 PartialPivLu::new = A.to_owned() (allocation 2, n x n) then new_imp;
+  :990-1019 new_imp: par = get_global_parallelism(); two vec![0usize; m] (allocations 3, 4); MemBuffer of
+  lu_in_place_scratch (allocation 5); lu_in_place(LU.as_mut(), fwd, bwd, par, stack, default()); split_LU(LU);
+  :955-979 split_LU (m >= n): L = LU (moved), U = Mat::zeros(n, n) (allocation 6, n x n), copy of the upper
+  triangle, strict upper triangle of L zeroed, diagonal of L set to one.
+  src/linalg/lu/partial_pivoting/factor.rs: lu_in_place (perm = identity, transpositions from the stack,
+  lu_in_place_recursion(matrix, 0, size, transpositions, par, params), perm and perm_inv from the transpositions);
+  params auto(): recursion_threshold 16, block_size 64, par_threshold 128*128; recursion: half = n/2,
+  block = half rounded up to a multiple of min(16, half.next_power_of_two()); unit lower triangular solve and
+  matmul with `par`; row swaps of the columns outside the block.
+  src/lib.rs:1112-1121 GLOBAL_PARALLELISM starts at 1 (= Par::Seq) when the feature "rayon" is off;
+  :929-936 enum Par { Seq, #[cfg(feature = "rayon")] Rayon(NonZeroUsize) }.
+  src/linalg/lu/partial_pivoting/solve.rs:21-52 solve_in_place_with_conj = permute_rows_in_place, unit lower
+  solve with L, upper solve with U.
+  src/linalg/triangular_solve.rs:433-500 (unit lower) and :501-565 (lower; the upper solve is the lower solve on
+  the reversed matrix, :589-604): the recursion splits the matrix with split_with(bs, bs) and uses only the
+  top-left, bottom-left and bottom-right blocks; the base cases (n <= 4) read the strict lower triangle (unit) or
+  the lower triangle with the diagonal. Neither solve reads the opposite triangle.
+- Cargo.toml:24 faer = { version = "0.24.4", default-features = false, features = ["std", "linalg",
+  "sparse-linalg"] }; Cargo.lock:316-331 faer has no dependency on rayon or spindle.
+- research/production_loop_20261116/cost_anatomy/REVIEW.json finding V04-R1: the path-length variants of the
+  review were symbolic links to one binary whose own path has 93 characters; link paths of 100, 108, 116 and 124
+  characters (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v04/review-scratch/head-len108-yyy...).
+  Minor faults per attempt of the protected driver at n = 512: 496 / 496 / 776 / 776 / 776.
+
+== Design decisions so far ==
+D1 (reuse arm). Client-owned faer Mat<f64> n x n for the combined factors, two usize arrays for the permutation,
+   one MemBuffer for the transpositions, one Mat n x 1 and one MemBuffer for the solve. factor() writes
+   W = -J (+ inv_h_gamma on the diagonal) straight into the column-major Mat and calls
+   faer::linalg::lu::partial_pivoting::factor::lu_in_place(.., Par::Seq, .., Default::default()): the call,
+   the parameters and the storage layout (a faer Mat of the same shape) of the protected path.
+   The protected split into L and U is not repeated: both triangular solves read only their own triangle
+   (see above), so the combined matrix is passed as L and as U. Identity is then tested, not assumed.
+D2 (threaded arm). faer's own threads are behind the cargo feature "rayon", which the workspace manifest switches
+   off; Par::Rayon does not exist in this build. Switching it on needs Cargo.toml:24 and Cargo.lock (new
+   packages rayon -> faer, spindle): both protected. So the arm as the contract words it ("through a parallelism
+   argument of the factorisation call") is NOT_RUN. To be confirmed with `cargo tree -e features` and a compile
+   probe, both kept as logs.
+   Candidate exploratory arm that needs no manifest change: the same recursion written in the client, with the
+   triangular solve and the matmul of each level split over column chunks on a client-owned rayon pool (rayon is
+   already a dependency of rodas5p-integrators). To be decided after the reuse arm is in place.
+
+== Next steps ==
+1. Read tests/stage_clients_dense_identity.rs and tests/stage_clients_alloc.rs (identity set, counting allocator).
+2. Read choose_lu in rodas5p_fast.rs and the V04 runner (dense problem family, timing protocol).
+3. Write PREDECLARED.json, commit, then the client, the tests, the runner.
+
+== 2026-11-23 21:58 KST: milestone - client, tests, runner, PREDECLARED committed ==
+Commits so far: 5fe32408 notes; 4035c011 client (dense_lu_reuse.rs + dense_lu_reuse/threaded.rs);
+67b5bedf identity test + shared problems module; ca5a8dfe allocation test; 2ebae4d9 PREDECLARED.json
+(predeclared commit, before any measurement); 49d84242 runner + pilot + faer feature evidence.
+
+Decisions taken (all written into PREDECLARED.json):
+D3. Threaded arm: faer's Par::Rayon does not exist in this build (compile probe E0599, cargo tree shows the
+    features linalg, sparse, sparse-linalg, std). The arm as the contract words it is NOT_RUN. A client-side
+    arm that needs no manifest change is built (faer's recursion in the client; panels <= 64 columns by faer's
+    sequential lu_in_place; triangular solve, product and swaps of each level split with rayon::join on a
+    client-owned pool). Both lines are reported; the orchestrator rules which one is the verdict of A2.
+D4. Problems: meanfield (client-kit faer row, any order) and the new family skewnet (full skew coupling,
+    manufactured solution phi = atanh(alpha(t) p + beta(t) q), so the reference is analytic; W is not
+    diagonally dominant, the factorisation moves up to 1393 of 2048 rows).
+D5. Page faults per attempt: read with getrusage in the Jacobian hook at every accepted state; rate per
+    accepted step is an upper bound of the rate per attempt.
+D6. Heap-layout variants: symbolic links of 93, 108 and 124 characters in <target>/hl/ to the runner
+    (own path 89 characters), started with an emptied environment.
+
+Development results seen before the freeze (deterministic, repeated and logged after it):
+- identity test target: 7 passed, 1 ignored; allocation test: protected and kit 6 allocations per attempt
+  (3 n x n matrices + 3 small), reuse 0, threaded 0..1 per run (job queue block of the pool).
+- threaded factors equal the sequential ones bit for bit in every tested case (n = 65..512; 2, 4, 6 workers).
+Sizing pilot (protected only): skewnet.n2048 on [0,1]: 17/26/45 attempts at rtol 1e-4/1e-5/1e-6, about
+0.25 s per attempt on a loaded host; skewnet.n512 on [0,2]: 29/88/340; meanfield.n512: 89 at 1e-6.
+Protected driver minor faults per accepted step in the pilot: about 780 at n = 512, 24.6e3 at n = 2048.
+
+After the freeze (first results, logs/identity.*.jsonl): reuse and kit equal the protected driver in 18 of 18
+runner rows each (n = 128, 512, 2048); the threaded arm (2, 4, 6 workers) is bit-identical in 54 of 54 rows.
+
+== Next steps ==
+1. Background job (build links reference identity tests faults) is running; then parse.
+2. Timing stages under the lock: wall, wp, extra; then perf.
+3. parse_results.py -> RESULTS.json; make_report.py -> REPORT_KO.md; checks (clippy, rustfmt, sentinels,
+   kit tests, loop checker, strict JSON); final commit.
+
+== 2026-11-23 22:20 KST: milestone - identity, allocation and page-fault parts measured ==
+Commit bba4a0fe holds the logs of the non-timing stages, repeated with the final runner binary after a
+clippy fix in the shared problems module (needless_range_loop in the partial_t closure of skewnet; the
+arithmetic is unchanged). The first set of these logs (earlier binary) is in commit 9e1eadef.
+Results (RESULTS.json, parts of the reuse verdict): identity PASS (15 client-kit rows, 18 faer-path test rows
+at n = 128, 512, 2048, 18 runner rows; kit client 18 of 18; threaded arm bit-identical in 54 of 54 rows, up
+to 1393 of 2048 rows moved by pivoting); allocations PASS (reuse 0 per attempt; protected and kit 6 per
+attempt, 6.3 MB at n = 512); page faults PASS (reuse at most 0.29 per accepted step; protected 31..840 at
+n = 512 depending on the run and variant, 24579..25263 at n = 2048).
+
+Incident, recorded in logs/WAIT_BUDGET.json: the first timing stage (wall) was started at 22:01:37 and was
+meant to be stopped at 22:05 for the clippy fix. `kill` stopped only its shell wrapper; the Python script
+kept waiting for a load of at most 8 (it never saw one) until 22:18, when it was found and stopped together
+with a second instance started at 22:17. Neither made a timing run (no wall log existed). The whole
+elapsed time, 17 minutes, is counted against the node's 20 minutes of waiting. The host load was 12 to 27
+in that period (builds of the other agents of the group plus this node's own repeated non-timing stages).
+
+Change to the measurement script after that (no change of the declared rule): one call of a timing stage
+adds one try to every invocation that still misses the quality rule (at most three tries per invocation),
+so the two re-measurements can be made later than the first try instead of back to back.
+
+== Next steps ==
+1. Timing pass 1 (wall, wp, extra) is running (background, started 22:19).
+2. run_checks.sh (cargo; not while a timing invocation runs), then timing pass 2 and 3 for invocations that
+   miss the quality rule, then perf stage.
+3. parse_results.py, make_report.py, final checks, final commit.
+
+== 2026-11-23 22:52 KST: milestone - timing passes 1 and 2 done, pass 3 running ==
+Timing passes (one try per invocation and pass; wall: 6 invocations, wp: 6, extra: 3):
+pass 1 22:22-22:34 (1-minute load 8.8..15), pass 2 22:34-22:50 (load 8.0..10.9), pass 3 started 22:50.
+No try of passes 1 and 2 meets the quality rule. 23 of 24 tries of the frozen cells miss the 10 % spread
+limit; the load was within 0.4 of the limit for most of pass 2.
+Why the spread is large (per-repetition rows of the logs): the protected arm changes its page-fault regime
+between repetitions of one invocation (for example wall.skewnet.n512.len124.try2: 2496, 42432 and 63210
+minor faults after warm-up in runs of 399, 472..513 and 499..517 ms), and at a constant fault count its wall
+still drifts (wall.meanfield.n512.len108.try2: 450..576 ms at 64672 faults). The reuse arm has a spread of
+0.05..0.07 in pass 2.
+Diagnostic numbers so far (no verdict): reuse/protected at n = 512: 1.36..1.62 over 12 tries; in the 5-arm
+wp invocations the protected arm did not fault after warm-up and reuse/protected was 1.11..1.26; threaded6
+at n = 2048: 2.53..2.76; threaded6 at n = 512: 1.21..1.27; reuse at n = 2048 (extra): 1.47.
+perf stat: user-mode instructions per attempt reuse/protected 0.960 (meanfield.n512) and 0.966
+(skewnet.n512): the wall difference is kernel work on page faults, not user-mode instructions.
+Threaded trajectories are bit-identical to the protected one in every pair row.
+
+Added after seeing the first timing pass (exploratory, not in PREDECLARED.json): a second binary of the
+runner package, v18-dense-lu-phases, which wraps every client arm in the kit's TimedStageClient and prints
+the time of linearization, factorization and solves; stage `phases` of run_measurements.py. Reason: the
+threaded arm gains little at n = 512 and the phase split tells whether the factorization or the rest of
+the step limits it. The main runner binary is unchanged.
+
+== Next steps ==
+1. Wait for pass 3. 2. Build the phases binary, run run_checks.sh (cargo). 3. Stage phases.
+4. parse_results.py, make_report.py, strict JSON, final commit, structured answer.
+If the timing verdicts stay NOT_DECIDABLE: a later measurement on a quiet host is
+`V18_ROUND=2 python3 -I research/production_loop_20261116/dense_lu_client/run_measurements.py wall wp extra`
+(logs get the suffix .round2; the parser uses the first try that meets the rule, in round order).
+
+== 2026-11-23 23:30 KST: milestone - all measurements done, results and report written ==
+Timing, round 1 (the node's own three tries per invocation; verdict source): 36 tries, 2 meet the quality
+rule (wp.skewnet.n2048 at rtol 1e-5 and 1e-6, try 3, after the host became quiet at about 22:57). 33 miss the
+10 % spread limit. Verdict lines: reuse wall NOT_DECIDABLE; threaded (client-side arm) PASS and KILL criteria
+NOT_DECIDABLE under the pre-declared rule (all invocations of a size authoritative).
+Round 2 (23:02-23:17, exploratory replicate on the quiet host, one try, logs *.round2.try1.jsonl, never used
+for a verdict): 5 of 12 invocations meet the rule. The protected arm still changes its page-fault regime
+between repetitions on the three skewnet wall cells (spread 0.14..0.26 at a load of 2.5..4).
+Stage phases (23:18, exploratory, added after pass 1): factor phase per attempt kit -> reuse -> 6 workers:
+n = 512 3.73 -> 3.05 -> 2.69 ms, n = 1024 24.7 -> 18.5 -> 10.7 ms, n = 2048 205.6 -> 128.8 -> 56.0 ms.
+Checks (run_checks.sh, logs/checks.log): tests exit 0 (7 test binaries ok), sentinels exit 0, clippy exit 0,
+rustfmt exit 0, strict JSON exit 0; loop checker exit 1 with the expected complaint about the pre-seeded stub
+("implementation changed; rerun affected tests/update checkpoint:
+crates/rodas5p-integrators/src/stage_clients/dense_lu_reuse.rs"); check_remaining.py runs the checks the
+loop checker does not reach after that complaint: all pass (logs/checks_loop_checker_remaining.log).
+
+For the orchestrator:
+- Ruling 1: is the client-side threaded arm the threaded arm of addendum A2, or exploratory?
+- Ruling 2: how to apply the spread rule to a baseline arm whose wall is bimodal by construction (the
+  protected faer path at n = 512).
+- A further measurement on a quiet host: V18_ROUND=3 python3 -I .../run_measurements.py wall wp extra
+  (round 2 already exists), then parse_results.py and make_report.py.

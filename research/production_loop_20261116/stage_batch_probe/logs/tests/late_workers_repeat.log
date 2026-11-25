@@ -1,0 +1,583 @@
+# 2026-11-25 09:59:46 KST kernel 7.0.0-43-generic nproc 24 loadavg 7.33 13.84 17.07 4/5999 2935173
+# executable old=/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v32/probe-bins/late_workers_test-old sha256=8342d42aa87bc73b2528c14db4c147cff65414620651b1163a3db5dd7edab5cf
+# executable new=/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v32/probe-bins/late_workers_test-new sha256=1b2739d9f6dc9ae6d55d65112cb5fccfa739e46ebf6fafbe15054e02ae454734
+## run=1 label=old start=1795568386.145544464 loadavg=7.33 13.84 17.07
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... 
+thread 'probe_observes_concurrency_when_pool_workers_start_late' (2935184) panicked at crates/rodas5p-integrators/tests/stage_batch_probe_late_workers.rs:89:9:
+repeat 0: probe observed 1 simultaneously active task(s) with late workers
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    probe_observes_concurrency_when_pool_workers_start_late
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+## run=1 label=old exit=101 end=1795568386.161548702
+## run=1 label=new start=1795568386.162793273 loadavg=7.33 13.84 17.07
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... repeat=0 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=1 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=2 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=3 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.22s
+
+## run=1 label=new exit=0 end=1795568387.390652636
+## run=2 label=old start=1795568387.391707900 loadavg=7.33 13.84 17.07
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... 
+thread 'probe_observes_concurrency_when_pool_workers_start_late' (2935331) panicked at crates/rodas5p-integrators/tests/stage_batch_probe_late_workers.rs:89:9:
+repeat 0: probe observed 1 simultaneously active task(s) with late workers
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    probe_observes_concurrency_when_pool_workers_start_late
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+## run=2 label=old exit=101 end=1795568387.406940290
+## run=2 label=new start=1795568387.408000372 loadavg=7.33 13.84 17.07
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... repeat=0 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=1 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=2 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=3 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.22s
+
+## run=2 label=new exit=0 end=1795568388.636030060
+## run=3 label=old start=1795568388.637516188 loadavg=7.33 13.84 17.07
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... 
+thread 'probe_observes_concurrency_when_pool_workers_start_late' (2935399) panicked at crates/rodas5p-integrators/tests/stage_batch_probe_late_workers.rs:89:9:
+repeat 0: probe observed 1 simultaneously active task(s) with late workers
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    probe_observes_concurrency_when_pool_workers_start_late
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+## run=3 label=old exit=101 end=1795568388.654095963
+## run=3 label=new start=1795568388.655156667 loadavg=7.33 13.84 17.07
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... repeat=0 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=1 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=2 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=3 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.22s
+
+## run=3 label=new exit=0 end=1795568389.884013330
+## run=4 label=old start=1795568389.885454263 loadavg=7.55 13.78 17.03
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... 
+thread 'probe_observes_concurrency_when_pool_workers_start_late' (2935494) panicked at crates/rodas5p-integrators/tests/stage_batch_probe_late_workers.rs:89:9:
+repeat 0: probe observed 1 simultaneously active task(s) with late workers
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    probe_observes_concurrency_when_pool_workers_start_late
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+## run=4 label=old exit=101 end=1795568389.901717731
+## run=4 label=new start=1795568389.902792892 loadavg=7.55 13.78 17.03
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... repeat=0 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=1 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=2 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=3 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.22s
+
+## run=4 label=new exit=0 end=1795568391.129728608
+## run=5 label=old start=1795568391.130898970 loadavg=7.55 13.78 17.03
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... 
+thread 'probe_observes_concurrency_when_pool_workers_start_late' (2935589) panicked at crates/rodas5p-integrators/tests/stage_batch_probe_late_workers.rs:89:9:
+repeat 0: probe observed 1 simultaneously active task(s) with late workers
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    probe_observes_concurrency_when_pool_workers_start_late
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+## run=5 label=old exit=101 end=1795568391.146703881
+## run=5 label=new start=1795568391.147658956 loadavg=7.55 13.78 17.03
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... repeat=0 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=1 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=2 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=3 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.22s
+
+## run=5 label=new exit=0 end=1795568392.375429001
+## run=6 label=old start=1795568392.376706024 loadavg=7.55 13.78 17.03
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... 
+thread 'probe_observes_concurrency_when_pool_workers_start_late' (2935691) panicked at crates/rodas5p-integrators/tests/stage_batch_probe_late_workers.rs:89:9:
+repeat 0: probe observed 1 simultaneously active task(s) with late workers
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    probe_observes_concurrency_when_pool_workers_start_late
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+## run=6 label=old exit=101 end=1795568392.392341124
+## run=6 label=new start=1795568392.393377292 loadavg=7.55 13.78 17.03
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... repeat=0 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=1 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=2 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=3 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.22s
+
+## run=6 label=new exit=0 end=1795568393.620404297
+## run=7 label=old start=1795568393.621803170 loadavg=7.55 13.78 17.03
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... 
+thread 'probe_observes_concurrency_when_pool_workers_start_late' (2935787) panicked at crates/rodas5p-integrators/tests/stage_batch_probe_late_workers.rs:89:9:
+repeat 0: probe observed 1 simultaneously active task(s) with late workers
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    probe_observes_concurrency_when_pool_workers_start_late
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+## run=7 label=old exit=101 end=1795568393.637826204
+## run=7 label=new start=1795568393.638785005 loadavg=7.55 13.78 17.03
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... repeat=0 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=1 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=2 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=3 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.22s
+
+## run=7 label=new exit=0 end=1795568394.866568012
+## run=8 label=old start=1795568394.867774291 loadavg=7.66 13.70 16.99
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... 
+thread 'probe_observes_concurrency_when_pool_workers_start_late' (2935854) panicked at crates/rodas5p-integrators/tests/stage_batch_probe_late_workers.rs:89:9:
+repeat 0: probe observed 1 simultaneously active task(s) with late workers
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    probe_observes_concurrency_when_pool_workers_start_late
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+## run=8 label=old exit=101 end=1795568394.883006941
+## run=8 label=new start=1795568394.884098093 loadavg=7.66 13.70 16.99
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... repeat=0 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=1 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=2 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=3 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.22s
+
+## run=8 label=new exit=0 end=1795568396.110657390
+## run=9 label=old start=1795568396.111881142 loadavg=7.66 13.70 16.99
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... 
+thread 'probe_observes_concurrency_when_pool_workers_start_late' (2935949) panicked at crates/rodas5p-integrators/tests/stage_batch_probe_late_workers.rs:89:9:
+repeat 0: probe observed 1 simultaneously active task(s) with late workers
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    probe_observes_concurrency_when_pool_workers_start_late
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+## run=9 label=old exit=101 end=1795568396.127291798
+## run=9 label=new start=1795568396.128201748 loadavg=7.66 13.70 16.99
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... repeat=0 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=1 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=2 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=3 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.22s
+
+## run=9 label=new exit=0 end=1795568397.355370590
+## run=10 label=old start=1795568397.356561329 loadavg=7.66 13.70 16.99
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... 
+thread 'probe_observes_concurrency_when_pool_workers_start_late' (2936280) panicked at crates/rodas5p-integrators/tests/stage_batch_probe_late_workers.rs:89:9:
+repeat 0: probe observed 1 simultaneously active task(s) with late workers
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    probe_observes_concurrency_when_pool_workers_start_late
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+## run=10 label=old exit=101 end=1795568397.372637563
+## run=10 label=new start=1795568397.373759192 loadavg=7.66 13.70 16.99
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... repeat=0 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=1 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=2 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=3 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.30s
+
+## run=10 label=new exit=0 end=1795568398.687580343
+## run=11 label=old start=1795568398.690190565 loadavg=7.66 13.70 16.99
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... 
+thread 'probe_observes_concurrency_when_pool_workers_start_late' (2936397) panicked at crates/rodas5p-integrators/tests/stage_batch_probe_late_workers.rs:89:9:
+repeat 0: probe observed 1 simultaneously active task(s) with late workers
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    probe_observes_concurrency_when_pool_workers_start_late
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.44s
+
+## run=11 label=old exit=101 end=1795568399.154422949
+## run=11 label=new start=1795568399.157415763 loadavg=7.66 13.70 16.99
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... repeat=0 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=1 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=2 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=3 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.53s
+
+## run=11 label=new exit=0 end=1795568400.692375408
+## run=12 label=old start=1795568400.693732973 loadavg=9.93 14.07 17.09
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... 
+thread 'probe_observes_concurrency_when_pool_workers_start_late' (2936564) panicked at crates/rodas5p-integrators/tests/stage_batch_probe_late_workers.rs:89:9:
+repeat 0: probe observed 1 simultaneously active task(s) with late workers
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    probe_observes_concurrency_when_pool_workers_start_late
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+
+## run=12 label=old exit=101 end=1795568401.009927110
+## run=12 label=new start=1795568401.011069849 loadavg=9.93 14.07 17.09
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... repeat=0 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=1 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=2 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=3 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.22s
+
+## run=12 label=new exit=0 end=1795568402.237770109
+## run=13 label=old start=1795568402.239030380 loadavg=9.93 14.07 17.09
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... 
+thread 'probe_observes_concurrency_when_pool_workers_start_late' (2936674) panicked at crates/rodas5p-integrators/tests/stage_batch_probe_late_workers.rs:89:9:
+repeat 0: probe observed 1 simultaneously active task(s) with late workers
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    probe_observes_concurrency_when_pool_workers_start_late
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+## run=13 label=old exit=101 end=1795568402.255869003
+## run=13 label=new start=1795568402.256947290 loadavg=9.93 14.07 17.09
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... repeat=0 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=1 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=2 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=3 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.22s
+
+## run=13 label=new exit=0 end=1795568403.483853413
+## run=14 label=old start=1795568403.484940577 loadavg=9.93 14.07 17.09
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... 
+thread 'probe_observes_concurrency_when_pool_workers_start_late' (2936778) panicked at crates/rodas5p-integrators/tests/stage_batch_probe_late_workers.rs:89:9:
+repeat 0: probe observed 1 simultaneously active task(s) with late workers
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    probe_observes_concurrency_when_pool_workers_start_late
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+## run=14 label=old exit=101 end=1795568403.501252616
+## run=14 label=new start=1795568403.502315744 loadavg=9.93 14.07 17.09
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... repeat=0 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=1 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=2 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=3 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.22s
+
+## run=14 label=new exit=0 end=1795568404.729308344
+## run=15 label=old start=1795568404.730393554 loadavg=9.62 13.93 17.03
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... 
+thread 'probe_observes_concurrency_when_pool_workers_start_late' (2936859) panicked at crates/rodas5p-integrators/tests/stage_batch_probe_late_workers.rs:89:9:
+repeat 0: probe observed 1 simultaneously active task(s) with late workers
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    probe_observes_concurrency_when_pool_workers_start_late
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+## run=15 label=old exit=101 end=1795568404.745876065
+## run=15 label=new start=1795568404.747257125 loadavg=9.62 13.93 17.03
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... repeat=0 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=1 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=2 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=3 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.22s
+
+## run=15 label=new exit=0 end=1795568405.974312336
+## run=16 label=old start=1795568405.975623793 loadavg=9.62 13.93 17.03
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... 
+thread 'probe_observes_concurrency_when_pool_workers_start_late' (2936972) panicked at crates/rodas5p-integrators/tests/stage_batch_probe_late_workers.rs:89:9:
+repeat 0: probe observed 1 simultaneously active task(s) with late workers
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    probe_observes_concurrency_when_pool_workers_start_late
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+## run=16 label=old exit=101 end=1795568405.991546687
+## run=16 label=new start=1795568405.992759338 loadavg=9.62 13.93 17.03
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... repeat=0 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=1 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=2 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=3 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.22s
+
+## run=16 label=new exit=0 end=1795568407.218780207
+## run=17 label=old start=1795568407.219757253 loadavg=9.62 13.93 17.03
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... 
+thread 'probe_observes_concurrency_when_pool_workers_start_late' (2937039) panicked at crates/rodas5p-integrators/tests/stage_batch_probe_late_workers.rs:89:9:
+repeat 0: probe observed 1 simultaneously active task(s) with late workers
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    probe_observes_concurrency_when_pool_workers_start_late
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+## run=17 label=old exit=101 end=1795568407.235393915
+## run=17 label=new start=1795568407.236719209 loadavg=9.62 13.93 17.03
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... repeat=0 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=1 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=2 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=3 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.22s
+
+## run=17 label=new exit=0 end=1795568408.464017045
+## run=18 label=old start=1795568408.465233593 loadavg=9.62 13.93 17.03
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... 
+thread 'probe_observes_concurrency_when_pool_workers_start_late' (2937956) panicked at crates/rodas5p-integrators/tests/stage_batch_probe_late_workers.rs:89:9:
+repeat 0: probe observed 1 simultaneously active task(s) with late workers
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    probe_observes_concurrency_when_pool_workers_start_late
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+## run=18 label=old exit=101 end=1795568408.480958623
+## run=18 label=new start=1795568408.482054463 loadavg=9.62 13.93 17.03
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... repeat=0 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=1 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=2 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=3 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.22s
+
+## run=18 label=new exit=0 end=1795568409.709609508
+## run=19 label=old start=1795568409.710693566 loadavg=9.57 13.85 16.99
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... 
+thread 'probe_observes_concurrency_when_pool_workers_start_late' (2940643) panicked at crates/rodas5p-integrators/tests/stage_batch_probe_late_workers.rs:89:9:
+repeat 0: probe observed 1 simultaneously active task(s) with late workers
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    probe_observes_concurrency_when_pool_workers_start_late
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+## run=19 label=old exit=101 end=1795568409.727113789
+## run=19 label=new start=1795568409.728157751 loadavg=9.57 13.85 16.99
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... repeat=0 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=1 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=2 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=3 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.22s
+
+## run=19 label=new exit=0 end=1795568410.956455964
+## run=20 label=old start=1795568410.957561793 loadavg=9.57 13.85 16.99
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... 
+thread 'probe_observes_concurrency_when_pool_workers_start_late' (2940736) panicked at crates/rodas5p-integrators/tests/stage_batch_probe_late_workers.rs:89:9:
+repeat 0: probe observed 1 simultaneously active task(s) with late workers
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    probe_observes_concurrency_when_pool_workers_start_late
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+## run=20 label=old exit=101 end=1795568410.973205018
+## run=20 label=new start=1795568410.974359198 loadavg=9.57 13.85 16.99
+
+running 1 test
+test probe_observes_concurrency_when_pool_workers_start_late ... repeat=0 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=1 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=2 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+repeat=3 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.22s
+
+## run=20 label=new exit=0 end=1795568412.202859375

@@ -1,0 +1,180 @@
+{
+  "evidence_id": "EV-V3-WORKSPACE-20261107",
+  "task_id": "V3-WORKSPACE",
+  "claim_support": [
+    "IMPLEMENTATION_VERIFIED"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "continue",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "https://github.com/cosmosapjw-quantum/vigilode",
+    "branch": "research/switcher-v2-20261103",
+    "head": "bcf6fcefa8322f7e8d4454ab40498256f4ff1e22",
+    "tree": "076c5d01e8419b1b8f0d88ca2d0de04407e21aa2",
+    "worktree_clean": true
+  },
+  "command_records": [
+    {
+      "argv": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "cargo 1.99.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    },
+    {
+      "argv": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "cargo 1.99.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    },
+    {
+      "argv": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--release"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "cargo 1.99.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    },
+    {
+      "argv": [
+        "python3",
+        "tools/check_ignored_tests_in_ci.py"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "python 3.12",
+      "exit_code": 0,
+      "verdict": "PASS"
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "rodas5p-core"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "cargo 1.99.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "rodas5p-krylov"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "cargo 1.99.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "rodas5p-integrators"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "cargo 1.99.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "vigilode-coupled"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "cargo 1.99.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "vigilode"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "cargo 1.99.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "rodas5p-cli"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "cargo 1.99.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "rodas5p-fair-ab"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "cargo 1.99.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "crates/vigilode-bench/Cargo.toml"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "cargo 1.99.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    }
+  ],
+  "result": "Full workspace verification completed with 100% pass across all 7 workspace crates and vigilode-bench. Formatting check passed, clippy passed with -D warnings, release binaries compiled cleanly, ignored tests CI check passed (85/85 accounted for), and 500+ unit, integration, and doc tests passed without failure.",
+  "limitations": [
+    "Full workspace PASS verifies implementation hygiene and regression freedom on clean current source; it does not substitute for problem-specific spatial model validation or continuous enclosure guarantees."
+  ]
+}
+

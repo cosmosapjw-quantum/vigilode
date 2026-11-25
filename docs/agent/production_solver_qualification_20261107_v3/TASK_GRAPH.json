@@ -1,0 +1,252 @@
+{
+  "schema": "vigilode.task_graph.v3",
+  "nodes": [
+    "V3-BASELINE-IDENTITY",
+    "V3-BENCH-PROTOCOL",
+    "V3-REFERENCE-LADDER",
+    "V3-ACHIEVED-WP",
+    "V3-PHYSICS",
+    "V3-ALLOC",
+    "V3-CERT-BOUNDARY",
+    "V3-SESSION-FSM",
+    "V3-API-SEMANTICS",
+    "V3-WORKSPACE",
+    "V3-DOC-CLAIMS",
+    "V3-INDEPENDENT-REVIEW",
+    "V3-M4-QUALIFY"
+  ],
+  "dependencies": {
+    "V3-BASELINE-IDENTITY": [],
+    "V3-BENCH-PROTOCOL": [
+      "V3-BASELINE-IDENTITY"
+    ],
+    "V3-REFERENCE-LADDER": [
+      "V3-BASELINE-IDENTITY",
+      "V3-BENCH-PROTOCOL"
+    ],
+    "V3-ACHIEVED-WP": [
+      "V3-BENCH-PROTOCOL",
+      "V3-REFERENCE-LADDER"
+    ],
+    "V3-PHYSICS": [
+      "V3-BASELINE-IDENTITY"
+    ],
+    "V3-ALLOC": [
+      "V3-BASELINE-IDENTITY"
+    ],
+    "V3-CERT-BOUNDARY": [
+      "V3-BASELINE-IDENTITY"
+    ],
+    "V3-SESSION-FSM": [
+      "V3-BASELINE-IDENTITY"
+    ],
+    "V3-API-SEMANTICS": [
+      "V3-BASELINE-IDENTITY"
+    ],
+    "V3-WORKSPACE": [
+      "V3-BASELINE-IDENTITY",
+      "V3-CERT-BOUNDARY",
+      "V3-SESSION-FSM",
+      "V3-API-SEMANTICS"
+    ],
+    "V3-DOC-CLAIMS": [
+      "V3-ACHIEVED-WP",
+      "V3-PHYSICS",
+      "V3-ALLOC",
+      "V3-WORKSPACE"
+    ],
+    "V3-INDEPENDENT-REVIEW": [
+      "V3-ACHIEVED-WP",
+      "V3-PHYSICS",
+      "V3-ALLOC",
+      "V3-CERT-BOUNDARY",
+      "V3-SESSION-FSM",
+      "V3-API-SEMANTICS",
+      "V3-WORKSPACE",
+      "V3-DOC-CLAIMS"
+    ],
+    "V3-M4-QUALIFY": [
+      "V3-BASELINE-IDENTITY",
+      "V3-BENCH-PROTOCOL",
+      "V3-REFERENCE-LADDER",
+      "V3-ACHIEVED-WP",
+      "V3-PHYSICS",
+      "V3-ALLOC",
+      "V3-CERT-BOUNDARY",
+      "V3-SESSION-FSM",
+      "V3-API-SEMANTICS",
+      "V3-WORKSPACE",
+      "V3-DOC-CLAIMS",
+      "V3-INDEPENDENT-REVIEW"
+    ]
+  },
+  "edges": [
+    {
+      "from": "V3-BASELINE-IDENTITY",
+      "to": "V3-BENCH-PROTOCOL"
+    },
+    {
+      "from": "V3-BASELINE-IDENTITY",
+      "to": "V3-REFERENCE-LADDER"
+    },
+    {
+      "from": "V3-BENCH-PROTOCOL",
+      "to": "V3-REFERENCE-LADDER"
+    },
+    {
+      "from": "V3-BENCH-PROTOCOL",
+      "to": "V3-ACHIEVED-WP"
+    },
+    {
+      "from": "V3-REFERENCE-LADDER",
+      "to": "V3-ACHIEVED-WP"
+    },
+    {
+      "from": "V3-BASELINE-IDENTITY",
+      "to": "V3-PHYSICS"
+    },
+    {
+      "from": "V3-BASELINE-IDENTITY",
+      "to": "V3-ALLOC"
+    },
+    {
+      "from": "V3-BASELINE-IDENTITY",
+      "to": "V3-CERT-BOUNDARY"
+    },
+    {
+      "from": "V3-BASELINE-IDENTITY",
+      "to": "V3-SESSION-FSM"
+    },
+    {
+      "from": "V3-BASELINE-IDENTITY",
+      "to": "V3-API-SEMANTICS"
+    },
+    {
+      "from": "V3-BASELINE-IDENTITY",
+      "to": "V3-WORKSPACE"
+    },
+    {
+      "from": "V3-CERT-BOUNDARY",
+      "to": "V3-WORKSPACE"
+    },
+    {
+      "from": "V3-SESSION-FSM",
+      "to": "V3-WORKSPACE"
+    },
+    {
+      "from": "V3-API-SEMANTICS",
+      "to": "V3-WORKSPACE"
+    },
+    {
+      "from": "V3-ACHIEVED-WP",
+      "to": "V3-DOC-CLAIMS"
+    },
+    {
+      "from": "V3-PHYSICS",
+      "to": "V3-DOC-CLAIMS"
+    },
+    {
+      "from": "V3-ALLOC",
+      "to": "V3-DOC-CLAIMS"
+    },
+    {
+      "from": "V3-WORKSPACE",
+      "to": "V3-DOC-CLAIMS"
+    },
+    {
+      "from": "V3-ACHIEVED-WP",
+      "to": "V3-INDEPENDENT-REVIEW"
+    },
+    {
+      "from": "V3-PHYSICS",
+      "to": "V3-INDEPENDENT-REVIEW"
+    },
+    {
+      "from": "V3-ALLOC",
+      "to": "V3-INDEPENDENT-REVIEW"
+    },
+    {
+      "from": "V3-CERT-BOUNDARY",
+      "to": "V3-INDEPENDENT-REVIEW"
+    },
+    {
+      "from": "V3-SESSION-FSM",
+      "to": "V3-INDEPENDENT-REVIEW"
+    },
+    {
+      "from": "V3-API-SEMANTICS",
+      "to": "V3-INDEPENDENT-REVIEW"
+    },
+    {
+      "from": "V3-WORKSPACE",
+      "to": "V3-INDEPENDENT-REVIEW"
+    },
+    {
+      "from": "V3-DOC-CLAIMS",
+      "to": "V3-INDEPENDENT-REVIEW"
+    },
+    {
+      "from": "V3-BASELINE-IDENTITY",
+      "to": "V3-M4-QUALIFY"
+    },
+    {
+      "from": "V3-BENCH-PROTOCOL",
+      "to": "V3-M4-QUALIFY"
+    },
+    {
+      "from": "V3-REFERENCE-LADDER",
+      "to": "V3-M4-QUALIFY"
+    },
+    {
+      "from": "V3-ACHIEVED-WP",
+      "to": "V3-M4-QUALIFY"
+    },
+    {
+      "from": "V3-PHYSICS",
+      "to": "V3-M4-QUALIFY"
+    },
+    {
+      "from": "V3-ALLOC",
+      "to": "V3-M4-QUALIFY"
+    },
+    {
+      "from": "V3-CERT-BOUNDARY",
+      "to": "V3-M4-QUALIFY"
+    },
+    {
+      "from": "V3-SESSION-FSM",
+      "to": "V3-M4-QUALIFY"
+    },
+    {
+      "from": "V3-API-SEMANTICS",
+      "to": "V3-M4-QUALIFY"
+    },
+    {
+      "from": "V3-WORKSPACE",
+      "to": "V3-M4-QUALIFY"
+    },
+    {
+      "from": "V3-DOC-CLAIMS",
+      "to": "V3-M4-QUALIFY"
+    },
+    {
+      "from": "V3-INDEPENDENT-REVIEW",
+      "to": "V3-M4-QUALIFY"
+    }
+  ],
+  "topological_order": [
+    "V3-BASELINE-IDENTITY",
+    "V3-BENCH-PROTOCOL",
+    "V3-REFERENCE-LADDER",
+    "V3-ACHIEVED-WP",
+    "V3-PHYSICS",
+    "V3-ALLOC",
+    "V3-CERT-BOUNDARY",
+    "V3-SESSION-FSM",
+    "V3-API-SEMANTICS",
+    "V3-WORKSPACE",
+    "V3-DOC-CLAIMS",
+    "V3-INDEPENDENT-REVIEW",
+    "V3-M4-QUALIFY"
+  ]
+}

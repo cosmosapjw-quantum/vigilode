@@ -1,0 +1,17 @@
+FIXTURE fixtures/r3_certified_budget_fixtures.json match
+FIXTURE fixtures/r3_homotopy_certificate_fixtures.json match
+FIXTURE fixtures/r3_polynomial_oracle_fixtures.json match
+FIXTURE fixtures/r4_polynomial_range_fixtures.json match
+FIXTURE fixtures/r4_transform_oracle_fixtures.json match
+FIXTURE fixtures/rodas5p_coefficients_snapshot.json match
+FIXTURE fixtures/scientific_corpus_v2_1_calibration_oracle.json match
+FIXTURE fixtures/scientific_corpus_v2_1_semilinear_oracle.json match
+FIXTURE fixtures/stage_target_semantics.json match
+FIXTURE fixtures/thread_transfer_laguerre_cache_cases.json match
+FIXTURE fixtures/thread_transfer_laguerre_cases.json match
+FIXTURE fixtures/thread_transfer_r4_root_oracle.json match
+FIXTURE fixtures/thread_transfer_r4_stage_inputs.json match
+FIXTURE fixtures/thread_transfer_raw_stage_allowance.json match
+NEGATIVE_CONTROL prothero_robinson_wfiltered_enforce_kill_gate exit=101 failed=True recorded_signature_present=True
+  command: cargo +1.94.1 test --release --locked -j 4 -p rodas5p-integrators --test dense_wfiltered_contracts -- --ignored --exact prothero_robinson_wfiltered_enforce_kill_gate
+SUMMARY {"all_checks_hold": true, "fixtures": 14, "fixtures_matching": 14, "manifest": "research/qualification/negative_controls/negative_fixture_manifest.json", "manifest_sha256": "e3b06b7e28cf7252d4e4a151bb4182f733928b2340ab20af797e4c9638f11eee", "negative_controls": 1, "negative_controls_failing_with_signature": 1, "negative_controls_run": 1}

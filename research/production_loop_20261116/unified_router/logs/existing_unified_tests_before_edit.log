@@ -1,0 +1,38 @@
+# existing test file crates/vigilode/tests/unified_production_solver_contracts.rs, unedited (blob 07a82c0547631b7c9ab02150ae41d7e435133207), against the new router
+# command: taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test unified_production_solver_contracts -- --test-threads 1
+   Compiling vigilode v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03b/crates/vigilode)
+    Finished `release` profile [optimized] target(s) in 28.96s
+     Running tests/unified_production_solver_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v03b/release/deps/unified_production_solver_contracts-9799abf0b9e3b341)
+
+running 6 tests
+test contract_1_single_api_ergonomics ... ok
+test contract_2_workspace_reuse_and_retained_bytes ... ok
+test contract_3_autonomous_tier_routing ... FAILED
+test contract_4_fail_closed_protected_fallback ... FAILED
+test contract_5_physical_invariant_preservation ... ok
+test contract_6_complete_work_accounting_and_timing_authority ... ok
+
+failures:
+
+---- contract_3_autonomous_tier_routing stdout ----
+
+thread 'contract_3_autonomous_tier_routing' (814880) panicked at crates/vigilode/tests/unified_production_solver_contracts.rs:204:5:
+assertion `left == right` failed
+  left: "dopri5-5(4)-fsal"
+ right: "Tier1ExplicitDopri5"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- contract_4_fail_closed_protected_fallback stdout ----
+
+thread 'contract_4_fail_closed_protected_fallback' (814881) panicked at crates/vigilode/tests/unified_production_solver_contracts.rs:263:5:
+route history must record fallback to ProtectedRODAS5P: [RouteTransitionRecord { from_tier: "preflight", to_tier: "dopri5-5(4)-fsal", time: 0.0, reason: "no declaration and no evidence of stiffness at t0: budgeted explicit trial", step_index: 0 }, RouteTransitionRecord { from_tier: "dopri5-5(4)-fsal", to_tier: "rodas5p-fast-transformed-v2", time: 0.34574795015503906, reason: "DOPRI5 stopped at t = 3.4574795015503906e-1 (DOPRI5 attempt budget exhausted); RODAS5P continues from that state with the 250 attempts left of 500", step_index: 236 }]
+
+
+failures:
+    contract_3_autonomous_tier_routing
+    contract_4_fail_closed_protected_fallback
+
+test result: FAILED. 4 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p vigilode --test unified_production_solver_contracts`
+exit=101

@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vigilode-evidence-v3.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "evidence_id",
+    "task_id",
+    "claim_support",
+    "test_verdict",
+    "work_decision",
+    "failure_kind",
+    "source_identity",
+    "command_records",
+    "result",
+    "limitations"
+  ],
+  "properties": {
+    "evidence_id": {
+      "type": "string"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "claim_support": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "ESTABLISHED",
+          "LITERATURE_SUPPORTED",
+          "DERIVED",
+          "NUMERICALLY_CHECKED",
+          "IMPLEMENTATION_VERIFIED",
+          "FORMALLY_VERIFIED",
+          "EMPIRICAL_DIAGNOSTIC",
+          "CONJECTURAL",
+          "UNRESOLVED"
+        ]
+      }
+    },
+    "test_verdict": {
+      "enum": [
+        "PASS",
+        "FAIL",
+        "CONCERN",
+        "NOT_RUN",
+        "NOT_APPLICABLE"
+      ]
+    },
+    "work_decision": {
+      "enum": [
+        "continue",
+        "promote_for_specified_use",
+        "hold",
+        "rework",
+        "revert"
+      ]
+    },
+    "failure_kind": {
+      "enum": [
+        "theory",
+        "numerical",
+        "implementation",
+        "runtime_environment",
+        "input_missing",
+        "authorization",
+        "none"
+      ]
+    },
+    "source_identity": {
+      "type": "object",
+      "required": [
+        "repository",
+        "branch",
+        "head",
+        "tree",
+        "worktree_clean"
+      ],
+      "properties": {
+        "repository": {
+          "type": "string"
+        },
+        "branch": {
+          "type": "string"
+        },
+        "head": {
+          "type": "string"
+        },
+        "tree": {
+          "type": "string"
+        },
+        "worktree_clean": {
+          "type": "boolean"
+        },
+        "binary_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "input_hashes": {
+          "type": "object"
+        }
+      }
+    },
+    "command_records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "argv",
+          "exit_code",
+          "verdict"
+        ],
+        "properties": {
+          "argv": {
+            "type": [
+              "array",
+              "string"
+            ]
+          },
+          "cwd": {
+            "type": "string"
+          },
+          "toolchain": {
+            "type": "string"
+          },
+          "exit_code": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "verdict": {
+            "enum": [
+              "PASS",
+              "FAIL",
+              "CONCERN",
+              "NOT_RUN",
+              "NOT_APPLICABLE"
+            ]
+          },
+          "stdout_path": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "stderr_path": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "stdout_sha256": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "stderr_sha256": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "result": {
+      "type": "string"
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "math_review": {
+      "type": "string"
+    },
+    "independent_review": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "work_accounting": {
+      "type": [
+        "object",
+        "null"
+      ]
+    }
+  }
+}

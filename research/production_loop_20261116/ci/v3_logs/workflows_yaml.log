@@ -1,0 +1,30 @@
+# YAML parse of the three workflows with python3 yaml 6.0.1 (actionlint is not installed) (2026-11-24T12:22:43Z)
+production.yml: parsed; on: ['pull_request', 'push', 'workflow_dispatch']; workflow-level concurrency: False; schedule: False
+  job fmt: timeout 15, concurrency group 'production-fmt-${{ github.ref }}', cancel-in-progress "${{ github.ref != 'refs/heads/main' }}"
+  job clippy: timeout 45, concurrency group 'production-clippy-${{ github.ref }}', cancel-in-progress "${{ github.ref != 'refs/heads/main' }}"
+  job test: timeout 300, concurrency group 'production-test-${{ github.ref }}', cancel-in-progress False
+    step 'Install strace' id=None if=None overwrite=None python3 -u=-
+    step 'Self-test of the test selection' id=None if=None overwrite=None python3 -u=True
+    step 'Baseline of the test selection' id=None if=None overwrite=None python3 -u=True
+    step 'Select the tests' id=None if=None overwrite=None python3 -u=True
+    step 'Run the selected tests' id=None if=None overwrite=None python3 -u=True
+    step 'Keep the outcome and the input map for the next run' id=None if=${{ !cancelled() }} overwrite=True python3 -u=-
+  job docs: timeout 45, concurrency group 'production-docs-${{ github.ref }}', cancel-in-progress "${{ github.ref != 'refs/heads/main' }}"
+  job semver: timeout 45, concurrency group 'production-semver-${{ github.ref }}', cancel-in-progress "${{ github.ref != 'refs/heads/main' }}"
+  job bench: timeout 90, concurrency group 'production-bench-${{ github.ref }}', cancel-in-progress "${{ github.ref != 'refs/heads/main' }}"
+ignored-tests.yml: parsed; on: ['pull_request', 'push', 'workflow_dispatch']; workflow-level concurrency: False; schedule: False
+  job ignored-tests: timeout 330, concurrency group 'ignored-tests-${{ github.ref }}', cancel-in-progress False
+    step 'Install strace' id=None if=None overwrite=None python3 -u=-
+    step 'Self-test of the test selection' id=None if=None overwrite=None python3 -u=True
+    step 'Baseline of the test selection' id=None if=None overwrite=None python3 -u=True
+    step 'Select the tests' id=None if=None overwrite=None python3 -u=True
+    step 'The recorded kill gate still fails' id=kill-gate if=${{ !cancelled() }} overwrite=None python3 -u=True
+    step 'The recorded stopping-test difference of the merged hook still fails' id=stop-diff if=${{ !cancelled() }} overwrite=None python3 -u=True
+    step 'Run the selected ignored tests in the measurement profile' id=None if=${{ !cancelled() }} overwrite=None python3 -u=True
+    step 'Keep the outcome and the input map for the next run' id=None if=${{ !cancelled() }} overwrite=True python3 -u=-
+a1-inner-tolerance-parity.yml: parsed; on: ['pull_request', 'push', 'workflow_dispatch']; workflow-level concurrency: False; schedule: False
+  job a1-inner-tolerance-parity: timeout 90, concurrency group None, cancel-in-progress None
+    step 'Compile every workspace target' id=None if=None overwrite=None python3 -u=-
+    step 'Lint the workspace' id=None if=None overwrite=None python3 -u=-
+a1 steps: ['Check out the repository', 'Install the pinned Rust toolchain', 'Run the A1 tolerance-arm contracts', 'Run the committed external trace regression', 'Run the affected G4/S5B0 behavioral contracts', 'Run the downstream frozen-threshold CLI contract', 'Compile every workspace target', 'Lint the workspace', 'Check formatting and source stability']
+# exit 0

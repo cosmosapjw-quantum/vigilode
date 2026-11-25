@@ -1,0 +1,340 @@
+{
+ "rust_bench_results.json": {
+  "corpus_id": "e1-corpus-v1",
+  "problems": {
+   "robertson": {
+    "n": 3,
+    "banded": false,
+    "kind": "robertson",
+    "t_end": 40.0
+   },
+   "hires": {
+    "n": 8,
+    "banded": false,
+    "kind": "hires",
+    "t_end": 321.8122
+   },
+   "van-der-pol-mu1000": {
+    "n": 2,
+    "banded": false,
+    "kind": "van-der-pol-mu1000",
+    "t_end": 2000.0
+   },
+   "brusselator-1d-n100": {
+    "n": 100,
+    "banded": true,
+    "kind": "brusselator1d",
+    "t_end": 10.0
+   }
+  },
+  "max_n": 100,
+  "arms_with_rows": {
+   "vigilode": 12,
+   "diffsol-bdf-dense": 12,
+   "cvode-bdf-dense": 12,
+   "dvode-mf21": 12,
+   "radau5": 12,
+   "rodas": 12,
+   "internal-radau-iia3": 12,
+   "vigilode-banded": 3,
+   "diffsol-bdf-sparse": 3,
+   "cvode-bdf-band": 3,
+   "dvode-mf24": 3,
+   "radau5-band": 3,
+   "rodas-band": 3
+  },
+  "matched_status_basis": {
+   "DIAGNOSTIC_ONLY|grid-clipped": 295,
+   "MATCHED|grid-clipped": 80
+  },
+  "timing_authority": "diagnostic_only",
+  "vigilode_dense_rows": 0,
+  "vigilode_clipped_rows": 15,
+  "status_counts": {
+   "vig=True|{\"kind\": \"success\"}": 15,
+   "vig=False|{\"kind\": \"success\"}": 86,
+   "vig=False|{\"code\": -1, \"kind\": \"solver-failure\", \"": 1
+  },
+  "dense_rows_with_clipped_steps": 0,
+  "warmups": 2,
+  "repetitions": 21
+ },
+ "adversarial_rust_results.json": {
+  "corpus_id": "adversarial-cross-solver-v1",
+  "problems": {
+   "robertson": {
+    "n": 3,
+    "banded": false,
+    "kind": "robertson",
+    "t_end": 40.0
+   },
+   "hires": {
+    "n": 8,
+    "banded": false,
+    "kind": "hires",
+    "t_end": 321.8122
+   },
+   "van-der-pol-mu1000": {
+    "n": 2,
+    "banded": false,
+    "kind": "van-der-pol-mu1000",
+    "t_end": 2000.0
+   },
+   "oregonator": {
+    "n": 3,
+    "banded": false,
+    "kind": "oregonator",
+    "t_end": 360.0
+   },
+   "brusselator-1d-n100": {
+    "n": 100,
+    "banded": true,
+    "kind": "brusselator1d",
+    "t_end": 10.0
+   }
+  },
+  "max_n": 100,
+  "arms_with_rows": {
+   "vigilode": 15,
+   "diffsol-bdf-dense": 15,
+   "cvode-bdf-dense": 15,
+   "dvode-mf21": 15,
+   "radau5": 15,
+   "rodas": 15,
+   "vigilode-dense": 15,
+   "vigilode-banded": 3,
+   "diffsol-bdf-sparse": 3,
+   "cvode-bdf-band": 3,
+   "dvode-mf24": 3,
+   "radau5-band": 3,
+   "rodas-band": 3,
+   "vigilode-banded-dense": 3
+  },
+  "matched_status_basis": {
+   "DIAGNOSTIC_ONLY|grid-clipped": 353,
+   "MATCHED|grid-clipped": 97,
+   "DIAGNOSTIC_ONLY|dense": 299,
+   "MATCHED|dense": 151
+  },
+  "timing_authority": "diagnostic_only",
+  "vigilode_dense_rows": 18,
+  "vigilode_clipped_rows": 18,
+  "status_counts": {
+   "vig=True|{\"kind\": \"success\"}": 36,
+   "vig=False|{\"kind\": \"success\"}": 87,
+   "vig=False|{\"code\": -1, \"kind\": \"solver-failure\", \"": 3
+  },
+  "dense_rows_with_clipped_steps": 0,
+  "warmups": 2,
+  "repetitions": 7
+ },
+ "adversarial_spatial_grid_rust_results.json": {
+  "corpus_id": "adversarial-spatial-grid-v1",
+  "problems": {
+   "sphere-photon-2d": {
+    "n": 86,
+    "banded": true,
+    "kind": "sphere-photon2d",
+    "t_end": 3.0
+   },
+   "semilinear-advection-diffusion-2d": {
+    "n": 96,
+    "banded": true,
+    "kind": "semilinear-advection-diffusion2d",
+    "t_end": 1.0
+   },
+   "semilinear-advection-diffusion-3d": {
+    "n": 216,
+    "banded": true,
+    "kind": "semilinear-advection-diffusion3d",
+    "t_end": 1.0
+   },
+   "sphere-photon-3d": {
+    "n": 302,
+    "banded": true,
+    "kind": "sphere-photon3d",
+    "t_end": 3.0
+   }
+  },
+  "max_n": 302,
+  "arms_with_rows": {
+   "vigilode": 12,
+   "vigilode-banded": 12,
+   "diffsol-bdf-dense": 12,
+   "diffsol-bdf-sparse": 12,
+   "cvode-bdf-dense": 12,
+   "cvode-bdf-band": 12,
+   "dvode-mf21": 12,
+   "dvode-mf24": 12,
+   "radau5": 12,
+   "radau5-band": 12,
+   "rodas": 12,
+   "rodas-band": 12
+  },
+  "matched_status_basis": {
+   "DIAGNOSTIC_ONLY|grid-clipped": 520
+  },
+  "timing_authority": "diagnostic_only",
+  "vigilode_dense_rows": 0,
+  "vigilode_clipped_rows": 24,
+  "status_counts": {
+   "vig=True|{\"kind\": \"success\"}": 24,
+   "vig=False|{\"kind\": \"success\"}": 120
+  },
+  "dense_rows_with_clipped_steps": 0,
+  "warmups": 1,
+  "repetitions": 3
+ },
+ "adversarial_spatial_grid_v2_results.json": {
+  "corpus_id": "adversarial-spatial-grid-v2",
+  "problems": {
+   "sphere-photon-2d": {
+    "n": 86,
+    "banded": true,
+    "kind": "sphere-photon2d",
+    "t_end": 3.0
+   },
+   "semilinear-advection-diffusion-2d": {
+    "n": 96,
+    "banded": true,
+    "kind": "semilinear-advection-diffusion2d",
+    "t_end": 1.0
+   },
+   "semilinear-advection-diffusion-3d": {
+    "n": 216,
+    "banded": true,
+    "kind": "semilinear-advection-diffusion3d",
+    "t_end": 1.0
+   },
+   "sphere-photon-3d": {
+    "n": 302,
+    "banded": true,
+    "kind": "sphere-photon3d",
+    "t_end": 3.0
+   }
+  },
+  "max_n": 302,
+  "arms_with_rows": {
+   "vigilode-dense": 12,
+   "vigilode-banded-dense": 12,
+   "vigilode": 12,
+   "vigilode-banded": 12,
+   "diffsol-bdf-dense": 12,
+   "diffsol-bdf-sparse": 12,
+   "cvode-bdf-dense": 12,
+   "cvode-bdf-band": 12,
+   "dvode-mf21": 12,
+   "dvode-mf24": 12,
+   "radau5": 12,
+   "radau5-band": 12,
+   "rodas": 12,
+   "rodas-band": 12
+  },
+  "matched_status_basis": {
+   "DIAGNOSTIC_ONLY|grid-clipped": 520,
+   "DIAGNOSTIC_ONLY|dense": 432,
+   "MATCHED|dense": 88
+  },
+  "timing_authority": "diagnostic_only",
+  "vigilode_dense_rows": 24,
+  "vigilode_clipped_rows": 24,
+  "status_counts": {
+   "vig=True|{\"kind\": \"success\"}": 48,
+   "vig=False|{\"kind\": \"success\"}": 120
+  },
+  "dense_rows_with_clipped_steps": 0,
+  "warmups": 1,
+  "repetitions": 3
+ },
+ "adversarial_spatial_battery_v3_results.json": {
+  "corpus_id": "adversarial-spatial-battery-v3",
+  "problems": {
+   "sphere-photon-2d": {
+    "n": 86,
+    "banded": true,
+    "kind": "sphere-photon2d",
+    "t_end": 3.0
+   },
+   "semilinear-advection-diffusion-2d": {
+    "n": 96,
+    "banded": true,
+    "kind": "semilinear-advection-diffusion2d",
+    "t_end": 1.0
+   },
+   "semilinear-advection-diffusion-3d": {
+    "n": 216,
+    "banded": true,
+    "kind": "semilinear-advection-diffusion3d",
+    "t_end": 1.0
+   },
+   "sphere-photon-3d": {
+    "n": 302,
+    "banded": true,
+    "kind": "sphere-photon3d",
+    "t_end": 3.0
+   },
+   "spherical-diffusion-2d": {
+    "n": 64,
+    "banded": true,
+    "kind": "spherical-diffusion2d",
+    "t_end": 1.0
+   },
+   "allen-cahn-2d": {
+    "n": 64,
+    "banded": true,
+    "kind": "allen-cahn2d",
+    "t_end": 1.0
+   },
+   "gray-scott-2d": {
+    "n": 128,
+    "banded": true,
+    "kind": "gray-scott2d",
+    "t_end": 10.0
+   },
+   "burgers-2d": {
+    "n": 72,
+    "banded": true,
+    "kind": "burgers2d",
+    "t_end": 0.5
+   },
+   "sine-gordon-2d": {
+    "n": 72,
+    "banded": true,
+    "kind": "sine-gordon2d",
+    "t_end": 2.0
+   }
+  },
+  "max_n": 302,
+  "arms_with_rows": {
+   "vigilode-dense": 27,
+   "vigilode-banded-dense": 27,
+   "vigilode": 27,
+   "vigilode-banded": 27,
+   "diffsol-bdf-dense": 27,
+   "diffsol-bdf-sparse": 27,
+   "cvode-bdf-dense": 27,
+   "cvode-bdf-band": 27,
+   "dvode-mf21": 27,
+   "dvode-mf24": 27,
+   "radau5": 27,
+   "radau5-band": 27,
+   "rodas": 27,
+   "rodas-band": 27
+  },
+  "matched_status_basis": {
+   "DIAGNOSTIC_ONLY|grid-clipped": 1170,
+   "DIAGNOSTIC_ONLY|dense": 1082,
+   "MATCHED|dense": 88
+  },
+  "timing_authority": "diagnostic_only",
+  "vigilode_dense_rows": 54,
+  "vigilode_clipped_rows": 54,
+  "status_counts": {
+   "vig=True|{\"kind\": \"success\"}": 108,
+   "vig=False|{\"kind\": \"success\"}": 270
+  },
+  "dense_rows_with_clipped_steps": 0,
+  "warmups": 1,
+  "repetitions": 3
+ }
+}

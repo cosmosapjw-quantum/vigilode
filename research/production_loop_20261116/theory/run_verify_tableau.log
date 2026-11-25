@@ -1,0 +1,59 @@
+PASS S0.a             [exact] snapshot SHA-256 equals the digest pinned in coefficients.rs :: 211255f6125b648c6955833c3da537d9c031ec78168b2918563c29fa88c8bce6
+PASS S1.a             [exact] alpha is strictly lower triangular (diagonal and upper part exactly zero)
+PASS S1.b             [exact] all 28 strictly-lower entries of alpha are nonzero (also of the code matrix A) :: min |alpha_ij| = 3.487250e-03 at (8,1)
+PASS S1.c             [exact] the RHS dependency DAG has longest path 8 (total order)
+PASS S2.a             [exact] alpha21 = 3*gamma exactly in the represented tableau
+PASS S2.b             [zero by design within representation] beta21 = alpha21 + gamma21 = 0 by design :: residual 6.175407e-17
+PASS S2.c             [exact] N^7 has at most the entry (8,1), which equals the product of the subdiagonal
+PASS S2.d             [exact] with beta21 := 0 the matrix N has nilpotency index exactly 7 (N^6 != 0, N^7 = 0)
+PASS S2.e             [zero by design within representation] N^7 = 0 (nilpotency index 7) :: residual max|N^7| = 2.881974e-21
+PASS S2.f             [exact] P8(z) = (1-gamma z) P7(z) + mu_7 z^8 (exact numerator identity)
+PASS S2.g             [exact] R(z) = 1 + z b^T (I - z beta)^-1 1 equals P8(z)/(1-gamma z)^8 at 4 rational points
+PASS S2.h             [exact] R(infinity) = 0 exactly (b equals row 8 of beta exactly)
+PASS S2.i             [zero by design within representation] deg P <= 6: coefficient of z^7 of the numerator over (1-gamma z)^7 vanishes :: residual -2.881974e-21
+PASS S2.j             [zero by design within representation] P = trunc_6[e^z (1-gamma z)^7], i.e. P is fixed by gamma alone :: max coefficient residual 6.602123e-15
+PASS S2.k             [zero by design within representation] R(z) - exp(z) = O(z^7): Taylor defects of orders 1..6 vanish :: max residual 5.524278e-15
+PASS S2.l             [exact] the z^7 Taylor defect is nonzero (linear order is exactly 6) :: defect_7 = -1.015349e-05
+PASS S2.m             [exact] design R_d = trunc_6[e^z(1-gz)^7]/(1-gz)^7: E_d(s) = s^4 * cubic, cubic has no positive root and positive value at 0, hence |R_d(iy)| <= 1 for all real y (A- and L-stable)
+PASS S2.n             [numerical] represented R: |R(iy)|^2 - 1 <= 1e-15 on the rational grid (65 points, exact evaluation); a positive maximum is the representation residual of the coefficients of s^1..s^3 of E :: max = 2.502054e-18 at y = 0.02
+PASS S2.o             [exact] embedded: R_hat(infinity) = 0 exactly
+PASS S2.p             [zero by design within representation] embedded stability function has linear order exactly 4 (defects 1..4 vanish, defect 5 does not)
+PASS S2.q             [numerical] embedded, represented: |R_hat(iy)|^2 - 1 <= 1e-15 on the same grid :: max = 2.371803e-21
+PASS S3.a             [exact] plan values ||(N/gamma)^m||_inf = 37, 24, 23, 20, 6.4, 2.3, 0 reproduce after rounding :: 37.06, 24.31, 23.34, 20.46, 6.389, 2.317, 1.5e-16
+PASS S3.b             [exact] I - M_U(z) = gamma (I - M_k(z)) Gamma^-1 with M_k = z N/(1-gamma z), M_U = gamma (z A + C)/(1-gamma z)
+PASS S3.c             [exact] REFUTED as literally posed: the R6 (U-variable) sweep matrix is not z/(1-gamma z) N (norms differ at the tested points); the formula holds for the k-variable sweep
+PASS S3.d             [zero by design within representation] M_U(z)[2,1] = -3 for every z, hence the U-form sweep matrix has nilpotency index 8, not 7
+PASS S3.e             [exact] REFUTED: min over diagonal scalings of ||D (N/gamma) D^-1|| is not bounded away from zero (infimum 0, strictly lower triangular); the m=1 norm is scaling dependent
+PASS S3.f             [exact] truncated sweeps at infinity: |R_q(inf)| > 1 for q in {1,2,3,5,6} (k-form) and q = 1..6 (U-form); |R_4(inf)| < 1 (k-form) and |R_7(inf)| < 1 (U-form); exact (0) after 7 resp. 8 sweeps :: k-form 1, -3.718, 2.695, 2.732, -0.4628, -2.582, -2.317, 1.5e-16, 0 | U-form 1, 14.72, -60.42, 83.75, -47.49, 5.8, 2.665, -0.02031, 0
+PASS S3.g             [numerical] no truncated sweep count is A-stable: sup_y |R_q(iy)| > 1 on the grid for q = 1..6 (k-form) and q = 1..7 (U-form); q = 4 (k-form) is marginal :: k-form 3.718, 2.695, 2.732, 1.029, 2.582, 2.317, 1, 1 | U-form 14.72, 60.42, 87.34, 107, 102.1, 42.85, 15.54, 1
+PASS S4.a             [exact] ROW chain condition = sum of the four coloured W-trees
+PASS S4.b             [zero by design within representation] main weights: sum b_i gamma_i = 0 and sum b_i alpha_i = 1/2 (W-order 2) :: residual -3.321972e-16
+PASS S4.c             [exact] main weights fail the order-3 W-trees (defects of size 1e-2), W-order is exactly 2 :: w_ag 4.285457e-02, w_ga 2.952220e-02, w_gg -2.876538e-02
+PASS S4.d             [exact] embedded weights fail the order-2 W condition: sum bhat_i gamma_i != 0 (W-order 1) :: sum bhat_i gamma_i = -2.564010e-02
+PASS S4.e             [numerical] exact one-step experiment: perturbation by a fixed Jacobian error is O(h^3) in the main solution, O(h^2) in the embedded solution and in the error estimate; the h^2/h^3 prediction leaves an O(h^4) remainder :: orders 2.9938, 1.9984, 1.9935
+PASS S4.f             [numerical] a Jacobian lagged by O(h) perturbs the main solution by O(h^4) per step and the error estimate by O(h^3): the lagged method has classical order 3, not 5 :: orders 3.9826, 2.9967
+PASS S5.a             [exact] alpha_8 = beta_7, b = beta_8, alpha_7 = beta_6 hold exactly in the represented tableau
+PASS S5.b             [exact] rooted trees of order 1..5: 1, 1, 2, 4, 9 (17 in total)
+PASS S5.c             [zero by design within representation] main weights satisfy all 17 ROW conditions (order 5) :: max residual 5.524278e-15
+PASS S5.d             [zero by design within representation] g8 (weights alpha_8 = beta_7, the embedded solution) has classical order exactly 4
+PASS S5.e             [zero by design within representation] g7 (weights alpha_7 = beta_6) has classical order exactly 3
+PASS S5.f             [numerical] speculative Jacobian: evaluating J of step n+1 at g7 (g8) of step n perturbs the solution by O(h^7) (O(h^8)) and the error estimate by O(h^6) (O(h^7)) :: orders g7 6.987 / 6.000, g8 8.017 / 7.057
+PASS S6.a             [exact] speed-up <= 5/4 (two stages) and <= 9/8 (stage 8 only), attained at r = 1/4 resp. 1/8
+PASS S6.b             [exact] speed-up >= 23/20 exactly for r in [3/20, 11/12] (grid of step 1/240 on [0,4])
+PASS S7.a             [exact] within the model, LU > chain iff n^2 - 24n - 12rho - 168 > 0 (dense) resp. b^2 - 32b - 8rho - 112 > 0 (banded)
+PASS S7.b             [exact] within the model the shared basis reduces the orthogonalisation cost only if theta < 1/sqrt(8) (128 theta^2 kbar^2 < 16 kbar^2)
+PASS S8.a             [exact] 1D: rho = (1 + 2 sigma - sqrt(1 + 4 sigma))/(2 sigma) solves sigma rho^2 - (1 + 2 sigma) rho + sigma = 0; for sigma = m(m+1), rho = m/(m+1)
+PASS S8.b             [exact] 1D lattice Green's function G_d = rho^|d| / sqrt(1 + 4 sigma) satisfies W G = delta
+PASS S8.c             [numerical] rho = exp(-theta), theta = 2 asinh(1/(2 ell)); ell*theta -> 1 as ell grows (decay length ell cells)
+PASS S8.d             [exact] finite Dirichlet grid (121 points, sigma = 6, exact rationals): successive ratios of the Green's function equal rho = 2/3 up to image terms below 1e-12 :: max deviation 1.346335e-15
+PASS S8.e.sigma2      [numerical] 2D five-point (31x31, Dirichlet x, periodic y): y-sums of the Green's function equal the 1D Green's function; axis ratios G(d+1,0)/G(d,0) < rho_1D; diagonal ratios < rho_diag^2 :: colsum dev 3.33e-16, axis 0.3344..0.4681 vs 0.5000
+PASS S8.e.sigma6      [numerical] 2D five-point (31x31, Dirichlet x, periodic y): y-sums of the Green's function equal the 1D Green's function; axis ratios G(d+1,0)/G(d,0) < rho_1D; diagonal ratios < rho_diag^2 :: colsum dev 6.59e-16, axis 0.4341..0.6253 vs 0.6667
+PASS S8.f             [exact] Phi(d) = rho(K)^d satisfies the block difference equation (1+2 sigma) Phi(d) - sigma (Phi(d-1) + Phi(d+1)) = K Phi(d), Phi(0) = I, Phi(a) Phi(b) = Phi(a+b) (sigma = 6, exact)
+PASS S8.g             [exact] direct simulation of the local 8-stage chain (linear diffusion, k-form, sigma = 6, H = 12, Dirichlet stage-error data) equals (Phi(d) - Phi(2H-d)) (I - Phi(2H))^-1 E0 exactly
+PASS S8.h             [numerical] the 8-stage block transfer matrix has spectral radius rho^delta but a norm larger by a polynomial transient factor (non-normal growth through powers of K = N beta^-1) :: sigma=100: c=4 factor 75.39, c=8 factor 175.1, ||Phi|| = 1.38, 0.0589
+PASS S9.a             [exact] L = 4 levels: order 5 together with R(infinity) = 0 is impossible (the two conditions on gamma have no common root: polynomial gcd is constant)
+PASS S9.b             [numerical] L = 4 levels, order 5 without R(inf)=0: none of the admissible gamma is A-stable :: [[0.09129173346525075, False], [0.1744841756515235, False], [0.3888576711028921, False], [1.3453664197803337, False]]
+PASS S9.c             [numerical] L = 5 levels: order 5 with R(inf) = 0 forces gamma to one of 5 real roots; exactly one is A-stable (gamma = 0.27805...) :: [[0.07910891187347806, False], [0.14112712578705316, False], [0.2780538411364523, True], [0.7075122652077394, False], [3.794197855995277, False]]
+PASS S9.d             [numerical] L = 6 levels (order >= 5, R(inf) = 0): A-stable for gamma in [0.18391465, 0.33414237]; L = 7 (order >= 6): [0.20408345, 0.37886489]; RODAS5P gamma lies in both :: L6 [0.18391465, 0.33414237], L7 [0.20408345, 0.37886489]
+PASS S9.e             [exact] free coefficients: RODAS5P structure (stiffly accurate, two embedded ties) 44; two-processor L=5 stiffly accurate with one embedded tie: 44; L=6: 74 :: [['rodas5p_sequential_8x1', 8, 8, 65, 57, 50, 44], ['P2_L5_1-2-2-2-1', 8, 5, 59, 51, 44, 39], ['P2_L6_1-2-2-2-2-1', 10, 6, 93, 83, 74, 67], ['P2_L5_1-2-2-2-2_not_stiffly_accurate', 9, 5, 74, 65, 58, 51], ['P3_L5_1-3-3-3-1', 11, 5, 104, 93, 83, 76]]
+values: 1040, checks: 58, failed: 0 -> /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116/research/production_loop_20261116/theory/RESULTS.json

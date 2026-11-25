@@ -1,0 +1,20 @@
+# node V26 log
+# date: 2026-11-24T18:39:45+09:00
+# git head: ef11551e10b026e219ccc342a91d36c1c0e9ad74
+# git status (tracked changes): 1
+# binary: /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_assembly_check_measure-bae05b015b51428f
+# binary sha256: 547232213bffe97e06bbed7935304de4e14f8d63ad31b8ceba39e6c9f885694b
+# rustc: rustc 1.94.1 (e408947bf 2026-03-25)
+# host: 7.0.0-43-generic, 24 logical cpus
+# loadavg at start: 9.56 10.59 8.59 3/6128 4129224
+# command: V26_MODE=perf V26_CELL=bruss1d-n131072 V26_ARM=None@t4 V26_ACTION=solve flock /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/timing.lock taskset -c 6-11 perf stat -e instructions:u -x, /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_assembly_check_measure-bae05b015b51428f --ignored --nocapture --exact v26_measure
+
+running 1 test
+V26_META_JSON {"action_env":"solve","arm_env":"None@t4","arms_env":null,"atol":1e-8,"cell":"bruss1d-n131072","cpus_allowed_list":"6-11","max_attempts":48,"mode":"perf","rounds_env":null,"rtol":1e-6,"what_env":null}
+V26_PERF_JSON {"accepted_steps":48,"action":"solve","arm":"None@t4","assembly_rhs_calls":288,"attempts":48,"builds":48,"cell":"bruss1d-n131072","construct_ns":33988443,"factor_ns":83528825,"final_fingerprint":"57ec697f9e76eac6","jacobian_builds":48,"jacobian_fingerprint":"cbf29ce484222325","linearize_ns":231371446,"rejected_steps":0,"rhs_calls":672,"solve_ns":446974970,"state_fingerprint":"cbf29ce484222325","stop_reason":"AttemptBudget","success":false,"t_end":5.160450198148365,"verification_rhs_calls":0,"verifications":0,"verified_columns":0,"wall_ns":1086255754,"what":"solve"}
+test v26_measure ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.10s
+
+10286667777,,instructions:u,1535675899,100.00,,
+# exit code: 0

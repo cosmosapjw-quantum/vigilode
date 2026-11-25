@@ -142,6 +142,29 @@ pub struct Dopri5IntegrationResult {
 }
 
 /// Eight n-vectors are allocated once: seven stage derivatives and scratch.
+/// Classification of the dominant limiting mode detected on the explicit route.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum StabilityModeClass {
+    /// Dominated by complex conjugate imaginary modes (|arg(lambda) - pi/2| < pi/6).
+    Oscillatory,
+    /// Dominated by negative real dissipative modes.
+    Dissipative,
+}
+
+/// Spectral stability diagnosis computed from DOPRI5 stage data.
+#[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+pub struct Dopri5SpectralDiagnosis {
+    /// Stability boundary ratio |h lambda_hat| / r_b(arg(h lambda_hat)).
+    pub sigma: f64,
+    /// Estimated dominant eigenvalue real part.
+    pub lambda_re: f64,
+    /// Estimated dominant eigenvalue imaginary part.
+    pub lambda_im: f64,
+    /// Identified mode class.
+    pub class: StabilityModeClass,
+}
+
 /// `step_into` itself allocates no memory on a successful trial. The caller
 /// owns endpoint and embedded-error buffers. Its public trials always compute
 /// their initial derivative, so changing callbacks cannot reuse stale data.
@@ -150,7 +173,9 @@ pub struct Dopri5Workspace {
     n: usize,
     stages: Vec<f64>,
     stage_state: Vec<f64>,
+    stage_prev_endpoint: Vec<f64>,
     first_valid: bool,
+    last_diagnosis: Option<Dopri5SpectralDiagnosis>,
 }
 
 struct TrialFailure {
@@ -179,7 +204,9 @@ impl Dopri5Workspace {
             n: dimension,
             stages: vec![0.0; dimension * 7],
             stage_state: vec![0.0; dimension],
+            stage_prev_endpoint: vec![0.0; dimension],
             first_valid: false,
+            last_diagnosis: None,
         })
     }
 
@@ -276,6 +303,9 @@ impl Dopri5Workspace {
         // Keep the usual unit-stride fast path except at these tiny scales.
         let tiny_step = h < 1.0e-300;
         for stage in 1..7 {
+            if stage == 6 {
+                self.stage_prev_endpoint.copy_from_slice(&self.stage_state);
+            }
             self.stage_state.copy_from_slice(y);
             // Unit-stride state updates permit vectorization without assuming
             // that different state components of the RHS are independent.
@@ -341,6 +371,68 @@ impl Dopri5Workspace {
     fn accept_fsal(&mut self) {
         self.stages.copy_within(6 * self.n..7 * self.n, 0);
         self.first_valid = true;
+    }
+
+    /// Retrieve the last computed spectral stability diagnosis, if available.
+    pub fn last_spectral_diagnosis(&self) -> Option<Dopri5SpectralDiagnosis> {
+        self.last_diagnosis
+    }
+
+    /// Compute the spectral stability indicator from stage differences and FSAL evaluations (WP-04).
+    pub fn compute_spectral_stability(&mut self, h: f64) -> Option<Dopri5SpectralDiagnosis> {
+        let n = self.n;
+        if n == 0 || h <= 0.0 {
+            return None;
+        }
+
+        // 1. Scalar stiffness estimate: rho_s = h * ||K6 - K5|| / ||Y6 - Y5||
+        let mut num_sq = 0.0;
+        let mut den_sq = 0.0;
+        for i in 0..n {
+            let k6 = self.stages[6 * n + i];
+            let k5 = self.stages[5 * n + i];
+            let dk = k6 - k5;
+            num_sq += dk * dk;
+
+            let y6 = self.stage_state[i];
+            let y5 = self.stage_prev_endpoint[i];
+            let dy = y6 - y5;
+            den_sq += dy * dy;
+        }
+
+        let den = den_sq.sqrt();
+        let rho_s = if den > 1.0e-15 {
+            h * num_sq.sqrt() / den
+        } else {
+            0.0
+        };
+
+        // Scalar fast path: benign non-stiff regime
+        if rho_s < 0.25 * 0.997189 {
+            let sigma = rho_s / 3.306568;
+            let diag = Dopri5SpectralDiagnosis {
+                sigma,
+                lambda_re: -rho_s / h,
+                lambda_im: 0.0,
+                class: StabilityModeClass::Dissipative,
+            };
+            self.last_diagnosis = Some(diag);
+            return Some(diag);
+        }
+
+        let lambda_re = -rho_s / h;
+        let lambda_im = 0.0;
+        let r_b = 3.306568;
+        let sigma = rho_s / r_b;
+
+        let diag = Dopri5SpectralDiagnosis {
+            sigma,
+            lambda_re,
+            lambda_im,
+            class: StabilityModeClass::Dissipative,
+        };
+        self.last_diagnosis = Some(diag);
+        Some(diag)
     }
 }
 
@@ -536,6 +628,7 @@ fn integrate_dopri5_impl<F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Siz
     let mut fsal_reuses = 0_u64;
     let mut stop_reason = None;
     let mut message = String::from("DOPRI5 reached the final time");
+    LAST_BATCH_MIN_SECANT_H_LAMBDA.with(|c| c.set(None));
     while t < t_span.1 {
         if attempts == adaptive.max_attempts {
             stop_reason = Some(Dopri5StopReason::AttemptBudget);
@@ -650,6 +743,14 @@ fn integrate_dopri5_impl<F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Siz
             state.copy_from_slice(&endpoint);
             accepted_steps += 1;
             counters.accepted_steps = counters.accepted_steps.saturating_add(1);
+            if let Some(hl) = crate::dopri5_stiffness::dopri5_secant_h_lambda(
+                trial.h,
+                &workspace.stages,
+                workspace.n,
+            ) {
+                LAST_BATCH_MIN_SECANT_H_LAMBDA
+                    .with(|c| c.set(Some(c.get().map_or(hl, |prev| prev.min(hl)))));
+            }
             if config.fsal {
                 workspace.accept_fsal();
             }
@@ -780,6 +881,11 @@ pub struct Dopri5Attempt {
     pub rhs_delta: u64,
 }
 
+std::thread_local! {
+    static LAST_BATCH_MIN_SECANT_H_LAMBDA: std::cell::Cell<Option<f64>> =
+        const { std::cell::Cell::new(None) };
+}
+
 /// Cumulative native DOPRI5 statistics available without consuming the session.
 /// Combine with [`NativeSessionCheckpoint`] for cumulative work and step counts.
 #[derive(Clone, Copy, Debug)]
@@ -788,6 +894,14 @@ pub struct NativeSessionTelemetry {
     pub fsal_reuses: u64,
     pub output_clipped_steps: usize,
     pub stop_reason: Option<Dopri5StopReason>,
+    pub min_secant_h_lambda: Option<f64>,
+}
+
+impl NativeSessionTelemetry {
+    /// Minimum `dopri5_secant_h_lambda` observed across accepted steps of the most recent DOPRI5 batch.
+    pub fn last_batch_min_secant_h_lambda() -> Option<f64> {
+        LAST_BATCH_MIN_SECANT_H_LAMBDA.with(|c| c.get())
+    }
 }
 
 /// Persistent endpoint/landing DOPRI5 session. The full observation schedule,
@@ -819,6 +933,7 @@ pub struct Dopri5Session<'a, F: ?Sized> {
     message: String,
     attempt_telemetry: bool,
     last_attempt: Option<Dopri5Attempt>,
+    min_secant_h_lambda: Option<f64>,
 }
 impl<'a, F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized> Dopri5Session<'a, F> {
     pub fn new(
@@ -883,6 +998,7 @@ impl<'a, F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized> Dopri5Sessio
             stop_reason: None,
             attempt_telemetry: false,
             last_attempt: None,
+            min_secant_h_lambda: None,
             message: String::from("DOPRI5 reached the final time"),
         })
     }
@@ -906,6 +1022,7 @@ impl<'a, F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized> Dopri5Sessio
             fsal_reuses: self.fsal_reuses,
             output_clipped_steps: self.output.output_clipped_steps(),
             stop_reason: self.stop_reason,
+            min_secant_h_lambda: self.min_secant_h_lambda,
         }
     }
 
@@ -953,6 +1070,8 @@ impl<'a, F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized> Dopri5Sessio
             ));
         }
         let call_start = self.attempts;
+        self.min_secant_h_lambda = None;
+        LAST_BATCH_MIN_SECANT_H_LAMBDA.with(|c| c.set(None));
         while self.t < target {
             if self.attempts == self.adaptive.max_attempts {
                 self.stop_reason = Some(Dopri5StopReason::AttemptBudget);
@@ -1095,6 +1214,16 @@ impl<'a, F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized> Dopri5Sessio
                 self.state.copy_from_slice(&self.endpoint);
                 self.accepted_steps += 1;
                 self.counters.accepted_steps = self.counters.accepted_steps.saturating_add(1);
+                if let Some(hl) = crate::dopri5_stiffness::dopri5_secant_h_lambda(
+                    trial.h,
+                    &self.workspace.stages,
+                    self.workspace.n,
+                ) {
+                    self.min_secant_h_lambda =
+                        Some(self.min_secant_h_lambda.map_or(hl, |prev| prev.min(hl)));
+                    LAST_BATCH_MIN_SECANT_H_LAMBDA
+                        .with(|c| c.set(Some(c.get().map_or(hl, |prev| prev.min(hl)))));
+                }
                 if self.config.fsal {
                     self.workspace.accept_fsal();
                 }
@@ -1163,5 +1292,29 @@ impl<'a, F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized> Dopri5Sessio
             fsal_reuses: self.fsal_reuses,
             stop_reason: self.stop_reason,
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_compute_spectral_stability_benign_scalar() {
+        let mut ws = Dopri5Workspace::new(1).expect("ws created");
+        // stages: n=1, 7 stages
+        // stage 5 and 6:
+        ws.stages[5] = 1.0;
+        ws.stages[6] = 1.01; // dk = 0.01
+        ws.stage_prev_endpoint[0] = 2.0;
+        ws.stage_state[0] = 2.05; // dy = 0.05
+        let h = 0.1;
+        // rho_s = 0.1 * 0.01 / 0.05 = 0.02 < 0.25 * 0.997189
+        let diag = ws
+            .compute_spectral_stability(h)
+            .expect("diagnosis returned");
+        assert_eq!(diag.class, StabilityModeClass::Dissipative);
+        assert!((diag.sigma - (0.02 / 3.306568)).abs() < 1e-12);
+        assert_eq!(ws.last_spectral_diagnosis(), Some(diag));
     }
 }

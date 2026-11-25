@@ -1,0 +1,70 @@
+{
+  "evidence_id": "EV-DOC-CLAIMS-001",
+  "task_id": "DOC-CLAIMS",
+  "claim_support": [
+    "implementation-verified",
+    "numerically-checked"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "hold",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "worktree_head": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "tree_sha": "8a236871948798cb2a40c8a5ea65112a045bf16d",
+    "branch": "task/DOC-CLAIMS-20261106_v2",
+    "input_hashes": [
+      {
+        "path": "README.md",
+        "sha256": "be2ab83cba065e9fb778fb7087ed16226aae6c08d799b0ea779597c098aff385"
+      },
+      {
+        "path": "bench/out/ADVERSARIAL_CROSS_SOLVER_REPORT.md",
+        "sha256": "9111ef4a65c37bd453c5587b53177554fdec527030466d29001aae4d32fddcae"
+      }
+    ],
+    "identity_relation": "BYTE_IDENTITY"
+  },
+  "command_records": [
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check",
+        "README.md"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-DOC-CLAIMS-20261106_v2",
+      "exit_code": 0,
+      "stdout_artifact": "clean diff"
+    }
+  ],
+  "result": "README.md and benchmark report reconciled with authoritative evidence: status set to HOLD_NOT_RELEASE_QUALIFIED; live controller identified as DriveState in switching.rs; timing authority designated as diagnostic_only; unverified universal speedup claims removed; error characterization explicitly bounded; and production API handling of non-fatal early termination documented.",
+  "limitations": [
+    "Documentation claims align strictly with validated evidence; production release qualification remains on hold.",
+    "Single-host timing numbers remain diagnostic-only."
+  ],
+  "math_review": {
+    "definitions": "Mathematical claims in documentation must distinguish between local error estimates, observed reference error, a posteriori global bounds, validated interval enclosures, and performance benchmarking evidence.",
+    "assumptions": [
+      "No solver is claimed to be globally validated without certified outward continuous enclosure.",
+      "Timing authority is diagnostic only without statistical multi-environment replication."
+    ],
+    "derivation": "Claims reconciled against findings AUTH-001 through AUTH-003, OBS-001, FSM-001, API-001, BENCH-001, and CLAIM-001.",
+    "roundoff_model": "All claims bound to exact SHA-256 artifacts and reproducible command traces.",
+    "counterexamples": []
+  },
+  "work_accounting": {
+    "rhs": null,
+    "jvp": null,
+    "jacobian": null,
+    "linear_iterations": null,
+    "factorizations": null,
+    "rejected_steps": null,
+    "speculative_work": null,
+    "refused_work": null,
+    "failed_attempts": null,
+    "unknown_counters": []
+  },
+  "decision_rationale": "Every public claim in README.md and benchmark report is strictly bound to admissible evidence and declared scope."
+}

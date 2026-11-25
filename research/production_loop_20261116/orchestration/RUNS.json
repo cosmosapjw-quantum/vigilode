@@ -1,0 +1,222 @@
+{
+  "schema": "vigilode.loop-l1.orchestration-runs.v1",
+  "note": "Workflow scripts as launched by the orchestrator session; staged, not yet launched: wave2_group3.js, wave2_group4.js. Fields other than run_id, script and what are read from the run records of the session.",
+  "runs": [
+    {
+      "run_id": "wf_7cef339f-7cb",
+      "script": "wave1.js",
+      "script_sha256": "9b522f405cccaa1639faf414f5f1a3afc1ec92d777e2e78548874dc19562bfe2",
+      "what": "wave 1: audit, theory, golden oracle, client kit, Schwarz screen",
+      "recorded_script_sha256": "9b522f405cccaa1639faf414f5f1a3afc1ec92d777e2e78548874dc19562bfe2",
+      "status": "completed",
+      "agent_count": 18,
+      "total_tokens": 3232382,
+      "total_tool_calls": 603,
+      "duration_ms": 4209064,
+      "default_model": "claude-fable-5-2",
+      "errors": [
+        "[screen:V14] failed: You've hit your monthly spend limit \u00b7 your 5-hour limit resets 9:10pm (Asia/Seoul)"
+      ]
+    },
+    {
+      "run_id": "wf_4529fa64-b63",
+      "script": "wave2_group1.js",
+      "script_sha256": "2c3c232a27695d47127662cc55b19269f2cccb29e1c198828dd05f8d67cb4b66",
+      "what": "wave 2 group 1: V04, V06, V07 with reviewers",
+      "recorded_script_sha256": "2c3c232a27695d47127662cc55b19269f2cccb29e1c198828dd05f8d67cb4b66",
+      "status": "completed",
+      "agent_count": 6,
+      "total_tokens": 3357047,
+      "total_tool_calls": 691,
+      "duration_ms": 10660323,
+      "default_model": "claude-fable-5-2",
+      "errors": []
+    },
+    {
+      "run_id": "wf_1610a0a6-5b3",
+      "script": "wave2_group2.js",
+      "script_sha256": "39fcb7610a7cb440ccca80f43f368e68fa21b1c0d1aff8f30774c4d94390e64b",
+      "what": "wave 2 group 2, first launch: V03a, V17, V16 with reviewers",
+      "recorded_script_sha256": "39fcb7610a7cb440ccca80f43f368e68fa21b1c0d1aff8f30774c4d94390e64b",
+      "status": "completed",
+      "agent_count": 3,
+      "total_tokens": 828443,
+      "total_tool_calls": 108,
+      "duration_ms": 1181253,
+      "default_model": "claude-fable-5-2",
+      "args_base": "c468478e73123a4625c6d20f7459a9f79cbf33de",
+      "args_notes_sha256": "efe502e1ecb188b88ebf1fd6bb6d0cff2ffd884fbe72c39b4e1b5c7c69c83631",
+      "errors": [
+        "[build:v16] failed: You've hit your monthly spend limit \u00b7 your Fable limit resets Nov 23, 3pm (Asia/Seoul). Switch to another model to continue.",
+        "[build:v03] failed: You've hit your monthly spend limit \u00b7 your Fable limit resets Nov 23, 3pm (Asia/Seoul). Switch to another model to continue.",
+        "[build:v17] failed: You've hit your monthly spend limit \u00b7 your Fable limit resets Nov 23, 3pm (Asia/Seoul). Switch to another model to continue."
+      ]
+    },
+    {
+      "run_id": "wf_7beb7c33-487",
+      "script": "wave2_group2.js",
+      "script_sha256": "39fcb7610a7cb440ccca80f43f368e68fa21b1c0d1aff8f30774c4d94390e64b",
+      "what": "wave 2 group 2, second launch: V03a, V17, V16 with reviewers",
+      "status": "completed with errors",
+      "agent_count": 4,
+      "total_tokens": 1977248,
+      "duration_ms": 5852894,
+      "errors": [
+        "build:v16, build:v17 and review:v03 failed: monthly spend limit of the model (reset 2026-11-23 15:00 KST); build:v03 finished"
+      ]
+    },
+    {
+      "run_id": "wf_f2599e6f-a4a",
+      "script": "wave2_group2_reviews.js",
+      "script_sha256": "ab75dfa97701b08fbba2cd6ee8f62cf0a75dc74f21e8b3c8a0e3011ce5b8e46b",
+      "what": "wave 2 group 2: reviews of V03a, V17, V16 (2026-11-23)",
+      "status": "completed",
+      "agent_count": 3,
+      "total_tokens": 1355134,
+      "duration_ms": 1938276,
+      "errors": []
+    },
+    {
+      "run_id": "wf_8b1894ea-1d1",
+      "script": "wave2_group3.js",
+      "script_sha256": "7ac9990f49754079850ecbe70132476411676e1985d1967860fa3ba57892120c",
+      "what": "wave 2 group 3: V03b, V08, V18 with reviewers, and one reviewer of the orchestrator-run nodes V19 and V21 (launched 2026-11-23 21:05 KST)",
+      "status": "completed",
+      "args_base": "587a139501729bbe886bb2b8c49b0ef893705d08",
+      "agent_count": 7,
+      "total_tokens": 3772018,
+      "duration_ms": 10277478,
+      "errors": [],
+      "outcome": "V03b, V08 and V18 built and reviewed (three times accept with corrections), nodes V19 and V21 reviewed (accept with corrections); all merged on 2026-11-23 and 2026-11-24"
+    },
+    {
+      "run_id": "wf_6d64a847-033",
+      "script": "wave2_group5.js",
+      "script_sha256": "5b5a0e8998dd5a8cec051200cfd6ac405c450851c3d4517b025370812e102917",
+      "what": "wave 2 group 5, first part: builder and reviewer of node V24 (adaptive matrix-free stage solve), launched 2026-11-23 22:50 KST; args nodes = [v24], review_v22 = false",
+      "status": "completed",
+      "args_base": "892132e5d879b5d8c2740ef7a73946fd2b1d25f9",
+      "agent_count": 2,
+      "total_tokens": 1314722,
+      "duration_ms": 8947882,
+      "errors": [],
+      "outcome": "V24 built (frozen verdict FAIL by the budget rule, policy opt-in) and reviewed (accept with corrections); merged on 2026-11-24. The second part of the script (builder of V23, review of V22) was not launched: the owner asked for a pause on 2026-11-23 23:29 KST."
+    },
+    {
+      "run_id": "wf_2abb3b68-197",
+      "script": "wave3_group6.js",
+      "script_sha256": "376e78cd302c709b02de8887335bcf6678bcccd97d8302fc00fe6a18cf2eb956",
+      "what": "wave 3 group 6: builders and reviewers of V25 (P1 on unseen families, economic default decision) and V26 (full pattern check: parallel, batched, multi-colouring); launched 2026-11-24 17:41 KST",
+      "status": "completed",
+      "args_base": "80ba83881503c4b3253268df61c53b269740d6d3",
+      "agent_count": 4,
+      "total_tokens": 1995961,
+      "duration_ms": 11447123,
+      "errors": [],
+      "outputs": "V25 KEEP (B fails; review accept_with_corrections); V26 descriptive (review accept_with_corrections, general MC claim refuted); merges 1e53d5f9 and 68b6688c"
+    },
+    {
+      "run_id": "wf_c957bd0e-1ed",
+      "script": "wave3_design_v27.js",
+      "script_sha256": "beceed635656b91fcf89fc3ad88df26bb8869d8cea8dfc7a1a139e8f6a170a17",
+      "what": "node V27 design phase: two read-only designers of the Auto route and a judge; launched 2026-11-24 17:41 KST",
+      "status": "completed",
+      "args_base": "80ba83881503c4b3253268df61c53b269740d6d3",
+      "agent_count": 3,
+      "total_tokens": 1598237,
+      "duration_ms": 5770415,
+      "errors": [],
+      "outputs": "research/production_loop_20261116/router_hyperparameter_free/ (DESIGN_A.md, DESIGN_B.md, DESIGN_RECOMMENDED.md, judge_model.py, judge_model_results.jsonl, DESIGN_RESULTS.json)"
+    },
+    {
+      "run_id": "wf_366e2423-622",
+      "script": "ci_selection_review.js",
+      "script_sha256": "b6be72c6249a1d6b343facccad0e6602ad61d3c5c2b2de2825a4ea3d4970f461",
+      "what": "adversarial review of the change-based CI test selection (commit a4c891eb: tools/ci/select_tests.py v1 and the two test workflows), two read-and-run reviewers (soundness of the selection rules, CI mechanics); launched 2026-11-24 18:04 KST",
+      "status": "completed",
+      "args_base": "a4c891ebbc9f2453cd3b78ae479324a406c35d54",
+      "agent_count": 2,
+      "total_tokens": 594488,
+      "duration_ms": 6607586,
+      "errors": [],
+      "outputs": "research/production_loop_20261116/ci/SELECTION_REVIEW.json (soundness: unsound, 10 major and 4 minor findings; mechanics: sound_with_fixes, 1 critical, 4 major, 7 minor)"
+    },
+    {
+      "run_id": "wf_99d5d9d2-ffe",
+      "script": "wave3_group7.js",
+      "script_sha256": "5f656e3df280236bc3a806ab2f047e45c9c4152b16c18ed0607163169d014f26",
+      "what": "wave 3 group 7: CI test selection v3 builder (OD-L1-19..21) with two adversarial reviewers, one fix round and a recheck; V27 implementation phase 1 builder (OD-L1-22, no evaluation run); launched 2026-11-24 20:10 KST",
+      "status": "completed",
+      "args_base": "1ffbda20f0d8b7afab6d31134a1bea683f04ffda",
+      "agent_count": 6,
+      "total_tokens": 2835052,
+      "duration_ms": 11839960,
+      "errors": [],
+      "outputs": "CI v3 merged as 8ce2a318 (ci/V3_REVIEW.json); V27 phase 1 on branch w3-v27 at c998963d, not merged (router_hyperparameter_free/PHASE1_BUILD.json)"
+    },
+    {
+      "run_id": "wf_8a59cef2-f94",
+      "script": "wave3_group8.js",
+      "script_sha256": "182f3b53e0213289ff1b6d65a93726e5b1a8110d61161a24a2d1647df461c42a",
+      "what": "wave 3 group 8: V27 phase 2 (pre-registered evaluation of the FBP Auto route, arms T, N, D, R, E1-E10) and its independent review; launched 2026-11-24 23:31 KST",
+      "status": "completed",
+      "args_base": "1ffbda20f0d8b7afab6d31134a1bea683f04ffda",
+      "agent_count": 2,
+      "total_tokens": 796343,
+      "duration_ms": 3175844,
+      "errors": [],
+      "outputs": "V27 phase 2: frozen decision keep (E1, E3, E7 fail); review accept_with_corrections; evidence copied to router_hyperparameter_free/, code not merged"
+    },
+    {
+      "run_id": "wf_57f3f273-576",
+      "script": "wave3_group9.js",
+      "script_sha256": "a4f5ed412e336dde027b684d8f95d5fe601ed95582df63e49659202f32d04a7b",
+      "what": "wave 3 group 9: V28 (rule B of P1 tested alone, OD-L1-23) and V29 (multi-colouring default first-use check, OD-L1-24), builders and reviewers; launched 2026-11-24 23:49 KST",
+      "status": "completed",
+      "args_base": "e36fc6f4",
+      "agent_count": 4,
+      "total_tokens": 1530392,
+      "duration_ms": 3477532,
+      "errors": [],
+      "outputs": "V28: frozen verdict KEEP (K, V pass; T fails), review accept_with_corrections, merged 2f214eb1; V29: PASS (default MC on the coloured route, Sample(8) on the dense route), review accept_with_corrections, merged 2eb2aeed"
+    },
+    {
+      "run_id": "wf_88621c7a-4c1",
+      "script": "ks_n1_review.js",
+      "script_sha256": "4299530f0327111c728fe44f04118e03dd1379514d4b92b24564b24b89480895",
+      "what": "kernel/spectral PLAN task KS-N1 (branch research/stage-lattice-referee-20261124): two independent read-and-run reviews of the owner-host cells; launched 2026-11-25 07:2x KST",
+      "status": "completed",
+      "agent_count": 2,
+      "total_tokens": 416098,
+      "duration_ms": 873890,
+      "errors": [],
+      "outputs": "both confirm; records in research/kernel_spectral_foundation_20261124/owner_host/KS_N1_REVIEW.json on that branch"
+    },
+    {
+      "run_id": "wf_660859bd-2cd",
+      "script": "wave4_groupA.js",
+      "script_sha256": "8b70f40b76665ce0eb91567650de686830039cf88a198dc23322df2cf850b220",
+      "what": "wave 4 group A: L1 V31 (All on wide bands) and V32 (protected stage_batch probe); KS-N7 (two-for-one real FFT) and KS-N8 (field-of-values theory); each with an independent review; launched 2026-11-25 09:3x KST",
+      "status": "completed",
+      "args_base": "d4e2772f (L1), 05b5e3e3 (KS)",
+      "agent_count": 8,
+      "total_tokens": 2789920,
+      "duration_ms": 5331800,
+      "errors": [],
+      "outputs": "V31 PASS (merged bb2e6dd9), V32 PASS (merged 01c33a8c), KS-N7 implementation PASS with the timing cell left to the orchestrator, KS-N8 D1 PASS and D2 FAIL (kill not met); every review accept_with_corrections (one major: KS-N7 rustdoc private link breaks the CI docs job)"
+    },
+    {
+      "run_id": "wf_fdd7f935-265",
+      "script": "wave4_groupB.js",
+      "what": "wave 4 group B: V33 with two reviewers, V23 then V34 with a reviewer, the review of V22, V30 phase 1; launched 2026-11-25 10:5x KST (inline copy of the staged script plus a line reserving cores 8 and 20 for the KS-N3 measurement)",
+      "status": "running or record not yet written",
+      "args_base": "d4e2772f"
+    }
+  ],
+  "staged": [
+    {
+      "script": "wave2_group4.js",
+      "script_sha256": "1f49891f97873b9003fb230eddbcbe1fc0fb0dc27c9e4eff4a96fcb6c70496ae"
+    }
+  ]
+}

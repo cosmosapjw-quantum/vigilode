@@ -1,0 +1,6 @@
+V06_VERIFY command=taskset -c 0-9,12-21 cargo +1.94.1 clippy --locked -j 4 --release -p rodas5p-integrators --lib --test stage_clients_krylov_problems --test stage_clients_krylov_contracts --test stage_clients_krylov_alloc --test stage_clients_krylov_measure --no-deps -- -D warnings
+    Checking rodas5p-core v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v06/crates/rodas5p-core)
+    Checking rodas5p-krylov v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v06/crates/rodas5p-krylov)
+    Checking rodas5p-integrators v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v06/crates/rodas5p-integrators)
+    Finished `release` profile [optimized] target(s) in 16.68s
+V06_VERIFY clippy_exit=0

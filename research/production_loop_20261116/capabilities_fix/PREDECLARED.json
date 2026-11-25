@@ -1,0 +1,32 @@
+{
+  "schema": "vigilode.loop-l1.v23-predeclared.v1",
+  "node": "V23_CAPABILITIES_TRUTH",
+  "date_kst": "2026-11-23",
+  "authority": "owner decision OD-L1-10 (OWNER_DECISIONS_20261116.json): the capability answer must name what runs, and what cannot run is refused before any callback; golden files that record the old answer are re-pinned with a documented difference",
+  "frozen_before": "any edit of crates/vigilode/src/capabilities.rs, solve.rs or error.rs for this node, and any run of its grid",
+  "defect": {
+    "source": "unified_frontend/REVIEW.json, finding R-01 (independent review of node V03 part A)",
+    "statement": "Rodas5p::capabilities gives a plan on the sequential dense route to a Jacobian::SparseJvp provider with a general (not banded) pattern when the request has a mass matrix, or dense output with InteriorError::Enforce. Rodas5p::solve then returns a driver error (a direct linear solver needs an explicit Jacobian), with 0 callbacks.",
+    "size": "66 of 693 plans on the reviewer's grid at n = 4, and 352 distinct requests of the 9216 of the grid of crates/vigilode/tests/unified_frontend_contracts.rs; all 66 executed at n = 8 fail the same way"
+  },
+  "design": [
+    "One decision function serves Rodas5p::capabilities and the validation of Rodas5p::solve: a request gets a plan only if the driver family the plan names runs it.",
+    "A request of the defect class is refused with a typed Unsupported reason before any callback. The builder finds by execution whether other request classes get a plan that cannot run, and treats each the same way; each class is listed in the results with its count.",
+    "No request that runs today is refused, and none gets another route."
+  ],
+  "discriminators": {
+    "D1_truth_by_execution": "on the request grid of unified_frontend_contracts.rs (9216 distinct requests) every plan is executed with real callbacks at n = 8 and runs on the planned driver family; every refusal makes 0 callbacks. Plans that cannot run: 0 (352 before the fix).",
+    "D2_nothing_else_changes": "before the fix (commit A) the route and, for every plan that runs, the step counts and a hash of the bits of the end state are recorded for the whole grid; after the fix (commit B) every request outside the refused classes has the same record.",
+    "D3_golden": "the default-path golden files change only in records of requests whose answer changes from a plan to a refusal; a script lists every changed record and the class it belongs to; no other byte of the golden files changes.",
+    "D4_consumers": "the registry and the unified router (nodes V03 part A and part B) still agree with Rodas5p::capabilities (their tests pass); the facade suite passes; clippy and rustfmt are clean."
+  },
+  "verdicts": {
+    "PASS": "D1 to D4 hold",
+    "FAIL": "any discriminator fails: the fix is not merged and the defect stays listed for the owner"
+  },
+  "not_changed": [
+    "which driver runs any request that runs today, and its bits",
+    "default method routing, tolerances, controller constants, G0",
+    "drivers of rodas5p-integrators"
+  ]
+}

@@ -1,0 +1,265 @@
+#!/usr/bin/env python3
+"""Loop node V25: renders REPORT_KO.md (Korean, for the owner) from
+RESULTS.json, PROTOCOL.json and the optional step-6 files. Every number of
+the report is read from those files; nothing is typed in.
+
+usage: python3 -I make_report.py
+"""
+import json
+import os
+import sys
+
+sys.dont_write_bytecode = True
+NODE = os.path.dirname(os.path.abspath(__file__))
+FAMILIES = ["ac3d", "robertson_rd1d", "schnakenberg2d", "porous2d"]
+RTOLS = ["1e-3", "1e-4", "1e-5", "1e-6", "1e-7"]
+VERDICT_KO = {"PASS": "통과", "FAIL": "실패", "NOT_DECIDABLE": "판정 불가", "NOT_RUN": "미실행"}
+
+
+def load(name):
+    path = os.path.join(NODE, name)
+    if not os.path.exists(path):
+        return None
+    with open(path, encoding="utf-8") as handle:
+        return json.load(handle)
+
+
+def fmt(value, digits=3):
+    if value is None:
+        return "-"
+    if isinstance(value, bool):
+        return "예" if value else "아니오"
+    if isinstance(value, int):
+        return str(value)
+    if value != 0 and (abs(value) < 1e-3 or abs(value) >= 1e5):
+        return f"{value:.{digits - 1}e}"
+    return f"{value:.{digits}f}"
+
+
+def ko(verdict):
+    return VERDICT_KO.get(verdict, verdict or "-")
+
+
+def main():
+    results = load("RESULTS.json")
+    protocol = load("PROTOCOL.json")
+    golden = load("GOLDEN_DIFF.json")
+    suites = load("R_SUITES.json")
+    edits = load("OUT_OF_LIST_EDITS.json")
+    if results is None or protocol is None:
+        sys.exit("RESULTS.json and PROTOCOL.json are needed")
+    d = results["discriminators"]
+    fam = results["families"]
+    spans = {entry["id"]: entry["t_span"] for entry in protocol["families"]}
+    sizes = {entry["id"]: entry["n"] for entry in protocol["families"]}
+    decision = results["decision_before_step_6"]
+    final = results["verdict"]
+    lines = []
+    w = lines.append
+
+    w("# V25: 행렬 없는 경로의 적응 단계 풀이 P1 — 새 문제 네 가지에서의 확인 시험")
+    w("")
+    w("이 보고서는 `make_report.py`가 `RESULTS.json`과 `PROTOCOL.json`에서 숫자를 읽어 만든 것입니다. "
+      "판정 규칙은 `PREDECLARED.json`(부록 A7, 동결)에 있고, 그 파일이 열어 둔 선택은 P1의 첫 실행 전에 "
+      "`PROTOCOL.json`에 고정했습니다.")
+    w("")
+    w("**정정 고지 (2026-11-24, 독립 리뷰 `REVIEW.json`, 판정: 정정 조건부 수용).** 동결 판정 KEEP(B 불성립, V 온전)은 리뷰가 "
+      "원자료에서 다시 계산해 확인했습니다(재실행 24건이 로그와 기록 A에 bit 단위로 일치, 단계 풀이 9287건 재집계에서 위반 0). "
+      "병합 때 orchestrator가 덧붙이는 정정:")
+    w("1. robertson_rd1d, rtol 1e-7에서 P1의 '풀이당 열 수'는 완료된 풀이 기준 59.6입니다. 60.2는 실패한 풀이의 Arnoldi 열까지 센 값입니다(리뷰 F1).")
+    w("2. 검사기 로그는 8a4557f0에서 남긴 것입니다. 3768dac5에서의 PASS는 리뷰가 다시 돌려 확인했습니다(F2).")
+    w("3. D0의 PASS는 이 노드가 driver를 고치지 않아 생긴 공허한 통과입니다. 기록 A는 재현되었습니다(F3).")
+    w("4. E와 W의 칸 판정 가운데 3칸(ac3d 1e-3, robertson_rd1d 1e-3, porous2d 1e-7)은 사전에 선언한 대체 규칙(같은 허용오차 비교)에 기대고 있습니다(F4).")
+    w("5. robertson_rd1d 재연(같은 단계 시스템 2931개에서 S와 P1이 정확히 같은 시스템에서 예산을 소진)은 kernel 수준의 동등성만 보여 줍니다. "
+      "B 불성립이 궤적 차이에서 왔다는 해석은 가설입니다. 동결 B를 넘어 기본값을 바꾸려면 따로 사전등록한 시험(예: 칸마다 궤적 여러 개)이 필요합니다(F5).")
+    w("6. schnakenberg2d에서는 참조 불확실성 u_ref가 참조 민감도를 과소평가합니다(탐색 정보, F6).")
+    w("")
+    w("## 1. 무엇을 시험했나")
+    w("")
+    w("RODAS5P의 행렬 없는(matrix-free) 경로는 단계마다 선형계 `(I - h gamma J) U = rhs`를 재시작 GMRES로 풉니다. "
+      "두 정책의 차이는 '언제 멈출지를 얼마나 자주 확인하느냐' 하나뿐입니다.")
+    w("")
+    w("- **S (현재 기본값)**: 재시작 주기마다 Arnoldi 열 40개를 모두 만든 다음에야 참 잔차를 한 번 확인합니다. "
+      "필요한 열이 5개뿐이어도 40개를 만듭니다.")
+    w("- **P1 (적응 정책)**: 열을 하나 만들 때마다 Givens 회전으로 이미 알고 있는 투영 잔차를 확인하고, 단계 임계값을 "
+      "처음 만족하는 열에서 주기를 끝냅니다. 그 다음 참 잔차를 **같은 임계값**으로 다시 확인하고, 통과하지 못하면 풀이를 "
+      "계속합니다. 주기의 상한은 원래의 재시작 길이 40 그대로이므로 **새 하이퍼파라미터가 없습니다**.")
+    w("- 단계 임계값, Krylov 방법·예산(200)·전처리, 제어기 상수, 허용오차는 바꾸지 않았습니다. "
+      "P2(첫 주기 10열, 두 배씩 증가)는 비교용으로만 보고합니다.")
+    w("")
+    w("## 2. 문제족 (이전 노드가 쓰지 않은 네 가지)")
+    w("")
+    w("| 문제족 | n | 시간 구간 | 성격 | 기준해 불확실성 u_ref |")
+    w("|---|---|---|---|---|")
+    nature = {"ac3d": "3차원 Allen-Cahn (반응-확산)", "robertson_rd1d": "Robertson 반응 + 확산 (강한 강성)",
+              "schnakenberg2d": "Schnakenberg 2차원 (Turing 패턴, 오차 증폭 큼)", "porous2d": "다공성 매질 u_t = lap(u^2) (비선형 확산)"}
+    for family in FAMILIES:
+        ref = fam[family]["reference"] or {}
+        w(f"| {family} | {sizes[family]} | [{spans[family][0]:g}, {spans[family][1]:g}] | {nature[family]} | {fmt(ref.get('u_ref'))} |")
+    w("")
+    w("구간은 동결 규칙의 크기 맞춤 시험(S 단독, rtol 1e-7)으로 정했습니다: robertson_rd1d는 1초 미만이어서 세 번 두 배로 "
+      "늘려 [0, 320]이 되었고, 나머지는 잠정 구간 그대로입니다. 기준해는 V17 규칙(SciPy DOP853 rtol 1e-13, 교차 검증 두 개)으로 "
+      "독립 numpy 구현에서 계산했고, Rust와 numpy의 우변·JVP는 20개 상태에서 모든 성분이 비트 단위로 같았습니다.")
+    w("")
+    w("## 3. 판정표")
+    w("")
+    w("| 판별자 | 뜻 | 결과 |")
+    w("|---|---|---|")
+    d0_note = ("이 노드는 드라이버와 라우터를 편집하지 않았고, 판정에 쓴 실행과 시간 측정은 모두 바이너리 하나"
+               if d["D0"].get("after_the_edit", {}).get("verdict") == "NOT_RUN" else "편집 뒤 d0 실행을 기록 A와 비교")
+    w(f"| D0 | S와 P1을 명시적으로 고른 실행이 이 노드의 편집 뒤에도 기록 A와 비트 단위로 같음 | {ko(d['D0']['verdict'])} ({d0_note}) |")
+    w(f"| V | P1이 끝낸 모든 단계 풀이의 참 잔차가 임계값 이하 (풀이 로그로 재계산) | {ko(d['V']['verdict'])} (P1 위반 {d['V']['violations']['P1']}, 완료 풀이 {d['V']['totals_P1']['completed_solves']}, 최대 잔차/임계값 {fmt(d['V']['max_residual_over_threshold'], 5)}) |")
+    w(f"| B | 예산을 다 쓴 풀이가 어느 셀에서도 S보다 많지 않음 | {ko(d['B']['verdict'])} |")
+    w(f"| A | 같은 허용오차에서 P1 오차가 S의 3배 이하 | {ko(d['A']['verdict'])} |")
+    w(f"| S | 시도 횟수 비: 문제족 기하평균 1.05 이하, 셀 1.15 이하 | {ko(d['S']['verdict'])} |")
+    w(f"| E | 같은 달성 오차에서 명령어 수가 문제족마다 S보다 적고(1.00 미만) 어느 셀에서도 많지 않음 | {ko(d['E']['verdict'])} |")
+    w(f"| W | 권위 있는 벽시계 셀 중 P1이 S보다 느린 셀이 없음 | {ko(d['W']['verdict'])} |")
+    w(f"| G | (전환 시) 골든 기록 차이가 한계 이내 | {ko(d['G']['verdict'])} |")
+    w(f"| R | (전환 시) 테스트 묶음·clippy·rustfmt 통과 | {ko(d['R']['verdict'])} |")
+    w("")
+    w("## 4. 문제족별 숫자")
+    w("")
+    w("| 문제족 | E: 같은 오차에서 명령어 비 (P1/S) | E: 가장 나쁜 셀 | A: 최대 오차 비 | S: 시도 비 기하평균 / 최대 | B: 예산 소진 S / P1 | W: 벽시계 속도 향상 | W: 권위 셀 |")
+    w("|---|---|---|---|---|---|---|---|")
+    for family in FAMILIES:
+        disc = fam[family]["discriminators"]
+        w(f"| {family} | {fmt(disc['E']['family_number'])} | {fmt(disc['E']['max_cell_number'])} | {fmt(disc['A']['max_error_ratio'])} | "
+          f"{fmt(disc['S']['geometric_mean'])} / {fmt(disc['S']['max_ratio'])} | {disc['B']['total_S']} / {disc['B']['total_P1']} | "
+          f"{fmt(disc['W'].get('speedup_at_matched_error'))} | {disc['W']['authoritative_cells']} / 5 |")
+    w("")
+    w("명령어 비는 V17의 같은 달성 오차 통계(오차 구간 201점의 기하평균)입니다. 1보다 작을수록 P1이 싸다는 뜻입니다. "
+      f"벽시계 속도 향상은 S 시간 / P1 시간(같은 달성 오차)이며, 고정 코어·교차 실행·준비 실행과 반복 실행·1분 부하 {fmt(results['frozen_thresholds']['timing_load_max'], 1)} 이하·"
+      f"산포 {fmt(results['frozen_thresholds']['timing_spread_max'], 2)} 이하 규칙을 만족한 셀만 판정에 씁니다. 부하가 높았던 셀은 규칙대로 다시 측정했고, "
+      f"권위 있는 셀은 {sum(fam[f]['discriminators']['W']['authoritative_cells'] for f in FAMILIES)}개 / {len(FAMILIES) * len(RTOLS)}개입니다.")
+    w("")
+    error_ratios = [fam[f]["comparison"]["cells"][label].get("error_ratio") for f in FAMILIES for label in RTOLS]
+    attempt_ratios = [fam[f]["comparison"]["cells"][label].get("attempts_equal_tolerance") for f in FAMILIES for label in RTOLS]
+    error_ratios = [value for value in error_ratios if value is not None]
+    attempt_ratios = [value for value in attempt_ratios if value is not None]
+    w("P1이 싼 이유는 아래 표의 '열/풀이'에 보입니다: S는 재시작 주기마다 항상 재시작 길이만큼 열을 만들고, P1은 임계값을 만족하는 열에서 멈춥니다. "
+      f"오차와 시도 수는 거의 같으므로(같은 허용오차에서 오차 비 {fmt(min(error_ratios))}~{fmt(max(error_ratios))}, "
+      f"시도 비 {fmt(min(attempt_ratios))}~{fmt(max(attempt_ratios))}) 절약이 곧 같은 오차에서의 절약입니다. "
+      "robertson_rd1d는 풀이마다 여러 주기가 필요한 어려운 계라서(Krylov 예산을 다 쓰는 풀이가 두 정책 모두에 있음) 절약이 가장 작습니다.")
+    w("")
+    w("### 셀별 (허용오차마다)")
+    w("")
+    for family in FAMILIES:
+        disc = fam[family]["discriminators"]
+        cmp_cells = fam[family]["comparison"]["cells"]
+        w(f"**{family}**")
+        w("")
+        w("| rtol | 오차 S | 오차 P1 | 오차 비 | 명령어 셀 수치 (종류) | 시도 S / P1 | 열/풀이 S / P1 | 예산 소진 S / P1 | 벽시계 비 P1/S (권위) |")
+        w("|---|---|---|---|---|---|---|---|---|")
+        for label in RTOLS:
+            row = cmp_cells[label]
+            ecell = disc["E"]["cells"][label]
+            kind = "같은 오차" if (ecell.get("kind") or "").startswith("matched") else "같은 허용오차"
+            scell = disc["S"]["cells"][label]
+            bcell = disc["B"]["cells"][label]
+            wcell = disc["W"]["cells"][label]
+            s_cells = fam[family]["arms"]["S"][label]
+            p_cells = fam[family]["arms"]["P1"][label]
+            cps = lambda cell: (cell.get("linear_iterations") or 0) / cell["linear_solves"] if cell.get("linear_solves") else None
+            w(f"| {label} | {fmt(row.get('E_S'))} | {fmt(row.get('E_X'))} | {fmt(row.get('error_ratio'))} | {fmt(ecell.get('cell_number'))} ({kind}) | "
+              f"{scell.get('attempts_S')} / {scell.get('attempts_P1')} | {fmt(cps(s_cells), 1)} / {fmt(cps(p_cells), 1)} | {bcell.get('S')} / {bcell.get('P1')} | "
+              f"{fmt(wcell.get('ratio'))} ({'예' if wcell.get('authoritative') else '아니오'}) |")
+        w("")
+    w("## 5. 판정")
+    w("")
+    failing = [name for name, verdict in decision["discriminators"].items() if verdict == "FAIL"]
+    undecided = [name for name, verdict in decision["discriminators"].items() if verdict not in ("PASS", "FAIL")]
+    reason_ko = {
+        "KEEP": f"V는 성립하고 {', '.join(failing)}가 성립하지 않으므로, 동결 규칙에 따라 기본값은 S로 남고 P1은 선택 사항으로 남습니다.",
+        "SWITCH": "D0, V, B, A, S, E, W가 모두 성립합니다.",
+        "KILL": "P1의 단계 풀이에서 V 위반이 있습니다.",
+        "NOT_DECIDABLE": f"실패는 없지만 {', '.join(undecided)}를 판정할 수 없습니다.",
+    }
+    w(f"- 6단계(전환) 전 동결 규칙의 판정: **{decision['verdict']}** — {reason_ko.get(decision['verdict'], decision['reason'])}")
+    w(f"- 최종 판정: **{final['verdict']}** (G {ko(final['G'])}, R {ko(final['R'])}: 전환하지 않았으므로 정의상 실행하지 않음)"
+      if final["verdict"] != "SWITCH" else f"- 최종 판정: **{final['verdict']}** (G {ko(final['G'])}, R {ko(final['R'])})")
+    w("")
+    notes = results.get("report_notes_ko") or []
+    for note in notes:
+        w(f"- {note}")
+    if notes:
+        w("")
+    replay = (results.get("exploratory") or {}).get("budget_replay", {}).get("totals_by_family_and_arm") or {}
+    if failing == ["B"] and replay:
+        lost = sum(block["shipped_solved_p1_budget"] for block in replay.values())
+        gained = sum(block["shipped_budget_p1_solved"] for block in replay.values())
+        systems = sum(block["systems"] for block in replay.values())
+        lost_p2 = sum(block["shipped_solved_p2_budget"] for block in replay.values())
+        w("### B 실패를 어떻게 읽어야 하나 (탐색용, 판정에는 쓰지 않음)")
+        w("")
+        diffs = [abs((fam[f]["arms"]["P1"][label].get("attempts") or 0) - (fam[f]["arms"]["S"][label].get("attempts") or 0))
+                 for f in FAMILIES for label in RTOLS if fam[f]["discriminators"]["B"]["cells"][label]["verdict"] == "FAIL"]
+        w(f"- B는 셀마다 '그 실행에서' 예산을 다 쓴 풀이 수를 셉니다. P1의 반복값은 S와 선형 허용오차 수준에서만 다르지만, "
+          f"robertson_rd1d에서는 그 차이로 거부되는 시도가 달라져 두 실행이 서로 다른 단계 계를 풉니다 (B가 실패한 셀에서 시도 수 차이 {min(diffs) if min(diffs) == max(diffs) else str(min(diffs)) + '~' + str(max(diffs))}개).")
+        w(f"- 같은 단계 계에서 비교하면 (S와 P1 실행의 모든 단계 계 {systems}개를 세 커널로 다시 풂): S가 풀고 P1이 예산을 다 쓴 계 {lost}개, "
+          f"그 반대 {gained}개였습니다. 즉 같은 계에서는 P1과 S가 정확히 같은 계에서만 예산을 다 씁니다. 같은 비교에서 P2는 S가 예산 전체의 열로 푼 계를 포함해 {lost_p2}개를 잃었습니다.")
+        w("- 따라서 이 B 실패는 P1 커널이 더 약해서가 아니라 궤적이 달라진 결과로 보입니다. 다만 동결 규칙은 실행 단위로 세므로 판정은 바뀌지 않습니다.")
+        w("")
+    if golden:
+        w("### G: 골든 기록")
+        w("")
+        w(f"- {golden.get('summary')}")
+        w("")
+    if suites:
+        w("### R: 테스트 묶음")
+        w("")
+        w(f"- {suites.get('summary')}")
+        for failure in suites.get("failing_tests", [])[:20]:
+            w(f"  - 실패: `{failure}`")
+        w("")
+    if edits:
+        reason_text = {
+            "pins the enum default to the shipped policy": "열거형 기본값을 S로 고정",
+            "pins RoutingOptions::default().matrix_free_policy to the shipped policy": "RoutingOptions::default()의 정책을 S로 고정",
+            "pins the routed default's driver identifier to v1 and (next lines) its bits to the shipped entry": "라우터 기본 경로의 식별자를 v1으로, 비트를 S로 고정",
+            "pins the candidate identifier of P1, which a switch replaces by rodas5p-mf-fast-transformed-v3": "P1의 후보 식별자를 고정 (전환 시 v3)",
+            "pins the identifier of the default matrix-free route": "기본 행렬 없는 경로의 식별자를 고정",
+            "pins the facade's matrix-free driver identifier (and, near these lines, its bits to the shipped entry)": "파사드의 행렬 없는 경로 식별자(와 근처의 비트 비교)를 고정",
+            "the default of the route itself": "경로의 기본값 자체",
+            "the enum default of MfStageSolvePolicy": "MfStageSolvePolicy의 기본값",
+            "the identifier of P1": "P1의 식별자",
+        }
+        w("### 기본값을 P1로 바꾼다면 바뀌어야 하는 줄 (`OUT_OF_LIST_EDITS.json`)")
+        w("")
+        w("이 노드의 작성 허용 목록 **밖** (바꾸려면 오케스트레이터/소유자 결정 필요):")
+        w("")
+        for item in edits.get("lines", []):
+            if not item.get("inside_the_write_list_of_V25"):
+                w(f"- `{item.get('file')}:{item.get('line')}` — {reason_text.get(item.get('reason'), item.get('reason'))}")
+        w("")
+        w("작성 허용 목록 **안** (전환 판정이었다면 6단계에서 이 노드가 바꿨을 줄):")
+        w("")
+        for item in edits.get("lines", []):
+            if item.get("inside_the_write_list_of_V25"):
+                w(f"- `{item.get('file')}:{item.get('line')}` — {reason_text.get(item.get('reason'), item.get('reason'))}")
+        w("")
+    w("## 6. P2 (보고만 함)")
+    w("")
+    w("| 문제족 | 같은 오차 명령어 비 P2/S | 예산 소진 S / P2 | 최대 오차 비 | 감사 위반 |")
+    w("|---|---|---|---|---|")
+    for family in FAMILIES:
+        p2 = fam[family]["P2_reported_only"]
+        w(f"| {family} | {fmt(p2['instructions_matched_error'])} | {p2['budget_exhausted']['S']} / {p2['budget_exhausted']['P2']} | {fmt(p2['max_error_ratio'])} | {p2['audit_violations']} |")
+    w("")
+    w("## 7. 사용자에게 무엇이 바뀌는가")
+    w("")
+    for text in results.get("user_impact_ko") or ["(RESULTS.json에 기록 없음)"]:
+        w(f"- {text}")
+    w("")
+    w("## 8. 증거 파일")
+    w("")
+    w("- 동결 설계: `PREDECLARED.json`; 프로토콜: `PROTOCOL.json`; 결과: `RESULTS.json`; 기록 A: `RECORDING_A.json`")
+    w("- 원시 로그: `logs/sizing`, `logs/consistency`, `logs/reference`, `logs/setup`, `logs/record_a` (S와 P1, 단계 풀이 로그 `*.solves.txt.gz` 포함), `logs/p2`, `logs/timing`")
+    w("- 진행 기록: `NOTES.txt`")
+    text = "\n".join(lines) + "\n"
+    with open(os.path.join(NODE, "REPORT_KO.md"), "w", encoding="utf-8") as handle:
+        handle.write(text)
+    print(f"wrote REPORT_KO.md ({len(text)} bytes)")
+
+
+if __name__ == "__main__":
+    main()

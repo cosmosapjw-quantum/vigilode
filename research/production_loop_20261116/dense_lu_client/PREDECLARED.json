@@ -1,0 +1,147 @@
+{
+  "schema": "vigilode.loop_l1.v18_dense_lu_client.predeclared.v1",
+  "node": "V18_DENSE_LU_CLIENT",
+  "written": "2026-11-23 KST, before the first measurement run of this node",
+  "frozen_source": "research/production_loop_20261116/PREREGISTRATION.md, addendum A2, row V18; contract V18_DENSE_LU_CLIENT in docs/agent/production_solver_program_20261112/TASK_CONTRACTS.json",
+  "frozen_thresholds_repeated_verbatim": {
+    "pass": "reuse arm: end state, accepted and rejected counts and counters equal the protected dense driver bit for bit on the client-kit identity set extended to n in {128, 512, 2048} on the faer path; zero heap allocations and at most 1 minor page fault per attempt after warm-up; wall >= 1.10x of the protected dense driver at n = 512 in each of three heap-layout variants (invocation paths of 93, 108 and 124 characters, as in the V04 review), authoritative protocol. Threaded arm (2, 4, 6 workers, opt-in): at n >= 512 with 6 workers wall >= 1.5x of the protected driver at matched achieved error, attempts within 1% and achieved error within [0.9, 1.1] of the protected arm; bit identity is reported, not required",
+    "kill": "reuse arm: bit identity cannot be reached, or wall below 1.03x in all three variants. Threaded arm: below 1.15x at n = 2048 with 6 workers; NOT_RUN if threads would need a change of a protected manifest"
+  },
+  "this_file_fixes": "every protocol choice the frozen row leaves open. Nothing below moves or re-reads a frozen threshold.",
+
+  "what_was_run_before_this_file": {
+    "statement": "No wall-time comparison of two arms on a declared cell exists at the time of this commit.",
+    "development_runs": [
+      "cargo test of stage_clients_dense_lu_reuse_identity (functional: identity of the reuse client with the protected driver on the client-kit set and on the faer path at n = 128 and 512, kernel identity, error kinds, threaded factorisation) and of stage_clients_dense_lu_reuse_alloc (allocation counts). Their results are deterministic identities and counts; they were seen before this file and are repeated, logged, after it.",
+      "runner smoke runs on the non-declared size n = 160 (identity and measure mode with 1 warm-up and 2 repetitions on a host with a 1-minute load of 19): they printed wall times of the arms protected, kit, reuse, threaded2 and threaded6 at n = 160. Not kept as evidence, not used for any choice below.",
+      "sizing pilot of the protected driver alone (no other arm): logs/pilot_protected_only.jsonl. Used for the time spans, the tolerances and the attempt cap below.",
+      "feature state of faer in the workspace build: logs/threaded_faer_feature_state.log and logs/threaded_faer_par_compile_probe.log."
+    ]
+  },
+
+  "arms": {
+    "protected": "integrate_rodas5p_fast_observed_with_atol with default options (the protected dense driver; its policy picks the faer LU on every declared cell)",
+    "kit": "integrate_rodas5p_fast_client_observed_with_atol with stage_clients::DenseLuStageClient in the mode DenseLuMode::Faer (client kit, node V15)",
+    "reuse": "the same client driver with stage_clients::dense_lu_reuse::DenseLuReuseStageClient::new(n, DenseLuMode::Faer), no worker threads",
+    "threaded2, threaded4, threaded6": "the reuse client after with_factor_workers(2 | 4 | 6)",
+    "common": "output schedule [t0, tf]; atol = rtol; initial step 1e-6; min step 1e-14; max step tf - t0; every other controller field is AdaptiveStepConfig::default(). A client and its thread pool are constructed and dropped inside the timed call, as the protected driver builds and drops its workspace inside its call."
+  },
+
+  "threaded_arm_mechanism": {
+    "finding": "faer's own threaded factorisation is not reachable without a change of two protected files. The workspace manifest (Cargo.toml line 24) builds faer 0.24.4 with default-features = false and the features std, linalg, sparse-linalg; faer's enum Par has the variant Rayon only under its cargo feature rayon (faer-0.24.4/src/lib.rs lines 929-936), which also adds the packages rayon and spindle to faer's dependencies in Cargo.lock. Evidence: logs/threaded_faer_feature_state.log (cargo tree -e features), logs/threaded_faer_par_compile_probe.log (error E0599: no variant Rayon).",
+    "arm_as_worded_in_the_contract": "The contract says: 'Threaded arm: 2, 4, 6 workers through a parallelism argument of the factorisation call, opt-in, no global setting and no manifest change.' Read as the Par argument of faer's lu_in_place, this arm is NOT_RUN for the reason above.",
+    "arm_that_is_built_and_measured": "Threads themselves need no manifest change: rayon is already a dependency of rodas5p-integrators. The client therefore runs faer's recursion itself (src/stage_clients/dense_lu_reuse/threaded.rs): panels of at most 64 columns are factored by faer's sequential lu_in_place; above them the unit lower triangular solve, the matrix product and the row swaps of each level are split into at most `workers` parts with rayon::join on a pool the client owns, each part calling faer's sequential kernel on a disjoint block. The worker count is an argument of the client's factorisation (with_factor_workers); nothing global is set.",
+    "how_the_verdict_is_reported": "Both lines are reported. Line 1: threaded arm through faer's Par argument: NOT_RUN. Line 2: the frozen thresholds of the threaded arm evaluated, as written, on the client-side arm. Whether line 2 is the verdict of addendum A2 or an exploratory result is a ruling for the orchestrator; this node does not decide it.",
+    "constants_fixed_before_any_timing": {
+      "sequential_panel_columns": 64,
+      "least_work_per_part_flops": 2000000,
+      "least_work_per_part_swapped_elements": 65536,
+      "split_alignment_rows_or_columns": 16,
+      "tuning": "none. The constants were chosen by design before any timing run and are not changed after this commit."
+    }
+  },
+
+  "problems": {
+    "meanfield": {
+      "definition": "the 1D Brusselator with a mean-field coupling of the client-kit identity set (tests/stage_clients_dense_identity.rs), coupling 0.1, order n = 2 x cells; code: tests/stage_clients_dense_lu_reuse_problems.rs, function meanfield_problem",
+      "properties": "autonomous; right-hand side O(n); Jacobian half full; no exact solution",
+      "role": "identity, page faults, reuse wall; threaded wall only as an exploratory row (no reference)"
+    },
+    "skewnet": {
+      "definition": "y_i' = c_i [ s (S tanh(y))_i - y_i ] - c_i [ s (alpha(t) (S p)_i + beta(t) (S q)_i) - phi_i(t) ] + phi_i'(t), s = 1/sqrt(n); S skew-symmetric with entries in [-1, 1) from a 64-bit mixer; c_i = 10^(4 frac(i g)), g = 0.6180339887498949; p_j = cos(2 pi frac(0.7548776662466927 j)), q_j = cos(2 pi frac(0.5698402909980532 j)); alpha(t) = 0.6 sin(3 t + 0.5), beta(t) = 0.3 cos(5 t); phi_j(t) = atanh(alpha(t) p_j + beta(t) q_j); y(0) = phi(0). Code: the same file, SkewnetData and skewnet_problem.",
+      "properties": "non-autonomous with an analytic time derivative; one dense matrix-vector product per right-hand side; full Jacobian; W = I/(h gamma) - J is not diagonally dominant, so the factorisation permutes rows (the sizing and identity logs report how many); exact solution y = phi",
+      "why_new": "addendum A2 asks for confirmatory runs on problems that were not used for the exploratory numbers; the dense family of V04 was radnet. The sizes 128, 512 and 2048 are fixed by the frozen row.",
+      "role": "identity, page faults, reuse wall, threaded work-precision"
+    },
+    "client_kit_identity_set": "Robertson (n = 3), HIRES (n = 8), Brusselator 1D with 32 and 100 cells (n = 64, 200; in-place LU), mean-field Brusselator with 100 cells (n = 200; faer LU); rtol 1e-4, 1e-6, 1e-8; output schedule of 11 points; the configuration of tests/stage_clients_dense_identity.rs"
+  },
+
+  "cells": {
+    "meanfield.n128": {"t_span": [0.0, 10.0], "rtols": [1e-4, 1e-6, 1e-8], "max_attempts": 1000000},
+    "skewnet.n128": {"t_span": [0.0, 2.0], "rtols": [1e-4, 1e-6, 1e-8], "max_attempts": 1000000},
+    "meanfield.n512": {"t_span": [0.0, 10.0], "rtols": [1e-4, 1e-6, 1e-8], "max_attempts": 1000000},
+    "skewnet.n512": {"t_span": [0.0, 2.0], "rtols": [1e-4, 1e-6, 1e-8], "max_attempts": 1000000},
+    "meanfield.n2048": {"t_span": [0.0, 10.0], "rtols": [1e-4, 1e-6, 1e-8], "max_attempts": 40, "note": "a run stops after 40 attempts (about 9 s for the protected driver in the pilot) and is compared at its last accepted state; a complete run would take several hundred attempts"},
+    "skewnet.n2048": {"t_span": [0.0, 1.0], "rtols": [1e-4, 1e-5, 1e-6], "max_attempts": 1000000, "note": "the pilot gives 17, 26 and 45 attempts; rtol 1e-8 would need about 170 attempts of 0.25 s per run and arm"}
+  },
+
+  "measurement_1_identity": {
+    "evidence": [
+      "test target stage_clients_dense_lu_reuse_identity, run after this commit with --nocapture and logged (client-kit set: 15 rows; faer path at n = 128 and 512: both families at rtol 1e-4, 1e-6, 1e-8, arms kit and reuse; kernel identity of factors, permutation and solves against rodas5p_core::LuFactorization on matrices that need row interchanges)",
+      "the ignored test reuse_client_reproduces_protected_driver_on_the_faer_path_n2048 of the same target (skewnet on [0, 1] at rtol 1e-4, 1e-6, 1e-8 complete; mean-field Brusselator with a cap of 40 attempts), run once with --ignored and logged",
+      "runner command identity on the six cells above at their tolerances: arms kit, reuse, threaded2, threaded4, threaded6 against protected"
+    ],
+    "compared": "attempts, accepted steps, rejected steps, Jacobian reuses, every field of WorkCounters, success flag, number and FNV-1a fingerprint of the accepted states (t and y bits, read in the Jacobian callback, which every driver calls once per accepted state), fingerprint of the end state (last output of a complete run, last accepted state of a capped run); in the test target also every output time and state",
+    "pass_rule": "bit identity PASS if every reuse row of the three sources is identical in every compared quantity. One differing row is FAIL of the identity part and triggers the frozen kill rule 'bit identity cannot be reached'; the first differing quantity is reported.",
+    "threaded_rows": "reported (identical or not, largest end-state difference, attempts); they decide nothing"
+  },
+
+  "measurement_2_allocations_and_page_faults": {
+    "allocations": {
+      "evidence": "test target stage_clients_dense_lu_reuse_alloc (a binary of its own with a counting global allocator), logged",
+      "method": "a hook in the in-place Jacobian callback reads the allocation counter at every accepted state into a reserved buffer; the first 2 accepted steps are warm-up; the difference of consecutive readings is one accepted step with all its attempts; the smallest difference is one attempt",
+      "cells": "meanfield and skewnet at n = 128 and 512, rtol 1e-4 and 1e-6, arms protected, kit, reuse, threaded2, threaded6",
+      "pass_rule": "zero allocations in every counted step of every reuse row (asserted by the test). The other arms are reported. n = 2048 is not run in this binary: the allocation count of an attempt does not depend on n (it is the number of allocation calls of one factorisation)."
+    },
+    "page_faults": {
+      "evidence": "runner command faults: one arm per process, 3 consecutive runs of the cell in that process",
+      "method": "getrusage(RUSAGE_SELF).ru_minflt read in the Jacobian hook at every accepted state (no allocation, no file access); warm-up = the first 2 accepted steps of each run; rate = minor faults between the first counted state and the last accepted state, divided by the number of accepted steps between them",
+      "per_attempt": "an accepted step holds one attempt plus its rejected attempts, so the rate per accepted step is an upper bound of the rate per attempt. The frozen bound (at most 1) is tested on this upper bound.",
+      "cells": [
+        "n = 512: meanfield.n512 and skewnet.n512 at rtol 1e-6, in each of the three heap-layout variants; arms protected, kit, reuse, threaded6",
+        "n = 128: both families at rtol 1e-6, variant of 93 characters; arms protected, kit, reuse",
+        "n = 2048: skewnet.n2048 at rtol 1e-5 and meanfield.n2048 at rtol 1e-6 (cap 40), variant of 93 characters; arms protected, kit, reuse"
+      ],
+      "pass_rule": "page-fault PASS if the rate of the reuse arm is at most 1.0 in every run of every listed invocation. The arms protected, kit and threaded6 are reported.",
+      "cpu_prefix": "taskset -c 0-5,12-17 (a count, not a timing)"
+    }
+  },
+
+  "heap_layout_variants": {
+    "definition": "three symbolic links to the one runner binary, in <CARGO_TARGET_DIR>/hl/, named v18r-len<L>- followed by as many 'x' as make the full path exactly L characters long, L in {93, 108, 124}. The runner is started through the link (argv[0] = the link path) with an emptied environment (env -i PATH=/usr/bin:/bin LC_ALL=C). The runner collects its arguments as the V04 runner did (std::env::args into a Vec<String>), prints argv[0] and its length in the header, and the parser checks the length.",
+    "note": "The variants are three samples of the heap layout, as in the V04 review; nothing about them is tuned. The binary itself has a path of 89 characters, which is not a variant."
+  },
+
+  "measurement_3_reuse_wall": {
+    "cells": "skewnet.n512 and meanfield.n512 at rtol 1e-6 (88 and 89 attempts in the pilot)",
+    "invocation": "runner command measure, arms protected and reuse, 2 warm-ups + 7 timed repetitions; in every repetition each arm runs once, the order rotating by one position per repetition; one invocation per cell and variant",
+    "cpu_prefix": "flock /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/timing.lock taskset -c 6-11",
+    "statistic": "speed-up = median wall of the protected arm over the 7 timed repetitions / median wall of the reuse arm",
+    "pass_rule": "wall PASS if the speed-up is at least 1.10 in each of the three variants on both cells, all six invocations authoritative.",
+    "kill_rule": "wall KILL if the speed-up is below 1.03 in all three variants on both cells, all six invocations authoritative.",
+    "otherwise": "FAIL (neither pass nor kill) when all six are authoritative; NOT_DECIDABLE when an invocation that the rule needs stays diagnostic_only after its re-measurements. The verdict per cell (three variants of one problem) is reported next to the combined one.",
+    "also_recorded": "minor page faults of every run and the rate after warm-up, end-state fingerprint and attempt count of every run (the two arms must agree in every repetition)"
+  },
+
+  "measurement_4_threaded": {
+    "cells": "skewnet.n512 on [0, 2] at rtol 1e-4, 1e-6, 1e-8; skewnet.n2048 on [0, 1] at rtol 1e-4, 1e-5, 1e-6",
+    "invocation": "runner command measure with --emit-end-state, arms protected, reuse, threaded2, threaded4, threaded6 at n = 512 and protected, threaded2, threaded4, threaded6 at n = 2048 (the reuse arm is left out there to keep one invocation at a few minutes); 2 warm-ups + 7 timed repetitions, rotating order; one invocation per cell and tolerance; link of 93 characters",
+    "cpu_prefix": "flock <timing.lock> taskset -c 6-11 (six cores; the pool of 6 workers uses all of them while the calling thread waits)",
+    "reference": "the exact solution phi(t_end). The parser evaluates it with mpmath at 40 digits from the profiles p and q that the runner prints as bit patterns (command reference-inputs) and from the constants above; it does not use the runner's own error value except to cross-check it (agreement within 1e-12 absolute is required, otherwise the cell is invalid). Stated uncertainty of the reference: the implemented forcing uses the floating-point products S p and S q, which moves the solution of the implemented problem from phi by rounding-level terms; bound used: 1e-12 absolute. Achieved errors of the declared tolerances are above 1e-9.",
+    "achieved_error": "max_i |y_i(t_end) - phi_i(t_end)| on the end state of the first timed repetition; every repetition of an arm must have the same end-state fingerprint, otherwise the cell is invalid",
+    "matched_error_rule": "for a size and a worker count: protected points (e_k, T_k) and threaded points (e'_k, T'_k) at the three tolerances, T = median wall over the 7 timed repetitions. T'(e) is the piecewise-linear interpolant of the threaded points in (log e, log T). For e outside [min e', max e'] the nearest segment is extended, but only while e is within a factor 1.1 of the nearest threaded error; beyond that the point is not decidable. Speed-up S_k = T_k / T'(e_k).",
+    "pass_rule": "threaded PASS (6 workers) if S_k >= 1.5 at every tolerance at n = 512 and at n = 2048, and at every tolerance the attempts of the threaded arm are within 1% of the protected arm and e'_k / e_k is within [0.9, 1.1]; all six invocations authoritative.",
+    "kill_rule": "threaded KILL if S_k < 1.15 at every tolerance at n = 2048 with 6 workers, the three invocations authoritative.",
+    "otherwise": "FAIL when all needed invocations are authoritative; NOT_DECIDABLE when one of them stays diagnostic_only. The readings per size are reported next to the combined verdict.",
+    "reported_not_required": "2 and 4 workers (same statistics); bit identity of the threaded trajectory with the protected one (pair rows of every repetition); the reuse arm at n = 512",
+    "exploratory_rows_without_verdict": [
+      "meanfield.n512 at rtol 1e-6 and meanfield.n2048 at rtol 1e-6 with the cap of 40 attempts: arms protected, threaded2, threaded4, threaded6; ratio of median walls at equal tolerance (no reference solution exists for this family in this node)",
+      "skewnet.n2048 at rtol 1e-4: arms protected and reuse (what the reuse arm removes at n = 2048)"
+    ]
+  },
+
+  "measurement_5_instructions_exploratory": {
+    "what": "perf stat -e instructions:u,minor-faults on the runner command single (no hook readings beyond the per-state one that every mode has): arms none (set-up only), protected, kit, reuse; skewnet.n512 and meanfield.n512 at rtol 1e-6, 3 runs per process; user-mode instructions per attempt after subtracting the set-up",
+    "status": "deterministic supporting measure without a frozen threshold: exploratory. User-mode instructions do not contain the kernel's work on page faults."
+  },
+
+  "timing_quality_rule": {
+    "authoritative": "an invocation is authoritative only if the 1-minute load average is at most 8 before and after it (read by the runner from /proc/loadavg in its header and footer) and, for every arm, (max - min) / median of the wall over the 7 timed repetitions is at most 10%",
+    "re_measurement": "an invocation that misses the rule is measured again at most twice; every try is kept; the verdict uses the first try that meets the rule; otherwise the invocation is diagnostic_only and its numbers are shown with that label",
+    "waiting": "before a timing invocation the script reads /proc/loadavg; while the 1-minute value is above 8 it waits, one check per minute, at most 20 minutes in total for the whole node; then it measures anyway"
+  },
+
+  "exclusions_and_failures": "No run is excluded. A run that ends with an error or a non-zero exit code is kept with its log and listed in RESULTS.json. Negative results are kept.",
+  "numbers": "RESULTS.json is built by parse_results.py from the raw logs only; REPORT_KO.md is rendered from RESULTS.json by make_report.py.",
+  "search_budget": "none: one implementation, one set of constants, no selection among variants"
+}

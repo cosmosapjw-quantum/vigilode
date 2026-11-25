@@ -1,0 +1,24 @@
+# node V26 log
+# date: 2026-11-24T18:35:57+09:00
+# git head: ef11551e10b026e219ccc342a91d36c1c0e9ad74
+# git status (tracked changes): 0
+# loadavg at start: 10.71 8.06 7.26 10/6140 4096151
+# command: taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test stage_clients_assembly_check_mc -- --nocapture --test-threads 1
+    Finished `release` profile [optimized] target(s) in 0.15s
+     Running tests/stage_clients_assembly_check_mc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_assembly_check_mc-87366af99a3f1820)
+
+running 6 tests
+test pooled_checks_decide_as_checks_on_the_calling_thread ... ok
+test the_constructions_are_the_frozen_ones ... ok
+test the_multi_colouring_check_detects_what_the_full_check_detects_on_every_band ... V26_MC_UNIT_JSON {"detected_at_the_build":14478458,"detected_by_both":14528268,"detected_by_neither":0,"failures":0,"full_check_misses_rounding_limited":0,"full_check_only":0,"multi_colouring_only":0,"single_entry_omissions":14528268,"test":"every band of order 1 to 40"}
+ok
+test the_multi_colouring_check_detects_what_the_full_check_detects_on_random_patterns ... V26_MC_UNIT_JSON {"detected_at_the_build":389,"detected_by_both":693,"detected_by_neither":30,"failures":0,"full_check_misses_rounding_limited":30,"full_check_only":0,"multi_colouring_only":0,"single_entry_omissions":723,"test":"two seeded random sparse patterns"}
+ok
+test the_multi_colouring_check_refuses_the_dense_route ... ok
+test true_patterns_pass_and_the_jacobian_does_not_change ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 177.93s
+
+# exit code: 0
+# loadavg at end: 14.75 11.49 8.75 6/6141 4123318
+# date at end: 2026-11-24T18:38:55+09:00

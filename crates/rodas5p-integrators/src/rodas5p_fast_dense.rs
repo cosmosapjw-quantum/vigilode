@@ -55,6 +55,10 @@ pub const RODAS5P_FAST_DENSE_DRIVER_ID: &str = "rodas5p-fast-dense-v1";
 /// Identifier of the banded fast driver with a continuous extension.
 pub const RODAS5P_FAST_BANDED_DENSE_DRIVER_ID: &str = "rodas5p-fast-banded-dense-v1";
 
+/// Identifier of the banded fast driver with a continuous extension on the
+/// [`BandedKernel::Slices`] kernel (loop L1 node V22).
+pub const RODAS5P_FAST_BANDED_DENSE_SLICES_DRIVER_ID: &str = "rodas5p-fast-banded-dense-v1-slices";
+
 /// The number of RODAS5P stages (columns of the dense-output rows).
 const STAGES: usize = 8;
 
@@ -401,8 +405,9 @@ impl StepSink for DenseSink {
 #[derive(Clone, Debug)]
 pub struct Rodas5pFastDenseResult {
     /// The fast driver's result on the output `[t0, t1]` (its `driver` is
-    /// [`RODAS5P_FAST_DENSE_DRIVER_ID`] or
-    /// [`RODAS5P_FAST_BANDED_DENSE_DRIVER_ID`]).
+    /// [`RODAS5P_FAST_DENSE_DRIVER_ID`],
+    /// [`RODAS5P_FAST_BANDED_DENSE_DRIVER_ID`] or
+    /// [`RODAS5P_FAST_BANDED_DENSE_SLICES_DRIVER_ID`]).
     pub fast: Rodas5pFastResult,
     /// Every accepted step's continuous extension.
     pub segments: FastDenseSegments,
@@ -420,7 +425,7 @@ fn span_schedule((t0, t1): (f64, f64)) -> CoreResult<OutputSchedule> {
 
 fn run_dense(
     problem: &OdeProblem,
-    band: Option<&BandedJacobian>,
+    band: Option<(&BandedJacobian, BandedKernel)>,
     t_span: (f64, f64),
     y0: &[f64],
     adaptive: &AdaptiveStepConfig,
@@ -436,7 +441,7 @@ fn run_dense(
     let mut sink = DenseSink::new(interior, t_span.0, y0)?;
     let (mut fast, banded, partial) = integrate_fast(
         problem,
-        band.map(|band| (band, BandedKernel::Indexed)),
+        band,
         t_span,
         y0,
         adaptive,
@@ -446,10 +451,10 @@ fn run_dense(
         atol_vector,
         &mut sink,
     )?;
-    fast.driver = if band.is_some() {
-        RODAS5P_FAST_BANDED_DENSE_DRIVER_ID
-    } else {
-        RODAS5P_FAST_DENSE_DRIVER_ID
+    fast.driver = match band {
+        Some((_, BandedKernel::Slices)) => RODAS5P_FAST_BANDED_DENSE_SLICES_DRIVER_ID,
+        Some(_) => RODAS5P_FAST_BANDED_DENSE_DRIVER_ID,
+        None => RODAS5P_FAST_DENSE_DRIVER_ID,
     };
     Ok(Rodas5pFastDenseResult {
         fast,
@@ -485,9 +490,37 @@ pub fn integrate_rodas5p_fast_banded_dense_observed(
     adaptive: &AdaptiveStepConfig,
     interior: FastInteriorControl,
 ) -> CoreResult<Rodas5pFastDenseResult> {
-    run_banded_dense(problem, band, t_span, y0, adaptive, interior, &[])
+    run_banded_dense(
+        problem,
+        band,
+        t_span,
+        y0,
+        adaptive,
+        interior,
+        BandedKernel::Indexed,
+        &[],
+    )
 }
 
+/// [`integrate_rodas5p_fast_banded_dense_observed`] with an explicit
+/// [`BandedKernel`] (loop L1 node V22). `Indexed` is that function;
+/// `Slices` returns the same bits under
+/// [`RODAS5P_FAST_BANDED_DENSE_SLICES_DRIVER_ID`]. Every other kernel is
+/// refused.
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_rodas5p_fast_banded_dense_observed_with_kernel(
+    problem: &OdeProblem,
+    band: &BandedJacobian,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    interior: FastInteriorControl,
+    kernel: BandedKernel,
+) -> CoreResult<Rodas5pFastDenseResult> {
+    run_banded_dense(problem, band, t_span, y0, adaptive, interior, kernel, &[])
+}
+
+#[allow(clippy::too_many_arguments)]
 fn run_banded_dense(
     problem: &OdeProblem,
     band: &BandedJacobian,
@@ -495,8 +528,15 @@ fn run_banded_dense(
     y0: &[f64],
     adaptive: &AdaptiveStepConfig,
     interior: FastInteriorControl,
+    kernel: BandedKernel,
     atol_vector: &[f64],
 ) -> CoreResult<Rodas5pFastDenseResult> {
+    if !matches!(kernel, BandedKernel::Indexed | BandedKernel::Slices) {
+        return Err(CoreError::InvalidInput(
+            "the RODAS5P fast banded dense driver runs the Indexed and the Slices kernel only"
+                .into(),
+        ));
+    }
     let n = problem.dimension;
     if band.lower >= n.max(1) || band.upper >= n.max(1) {
         return Err(CoreError::InvalidInput(
@@ -505,7 +545,7 @@ fn run_banded_dense(
     }
     run_dense(
         problem,
-        Some(band),
+        Some((band, kernel)),
         t_span,
         y0,
         adaptive,
@@ -544,7 +584,34 @@ pub fn integrate_rodas5p_fast_banded_dense_observed_with_atol(
     atol: &[f64],
 ) -> CoreResult<Rodas5pFastDenseResult> {
     require_atol_vector(problem.dimension, atol)?;
-    run_banded_dense(problem, band, t_span, y0, adaptive, interior, atol)
+    run_banded_dense(
+        problem,
+        band,
+        t_span,
+        y0,
+        adaptive,
+        interior,
+        BandedKernel::Indexed,
+        atol,
+    )
+}
+
+/// [`integrate_rodas5p_fast_banded_dense_observed_with_atol`] with an
+/// explicit [`BandedKernel`]; see
+/// [`integrate_rodas5p_fast_banded_dense_observed_with_kernel`].
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_rodas5p_fast_banded_dense_observed_with_atol_and_kernel(
+    problem: &OdeProblem,
+    band: &BandedJacobian,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    interior: FastInteriorControl,
+    atol: &[f64],
+    kernel: BandedKernel,
+) -> CoreResult<Rodas5pFastDenseResult> {
+    require_atol_vector(problem.dimension, atol)?;
+    run_banded_dense(problem, band, t_span, y0, adaptive, interior, kernel, atol)
 }
 
 #[cfg(test)]

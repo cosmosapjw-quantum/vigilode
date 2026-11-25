@@ -1,0 +1,182 @@
+{
+  "schema": "vigilode.loop_l1.node_review.v1",
+  "node": "V17_MATRIX_FREE_STAGE_SOLVE",
+  "provenance": "the builder agent was cut by the usage limit and returned no report; its last steps were run by the orchestrator (NOTES.txt); review: run wf_f2599e6f-a4a (2026-11-23)",
+  "builder_report": null,
+  "review": {
+    "node": "V17_MATRIX_FREE_STAGE_SOLVE",
+    "verdict": "accept_with_corrections",
+    "summary": "Accept with corrections. Scope is clean: only allowed paths changed, protected blobs identical, git status empty; PREDECLARED (a6c66e9b) and amendment A1 (2681f19a) precede every declared-size run; policy C unchanged. My own script rebuilt every deciding number from the raw logs: 0 mismatches with RESULTS.json; regenerated RESULTS.json and REPORT_KO.md are identical. Re-runs: 30 declared runs reproduce all counters, audits and state bits (instructions within 2e-6); 6 timing cells meeting the rule give B speed-ups within 3% of the reported ones; my own references agree below 1e-10. Tests, sentinels, clippy, fmt pass on HEAD. Verdicts: validity PASS, cadence PASS 4/4, policy PASS 4/4 (pre-declared geometric mean), KILL not triggered. Corrections: KILL label NOT_RUN is wrong; policy attempts exceed 1.10 at the worst grid point on 2 families (1.44, 1.23); 149/149/33 cusp1d solves hit the Krylov budget and lie outside the checks; the gain is confounded with restart length (protected driver at restart 10 costs 0.26-0.37 of restart 40; B/A at equal restart 0.64-0.78, exploratory); three binaries, not two; load ranges; unlisted report-script edit.",
+    "scope_ok": true,
+    "protected_ok": true,
+    "predeclared_before_results": true,
+    "discriminator_checks": [
+      {
+        "name": "validity",
+        "builder_value": "0 residual-check failures in every arm; attempts of B within 1.05 of A at every tolerance",
+        "reviewer_value": "0 failures in 37606 / 37679 / 36881 checks (A / B / C), recounted from logs/runs/*audit1.log; checks equal completed solves in all 60 arm-cells; audit-on and audit-off runs identical in counters and state bits; attempts B/A between 0.976 and 1.026 (cusp1d), 1.000 elsewhere. Not checks: 149 (A), 149 (B), 33 (C) cusp1d solves that exhausted the 200-vector GMRES budget",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "cadence PASS (B)",
+        "builder_value": "instructions <= 0.67x on 4 of 4 families; wall >= 1.3x on 4 of 4 families (authoritative cells)",
+        "reviewer_value": "instructions B/A at matched error 0.359, 0.382, 0.216, 0.430 (worst grid point 0.531, 0.527, 0.519, 0.635); wall speed-up 3.03, 2.61, 5.30, 2.36 (worst grid point 1.95, 1.85, 1.97, 1.55); 20 of 20 cells authoritative (try 2 for 19, try 3 for burgers2d 1e-4); 4 of 4 families pass",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "policy PASS (C)",
+        "builder_value": "instructions <= 0.5x with attempts <= 1.10 on 4 of 4 families",
+        "reviewer_value": "instructions C/A 0.129, 0.118, 0.100, 0.146 (worst grid point 0.146, 0.137, 0.159, 0.184); attempts C/A: geometric mean 1.009, 1.005, 1.000, 1.003; equal-tolerance maximum 1.017, 0.999, 1.000, 1.023; worst grid point 1.027, 1.439, 1.005, 1.226. 4 of 4 under the pre-declared geometric-mean statistic; 2 of 4 if the worst grid point were the statistic",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "KILL",
+        "builder_value": "NOT_RUN (no residual-check failure in B; wall speed-up of B at least 2.36 on every family)",
+        "reviewer_value": "Evaluated and not triggered: 0 residual-check failures of B in 37679 checks; wall speed-up of B 2.36 to 5.30 on four families with authoritative walls, so neither kill clause holds. Enum has no 'not triggered'; PASS here means the node survives the kill rule. The builder label NOT_RUN is wrong",
+        "reviewer_verdict": "PASS",
+        "agrees": false
+      }
+    ],
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "minor",
+        "claim": "Builder report: KILL verdict \"NOT_RUN\".",
+        "evidence": "RESULTS.json verdicts.kill.verdict is \"NOT_TRIGGERED\". My recomputation from the raw logs: 0 failed checks of arm B in 37679; wall speed-up of B at matched error 3.03, 2.61, 5.30, 2.36 with all 20 cells authoritative. Both kill clauses were evaluated and neither holds.",
+        "correction": "Record KILL as evaluated and not triggered, not as NOT_RUN."
+      },
+      {
+        "id": "F2",
+        "severity": "major",
+        "claim": "Builder report: policy PASS (C) with attempts <= 1.10 on 4 of 4 families, stated without qualification.",
+        "evidence": "The family statistic declared before the runs (PREDECLARED.json matched_error_rule.family_statistic, commit a6c66e9b) is the geometric mean over a 201-point grid: 1.009, 1.005, 1.000, 1.003. Equal-tolerance maxima: 1.017, 0.999, 1.000, 1.023. The worst grid point is 1.439 on cusp1d (E about 7.0e-7: C needs 1225 attempts at rtol 1e-7, A reached 6.7e-7 with 853 attempts at rtol 1e-6) and 1.226 on bruss1d (E 3.76e-5: A 44 attempts at rtol 1e-3, C interpolated 54 because its error at 1e-3 is 27% larger). With the worst grid point as statistic only 2 of 4 families meet 1.10. REPORT_KO.md section 3.3 says this; the summary does not.",
+        "correction": "Keep PASS (statistic fixed before the runs) and record next to it that the attempts part holds for the geometric mean and at equal tolerance, and exceeds 1.10 at the worst grid point on cusp1d (1.44) and bruss1d (1.23)."
+      },
+      {
+        "id": "F3",
+        "severity": "minor",
+        "claim": "Builder report: zero failed residual checks; the residual check passes in every solve.",
+        "evidence": "logs/runs/cusp1d__*__audit1.log: linear_solve_failures of arm A 55, 46, 34, 11, 3 (149), arm B the same 149 (client failed_solves), arm C 9, 15, 6, 2, 1 (33). These solves ended with 'GMRES exhausted 200 Arnoldi vectors'; the attempt was rejected and retried with a smaller step. They are outside the checks by the pre-declared definition (PREDECLARED.json residual_check: checks = solves the arm completed). A and B have the same count, so B is not worse than the protected driver. REPORT_KO.md sections 1 and 3.1 do not state these counts.",
+        "correction": "State the validity result as 'among completed solves' and add the counts of budget-exhausted solves for cusp1d (A 149, B 149, C 33)."
+      },
+      {
+        "id": "F4",
+        "severity": "major",
+        "claim": "The summary attributes the gain of arm B to the residual-test cadence without qualification.",
+        "evidence": "Builder's exploratory logs (logs/exploratory, rtol 1e-5 only, achieved error identical in three families and within 3% on cusp1d), recomputed by me from the perf files: the protected driver with restart 10 costs 0.367, 0.336, 0.255, 0.370 of the shipped restart 40 (fhn3d, cusp1d, burgers2d, bruss1d). B(restart 40)/A(restart 10) = 0.972, 1.111, 0.744, 1.407. B(10)/A(10) = 0.766, 0.760, 0.636, 0.776. I re-ran fhn3d A and B at restart 10 with the HEAD binary: all fields and state bits identical. Control arm B0 (client with shipped cadence) costs 0.945 to 0.967 of A, so the driver difference is about 5%. In the exploratory Krylov-budget-limited cell (bruss1d_stiff600, one tolerance) B/A is 0.771, above 0.67. The frozen row compares with A as shipped, so the verdict is unaffected.",
+        "correction": "Record that cadence PASS is relative to the shipped restart 40; that at equal restart length 10 the per-column test alone is worth 0.64 to 0.78 in instructions (exploratory, one tolerance); that a shorter restart in the protected driver's own configuration is an untested alternative lever; and that the result does not cover the budget-limited regime."
+      },
+      {
+        "id": "F5",
+        "severity": "minor",
+        "claim": "Builder report: two binaries (declared runs 3fc4994c65c1, exploratory and timing 533d04044ca0).",
+        "evidence": "Log headers: 72 of the 82 exploratory logs (restart, Jacobi, kappa) carry binary_sha256 363a1a04e538, built at head 98ea8a37 with 2 dirty tracked files, so its source state is not a commit. 533d04044ca0 produced the 10 stiff-cell logs and all 74 timing logs. REPORT_KO.md header lists three binaries. I re-ran four of the 363a cells with the HEAD binary (sha256 533d04044ca0, unchanged after my cargo runs): every field and the state bits are identical.",
+        "correction": "Three measurement binaries; the restart, Jacobi and kappa exploratory logs come from a binary built from an uncommitted tree (reproduced with the HEAD binary on four sampled cells)."
+      },
+      {
+        "id": "F6",
+        "severity": "minor",
+        "claim": "Builder report: try 1 measured under a load of 22-44; tries 2 and 3 at a load of 2-3.5.",
+        "evidence": "V17_LOAD_BEFORE/AFTER lines in logs/timing: the builder's try-1 invocations read 14.46 to 41.70; the five try-1 rounds of cusp1d 1e-7 that the orchestrator ran read 2.09 to 3.85; tries 2 and 3 read 1.88 to 3.85. Every try-1 cell misses the rule either way (per-cell maximum at least 20.5).",
+        "correction": "Try 1: 14.5 to 41.7 (builder's part); tries 2 and 3: 1.9 to 3.9."
+      },
+      {
+        "id": "F7",
+        "severity": "minor",
+        "claim": "NOTES.txt last entry: the orchestrator ran only the listed steps (timing tries, parser, report generator, checker).",
+        "evidence": "Commit 77fe1c81 also edits make_report.py in three places (two sentences of section 7, one line of section 8, the re-measurement hint of section 9) after all data existed. No verdict logic or number is touched: parse_results.py is unchanged since 458a4c7e (before any timing data); I regenerated RESULTS.json from the committed logs (equal to the committed file except 'generated') and REPORT_KO.md (byte-identical). The earlier parser changes after the declared runs (4fe05811, df6dfa6f, 42b2b478, 458a4c7e) add the common-field V06 regression comparison, exploratory thread-CPU figures, worst-grid-point flags and the load poll; none changes a threshold or a verdict rule.",
+        "correction": "Add the make_report.py text edit to the orchestrator's NOTES entry."
+      },
+      {
+        "id": "F8",
+        "severity": "minor",
+        "claim": "NOTES.txt: logs/checks show tests, sentinels, clippy and fmt exit 0.",
+        "evidence": "Those four logs are dated 2026-11-17 15:06 to 15:08 at head 98ea8a37 with a dirty tree, before df6dfa6f changed stage_clients_krylov_v17_measure.rs (15:12). They do not cover the final source. I re-ran all four on HEAD: V17 contracts 11/11, V17 alloc 1/1, V06 contracts 9/9 plus 1 ignored, V06 alloc 1/1; sentinels 37 and 24 passed; clippy with -D warnings exit 0; rustfmt --check exit 0. The four V06 test files are blob-identical to the base.",
+        "correction": "Note that the check logs predate the last source commit; the reviewer's re-run on HEAD passes."
+      },
+      {
+        "id": "F9",
+        "severity": "minor",
+        "claim": "PREDECLARED.json amendment A1: final families and spans set before any run at a declared size.",
+        "evidence": "A1 commit 2681f19a at 14:51:29; first declared-size process (reference for burgers2d) 14:51:42, first SETUP 14:56:21, first RUN 14:56:32, all at head 2bd2dd65 with a clean tree. The policy_C block is unchanged between a6c66e9b and HEAD; no declared C log carries a V17_KAPPA override. A1 replaced two families, changed the cusp1d span and the Burgers start state, and withdrew the original span rule after arm-A runs on reduced instances (15 sizing logs kept, arm A only, n 150 to 432). The numbers quoted for the dropped families (ac3d, grayscott2d) come from console output and have no logs. I reproduced them with my own numpy code: ac3d m=8 minimum 0.950 at t=0.7 and 0.99995 to 0.99998 at t=1; Gray-Scott grid 16 largest v 0.0335, 0.0072, 1.5e-4 at t = 10, 20, 50. The constants 25.17 and 14.19 of the kappa justification recompute to 25.171 and 14.188.",
+        "correction": "No change to verdicts. Record that the development evidence for the two dropped families was not kept as logs."
+      },
+      {
+        "id": "F10",
+        "severity": "minor",
+        "claim": "Timing protocol and re-measurement rule were followed.",
+        "evidence": "Confirmed for the quality rule: every try is kept (75 timing logs plus the interrupted cusp1d 1e-7 round 4 log), no cell has more than three measurements, the first try that meets load <= 8 and spread <= 10% is used (try 2 for 19 cells; burgers2d 1e-4 try 2 misses with a spread of 0.104 in arm C and try 3 is used), arm order rotates by round in every run, all timed runs end in the state hash of the instruction runs. Deviations from the letter of PREDECLARED timing.load_wait (wait bounded at 20 minutes): try 1 started at 15:12:31, minute 8 of the poll (15:04:16 to 15:24:17), and tries 2 and 3 were made six days later on a quiet host. Try 1 of cusp1d 1e-7 mixes rounds 0-3 from 2026-11-17 with rounds 4-8 from 2026-11-23; it misses on load either way. The cusp1d 1e-3 to 1e-5 invocations held the timing lock for 130 to 238 s each.",
+        "correction": "No change to verdicts. Record the two load_wait deviations."
+      },
+      {
+        "id": "F11",
+        "severity": "minor",
+        "claim": "cusp1d is decided at matched achieved error like the other families.",
+        "evidence": "The end-point error of cusp1d is erratic: at rtol 1e-4 arms A and B, which use the same threshold, end with E 1.81e-3 and 1.44e-4 (factor 12.6); A's error is not monotone (6.70e-7 at 1e-6, 9.47e-7 at 1e-7). My own reference (own right-hand side, DOP853 1e-12) agrees with the builder's to 1.9e-11, so this is a property of the runs, not of the reference. The verdicts on this family do not depend on the matching: the worst pairing across all tolerances gives instructions B_max/A_min 0.577, wall A_min/B_max 1.80, instructions C_max/A_min 0.236.",
+        "correction": "Report cusp1d as noise-limited for matched-error statements, with the worst-pairing bounds as the robust figures."
+      },
+      {
+        "id": "F12",
+        "severity": "minor",
+        "claim": "Review side effect, not builder work.",
+        "evidence": "A git-ignored directory research/production_loop_20261116/mf_stage_solve/.mypy_cache (155 files, all created at 20:12 on 2026-11-23) appeared during this review, created by a session hook when I opened the Python scripts with the Read tool. I moved it to /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v17/review-scratch/moved_out_mypy_cache_created_20261123_2012. git status --short --ignored is empty before and after; HEAD is 77fe1c81.",
+        "correction": "None needed; the worktree is as found."
+      }
+    ],
+    "reran": [
+      {
+        "command": "git -C /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v17 diff --name-only c468478e..HEAD; git status --short --ignored; git log --name-status; blob comparison of 10 protected or read-only files",
+        "exit_code": 0,
+        "result": "Changed: stage_clients/krylov.rs, krylov/step_tied.rs, four new tests stage_clients_krylov_v17_*.rs, mf_stage_solve/** (538 log files). No protected path. Status empty. PREDECLARED a6c66e9b (14:21) precedes the first log commit 2681f19a (sizing logs with A1, 14:51) and the declared-run logs 98ea8a37."
+      },
+      {
+        "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test stage_clients_krylov_v17_{contracts,alloc,measure,problems} --test stage_clients_krylov_{contracts,alloc,measure,problems} -- --test-threads 4",
+        "exit_code": 0,
+        "result": "No rebuild. V17 contracts 11 passed, V17 alloc 1 passed, V06 contracts 9 passed and 1 ignored, V06 alloc 1 passed. Measurement binary sha256 still 533d04044ca0."
+      },
+      {
+        "command": "cargo +1.94.1 test ... --test ppsw1_6b_contracts --test ptsw2b_contracts; cargo +1.94.1 clippy --locked -j 4 --release -p rodas5p-integrators --lib --test <four V17 targets> --no-deps -- -D warnings; rustfmt +1.94.1 --check --edition 2024 <six files>",
+        "exit_code": 0,
+        "result": "Sentinels 37 and 24 passed; clippy exit 0; rustfmt exit 0, all on HEAD."
+      },
+      {
+        "command": "python3 -I /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v17/review-scratch/recompute.py",
+        "exit_code": 0,
+        "result": "Own parser over raw logs, perf files and references: E, net instructions, attempts, JVPs, timing medians, used tries, matched-error geometric means and check totals for all 20 cells: 0 mismatches with RESULTS.json. Verdicts recomputed from the raw logs and from RESULTS.json alone: validity PASS, cadence PASS 4 of 4, policy PASS 4 of 4, KILL not triggered."
+      },
+      {
+        "command": "python3 -I review-scratch/rerun.py counters bruss1d:1e-3,fhn3d:1e-5,cusp1d:1e-3,burgers2d:1e-4,cusp1d:1e-6 (A, B, C with audit on, and audit off under perf stat -e instructions:u; SETUP x3 per family)",
+        "exit_code": 0,
+        "result": "30 runs: every JSON field (counters, client statistics, audit checks, failures, max ratio, solve log) and the final state bits equal the builder's logs. Raw instructions differ by at most 1.6e-6 relative; net ratios B/A and C/A agree to six digits (0.635406 and 0.173997 for bruss1d 1e-3)."
+      },
+      {
+        "command": "flock /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/timing.lock taskset -c 6-11 <measure binary> with V17_MODE=TIMING, 9 rounds, for bruss1d 1e-3, bruss1d 1e-4, fhn3d 1e-3, burgers2d 1e-3, bruss1d 1e-7, cusp1d 1e-3",
+        "exit_code": 0,
+        "result": "All six meet the rule (load 4.6 to 7.4, spreads at most 8.5%, states equal). Speed-up A/B mine against reported: 1.547/1.549, 1.709/1.693, 1.915/1.947, 1.951/1.969, 3.376/3.414, 1.899/1.848. Medians within 6%. A first attempt on three cells ran at load 9.4 to 10.9 (diagnostic): 1.575, 1.884, 1.952."
+      },
+      {
+        "command": "python3 -I -B parse_results.py --out review-scratch/RESULTS_regen.json; python3 -I -B make_report.py --out review-scratch/REPORT_regen.md",
+        "exit_code": 0,
+        "result": "Regenerated RESULTS.json equals the committed file except 'generated'; regenerated REPORT_KO.md is byte-identical."
+      },
+      {
+        "command": "python3 -I research/production_loop_20261116/check_checkpoint.py (from the worktree root)",
+        "exit_code": 1,
+        "result": "Verbatim: 'ValueError: implementation changed; rerun affected tests/update checkpoint: crates/rodas5p-integrators/src/stage_clients/krylov.rs'. This names only a path the node is allowed to change. The same checker with only that pin removed in memory exits 0: 'PASS: strict JSON, task/DAG structure, ancestry, protected and evidence identities'."
+      },
+      {
+        "command": "python3 -I review-scratch/own_reference.py and own_reference2.py (own numpy right-hand sides written from PREDECLARED.json, scipy DOP853 rtol 1e-12)",
+        "exit_code": 0,
+        "result": "Maximum scaled difference to the builder's reference states: bruss1d 6.5e-14, burgers2d 8.2e-13, cusp1d 1.9e-11, fhn3d 9.8e-11. Achieved errors of the declared runs recomputed against my references agree with RESULTS.json to 3e-5 relative or better."
+      },
+      {
+        "command": "python3 -I review-scratch/rerun_expl.py (fhn3d A and B restart 10, bruss1d C kappa 1e-2, burgers2d B Jacobi, stiff Brusselator B and C with audit) and a1_check.py",
+        "exit_code": 0,
+        "result": "All six exploratory runs reproduce the builder's logs in every field and state bit with the HEAD binary. Facts quoted in amendment A1 for the dropped families reproduced with independent code."
+      }
+    ]
+  }
+}

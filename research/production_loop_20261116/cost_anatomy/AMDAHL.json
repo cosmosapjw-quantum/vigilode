@@ -1,0 +1,3921 @@
+{
+ "schema": "vigilode.loop_l1.v04_cost_anatomy.amdahl.v1",
+ "node": "V04_STAGE_COST_ANATOMY",
+ "generated_by": "build_amdahl.py from RESULTS.json",
+ "formulas": {
+  "inputs": "f_J, f_LU, f_S, f_R: the cell's median fractions of the instrumented wall (instruction fractions for n < 128); f_chain = f_R + f_S (eight right-hand sides and eight solves); for matrix-free cells f_S is the sum of the solve-interval fractions and f_J = f_LU = 0",
+  "assumptions": "upper bounds: zero overhead, perfect scaling, unchanged step count and unchanged error",
+  "a_level_structured_tableau": "S = 1 / (1 - (1 - L/8) f_chain), L in {4, 5, 6}; the present tableau has depth 8 (theory S1), bound 1.0; theory S9 excludes L = 4 for a stiffly accurate order-5 tableau",
+  "b_speculative_jacobian_lu": "saving = min(f_J + f_LU, f_chain / 4), S = 1 / (1 - saving); r = (f_J + f_LU) / f_chain. Also the variant without step-size prediction (theory S6): saving = min(f_J, f_chain / 4)",
+  "b_gate_list_for_V07_stage_b": "cells with 0.15 <= r <= 0.92 and plain wall per accepted step (median plain wall / accepted steps) >= 500 microseconds; each entry carries its admissibility label",
+  "c_parallel_jacobian_assembly": "S = 1 / (1 - f_J (1 - 1/P)), P in {2, 4, 6}",
+  "d_lagged_lu": "S = 1 / (1 - f_LU (1 - 1/k)), k in {2, 4}",
+  "e_parallel_dense_lu": "S = 1 / (1 - f_LU (1 - 1/P)), P in {2, 4, 6}; dense cells only",
+  "f_shared_krylov_basis": "matrix-free cells only: S = 1 / (1 - sum over stages 2..8 of the solve-interval fractions); the JVP part of that sum is reported separately",
+  "g_parallel_rhs": "S = 1 / (1 - f_R (1 - 1/P)), P in {2, 4, 6}; exploratory variant with the right-hand sides inside a finite-difference Jacobian (f_R + f_J) and, matrix-free, with the JVP (f_R + f_JVP)"
+ },
+ "reading": "every bound is an upper bound of the whole-step speed-up under zero overhead, perfect scaling and an unchanged step count; a bound computed from a diagnostic_only row is diagnostic",
+ "v07_stage_b_gate": {
+  "condition": "0.15 <= (f_J + f_LU) / f_chain <= 0.92 and plain wall per accepted step >= 500 microseconds",
+  "regimes": [
+   {
+    "cell": "dense.radnet.n512.analytic.x10",
+    "n": 512,
+    "r": 0.7825304017248673,
+    "plain_wall_per_accepted_step_us": 8515.269209302325,
+    "bound": 1.1627251184354102,
+    "bound_jacobian_only": 1.0085467018508343,
+    "fraction_basis": "wall",
+    "admissibility": "authoritative",
+    "reduced_protocol": false
+   },
+   {
+    "cell": "banded_1d.bruss1d.n10000.analytic.x1",
+    "n": 10000,
+    "r": 0.17184100852038955,
+    "plain_wall_per_accepted_step_us": 1756.8775487804878,
+    "bound": 1.1436403114840774,
+    "bound_jacobian_only": 1.0085164839264542,
+    "fraction_basis": "wall",
+    "admissibility": "diagnostic_only",
+    "reduced_protocol": false
+   },
+   {
+    "cell": "banded_1d.bruss1d.n10000.fd.x1",
+    "n": 10000,
+    "r": 0.2856655418211956,
+    "plain_wall_per_accepted_step_us": 1913.6325609756097,
+    "bound": 1.2023508253921633,
+    "bound_jacobian_only": 1.0946805387317988,
+    "fraction_basis": "wall",
+    "admissibility": "diagnostic_only",
+    "reduced_protocol": false
+   },
+   {
+    "cell": "banded_1d.bruss1d.n100000.analytic.x1",
+    "n": 100000,
+    "r": 0.2017923616872191,
+    "plain_wall_per_accepted_step_us": 18049.50875949367,
+    "bound": 1.1657362157527225,
+    "bound_jacobian_only": 1.0199608931508068,
+    "fraction_basis": "wall",
+    "admissibility": "diagnostic_only",
+    "reduced_protocol": false
+   },
+   {
+    "cell": "banded_1d.bruss1d.n100000.fd.x1",
+    "n": 100000,
+    "r": 0.3153575483901667,
+    "plain_wall_per_accepted_step_us": 19805.13657142857,
+    "bound": 1.1956082735644085,
+    "bound_jacobian_only": 1.1024252491878224,
+    "fraction_basis": "wall",
+    "admissibility": "diagnostic_only",
+    "reduced_protocol": false
+   },
+   {
+    "cell": "banded_1d.bruss1d.n10000.fd.x10",
+    "n": 10000,
+    "r": 0.4360892940421453,
+    "plain_wall_per_accepted_step_us": 3235.9498170731704,
+    "bound": 1.1922550864410404,
+    "bound_jacobian_only": 1.1922550864410404,
+    "fraction_basis": "wall",
+    "admissibility": "authoritative",
+    "reduced_protocol": false
+   },
+   {
+    "cell": "banded_1d.bruss1d.n10000.fd.x100",
+    "n": 10000,
+    "r": 0.6273683569230101,
+    "plain_wall_per_accepted_step_us": 16847.376512195122,
+    "bound": 1.178397032583618,
+    "bound_jacobian_only": 1.178397032583618,
+    "fraction_basis": "wall",
+    "admissibility": "authoritative",
+    "reduced_protocol": false
+   }
+  ],
+  "regimes_on_authoritative_rows": [
+   "dense.radnet.n512.analytic.x10",
+   "banded_1d.bruss1d.n10000.fd.x10",
+   "banded_1d.bruss1d.n10000.fd.x100"
+  ]
+ },
+ "largest_bounds_per_lever": {
+  "a_level_structured_tableau_L5": {
+   "authoritative_rows": [
+    {
+     "cell": "banded_1d.bruss1d.n10000.analytic.x100",
+     "bound": 1.5597568479481208
+    },
+    {
+     "cell": "dense.radnet.n128.analytic.x100",
+     "bound": 1.5568268348937513
+    },
+    {
+     "cell": "dense.radnet.n512.analytic.x100",
+     "bound": 1.5190739362143428
+    },
+    {
+     "cell": "banded_1d.bruss1d.n10000.analytic.x10",
+     "bound": 1.4446721488587562
+    },
+    {
+     "cell": "dense.radnet.n128.analytic.x10",
+     "bound": 1.3594442992031934
+    }
+   ],
+   "all_rows": [
+    {
+     "cell": "matrix_free_2d.ac2d.g256.jvp.x1",
+     "bound": 1.5999483613232135
+    },
+    {
+     "cell": "matrix_free_2d.ac2d.g128.jvp.x100",
+     "bound": 1.599910026364336
+    },
+    {
+     "cell": "matrix_free_2d.ac2d.g128.jvp.x10",
+     "bound": 1.5999013549749426
+    },
+    {
+     "cell": "matrix_free_3d.ac3d.g32.jvp.x100",
+     "bound": 1.59989396916075
+    },
+    {
+     "cell": "matrix_free_2d.ac2d.g128.jvp.x1",
+     "bound": 1.5998932737874996
+    }
+   ]
+  },
+  "b_speculative_jacobian_lu": {
+   "authoritative_rows": [
+    {
+     "cell": "dense.radnet.n128.analytic.x10",
+     "bound": 1.2139903312511822
+    },
+    {
+     "cell": "banded_1d.bruss1d.n10000.fd.x10",
+     "bound": 1.1922550864410404
+    },
+    {
+     "cell": "banded_1d.bruss1d.n10000.fd.x100",
+     "bound": 1.178397032583618
+    },
+    {
+     "cell": "dense.radnet.n512.analytic.x10",
+     "bound": 1.1627251184354102
+    },
+    {
+     "cell": "dense.radnet.n512.analytic.x100",
+     "bound": 1.0967011158241715
+    }
+   ],
+   "all_rows": [
+    {
+     "cell": "dense.radnet.n128.analytic.x10",
+     "bound": 1.2139903312511822
+    },
+    {
+     "cell": "banded_1d.bruss1d.n1000.fd.x1",
+     "bound": 1.209043949979428
+    },
+    {
+     "cell": "banded_1d.bruss1d.n10000.fd.x1",
+     "bound": 1.2023508253921633
+    },
+    {
+     "cell": "banded_1d.bruss1d.n100000.fd.x1",
+     "bound": 1.1956082735644085
+    },
+    {
+     "cell": "dense.bruss1d.n32.analytic.x10",
+     "bound": 1.193960452459018
+    }
+   ]
+  },
+  "b_speculative_jacobian_only": {
+   "authoritative_rows": [
+    {
+     "cell": "banded_1d.bruss1d.n10000.fd.x10",
+     "bound": 1.1922550864410404
+    },
+    {
+     "cell": "banded_1d.bruss1d.n10000.fd.x100",
+     "bound": 1.178397032583618
+    },
+    {
+     "cell": "dense.bruss1d.n128.fd.x1",
+     "bound": 1.0465054167877033
+    },
+    {
+     "cell": "dense.radnet.n128.fd.x1",
+     "bound": 1.0261292321294033
+    },
+    {
+     "cell": "dense.radnet.n128.analytic.x1",
+     "bound": 1.0202228847581616
+    }
+   ],
+   "all_rows": [
+    {
+     "cell": "banded_1d.bruss1d.n10000.fd.x10",
+     "bound": 1.1922550864410404
+    },
+    {
+     "cell": "banded_1d.bruss1d.n10000.fd.x100",
+     "bound": 1.178397032583618
+    },
+    {
+     "cell": "dense.hires.n8.fd.x1",
+     "bound": 1.104241102215017
+    },
+    {
+     "cell": "banded_1d.bruss1d.n100000.fd.x1",
+     "bound": 1.1024252491878224
+    },
+    {
+     "cell": "banded_1d.bruss1d.n10000.fd.x1",
+     "bound": 1.0946805387317988
+    }
+   ]
+  },
+  "c_parallel_jacobian_assembly_P6": {
+   "authoritative_rows": [
+    {
+     "cell": "dense.radnet.n128.fd.x100",
+     "bound": 4.5823698449855526
+    },
+    {
+     "cell": "dense.radnet.n128.fd.x10",
+     "bound": 4.04837614365754
+    },
+    {
+     "cell": "dense.radnet.n128.fd.x1",
+     "bound": 2.443313786615331
+    },
+    {
+     "cell": "dense.bruss1d.n512.fd.x1",
+     "bound": 2.123979586245972
+    },
+    {
+     "cell": "dense.bruss1d.n2048.fd.x1",
+     "bound": 1.980557323992354
+    }
+   ],
+   "all_rows": [
+    {
+     "cell": "dense.radnet.n128.fd.x100",
+     "bound": 4.5823698449855526
+    },
+    {
+     "cell": "dense.radnet.n2048.fd.x1",
+     "bound": 4.369497034163769
+    },
+    {
+     "cell": "dense.radnet.n128.fd.x10",
+     "bound": 4.04837614365754
+    },
+    {
+     "cell": "dense.radnet.n512.fd.x1",
+     "bound": 3.1626119130575363
+    },
+    {
+     "cell": "dense.radnet.n128.fd.x1",
+     "bound": 2.443313786615331
+    }
+   ]
+  },
+  "d_lagged_lu_k4": {
+   "authoritative_rows": [
+    {
+     "cell": "dense.bruss1d.n2048.analytic.x1",
+     "bound": 3.759631132286444
+    },
+    {
+     "cell": "banded_3d.ac3d.g16.analytic.x1",
+     "bound": 3.386929245434181
+    },
+    {
+     "cell": "banded_3d.ac3d.g16.fd.x1",
+     "bound": 3.1265689028287253
+    },
+    {
+     "cell": "dense.bruss1d.n512.analytic.x1",
+     "bound": 3.1014117166784505
+    },
+    {
+     "cell": "banded_2d.bruss2d.g64.analytic.x1",
+     "bound": 3.038782109755961
+    }
+   ],
+   "all_rows": [
+    {
+     "cell": "dense.bruss1d.n2048.analytic.x1",
+     "bound": 3.759631132286444
+    },
+    {
+     "cell": "banded_3d.ac3d.g16.analytic.x1",
+     "bound": 3.386929245434181
+    },
+    {
+     "cell": "banded_2d.bruss2d.g128.analytic.x1",
+     "bound": 3.2793935102458067
+    },
+    {
+     "cell": "banded_3d.ac3d.g16.fd.x1",
+     "bound": 3.1265689028287253
+    },
+    {
+     "cell": "dense.bruss1d.n512.analytic.x1",
+     "bound": 3.1014117166784505
+    }
+   ]
+  },
+  "e_parallel_dense_lu_P6": {
+   "authoritative_rows": [
+    {
+     "cell": "dense.bruss1d.n2048.analytic.x1",
+     "bound": 5.422224376133009
+    },
+    {
+     "cell": "dense.bruss1d.n512.analytic.x1",
+     "bound": 4.046147458544457
+    },
+    {
+     "cell": "dense.radnet.n2048.analytic.x1",
+     "bound": 3.563608648996405
+    },
+    {
+     "cell": "dense.radnet.n512.analytic.x1",
+     "bound": 2.8995302065887842
+    },
+    {
+     "cell": "dense.radnet.n128.analytic.x1",
+     "bound": 2.04314344860655
+    }
+   ],
+   "all_rows": [
+    {
+     "cell": "dense.bruss1d.n2048.analytic.x1",
+     "bound": 5.422224376133009
+    },
+    {
+     "cell": "dense.bruss1d.n512.analytic.x1",
+     "bound": 4.046147458544457
+    },
+    {
+     "cell": "dense.radnet.n2048.analytic.x1",
+     "bound": 3.563608648996405
+    },
+    {
+     "cell": "dense.radnet.n512.analytic.x1",
+     "bound": 2.8995302065887842
+    },
+    {
+     "cell": "dense.radnet.n128.analytic.x1",
+     "bound": 2.04314344860655
+    }
+   ]
+  },
+  "f_shared_krylov_basis": {
+   "authoritative_rows": [],
+   "all_rows": [
+    {
+     "cell": "matrix_free_2d.ac2d.g128.jvp.x1",
+     "bound": 9.4559523704359
+    },
+    {
+     "cell": "matrix_free_2d.ac2d.g256.jvp.x1",
+     "bound": 9.283564886031739
+    },
+    {
+     "cell": "matrix_free_2d.ac2d.g128.jvp.x10",
+     "bound": 8.804452186786616
+    },
+    {
+     "cell": "matrix_free_2d.ac2d.g64.jvp.x1",
+     "bound": 7.929092914197207
+    },
+    {
+     "cell": "matrix_free_2d.bruss2d.g128.jvp.x1",
+     "bound": 7.920225195511099
+    }
+   ]
+  },
+  "g_parallel_rhs_P6": {
+   "authoritative_rows": [
+    {
+     "cell": "dense.radnet.n128.analytic.x100",
+     "bound": 4.612975658658457
+    },
+    {
+     "cell": "dense.radnet.n512.analytic.x100",
+     "bound": 4.012174239127272
+    },
+    {
+     "cell": "banded_1d.bruss1d.n10000.analytic.x100",
+     "bound": 3.3723883256235236
+    },
+    {
+     "cell": "dense.radnet.n128.analytic.x10",
+     "bound": 2.059827489246121
+    },
+    {
+     "cell": "banded_1d.bruss1d.n10000.fd.x100",
+     "bound": 1.8024271122833213
+    }
+   ],
+   "all_rows": [
+    {
+     "cell": "dense.radnet.n128.analytic.x100",
+     "bound": 4.612975658658457
+    },
+    {
+     "cell": "dense.radnet.n512.analytic.x100",
+     "bound": 4.012174239127272
+    },
+    {
+     "cell": "dense.bruss1d.n32.analytic.x100",
+     "bound": 3.8662330785503283
+    },
+    {
+     "cell": "banded_1d.bruss1d.n10000.analytic.x100",
+     "bound": 3.3723883256235236
+    },
+    {
+     "cell": "dense.radnet.n128.analytic.x10",
+     "bound": 2.059827489246121
+    }
+   ]
+  }
+ },
+ "regimes": [
+  {
+   "cell": "dense.hires.n8.analytic.x1",
+   "n": 8,
+   "structure": "dense",
+   "problem": "hires",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 1,
+   "lu_mode": "in_place_zero_skipping",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "instructions",
+   "fractions": {
+    "f_J": 0.008740519431862393,
+    "f_LU": 0.10845280009990922,
+    "f_S": 0.3785790795863374,
+    "f_R": 0.03730917579699215,
+    "f_remainder": 0.46691842508489884,
+    "f_chain": 0.4158882553833296
+   },
+   "plain_wall_per_accepted_step_us": 1.2211225490196078,
+   "plain_wall_per_attempt_us": 1.1862333333333333,
+   "a_level_structured_tableau": {
+    "L4": 1.262537195874378,
+    "L5": 1.1847752996467567,
+    "L6": 1.1160366319515547
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.281790404068403,
+    "saving": 0.1039720638458324,
+    "bound": 1.1160366319515547,
+    "bound_jacobian_only": 1.008817589746383,
+    "r_in_0.15_0.92": true,
+    "plain_wall_per_accepted_step_ge_500us": false,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0043894427206286,
+    "P4": 1.0065986462708627,
+    "P6": 1.0073372087059436
+   },
+   "d_lagged_lu": {
+    "k2": 1.0573354976844551,
+    "k4": 1.0885415329555583
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.0573354976844551,
+    "P4": 1.0885415329555583,
+    "P6": 1.0993569495756446
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.0190091966278705,
+    "P4": 1.0287874076883832,
+    "P6": 1.0320886473173696
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "dense.hires.n8.fd.x1",
+   "n": 8,
+   "structure": "dense",
+   "problem": "hires",
+   "jacobian_source": "fd",
+   "rhs_multiplier": 1,
+   "lu_mode": "in_place_zero_skipping",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "instructions",
+   "fractions": {
+    "f_J": 0.09964346757871607,
+    "f_LU": 0.09846892369354888,
+    "f_S": 0.3437280961433861,
+    "f_R": 0.03387459227644503,
+    "f_remainder": 0.4242849203079039,
+    "f_chain": 0.37760268841983113
+   },
+   "plain_wall_per_accepted_step_us": 1.3152696078431372,
+   "plain_wall_per_attempt_us": 1.2776904761904762,
+   "a_level_structured_tableau": {
+    "L4": 1.2327436600915327,
+    "L5": 1.1649594297093575,
+    "L6": 1.104241102215017
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.5246583177183237,
+    "saving": 0.09440067210495778,
+    "bound": 1.104241102215017,
+    "bound_jacobian_only": 1.104241102215017,
+    "r_in_0.15_0.92": true,
+    "plain_wall_per_accepted_step_ge_500us": false,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0524340911185537,
+    "P4": 1.0807686521099584,
+    "P6": 1.090555619603998
+   },
+   "d_lagged_lu": {
+    "k2": 1.0517840202142874,
+    "k4": 1.0797406767292554
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.0517840202142874,
+    "P4": 1.0797406767292554,
+    "P6": 1.0893927786619741
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.017229110688146,
+    "P4": 1.0260682322617598,
+    "P6": 1.0290488416186498
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand sides of the stages and of the finite-difference Jacobian in parallel",
+    "P2": 1.0715346111759325,
+    "P4": 1.111282180521092,
+    "P6": 1.1251948624999952
+   }
+  },
+  {
+   "cell": "dense.bruss1d.n32.analytic.x1",
+   "n": 32,
+   "structure": "dense",
+   "problem": "bruss1d",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 1,
+   "lu_mode": "in_place_zero_skipping",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "instructions",
+   "fractions": {
+    "f_J": 0.010451007563128738,
+    "f_LU": 0.26167793086229696,
+    "f_S": 0.4064687264572133,
+    "f_R": 0.07440180198056504,
+    "f_remainder": 0.24700053313679593,
+    "f_chain": 0.48087052843777833
+   },
+   "plain_wall_per_accepted_step_us": 5.931414634146341,
+   "plain_wall_per_attempt_us": 5.229849462365592,
+   "a_level_structured_tableau": {
+    "L4": 1.3165434793015156,
+    "L5": 1.219997885451211,
+    "L6": 1.1366447390821086
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.56590895538868,
+    "saving": 0.12021763210944458,
+    "bound": 1.1366447390821086,
+    "bound_jacobian_only": 1.0105613846742363,
+    "r_in_0.15_0.92": true,
+    "plain_wall_per_accepted_step_ge_500us": false,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.005252953107894,
+    "P4": 1.007900179297538,
+    "P6": 1.0087856890549074
+   },
+   "d_lagged_lu": {
+    "k2": 1.1505347803540817,
+    "k4": 1.244181040154248
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.1505347803540817,
+    "P4": 1.244181040154248,
+    "P6": 1.278878584943412
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.0386382798120037,
+    "P4": 1.0590991647501413,
+    "P6": 1.0660997877497316
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "dense.bruss1d.n32.fd.x1",
+   "n": 32,
+   "structure": "dense",
+   "problem": "bruss1d",
+   "jacobian_source": "fd",
+   "rhs_multiplier": 1,
+   "lu_mode": "in_place_zero_skipping",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "instructions",
+   "fractions": {
+    "f_J": 0.32244061240280336,
+    "f_LU": 0.17915097385851475,
+    "f_S": 0.2782782176084989,
+    "f_R": 0.05093725419535212,
+    "f_remainder": 0.16919294193483086,
+    "f_chain": 0.329215471803851
+   },
+   "plain_wall_per_accepted_step_us": 7.947048780487805,
+   "plain_wall_per_attempt_us": 7.007075268817204,
+   "a_level_structured_tableau": {
+    "L4": 1.1970424469750665,
+    "L5": 1.1408437842584227,
+    "L6": 1.0896853163881102
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 1.5235966387392934,
+    "saving": 0.08230386795096276,
+    "bound": 1.0896853163881102,
+    "bound_jacobian_only": 1.0896853163881102,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": false,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.1922081654972834,
+    "P4": 1.3189662025719167,
+    "P6": 1.367428822436351
+   },
+   "d_lagged_lu": {
+    "k2": 1.0983887028998494,
+    "k4": 1.1552189499240249
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.0983887028998494,
+    "P4": 1.1552189499240249,
+    "P6": 1.175492133773839
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.0261342300574954,
+    "P4": 1.0397203758058835,
+    "P6": 1.0443293931348219
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand sides of the stages and of the finite-difference Jacobian in parallel",
+    "P2": 1.229541857897439,
+    "P4": 1.3889533207910352,
+    "P6": 1.451691107110298
+   }
+  },
+  {
+   "cell": "dense.bruss1d.n32.analytic.x10",
+   "n": 32,
+   "structure": "dense",
+   "problem": "bruss1d",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 10,
+   "lu_mode": "in_place_zero_skipping",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "instructions",
+   "fractions": {
+    "f_J": 0.006238880700883165,
+    "f_LU": 0.15621244007741164,
+    "f_S": 0.24264740769619023,
+    "f_R": 0.44744414357274814,
+    "f_remainder": 0.1474571279527668,
+    "f_chain": 0.6900915512689384
+   },
+   "plain_wall_per_accepted_step_us": 8.77690243902439,
+   "plain_wall_per_attempt_us": 7.738774193548387,
+   "a_level_structured_tableau": {
+    "L4": 1.5268242616019811,
+    "L5": 1.3491349991675259,
+    "L6": 1.208492640191756
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.23540546247752167,
+    "saving": 0.1624513207782948,
+    "bound": 1.193960452459018,
+    "bound_jacobian_only": 1.0062780486977427,
+    "r_in_0.15_0.92": true,
+    "plain_wall_per_accepted_step_ge_500us": false,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0031292017085158,
+    "P4": 1.0047011579985943,
+    "P6": 1.0052262388178181
+   },
+   "d_lagged_lu": {
+    "k2": 1.0847236652816825,
+    "k4": 1.1327072189206728
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.0847236652816825,
+    "P4": 1.1327072189206728,
+    "P6": 1.1496592276775142
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.2881984192197815,
+    "P4": 1.5050791326324588,
+    "P6": 1.5945660242376996
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "dense.bruss1d.n32.analytic.x100",
+   "n": 32,
+   "structure": "dense",
+   "problem": "bruss1d",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 100,
+   "lu_mode": "in_place_zero_skipping",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "instructions",
+   "fractions": {
+    "f_J": 0.0012462909362166168,
+    "f_LU": 0.03120530068241248,
+    "f_S": 0.04847171782999657,
+    "f_R": 0.8896203680379382,
+    "f_remainder": 0.029456322513436165,
+    "f_chain": 0.9380920858679348
+   },
+   "plain_wall_per_accepted_step_us": 36.28153658536585,
+   "plain_wall_per_attempt_us": 31.99017204301075,
+   "a_level_structured_tableau": {
+    "L4": 1.8834024809342065,
+    "L5": 1.542696911251851,
+    "L6": 1.3063750158971872
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.0345931834491541,
+    "saving": 0.032451591618629094,
+    "bound": 1.0335400186052892,
+    "bound_jacobian_only": 1.0012478461155203,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": false,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0006235340205074,
+    "P4": 1.0009355927177055,
+    "P6": 1.0010396555412453
+   },
+   "d_lagged_lu": {
+    "k2": 1.0158499515938502,
+    "k4": 1.0239648482329988
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.0158499515938502,
+    "P4": 1.0239648482329988,
+    "P6": 1.0266987014063564
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.8011857768554005,
+    "P4": 3.0049456239028016,
+    "P6": 3.8662330785503283
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "dense.bruss1d.n128.analytic.x1",
+   "n": 128,
+   "structure": "dense",
+   "problem": "bruss1d",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 1,
+   "lu_mode": "in_place_zero_skipping",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.004802696424484151,
+    "f_LU": 0.5819626768701528,
+    "f_S": 0.2973001126419391,
+    "f_R": 0.031373614768294915,
+    "f_remainder": 0.08500201493215176,
+    "f_chain": 0.32867372741023404
+   },
+   "plain_wall_per_accepted_step_us": 42.06280487804878,
+   "plain_wall_per_attempt_us": 37.490760869565214,
+   "a_level_structured_tableau": {
+    "L4": 1.196654437138085,
+    "L5": 1.1405794354172705,
+    "L6": 1.0895245213873042
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 1.7852518298861957,
+    "saving": 0.08216843185255851,
+    "bound": 1.0895245213873042,
+    "bound_jacobian_only": 1.0048258736305145,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": false,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.002407128566121,
+    "P4": 1.003615043786765,
+    "P6": 1.00401832936714
+   },
+   "d_lagged_lu": {
+    "k2": 1.410400112449553,
+    "k4": 1.774534741095084
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.410400112449553,
+    "P4": 1.774534741095084,
+    "P6": 1.941630311132334
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.0159368049740947,
+    "P4": 1.024097223839516,
+    "P6": 1.026846574033218
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "dense.bruss1d.n128.fd.x1",
+   "n": 128,
+   "structure": "dense",
+   "problem": "bruss1d",
+   "jacobian_source": "fd",
+   "rhs_multiplier": 1,
+   "lu_mode": "in_place_zero_skipping",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.46269094111573383,
+    "f_LU": 0.3142943909623736,
+    "f_S": 0.16109084477258923,
+    "f_R": 0.016664247715909537,
+    "f_remainder": 0.04479394358631276,
+    "f_chain": 0.17775509248849877
+   },
+   "plain_wall_per_accepted_step_us": 79.34291463414634,
+   "plain_wall_per_attempt_us": 70.71868478260869,
+   "a_level_structured_tableau": {
+    "L4": 1.0975473119753398,
+    "L5": 1.0714188058477703,
+    "L6": 1.0465054167877033
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 4.3711002661056275,
+    "saving": 0.04443877312212469,
+    "bound": 1.0465054167877033,
+    "bound_jacobian_only": 1.0465054167877033,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": false,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.300974575308586,
+    "P4": 1.5314362650516258,
+    "P6": 1.627540019399601
+   },
+   "d_lagged_lu": {
+    "k2": 1.186446784822532,
+    "k4": 1.3084223555099048
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.186446784822532,
+    "P4": 1.3084223555099048,
+    "P6": 1.3548519821432243
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.008402131457933,
+    "P4": 1.012656367418314,
+    "P6": 1.0140824340714325
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand sides of the stages and of the finite-difference Jacobian in parallel",
+    "P2": 1.3152315289612835,
+    "P4": 1.5613202069841667,
+    "P6": 1.665175383771211
+   }
+  },
+  {
+   "cell": "dense.bruss1d.n512.analytic.x1",
+   "n": 512,
+   "structure": "dense",
+   "problem": "bruss1d",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 1,
+   "lu_mode": "in_place_zero_skipping",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.011550115308498898,
+    "f_LU": 0.9034215850275307,
+    "f_S": 0.06255975480195136,
+    "f_R": 0.005896494765387867,
+    "f_remainder": 0.01651476830611048,
+    "f_chain": 0.06845624956733923
+   },
+   "plain_wall_per_accepted_step_us": 827.5437682926829,
+   "plain_wall_per_attempt_us": 737.5933586956522,
+   "a_level_structured_tableau": {
+    "L4": 1.0354412109754207,
+    "L5": 1.0263474617439816,
+    "L6": 1.0174120533593976
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 13.365787727473847,
+    "saving": 0.017114062391834807,
+    "bound": 1.0174120533593976,
+    "bound_jacobian_only": 1.0116850793220575,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0058086026695567,
+    "P4": 1.0087382826101836,
+    "P6": 1.0097186389239265
+   },
+   "d_lagged_lu": {
+    "k2": 1.8238549771656885,
+    "k4": 3.1014117166784505
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.8238549771656885,
+    "P4": 3.1014117166784505,
+    "P6": 4.046147458544457
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.0029569652477464,
+    "P4": 1.0044420153140763,
+    "P6": 1.0049380097617495
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "dense.bruss1d.n512.fd.x1",
+   "n": 512,
+   "structure": "dense",
+   "problem": "bruss1d",
+   "jacobian_source": "fd",
+   "rhs_multiplier": 1,
+   "lu_mode": "in_place_zero_skipping",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.6350228185945327,
+    "f_LU": 0.3333556553296937,
+    "f_S": 0.0228134092895291,
+    "f_R": 0.0022470587462491967,
+    "f_remainder": 0.006543167922084245,
+    "f_chain": 0.025060468035778296
+   },
+   "plain_wall_per_accepted_step_us": 2265.669902439024,
+   "plain_wall_per_attempt_us": 2019.4014347826087,
+   "a_level_structured_tableau": {
+    "L4": 1.0126892330778623,
+    "L5": 1.0094868296602146,
+    "L6": 1.006304616166927
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 38.64167550828233,
+    "saving": 0.006265117008944574,
+    "bound": 1.006304616166927,
+    "bound_jacobian_only": 1.006304616166927,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.465225959265248,
+    "P4": 1.9093702660800684,
+    "P6": 2.123979586245972
+   },
+   "d_lagged_lu": {
+    "k2": 1.2000160720526356,
+    "k4": 1.333363096659524
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.2000160720526356,
+    "P4": 1.333363096659524,
+    "P6": 1.3846510478949825
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.0011247931112237,
+    "P4": 1.0016881390704342,
+    "P6": 1.0018760619730953
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand sides of the stages and of the finite-difference Jacobian in parallel",
+    "P2": 1.4676420273863322,
+    "P4": 1.9155341684071994,
+    "P6": 2.1324609287473746
+   }
+  },
+  {
+   "cell": "dense.bruss1d.n2048.analytic.x1",
+   "n": 2048,
+   "structure": "dense",
+   "problem": "bruss1d",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 1,
+   "lu_mode": "in_place_zero_skipping",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.0030901080317532435,
+    "f_LU": 0.9786886125033784,
+    "f_S": 0.011330288427144373,
+    "f_R": 0.0009770011864571712,
+    "f_remainder": 0.0059125381942655006,
+    "f_chain": 0.012307289613601544
+   },
+   "plain_wall_per_accepted_step_us": 19840.548558823528,
+   "plain_wall_per_attempt_us": 17521.523402597402,
+   "a_level_structured_tableau": {
+    "L4": 1.0061917466162107,
+    "L5": 1.0046366327483753,
+    "L6": 1.0030863184571734
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 79.7721310994508,
+    "saving": 0.003076822403400386,
+    "bound": 1.0030863184571734,
+    "bound_jacobian_only": 1.0030863184571734,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0015474449018364,
+    "P4": 1.0023229646826826,
+    "P6": 1.0025817382348405
+   },
+   "d_lagged_lu": {
+    "k2": 1.9582666212136164,
+    "k4": 3.759631132286444
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.9582666212136164,
+    "P4": 3.759631132286444,
+    "P6": 5.422224376133009
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.0004887393426873,
+    "P4": 1.0007332882074294,
+    "P6": 1.0008148310644782
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "dense.bruss1d.n2048.fd.x1",
+   "n": 2048,
+   "structure": "dense",
+   "problem": "bruss1d",
+   "jacobian_source": "fd",
+   "rhs_multiplier": 1,
+   "lu_mode": "in_place_zero_skipping",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.5941099379132979,
+    "f_LU": 0.3964814444357354,
+    "f_S": 0.004164967127542328,
+    "f_R": 0.0003659010011668123,
+    "f_remainder": 0.0046219629413797435,
+    "f_chain": 0.00453086812870914
+   },
+   "plain_wall_per_accepted_step_us": 49670.95486666667,
+   "plain_wall_per_attempt_us": 48068.666,
+   "a_level_structured_tableau": {
+    "L4": 1.0022705779088952,
+    "L5": 1.0017019673193222,
+    "L6": 1.0011340015350305
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 218.6316957830455,
+    "saving": 0.001132717032177285,
+    "bound": 1.0011340015350305,
+    "bound_jacobian_only": 1.0011340015350305,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.4225863415176903,
+    "P4": 1.8036947174483267,
+    "P6": 1.980557323992354
+   },
+   "d_lagged_lu": {
+    "k2": 1.2472571602367377,
+    "k4": 1.423206110949169
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.2472571602367377,
+    "P4": 1.423206110949169,
+    "P6": 1.493431597428773
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.0001829839775938,
+    "P4": 1.0002745010810403,
+    "P6": 1.000305010504013
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand sides of the stages and of the finite-difference Jacobian in parallel",
+    "P2": 1.4229566843271697,
+    "P4": 1.804587952893455,
+    "P6": 1.9817541183637264
+   }
+  },
+  {
+   "cell": "dense.radnet.n8.analytic.x1",
+   "n": 8,
+   "structure": "dense",
+   "problem": "radnet",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 1,
+   "lu_mode": "in_place_zero_skipping",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "instructions",
+   "fractions": {
+    "f_J": 0.029177227380708517,
+    "f_LU": 0.10967906639720922,
+    "f_S": 0.26993765993940266,
+    "f_R": 0.21564096527728946,
+    "f_remainder": 0.37556508100539016,
+    "f_chain": 0.48557862521669215
+   },
+   "plain_wall_per_accepted_step_us": 1.8734050632911392,
+   "plain_wall_per_attempt_us": 1.8734050632911392,
+   "a_level_structured_tableau": {
+    "L4": 1.320636404967654,
+    "L5": 1.2226313729609386,
+    "L6": 1.1381674459132356
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.2859604738902013,
+    "saving": 0.12139465630417304,
+    "bound": 1.1381674459132356,
+    "bound_jacobian_only": 1.030054123372063,
+    "r_in_0.15_0.92": true,
+    "plain_wall_per_accepted_step_ge_500us": false,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0148045921663118,
+    "P4": 1.0223724960896425,
+    "P6": 1.0249202766319918
+   },
+   "d_lagged_lu": {
+    "k2": 1.0580213996721552,
+    "k4": 1.0896323981052523
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.0580213996721552,
+    "P4": 1.0896323981052523,
+    "P6": 1.1005933785337794
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.1208506590215461,
+    "P4": 1.1929340947834732,
+    "P6": 1.2190673907290692
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "dense.radnet.n32.analytic.x1",
+   "n": 32,
+   "structure": "dense",
+   "problem": "radnet",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 1,
+   "lu_mode": "in_place_zero_skipping",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "instructions",
+   "fractions": {
+    "f_J": 0.029880907220203777,
+    "f_LU": 0.3581087445266986,
+    "f_S": 0.29137583749010826,
+    "f_R": 0.2116121806983962,
+    "f_remainder": 0.10902233006459316,
+    "f_chain": 0.5029880181885045
+   },
+   "plain_wall_per_accepted_step_us": 13.736952380952381,
+   "plain_wall_per_attempt_us": 13.736952380952381,
+   "a_level_structured_tableau": {
+    "L4": 1.3359946508777116,
+    "L5": 1.2324689105483777,
+    "L6": 1.1438336559338724
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.7713695708781193,
+    "saving": 0.12574700454712612,
+    "bound": 1.1438336559338724,
+    "bound_jacobian_only": 1.0308012773303765,
+    "r_in_0.15_0.92": true,
+    "plain_wall_per_accepted_step_ge_500us": false,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.015167056311323,
+    "P4": 1.0229244325466547,
+    "P6": 1.0255366375991841
+   },
+   "d_lagged_lu": {
+    "k2": 1.2181074680390256,
+    "k4": 1.3672064349453186
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.2181074680390256,
+    "P4": 1.3672064349453186,
+    "P6": 1.4253622331845863
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.1183256665106533,
+    "P4": 1.188649541110388,
+    "P6": 1.2140983291841068
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "dense.radnet.n32.fd.x1",
+   "n": 32,
+   "structure": "dense",
+   "problem": "radnet",
+   "jacobian_source": "fd",
+   "rhs_multiplier": 1,
+   "lu_mode": "in_place_zero_skipping",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "instructions",
+   "fractions": {
+    "f_J": 0.49955602296419305,
+    "f_LU": 0.18472117157129495,
+    "f_S": 0.15029872040649728,
+    "f_R": 0.10915469263122123,
+    "f_remainder": 0.0562693924267935,
+    "f_chain": 0.2594534130377185
+   },
+   "plain_wall_per_accepted_step_us": 23.089333333333332,
+   "plain_wall_per_attempt_us": 23.089333333333332,
+   "a_level_structured_tableau": {
+    "L4": 1.1490643312745417,
+    "L5": 1.107781648612388,
+    "L6": 1.0693624332716631
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 2.637379815219505,
+    "saving": 0.06486335325942963,
+    "bound": 1.0693624332716631,
+    "bound_jacobian_only": 1.0693624332716631,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": false,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.3329388038539687,
+    "P4": 1.59914801800378,
+    "P6": 1.713199112765953
+   },
+   "d_lagged_lu": {
+    "k2": 1.101759117485653,
+    "k4": 1.16082118727345
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.101759117485653,
+    "P4": 1.16082118727345,
+    "P6": 1.1819413213384726
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.057727986634251,
+    "P4": 1.0891656568755494,
+    "P6": 1.100064318830424
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand sides of the stages and of the finite-difference Jacobian in parallel",
+    "P2": 1.4375155637426744,
+    "P4": 1.840038249834995,
+    "P6": 2.0294634650928463
+   }
+  },
+  {
+   "cell": "dense.radnet.n128.analytic.x1",
+   "n": 128,
+   "structure": "dense",
+   "problem": "radnet",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 1,
+   "lu_mode": "faer",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.019822026206514118,
+    "f_LU": 0.6126697267299486,
+    "f_S": 0.1959255404188043,
+    "f_R": 0.14434951008423957,
+    "f_remainder": 0.026298564886790502,
+    "f_chain": 0.34027505050304385
+   },
+   "plain_wall_per_accepted_step_us": 201.19501176470587,
+   "plain_wall_per_attempt_us": 201.19501176470587,
+   "a_level_structured_tableau": {
+    "L4": 1.205018940401045,
+    "L5": 1.146267312923084,
+    "L6": 1.092978312632433
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 1.8587661716644277,
+    "saving": 0.08506876262576096,
+    "bound": 1.092978312632433,
+    "bound_jacobian_only": 1.0202228847581616,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": false,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0100102245701381,
+    "P4": 1.0150908683457571,
+    "P6": 1.016795794063839
+   },
+   "d_lagged_lu": {
+    "k2": 1.4416177881607353,
+    "k4": 1.8501466164186777
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.4416177881607353,
+    "P4": 1.8501466164186777,
+    "P6": 2.04314344860655
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.077789169279821,
+    "P4": 1.121405781358556,
+    "P6": 1.1367398693631625
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "dense.radnet.n128.analytic.x10",
+   "n": 128,
+   "structure": "dense",
+   "problem": "radnet",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 10,
+   "lu_mode": "faer",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.009205240796851371,
+    "f_LU": 0.27081367838192094,
+    "f_S": 0.08765390036405783,
+    "f_R": 0.6174269416905444,
+    "f_remainder": 0.012198453614092155,
+    "f_chain": 0.7050808420546022
+   },
+   "plain_wall_per_accepted_step_us": 418.1577411764706,
+   "plain_wall_per_attempt_us": 418.1577411764706,
+   "a_level_structured_tableau": {
+    "L4": 1.5444979616900014,
+    "L5": 1.3594442992031934,
+    "L6": 1.2139903312511822
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.39714441589818056,
+    "saving": 0.17627021051365055,
+    "bound": 1.2139903312511822,
+    "bound_jacobian_only": 1.0092907645214582,
+    "r_in_0.15_0.92": true,
+    "plain_wall_per_accepted_step_ge_500us": false,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0046239024662371,
+    "P4": 1.006951926213738,
+    "P6": 1.0077303336496133
+   },
+   "d_lagged_lu": {
+    "k2": 1.1566133591251797,
+    "k4": 1.2548787470612062
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.1566133591251797,
+    "P4": 1.2548787470612062,
+    "P6": 1.2914525021314647
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.446578166686905,
+    "P4": 1.8624408845879084,
+    "P6": 2.059827489246121
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "dense.radnet.n128.analytic.x100",
+   "n": 128,
+   "structure": "dense",
+   "problem": "radnet",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 100,
+   "lu_mode": "faer",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.0014436273946728474,
+    "f_LU": 0.041274374828612376,
+    "f_S": 0.013916585494452289,
+    "f_R": 0.9398642245710476,
+    "f_remainder": 0.0019624845519424765,
+    "f_chain": 0.9537808100654999
+   },
+   "plain_wall_per_accepted_step_us": 2589.8379176470585,
+   "plain_wall_per_attempt_us": 2589.8379176470585,
+   "a_level_structured_tableau": {
+    "L4": 1.9116453026685665,
+    "L5": 1.5568268348937513,
+    "L6": 1.31310314543912
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.044788070563457454,
+    "saving": 0.04271800222328522,
+    "bound": 1.0446242615263817,
+    "bound_jacobian_only": 1.0014457144676834,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0007223350886976,
+    "P4": 1.001083894100417,
+    "P6": 1.0012044718360096
+   },
+   "d_lagged_lu": {
+    "k2": 1.0210720553701853,
+    "k4": 1.031944652801586
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.0210720553701853,
+    "P4": 1.031944652801586,
+    "P6": 1.0356204902454862
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.8865508044861135,
+    "P4": 3.388660770670224,
+    "P6": 4.612975658658457
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "dense.radnet.n128.fd.x1",
+   "n": 128,
+   "structure": "dense",
+   "problem": "radnet",
+   "jacobian_source": "fd",
+   "rhs_multiplier": 1,
+   "lu_mode": "faer",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.7088637380210039,
+    "f_LU": 0.18129857976251457,
+    "f_S": 0.05895082293682063,
+    "f_R": 0.042904699004330846,
+    "f_remainder": 0.007805669985211696,
+    "f_chain": 0.10185552194115147
+   },
+   "plain_wall_per_accepted_step_us": 606.7639647058824,
+   "plain_wall_per_attempt_us": 606.7639647058824,
+   "a_level_structured_tableau": {
+    "L4": 1.053660573849107,
+    "L5": 1.03971267909944,
+    "L6": 1.0261292321294033
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 8.73946056943111,
+    "saving": 0.025463880485287867,
+    "bound": 1.0261292321294033,
+    "bound_jacobian_only": 1.0261292321294033,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.5490231812825774,
+    "P4": 2.1351453190710825,
+    "P6": 2.443313786615331
+   },
+   "d_lagged_lu": {
+    "k2": 1.0996857305685948,
+    "k4": 1.1573724917590948
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.0996857305685948,
+    "P4": 1.1573724917590948,
+    "P6": 1.1779702827156648
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.021922641673353,
+    "P4": 1.0332484089882588,
+    "P6": 1.03707965883831
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand sides of the stages and of the finite-difference Jacobian in parallel",
+    "P2": 1.6022668063558598,
+    "P4": 2.292664742658738,
+    "P6": 2.677187639434097
+   }
+  },
+  {
+   "cell": "dense.radnet.n128.fd.x10",
+   "n": 128,
+   "structure": "dense",
+   "problem": "radnet",
+   "jacobian_source": "fd",
+   "rhs_multiplier": 10,
+   "lu_mode": "faer",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.9035848554043079,
+    "f_LU": 0.031875134329502904,
+    "f_S": 0.007776916198196549,
+    "f_R": 0.055728662615673635,
+    "f_remainder": 0.0011413522025016884,
+    "f_chain": 0.06350557881387019
+   },
+   "plain_wall_per_accepted_step_us": 4324.176141176471,
+   "plain_wall_per_attempt_us": 4324.176141176471,
+   "a_level_structured_tableau": {
+    "L4": 1.0327940933467663,
+    "L5": 1.0243955624222443,
+    "L6": 1.016132520974013
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 14.73035924096637,
+    "saving": 0.015876394703467547,
+    "bound": 1.016132520974013,
+    "bound_jacobian_only": 1.016132520974013,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.824126572729446,
+    "P4": 3.1025900074357877,
+    "P6": 4.04837614365754
+   },
+   "d_lagged_lu": {
+    "k2": 1.0161956870143216,
+    "k4": 1.0244918617854195
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.0161956870143216,
+    "P4": 1.0244918617854195,
+    "P6": 1.0272874375559216
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.0286630068263243,
+    "P4": 1.0436196453354931,
+    "P6": 1.0487023145603411
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand sides of the stages and of the finite-difference Jacobian in parallel",
+    "P2": 1.9218083780571298,
+    "P4": 3.5648735140309986,
+    "P6": 4.985739083176357
+   }
+  },
+  {
+   "cell": "dense.radnet.n128.fd.x100",
+   "n": 128,
+   "structure": "dense",
+   "problem": "radnet",
+   "jacobian_source": "fd",
+   "rhs_multiplier": 100,
+   "lu_mode": "faer",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.9381267683329512,
+    "f_LU": 0.002951164661764454,
+    "f_S": 0.0009021607857865495,
+    "f_R": 0.057950606145721194,
+    "f_remainder": 0.0002021911283430991,
+    "f_chain": 0.05885276693150775
+   },
+   "plain_wall_per_accepted_step_us": 41504.67474285714,
+   "plain_wall_per_attempt_us": 41504.67474285714,
+   "a_level_structured_tableau": {
+    "L4": 1.0303185487061048,
+    "L5": 1.0225678553739914,
+    "L6": 1.0149329023888525
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 15.990377038516007,
+    "saving": 0.014713191732876937,
+    "bound": 1.0149329023888525,
+    "bound_jacobian_only": 1.0149329023888525,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.8834639958483306,
+    "P4": 3.373763118869354,
+    "P6": 4.5823698449855526
+   },
+   "d_lagged_lu": {
+    "k2": 1.0014777628916944,
+    "k4": 1.0022182833859772
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.0014777628916944,
+    "P4": 1.0022182833859772,
+    "P6": 1.002465366971374
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.0298399239118783,
+    "P4": 1.0454378163592586,
+    "P6": 1.0507426442827879
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand sides of the stages and of the finite-difference Jacobian in parallel",
+    "P2": 1.9921854026961676,
+    "P4": 3.9534759826376487,
+    "P6": 5.884584885724198
+   }
+  },
+  {
+   "cell": "dense.radnet.n512.analytic.x1",
+   "n": 512,
+   "structure": "dense",
+   "problem": "radnet",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 1,
+   "lu_mode": "faer",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.013748274244411293,
+    "f_LU": 0.7861398521480601,
+    "f_S": 0.10034942452713969,
+    "f_R": 0.09635751845808824,
+    "f_remainder": 0.004257527714267862,
+    "f_chain": 0.19670694298522792
+   },
+   "plain_wall_per_accepted_step_us": 4806.355639534884,
+   "plain_wall_per_attempt_us": 4806.355639534884,
+   "a_level_structured_tableau": {
+    "L4": 1.109082071946122,
+    "L5": 1.0796397370771855,
+    "L6": 1.0517201646143
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 4.066394984606824,
+    "saving": 0.04917673574630698,
+    "bound": 1.0517201646143,
+    "bound_jacobian_only": 1.0139399241444962,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.006921717960588,
+    "P4": 1.010418634365187,
+    "P6": 1.0115896769175652
+   },
+   "d_lagged_lu": {
+    "k2": 1.64763626480301,
+    "k4": 2.4366762017069474
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.64763626480301,
+    "P4": 2.4366762017069474,
+    "P6": 2.8995302065887842
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.0506174449206662,
+    "P4": 1.077897657576924,
+    "P6": 1.0873086348791738
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "dense.radnet.n512.fd.x1",
+   "n": 512,
+   "structure": "dense",
+   "problem": "radnet",
+   "jacobian_source": "fd",
+   "rhs_multiplier": 1,
+   "lu_mode": "faer",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.820566786887276,
+    "f_LU": 0.1509360144920887,
+    "f_S": 0.013895660991331688,
+    "f_R": 0.012689751734502385,
+    "f_remainder": 0.0014310929140919522,
+    "f_chain": 0.026585412725834073
+   },
+   "plain_wall_per_accepted_step_us": 30980.051395833332,
+   "plain_wall_per_attempt_us": 30980.051395833332,
+   "a_level_structured_tableau": {
+    "L4": 1.0134717828160762,
+    "L5": 1.0100699221609752,
+    "L6": 1.0066908227525466
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 36.54270149567089,
+    "saving": 0.006646353181458518,
+    "bound": 1.0066908227525466,
+    "bound_jacobian_only": 1.0066908227525466,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.6957297605022175,
+    "P4": 2.600273638314661,
+    "P6": 3.1626119130575363
+   },
+   "d_lagged_lu": {
+    "k2": 1.0816283350252094,
+    "k4": 1.1276525344627868
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.0816283350252094,
+    "P4": 1.1276525344627868,
+    "P6": 1.1438768431450939
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.0063853903765543,
+    "P4": 1.0096087634175601,
+    "P6": 1.0106878145396625
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand sides of the stages and of the finite-difference Jacobian in parallel",
+    "P2": 1.714172880504074,
+    "P4": 2.6662571577679426,
+    "P6": 3.2720419758552777
+   }
+  },
+  {
+   "cell": "dense.radnet.n512.analytic.x10",
+   "n": 512,
+   "structure": "dense",
+   "problem": "radnet",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 10,
+   "lu_mode": "faer",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.008474274751134273,
+    "f_LU": 0.42959092322561954,
+    "f_S": 0.05487566144011989,
+    "f_R": 0.5049303179967976,
+    "f_remainder": 0.0021288225863287974,
+    "f_chain": 0.5598059794369175
+   },
+   "plain_wall_per_accepted_step_us": 8515.269209302325,
+   "plain_wall_per_attempt_us": 8515.269209302325,
+   "a_level_structured_tableau": {
+    "L4": 1.388701780068526,
+    "L5": 1.2657062153326286,
+    "L6": 1.1627251184354102
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.7825304017248673,
+    "saving": 0.13995149485922936,
+    "bound": 1.1627251184354102,
+    "bound_jacobian_only": 1.0085467018508343,
+    "r_in_0.15_0.92": true,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": true
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0042551671031392,
+    "P4": 1.0063963594438514,
+    "P6": 1.0071121206798657
+   },
+   "d_lagged_lu": {
+    "k2": 1.273553515182171,
+    "k4": 1.475346645704519
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.273553515182171,
+    "P4": 1.475346645704519,
+    "P6": 1.5576140471037416
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.3377302904840231,
+    "P4": 1.609522549591,
+    "P6": 1.726445608361999
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "dense.radnet.n512.analytic.x100",
+   "n": 512,
+   "structure": "dense",
+   "problem": "radnet",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 100,
+   "lu_mode": "faer",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.0025420400201961965,
+    "f_LU": 0.08563249944993152,
+    "f_S": 0.010300888740775635,
+    "f_R": 0.9009102973900196,
+    "f_remainder": 0.0004847507141092385,
+    "f_chain": 0.9112111861307952
+   },
+   "plain_wall_per_accepted_step_us": 42389.20747058824,
+   "plain_wall_per_attempt_us": 42389.20747058824,
+   "a_level_structured_tableau": {
+    "L4": 1.836903515652998,
+    "L5": 1.5190739362143428,
+    "L6": 1.2950059848829083
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.09676630490516296,
+    "saving": 0.08817453947012772,
+    "bound": 1.0967011158241715,
+    "bound_jacobian_only": 1.0025485184561038,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0012726375578997,
+    "P4": 1.0019101718150467,
+    "P6": 1.0021228636872055
+   },
+   "d_lagged_lu": {
+    "k2": 1.044731484119599,
+    "k4": 1.0686322370911663
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.044731484119599,
+    "P4": 1.0686322370911663,
+    "P6": 1.076844038800182
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.8196876881392399,
+    "P4": 3.083400333714228,
+    "P6": 4.012174239127272
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "dense.radnet.n2048.analytic.x1",
+   "n": 2048,
+   "structure": "dense",
+   "problem": "radnet",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 1,
+   "lu_mode": "faer",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.01692621481463763,
+    "f_LU": 0.8632626872936937,
+    "f_S": 0.06056249844687299,
+    "f_R": 0.05527763010828881,
+    "f_remainder": 0.0033506162278381735,
+    "f_chain": 0.11584012855516179
+   },
+   "plain_wall_per_accepted_step_us": 217739.1754,
+   "plain_wall_per_attempt_us": 217739.1754,
+   "a_level_structured_tableau": {
+    "L4": 1.061481050685116,
+    "L5": 1.045412781631527,
+    "L6": 1.0298237282679281
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 7.598307366252577,
+    "saving": 0.028960032138790448,
+    "bound": 1.0298237282679281,
+    "bound_jacobian_only": 1.0172176443617058,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0085353429313046,
+    "P4": 1.0128578876371346,
+    "P6": 1.0143069815480577
+   },
+   "d_lagged_lu": {
+    "k2": 1.7594214403312465,
+    "k4": 2.8364530833114334
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.7594214403312465,
+    "P4": 2.8364530833114334,
+    "P6": 3.563608648996405
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.0284244326923473,
+    "P4": 1.043251346532707,
+    "P6": 1.0482891149524036
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "banded_1d.bruss1d.n1000.analytic.x1",
+   "n": 1000,
+   "structure": "banded_1d",
+   "problem": "bruss1d",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 1,
+   "lu_mode": "banded_indexed",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.007371656225305374,
+    "f_LU": 0.11285549867070555,
+    "f_S": 0.6970014181041767,
+    "f_R": 0.053639848404568216,
+    "f_remainder": 0.1294944201625332,
+    "f_chain": 0.750641266508745
+   },
+   "plain_wall_per_accepted_step_us": 168.0802317073171,
+   "plain_wall_per_attempt_us": 149.81064130434783,
+   "a_level_structured_tableau": {
+    "L4": 1.600821242439411,
+    "L5": 1.3917699976455824,
+    "L6": 1.2310121251839197
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.16016592780089353,
+    "saving": 0.12022715489601092,
+    "bound": 1.136657042286637,
+    "bound_jacobian_only": 1.0074264011012146,
+    "r_in_0.15_0.92": true,
+    "plain_wall_per_accepted_step_ge_500us": false,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0036994636999599,
+    "P4": 1.0055594790954918,
+    "P6": 1.0061810171322727
+   },
+   "d_lagged_lu": {
+    "k2": 1.0598022560493967,
+    "k4": 1.0924682902593654
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.0275590559951608,
+    "P4": 1.041916169017266,
+    "P6": 1.0467914453672484
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "banded_1d.bruss1d.n1000.fd.x1",
+   "n": 1000,
+   "structure": "banded_1d",
+   "problem": "bruss1d",
+   "jacobian_source": "fd",
+   "rhs_multiplier": 1,
+   "lu_mode": "banded_indexed",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.08334164622225897,
+    "f_LU": 0.10500060127777017,
+    "f_S": 0.6424176436817846,
+    "f_R": 0.04918318681899243,
+    "f_remainder": 0.11977342764510629,
+    "f_chain": 0.691600830500777
+   },
+   "plain_wall_per_accepted_step_us": 183.09619512195124,
+   "plain_wall_per_attempt_us": 163.1944347826087,
+   "a_level_structured_tableau": {
+    "L4": 1.5285855009870424,
+    "L5": 1.3501659629956195,
+    "L6": 1.209043949979428
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.27232796606628357,
+    "saving": 0.17290020762519426,
+    "bound": 1.209043949979428,
+    "bound_jacobian_only": 1.0909189840236448,
+    "r_in_0.15_0.92": true,
+    "plain_wall_per_accepted_step_ge_500us": false,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0434827866207832,
+    "P4": 1.0666737603790586,
+    "P6": 1.0746348656599467
+   },
+   "d_lagged_lu": {
+    "k2": 1.055409305854435,
+    "k4": 1.0854822138477545
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.0252115864937592,
+    "P4": 1.0383001839407127,
+    "P6": 1.042737633179901
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand sides of the stages and of the finite-difference Jacobian in parallel",
+    "P2": 1.0709647096711186,
+    "P4": 1.1103630037670589,
+    "P6": 1.1241479306903377
+   }
+  },
+  {
+   "cell": "banded_1d.bruss1d.n10000.analytic.x1",
+   "n": 10000,
+   "structure": "banded_1d",
+   "problem": "bruss1d",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 1,
+   "lu_mode": "banded_indexed",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.008444565916559989,
+    "f_LU": 0.11715463694616388,
+    "f_S": 0.6779886816480774,
+    "f_R": 0.052914866603742026,
+    "f_remainder": 0.14713929696108452,
+    "f_chain": 0.7309035482518194
+   },
+   "plain_wall_per_accepted_step_us": 1756.8775487804878,
+   "plain_wall_per_attempt_us": 1565.912597826087,
+   "a_level_structured_tableau": {
+    "L4": 1.575924349362887,
+    "L5": 1.37757902364125,
+    "L6": 1.2235796829613155
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.17184100852038955,
+    "saving": 0.12559920286272386,
+    "bound": 1.1436403114840774,
+    "bound_jacobian_only": 1.0085164839264542,
+    "r_in_0.15_0.92": true,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": true
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0042401862243149,
+    "P4": 1.0063737923697738,
+    "P6": 1.0070870105368246
+   },
+   "d_lagged_lu": {
+    "k2": 1.0622221236247185,
+    "k4": 1.096330117682696
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.0271764524807623,
+    "P4": 1.0413262288686727,
+    "P6": 1.0461298512753567
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "banded_1d.bruss1d.n10000.fd.x1",
+   "n": 10000,
+   "structure": "banded_1d",
+   "problem": "bruss1d",
+   "jacobian_source": "fd",
+   "rhs_multiplier": 1,
+   "lu_mode": "banded_indexed",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.08649147891263999,
+    "f_LU": 0.10581398452733284,
+    "f_S": 0.6258518341416938,
+    "f_R": 0.04733213552427703,
+    "f_remainder": 0.13560925488345602,
+    "f_chain": 0.6731839696659708
+   },
+   "plain_wall_per_accepted_step_us": 1913.6325609756097,
+   "plain_wall_per_attempt_us": 1705.6290217391304,
+   "a_level_structured_tableau": {
+    "L4": 1.5073679803947615,
+    "L5": 1.3376924067005012,
+    "L6": 1.2023508253921633
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.2856655418211956,
+    "saving": 0.1682959924164927,
+    "bound": 1.2023508253921633,
+    "bound_jacobian_only": 1.0946805387317988,
+    "r_in_0.15_0.92": true,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": true
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.045200467078919,
+    "P4": 1.0693684436450248,
+    "P6": 1.0776747346559858
+   },
+   "d_lagged_lu": {
+    "k2": 1.0558625096284056,
+    "k4": 1.0862014799442936
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.024239726778617,
+    "P4": 1.0368056698585633,
+    "P6": 1.0410631171242077
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand sides of the stages and of the finite-difference Jacobian in parallel",
+    "P2": 1.071710056708567,
+    "P4": 1.1115652606466904,
+    "P6": 1.1255173311367614
+   }
+  },
+  {
+   "cell": "banded_1d.bruss1d.n100000.analytic.x1",
+   "n": 100000,
+   "structure": "banded_1d",
+   "problem": "bruss1d",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 1,
+   "lu_mode": "banded_indexed",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.019570253413485953,
+    "f_LU": 0.12260274723032223,
+    "f_S": 0.6540432681375978,
+    "f_R": 0.05050768441123198,
+    "f_remainder": 0.15392585566237532,
+    "f_chain": 0.7045509525488298
+   },
+   "plain_wall_per_accepted_step_us": 18049.50875949367,
+   "plain_wall_per_attempt_us": 16203.536272727273,
+   "a_level_structured_tableau": {
+    "L4": 1.5438662014033298,
+    "L5": 1.359077167304373,
+    "L6": 1.2137951284950854
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.2017923616872191,
+    "saving": 0.1421730006438082,
+    "bound": 1.1657362157527225,
+    "bound_jacobian_only": 1.0199608931508068,
+    "r_in_0.15_0.92": true,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": true
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0098818215830263,
+    "P4": 1.0148963338311197,
+    "P6": 1.0165789226085482
+   },
+   "d_lagged_lu": {
+    "k2": 1.0653046376037087,
+    "k4": 1.1012634426168624
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.025908121826055,
+    "P4": 1.0393722127817377,
+    "P6": 1.043939123147041
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "banded_1d.bruss1d.n100000.fd.x1",
+   "n": 100000,
+   "structure": "banded_1d",
+   "problem": "bruss1d",
+   "jacobian_source": "fd",
+   "rhs_multiplier": 1,
+   "lu_mode": "banded_indexed",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.09290901969388039,
+    "f_LU": 0.11346809214125872,
+    "f_S": 0.6076724283708937,
+    "f_R": 0.046750187763238624,
+    "f_remainder": 0.1392643335734689,
+    "f_chain": 0.6544226161341323
+   },
+   "plain_wall_per_accepted_step_us": 19805.13657142857,
+   "plain_wall_per_attempt_us": 17548.855189873415,
+   "a_level_structured_tableau": {
+    "L4": 1.486350784414914,
+    "L5": 1.3252203011662236,
+    "L6": 1.1956082735644085
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.3153575483901667,
+    "saving": 0.16360565403353308,
+    "bound": 1.1956082735644085,
+    "bound_jacobian_only": 1.1024252491878224,
+    "r_in_0.15_0.92": true,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": true
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0487176651000505,
+    "P4": 1.074900998531125,
+    "P6": 1.083921756519225
+   },
+   "d_lagged_lu": {
+    "k2": 1.0601463943803886,
+    "k4": 1.093016907367879
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.0239345666234585,
+    "P4": 1.036336701537096,
+    "P6": 1.0405377805113754
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand sides of the stages and of the finite-difference Jacobian in parallel",
+    "P2": 1.0750718406094941,
+    "P4": 1.116999442670002,
+    "P6": 1.1317116236961817
+   }
+  },
+  {
+   "cell": "banded_1d.bruss1d.n10000.analytic.x10",
+   "n": 10000,
+   "structure": "banded_1d",
+   "problem": "bruss1d",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 10,
+   "lu_mode": "banded_indexed",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.006001150722183923,
+    "f_LU": 0.07907401023205043,
+    "f_S": 0.46941839010142083,
+    "f_R": 0.35138541503417403,
+    "f_remainder": 0.09435496861367133,
+    "f_chain": 0.8208038051355948
+   },
+   "plain_wall_per_accepted_step_us": 2542.3649268292684,
+   "plain_wall_per_attempt_us": 2266.0209130434782,
+   "a_level_structured_tableau": {
+    "L4": 1.6960706019153822,
+    "L5": 1.4446721488587562,
+    "L6": 1.25817966392307
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.10364859473352483,
+    "saving": 0.08507516095423436,
+    "bound": 1.0929859561392659,
+    "bound_jacobian_only": 1.006037381961301,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0030096059104334,
+    "P4": 1.00452121239943,
+    "P6": 1.0050260942259817
+   },
+   "d_lagged_lu": {
+    "k2": 1.0411645272401164,
+    "k4": 1.0630443870542912
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.2131398194814937,
+    "P4": 1.3578452670308745,
+    "P6": 1.4140694978136918
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "banded_1d.bruss1d.n10000.analytic.x100",
+   "n": 10000,
+   "structure": "banded_1d",
+   "problem": "bruss1d",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 100,
+   "lu_mode": "banded_indexed",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.0014567226501763322,
+    "f_LU": 0.018994212341359163,
+    "f_S": 0.11282938491581669,
+    "f_R": 0.8441690920104431,
+    "f_remainder": 0.022744433143457223,
+    "f_chain": 0.9569984769262598
+   },
+   "plain_wall_per_accepted_step_us": 10592.815524390244,
+   "plain_wall_per_attempt_us": 9441.422532608696,
+   "a_level_structured_tableau": {
+    "L4": 1.9175427415541753,
+    "L5": 1.5597568479481208,
+    "L6": 1.3144916194322487
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.02136987203701821,
+    "saving": 0.020450934991535497,
+    "bound": 1.0208779077251824,
+    "bound_jacobian_only": 1.0014588477867905,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0007288922219928,
+    "P4": 1.0010937369411639,
+    "P6": 1.001215410972391
+   },
+   "d_lagged_lu": {
+    "k2": 1.0095881660011747,
+    "k4": 1.0144515308400952
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.7303569113572022,
+    "P4": 2.7257375349585686,
+    "P6": 3.3723883256235236
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "banded_1d.bruss1d.n10000.fd.x10",
+   "n": 10000,
+   "structure": "banded_1d",
+   "problem": "bruss1d",
+   "jacobian_source": "fd",
+   "rhs_multiplier": 10,
+   "lu_mode": "banded_indexed",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.21875014845923493,
+    "f_LU": 0.06253323082951759,
+    "f_S": 0.3683211932938126,
+    "f_R": 0.27669207149311936,
+    "f_remainder": 0.07462837023971583,
+    "f_chain": 0.645013264786932
+   },
+   "plain_wall_per_accepted_step_us": 3235.9498170731704,
+   "plain_wall_per_attempt_us": 2884.2161413043477,
+   "a_level_structured_tableau": {
+    "L4": 1.4760292097512715,
+    "L5": 1.3190523480371057,
+    "L6": 1.1922550864410404
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.4360892940421453,
+    "saving": 0.161253316196733,
+    "bound": 1.1922550864410404,
+    "bound_jacobian_only": 1.1922550864410404,
+    "r_in_0.15_0.92": true,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": true
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.1228071111248195,
+    "P4": 1.1962618415815636,
+    "P6": 1.2229301213302115
+   },
+   "d_lagged_lu": {
+    "k2": 1.032275769486509,
+    "k4": 1.0492077634447072
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.1605586946569977,
+    "P4": 1.261859991167902,
+    "P6": 1.2996747487488487
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand sides of the stages and of the finite-difference Jacobian in parallel",
+    "P2": 1.3292942461383337,
+    "P4": 1.5912966637791308,
+    "P6": 1.7031960102957773
+   }
+  },
+  {
+   "cell": "banded_1d.bruss1d.n10000.fd.x100",
+   "n": 10000,
+   "structure": "banded_1d",
+   "problem": "bruss1d",
+   "jacobian_source": "fd",
+   "rhs_multiplier": 100,
+   "lu_mode": "banded_indexed",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.36784456330769366,
+    "f_LU": 0.012063566523694903,
+    "f_S": 0.07132726921062618,
+    "f_R": 0.5342310533268467,
+    "f_remainder": 0.01459822380956975,
+    "f_chain": 0.6055583225374729
+   },
+   "plain_wall_per_accepted_step_us": 16847.376512195122,
+   "plain_wall_per_attempt_us": 15016.13993478261,
+   "a_level_structured_tableau": {
+    "L4": 1.4342657942061878,
+    "L5": 1.2938022759756076,
+    "L6": 1.178397032583618
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.6273683569230101,
+    "saving": 0.15138958063436822,
+    "bound": 1.178397032583618,
+    "bound_jacobian_only": 1.178397032583618,
+    "r_in_0.15_0.92": true,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": true
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.2253734877440106,
+    "P4": 1.3809931039362842,
+    "P6": 1.4420382864646308
+   },
+   "d_lagged_lu": {
+    "k2": 1.0060683864536852,
+    "k4": 1.0091302827225237
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.3644715318463987,
+    "P4": 1.668539017711863,
+    "P6": 1.8024271122833213
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand sides of the stages and of the finite-difference Jacobian in parallel",
+    "P2": 1.8216190753223045,
+    "P4": 3.0917321167949905,
+    "P6": 4.027867697314244
+   }
+  },
+  {
+   "cell": "banded_2d.ac2d.g32.analytic.x1",
+   "n": 1024,
+   "structure": "banded_2d",
+   "problem": "ac2d",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 1,
+   "lu_mode": "banded_indexed",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.004089164151318832,
+    "f_LU": 0.7244795404873963,
+    "f_S": 0.252815656723956,
+    "f_R": 0.007882185116610551,
+    "f_remainder": 0.010867328999619277,
+    "f_chain": 0.26069784184056655
+   },
+   "plain_wall_per_accepted_step_us": 2505.825263157895,
+   "plain_wall_per_attempt_us": 2441.5733333333333,
+   "a_level_structured_tableau": {
+    "L4": 1.1498864591282072,
+    "L5": 1.1083546217018874,
+    "L6": 1.0697183139564437
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 2.7946863675391747,
+    "saving": 0.06517446046014164,
+    "bound": 1.0697183139564437,
+    "bound_jacobian_only": 1.0041059540715151,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0020487709560333,
+    "P4": 1.003076307759044,
+    "P6": 1.0034192884860158
+   },
+   "d_lagged_lu": {
+    "k2": 1.5679873929770058,
+    "k4": 2.18990724702723
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.003956686224942,
+    "P4": 1.0059467941366345,
+    "P6": 1.0066119178978812
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "banded_2d.ac2d.g64.analytic.x1",
+   "n": 4096,
+   "structure": "banded_2d",
+   "problem": "ac2d",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 1,
+   "lu_mode": "banded_indexed",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.006160582594152991,
+    "f_LU": 0.8360102154401059,
+    "f_S": 0.152974930652086,
+    "f_R": 0.0021548130987067244,
+    "f_remainder": 0.0034827743903913353,
+    "f_chain": 0.15512974375079272
+   },
+   "plain_wall_per_accepted_step_us": 37772.61642105263,
+   "plain_wall_per_attempt_us": 36804.08779487179,
+   "a_level_structured_tableau": {
+    "L4": 1.0840870750803833,
+    "L5": 1.0617668577098553,
+    "L6": 1.040347198581969
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 5.428815762031808,
+    "saving": 0.03878243593769818,
+    "bound": 1.040347198581969,
+    "bound_jacobian_only": 1.0061987706326174,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0030898088082583,
+    "P4": 1.0046418844801641,
+    "P6": 1.0051603109298735
+   },
+   "d_lagged_lu": {
+    "k2": 1.718228137849339,
+    "k4": 2.681020216758942
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.0010785686062338,
+    "P4": 1.0016187258627993,
+    "P6": 1.0017989078407379
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "banded_2d.ac2d.g64.fd.x1",
+   "n": 4096,
+   "structure": "banded_2d",
+   "problem": "ac2d",
+   "jacobian_source": "fd",
+   "rhs_multiplier": 1,
+   "lu_mode": "banded_indexed",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.06835254368591831,
+    "f_LU": 0.7814120276167752,
+    "f_S": 0.14450142574632566,
+    "f_R": 0.002042322618707617,
+    "f_remainder": 0.0036536903322687496,
+    "f_chain": 0.14654374836503328
+   },
+   "plain_wall_per_accepted_step_us": 41364.15044736842,
+   "plain_wall_per_attempt_us": 40303.53120512821,
+   "a_level_structured_tableau": {
+    "L4": 1.079065124000507,
+    "L5": 1.0581494447357322,
+    "L6": 1.0380291714231495
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 5.79870912804804,
+    "saving": 0.03663593709125832,
+    "bound": 1.0380291714231495,
+    "bound_jacobian_only": 1.0380291714231495,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0353856204259688,
+    "P4": 1.0540344519421279,
+    "P6": 1.0604009166499178
+   },
+   "d_lagged_lu": {
+    "k2": 1.6412438373969396,
+    "k4": 2.4158033392138574
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.0010222051456987,
+    "P4": 1.0015340917968125,
+    "P6": 1.0017048370382935
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand sides of the stages and of the finite-difference Jacobian in parallel",
+    "P2": 1.0364814878833852,
+    "P4": 1.0557389517719282,
+    "P6": 1.0623181182563657
+   }
+  },
+  {
+   "cell": "banded_2d.ac2d.g64.analytic.x10",
+   "n": 4096,
+   "structure": "banded_2d",
+   "problem": "ac2d",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 10,
+   "lu_mode": "banded_indexed",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.0036212852931129793,
+    "f_LU": 0.832647002959697,
+    "f_S": 0.13883930496143762,
+    "f_R": 0.02192989494492292,
+    "f_remainder": 0.0030318940386764113,
+    "f_chain": 0.16076919990636054
+   },
+   "plain_wall_per_accepted_step_us": 63080.36578947368,
+   "plain_wall_per_attempt_us": 61462.920512820514,
+   "a_level_structured_tableau": {
+    "L4": 1.0874111068051793,
+    "L5": 1.0641563360188906,
+    "L6": 1.0418753673007726
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 5.201669777170574,
+    "saving": 0.040192299976590136,
+    "bound": 1.0418753673007726,
+    "bound_jacobian_only": 1.0036344466613565,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.001813927020177,
+    "P4": 1.002723360518881,
+    "P6": 1.0030268720502942
+   },
+   "d_lagged_lu": {
+    "k2": 1.7132778217649531,
+    "k4": 2.663011255646495
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.0110865104775002,
+    "P4": 1.0167224625946327,
+    "P6": 1.0186151018100045
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "banded_2d.ac2d.g64.analytic.x100",
+   "n": 4096,
+   "structure": "banded_2d",
+   "problem": "ac2d",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 100,
+   "lu_mode": "banded_indexed",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.005195877321585678,
+    "f_LU": 0.6925450043441272,
+    "f_S": 0.12434231268569516,
+    "f_R": 0.17506197139606214,
+    "f_remainder": 0.0027320520178027467,
+    "f_chain": 0.2994042840817573
+   },
+   "plain_wall_per_accepted_step_us": 41526.37033333333,
+   "plain_wall_per_attempt_us": 40404.036,
+   "a_level_structured_tableau": {
+    "L4": 1.1760584724983227,
+    "L5": 1.1264770167786917,
+    "L6": 1.080907050395659
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 2.330430520744263,
+    "saving": 0.07485107102043932,
+    "bound": 1.080907050395659,
+    "bound_jacobian_only": 1.0052230154692123,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0026047055259788,
+    "P4": 1.003912153292618,
+    "P6": 1.0043487273126728
+   },
+   "d_lagged_lu": {
+    "k2": 1.5296893634160758,
+    "k4": 2.080770315271758
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.095927625295848,
+    "P4": 1.1511407232785775,
+    "P6": 1.1708024939171329
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "banded_2d.ac2d.g128.analytic.x1",
+   "n": 16384,
+   "structure": "banded_2d",
+   "problem": "ac2d",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 1,
+   "lu_mode": "banded_indexed",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.0045766718623739665,
+    "f_LU": 0.8745179426925572,
+    "f_S": 0.11829057954078175,
+    "f_R": 0.0005623138473741023,
+    "f_remainder": 0.0020327787779397706,
+    "f_chain": 0.11885289338815584
+   },
+   "plain_wall_per_accepted_step_us": 526752.1354736842,
+   "plain_wall_per_attempt_us": 500414.52869999997,
+   "a_level_structured_tableau": {
+    "L4": 1.063181073383582,
+    "L5": 1.0466489720067793,
+    "L6": 1.0306231354090343
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 7.396493173152623,
+    "saving": 0.02971322334703896,
+    "bound": 1.0306231354090343,
+    "bound_jacobian_only": 1.004597714091086,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.002293584422833,
+    "P4": 1.0034443265611233,
+    "P6": 1.0038284946885754
+   },
+   "d_lagged_lu": {
+    "k2": 1.777016334480461,
+    "k4": 2.9060344542305256
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.0002812359951343,
+    "P4": 1.0004219133213077,
+    "P6": 1.0004688145569094
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "banded_2d.bruss2d.g32.analytic.x1",
+   "n": 2048,
+   "structure": "banded_2d",
+   "problem": "bruss2d",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 1,
+   "lu_mode": "banded_indexed",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.006222713052627482,
+    "f_LU": 0.8382386292792733,
+    "f_S": 0.15075209613765148,
+    "f_R": 0.0014501546014584654,
+    "f_remainder": 0.0033560163722336895,
+    "f_chain": 0.15220225073910995
+   },
+   "plain_wall_per_accepted_step_us": 17185.85215116279,
+   "plain_wall_per_attempt_us": 16241.57456043956,
+   "a_level_structured_tableau": {
+    "L4": 1.0823695400646471,
+    "L5": 1.0605306839003186,
+    "L6": 1.0395556785094398
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 5.548284195740265,
+    "saving": 0.03805056268477749,
+    "bound": 1.0395556785094398,
+    "bound_jacobian_only": 1.0062616776760334,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0031210672793625,
+    "P4": 1.0046889181335248,
+    "P6": 1.005212624767338
+   },
+   "d_lagged_lu": {
+    "k2": 1.7215239294445224,
+    "k4": 2.69308744855357
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.000725603419298,
+    "P4": 1.0010888001475018,
+    "P6": 1.0012099243156436
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "banded_2d.bruss2d.g64.analytic.x1",
+   "n": 8192,
+   "structure": "banded_2d",
+   "problem": "bruss2d",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 1,
+   "lu_mode": "banded_indexed",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.002611488689770824,
+    "f_LU": 0.8945610603715148,
+    "f_S": 0.10105121873664424,
+    "f_R": 0.00038754283864101476,
+    "f_remainder": 0.0014083901777991847,
+    "f_chain": 0.10143876157528525
+   },
+   "plain_wall_per_accepted_step_us": 307047.362375,
+   "plain_wall_per_attempt_us": 245637.8899,
+   "a_level_structured_tableau": {
+    "L4": 1.0534292808271233,
+    "L5": 1.039543761930062,
+    "L6": 1.026019537817052
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 8.844474588694846,
+    "saving": 0.025359690393821313,
+    "bound": 1.026019537817052,
+    "bound_jacobian_only": 1.0026183264196018,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.001307451542343,
+    "P4": 1.001962460224338,
+    "P6": 1.0021809869270528
+   },
+   "d_lagged_lu": {
+    "k2": 1.8092360675046946,
+    "k4": 3.038782109755961
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.0001938089739606,
+    "P4": 1.0002907416351097,
+    "P6": 1.0003230566974588
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "banded_3d.ac3d.g8.analytic.x1",
+   "n": 512,
+   "structure": "banded_3d",
+   "problem": "ac3d",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 1,
+   "lu_mode": "banded_indexed",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.002469890287746718,
+    "f_LU": 0.8290255972221526,
+    "f_S": 0.16074018231701656,
+    "f_R": 0.0034854190832477017,
+    "f_remainder": 0.004286159859595554,
+    "f_chain": 0.16422560140026427
+   },
+   "plain_wall_per_accepted_step_us": 3723.8545,
+   "plain_wall_per_attempt_us": 3451.3773414634143,
+   "a_level_structured_tableau": {
+    "L4": 1.0894584876690347,
+    "L5": 1.06562616146278,
+    "L6": 1.0428141971697333
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 5.063129502465998,
+    "saving": 0.041056400350066066,
+    "bound": 1.0428141971697333,
+    "bound_jacobian_only": 1.0024760057503017,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0012364721191125,
+    "P4": 1.001855855535482,
+    "P6": 1.002062487003638
+   },
+   "d_lagged_lu": {
+    "k2": 1.7079792651790633,
+    "k4": 2.643888320284232
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.0017457518800825,
+    "P4": 1.002620915554252,
+    "P6": 1.0029129766898264
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "banded_3d.ac3d.g16.analytic.x1",
+   "n": 4096,
+   "structure": "banded_3d",
+   "problem": "ac3d",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 1,
+   "lu_mode": "banded_indexed",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.0018284514862427184,
+    "f_LU": 0.9396630684080296,
+    "f_S": 0.05776410993378354,
+    "f_R": 0.00020581304317995126,
+    "f_remainder": 0.0005233434677435836,
+    "f_chain": 0.05796992297696349
+   },
+   "plain_wall_per_accepted_step_us": 424948.6932,
+   "plain_wall_per_attempt_us": 424948.6932,
+   "a_level_structured_tableau": {
+    "L4": 1.0298501674422191,
+    "L5": 1.0222217945099175,
+    "L6": 1.0147056013892064
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 16.24103451488816,
+    "saving": 0.014492480744240872,
+    "bound": 1.0147056013892064,
+    "bound_jacobian_only": 1.0018318008452205,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0009150623166478,
+    "P4": 1.0013732217667173,
+    "P6": 1.0015260348057093
+   },
+   "d_lagged_lu": {
+    "k2": 1.8861929075668775,
+    "k4": 3.386929245434181
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.000102917112432,
+    "P4": 1.0001543836130058,
+    "P6": 1.000171540290341
+   },
+   "g_parallel_rhs_exploratory": null
+  },
+  {
+   "cell": "banded_3d.ac3d.g16.fd.x1",
+   "n": 4096,
+   "structure": "banded_3d",
+   "problem": "ac3d",
+   "jacobian_source": "fd",
+   "rhs_multiplier": 1,
+   "lu_mode": "banded_indexed",
+   "admissibility": "authoritative",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.03602178025387607,
+    "f_LU": 0.9068807667108558,
+    "f_S": 0.05632887375081446,
+    "f_R": 0.0002005032712790811,
+    "f_remainder": 0.0005058159273128652,
+    "f_chain": 0.05652937702209354
+   },
+   "plain_wall_per_accepted_step_us": 438319.7338,
+   "plain_wall_per_attempt_us": 438319.7338,
+   "a_level_structured_tableau": {
+    "L4": 1.029086818372112,
+    "L5": 1.0216576259211987,
+    "L6": 1.0143349304271996
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 16.67986800201627,
+    "saving": 0.014132344255523385,
+    "bound": 1.0143349304271996,
+    "bound_jacobian_only": 1.0143349304271996,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.01834123204204,
+    "P4": 1.0277664838244678,
+    "P6": 1.0309471256788059
+   },
+   "d_lagged_lu": {
+    "k2": 1.8296265760342487,
+    "k4": 3.1265689028287253
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.0001002616870376,
+    "P4": 1.000150400070239,
+    "P6": 1.0001671139818158
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand sides of the stages and of the finite-difference Jacobian in parallel",
+    "P2": 1.0184452054941215,
+    "P4": 1.0279253526754797,
+    "P6": 1.0311247440231754
+   }
+  },
+  {
+   "cell": "matrix_free_2d.ac2d.g64.jvp.x1",
+   "n": 4096,
+   "structure": "matrix_free_2d",
+   "problem": "ac2d",
+   "jacobian_source": "jvp",
+   "rhs_multiplier": 1,
+   "lu_mode": "matrix_free_gmres",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.0,
+    "f_LU": 0.0,
+    "f_S": 0.9985634056661211,
+    "f_R": 0.0013100487687426922,
+    "f_remainder": 0.00011818511057082688,
+    "f_JVP": 0.0625858045753988,
+    "f_S_stages_2_to_8": 0.8738821690171547,
+    "f_JVP_stages_2_to_8": 0.05474484898198494,
+    "f_orthogonalisation_and_vector_work_in_solves": 0.9359764291412319,
+    "f_chain": 0.9998734544348639
+   },
+   "plain_wall_per_accepted_step_us": 55242.02603703704,
+   "plain_wall_per_attempt_us": 53269.096535714285,
+   "a_level_structured_tableau": {
+    "L4": 1.9997469408932356,
+    "L5": 1.5998785254807064,
+    "L6": 1.3332770932322513
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.0,
+    "saving": 0.0,
+    "bound": 1.0,
+    "bound_jacobian_only": 1.0,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0,
+    "P4": 1.0,
+    "P6": 1.0
+   },
+   "d_lagged_lu": {
+    "k2": 1.0,
+    "k4": 1.0
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": {
+    "later_stage_solve_fraction": 0.8738821690171547,
+    "later_stage_jvp_fraction": 0.05474484898198494,
+    "bound": 7.929092914197207,
+    "bound_jvp_part_only": 1.057915419898031
+   },
+   "g_parallel_rhs": {
+    "P2": 1.0006554537225425,
+    "P4": 1.0009835029041334,
+    "P6": 1.0010929004346762
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand side and JVP callbacks in parallel",
+    "P2": 1.0330022811296107,
+    "P4": 1.0503339899375632,
+    "P6": 1.0562411936724463
+   }
+  },
+  {
+   "cell": "matrix_free_2d.ac2d.g128.jvp.x1",
+   "n": 16384,
+   "structure": "matrix_free_2d",
+   "problem": "ac2d",
+   "jacobian_source": "jvp",
+   "rhs_multiplier": 1,
+   "lu_mode": "matrix_free_gmres",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.0,
+    "f_LU": 0.0,
+    "f_S": 0.9988571587565372,
+    "f_R": 0.0010316606892668693,
+    "f_remainder": 0.00011118055419583324,
+    "f_JVP": 0.06122609100928909,
+    "f_S_stages_2_to_8": 0.8942465062401851,
+    "f_JVP_stages_2_to_8": 0.05476856834270205,
+    "f_orthogonalisation_and_vector_work_in_solves": 0.9376364072195326,
+    "f_chain": 0.9998888194458041
+   },
+   "plain_wall_per_accepted_step_us": 285462.73105263157,
+   "plain_wall_per_attempt_us": 271189.5945,
+   "a_level_structured_tableau": {
+    "L4": 1.9997776636110909,
+    "L5": 1.5998932737874996,
+    "L6": 1.3332839215848993
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.0,
+    "saving": 0.0,
+    "bound": 1.0,
+    "bound_jacobian_only": 1.0,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0,
+    "P4": 1.0,
+    "P6": 1.0
+   },
+   "d_lagged_lu": {
+    "k2": 1.0,
+    "k4": 1.0
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": {
+    "later_stage_solve_fraction": 0.8942465062401851,
+    "later_stage_jvp_fraction": 0.05476856834270205,
+    "bound": 9.4559523704359,
+    "bound_jvp_part_only": 1.0579419669177472
+   },
+   "g_parallel_rhs": {
+    "P2": 1.0005160965629014,
+    "P4": 1.0007743446626616,
+    "P6": 1.0008604569907658
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand side and JVP callbacks in parallel",
+    "P2": 1.0321290159994854,
+    "P4": 1.0489803695374935,
+    "P6": 1.0547204358381714
+   }
+  },
+  {
+   "cell": "matrix_free_2d.ac2d.g128.jvp.x10",
+   "n": 16384,
+   "structure": "matrix_free_2d",
+   "problem": "ac2d",
+   "jacobian_source": "jvp",
+   "rhs_multiplier": 10,
+   "lu_mode": "matrix_free_gmres",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.0,
+    "f_LU": 0.0,
+    "f_S": 0.9891999536301139,
+    "f_R": 0.01069728479987793,
+    "f_remainder": 0.00010554292370753312,
+    "f_JVP": 0.06305811058343777,
+    "f_S_stages_2_to_8": 0.8864210993727967,
+    "f_JVP_stages_2_to_8": 0.056542362561843376,
+    "f_orthogonalisation_and_vector_work_in_solves": 0.9261418430466761,
+    "f_chain": 0.9998972384299919
+   },
+   "plain_wall_per_accepted_step_us": 308648.3129473684,
+   "plain_wall_per_attempt_us": 293215.8973,
+   "a_level_structured_tableau": {
+    "L4": 1.9997944979776945,
+    "L5": 1.5999013549749426,
+    "L6": 1.3332876630888228
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.0,
+    "saving": 0.0,
+    "bound": 1.0,
+    "bound_jacobian_only": 1.0,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0,
+    "P4": 1.0,
+    "P6": 1.0
+   },
+   "d_lagged_lu": {
+    "k2": 1.0,
+    "k4": 1.0
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": {
+    "later_stage_solve_fraction": 0.8864210993727967,
+    "later_stage_jvp_fraction": 0.056542362561843376,
+    "bound": 8.804452186786616,
+    "bound_jvp_part_only": 1.05993100306589
+   },
+   "g_parallel_rhs": {
+    "P2": 1.0053774042121095,
+    "P4": 1.0080878521432552,
+    "P6": 1.0089945853676774
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand side and JVP callbacks in parallel",
+    "P2": 1.0382897349622908,
+    "P4": 1.0585556424585791,
+    "P6": 1.065487901190362
+   }
+  },
+  {
+   "cell": "matrix_free_2d.ac2d.g128.jvp.x100",
+   "n": 16384,
+   "structure": "matrix_free_2d",
+   "problem": "ac2d",
+   "jacobian_source": "jvp",
+   "rhs_multiplier": 100,
+   "lu_mode": "matrix_free_gmres",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.0,
+    "f_LU": 0.0,
+    "f_S": 0.9068718239882649,
+    "f_R": 0.0930344482039403,
+    "f_remainder": 0.00010452578104437613,
+    "f_JVP": 0.054993330118874174,
+    "f_S_stages_2_to_8": 0.8121197253043317,
+    "f_JVP_stages_2_to_8": 0.049225658361344245,
+    "f_orthogonalisation_and_vector_work_in_solves": 0.8518313422594602,
+    "f_chain": 0.9999062721922052
+   },
+   "plain_wall_per_accepted_step_us": 314111.22036842105,
+   "plain_wall_per_attempt_us": 298405.65935000003,
+   "a_level_structured_tableau": {
+    "L4": 1.9998125619525677,
+    "L5": 1.599910026364336,
+    "L6": 1.333291677831295
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.0,
+    "saving": 0.0,
+    "bound": 1.0,
+    "bound_jacobian_only": 1.0,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0,
+    "P4": 1.0,
+    "P6": 1.0
+   },
+   "d_lagged_lu": {
+    "k2": 1.0,
+    "k4": 1.0
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": {
+    "later_stage_solve_fraction": 0.8121197253043317,
+    "later_stage_jvp_fraction": 0.049225658361344245,
+    "bound": 5.322538524173533,
+    "bound_jvp_part_only": 1.0517742814520048
+   },
+   "g_parallel_rhs": {
+    "P2": 1.0487866433225899,
+    "P4": 1.0750097007417971,
+    "P6": 1.0840445739734097
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand side and JVP callbacks in parallel",
+    "P2": 1.0799298048805275,
+    "P4": 1.1248857543078845,
+    "P6": 1.1407145314985696
+   }
+  },
+  {
+   "cell": "matrix_free_2d.ac2d.g256.jvp.x1",
+   "n": 65536,
+   "structure": "matrix_free_2d",
+   "problem": "ac2d",
+   "jacobian_source": "jvp",
+   "rhs_multiplier": 1,
+   "lu_mode": "matrix_free_gmres",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.0,
+    "f_LU": 0.0,
+    "f_S": 0.9993523635098013,
+    "f_R": 0.0005938444657862167,
+    "f_remainder": 5.3792024412541225e-05,
+    "f_JVP": 0.05843805761706704,
+    "f_S_stages_2_to_8": 0.892282758587208,
+    "f_JVP_stages_2_to_8": 0.05220401952563555,
+    "f_orthogonalisation_and_vector_work_in_solves": 0.9409193409808034,
+    "f_chain": 0.9999462079755875
+   },
+   "plain_wall_per_accepted_step_us": 2004473.3217368422,
+   "plain_wall_per_attempt_us": 1904249.65565,
+   "a_level_structured_tableau": {
+    "L4": 1.9998924217380274,
+    "L5": 1.5999483613232135,
+    "L6": 1.333309426195599
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.0,
+    "saving": 0.0,
+    "bound": 1.0,
+    "bound_jacobian_only": 1.0,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0,
+    "P4": 1.0,
+    "P6": 1.0
+   },
+   "d_lagged_lu": {
+    "k2": 1.0,
+    "k4": 1.0
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": {
+    "later_stage_solve_fraction": 0.892282758587208,
+    "later_stage_jvp_fraction": 0.05220401952563555,
+    "bound": 9.283564886031739,
+    "bound_jvp_part_only": 1.055079384805481
+   },
+   "g_parallel_rhs": {
+    "P2": 1.000297010421891,
+    "P4": 1.0004455818040559,
+    "P6": 1.0004951154061084
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand side and JVP callbacks in parallel",
+    "P2": 1.0304136385065785,
+    "P4": 1.0463249123285727,
+    "P6": 1.051738433520286
+   }
+  },
+  {
+   "cell": "matrix_free_2d.bruss2d.g128.jvp.x1",
+   "n": 32768,
+   "structure": "matrix_free_2d",
+   "problem": "bruss2d",
+   "jacobian_source": "jvp",
+   "rhs_multiplier": 1,
+   "lu_mode": "matrix_free_gmres",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.0,
+    "f_LU": 0.0,
+    "f_S": 0.9988612731831283,
+    "f_R": 0.0008555376266177251,
+    "f_remainder": 0.0002771531675804183,
+    "f_JVP": 0.04142039468570153,
+    "f_S_stages_2_to_8": 0.8737409637586108,
+    "f_JVP_stages_2_to_8": 0.03628015686589663,
+    "f_orthogonalisation_and_vector_work_in_solves": 0.9574408784974269,
+    "f_chain": 0.9997168108097461
+   },
+   "plain_wall_per_accepted_step_us": 562478.6817999999,
+   "plain_wall_per_attempt_us": 421859.01135000004,
+   "a_level_structured_tableau": {
+    "L4": 1.9994337819663186,
+    "L5": 1.5997281845624725,
+    "L6": 1.333207483350783
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.0,
+    "saving": 0.0,
+    "bound": 1.0,
+    "bound_jacobian_only": 1.0,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0,
+    "P4": 1.0,
+    "P6": 1.0
+   },
+   "d_lagged_lu": {
+    "k2": 1.0,
+    "k4": 1.0
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": {
+    "later_stage_solve_fraction": 0.8737409637586108,
+    "later_stage_jvp_fraction": 0.03628015686589663,
+    "bound": 7.920225195511099,
+    "bound_jvp_part_only": 1.0376459581323034
+   },
+   "g_parallel_rhs": {
+    "P2": 1.0004279518777757,
+    "P4": 1.0006420652031685,
+    "P6": 1.0007134566797102
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand side and JVP callbacks in parallel",
+    "P2": 1.0215944284539815,
+    "P4": 1.0327451996161332,
+    "P6": 1.0365164148282389
+   }
+  },
+  {
+   "cell": "matrix_free_3d.ac3d.g16.jvp.x1",
+   "n": 4096,
+   "structure": "matrix_free_3d",
+   "problem": "ac3d",
+   "jacobian_source": "jvp",
+   "rhs_multiplier": 1,
+   "lu_mode": "matrix_free_gmres",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.0,
+    "f_LU": 0.0,
+    "f_S": 0.9983086911279078,
+    "f_R": 0.0015704100708606196,
+    "f_remainder": 0.00012232286754449483,
+    "f_JVP": 0.07192273525019825,
+    "f_S_stages_2_to_8": 0.8735912248954328,
+    "f_JVP_stages_2_to_8": 0.06292299732611041,
+    "f_orthogonalisation_and_vector_work_in_solves": 0.9263856712404848,
+    "f_chain": 0.9998791011987684
+   },
+   "plain_wall_per_accepted_step_us": 59293.32364,
+   "plain_wall_per_attempt_us": 52940.467535714284,
+   "a_level_structured_tableau": {
+    "L4": 1.9997582316270432,
+    "L5": 1.5998839455693226,
+    "L6": 1.333279602698109
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.0,
+    "saving": 0.0,
+    "bound": 1.0,
+    "bound_jacobian_only": 1.0,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0,
+    "P4": 1.0,
+    "P6": 1.0
+   },
+   "d_lagged_lu": {
+    "k2": 1.0,
+    "k4": 1.0
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": {
+    "later_stage_solve_fraction": 0.8735912248954328,
+    "later_stage_jvp_fraction": 0.06292299732611041,
+    "bound": 7.910843208256591,
+    "bound_jvp_part_only": 1.0671481608731872
+   },
+   "g_parallel_rhs": {
+    "P2": 1.0007858220668742,
+    "P4": 1.001179196419595,
+    "P6": 1.0013103899336744
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand side and JVP callbacks in parallel",
+    "P2": 1.0381483954456558,
+    "P4": 1.0583352920635223,
+    "P6": 1.0652398563007455
+   }
+  },
+  {
+   "cell": "matrix_free_3d.ac3d.g32.jvp.x1",
+   "n": 32768,
+   "structure": "matrix_free_3d",
+   "problem": "ac3d",
+   "jacobian_source": "jvp",
+   "rhs_multiplier": 1,
+   "lu_mode": "matrix_free_gmres",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.0,
+    "f_LU": 0.0,
+    "f_S": 0.9982435209783738,
+    "f_R": 0.0016215298879721362,
+    "f_remainder": 0.00013383953549868223,
+    "f_JVP": 0.07432450465785836,
+    "f_S_stages_2_to_8": 0.8729737026966843,
+    "f_JVP_stages_2_to_8": 0.06500506568668983,
+    "f_orthogonalisation_and_vector_work_in_solves": 0.9239270135954784,
+    "f_chain": 0.9998650508663459
+   },
+   "plain_wall_per_accepted_step_us": 432001.911,
+   "plain_wall_per_attempt_us": 432001.911,
+   "a_level_structured_tableau": {
+    "L4": 1.999730138150315,
+    "L5": 1.5998704593205335,
+    "L6": 1.3332733586384427
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.0,
+    "saving": 0.0,
+    "bound": 1.0,
+    "bound_jacobian_only": 1.0,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0,
+    "P4": 1.0,
+    "P6": 1.0
+   },
+   "d_lagged_lu": {
+    "k2": 1.0,
+    "k4": 1.0
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": {
+    "later_stage_solve_fraction": 0.8729737026966843,
+    "later_stage_jvp_fraction": 0.06500506568668983,
+    "bound": 7.8723856495020215,
+    "bound_jvp_part_only": 1.069524511097412
+   },
+   "g_parallel_rhs": {
+    "P2": 1.000811422817161,
+    "P4": 1.0012176282314063,
+    "P6": 1.0013531033212075
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand side and JVP callbacks in parallel",
+    "P2": 1.039471883798178,
+    "P4": 1.0603998741032816,
+    "P6": 1.0675644024930286
+   }
+  },
+  {
+   "cell": "matrix_free_3d.ac3d.g32.jvp.x10",
+   "n": 32768,
+   "structure": "matrix_free_3d",
+   "problem": "ac3d",
+   "jacobian_source": "jvp",
+   "rhs_multiplier": 10,
+   "lu_mode": "matrix_free_gmres",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.0,
+    "f_LU": 0.0,
+    "f_S": 0.9837050685090976,
+    "f_R": 0.01617045236095975,
+    "f_remainder": 0.00013589579632340362,
+    "f_JVP": 0.07330451683496875,
+    "f_S_stages_2_to_8": 0.8605159522122593,
+    "f_JVP_stages_2_to_8": 0.06421682120281691,
+    "f_orthogonalisation_and_vector_work_in_solves": 0.9102971723472589,
+    "f_chain": 0.9998755208700573
+   },
+   "plain_wall_per_accepted_step_us": 448823.33694999997,
+   "plain_wall_per_attempt_us": 448823.33694999997,
+   "a_level_structured_tableau": {
+    "L4": 1.9997510727263648,
+    "L5": 1.5998805089597394,
+    "L6": 1.3332780115710492
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.0,
+    "saving": 0.0,
+    "bound": 1.0,
+    "bound_jacobian_only": 1.0,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0,
+    "P4": 1.0,
+    "P6": 1.0
+   },
+   "d_lagged_lu": {
+    "k2": 1.0,
+    "k4": 1.0
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": {
+    "later_stage_solve_fraction": 0.8605159522122593,
+    "later_stage_jvp_fraction": 0.06421682120281691,
+    "bound": 7.169278608273156,
+    "bound_jvp_part_only": 1.0686236113854477
+   },
+   "g_parallel_rhs": {
+    "P2": 1.0081511299094241,
+    "P4": 1.0122767294725328,
+    "P6": 1.013659443112574
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand side and JVP callbacks in parallel",
+    "P2": 1.046832660003555,
+    "P4": 1.071933406387453,
+    "P6": 1.0805699707021863
+   }
+  },
+  {
+   "cell": "matrix_free_3d.ac3d.g32.jvp.x100",
+   "n": 32768,
+   "structure": "matrix_free_3d",
+   "problem": "ac3d",
+   "jacobian_source": "jvp",
+   "rhs_multiplier": 100,
+   "lu_mode": "matrix_free_gmres",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.0,
+    "f_LU": 0.0,
+    "f_S": 0.858301884086934,
+    "f_R": 0.14158765980233434,
+    "f_remainder": 0.00011886633154992447,
+    "f_JVP": 0.06363403738488321,
+    "f_S_stages_2_to_8": 0.7505762113525427,
+    "f_JVP_stages_2_to_8": 0.05566998682287556,
+    "f_orthogonalisation_and_vector_work_in_solves": 0.7948278503440457,
+    "f_chain": 0.9998895438892683
+   },
+   "plain_wall_per_accepted_step_us": 504635.80215,
+   "plain_wall_per_attempt_us": 504635.80215,
+   "a_level_structured_tableau": {
+    "L4": 1.9997791121769464,
+    "L5": 1.59989396916075,
+    "L6": 1.3332842435359864
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 0.0,
+    "saving": 0.0,
+    "bound": 1.0,
+    "bound_jacobian_only": 1.0,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0,
+    "P4": 1.0,
+    "P6": 1.0
+   },
+   "d_lagged_lu": {
+    "k2": 1.0,
+    "k4": 1.0
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": {
+    "later_stage_solve_fraction": 0.7505762113525427,
+    "later_stage_jvp_fraction": 0.05566998682287556,
+    "bound": 4.009240679979521,
+    "bound_jvp_part_only": 1.0589518346828544
+   },
+   "g_parallel_rhs": {
+    "P2": 1.076187429850619,
+    "P4": 1.1188069425776284,
+    "P6": 1.1337736290715317
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand side and JVP callbacks in parallel",
+    "P2": 1.1143437587057932,
+    "P4": 1.1819161247979864,
+    "P6": 1.2062989277178078
+   }
+  },
+  {
+   "cell": "dense.radnet.n2048.fd.x1",
+   "n": 2048,
+   "structure": "dense",
+   "problem": "radnet",
+   "jacobian_source": "fd",
+   "rhs_multiplier": 1,
+   "lu_mode": "faer",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": false,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.9253688489504478,
+    "f_LU": 0.06515423427673993,
+    "f_S": 0.004924711402423415,
+    "f_R": 0.004385400213143072,
+    "f_remainder": 0.0002512131023495778,
+    "f_chain": 0.009310111615566486
+   },
+   "plain_wall_per_accepted_step_us": 2701175.03065,
+   "plain_wall_per_attempt_us": 2701175.03065,
+   "a_level_structured_tableau": {
+    "L4": 1.0046768266970614,
+    "L5": 1.0035035236795264,
+    "L6": 1.002332957928569
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 106.39218133228772,
+    "saving": 0.0023275279038916215,
+    "bound": 1.002332957928569,
+    "bound_jacobian_only": 1.002332957928569,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.861103689434905,
+    "P4": 3.2682583518274213,
+    "P6": 4.369497034163769
+   },
+   "d_lagged_lu": {
+    "k2": 1.0336741229874644,
+    "k4": 1.051376208869243
+   },
+   "e_parallel_dense_lu": {
+    "P2": 1.0336741229874644,
+    "P4": 1.051376208869243,
+    "P6": 1.0574124134262561
+   },
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.002197518605853,
+    "P4": 1.0032999037086778,
+    "P6": 1.0036679045353953
+   },
+   "g_parallel_rhs_exploratory": {
+    "what": "right-hand sides of the stages and of the finite-difference Jacobian in parallel",
+    "P2": 1.8687296804841107,
+    "P4": 3.303772136943902,
+    "P6": 4.440402841806047
+   }
+  },
+  {
+   "cell": "banded_2d.bruss2d.g128.analytic.x1",
+   "n": 32768,
+   "structure": "banded_2d",
+   "problem": "bruss2d",
+   "jacobian_source": "analytic",
+   "rhs_multiplier": 1,
+   "lu_mode": "banded_indexed",
+   "admissibility": "diagnostic_only",
+   "reduced_protocol": true,
+   "fraction_basis": "wall",
+   "fractions": {
+    "f_J": 0.003781361181469121,
+    "f_LU": 0.9267540895897567,
+    "f_S": 0.06793677594212034,
+    "f_R": 0.00010024778420972016,
+    "f_remainder": 0.0014678710663511654,
+    "f_chain": 0.06803702372633007
+   },
+   "plain_wall_per_accepted_step_us": 3776363.9715,
+   "plain_wall_per_attempt_us": 3776363.9715,
+   "a_level_structured_tableau": {
+    "L4": 1.035216525659078,
+    "L5": 1.0261818854838223,
+    "L6": 1.0173035768995997
+   },
+   "b_speculative_jacobian_lu": {
+    "r": 13.676898250490522,
+    "saving": 0.017009255931582517,
+    "bound": 1.0173035768995997,
+    "bound_jacobian_only": 1.0037957141476028,
+    "r_in_0.15_0.92": false,
+    "plain_wall_per_accepted_step_ge_500us": true,
+    "gates_V07_stage_b": false
+   },
+   "c_parallel_jacobian_assembly": {
+    "P2": 1.0018942620351983,
+    "P4": 1.0028440867755992,
+    "P6": 1.003161095353943
+   },
+   "d_lagged_lu": {
+    "k2": 1.863505819682564,
+    "k4": 3.2793935102458067
+   },
+   "e_parallel_dense_lu": null,
+   "f_shared_krylov_basis": null,
+   "g_parallel_rhs": {
+    "P2": 1.0000501264046353,
+    "P4": 1.0000751914914925,
+    "P6": 1.0000835467996594
+   },
+   "g_parallel_rhs_exploratory": null
+  }
+ ]
+}

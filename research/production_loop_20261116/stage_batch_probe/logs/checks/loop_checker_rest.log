@@ -1,0 +1,9 @@
+# check loop_checker_rest
+# head 4a90ac87abdbf58fa6ee9069f91973c5de6695c4 stage_batch.rs blob fb68321b94dd4caf8a895ea7e2f9aad5363b80f2
+# start 2026-11-25 10:35:52 KST loadavg 5.91 13.62 27.65 5/5944 3282939
+# command: python3 -I research/production_loop_20261116/stage_batch_probe/loop_checker_rest.py
+expected complaint (not raised): protected file changed: crates/rodas5p-integrators/src/stage_batch.rs fb68321b94dd4caf8a895ea7e2f9aad5363b80f2 != c2f44c327c53d7c6dfe7ba80b26cd43486d56b43
+PASS: strict JSON, task/DAG structure, ancestry, protected and evidence identities
+Scope: checkpoint reproducibility. Production HOLD; no new numerical qualification.
+# end 2026-11-25 10:35:52 KST
+exit=0

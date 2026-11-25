@@ -1,0 +1,240 @@
+{
+  "schema": "vigilode.loop_l1.node_review.v1",
+  "node": "V16_LEVEL_TABLEAU_SEARCH",
+  "provenance": "the builder agent was cut by the usage limit and returned no report; its last step was run by the orchestrator (NOTES.txt); review: run wf_f2599e6f-a4a (2026-11-23)",
+  "builder_report": null,
+  "review": {
+    "node": "V16_LEVEL_TABLEAU_SEARCH",
+    "verdict": "accept_with_corrections",
+    "summary": "Accept with corrections. Scope is clean: 89 changed paths, all under level_tableau/; protected files untouched; loop checker PASS; PREDECLARED.json committed before the first log. Every re-run in a scratch copy equals the builder's logs: tool validation (17 conditions, 8.94e-15), 24 candidate verifications, 4 order logs, both pay-off screens and 3 development screens (attempt counts exact), polish, continuation, refinement (24 coefficient files byte-identical), 624 of 6000 declared starts; RESULTS.json regenerates byte-identically. My own exact verifier, my own k-form integrator (116 of 117 cells equal, one off by 1 attempt) and the protected Robertson golden (35 attempts) agree. Recomputed: tool validation PASS; depth 5 found, ratios 3.368/2.423/1.290, FAIL; depth 6 found, ratios 1.246/1.482/1.289, FAIL; node FAIL, KILL not met. Corrections are labels: amendment A-2 (order guard) was written after the RODAS5P order arm had run; the coefficient bound holds in k-form (14 of 24 candidates exceed 100 in code form, neither primary); D6L is A-stable with zero margin; the D6T pass count omits 125 valid starts; NOTES clock labels are wrong.",
+    "scope_ok": true,
+    "protected_ok": true,
+    "predeclared_before_results": true,
+    "discriminator_checks": [
+      {
+        "name": "tool validation (17 generated conditions of order <= 5 vanish on RODAS5P to <= 1e-12)",
+        "reviewer_verdict": "PASS",
+        "agrees": true,
+        "builder_value": "max residual 8.94e-15 binary64, 17 conditions",
+        "reviewer_value": "re-run identical (108 of 108 log lines); own tree generator gives 1+1+2+4+9 = 17; own exact-rational residual on the snapshot strings 5.52e-15; max over the 17 raw log lines 8.937e-15"
+      },
+      {
+        "name": "depth 5: FOUND (algebraic conditions, primary D5F_r01)",
+        "reviewer_verdict": "PASS",
+        "agrees": true,
+        "builder_value": "found; order-5 residual 1.18e-16 binary64 / 1.37e-40 exact",
+        "reviewer_value": "own exact check: 17 conditions 1.37e-40 (binary64 1.18e-16); zero pattern = levels 1-2-2-2-1, longest path 5; b = last row of beta exactly; R(inf) = 0 exactly; design E(s) has no positive root (own Sturm); embedded order 4 at 1.26e-40, embedded order-5 residual 9.0e-3; sum b_i gamma_i = 6.4e-41; max coefficient 1.44 in k-form and 60.4 in code form; local-error slope 6.00 per decade in a 130-digit scan"
+      },
+      {
+        "name": "depth 5: observed order >= 4.8 on three smooth problems",
+        "reviewer_verdict": "PASS",
+        "agrees": true,
+        "builder_value": "5.237, 5.037, 4.985",
+        "reviewer_value": "5.2368, 5.0371, 4.9853 with the amended guard 1e-12 (re-run identical). With the guard first declared (1e-11) PENDULUM_FORCED has only 2 usable pairs (4.969, 4.985) and is NOT_DECIDABLE"
+      },
+      {
+        "name": "depth 5: pay-off screen (ratio <= 1.25 on at least 2 of 3)",
+        "reviewer_verdict": "FAIL",
+        "agrees": true,
+        "builder_value": "ROBER 3.368, VDPOL 2.423, BURGERS 1.290; 0 of 3 at or below 1.25; 2 of 3 at or above 1.6",
+        "reviewer_value": "3.3677, 2.4229, 1.2905 from the raw run lines with my own implementation of the declared rule; attempts re-run exactly; 0 of 3 <= 1.25; 2 of 3 >= 1.6, so not KILL. No single target error gives 2 of 3 below 1.25"
+      },
+      {
+        "name": "depth 5 layout",
+        "reviewer_verdict": "FAIL",
+        "agrees": true,
+        "builder_value": "FAIL (found, pay-off screen failed, not at kill level)",
+        "reviewer_value": "FAIL"
+      },
+      {
+        "name": "depth 6: FOUND (algebraic conditions, primary D6L_r04)",
+        "reviewer_verdict": "PASS",
+        "agrees": true,
+        "builder_value": "found; order-5 residual 3.61e-16 binary64 / 1.49e-39 exact",
+        "reviewer_value": "own exact check: 17 conditions 1.49e-39 (binary64 3.6e-16); levels 1-2-2-2-2-1, longest path 6; stiffly accurate and R(inf) = 0 exactly; design E(s) no positive root, lowest coefficient 2.2e-42 (gamma on the edge of the window); embedded order 4 at 2.65e-40; sum b_i gamma_i = 7.5e-40; max coefficient 2.44 in k-form and 41.1 in code form; local-error slope 6.00"
+      },
+      {
+        "name": "depth 6: observed order >= 4.8 on three smooth problems",
+        "reviewer_verdict": "PASS",
+        "agrees": true,
+        "builder_value": "6.095, 5.281, 4.979",
+        "reviewer_value": "6.0948, 5.2811, 4.9792 (guard 1e-12); 6.116, 5.281, 4.972 with the first-declared guard 1e-11: PASS under both"
+      },
+      {
+        "name": "depth 6: pay-off screen (ratio <= 1.10 on at least 2 of 3)",
+        "reviewer_verdict": "FAIL",
+        "agrees": true,
+        "builder_value": "ROBER 1.246, VDPOL 1.482, BURGERS 1.289; 0 of 3 at or below 1.10; 1 of 3 at or above 1.33",
+        "reviewer_value": "1.2457, 1.4819, 1.2895; attempts re-run exactly and reproduced by my own k-form integrator; 0 of 3 <= 1.10; 1 of 3 >= 1.33, so not KILL. VDPOL >= 1.16 and BURGERS >= 1.18 at every usable target"
+      },
+      {
+        "name": "depth 6 layout",
+        "reviewer_verdict": "FAIL",
+        "agrees": true,
+        "builder_value": "FAIL (found, pay-off screen failed, not at kill level)",
+        "reviewer_value": "FAIL; primary selection recomputed: D6L_r04 development geomean 1.3769, runner-up D6T_r07 1.4217"
+      },
+      {
+        "name": "search budget (at least 2000 starts per layout)",
+        "reviewer_verdict": "PASS",
+        "agrees": true,
+        "builder_value": "D5F 2000, D6T 2000, D6L 2000 starts",
+        "reviewer_value": "each log has 2000 start lines, k = 0..1999 once, seeds [20261117, code, k]; 368 / 551 / 1090 pass; 624 starts re-run, all rows identical"
+      },
+      {
+        "name": "node",
+        "reviewer_verdict": "FAIL",
+        "agrees": true,
+        "builder_value": "FAIL: no layout passes; KILL condition not met",
+        "reviewer_value": "FAIL under both readings of the kill clause (no found layout has a ratio >= its depth gain on all three problems)"
+      }
+    ],
+    "findings": [
+      {
+        "id": "R1",
+        "severity": "minor",
+        "claim": "Amendment A-2 (round-off guard of the order check, 1e-11 to 1e-12) was written after data of the same check had been seen, so the statement that all three amendments were committed before the affected declared runs is not exact for A-2.",
+        "evidence": "logs/amend_A2_order_RODAS5P_floor1e-11.jsonl (file time 14:32:34, header floor 1e-11) is a run of the RODAS5P arm of the declared order check; its 18 order points equal those of logs/order_RODAS5P.jsonl. A-2 was committed in 70efc454 at 14:43:02; the first candidate file dates from 14:56. My recomputation with the first-declared guard: D5F_r01 on PENDULUM_FORCED has 2 usable pairs (4.969, 4.985) and is NOT_DECIDABLE; D6L_r04 gives 6.116, 5.281, 4.972 (PASS); RODAS5P itself is NOT_DECIDABLE on PENDULUM_FORCED.",
+        "correction": "Record that the depth-5 order result (5.237, 5.037, 4.985) holds under the amended guard, and that under the guard first declared it is PASS on two problems and NOT_DECIDABLE on one. No frozen verdict changes: depth 5 fails on the pay-off screen under both guards and the depth-6 primary passes the order check under both."
+      },
+      {
+        "id": "R2",
+        "severity": "minor",
+        "claim": "The report line 'coefficients <= 100' is true only for the k-form coefficients (the reading declared in the first PREDECLARED.json commit). In the code form that the prototype integrator actually uses, most candidates listed as passing every algebraic check exceed 100.",
+        "evidence": "mine/indep_verify.py (exact rationals): k-form maximum <= 8.20 for all 24 candidates. Code form A = alpha Gamma^-1, C = I/gamma - Gamma^-1: D5F_r01 max|A| 11.8, max|C| 60.4; D6L_r04 4.4 and 41.1. max|C| > 100 for 14 of 24: all eight D6T candidates (328 to 1555; D6T_r07 1555), D5F_r02 268, D5F_r05 135, D5F_r07 146, D6L_r02 115, D6L_r06 189, D6L_r08 216. The protected RODAS5P has max|C| 165.4.",
+        "correction": "Write 'k-form coefficients <= 100' in the result record and add that both primaries also meet the bound in code form. No verdict effect."
+      },
+      {
+        "id": "R3",
+        "severity": "minor",
+        "claim": "A-stability is established for the design stability function, not for the stored tableau as such, and the D6L candidates are A-stable with zero margin by construction.",
+        "evidence": "My own Sturm sequences in exact rationals: E(s) of the design numerator has no positive root and positive lowest and leading coefficients for all 24 candidates (cross-checked with multiprecision root finding). For D6L the lowest coefficient is 2.2e-42 at s^3: gamma is the upper end of the window rounded down (my scan: A-stable at 0.33414236, not at 0.33414237). The exact E of the stored 40-digit tableaux has a lowest coefficient of about +-1e-39 at s^1 whose sign is rounding noise: negative for 12 of 24 candidates, none of them D5F_r01, D6L_r04 or D6T_r07; the RODAS5P snapshot shows the same at 7.9e-15. Tableau and design numerators differ by <= 1.7e-39. A 4001-point scan of |R(iy)| on [1e-8, 1e8] stays below 1 for both primaries.",
+        "correction": "Label the property 'A-stable (design stability function; D6L at the edge of the A-stability window)'. The declared check passes and both primaries pass even the strict reading."
+      },
+      {
+        "id": "R4",
+        "severity": "minor",
+        "claim": "The depth-6 primary comes from a formulation (D6L) added by amendment A-3 after development runs, which is outside the letter of the builder's own amendment rule ('a protocol choice that turns out to be unexecutable'). The clause 'before any of its results was inspected' cannot be verified.",
+        "evidence": "A-3 cites logs/dev_smoke_payoff.jsonl (HIRES and OREGO only, smoke seeds). It was committed at 14:43:02 while search_D6T ran (14:30:40 to 14:52:02 by file times) and before the D6L search started (15:09:50). ROBER, VDPOL and BURGERS occur only in the two screen logs and in no file of the builder's scratch directory. Selection recomputed: D6L_r04 1.3769 against D6T_r07 1.4217 (3.2% margin; same order without the Pareto filter and on a restricted target window). Counterfactual with D6T_r07 as primary: order 4.799 on BRUSS_ODE (FAIL) under the amended guard, NOT_DECIDABLE on PENDULUM_FORCED under the first guard.",
+        "correction": "State in the record that the depth-6 primary stems from the added formulation and that no protocol reading yields PASS or KILL for depth 6. The verdict FAIL stands."
+      },
+      {
+        "id": "R5",
+        "severity": "minor",
+        "claim": "The D6T pass count (551 of 2000) understates the number of valid tableaux, and the D6T candidate pool has little diversity.",
+        "evidence": "logs/search_D6T.jsonl: 189 starts have hard residual <= 1e-12 and coefficients <= 100 but gamma_in_window false, because search.py tests the searched range [0.19, 0.33] of amendment A-1. Of these, 114 have gamma in [0.18391465, 0.19), most at 0.18999999999999995 after the last projection, and 11 in (0.33, 0.33414237], all inside the declared A-stable window. Candidates D6T_r01 to r06 all descend from start 1436 through the gamma continuation; the best D6T scores sit on the lower bound 0.19.",
+        "correction": "Report '551 passed the screen of the searched range; 125 further starts are valid tableaux inside the declared A-stable window'. FOUND is unaffected."
+      },
+      {
+        "id": "R6",
+        "severity": "minor",
+        "claim": "The exploratory arm D6T_r07 must stay a lead and must not be read as a pass.",
+        "evidence": "My recomputation from logs/payoff_screen_depth6.jsonl: ratios 1.3773, 1.0109, 0.8487, which is 2 of 3 at or below 1.10. Against it: it was not the declared primary; observed order 4.7989 on BRUSS_ODE under the amended guard (pair orders 6.591, 4.973, 3.864, 4.625); ROBER ratio above 1.33; code-form max|C| 1555; its embedded method is not A-stable (|R_hat(iy)| - 1 = +3.87e-3 at y = 3.13 in my scan).",
+        "correction": "Keep the label 'exploratory'. A confirmation needs a new pre-registered node on new problems."
+      },
+      {
+        "id": "R7",
+        "severity": "minor",
+        "claim": "Clock labels in NOTES.txt do not match the commit and file times.",
+        "evidence": "Entries 3 to 5 say 'about 14:50', '16:25' and '17:15 KST'; they were committed at 14:43:02 (70efc454), 14:53:05 (3ac21b38) and 15:02:56 (67317a7e), and the declared D6T chain started at 14:30:40 by the time of logs/search_D6T.stderr. The orchestrator's entry 6 is labelled 19:30 and was committed at 19:20:07. The order of events is consistent.",
+        "correction": "Treat commit and file times as authoritative."
+      },
+      {
+        "id": "R8",
+        "severity": "minor",
+        "claim": "The renderer hard-codes two data-dependent narrative sentences written after the results were known, and the parser has one branch that would mislabel an untriggered case.",
+        "evidence": "render_report.py lines 463 to 465 name D6T_r07, its gamma 0.19 and its qualitative results as fixed text; they agree with RESULTS.json at this commit. parse_results.py line 390 would label a layout FOUND_NOT_DECIDABLE when the pay-off screen fails and one order status is NOT_DECIDABLE, although a failed pay-off already excludes PASS. Regenerating in a scratch copy gives a byte-identical RESULTS.json and a report identical except line 5 (git branch and HEAD), so the orchestrator's parser and renderer step added nothing of its own.",
+        "correction": "None needed for the verdicts."
+      },
+      {
+        "id": "R9",
+        "severity": "minor",
+        "claim": "Items I could not verify and therefore do not accept as verified.",
+        "evidence": "5376 of the 6000 declared starts were not re-run (624 were, all identical, and every later stage was reproduced from the logs). The index-1 tree extension and the Prothero-Robinson local-error factors are soft search terms and were not derived independently. The consequences drawn from the pole identity for 7 or 8 levels (report sections 8.2b and 11) were not checked; the identity itself holds exactly on three candidates in my own rational arithmetic. Literature entries other than the four owner PDFs were not checked; the four PDF entries match the extracted text.",
+        "correction": "Keep these labelled exploratory or unverified, as the report already does for most of them."
+      }
+    ],
+    "reran": [
+      {
+        "command": "git -C <worktree> diff --name-only c468478e..HEAD ; git status --short ; git log (commit order)",
+        "result": "89 changed paths, 0 outside research/production_loop_20261116/level_tableau/, 0 deletions, working tree clean; 15 commits with the required trailer; PREDECLARED.json (996da358, 14:17:58) precedes the first log (238321b5, 14:21:51)",
+        "exit_code": 0
+      },
+      {
+        "command": "python3 -I -B research/production_loop_20261116/check_checkpoint.py (from the worktree root)",
+        "result": "PASS: strict JSON, task/DAG structure, ancestry, protected and evidence identities",
+        "exit_code": 0
+      },
+      {
+        "command": "python3 -I -B run_validation.py (scratch copy of level_tableau with the fixture)",
+        "result": "108 of 108 JSON lines identical to logs/validation.jsonl; index1_selected.json identical; 17 conditions, max 8.937e-15",
+        "exit_code": 0
+      },
+      {
+        "command": "python3 -I -B verify_candidate.py candidates/{D5F,D6T,D6L}_r01..r08.json",
+        "result": "3 logs, 27 of 27 lines identical to logs/verify_*.jsonl; all 24 algebraic_pass true",
+        "exit_code": 0
+      },
+      {
+        "command": "python3 -I -B run_order.py RODAS5P | candidates/D5F_r01.json | candidates/D6L_r04.json | candidates/D6T_r07.json",
+        "result": "4 logs of 46 lines each, identical to the builder's logs",
+        "exit_code": 0
+      },
+      {
+        "command": "python3 -I -B run_payoff.py --label screen --problems ROBER,VDPOL,BURGERS --arms RODAS5P candidates/D5F_r01.json ; same with candidates/D6L_r04.json candidates/D6T_r07.json",
+        "result": "83 and 122 lines identical except wall-clock fields: 195 run lines with equal accepted, rejected, attempts and error; equal reference lines",
+        "exit_code": 0
+      },
+      {
+        "command": "python3 -I -B run_payoff.py --label dev --problems HIRES,OREGO --arms RODAS5P candidates/<F>_r01..r08.json for F in D5F, D6T, D6L",
+        "result": "3 logs of 238 lines (234 run lines each) identical except wall-clock fields",
+        "exit_code": 0
+      },
+      {
+        "command": "python3 -I -B search.py <F> --polish-top logs/search_<F>.jsonl (D5F, D6L, D6T) ; search.py D6T --continuation logs/polish_D6T.jsonl",
+        "result": "42, 42, 42 and 73 lines identical except 'seconds'",
+        "exit_code": 0
+      },
+      {
+        "command": "python3 -I -B refine.py D5F logs/polish_D5F.jsonl ; refine.py D6L logs/polish_D6L.jsonl ; refine.py D6T logs/polish_D6T.jsonl logs/continuation_D6T.jsonl",
+        "result": "24 regenerated coefficient files byte-identical to candidates/*.json; refine logs identical",
+        "exit_code": 0
+      },
+      {
+        "command": "python3 -I -B search.py D5F --first 0 --starts 200 ; D6L --first 0 --starts 200 and --first 750 --starts 8 ; D6T --first 0 --starts 200, --first 820 --starts 8, --first 1432 --starts 8",
+        "result": "624 declared starts re-run, 624 rows identical to the builder's search logs (including source starts 117, 754, 824, 1436)",
+        "exit_code": 0
+      },
+      {
+        "command": "python3 -I -B run_exploratory.py RODAS5P candidates/D5F_r01.json candidates/D6L_r04.json candidates/D6T_r07.json",
+        "result": "31 of 31 lines identical",
+        "exit_code": 0
+      },
+      {
+        "command": "python3 -I -B parse_results.py ; python3 -I -B render_report.py (scratch copy)",
+        "result": "RESULTS.json byte-identical to the committed file; REPORT_KO.md identical except line 5 (git branch and HEAD); 31 JSON files and 7672 log lines load as strict JSON",
+        "exit_code": 0
+      },
+      {
+        "command": "python3 -I -B review-scratch/mine/indep_verify.py <snapshot> <24 candidates> (reviewer's script, exact rationals, no builder code)",
+        "result": "17 trees; RODAS5P 5.52e-15; all 24 candidates: order 5 <= 1.7e-39 exact and <= 9.5e-16 binary64, declared level pattern and depth, stiff accuracy and R(inf) = 0 exact, embedded order 4 <= 1.8e-39, W <= 1.2e-39, design A-stable by Sturm, k-form max <= 8.20",
+        "exit_code": 0
+      },
+      {
+        "command": "python3 -I -B review-scratch/mine/kform_check.py scan | adaptive | jac (reviewer's k-form stepper, own problems)",
+        "result": "local-error slope 6.00 per decade and embedded slope 5.00 for D5F_r01, D6L_r04, D6T_r07 (130 digits); attempts equal to the builder's prototype in 116 of 117 cells, one cell differs by 1 (VDPOL D5F_r01 k=14: 1375 against 1374); my RODAS5P at rtol 1e-12 against the builder's Radau reference: 8.5e-13, 7.2e-13, 1.8e-13; builder Jacobians agree with central differences",
+        "exit_code": 0
+      },
+      {
+        "command": "python3 -I -B review-scratch/mine/recompute_verdicts.py <level_tableau> (reviewer's implementation of the declared rules on the raw logs)",
+        "result": "ratios, orders, development geomeans and selection equal RESULTS.json to 1e-15 relative; verdicts tool validation PASS, depth 5 FAIL, depth 6 FAIL, node FAIL",
+        "exit_code": 0
+      },
+      {
+        "command": "builder prototype proto.adaptive(RODAS5P, Robertson, t_end 40, rtol 1e-6, atol 1e-9, h0 1e-3) against crates/vigilode/tests/golden/robertson_stats.json",
+        "result": "prototype: accepted 34, rejected 1, attempts 35; protected golden: accepted 34, rejected 1, attempts 35",
+        "exit_code": 0
+      }
+    ]
+  }
+}

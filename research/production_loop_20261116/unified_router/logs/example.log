@@ -1,0 +1,39 @@
+# command: taskset -c 0-5,12-17 cargo +1.94.1 run --locked -j 4 --release -p vigilode --example unified_production_solver
+# commit: ec0ee46dbc6ff74a7cef43dc0af2f941ece6b950
+# worktree_dirty_files: 0
+# date: 2026-11-23T22:21:32+09:00
+# loadavg_before: 13.88 16.07 15.29 9/5815 980131
+    Finished `release` profile [optimized] target(s) in 0.05s
+     Running `/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v03b/release/examples/unified_production_solver`
+============================================================
+    VigilODE — Unified Production Solver Demonstration      
+============================================================
+
+--- 1. Robertson Stiff Chemical Kinetics ---
+Status: Success
+Final time: 40
+Final state: [0.715826808932855, 9.185525016783394e-6, 0.2841640055421296]
+Route taken: [RouteTransitionRecord { from_tier: "preflight", to_tier: "rodas5p-fast-transformed-v2", time: 0.0, reason: "a derivative or a band is supplied and no regime is declared", step_index: 0 }]
+Invariant drift: [("total_mass", 1.3322676295501878e-15)]
+Work counters: RHS=348, LU=44, Solves=352, Steps=40
+
+--- 2. Nonstiff Harmonic Oscillator ---
+Status: Success
+Final state: [0.9999992481164662, -3.0169707921322286e-7]
+Route taken: [RouteTransitionRecord { from_tier: "preflight", to_tier: "dopri5-5(4)-fsal", time: 0.0, reason: "no declaration and no evidence of stiffness at t0: budgeted explicit trial", step_index: 0 }]
+Invariant drift: [("energy", 1.5037664111705595e-6)]
+
+--- 3. 1D Heat Diffusion (Matrix-Free Krylov) ---
+Status: Success
+Route taken: [RouteTransitionRecord { from_tier: "preflight", to_tier: "rodas5p-mf-fast-transformed-v1", time: 0.0, reason: "a derivative or a band is supplied and no regime is declared", step_index: 0 }]
+Work counters: JVP vectors=6297, Linear solves=216
+
+--- 4. Fail-Closed Fallback Demonstration ---
+Status: Success
+Success: true
+Route transitions: [RouteTransitionRecord { from_tier: "preflight", to_tier: "dopri5-5(4)-fsal", time: 0.0, reason: "no declaration and no evidence of stiffness at t0: budgeted explicit trial", step_index: 0 }, RouteTransitionRecord { from_tier: "dopri5-5(4)-fsal", to_tier: "rodas5p-fast-transformed-v2", time: 0.7102640057483135, reason: "DOPRI5 stopped at t = 7.102640057483135e-1 (DOPRI5 attempt budget exhausted); RODAS5P continues from that state with the 500 attempts left of 1000", step_index: 476 }]
+Fallback steps recorded: 1
+
+All unified production solver demonstrations completed successfully!
+# loadavg_after: 13.88 16.07 15.29 9/5811 980196
+# exit_code: 0

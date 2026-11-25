@@ -1,0 +1,309 @@
+{
+ "schema": "vigilode.loop_l1.node_review.v1",
+ "node": "V19_BANDED_SOLVE_KERNEL and V21_BANDED_TIGHT_KERNEL",
+ "provenance": {
+  "workflow_run": "wf_8b1894ea-1d1",
+  "agent_label": "review:v19-v21",
+  "agent_id": "a9415a6fd5bb16d1f",
+  "base_commit": "587a139501729bbe886bb2b8c49b0ef893705d08",
+  "worktree": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-orch-review (detached, read-and-run)",
+  "note": "Both nodes were run by the orchestrator session without a builder agent; this is the independent read-and-run review. The review object is the reviewer's structured answer, verbatim."
+ },
+ "builder_report": null,
+ "review": {
+  "node": "V19_V21_ORCHESTRATOR_NODES",
+  "verdict": "accept_with_corrections",
+  "summary": "Accept with corrections. Every frozen verdict was recomputed from the raw logs with my own script (1098 values, 0 mismatches; RESULTS*.json and the report regenerate byte-identically): V19 stage a KILL (C8 at 0.863/0.887 of A1), V21 a1 PASS-I 0.2483/0.2506 and PASS-C 0.578/0.568, a2 PASS-I 0.220/0.221/0.163 with cycles NOT_DECIDABLE, stage b PASS 0.4486/0.4515. Re-runs agree: five validity suites byte for byte, hashes and counts on three wide-band problems for indexed, slices and tight, TA/A0 instructions 0.24828. No commit-order violation. TA and the client follow the protected arithmetic: my fuzz (38,564 matrices) and 40 driver cases found no difference. Corrections: (1) 'the A3 hypothesis is refuted, the kernels are instruction-bound' is contradicted by the authoritative cells: arm B, with the instruction count of the protected kernel, needs 0.565/0.576 of the cycles of A1; (2) REPORT section 2 shows only the busy-host measurement, not the deciding one, and calls the partition arms slower although they are faster there; (3) labels: undeclared arm BD, typed-in numbers, 'whole-run' for a 40-attempt prefix (my whole runs: 0.447-0.453).",
+  "scope_ok": true,
+  "protected_ok": true,
+  "predeclared_before_results": true,
+  "discriminator_checks": [
+   {
+    "name": "V19 V1: A1 equals A0 bit for bit on S1-S3",
+    "builder_value": "142 of 142 cases",
+    "reviewer_value": "142 of 142; A0 itself equals the reference solve in 154 of 154; check and xcheck logs reproduced byte for byte",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "V19 valid declared arms under V2 and V3",
+    "builder_value": "C8, CV8",
+    "reviewer_value": "C8, CV8 (B, BV fail V2 in 4 S1 cases, worst 1.728e-14; C2, CV2 in 3, worst 1.916e-14; C4, CV4 in 1, 1.031e-14; no silent failure in V3)",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "V19 stage a verdict (PASS <= 0.50 of A0 and <= 0.67 of A1; KILL if every valid arm > 0.77 of A1 at both sizes)",
+    "builder_value": "KILL: C8/A1 0.863 (n=1e4, measure_m2) and 0.887 (n=1e5, measure_m3), authoritative",
+    "reviewer_value": "KILL: C8/A1 0.8633 and 0.8865, CV8/A1 1.193 and 1.248; load 2.4->1.9 and 2.9->3.1; spreads of A1, C8, CV8 <= 0.07; m2 at n=1e5 correctly not authoritative (C8 spread 0.157)",
+    "reviewer_verdict": "KILL",
+    "agrees": true
+   },
+   {
+    "name": "V19 second question (partitioning kept if best C <= 0.77 of best B)",
+    "builder_value": "NOT_DECIDABLE (no valid sequential arm)",
+    "reviewer_value": "NOT_DECIDABLE as frozen; C8/B would be 1.53 and 1.54 if B were valid",
+    "reviewer_verdict": "NOT_DECIDABLE",
+    "agrees": true
+   },
+   {
+    "name": "V19 interpretation: hypothesis of A3 refuted, kernels bound by the instruction count",
+    "builder_value": "refuted by the counters (REPORT section 2, results row V19, ledger L-0320, reason of addendum A4)",
+    "reviewer_value": "not supported: at 163 against 162 instructions per row and solve, arm B needs 32.6/33.3 cycles per row against 60.3/61.1 (A0) and 65.5/66.3 (A1); B/A1 per pattern 0.565 and 0.576 on the deciding cells",
+    "reviewer_verdict": "FAIL",
+    "agrees": false
+   },
+   {
+    "name": "V21 a1 validity: TA bit-identical on every case with lower = upper = 2; TD meets V2 and V3",
+    "builder_value": "TA 78 of 78; TD valid, worst backward error 4.0e-15",
+    "reviewer_value": "TA 78 of 78; TD worst 4.030e-15 on S1, 33 of 33 applicable S2-S4 cases without error",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "V21 a1 PASS-I: TA/A0 instructions per stage pattern <= 0.40 at n = 1e4 and 1e5",
+    "builder_value": "0.2483 and 0.2506",
+    "reviewer_value": "0.24828 (re-measured: A0 1.757920e7, TA 4.364561e6 per pattern) and 0.25059",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "V21 a1 PASS-C: TA/A0 cycles <= 0.60 on authoritative cells",
+    "builder_value": "0.578 (measure_v2_n10000) and 0.568 (measure_v3_n100000), authoritative",
+    "reviewer_value": "0.5782 and 0.5680 recomputed from the logs (first authoritative measurement of each size); all diagnostic measurements 0.543-0.569; my own timing runs 0.552 and 0.578 are diagnostic_only (load 9-17)",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "V21 a2 validity: equal attempts, accepted, rejected, counted band operations and state hash for Indexed and Slices",
+    "builder_value": "equal in every run",
+    "reviewer_value": "equal in all nine drive_v files including warm-ups; my runs of ac2d 64, bruss2d 32 and ac3d 16 print the logged lines",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "V21 a2 PASS-I: Slices/Indexed instructions per attempt <= 0.50 on three wide-band problems",
+    "builder_value": "0.220, 0.221, 0.163",
+    "reviewer_value": "0.22043, 0.22103, 0.16286 (re-measured)",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "V21 a2 PASS-C: cycles <= 0.67 on authoritative cells",
+    "builder_value": "NOT_DECIDABLE (0.402 and 0.400 authoritative, 0.341 diagnostic)",
+    "reviewer_value": "NOT_DECIDABLE: ac3d 16 missed the spread rule in all three measurements (Indexed spread 0.42, 0.28, 0.14); no fourth measurement taken",
+    "reviewer_verdict": "NOT_DECIDABLE",
+    "agrees": true
+   },
+   {
+    "name": "V21 b identity: client run equals the protected banded driver bit for bit (states, counts, every work counter)",
+    "builder_value": "16 of 16 cases",
+    "reviewer_value": "6 test functions pass with --include-ignored; the tests call integrate_rodas5p_fast_banded_observed_with_atol (protected, Indexed); own tests: 38,564 matrices at kernel level and 40 driver cases, 0 differences",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "V21 b: no allocation per step after warm-up",
+    "builder_value": "0 per accepted step (Brusselator n = 1000)",
+    "reviewer_value": "test passes on re-run; n = 1000 only",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "V21 b PASS: instructions of the client run <= 0.60 of the protected banded driver at n = 1e4 and 1e5",
+    "builder_value": "0.4486 and 0.4515 (per attempt, attempts 2-40)",
+    "reviewer_value": "0.44863 and 0.45146 re-measured; complete runs at three tolerances: 0.447-0.449 (Brusselator 1e4), 0.450-0.452 (1e5), 0.450-0.453 (FitzHugh-Nagumo 1e4)",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "Order of pre-registration and data",
+    "builder_value": "A3 and PREDECLARED.json before V19 runs; A4 and PREDECLARED_V21.json before any timing or instruction count of TA, TD, drive mode; PREDECLARED_V21B.json before the client",
+    "reviewer_value": "no violation: 179fabea 14:16:40 and c9a80741 14:22:28 before the first log (14:35:49) and first timing run (14:36:04); 9ad4282f 14:52:41 before drive_v1 (start 14:52:59) and measure_v1 (start 15:00:54); 7d78de29 on 2026-11-17 15:02:39 before the client file (created 2026-11-23 19:22:02)",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "Claim: facade banded route and BandedStageLu use the Indexed kernel; Slices documented and tested as bit-identical",
+    "builder_value": "true",
+    "reviewer_value": "true (rodas5p_fast.rs:1954, 2072, 1637; rodas5p_fast_dense.rs:439). Repository tests of Slices against Indexed cover bands 1 and 2 only (tests/spd03_banded_arm.rs, tests/fast_driver_golden_digest_contracts.rs, src/banded_exact_tests.rs); wide bands rest on the state hashes of this node",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "Sentinels, clippy with -D warnings on the library, loop checker",
+    "builder_value": "pass",
+    "reviewer_value": "ppsw1_6b_contracts 37 passed, ptsw2b_contracts 24 passed; clippy exit 0; check_checkpoint.py PASS",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   }
+  ],
+  "findings": [
+   {
+    "id": "F01",
+    "severity": "major",
+    "claim": "REPORT_KO.md section 2 (interpretation), the results row of V19 in PREREGISTRATION.md, the last sentence of ledger row L-0320 and the reason of addendum A4 state that the hypothesis of addendum A3 (dependent chain) is refuted and that the banded kernels are bound by the instruction count.",
+    "evidence": "Deciding cells logs/measure_m2_n10000.jsonl and logs/measure_m3_n100000.jsonl (load 1.9-3.1): arm B, the reordered back substitution of A3, executes 163.0/163.7 instructions per row and solve (A0 162.0/162.7, A1 152.0/152.8) in 32.6/33.3 cycles per row against 60.3/61.1 (A0) and 65.5/66.3 (A1); per stage pattern B needs 0.565/0.576 of A1 and 0.600/0.609 of A0 (spreads 0.017/0.079). Exploratory arms: BD (division kept, valid under V2 and V3) 0.612 of A1 at n=1e4, B3 0.501/0.509 of A0. V21 cells: at 42 instructions per row and solve TA needs 35.5/36.1, TD 26.5/27.2, TS 15.0/15.4 cycles per row; TD (valid) is at 0.449/0.444 of A0 and 0.417/0.415 of A1, inside the numerical pass levels of V19. A1 has 0.918 of the instructions of A0 and 1.06-1.08 of its cycles. My diagnostic runs: B/A1 0.62 (1e4) and 0.57 (1e5).",
+    "correction": "Keep the frozen verdict KILL (the only valid declared arms are C8 and CV8). Replace the interpretation: KILL follows from the validity rule (B misses V2 with 1.7e-14 against 1e-14); the dependent chain is a real cost, reordering alone halves the solve cycles at unchanged instruction count, and with a valid sequential arm the outcome would have been FAIL. Instruction count and chain are two levers of similar size on the solves. Supersede the last sentence of L-0320 and add a dated note to the results section and PROGRESS.md."
+   },
+   {
+    "id": "F02",
+    "severity": "major",
+    "claim": "REPORT_KO.md section 2 documents the V19 verdict KILL with tables of cycle ratios and says the partition arms are slower.",
+    "evidence": "build_report.py:36-38 and 137-138 print only the first complete measurement of each size (logs/measure_m1_*.jsonl, load 38->27.9 and 27.9->14.5, spreads up to 1.09, 'load rule met: False'). The files that decide the verdict (verdicts.per_size in RESULTS.json: logs/measure_m2_n10000.jsonl, logs/measure_m3_n100000.jsonl) are not rendered; 0.863 and 0.887 appear nowhere in the report, which shows C8 at 1.246/1.744 of A1 and B at 0.702/0.764. On the deciding cells C2, C4 and C8 need 0.85-0.89 of the cycles of A1 and 0.90-0.94 of A0, so the sentence that the partition arms are slower is false there (only the CV arms are slower: 1.17-1.25 of A1).",
+    "correction": "Render the measurement named in verdicts.per_size for each size (all measurements if space allows) and correct the sentence about the partition arms."
+   },
+   {
+    "id": "F03",
+    "severity": "minor",
+    "claim": "Addendum A4: thresholds were fixed before any timing run or instruction count of TA, TD or the whole-run mode existed; the reason cites the first rounds of the running V19 measurement.",
+    "evidence": "File evidence supports the first part: second binary built 14:48:50 (sha256 54f4bc07, as PREDECLARED_V21.json), xcheck logs 14:49:19, commit 9ad4282f 14:52:41, first drive_v run started 14:52:59, first measure_v run 15:00:54; no measure_x or drive_x file exists. But logs/measure_m1_n10000.jsonl was complete at 14:50:42, not only its first rounds, with arms A0, A1, B3 and BD that V21 a1 uses as baseline or reports: every denominator of the a1 thresholds was known. Sibling arms were at 0.90-0.97 of the instructions of A0, so 0.40 was not fitted (measured 0.25); the cycle margin is thin (0.578/0.568 against 0.60). Order notes: 1ac99cf7 (TA, TD, TS code and validity logs, then labelled exploratory) precedes 9ad4282f, as A4 declares; 7d78de29 (PREDECLARED_V21B.json) follows 750b8e42 (drive_v1 logs) and the start of measure_v1, the stage b thresholds being frozen earlier in 9ad4282f. The output of the smoke run named in A4 was not kept. Not verifiable by me: pushes to the remote and the absence of unlogged ad-hoc runs.",
+    "correction": "State in the record that the complete n = 1e4 cell of V19 with A0, A1, B3 and BD existed when A4 was frozen."
+   },
+   {
+    "id": "F04",
+    "severity": "minor",
+    "claim": "PREDECLARED.json lists the exploratory arms of V19; PROGRESS.md (14:50) says arm BD was added after the first look at the timing data.",
+    "evidence": "BD is not in PREDECLARED.json (exploratory list: B2, B3, other bandwidths, n = 1e6, P = 16, S5). It is in the first binary, in logs/check_S*.log (630 = 42 x 15 lines) and in the arm list of logs/measure_m1_n10000.jsonl, started 14:36:04; runner/src/kernel.rs:271, 608, 1013 call it post hoc, added after the validity runs. RESULTS.json valid_arms and the report line of valid arms mix BD, C16 and CV16 with the declared arms.",
+    "correction": "Label BD as an undeclared post hoc arm added between the validity run and the first timing run, correct the PROGRESS sentence, and list the valid declared arms separately."
+   },
+   {
+    "id": "F05",
+    "severity": "minor",
+    "claim": "REPORT_KO.md line 3 and the docstring of build_report.py: every number in the report is read from the two result files.",
+    "evidence": "build_report.py:151, 159, 160 hold typed-in numbers: '0.46-0.62' (logs/xflag_v3_instructions.log; no committed script produces its XFLAG lines; the values recompute to 0.4615-0.6226), 'about 150' and 'about 95 instructions per component and stage' for the stage arithmetic, attributed to V04. I did not find the last figure in cost_anatomy/REPORT_KO.md, and this node's own logs leave about 79 instructions per component and stage for everything outside the band kernel at n = 1e4 ((1.0688e7 - 4.3646e6) / 8e4), right-hand side and Jacobian included.",
+    "correction": "Read these numbers from a result file or remove them; source or drop the figure 95."
+   },
+   {
+    "id": "F06",
+    "severity": "minor",
+    "claim": "V21 stage b PASS: whole-run instructions at most 0.60 of the protected banded driver on the one-dimensional cells with n >= 1e4.",
+    "evidence": "PREDECLARED_V21B.json (committed before the client existed) measures the marginal cost of attempts 2-40 on the Brusselator at one tolerance; the FitzHugh-Nagumo cell with n = 1e4 and the other tolerances are not measured. My complete runs (own program, perf stat instructions:u, equal hashes and counts): 0.4470/0.4478/0.4487 (Brusselator n = 1e4, rtol 1e-4/1e-6/1e-8), 0.4496/0.4505/0.4515 (n = 1e5), 0.4526/0.4513/0.4503 (FitzHugh-Nagumo n = 1e4); the client driver with the protected client BandedStageLu gives 1.0000.",
+    "correction": "Label the logged measure as instructions per attempt over attempts 2-40; the criterion as worded also holds on complete runs (reviewer data, exploratory)."
+   },
+   {
+    "id": "F07",
+    "severity": "minor",
+    "claim": "REPORT section 3 and the results section leave a switch of the facade's kernel to Slices to the owner.",
+    "evidence": "The narrow control of stage a2 (logs/drive_v2_bruss1d5000.jsonl, authoritative) shows Slices at 0.980 of the instructions but 1.143 of the cycles of Indexed on band 2; this is in the table and not in the text or the results row. The protected file also holds BandedKernel::FixedWidth2 (rodas5p_fast.rs:195-197, 560-641), which A4 and the report do not mention: my runs give 0.915 of the instructions of Indexed and 1.05-1.13 of its cycles (diagnostic).",
+    "correction": "Add to the owner note: Slices gains on wide bands (0.40 of the cycles, authoritative on two of three problems) and costs about 14% on band 2, so a kernel switch should depend on the band width; the new client needs about 0.49 of the instructions of FixedWidth2."
+   },
+   {
+    "id": "F08",
+    "severity": "minor",
+    "claim": "banded_tight.rs: nothing allocates after new; the client behaves as BandedStageLu.",
+    "evidence": "Read side by side with BandState::factor and solve (rodas5p_fast.rs:375-437, 528-558) I found no arithmetic difference: assembly (-J) + inv on all slots, strict-greater pivot search, swap of columns k..k+4, skip on a multiplier equal to 0.0 (also -0.0), ascending row updates, substitutions in the protected order, last four columns and rows through the general step. Counters and the singular-pivot error text are equal (checked at every column). Differences outside the driver's call sequence: solve_fixed2 computes p - k (lines 269, 282), which underflows if solve_in_place is called before a successful factor (pivots are zero): panic in a debug build, wrap in release, where BandedStageLu never panics. The singular-pivot path allocates the error message, as the protected kernel does. The node's tests have a singular pivot at column 0 only, no non-autonomous problem and the allocation test at n = 1000 only; my tests cover zero columns and NaN or infinite entries at every position, interchanges in the last columns, ties, denormals, n = 3 to 1000, non-finite shifts, a non-autonomous problem, rejected steps, attempt budgets and an injected non-finite Jacobian entry.",
+    "correction": "Optional: document the precondition or use a wrapping subtraction, adjust the sentence on allocation, add a test with a singular pivot in the last four columns."
+   },
+   {
+    "id": "F09",
+    "severity": "minor",
+    "claim": "The measurement program and the parsers guard the timed runs.",
+    "evidence": "runner/src/main.rs:481-483: the checksum is an XOR over an even number of identical patterns, so every BENCH line prints checksum=0000000000000000 and does not witness the solution of the timed run (validity rests on the check mode). build_results_v21.py:63-65 and 118 skip failed runs silently, build_results.py:140 skips incomplete rounds, and no parser caps the measurement index at three. No effect on these logs: 0 failed runs, 7 rounds in every arm, largest index 3."
+   },
+   {
+    "id": "F10",
+    "severity": "minor",
+    "claim": "Results section: measurement 1 of every cell was taken on 2026-11-17 on a busy host (load 14-40). Addendum A4: every arm of V19 spends about 150-160 instructions per row and solve.",
+    "evidence": "The stage b cells were first measured on 2026-11-23 at a load of 8.7-10.7 (logs/drive_b1_*.jsonl). Instructions per row and solve in the logs: A0 162, A1 152, B 163, BD 162, B2 153, B3 140, C arms 214-223, CV arms 342-352.",
+    "correction": "Correct both sentences in a dated note."
+   },
+   {
+    "id": "F11",
+    "severity": "minor",
+    "claim": "The frozen V19 series can be re-run with the binary named in the log headers.",
+    "evidence": "The headers of logs/measure_m*.jsonl name /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v04/release/v19-banded-solve-runner; the evidence records no hash of it, and that directory was removed during this review (between 21:05 and 21:43). The copy /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v19-runner-v1 has sha256 3aa713642cea..., equal to the w2-v04 binary when I hashed both at 21:05, and reproduces the logged instruction counts of A1, B, C8 and CV8 at n = 1e4 to nine digits.",
+    "correction": "Record the hash and the surviving path of the first binary in the evidence."
+   },
+   {
+    "id": "F12",
+    "severity": "minor",
+    "claim": "Reviewer's own cycle measurement of PASS-C.",
+    "evidence": "A copy of measure.py with my build, the timing lock and core 9, after the bounded wait of 20 minutes: load 9.4->17.6 at n = 1e4 and 9.1->12.3 at n = 1e5, so both cells are diagnostic_only. TA/A0 0.552 and 0.578, TD/A0 0.429 and 0.457. Consistent with the logged authoritative cells; no independent authoritative confirmation of the cycle verdicts was possible. Reviewer material: /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-orch-review/scratch/ (FINDINGS_SCRATCH.txt, recompute.py, compare_results.py, rvtest/src/main.rs, rerun/, timing/logs/)."
+   },
+   {
+    "id": "F13",
+    "severity": "minor",
+    "claim": "The protected driver, its kernels and the default route are not edited.",
+    "evidence": "git diff e2e6ce2e..587a1395 on the protected paths shows only crates/rodas5p-integrators/src/stage_clients/mod.rs (+2 lines in 12edfdfb: the pre-registered module line and a re-export that the frozen row does not mention, with the checkpoint hash updated in the same commit) and research/LEDGER.jsonl (+7 rows by the orchestrator). rodas5p_fast.rs, lib.rs, the facade and every manifest are unchanged; both nodes stay inside their write allowlist; the loop checker passes at the base commit."
+   }
+  ],
+  "reran": [
+   {
+    "command": "cd research/production_loop_20261116/banded_solve/runner && CARGO_TARGET_DIR=/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-orch-review/target taskset -c 0-5,12-17 cargo +1.94.1 build --locked -j 4 --release",
+    "exit_code": 0,
+    "result": "built in 1m51s; binary sha256 3fd36e3c...; the review worktree stayed clean"
+   },
+   {
+    "command": "taskset -c 0-5,12-17 v19-banded-solve-runner check S1 | S2 | S3 | S4 | S5",
+    "exit_code": 0,
+    "result": "all five outputs byte-identical to logs/xcheck_S*.log; with the TA, TD, TS lines removed also byte-identical to logs/check_S*.log"
+   },
+   {
+    "command": "taskset -c 0-5,12-17 perf stat -x, -e instructions:u,cycles:u -- v19-banded-solve-runner drive <ac2d 64 16 | bruss2d 32 16 | ac3d 16 6 | bruss1d 5000 40 | bruss1d 50000 40> <indexed|slices|fixed2|tight> (budget 1 and full)",
+    "exit_code": 0,
+    "result": "DRIVE lines identical to every logged run; hashes and counts equal across kernels; slices/indexed instructions 0.22043, 0.22103, 0.16286, 0.97992; tight/indexed 0.21556, 0.21611, 0.16168, 0.44863, 0.45146; fixed2/indexed 0.91485; logged instruction counts matched to at least 5 digits"
+   },
+   {
+    "command": "taskset -c 0-5,12-17 perf stat -x, -e instructions:u,cycles:u -- v19-banded-solve-runner bench <A0|TA|TD|A1> 10000 <0 0 | 2000 0 | 2000 8> (twice)",
+    "exit_code": 0,
+    "result": "instructions per pattern A0 1.757920e7, TA 4.364561e6, ratio 0.24828 (logged 0.24828); raw counts agree with the logs to at least 6 digits"
+   },
+   {
+    "command": "taskset -c 0-5,12-17 perf stat -e instructions:u -- /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v19-runner-v1 bench <A1|B|C8|CV8> 10000 <three run types>",
+    "exit_code": 0,
+    "result": "preserved first binary (sha256 3aa71364...) reproduces the instruction counts of logs/measure_m2_n10000.jsonl to nine digits"
+   },
+   {
+    "command": "python3 -I scratch/recompute.py and scratch/compare_results.py (own parser of check, measure and drive logs)",
+    "exit_code": 0,
+    "result": "1098 values of RESULTS.json and RESULTS_V21.json compared, 0 mismatches; all verdicts reproduced"
+   },
+   {
+    "command": "python3 -I build_results.py; build_results_v21.py; build_report.py in a scratch copy of banded_solve (scripts and logs)",
+    "exit_code": 0,
+    "result": "RESULTS.json, RESULTS_V21.json and REPORT_KO.md regenerate byte-identically (sha256 bb617138..., 5a7ea626..., 2d5bbf61...); strict JSON; 7 rounds per arm everywhere; 0 failed runs"
+   },
+   {
+    "command": "scratch/rvtest fuzz (own program: BandedTightStageLu against BandedStageLu through the trait)",
+    "exit_code": 0,
+    "result": "38,564 matrices (24,710 with lower = upper = 2, n = 3..1000), 96,001 factor calls of which 28,007 errors, every solution bitwise including non-finite ones, error text and the whole WorkCounters: 0 mismatches; 41,889 extra comparisons with rodas5p_fast_banded_solve: 0 mismatches"
+   },
+   {
+    "command": "scratch/rvtest driver (own program: protected banded driver against the client driver with the tight client)",
+    "exit_code": 0,
+    "result": "40 cases, 0 mismatches: non-autonomous problem (ft_calls > 0), rejected steps, attempt budgets 1, 2, 7, 33 with partial results, non-finite Jacobian entry injected on one callback call (one failed factorisation in each run), n = 4 to 1000"
+   },
+   {
+    "command": "perf stat -e instructions:u -- scratch/rvtest whole <bruss|fhn> <cells> <rtol> <indexed|tight|protclient|slices|fixed2>",
+    "exit_code": 0,
+    "result": "complete runs, equal hashes and counts: tight/indexed 0.4470-0.4487 (Brusselator n = 1e4), 0.4496-0.4515 (n = 1e5), 0.4503-0.4526 (FitzHugh-Nagumo n = 1e4); slices 0.979, fixed2 0.914, client driver with BandedStageLu 1.0000"
+   },
+   {
+    "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test stage_clients_banded_tight_identity --test stage_clients_banded_tight_alloc -- --include-ignored",
+    "exit_code": 0,
+    "result": "identity 6 passed (n = 1e5 cell included), allocation 1 passed"
+   },
+   {
+    "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test ppsw1_6b_contracts --test ptsw2b_contracts",
+    "exit_code": 0,
+    "result": "37 passed and 24 passed"
+   },
+   {
+    "command": "taskset -c 0-5,12-17 cargo +1.94.1 clippy --locked -j 4 --release -p rodas5p-integrators --lib --no-deps -- -D warnings",
+    "exit_code": 0,
+    "result": "no warning"
+   },
+   {
+    "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
+    "exit_code": 0,
+    "result": "PASS: strict JSON, task/DAG structure, ancestry, protected and evidence identities"
+   },
+   {
+    "command": "python3 -I scratch/timing/measure.py <runner> <10000|100000> 1 --tag r --arms A0,A1,B,BD,TA,TD (copy of the node's harness: timing lock, core 9, 2 warm-ups + 7 rounds)",
+    "exit_code": 0,
+    "result": "diagnostic_only (load 9.4->17.6 and 9.1->12.3): TA/A0 0.552 and 0.578, TD/A0 0.429 and 0.457, B/A1 0.622 and 0.566, BD/A1 0.685 and 0.626"
+   }
+  ]
+ }
+}

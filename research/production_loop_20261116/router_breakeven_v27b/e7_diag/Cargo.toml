@@ -1,0 +1,25 @@
+# V30 phase 1 (node V30_ROUTER_BREAKEVEN_V27B): E7 diagnosis on P_scalar_fd, one tolerance pair
+# per process, one JSON line of raw values per experiment on stdout. Not part of any deciding set.
+#
+# Built against the crates of this worktree (the V27 FBP implementation merged with the loop head);
+# Cargo.lock is the V27 runner's lock with the root package renamed (the dependency graph of the
+# facade is unchanged between 60d67729 and 91e9e582), so the build runs with --locked.
+[package]
+name = "v30-e7-diag"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+vigilode = { path = "../../../../crates/vigilode" }
+serde_json = "1"
+
+# the release profile of the V27 runner (that of the repository workspace)
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+
+# a workspace of its own: the repository workspace does not list this package
+[workspace]

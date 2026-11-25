@@ -1,0 +1,27 @@
+{
+  "schema": "vigilode.loop.amendment.v1",
+  "id": "A8.2",
+  "node": "V27_ROUTER_HYPERPARAMETER_FREE",
+  "date_kst": "2026-11-24 23:40",
+  "recorded_before": "any run of the deciding set (phase 2 has not started; phase 1 ran only the toy problem y' = -y on [0, 1])",
+  "items": [
+    {
+      "topic": "fixture spans of the start-rule and callback groups",
+      "reason": "PREDECLARED.json says 'with their V03b spans', but the V03b contracts use these fixtures at several sizes and spans (heat_dense(64), heat_jvp(9, 12, 25), heat_band_callback(16), scalar_dense, the singular-mass Robertson DAE); the phrase does not name one span.",
+      "fixed_values": {
+        "P_heat_dense": "heat_dense(8), span [0, 10], y0 = sin(pi x)",
+        "P_scalar_dense": "scalar_dense, span [0, 1]",
+        "P_heat_jvp": "heat_jvp(8), span [0, 0.01], y0 = 1",
+        "P_heat_banded": "heat_band_callback(8), span [0, 0.01], y0 = 1",
+        "P_mass": "the singular-mass Robertson DAE fixture, span [0, 1]",
+        "P_blowup": "blowup, span [0, 2]"
+      },
+      "source": "the phase-1 builder's runner choices (PHASE1_BUILD.json, open issues), adopted unchanged"
+    },
+    {
+      "topic": "exploratory arms N_prod and N_cont",
+      "decision": "not run",
+      "reason": "each needs a router variant; a public option is excluded by owner decision D6, and a re-implementation in the runner would be inexact because the attempt telemetry it needs (trial_h, requested_h, clipped) is crate-private. The arms carried no rule (PREDECLARED arms.exploratory_without_rule); no discriminator changes."
+    }
+  ]
+}

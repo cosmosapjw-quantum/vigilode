@@ -248,7 +248,8 @@ fn abba_order_is_seeded_mirrored_and_balanced() {
     let order = abba_pair_order(30, SEED);
     assert_eq!(order, abba_pair_order(30, SEED));
     assert_eq!(order.len(), 30);
-    for block in order.chunks_exact(2) {
+    let (blocks, _) = order.as_chunks::<2>();
+    for block in blocks {
         assert_eq!(block[0], [block[1][1], block[1][0]]);
     }
     let candidate_first = order

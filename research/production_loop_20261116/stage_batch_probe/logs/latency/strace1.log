@@ -1,0 +1,16 @@
+# condition strace1 pools 200 cpu1 8 2026-11-25 10:31:33 KST loadavg 6.35 18.48 32.90 6/5952 3246334
+# executable /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v32/probe-bins/latency_test-52a2d45e sha256 c03a9dca96ac65c2141efed76913692de80a23ed389e66cffb19575894628b5b
+
+running 1 test
+test rendezvous_wait_on_fresh_pools_diagnostic ... diagnostic pools=200 second_task_never=0 wait_seconds min=0.000004 median=0.000013 p90=0.000063 p99=0.000297 max=0.000651
+diagnostic largest[0]=0.000651
+diagnostic largest[1]=0.000334
+diagnostic largest[2]=0.000297
+diagnostic largest[3]=0.000240
+diagnostic largest[4]=0.000190
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.84s
+
+exit=0
+# end 2026-11-25 10:31:35 KST busy loops left: 0

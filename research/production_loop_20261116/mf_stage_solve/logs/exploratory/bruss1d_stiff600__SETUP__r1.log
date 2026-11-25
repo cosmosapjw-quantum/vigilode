@@ -1,0 +1,9 @@
+# V17_LOG_BEGIN {"binary": "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v17/release/deps/stage_clients_krylov_v17_measure-b6c134331ade4bf3", "binary_sha256": "533d04044ca00e3961de06bfeac9532c8ce33f5f4697f37f135c61277a0ae35d", "git_head": "df6dfa6fede330dfa66d3d22d7c0c3cc0dfb3acd", "git_dirty_tracked": 1, "phase": "exploratory", "name": "bruss1d_stiff600__SETUP__r1", "date": "2026-11-17T15:12:25+0900", "env": {"V17_FAMILY": "bruss1d_stiff600", "V17_MODE": "SETUP", "V17_LABEL": "exploratory"}, "perf": true, "timing": false, "command": ["taskset", "-c", "0-5,12-17", "perf", "stat", "-x", ",", "-e", "instructions:u", "-o", "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v17/research/production_loop_20261116/mf_stage_solve/logs/exploratory/bruss1d_stiff600__SETUP__r1.perf", "--", "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v17/release/deps/stage_clients_krylov_v17_measure-b6c134331ade4bf3", "--ignored", "--nocapture", "--exact", "v17_run"], "cpus": "0-5,12-17", "loadavg_before_launch": "40.64 41.00 38.19 27/7886 1059287"}
+
+running 1 test
+V17_RUN_JSON {"family":"bruss1d_stiff600","label":"exploratory","mode":"SETUP","n":1200,"schema":"vigilode.loop-l1.v17.run.v1","setup_only":true,"t_span":[0.0,10.0]}
+test v17_run ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+# V17_LOG_END {"exit_code": 0, "timed_out": false, "seconds": 0.06413769721984863, "loadavg_after_exit": "40.64 41.00 38.19 25/7886 1059292", "date": "2026-11-17T15:12:25+0900"}

@@ -5,6 +5,11 @@ use crate::{CoreError, CoreResult, DenseMatrix, WorkCounters, direct_solve};
 
 static NEXT_TOKEN: AtomicU64 = AtomicU64::new(1);
 
+/// Advance and return the next monotonically increasing operator token.
+pub fn next_operator_token() -> u64 {
+    NEXT_TOKEN.fetch_add(1, Ordering::Relaxed)
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ExactDenseMatrixIdentity {
     rows: usize,

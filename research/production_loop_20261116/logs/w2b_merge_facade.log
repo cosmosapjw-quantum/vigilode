@@ -1,0 +1,93 @@
+   Compiling vigilode v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116/crates/vigilode)
+    Finished `release` profile [optimized] target(s) in 36.06s
+     Running tests/default_path_golden.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/default_path_golden-ffa1f3e7a79e95a9)
+
+running 11 tests
+test format_helpers_are_bit_faithful ... ok
+test golden_directory_is_exactly_the_listed_files ... ok
+test dopri5 ... ok
+test production_automatic ... ok
+test rodas5p_contracts ... ok
+test rodas5p_hires ... ok
+test rodas5p_robertson ... ok
+test rodas5p_vanderpol ... ok
+test decision_grid ... ok
+test general_ode ... ok
+test rodas5p_brusselator ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.76s
+
+     Running tests/production_selection_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/production_selection_contracts-0dd970ee5bb21945)
+
+running 6 tests
+test default_is_rhs_only_even_with_provided_derivatives ... ok
+test matrix_free_is_an_explicit_permission_and_inherits_atol_refusal ... ok
+test resource_ceiling_includes_dense_callbacks_with_declared_band ... ok
+test failure_preserves_partial_state_and_typed_error ... ok
+test unsupported_requests_and_permissions_fail_without_callbacks ... ok
+test selected_implicit_method_matches_direct_method_and_fd_is_opt_in ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/unified_frontend_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/unified_frontend_contracts-9e56bd7e5363fb4e)
+
+running 31 tests
+test auto_ranking_is_transparent_and_refuses_before_any_callback ... ok
+test catalog_extends_the_registry_and_states_what_is_unavailable ... ok
+test cod02_p5_invalid_h0_is_refused_before_any_callback ... ok
+test cod03_audit_cases_agree_through_route ... ok
+test auto_fallback_is_opt_in_bounded_by_permissions_and_never_silent ... ok
+test cod04b_p2a_starter_endpoint_above_t_end_is_a_success_with_exact_endpoint ... ok
+test cod04c_p4_recoverable_jacobian_error_is_reported_as_itself ... ok
+test cod04a_p1_jvp_provider_needs_the_jvp_permission ... ok
+test cod04cd_p6_fatal_rhs_error_is_reported_as_a_fatal_callback ... ok
+test cod04e_p7_declared_band_is_refused_by_admission_too ... ok
+test cod02_p3_fast_forcing_20_is_error_controlled_or_refused ... ok
+test d2_bdf_adapter_is_bitwise_the_direct_call ... ok
+test d2_dopri5_adapter_and_general_plan_are_bitwise_the_direct_calls ... ok
+test d2_lagged_rodas5p_adapter_is_bitwise_the_direct_call ... ok
+test d2_lawson_adapter_is_bitwise_the_direct_call_and_needs_its_declaration ... ok
+test d2_pexprb_adapter_is_bitwise_the_direct_call ... ok
+test d2_ppsw1_adapter_is_bitwise_the_direct_call ... ok
+test d2_radau_adapter_is_bitwise_the_direct_call ... ok
+test d2_rodas5p_adapter_is_bitwise_the_direct_call_on_every_facade_route ... ok
+test d3_explicit_refusals_are_typed ... ok
+test cod02_p3b_fast_forcing_200_is_error_controlled_or_refused ... ok
+test d3_solve_refuses_malformed_input_before_any_callback ... ok
+test peer_baseline_digests_of_the_u07_cases ... ok
+test peer_fatal_rhs_error_on_a_peer_step_is_typed_with_prefix ... ok
+test peer_recoverable_jacobian_error_on_a_peer_step_is_typed_and_stops ... ok
+test peer_starter_record_and_typed_starter_failure ... ok
+test view_reports_the_executed_route_when_the_capability_query_disagrees ... ok
+test view_reports_typed_failure_with_accepted_prefix_and_work ... ok
+test d1_route_general_equals_select_on_the_golden_decision_grid ... ok
+test d3_route_is_pure_for_every_choice_over_the_extension_grid ... ok
+test d1_phase_b_select_equals_the_reference_body_on_the_extension_grid ... ok
+
+test result: ok. 31 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.51s
+
+     Running tests/unified_method_capabilities.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/unified_method_capabilities-5935450206d4fca1)
+
+running 6 tests
+test r2_request_construction_and_query_call_no_user_code ... ok
+test r3_policy_mapping_is_a_set_and_newton_methods_stay_refused ... ok
+test r5_routes_name_real_exports_and_ids_match_the_code ... ok
+test r6_peer_mass_and_events_are_refused_before_work ... ok
+test r4_serde_round_trip_and_unknown_or_missing_fields_are_refused ... ok
+test r1_exhaustive_permission_and_feature_combinations_match_the_spec_table ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/unified_method_sessions.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/unified_method_sessions-065927b900e7fcbf)
+
+running 6 tests
+test e2_refusals_happen_before_any_callback ... ok
+test e3_short_span_caps_the_starter_at_the_endpoint ... ok
+test e6_no_switching_and_no_default_routing_change ... ok
+test e4_fatal_callback_keeps_the_accepted_prefix_and_charged_work ... ok
+test e5_recoverable_callback_rejects_then_recovers ... ok
+test e1_end_to_end_dense_and_jvp_reach_the_endpoint_accurately ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+# exit=0

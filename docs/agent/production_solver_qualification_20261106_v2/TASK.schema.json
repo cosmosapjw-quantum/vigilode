@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "task_id",
+    "title",
+    "priority",
+    "status",
+    "base_sha",
+    "depends_on",
+    "read_allowlist",
+    "write_allowlist",
+    "math_contract",
+    "implementation_contract",
+    "acceptance",
+    "requires_isolated_worktree",
+    "requires_owner_approval",
+    "mutation_required"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9-]+$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 8
+    },
+    "priority": {
+      "enum": [
+        "P0",
+        "P1",
+        "P2"
+      ]
+    },
+    "status": {
+      "enum": [
+        "PROPOSED_NOT_AUTHORIZED",
+        "AUTHORIZED",
+        "IN_PROGRESS",
+        "BLOCKED",
+        "IMPLEMENTED_UNVERIFIED",
+        "VERIFIED",
+        "CLOSED"
+      ]
+    },
+    "base_sha": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "depends_on": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "read_allowlist": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "write_allowlist": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "math_contract": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "implementation_contract": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "acceptance": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "requires_isolated_worktree": {
+      "const": true
+    },
+    "requires_owner_approval": {
+      "const": true
+    },
+    "mutation_required": {
+      "const": true
+    }
+  },
+  "additionalProperties": true
+}

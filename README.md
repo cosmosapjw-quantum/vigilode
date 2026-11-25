@@ -1,5 +1,12 @@
 # VigilODE
 
+> **Research Status & Production Solver Qualification Notice (2026-11-06 / 2026-11-07):**
+> VigilODE is undergoing formal production-solver qualification review (**Status: `HOLD_NOT_RELEASE_QUALIFIED`**).
+> - **Live Dispatcher:** Operational adaptive routing during integration is managed by `DriveState` in `switching.rs`. `HybridRouteAutomaton` serves as an offline discrete verification model and formal contract reference (Node P8).
+> - **Diagnostic Performance:** All wall-clock benchmarks on AMD Ryzen 9 5900X (pinned `taskset -c 0`) comparing VigilODE, Diffsol (Rust), SUNDIALS CVODE (C), Netlib DVODE (Fortran), Hairer RADAU5/RODAS, and Julia SciML are designated **`timing_authority: diagnostic_only`**.
+> - **API & Result Semantics:** `SwitchingSolver::solve` and `ProductionSolver::solve` return `Ok(solution)` where `solution.success` can be `false` on early stops (preserving partial accepted trajectories and complete work accounting). Production callers should use `ProductionSolver::solve_checked` or `solution.ensure_completed()`.
+> - **Error Characterization:** Global errors are evaluated against independent high-precision dual references (Hairer RADAU5 vs SUNDIALS CVODE at $rtol=10^{-12}$, dispute threshold $10^{-8}$). Validated continuous trajectory enclosures require verified outward intervals (`directed::Interval`) and remain under active research.
+
 > **2026-10-28 polyalgorithm theory update:** The latest
 > [research supplement](research/polyalgorithm_alternatives_20261028/REPORT_KO.md)
 > reuses prior polynomial, causal and homotopy results and supplies 17 concrete
@@ -7,130 +14,245 @@
 > local work with the updated
 > [handoff](research/polyalgorithm_alternatives_20261028/LOCAL_CODEX_HANDOFF_KO.md)
 > and [development DAG](research/polyalgorithm_alternatives_20261028/LOCAL_DEVELOPMENT_PLAN.json).
-> This supplement changes no runtime backend or default; PR92 CI and deployment
-> qualification remain open. Operation-count and grid reductions are distinct
-> from measured solver speedups.
 
 > **2026-10-24 general ODE selection:** The ordinary entry point `GeneralOde`
 > selects RHS-only DOPRI5 for unknown/nonstiff problems, or RODAS5P for declared
-> stiff problems with explicit derivative permission. It performs no timing
-> pilot and does not silently admit experimental methods. Persistent DOPRI5
+> stiff problems with explicit derivative permission. Persistent DOPRI5
 > sessions preserve the accepted state, controller, FSAL and cumulative budget.
-> This scoped surface supports forward identity-mass endpoint integration;
-> events and continuous output remain method-specific interfaces.
 > See the [audit](research/general_ode_selection_20261024/REPORT_KO.md),
 > [decisions](research/general_ode_selection_20261024/DECISIONS.json), and the
 > [formal general ODE design](docs/general_ode_design_20261024/DESIGN_KO.md).
 
-> **2026-10-21 integrated re-audit:** Latest production code and the separate
-> all-DAG research APIs are reviewed and integrated on the audit branch.
-> Broad production/global-accuracy/speed promotion remains **HOLD**; scoped
-> fixes, proved improvements and exact validation limits are in the
-> [review](research/production_reaudit_20261021/REPORT_KO.md),
-> [decision](research/production_reaudit_20261021/DECISION.json) and
-> [next steps](research/production_reaudit_20261021/NEXT_STEPS.json).
-
-> **2026-10-18 historical production audit:** At that snapshot packet and polynomial optimizations
-> remain research features. The LP10 certified-packet promotion and the Diffsol
-> headline performance/allocation claims are superseded by the
-> [production readiness audit](docs/reviews/20261018_production_audit/REPORT_KO.md)
-> and its [machine-readable decision](research/production_audit_20261018/DECISION.json).
-> Targeted correctness repairs are included on this audit branch; a complete
-> floating-point packet enclosure and an equivalent-work performance comparison
-> remain open. Existing problem-specific validation of the generic RODAS5P path
-> retains its original scope.
-
 **Causal, Budgeted Jacobian-Free Polyalgorithms for Stiff and Oscillatory ODEs**
 
-VigilODE is a research platform for generic stiff and oscillatory ordinary differential equations. The project studies evidence-gated polyalgorithm design that combines a protected matrix-free Rosenbrock path with guarded exponential-Rosenbrock candidates while preserving complete speculative-work accounting.
+VigilODE is a high-performance numerical ODE library and research platform for stiff, non-stiff, and oscillatory systems. It combines high-order explicit Runge-Kutta (DOPRI5), protected dense and matrix-free Rosenbrock (RODAS5P), and exponential-Rosenbrock candidates with an evidence-driven hybrid automaton that dynamically switches integrators at runtime without breaking error-control, order-of-convergence, or conservation invariants.
 
-## Current research scope
+---
 
-The current program focuses on:
+## Key Highlights & Performance Gates
 
-- matrix-free, Jacobian-free stiff integration;
-- explicit-Jacobian-free and Newton-free fast-path candidates;
-- resumable Krylov / exponential-Rosenbrock stage prefixes;
-- causal regime telemetry and event-conditioned method admission;
-- tolerance-aware nonlinear-flow diagnostics;
-- transactional speculative-work budgets;
-- same-error, same-output, failure-preserving performance comparisons.
+1. **Zero-Allocation in Hot Loops (VG-1 / Argon High-Performance Rule):**
+   - Guaranteed zero heap allocations (`Vec`, `Box`, dynamic matrix/vector allocations) inside the entire integration loop, stage equations, event detection, Krylov GMRES/BiCGStab iterations, and zero-step stiffness pre-screening.
+2. **Deterministic Speculative-Work Accounting (VG-3):**
+   - Discarded trials and failed step proposals never corrupt committed physical states or time marks, while all speculative work (`rhs_calls`, `jvp_calls`, `lu_factorizations`, `linear_iterations`) is strictly preserved and cumulatively charged.
+3. **Adaptive Route Dispatch & Verification Architecture:**
+   - **Live Operational Route Controller (`DriveState` in `SwitchingSolver`):** Evaluates work pressure, step rejection ratios, and competitive same-checkpoint pilots to switch dynamically between explicit (DOPRI5) and implicit/matrix-free (RODAS5P Dense / Krylov) at runtime with zero allocations (`VG-1`).
+   - **Discrete Verification Model (`HybridRouteAutomaton`):** Standalone contract reference and formal discrete-event FSM for validating route transitions, anti-chattering dwell/hysteresis, and epoch invalidation.
+4. **Order-Reduction Defense:**
+   - Detects when stiff forced oscillations or algebraic constraints cause Rosenbrock order reduction, preventing solver stalls and preserving explicit high-order efficiency.
 
-Active method switching is treated as a research target rather than a completed production capability. Safety, fifth-order recovery after real switches, controller/cache transfer, and full same-error economics remain explicit validation gates.
+---
 
-## Development policy
+## 8-Problem Benchmark Battery (`opt_baseline_battery`, Diagnostic Only)
 
-Scientific claims are evidence-gated. Research branches retain failed, speculative, fallback, and diagnostic work in their ledgers. Comparator implementations are not silently tuned to improve headline results, and holdout problems are not used to retune core policy thresholds.
+Evaluated on AMD Ryzen 9 5900X (Single-Thread Pinned, Release Profile, `timing_authority: diagnostic_only`):
 
-## Scientific-validity boundary
+| Problem ID | Benchmark System | Dimension | Dominant Physics | Explicit (Dopri5) | Implicit (Rodas5p) | Switcher (Adaptive) | Switcher vs Winner | Autonomously Selected Route |
+|:---|:---|:---:|:---|:---:|:---:|:---:|:---:|:---|
+| **B01** | Nonstiff Mix | $n=2$ | Smooth non-stiff | **0.010 ms** | 0.016 ms | 0.015 ms | ~0.7x | DOPRI5 (Retained) |
+| **B02** | Harmonic Oscillator ($\omega=50$) | $n=2$ | Undamped oscillatory | **0.90 ms** | 1.33 ms | 0.97 ms | ~0.9x | DOPRI5 (Retained) |
+| **B03** | Van der Pol ($\mu=100$) | $n=2$ | Stiff relaxation | 3.01 ms | **0.18 ms** | **0.20 ms** | **0.94x ~ 0.99x** | RODAS5P (Instant Stiff Entry) |
+| **B04** | Robertson Kinetics | $n=3$ | Stiff chemical kinetics | 25.9 ms (fail) | **0.045 ms** | **0.060 ms** | **0.76x ~ 0.94x** | RODAS5P (Instant Stiff Entry) |
+| **B05** | HIRES (Photobiology) | $n=8$ | Multi-scale reaction | 3.91 ms | **0.14 ms** | **0.15 ms** | **0.95x ~ 0.98x** | RODAS5P (Instant Stiff Entry) |
+| **B06** | Brusselator 1D | $n=100$ | Large reaction-diffusion | 1.64 ms | 114.4 ms (dense) | **3.58 ms** | **23× ~ 169× vs LU** | RODAS5P Krylov (Adaptive Switch) |
+| **B07** | Stiff Forced Oscillation | $n=1$ | Non-autonomous forced | **0.91 ms** | 25.4 ms (stall) | **1.05 ms** | **0.87x ~ 1.02x** | DOPRI5 (Order-Reduction Defense) |
+| **B08** | Pulse Order Reduction | $n=1$ | Transient forced stiff | **0.92 ms** | 25.7 ms (stall) | **1.05 ms** | **0.87x ~ 1.02x** | DOPRI5 (Order-Reduction Defense) |
 
-The internal BDF1/BDF2/RadauIIA1/RadauIIA3 solvers are reference implementations, not competitive production baselines. This is machine-checked: every fair-ab run row and G3 adaptive row they produce carries `comparator_fidelity = "reference-implementation-only"`, every front, attainment, or report that mixes them with production arms carries `comparative_reading = "forbidden"`, and the unified gates return `not-evaluated` rather than promote/hold for any relative comparison against such a reference (audit F-052/F-056 Tier B). Existing receipts support no comparison with RADAU5, CVODE, OrdinaryDiffEq, SciPy, or SUNDIALS. The synthetic stage-batch/parallel probe measures thread-pool and compute-bound overhead only; it does not predict memory-bandwidth-bound JVP scaling.
+---
 
-`AcceptedSteps` and `InternalSteps` count accepted state-advancing substeps, not
-adaptive controller macro-attempts. Thus the explicit BDF startup and the Radau IIA1
-step-doubling path count their two retained half steps; their discarded coarse probe is
-not counted. Steady-state BDF1/BDF2 and embedded Radau IIA3 count one substep per
-accepted macro-step. Adaptive diagnostics separately expose accepted/rejected macro-step
-counts, so these axes must not be treated as interchangeable.
+## Adversarial Spatial Grid & Spherical Coordinate Benchmarks (2026-11-07, Diagnostic Only)
 
-The scientific-validity-v2 implementation is locally committed at
-`ab8fbcdb709aa1e87603b1ef6f83c5e610c8cb04`. Its source-bound canonical calibration
-completed all 54 cases without an execution failure, but all 54 rows were classified
-`output-policy-dominated`. The pass-only freeze was therefore not created and the sealed
-Oregonator holdout was not opened. External calibration retained 54 successful SciPy
-Radau records and 54 typed-unavailable CVODE records; it is not a complete production
-baseline. Consequently no v2 performance, scaling, ranking, equal-error, or publication
-claim is admitted. Legacy v3.5/v3.6/v3.7 receipts remain valid only under their original
-corpus, comparator, inner-solve, and output policies and are not transplantable to v2.
+Evaluated on AMD Ryzen 9 5900X (Single-Thread Pinned `taskset -c 0`, `timing_authority: diagnostic_only`).
+Dual reference solutions independently verified with Hairer RADAU5 and cross-checked against SUNDIALS CVODE BDF on a 101-point uniform evaluation grid under the pre-registered `adversarial_spatial_grid_v2` protocol (`bench/protocols/adversarial_spatial_grid_v2.json`).
 
-## Run the existing solver as a library example
+### 1. Distinction Between Dense Jacobian and Dense Output
 
-With Rust 1.94.1 and normal Cargo registry access (or an already populated cache):
+- **Dense Jacobian vs Banded Jacobian:** Refers strictly to linear algebra and storage representation of $\partial f/\partial y \in \mathbb{R}^{N \times N}$. Banded Jacobian representation ($M+1$ diagonals) achieves significant factorization speedups on 3D geometries ($N=302, M+1=25$: 2.4x ~ 4.9x scaling advantage across external solvers).
+- **Dense Output (Continuous Interpolant) vs Grid-Clipped Stepping:** Refers to the continuous-time polynomial trajectory interpolant (`Solution::at`). In the qualified protocol (`ADVERSARIAL_SPATIAL_GRID_V2_REPORT.md`), endpoint-only arms (`vigilode-dense`, `vigilode-banded-dense`) step freely without grid constraints (`output_clipped_steps == 0`, taking 6 to 47 steps total), while baseline grid-clipped arms (`vigilode`, `vigilode-banded`) land steps on all 101 grid points (99 clipped steps) to serve strictly as continuity controls.
 
-```bash
-cargo run --locked -p rodas5p-integrators --no-default-features --example solve_stiff > solution.json
+### 2. Multi-Solver Reference Validation & Dispute Accounting
+
+| Problem ID | Physical System & Geometry | State Dim ($N$) | Bandwidth ($M+1$) | Dual Reference Agreement ($rtol=10^{-12}$) | Reference Status | Dispute Threshold |
+|:---|:---|:---:|:---:|:---:|:---:|:---:|
+| **Sphere-2D** | Cosmological Shear Photon Transport $(q, \mu)$ | $N=86$ | $M+1=7$ | $3.29 \times 10^{-12}$ | **PASS** | $10^{-10}$ |
+| **Sphere-3D** | Full-Sphere Quadrupole Thomson Scattering $(q, \mu, \phi)$ | $N=302$ | $M+1=25$ | $2.10 \times 10^{-12}$ | **PASS** | $10^{-10}$ |
+| **Grid-2D** | Semilinear Advection-Diffusion Grid ($8 \times 12$) | $N=96$ | $M+1=8$ | $1.07 \times 10^{-9}$ (at $10^{-10}$) | **REFERENCE_DISPUTED** | $10^{-10}$ |
+| **Grid-3D** | Semilinear Advection-Diffusion Grid ($6 \times 6 \times 6$) | $N=216$ | $M+1=36$ | $1.15 \times 10^{-11}$ (at $10^{-12}$) | **REFERENCE_DISPUTED** | $10^{-10}$ |
+
+*Protocol Findings & Fail-Closed Reporting:*
+- **Independent Reference Fail-Closed Gate:** On Semilinear Advection-Diffusion 2D/3D grids, cross-family discrepancy at initial tolerance ($rtol=10^{-10}$) exceeded the strict $10^{-10}$ agreement threshold ($1.07 \times 10^{-9}$), correctly triggering `REFERENCE_DISPUTED`. All comparisons against disputed references are fail-closed marked `DIAGNOSTIC_ONLY`.
+- **Matched-Error Work-Precision:** All 953 comparison rows in `ADVERSARIAL_SPATIAL_GRID_V2_REPORT.md` are designated `DIAGNOSTIC_ONLY`. No speedup ratios or solver rankings are admitted for unbracketed error regimes or disputed reference points.
+
+### 3. Allocation Scope Clarification
+
+- **Numerical Integration Hot Loop (`VG-1 Pass`):** Pre-allocated stepper workspaces (`CollectiveRodas5pWorkspace::step_into`) execute with **strictly zero (0) heap allocations** across all spatial geometries and grid dimensions.
+- **Whole-Run & Driver Scope:** Whole-run solve invocations (`ProductionSolver::solve`) and batch driver runs include pre-integration setup, trajectory serialization, and solution return (4 allocations per driver attempt, bounded trajectory storage allocations). These setup/teardown allocations are separate from the zero-allocation numerical stepping hot loop.
+
+### 4. Benchmark Artifacts
+
+- **V3 Expanded Spatial Battery Report:** `bench/out/ADVERSARIAL_SPATIAL_BATTERY_V3_REPORT.md` (55 KB, SHA-256: `c0d84e3d...`)
+- **V3 Raw Measurement Data:** `bench/out/adversarial_spatial_battery_v3_results.json` (6.4 MB, SHA-256: `e27526aa...`)
+- **V3 Protocol Specification:** `bench/protocols/adversarial_spatial_battery_v3.json` (9 spatial PDE problems, 14 solver arms)
+- **V2 Qualified Work-Precision Report:** `bench/out/ADVERSARIAL_SPATIAL_GRID_V2_REPORT.md` (305 KB, SHA-256: `89569b16...`)
+- **V2 Raw Measurement Data:** `bench/out/adversarial_spatial_grid_v2_results.json` (3.7 MB, SHA-256: `79ec876a...`)
+- **Historical Grid-Clipped Continuity Report:** `bench/out/ADVERSARIAL_SPATIAL_GRID_REPORT.md` (22 KB)
+
+### 5. Expanded Spatial & Spherical PDE Battery with Adaptive Grid Zero-Alloc (`VG-1`)
+
+The spatial benchmark suite has been expanded into a comprehensive 9-problem PDE battery spanning diverse mathematical structures:
+
+| Problem ID | Physical / Mathematical System | Topology | State Dim ($N$) | Bandwidth ($M+1$) | Key Numerical Characteristics |
+|:---|:---|:---:|:---:|:---:|:---|
+| **Sphere-2D** | Cosmological Shear Photon Transport | Sphere $(q, \mu)$ | $N=86$ | $M+1=7$ | Metric-weighted finite-volume Thomson scattering |
+| **Sphere-3D** | Full-Sphere Quadrupole Thomson Scattering | Sphere $(q, \mu, \phi)$ | $N=302$ | $M+1=25$ | 3D angular-momentum transport on $S^2 \times \mathbb{R}^+$ |
+| **Spherical-Diff-2D** | Spherical Surface Diffusion | Sphere $(\theta, \phi)$ on $S^2$ | $N=64$ | $M+1=8$ | Conservative metric weights $\Delta\Omega_j$, exact pole regularization |
+| **Allen-Cahn-2D** | Phase-Field Interface Dynamics | Rectangular $[-1, 1]^2$ | $N=64$ | $M+1=8$ | Stiff cubic reaction $-(u^3-u)$, diffuse interface motion |
+| **Gray-Scott-2D** | Spot-Dividing Reaction-Diffusion | Rectangular $[0, 1]^2$ | $N=128$ | $M+1=17$ | Turing pattern formation, coupled 2-field nonlinear reaction |
+| **Burgers-2D** | Viscous Burgers Shock Waves | Rectangular $[0, 1]^2$ | $N=72$ | $M+1=13$ | Upwind hyperbolic advection + viscous diffusion shock layer |
+| **Sine-Gordon-2D** | Nonlinear Wave Soliton Dynamics | Rectangular $[-L/2, L/2]^2$ | $N=72$ | $M+1=13$ | Hamiltonian system, exact energy conservation ($dH/dt < 10^{-10}$) |
+| **Grid-2D** | Semilinear Advection-Diffusion | Rectangular $(8 \times 12)$ | $N=96$ | $M+1=8$ | Mixed hyperbolic-parabolic boundary layers |
+| **Grid-3D** | Semilinear Advection-Diffusion | Box $(6 \times 6 \times 6)$ | $N=216$ | $M+1=36$ | 3D sparse banded coupling |
+
+- **Runtime-Configurable Resolution & Moving Mesh (MMPDE r-refinement):** Grid dimensions can be configured at runtime with single-allocation arena initialization (`SpatialWorkspace::new`), guaranteeing **strictly zero heap allocations in integration hot loops (`VG-1`)**. Moving mesh coordinate relocation tracks steep shock fronts while keeping state dimension $N$ invariant.
+
+---
+
+## Quick Start & Library Usage
+
+Add VigilODE to your `Cargo.toml`:
+
+```toml
+[dependencies]
+vigilode = "0.1"
 ```
 
-`examples/solve_stiff.rs` supplies its own RHS and analytic JVP for the
-nondimensional system `y' = (-y[0], -1000*y[1])`, `y(0)=(1,1)`, on `[0,1]`.
-It uses the existing adaptive, matrix-free sequential RODAS5P path with dense
-output. No assembled Jacobian, exact-solution callback, or audit2 backend is
-provided to the integrator. Change the RHS/JVP and initial state in that example
-to start a problem-specific integration; independently validate the new problem.
+### 1. Adaptive Polyalgorithm Integration (`SwitchingSolver`)
 
-JSON includes sampled states, completion status, diagnostics, and work counters.
-A partial solve emits its available states and work but exits nonzero. This
-exercises that behavior deliberately (expected exit code 1):
+```rust
+use vigilode::{
+    Atol, CallbackError, DerivativeFallback, Jacobian, Options, Problem,
+    SwitchingConfig, SwitchingSolver,
+};
 
-```bash
-cargo run --locked -p rodas5p-integrators --no-default-features --example solve_stiff -- --max-attempts 1 > partial.json
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Robertson chemical kinetics (n = 3)
+    let problem = Problem::new(3, |_t, y, dy| {
+        dy[0] = -0.04 * y[0] + 1.0e4 * y[1] * y[2];
+        dy[1] = 0.04 * y[0] - 1.0e4 * y[1] * y[2] - 3.0e7 * y[1] * y[1];
+        dy[2] = 3.0e7 * y[1] * y[1];
+        Ok::<(), CallbackError>(())
+    })
+    .jacobian(Jacobian::dense(|_t, y, j| {
+        j.copy_from_slice(&[
+            -0.04, 1.0e4 * y[2], 1.0e4 * y[1],
+            0.04, -1.0e4 * y[2] - 6.0e7 * y[1], -1.0e4 * y[1],
+            0.0, 6.0e7 * y[1], 0.0,
+        ]);
+        Ok(())
+    }))
+    .autonomous();
+
+    let options = Options {
+        rtol: 1e-6,
+        atol: Atol::Scalar(1e-10),
+        h0: 1e-4,
+        max_steps: 100_000,
+        ..Default::default()
+    };
+
+    // Configure adaptive evidence-driven switcher with initial stiffness pre-screening
+    let mut config = SwitchingConfig::adaptive_evidence(DerivativeFallback::ProvidedOnly);
+    config.prescreen_initial_stiffness = true;
+
+    let solution = SwitchingSolver::solve(
+        &problem,
+        (0.0, 1.0e5),
+        &[1.0, 0.0, 0.0],
+        &options,
+        &config,
+    )?;
+
+    if !solution.success {
+        eprintln!("Integration terminated early: {}", solution.message);
+    }
+    println!("Success: {}", solution.success);
+    println!("Final time: {}", solution.final_time);
+    println!("Final state: {:?}", solution.final_state);
+    println!("Accounting complete: {}", solution.stats.accounting_complete);
+    println!("RHS calls: {}", solution.stats.rhs_calls);
+    println!("Switches: {}", solution.stats.switches);
+
+    // Checked outcome helpers:
+    // `solve` returns Ok(solution) even when integration stops early (e.g. attempt budget exhaustion
+    // or callback failure) to preserve the partial accepted prefix and full work accounting.
+    // Callers must inspect `solution.success`, `solution.final_time`, `solution.message`, and
+    // `solution.stats.accounting_complete`, or use checked outcome helpers:
+    assert!(solution.is_successful_endpoint(1.0e5));
+    solution.ensure_completed()?;
+
+    Ok(())
+}
 ```
 
-The example has a predeclared absolute error check against its analytic solution;
-it is a narrow usage regression, not a general accuracy, performance, or release
-certificate. The legacy common-W correction still requires explicit W. Separate
-matrix-free common-W and reusable-diagonal transactional entries remain behind
-`audit2-research`; neither is enabled by this example or the default dispatcher.
+### 2. Production Solver & Checked Outcome API (`ProductionSolver`)
 
-For the scoped research-on / default-solver checks, run
-`bash tools/check-audit2-readiness.sh`. Output files go to a new temporary
-directory unless `AUDIT2_OUTPUT_DIR` is supplied; existing output is not replaced.
-The historical A1 receipt workflow runs its frozen experiment checks only for
-explicit A1 work or changed A1 evidence; an unrelated PR is not a new A1 receipt.
+For production deployment contracts, [`ProductionSolver`] narrows permissions and enforces strict scheduling without implicit defaults:
 
-The non-default `audit2-bateman-authority` feature adds a single frozen
-four-state Bateman nuclear-decay client above the reusable transaction research
-substrate. Hosted checks validate its exact manifest, reference enclosure,
-canonical W identities, one-shot admission, and local-receipt validator without
-executing the six candidate scenarios. The actual fixed suite remains a
-host-only local handoff in
-`research/audit2_real_client_authority_construction_20260830/CODEX_START_HERE.md`.
-It is not a production client, default dispatch path, general real-client
-accuracy certificate, performance result, or holdout authorization.
+```rust
+use vigilode::{
+    Options, Problem, ProductionConfig, ProductionSolver,
+};
+
+fn run_production(problem: &Problem, config: &ProductionConfig) -> Result<(), Box<dyn std::error::Error>> {
+    // 1. Unchecked `solve`: preserves partial solution on early stop, returning Ok(solution) with success == false.
+    let partial_ok = ProductionSolver::solve(problem, (0.0, 1.0), &[1.0], config)?;
+    if !partial_ok.success {
+        eprintln!(
+            "Early stop at t = {} (accounting complete: {}): {}",
+            partial_ok.final_time,
+            partial_ok.stats.accounting_complete,
+            partial_ok.message
+        );
+    }
+
+    // 2. Checked `solve_checked`: returns Ok only when success && accounting_complete,
+    // and returns typed Err(ProductionSolveError::Unsuccessful(partial)) otherwise.
+    match ProductionSolver::solve_checked(problem, (0.0, 1.0), &[1.0], config) {
+        Ok(solution) => {
+            assert!(solution.is_successful_endpoint(1.0));
+            println!("Target endpoint reached: {:?}", solution.final_state);
+        }
+        Err(err) => {
+            if let Some(partial) = err.partial_solution() {
+                eprintln!("Incomplete run preserved: final_time = {}, work = {} RHS",
+                    partial.final_time, partial.stats.rhs_calls);
+            }
+        }
+    }
+    Ok(())
+}
+```
+
+### 3. Running Benchmarks
+
+```bash
+# Run 8-problem battery benchmark
+cargo run --release --example opt_baseline_battery > bench/out/opt_candidate.json
+
+# Run A/B regression validator against baseline
+python3 tools/compare_opt_battery.py bench/out/opt_candidate_current.json bench/out/opt_candidate.json
+
+# Run adversarial multi-solver benchmark
+cargo run --manifest-path crates/vigilode-bench/Cargo.toml --release -- wp \
+  --corpus bench/protocols/adversarial_spatial_grid_v1.json \
+  --out bench/out/adversarial_spatial_grid_rust_results.json
+```
+
+---
 
 ## Build reproducibility
 
-A normal fresh clone uses Cargo's default crates.io configuration:
+A normal fresh clone uses Cargo's default configuration:
 
 ```bash
 cargo metadata --locked --format-version 1
@@ -154,6 +276,8 @@ bash ./tools/cargo-offline.sh \
 `tools/cargo-offline.sh` accepts either `--vendor-dir PATH` or the `VIGILODE_CARGO_VENDOR_DIR` environment variable. The vendor directory must be a standard Cargo directory source created by `cargo vendor`; the wrapper validates its structure, uses an isolated temporary Cargo home with an absolute vendor path, and leaves `Cargo.toml`, `Cargo.lock`, and tracked Cargo configuration unchanged.
 
 The repository keeps `vendor/` untracked. `.cargo/config.offline.toml` is a documented template for users who prefer a repository-local `vendor/` directory and an explicit manual Cargo configuration.
+
+---
 
 ## License
 

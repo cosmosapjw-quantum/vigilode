@@ -1,0 +1,73 @@
+NOTES - loop L1 wave 2, node V03_UNIFIED_FRONTEND part A (builder w2-v03)
+worktree /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03
+branch   research/production-loop-20261116-w2-v03, base c468478e73123a4625c6d20f7459a9f79cbf33de
+started  2026-11-17 (relaunch; the worktree had no leftovers of the interrupted launch)
+
+STATE: phase B reached. All frozen discriminators PASS on the logs under logs/ (see RECEIPT.json,
+built by build_receipt.py, and REPORT_KO.md, rendered by build_report.py).
+
+COMMITS (oldest first)
+63111d4a notes
+00d32764 PREDECLARED.json (before any run)
+5c9a6c3e failing-first reproductions of COD-02 / COD-04 + log (8 fail on base, baseline digests recorded)
+2b6e229b PeerOde fix (selection/peer.rs) + log after the fix
+fedc3ee3 phase A: selection/frontend.rs, selection/adapters.rs, solve.rs accessor, contract tests
+34690639 rustfmt + one clippy alias
+3f0b8492 phase B: GeneralOde::select = MethodRegistry::general_selection; old body = select_reference
+2180b398 SolutionView::route reads the executed route from the run record
+05565f5c exact RODAS5P route variants in the catalog; plans name the driver that runs
+(+ runner and builder scripts, notes)
+
+FILES
+crates/vigilode/src/selection.rs            GeneralOde::{select, select_reference}, registry (U06), re-exports
+crates/vigilode/src/selection/frontend.rs   MethodFacts, catalog, MethodChoice, route, general_selection, solve, view
+crates/vigilode/src/selection/adapters.rs   shared lowering + BDF / Radau / PEXPRB / lagged drivers
+crates/vigilode/src/selection/peer.rs       PeerOde with the COD-02 / COD-04 repairs
+crates/vigilode/src/solve.rs                + pub(crate) lowered_driver_problem (accessor, no behaviour change)
+crates/vigilode/tests/unified_frontend_contracts.rs   31 contract tests (QUAL lines feed the receipt)
+research/production_loop_20261116/unified_frontend/{PREDECLARED.json, run_checks.sh, build_receipt.py,
+  build_report.py, RECEIPT.json, REPORT_KO.md, logs/}
+
+DESIGN DECISIONS
+- MethodRequest, MethodRegistry::descriptors() and query() (the U06 table) are NOT changed: the struct
+  literal of MethodRequest is used by tests/geometry_mol_contracts.rs (outside the allowlist) and r1/r5 pin
+  the six entries. The routing authority is MethodRegistry::catalog() (the six U06 descriptors +
+  pexprb54s4-fused, rodas5p-lagged-richardson-v1, lawson-dopri5-declared-damped-rotation) with MethodFacts
+  (the request extension COD-03 asks for) and, for RODAS5P, six exact route variants (MethodRouteVariant).
+- Existing tests unified_method_capabilities.rs / unified_method_sessions.rs: NOT edited, both pass.
+- RegistryRefusal gained the variant ProviderFormUnsupported.
+- Integrator-crate adapters share the facade lowering of Rodas5p::solve (solve::lowered_driver_problem) and
+  accept the provider forms the driver problem takes natively; everything else is a typed refusal.
+- ppsw1-6b-matrix-free-common-w stays unavailable (no end-to-end driver, no matrix-free starter).
+- Auto: regime fit, qualification, catalog order; measured evidence only as caller-supplied CostEvidence;
+  fallback restarts at t0 with the next admitted candidate; every attempt is kept.
+- GeneralOde::select keeps its receipt on the facade capability query (bug-compatible, default routing
+  unchanged); plans of route() name the driver that actually runs.
+- PeerOde starter control: step doubling at the five non-initial nodes, at most 40 halvings.
+- Radau descriptor corrected: 3 stages, order 5 (was 2 / 3).
+
+FINDINGS FOR THE OWNER (details in REPORT_KO.md section 9)
+1. Rodas5p::capabilities answers MatrixFree for every general sparse-JVP request that is not sequential, but
+   Rodas5p::solve runs the fast dense driver (dense output) or the dense fast driver (vector atol) with a
+   Jacobian assembled from n JVP columns. Executed in the test
+   view_reports_the_executed_route_when_the_capability_query_disagrees. Not fixed (capabilities.rs and the
+   RODAS5P path of solve.rs are outside this node).
+2. Consequence on the default path: GeneralOde::select selects such a problem with a vector atol as
+   matrix-free and does not apply max_dense_dimension although an n-by-n matrix is built. Unchanged.
+3. The U06 registry said radau-iia3 has 2 stages / order 3; the code runs 3 stages / order 5. Corrected.
+4. BDF, Radau, PEXPRB and lagged drivers return no last accepted state on failure and no record after a
+   fatal callback error; the view then holds the reached output samples (t0) and the callback-boundary
+   counts. A better prefix needs edits in rodas5p-integrators.
+5. A declared band on a dense provider is verified by the protected router with callbacks; that refusal
+   (SolveError::StructureRefused) is a solve-time error of the direct call, not a routing refusal.
+
+PROCESS NOTES
+- One launch of the full suite (15:07 KST) was stopped by me while it was still compiling, before any test
+  ran, to add the route-variant table; its partial log was removed. No test result was discarded.
+- No authoritative timing was run; the host load average was 20-44 during the node.
+
+REPRODUCE
+sh research/production_loop_20261116/unified_frontend/run_checks.sh \
+    contracts existing golden1 golden2 debuggrid suite clippy fmt doc checker diff
+python3 -I research/production_loop_20261116/unified_frontend/build_receipt.py
+python3 -I research/production_loop_20261116/unified_frontend/build_report.py

@@ -1,0 +1,104 @@
+{
+ "schema": "vigilode.loop-l1.v25.checks.v1",
+ "checks": {
+  "fmt": {
+   "command": "taskset -c 0-5,12-17 cargo +1.94.1 fmt -p rodas5p-krylov -p rodas5p-integrators -p vigilode -- --check",
+   "exit_code": 0,
+   "seconds": 3.2,
+   "log": "logs/checks/fmt.log",
+   "result_lines": 0,
+   "passed": 0,
+   "failed": 0,
+   "ignored": 0,
+   "failing_tests": []
+  },
+  "clippy_integrators_lib_and_mf_confirm": {
+   "command": "taskset -c 0-5,12-17 cargo +1.94.1 clippy --locked -j 4 --release --no-deps -p rodas5p-integrators --lib --test mf_confirm_contracts --test mf_confirm_measure --test mf_confirm_problems -- -D warnings",
+   "exit_code": 0,
+   "seconds": 44.5,
+   "log": "logs/checks/clippy_integrators_lib_and_mf_confirm.log",
+   "result_lines": 0,
+   "passed": 0,
+   "failed": 0,
+   "ignored": 0,
+   "failing_tests": []
+  },
+  "clippy_krylov_all_targets": {
+   "command": "taskset -c 0-5,12-17 cargo +1.94.1 clippy --locked -j 4 --release --no-deps -p rodas5p-krylov --all-targets -- -D warnings",
+   "exit_code": 0,
+   "seconds": 7.6,
+   "log": "logs/checks/clippy_krylov_all_targets.log",
+   "result_lines": 0,
+   "passed": 0,
+   "failed": 0,
+   "ignored": 0,
+   "failing_tests": []
+  },
+  "clippy_vigilode_all_targets": {
+   "command": "taskset -c 0-5,12-17 cargo +1.94.1 clippy --locked -j 4 --release --no-deps -p vigilode --all-targets -- -D warnings",
+   "exit_code": 0,
+   "seconds": 21.1,
+   "log": "logs/checks/clippy_vigilode_all_targets.log",
+   "result_lines": 0,
+   "passed": 0,
+   "failed": 0,
+   "ignored": 0,
+   "failing_tests": []
+  },
+  "integrators_mf_sentinels_stage_clients": {
+   "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release --no-fail-fast -p rodas5p-integrators --test mf_confirm_* --test mf_adaptive_* --test ppsw1_6b_contracts --test ptsw2b_contracts --test stage_clients_*",
+   "exit_code": 0,
+   "seconds": 154.7,
+   "log": "logs/checks/integrators_mf_sentinels_stage_clients.log",
+   "result_lines": 31,
+   "passed": 153,
+   "failed": 0,
+   "ignored": 13,
+   "failing_tests": []
+  },
+  "krylov_suite": {
+   "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release --no-fail-fast -p rodas5p-krylov",
+   "exit_code": 0,
+   "seconds": 100.9,
+   "log": "logs/checks/krylov_suite.log",
+   "result_lines": 36,
+   "passed": 166,
+   "failed": 0,
+   "ignored": 0,
+   "failing_tests": []
+  },
+  "facade_golden_oracle": {
+   "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release --no-fail-fast -p vigilode --test default_path_golden",
+   "exit_code": 0,
+   "seconds": 27.5,
+   "log": "logs/checks/facade_golden_oracle.log",
+   "result_lines": 1,
+   "passed": 11,
+   "failed": 0,
+   "ignored": 0,
+   "failing_tests": []
+  },
+  "facade_suite": {
+   "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release --no-fail-fast -p vigilode",
+   "exit_code": 0,
+   "seconds": 387.7,
+   "log": "logs/checks/facade_suite.log",
+   "result_lines": 59,
+   "passed": 536,
+   "failed": 0,
+   "ignored": 0,
+   "failing_tests": []
+  },
+  "loop_checker": {
+   "command": "taskset -c 0-5,12-17 python3 -I research/production_loop_20261116/check_checkpoint.py",
+   "exit_code": 0,
+   "seconds": 1.4,
+   "log": "logs/checks/loop_checker.log",
+   "result_lines": 0,
+   "passed": 0,
+   "failed": 0,
+   "ignored": 0,
+   "failing_tests": []
+  }
+ }
+}

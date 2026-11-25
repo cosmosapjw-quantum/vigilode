@@ -1,0 +1,1426 @@
+{
+ "schema": "vigilode.loop_l1.v04_cost_anatomy.predeclared.v1",
+ "node": "V04_STAGE_COST_ANATOMY",
+ "date": "2026-11-17",
+ "builder_base_commit": "0443025895dabf350f46fd3f0cdd0cf1d7fbcf85",
+ "status": "written and committed before the pilot and before every measurement run",
+ "question": "Mean cost per attempt of the phases of a RODAS5P step (Jacobian build, factorisation of W, eight stage solves, right-hand-side evaluations, remainder) across regimes, and the upper bound that these fractions put on every lever.",
+ "frozen_discriminator": {
+  "source": "research/production_loop_20261116/PREREGISTRATION.md, row V04",
+  "pass": "instrumented/plain wall <= 1.02 and phases sum to 0.90-1.00 of the total at n >= 128; trajectory bit-identical to the protected driver",
+  "fallback": "otherwise diagnostic_only",
+  "thresholds_are_not_changed_here": true
+ },
+ "what_ran_before_this_file": [
+  "runner selftest (problem definitions and wrappers; no integration)",
+  "runner list (cell table; no integration)",
+  "development smoke test with the non-LTO smoke build: `identity --attempts 12` on eleven cells; only the identity flags, the step counts and the work counters were read, no wall time",
+  "tooling check: one callgrind run of dense.hires.n8.fd.x1 (12 attempts) to verify that callgrind_annotate lists the marker symbols; the instruction numbers were masked when it was read",
+  "what the smoke test showed and how it changed the grid: (1) with the finite-difference JVP 6 of 12 attempts were rejected (the product's noise is above the protected linear tolerance 1e-10), so that source is kept as one exploratory counts-only cell and is never timed; (2) the protected matrix-free driver spent exactly 40 Krylov iterations in every stage solve (its GMRES solves the least-squares problem once per restart cycle), so a 48^3 cell was dropped to bound the run time"
+ ],
+ "binary": {
+  "package": "research/production_loop_20261116/cost_anatomy/runner (standalone, empty [workspace] table, path dependencies on crates/rodas5p-core and crates/rodas5p-integrators)",
+  "profile": "release with the repository workspace's settings: opt-level 3, lto fat, codegen-units 1, panic abort",
+  "toolchain": "1.94.1",
+  "lock": "runner/Cargo.lock: the repository Cargo.lock pruned by one offline build; every later build uses --locked"
+ },
+ "arms": {
+  "plain": {
+   "dense": "integrate_rodas5p_fast_observed_with_atol (protected dense driver, default options; it picks its LU from the first Jacobian)",
+   "banded": "integrate_rodas5p_fast_banded_observed_with_atol (protected banded driver, Indexed kernel)",
+   "matrix_free": "integrate_rodas5p_mf_fast_observed_gmres_into with RoutingOptions::default().matrix_free (GMRES, restart 40, rtol 1e-10, atol 1e-14, no preconditioner, zero start, 200 Arnoldi vectors): the route the protected router takes"
+  },
+  "instrumented": {
+   "dense": "integrate_rodas5p_fast_client_observed_with_atol with TimedStageClient(DenseLuStageClient) in the LU mode DenseLuMode::protected_choice_at(t0, y0) (evaluated once, outside every timed interval), right-hand side wrapped by a wall clock",
+   "banded": "integrate_rodas5p_fast_client_observed_with_atol with TimedStageClient(BandedStageLu), right-hand side wrapped by a wall clock",
+   "matrix_free": "integrate_rodas5p_mf_fast_observed_traced (gmres_into = true) with wall clocks around the right-hand side and the JVP callback and with the attempt observer; the observer cannot change the run"
+  },
+  "marked": "the client driver with a clock-free forwarding client and forwarding callbacks that pass through one unmangled never-inlined symbol per phase (v04_phase_linearize, v04_phase_factor, v04_phase_solve, v04_phase_rhs, v04_phase_jvp); used under callgrind only",
+  "timed_interval": "the whole driver call; for the instrumented direct arms it also contains the construction and the release of the stage client, as the protected drivers build and drop their workspace inside the call"
+ },
+ "problems": {
+  "definitions": "runner/src/problems.rs; every problem is autonomous with the identity mass matrix",
+  "hires": "HIRES, n = 8, physically derived (plant-physiology kinetics). It is one of the consumed U11 configurations; it is used here as a development problem and is not called holdout",
+  "bruss1d": "1D Brusselator, method of lines, species interleaved, Dirichlet data, diffusion (cells+1)^2/50, band lower = upper = 2. In dense storage (n = 32, 128, 512, 2048) its Jacobian has at most 10 % nonzeros, so the protected policy keeps the in-place zero-skipping LU at every size; in band storage n = 1e3, 1e4, 1e5",
+  "radnet": "radiative-conductive lumped thermal network on a ring: all-to-all T^4 exchange (every Jacobian entry nonzero), nearest-neighbour conduction, capacities over four decades; the model is a radiosity network, its parameters come from formulas. n = 8, 32 (in-place LU), 128, 512, 2048 (faer LU by the protected policy)",
+  "ac2d_ac3d": "Allen-Cahn u_t = D lap u + (u - u^3), cell-centred finite volumes, zero-flux boundaries, D = 0.01 in 2D and 0.04 in 3D; band lower = upper = m (2D) or m^2 (3D)",
+  "bruss2d": "2D Brusselator, A = 1, B = 3.4, alpha = 0.02, zero-flux boundaries, species interleaved per cell; band lower = upper = 2 m",
+  "expected_lu_mode": "dense cells with n <= 64: in-place; bruss1d in dense storage: in-place at every n; radnet with n >= 128: faer. The mode actually used is recorded in every log header and the protected driver's own choice in every plain run row",
+  "both_lu_modes": "the protected policy offers one LU per problem; both modes appear at n in {128, 512, 2048} through the two problem families. A mode the protected driver would not pick has no protected counterpart and is not measured"
+ },
+ "regime_grid": {
+  "cells": [
+   {
+    "atol": 1e-10,
+    "band_lower": null,
+    "band_upper": null,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "hires",
+    "id": "dense.hires.n8.analytic.x1",
+    "initial_step": 1e-06,
+    "jacobian_source": "analytic",
+    "n": 8,
+    "problem": "HIRES plant-physiology kinetics, n = 8",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 8,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     321.8122
+    ]
+   },
+   {
+    "atol": 1e-10,
+    "band_lower": null,
+    "band_upper": null,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "hires",
+    "id": "dense.hires.n8.fd.x1",
+    "initial_step": 1e-06,
+    "jacobian_source": "fd",
+    "n": 8,
+    "problem": "HIRES plant-physiology kinetics, n = 8",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 8,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     321.8122
+    ]
+   },
+   {
+    "atol": 1e-06,
+    "band_lower": 2,
+    "band_upper": 2,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "bruss1d",
+    "id": "dense.bruss1d.n32.analytic.x1",
+    "initial_step": 1e-06,
+    "jacobian_source": "analytic",
+    "n": 32,
+    "problem": "1D Brusselator, method of lines, 16 cells, n = 32, diffusion (cells+1)^2/50",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 16,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-06,
+    "band_lower": 2,
+    "band_upper": 2,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "bruss1d",
+    "id": "dense.bruss1d.n32.fd.x1",
+    "initial_step": 1e-06,
+    "jacobian_source": "fd",
+    "n": 32,
+    "problem": "1D Brusselator, method of lines, 16 cells, n = 32, diffusion (cells+1)^2/50",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 16,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-06,
+    "band_lower": 2,
+    "band_upper": 2,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "bruss1d",
+    "id": "dense.bruss1d.n32.analytic.x10",
+    "initial_step": 1e-06,
+    "jacobian_source": "analytic",
+    "n": 32,
+    "problem": "1D Brusselator, method of lines, 16 cells, n = 32, diffusion (cells+1)^2/50",
+    "rhs_multiplier": 10,
+    "rtol": 1e-06,
+    "size_parameter": 16,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-06,
+    "band_lower": 2,
+    "band_upper": 2,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "bruss1d",
+    "id": "dense.bruss1d.n32.analytic.x100",
+    "initial_step": 1e-06,
+    "jacobian_source": "analytic",
+    "n": 32,
+    "problem": "1D Brusselator, method of lines, 16 cells, n = 32, diffusion (cells+1)^2/50",
+    "rhs_multiplier": 100,
+    "rtol": 1e-06,
+    "size_parameter": 16,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-06,
+    "band_lower": 2,
+    "band_upper": 2,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "bruss1d",
+    "id": "dense.bruss1d.n128.analytic.x1",
+    "initial_step": 1e-06,
+    "jacobian_source": "analytic",
+    "n": 128,
+    "problem": "1D Brusselator, method of lines, 64 cells, n = 128, diffusion (cells+1)^2/50",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 64,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-06,
+    "band_lower": 2,
+    "band_upper": 2,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "bruss1d",
+    "id": "dense.bruss1d.n128.fd.x1",
+    "initial_step": 1e-06,
+    "jacobian_source": "fd",
+    "n": 128,
+    "problem": "1D Brusselator, method of lines, 64 cells, n = 128, diffusion (cells+1)^2/50",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 64,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-06,
+    "band_lower": 2,
+    "band_upper": 2,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "bruss1d",
+    "id": "dense.bruss1d.n512.analytic.x1",
+    "initial_step": 1e-06,
+    "jacobian_source": "analytic",
+    "n": 512,
+    "problem": "1D Brusselator, method of lines, 256 cells, n = 512, diffusion (cells+1)^2/50",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 256,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-06,
+    "band_lower": 2,
+    "band_upper": 2,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "bruss1d",
+    "id": "dense.bruss1d.n512.fd.x1",
+    "initial_step": 1e-06,
+    "jacobian_source": "fd",
+    "n": 512,
+    "problem": "1D Brusselator, method of lines, 256 cells, n = 512, diffusion (cells+1)^2/50",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 256,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-06,
+    "band_lower": 2,
+    "band_upper": 2,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "bruss1d",
+    "id": "dense.bruss1d.n2048.analytic.x1",
+    "initial_step": 1e-06,
+    "jacobian_source": "analytic",
+    "n": 2048,
+    "problem": "1D Brusselator, method of lines, 1024 cells, n = 2048, diffusion (cells+1)^2/50",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 1024,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-06,
+    "band_lower": 2,
+    "band_upper": 2,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "bruss1d",
+    "id": "dense.bruss1d.n2048.fd.x1",
+    "initial_step": 1e-06,
+    "jacobian_source": "fd",
+    "n": 2048,
+    "problem": "1D Brusselator, method of lines, 1024 cells, n = 2048, diffusion (cells+1)^2/50",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 1024,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": null,
+    "band_upper": null,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "radnet",
+    "id": "dense.radnet.n8.analytic.x1",
+    "initial_step": 1e-06,
+    "jacobian_source": "analytic",
+    "n": 8,
+    "problem": "radiative-conductive lumped thermal network on a ring, n = 8, all-to-all T^4 exchange, capacities over four decades",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 8,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     2.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": null,
+    "band_upper": null,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "radnet",
+    "id": "dense.radnet.n32.analytic.x1",
+    "initial_step": 1e-06,
+    "jacobian_source": "analytic",
+    "n": 32,
+    "problem": "radiative-conductive lumped thermal network on a ring, n = 32, all-to-all T^4 exchange, capacities over four decades",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 32,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     2.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": null,
+    "band_upper": null,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "radnet",
+    "id": "dense.radnet.n32.fd.x1",
+    "initial_step": 1e-06,
+    "jacobian_source": "fd",
+    "n": 32,
+    "problem": "radiative-conductive lumped thermal network on a ring, n = 32, all-to-all T^4 exchange, capacities over four decades",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 32,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     2.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": null,
+    "band_upper": null,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "radnet",
+    "id": "dense.radnet.n128.analytic.x1",
+    "initial_step": 1e-06,
+    "jacobian_source": "analytic",
+    "n": 128,
+    "problem": "radiative-conductive lumped thermal network on a ring, n = 128, all-to-all T^4 exchange, capacities over four decades",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 128,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     2.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": null,
+    "band_upper": null,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "radnet",
+    "id": "dense.radnet.n128.analytic.x10",
+    "initial_step": 1e-06,
+    "jacobian_source": "analytic",
+    "n": 128,
+    "problem": "radiative-conductive lumped thermal network on a ring, n = 128, all-to-all T^4 exchange, capacities over four decades",
+    "rhs_multiplier": 10,
+    "rtol": 1e-06,
+    "size_parameter": 128,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     2.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": null,
+    "band_upper": null,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "radnet",
+    "id": "dense.radnet.n128.analytic.x100",
+    "initial_step": 1e-06,
+    "jacobian_source": "analytic",
+    "n": 128,
+    "problem": "radiative-conductive lumped thermal network on a ring, n = 128, all-to-all T^4 exchange, capacities over four decades",
+    "rhs_multiplier": 100,
+    "rtol": 1e-06,
+    "size_parameter": 128,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     2.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": null,
+    "band_upper": null,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "radnet",
+    "id": "dense.radnet.n128.fd.x1",
+    "initial_step": 1e-06,
+    "jacobian_source": "fd",
+    "n": 128,
+    "problem": "radiative-conductive lumped thermal network on a ring, n = 128, all-to-all T^4 exchange, capacities over four decades",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 128,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     2.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": null,
+    "band_upper": null,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "radnet",
+    "id": "dense.radnet.n128.fd.x10",
+    "initial_step": 1e-06,
+    "jacobian_source": "fd",
+    "n": 128,
+    "problem": "radiative-conductive lumped thermal network on a ring, n = 128, all-to-all T^4 exchange, capacities over four decades",
+    "rhs_multiplier": 10,
+    "rtol": 1e-06,
+    "size_parameter": 128,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     2.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": null,
+    "band_upper": null,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "radnet",
+    "id": "dense.radnet.n128.fd.x100",
+    "initial_step": 1e-06,
+    "jacobian_source": "fd",
+    "n": 128,
+    "problem": "radiative-conductive lumped thermal network on a ring, n = 128, all-to-all T^4 exchange, capacities over four decades",
+    "rhs_multiplier": 100,
+    "rtol": 1e-06,
+    "size_parameter": 128,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     2.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": null,
+    "band_upper": null,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "radnet",
+    "id": "dense.radnet.n512.analytic.x1",
+    "initial_step": 1e-06,
+    "jacobian_source": "analytic",
+    "n": 512,
+    "problem": "radiative-conductive lumped thermal network on a ring, n = 512, all-to-all T^4 exchange, capacities over four decades",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 512,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     2.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": null,
+    "band_upper": null,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "radnet",
+    "id": "dense.radnet.n512.fd.x1",
+    "initial_step": 1e-06,
+    "jacobian_source": "fd",
+    "n": 512,
+    "problem": "radiative-conductive lumped thermal network on a ring, n = 512, all-to-all T^4 exchange, capacities over four decades",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 512,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     2.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": null,
+    "band_upper": null,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "radnet",
+    "id": "dense.radnet.n512.analytic.x10",
+    "initial_step": 1e-06,
+    "jacobian_source": "analytic",
+    "n": 512,
+    "problem": "radiative-conductive lumped thermal network on a ring, n = 512, all-to-all T^4 exchange, capacities over four decades",
+    "rhs_multiplier": 10,
+    "rtol": 1e-06,
+    "size_parameter": 512,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     2.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": null,
+    "band_upper": null,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "radnet",
+    "id": "dense.radnet.n512.analytic.x100",
+    "initial_step": 1e-06,
+    "jacobian_source": "analytic",
+    "n": 512,
+    "problem": "radiative-conductive lumped thermal network on a ring, n = 512, all-to-all T^4 exchange, capacities over four decades",
+    "rhs_multiplier": 100,
+    "rtol": 1e-06,
+    "size_parameter": 512,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     2.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": null,
+    "band_upper": null,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "radnet",
+    "id": "dense.radnet.n2048.analytic.x1",
+    "initial_step": 1e-06,
+    "jacobian_source": "analytic",
+    "n": 2048,
+    "problem": "radiative-conductive lumped thermal network on a ring, n = 2048, all-to-all T^4 exchange, capacities over four decades",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 2048,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     2.0
+    ]
+   },
+   {
+    "atol": 1e-06,
+    "band_lower": 2,
+    "band_upper": 2,
+    "driver": "Banded",
+    "exploratory": false,
+    "family": "bruss1d",
+    "id": "banded_1d.bruss1d.n1000.analytic.x1",
+    "initial_step": 1e-06,
+    "jacobian_source": "analytic",
+    "n": 1000,
+    "problem": "1D Brusselator, method of lines, 500 cells, n = 1000, diffusion (cells+1)^2/50",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 500,
+    "structure": "banded_1d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-06,
+    "band_lower": 2,
+    "band_upper": 2,
+    "driver": "Banded",
+    "exploratory": false,
+    "family": "bruss1d",
+    "id": "banded_1d.bruss1d.n1000.fd.x1",
+    "initial_step": 1e-06,
+    "jacobian_source": "fd",
+    "n": 1000,
+    "problem": "1D Brusselator, method of lines, 500 cells, n = 1000, diffusion (cells+1)^2/50",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 500,
+    "structure": "banded_1d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-06,
+    "band_lower": 2,
+    "band_upper": 2,
+    "driver": "Banded",
+    "exploratory": false,
+    "family": "bruss1d",
+    "id": "banded_1d.bruss1d.n10000.analytic.x1",
+    "initial_step": 1e-06,
+    "jacobian_source": "analytic",
+    "n": 10000,
+    "problem": "1D Brusselator, method of lines, 5000 cells, n = 10000, diffusion (cells+1)^2/50",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 5000,
+    "structure": "banded_1d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-06,
+    "band_lower": 2,
+    "band_upper": 2,
+    "driver": "Banded",
+    "exploratory": false,
+    "family": "bruss1d",
+    "id": "banded_1d.bruss1d.n10000.fd.x1",
+    "initial_step": 1e-06,
+    "jacobian_source": "fd",
+    "n": 10000,
+    "problem": "1D Brusselator, method of lines, 5000 cells, n = 10000, diffusion (cells+1)^2/50",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 5000,
+    "structure": "banded_1d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-06,
+    "band_lower": 2,
+    "band_upper": 2,
+    "driver": "Banded",
+    "exploratory": false,
+    "family": "bruss1d",
+    "id": "banded_1d.bruss1d.n100000.analytic.x1",
+    "initial_step": 1e-06,
+    "jacobian_source": "analytic",
+    "n": 100000,
+    "problem": "1D Brusselator, method of lines, 50000 cells, n = 100000, diffusion (cells+1)^2/50",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 50000,
+    "structure": "banded_1d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-06,
+    "band_lower": 2,
+    "band_upper": 2,
+    "driver": "Banded",
+    "exploratory": false,
+    "family": "bruss1d",
+    "id": "banded_1d.bruss1d.n100000.fd.x1",
+    "initial_step": 1e-06,
+    "jacobian_source": "fd",
+    "n": 100000,
+    "problem": "1D Brusselator, method of lines, 50000 cells, n = 100000, diffusion (cells+1)^2/50",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 50000,
+    "structure": "banded_1d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-06,
+    "band_lower": 2,
+    "band_upper": 2,
+    "driver": "Banded",
+    "exploratory": false,
+    "family": "bruss1d",
+    "id": "banded_1d.bruss1d.n10000.analytic.x10",
+    "initial_step": 1e-06,
+    "jacobian_source": "analytic",
+    "n": 10000,
+    "problem": "1D Brusselator, method of lines, 5000 cells, n = 10000, diffusion (cells+1)^2/50",
+    "rhs_multiplier": 10,
+    "rtol": 1e-06,
+    "size_parameter": 5000,
+    "structure": "banded_1d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-06,
+    "band_lower": 2,
+    "band_upper": 2,
+    "driver": "Banded",
+    "exploratory": false,
+    "family": "bruss1d",
+    "id": "banded_1d.bruss1d.n10000.analytic.x100",
+    "initial_step": 1e-06,
+    "jacobian_source": "analytic",
+    "n": 10000,
+    "problem": "1D Brusselator, method of lines, 5000 cells, n = 10000, diffusion (cells+1)^2/50",
+    "rhs_multiplier": 100,
+    "rtol": 1e-06,
+    "size_parameter": 5000,
+    "structure": "banded_1d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-06,
+    "band_lower": 2,
+    "band_upper": 2,
+    "driver": "Banded",
+    "exploratory": false,
+    "family": "bruss1d",
+    "id": "banded_1d.bruss1d.n10000.fd.x10",
+    "initial_step": 1e-06,
+    "jacobian_source": "fd",
+    "n": 10000,
+    "problem": "1D Brusselator, method of lines, 5000 cells, n = 10000, diffusion (cells+1)^2/50",
+    "rhs_multiplier": 10,
+    "rtol": 1e-06,
+    "size_parameter": 5000,
+    "structure": "banded_1d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-06,
+    "band_lower": 2,
+    "band_upper": 2,
+    "driver": "Banded",
+    "exploratory": false,
+    "family": "bruss1d",
+    "id": "banded_1d.bruss1d.n10000.fd.x100",
+    "initial_step": 1e-06,
+    "jacobian_source": "fd",
+    "n": 10000,
+    "problem": "1D Brusselator, method of lines, 5000 cells, n = 10000, diffusion (cells+1)^2/50",
+    "rhs_multiplier": 100,
+    "rtol": 1e-06,
+    "size_parameter": 5000,
+    "structure": "banded_1d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": 32,
+    "band_upper": 32,
+    "driver": "Banded",
+    "exploratory": false,
+    "family": "ac2d",
+    "id": "banded_2d.ac2d.g32.analytic.x1",
+    "initial_step": 0.001,
+    "jacobian_source": "analytic",
+    "n": 1024,
+    "problem": "Allen-Cahn, 2D, 32^2 cells, n = 1024, D = 0.01, kappa = 1, zero-flux boundaries",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 32,
+    "structure": "banded_2d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": 64,
+    "band_upper": 64,
+    "driver": "Banded",
+    "exploratory": false,
+    "family": "ac2d",
+    "id": "banded_2d.ac2d.g64.analytic.x1",
+    "initial_step": 0.001,
+    "jacobian_source": "analytic",
+    "n": 4096,
+    "problem": "Allen-Cahn, 2D, 64^2 cells, n = 4096, D = 0.01, kappa = 1, zero-flux boundaries",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 64,
+    "structure": "banded_2d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": 64,
+    "band_upper": 64,
+    "driver": "Banded",
+    "exploratory": false,
+    "family": "ac2d",
+    "id": "banded_2d.ac2d.g64.fd.x1",
+    "initial_step": 0.001,
+    "jacobian_source": "fd",
+    "n": 4096,
+    "problem": "Allen-Cahn, 2D, 64^2 cells, n = 4096, D = 0.01, kappa = 1, zero-flux boundaries",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 64,
+    "structure": "banded_2d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": 64,
+    "band_upper": 64,
+    "driver": "Banded",
+    "exploratory": false,
+    "family": "ac2d",
+    "id": "banded_2d.ac2d.g64.analytic.x10",
+    "initial_step": 0.001,
+    "jacobian_source": "analytic",
+    "n": 4096,
+    "problem": "Allen-Cahn, 2D, 64^2 cells, n = 4096, D = 0.01, kappa = 1, zero-flux boundaries",
+    "rhs_multiplier": 10,
+    "rtol": 1e-06,
+    "size_parameter": 64,
+    "structure": "banded_2d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": 64,
+    "band_upper": 64,
+    "driver": "Banded",
+    "exploratory": false,
+    "family": "ac2d",
+    "id": "banded_2d.ac2d.g64.analytic.x100",
+    "initial_step": 0.001,
+    "jacobian_source": "analytic",
+    "n": 4096,
+    "problem": "Allen-Cahn, 2D, 64^2 cells, n = 4096, D = 0.01, kappa = 1, zero-flux boundaries",
+    "rhs_multiplier": 100,
+    "rtol": 1e-06,
+    "size_parameter": 64,
+    "structure": "banded_2d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": 128,
+    "band_upper": 128,
+    "driver": "Banded",
+    "exploratory": false,
+    "family": "ac2d",
+    "id": "banded_2d.ac2d.g128.analytic.x1",
+    "initial_step": 0.001,
+    "jacobian_source": "analytic",
+    "n": 16384,
+    "problem": "Allen-Cahn, 2D, 128^2 cells, n = 16384, D = 0.01, kappa = 1, zero-flux boundaries",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 128,
+    "structure": "banded_2d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": 64,
+    "band_upper": 64,
+    "driver": "Banded",
+    "exploratory": false,
+    "family": "bruss2d",
+    "id": "banded_2d.bruss2d.g32.analytic.x1",
+    "initial_step": 0.001,
+    "jacobian_source": "analytic",
+    "n": 2048,
+    "problem": "2D Brusselator, 32x32 cells, n = 2048, A = 1, B = 3.4, alpha = 0.02, zero-flux boundaries",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 32,
+    "structure": "banded_2d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": 128,
+    "band_upper": 128,
+    "driver": "Banded",
+    "exploratory": false,
+    "family": "bruss2d",
+    "id": "banded_2d.bruss2d.g64.analytic.x1",
+    "initial_step": 0.001,
+    "jacobian_source": "analytic",
+    "n": 8192,
+    "problem": "2D Brusselator, 64x64 cells, n = 8192, A = 1, B = 3.4, alpha = 0.02, zero-flux boundaries",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 64,
+    "structure": "banded_2d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": 64,
+    "band_upper": 64,
+    "driver": "Banded",
+    "exploratory": false,
+    "family": "ac3d",
+    "id": "banded_3d.ac3d.g8.analytic.x1",
+    "initial_step": 0.001,
+    "jacobian_source": "analytic",
+    "n": 512,
+    "problem": "Allen-Cahn, 3D, 8^3 cells, n = 512, D = 0.04, kappa = 1, zero-flux boundaries",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 8,
+    "structure": "banded_3d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": 256,
+    "band_upper": 256,
+    "driver": "Banded",
+    "exploratory": false,
+    "family": "ac3d",
+    "id": "banded_3d.ac3d.g16.analytic.x1",
+    "initial_step": 0.001,
+    "jacobian_source": "analytic",
+    "n": 4096,
+    "problem": "Allen-Cahn, 3D, 16^3 cells, n = 4096, D = 0.04, kappa = 1, zero-flux boundaries",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 16,
+    "structure": "banded_3d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": 256,
+    "band_upper": 256,
+    "driver": "Banded",
+    "exploratory": false,
+    "family": "ac3d",
+    "id": "banded_3d.ac3d.g16.fd.x1",
+    "initial_step": 0.001,
+    "jacobian_source": "fd",
+    "n": 4096,
+    "problem": "Allen-Cahn, 3D, 16^3 cells, n = 4096, D = 0.04, kappa = 1, zero-flux boundaries",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 16,
+    "structure": "banded_3d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": 64,
+    "band_upper": 64,
+    "driver": "MatrixFree",
+    "exploratory": false,
+    "family": "ac2d",
+    "id": "matrix_free_2d.ac2d.g64.jvp.x1",
+    "initial_step": 0.001,
+    "jacobian_source": "jvp",
+    "n": 4096,
+    "problem": "Allen-Cahn, 2D, 64^2 cells, n = 4096, D = 0.01, kappa = 1, zero-flux boundaries",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 64,
+    "structure": "matrix_free_2d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": 128,
+    "band_upper": 128,
+    "driver": "MatrixFree",
+    "exploratory": false,
+    "family": "ac2d",
+    "id": "matrix_free_2d.ac2d.g128.jvp.x1",
+    "initial_step": 0.001,
+    "jacobian_source": "jvp",
+    "n": 16384,
+    "problem": "Allen-Cahn, 2D, 128^2 cells, n = 16384, D = 0.01, kappa = 1, zero-flux boundaries",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 128,
+    "structure": "matrix_free_2d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": 128,
+    "band_upper": 128,
+    "driver": "MatrixFree",
+    "exploratory": false,
+    "family": "ac2d",
+    "id": "matrix_free_2d.ac2d.g128.jvp.x10",
+    "initial_step": 0.001,
+    "jacobian_source": "jvp",
+    "n": 16384,
+    "problem": "Allen-Cahn, 2D, 128^2 cells, n = 16384, D = 0.01, kappa = 1, zero-flux boundaries",
+    "rhs_multiplier": 10,
+    "rtol": 1e-06,
+    "size_parameter": 128,
+    "structure": "matrix_free_2d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": 128,
+    "band_upper": 128,
+    "driver": "MatrixFree",
+    "exploratory": false,
+    "family": "ac2d",
+    "id": "matrix_free_2d.ac2d.g128.jvp.x100",
+    "initial_step": 0.001,
+    "jacobian_source": "jvp",
+    "n": 16384,
+    "problem": "Allen-Cahn, 2D, 128^2 cells, n = 16384, D = 0.01, kappa = 1, zero-flux boundaries",
+    "rhs_multiplier": 100,
+    "rtol": 1e-06,
+    "size_parameter": 128,
+    "structure": "matrix_free_2d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": 256,
+    "band_upper": 256,
+    "driver": "MatrixFree",
+    "exploratory": false,
+    "family": "ac2d",
+    "id": "matrix_free_2d.ac2d.g256.jvp.x1",
+    "initial_step": 0.001,
+    "jacobian_source": "jvp",
+    "n": 65536,
+    "problem": "Allen-Cahn, 2D, 256^2 cells, n = 65536, D = 0.01, kappa = 1, zero-flux boundaries",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 256,
+    "structure": "matrix_free_2d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": 256,
+    "band_upper": 256,
+    "driver": "MatrixFree",
+    "exploratory": false,
+    "family": "bruss2d",
+    "id": "matrix_free_2d.bruss2d.g128.jvp.x1",
+    "initial_step": 0.001,
+    "jacobian_source": "jvp",
+    "n": 32768,
+    "problem": "2D Brusselator, 128x128 cells, n = 32768, A = 1, B = 3.4, alpha = 0.02, zero-flux boundaries",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 128,
+    "structure": "matrix_free_2d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": 256,
+    "band_upper": 256,
+    "driver": "MatrixFree",
+    "exploratory": false,
+    "family": "ac3d",
+    "id": "matrix_free_3d.ac3d.g16.jvp.x1",
+    "initial_step": 0.001,
+    "jacobian_source": "jvp",
+    "n": 4096,
+    "problem": "Allen-Cahn, 3D, 16^3 cells, n = 4096, D = 0.04, kappa = 1, zero-flux boundaries",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 16,
+    "structure": "matrix_free_3d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": 1024,
+    "band_upper": 1024,
+    "driver": "MatrixFree",
+    "exploratory": false,
+    "family": "ac3d",
+    "id": "matrix_free_3d.ac3d.g32.jvp.x1",
+    "initial_step": 0.001,
+    "jacobian_source": "jvp",
+    "n": 32768,
+    "problem": "Allen-Cahn, 3D, 32^3 cells, n = 32768, D = 0.04, kappa = 1, zero-flux boundaries",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 32,
+    "structure": "matrix_free_3d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": 1024,
+    "band_upper": 1024,
+    "driver": "MatrixFree",
+    "exploratory": false,
+    "family": "ac3d",
+    "id": "matrix_free_3d.ac3d.g32.jvp.x10",
+    "initial_step": 0.001,
+    "jacobian_source": "jvp",
+    "n": 32768,
+    "problem": "Allen-Cahn, 3D, 32^3 cells, n = 32768, D = 0.04, kappa = 1, zero-flux boundaries",
+    "rhs_multiplier": 10,
+    "rtol": 1e-06,
+    "size_parameter": 32,
+    "structure": "matrix_free_3d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": 1024,
+    "band_upper": 1024,
+    "driver": "MatrixFree",
+    "exploratory": false,
+    "family": "ac3d",
+    "id": "matrix_free_3d.ac3d.g32.jvp.x100",
+    "initial_step": 0.001,
+    "jacobian_source": "jvp",
+    "n": 32768,
+    "problem": "Allen-Cahn, 3D, 32^3 cells, n = 32768, D = 0.04, kappa = 1, zero-flux boundaries",
+    "rhs_multiplier": 100,
+    "rtol": 1e-06,
+    "size_parameter": 32,
+    "structure": "matrix_free_3d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": 128,
+    "band_upper": 128,
+    "driver": "MatrixFree",
+    "exploratory": true,
+    "family": "ac2d",
+    "id": "matrix_free_2d.ac2d.g128.jvpfd.x1",
+    "initial_step": 0.001,
+    "jacobian_source": "jvpfd",
+    "n": 16384,
+    "problem": "Allen-Cahn, 2D, 128^2 cells, n = 16384, D = 0.01, kappa = 1, zero-flux boundaries",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 128,
+    "structure": "matrix_free_2d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": null,
+    "band_upper": null,
+    "driver": "Dense",
+    "exploratory": false,
+    "family": "radnet",
+    "id": "dense.radnet.n2048.fd.x1",
+    "initial_step": 1e-06,
+    "jacobian_source": "fd",
+    "n": 2048,
+    "problem": "radiative-conductive lumped thermal network on a ring, n = 2048, all-to-all T^4 exchange, capacities over four decades",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 2048,
+    "structure": "dense",
+    "t_span": [
+     0.0,
+     2.0
+    ]
+   },
+   {
+    "atol": 1e-08,
+    "band_lower": 256,
+    "band_upper": 256,
+    "driver": "Banded",
+    "exploratory": false,
+    "family": "bruss2d",
+    "id": "banded_2d.bruss2d.g128.analytic.x1",
+    "initial_step": 0.001,
+    "jacobian_source": "analytic",
+    "n": 32768,
+    "problem": "2D Brusselator, 128x128 cells, n = 32768, A = 1, B = 3.4, alpha = 0.02, zero-flux boundaries",
+    "rhs_multiplier": 1,
+    "rtol": 1e-06,
+    "size_parameter": 128,
+    "structure": "banded_2d",
+    "t_span": [
+     0.0,
+     10.0
+    ]
+   }
+  ],
+  "rhs_multiplier": "the same right-hand side is evaluated k times and the last result kept (runner/src/instrument.rs, `multiplied`); the multiplied function is the problem's right-hand side for both arms and for the finite-difference Jacobians",
+  "jacobian_source": {
+   "analytic": "dense: in-place fill of the fixed pattern; banded: band fill",
+   "fd": "forward differences of the (multiplied) right-hand side inside the Jacobian callback: dense n + 1 evaluations, banded lower + upper + 2 evaluations (Curtis-Powell-Reid grouping of the band); their time is inside the Jacobian phase and their number is reported as fd_rhs_calls",
+   "jvp": "analytic JVP callback (matrix-free cells)",
+   "jvpfd": "exploratory, counts only: forward-difference JVP"
+  },
+  "excluded_a_priori": [
+   {
+    "regime": "banded direct, 3D, 32^3 cells (n = 32768, lower = upper = 1024)",
+    "reason": "band storage n (2 lower + upper + 1) = 100.7e6 doubles (805 MB) for the factors plus 537 MB for the Jacobian band, and about n lower (lower + upper) = 6.9e10 multiply-subtracts per factorisation; one 8-attempt run would exceed the 150 s limit of the sizing rule by more than an order of magnitude. The 32^3 problem is measured matrix-free"
+   },
+   {
+    "regime": "banded direct, 2D, more than 128 x 128 cells",
+    "reason": "the contract asks for 2D up to at least 128 x 128; larger grids are measured matrix-free only (256 x 256)"
+   }
+  ]
+ },
+ "run_definition": {
+  "span": "the problem's (t0, tf) of the cell table; output schedule {t0, tf}",
+  "adaptive": "AdaptiveStepConfig { rtol, atol, initial_step of the cell table, min_step 1e-14, max_step tf - t0, max_attempts = attempt budget, every other field default }; the dense and banded entries get the absolute tolerance as a vector of n equal entries",
+  "shortened_horizon": "a run ends at tf or when the attempt budget is used up (DriverStopReason::AttemptBudget), whichever comes first; the budget is the same for both arms, and the end time and end state are recorded"
+ },
+ "sizing_rule": {
+  "pilot": "one run of the plain arm per cell with an attempt budget of 12, pinned to the timing core; c = wall / attempts. The pilot times no phase",
+  "full_protocol": "if 20 c <= 60.0 s: attempt budget A = min(1000, max(20, floor(1.5 s / c))), 2 warm-ups + 7 repetitions",
+  "reduced_protocol": "else if 8 c <= 150.0 s: A = 8, 1 warm-up + 3 repetitions, the row is marked reduced_protocol",
+  "not_measured": "else: the cell is not measured and is reported with its pilot numbers",
+  "exploratory_cells": "cells flagged exploratory are run in pilot mode only (counts, no phase timing)",
+  "output": "SIZING.json, written by `campaign.py size` from the pilot logs and committed before the first measurement run"
+ },
+ "wall_protocol": {
+  "pinning": "taskset -c 10 for the whole process (core 10; its SMT sibling 22 and core 11/23 are reserved for this node); builds and all non-timing runs under taskset -c 0-9,12-21",
+  "interleaving": "each repetition is one plain run and one instrumented run in the same process; plain first on even repetitions, instrumented first on odd ones",
+  "repetitions": "2 warm-ups + 7 timed repetitions (reduced protocol: 1 + 3)",
+  "load": "/proc/loadavg is recorded by the runner at the start and the end of each cell and by the campaign script before and after the process",
+  "order_of_cells": "the order of the cell table; a cell that is not reached before the session ends is reported as NOT_RUN",
+  "retries": "a cell whose process fails is rerun at most once; both logs are kept"
+ },
+ "phases": {
+  "direct_drivers": {
+   "jacobian": "TimedStageClient linearize_ns (finite-difference evaluations of the right-hand side included)",
+   "factor": "TimedStageClient factor_ns (assembly of W and LU)",
+   "solve": "TimedStageClient solve_ns (eight triangular solves per attempt)",
+   "rhs": "wall clock around the driver's right-hand-side calls (f(t, y) of a new state and seven stage evaluations)",
+   "remainder": "total - (jacobian + factor + solve + rhs): stage vector work, error norm, controller, output, clock overhead"
+  },
+  "matrix_free": {
+   "rhs": "wall clock around the driver's right-hand-side calls",
+   "jvp": "wall clock around the JVP callback, booked per stage",
+   "solve_intervals": "per stage, the interval from the end of the right-hand-side call that precedes the stage solve (or, in an attempt that reuses f(t, y), from its first JVP) to the start of the next right-hand-side call or to the attempt observer; it contains the JVP time, the Krylov orthogonalisation, the least-squares solve and the stage vector work",
+   "other": "everything else on the timeline (controller, output, attempt set-up)",
+   "remainder_as_in_the_task_text": "total - (rhs + jvp): Krylov orthogonalisation + vector work + controller"
+  }
+ },
+ "statistics": {
+  "repetitions_used": "timed repetitions only",
+  "per_attempt": "phase_ns / attempts of the same run; median and minimum over the repetitions. Per accepted step: phase_ns / accepted steps",
+  "fractions": "phase_ns / instrumented wall of the same run; the reported fraction is the median over the repetitions",
+  "sum_check": "per repetition (jacobian + factor + solve + rhs) / instrumented wall for the direct drivers and (rhs + jvp) / instrumented wall for the matrix-free driver; the cell's value is the median over the repetitions",
+  "sum_check_with_solve_intervals": "matrix-free only, reported next to the sum check and not used for the label: (rhs + all solve intervals) / instrumented wall",
+  "instrumented_over_plain": "median of the instrumented walls / median of the plain walls; the ratio of the minima and the median of the paired ratios are reported next to it",
+  "identity": "every pair of every repetition (warm-ups included) must agree in attempts, accepted and rejected steps, reuses, success, stop reason, the bits of the end time, every bit of the end state, every WorkCounters field and the finite-difference call count"
+ },
+ "admissibility": {
+  "n_at_least_128": "authoritative iff the full protocol was used (one pinned core, interleaved arms, 2 warm-ups + 7 repetitions, load average recorded) and (i) instrumented_over_plain <= 1.02, (ii) 0.90 <= sum_check <= 1.00, (iii) identity holds; otherwise diagnostic_only with the failed criteria listed",
+  "reduced_protocol": "diagnostic_only (the wall rule needs 2 + 7); the three criteria are still evaluated and reported",
+  "n_below_128": "wall numbers are diagnostic_only; the primary numbers are callgrind instruction counts, labelled instruction_counts",
+  "matrix_free_note": "the label uses the sum check of the task text (rhs + jvp callbacks). The matrix-free driver has no hook around its Krylov orthogonalisation, so a row whose orthogonalisation exceeds 10 % of the wall is diagnostic_only by criterion (ii); the solve-interval accounting is reported as an extension"
+ },
+ "instruction_counts": {
+  "tool": "valgrind 3.22 callgrind, `runner single --arm marked` and `--arm plain`, attempt budget of the cell's measurement; callgrind_annotate --inclusive=yes --threshold=100",
+  "numbers": "inclusive Ir of v04_region (total of the run) and of the phase symbols; fractions = phase Ir / v04_region Ir of the marked arm; the plain arm gives the ratio marked / plain of v04_region",
+  "cells": "every measured cell with n < 128",
+  "exploratory_cells": [
+   "dense.bruss1d.n128.analytic.x1",
+   "dense.radnet.n128.analytic.x1",
+   "banded_1d.bruss1d.n1000.analytic.x1",
+   "banded_2d.ac2d.g32.analytic.x1",
+   "matrix_free_2d.ac2d.g64.jvp.x1"
+  ],
+  "exploratory_budget": "min(A, 20) attempts",
+  "perf_stat": "exploratory and optional: perf stat -e instructions:u of `runner single` for the arms plain, instrumented and none (set-up only) with min(A, 20) attempts; ratio (instrumented - none) / (plain - none)"
+ },
+ "amdahl": {
+  "inputs": "f_J, f_LU, f_S, f_R: the cell's median fractions of the instrumented wall (instruction fractions for n < 128); f_chain = f_R + f_S (eight right-hand sides and eight solves); for matrix-free cells f_S is the sum of the solve-interval fractions and f_J = f_LU = 0",
+  "assumptions": "upper bounds: zero overhead, perfect scaling, unchanged step count and unchanged error",
+  "a_level_structured_tableau": "S = 1 / (1 - (1 - L/8) f_chain), L in {4, 5, 6}; the present tableau has depth 8 (theory S1), bound 1.0; theory S9 excludes L = 4 for a stiffly accurate order-5 tableau",
+  "b_speculative_jacobian_lu": "saving = min(f_J + f_LU, f_chain / 4), S = 1 / (1 - saving); r = (f_J + f_LU) / f_chain. Also the variant without step-size prediction (theory S6): saving = min(f_J, f_chain / 4)",
+  "b_gate_list_for_V07_stage_b": "cells with 0.15 <= r <= 0.92 and plain wall per accepted step (median plain wall / accepted steps) >= 500 microseconds; each entry carries its admissibility label",
+  "c_parallel_jacobian_assembly": "S = 1 / (1 - f_J (1 - 1/P)), P in {2, 4, 6}",
+  "d_lagged_lu": "S = 1 / (1 - f_LU (1 - 1/k)), k in {2, 4}",
+  "e_parallel_dense_lu": "S = 1 / (1 - f_LU (1 - 1/P)), P in {2, 4, 6}; dense cells only",
+  "f_shared_krylov_basis": "matrix-free cells only: S = 1 / (1 - sum over stages 2..8 of the solve-interval fractions); the JVP part of that sum is reported separately",
+  "g_parallel_rhs": "S = 1 / (1 - f_R (1 - 1/P)), P in {2, 4, 6}; exploratory variant with the right-hand sides inside a finite-difference Jacobian (f_R + f_J) and, matrix-free, with the JVP (f_R + f_JVP)"
+ },
+ "reference_solution": "not applicable: both arms are the same method on the same problem and are required to be bit-identical; no accuracy comparison between methods is made",
+ "evidence_rules": [
+  "numbers in SIZING.json, RESULTS.json and AMDAHL.json are parsed by scripts from the raw logs of executed runs",
+  "failed and negative runs are kept",
+  "strict JSON without NaN or Infinity"
+ ],
+ "constants": {
+  "pilot_attempts": 12,
+  "target_run_seconds": 1.5,
+  "min_attempts_full": 20,
+  "max_attempts": 1000,
+  "full_protocol_max_run_seconds": 60.0,
+  "reduced_attempts": 8,
+  "reduced_max_run_seconds": 150.0,
+  "identity_sweep_attempts": 12
+ }
+}

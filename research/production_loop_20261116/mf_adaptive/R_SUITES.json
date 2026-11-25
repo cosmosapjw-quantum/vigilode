@@ -1,0 +1,319 @@
+{
+ "schema": "vigilode.loop-l1.v24.r-suites.v1",
+ "node": "V24_MF_ADAPTIVE_STAGE_SOLVE",
+ "generated": "2026-11-24T00:27:00+0900",
+ "git_head_now": "94d99ee0887adb2691bada4bcca21b6d723094a7",
+ "verdict": "FAIL",
+ "summary": {
+  "commands": 10,
+  "not_run": [],
+  "not_exit_0": [
+   "sentinels"
+  ],
+  "failing_tests": [
+   "sentinels: tests/ptsw2b_contracts.rs h2_protected_sources_are_byte_identical"
+  ],
+  "tests_passed": 1035,
+  "tests_failed": 1,
+  "tests_ignored": 37
+ },
+ "rows": [
+  {
+   "name": "krylov_all",
+   "kind": "suite",
+   "present": true,
+   "log": "logs/checks/krylov_all.log",
+   "binaries": 36,
+   "passed": 166,
+   "failed": 0,
+   "ignored": 0,
+   "failing_tests": [],
+   "panics": [],
+   "command": "cargo +1.94.1 test --locked -j 4 --release --no-fail-fast -p rodas5p-krylov",
+   "git_head": "94d99ee0887adb2691bada4bcca21b6d723094a7",
+   "git_dirty_tracked": 0,
+   "exit_code": 0,
+   "seconds": 1.537384271621704,
+   "last_lines": [
+    "   Doc-tests rodas5p_krylov",
+    "",
+    "running 0 tests",
+    "",
+    "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    ""
+   ]
+  },
+  {
+   "name": "sentinels",
+   "kind": "suite",
+   "present": true,
+   "log": "logs/checks/sentinels.log",
+   "binaries": 2,
+   "passed": 60,
+   "failed": 1,
+   "ignored": 0,
+   "failing_tests": [
+    {
+     "binary": "tests/ptsw2b_contracts.rs",
+     "test": "h2_protected_sources_are_byte_identical"
+    }
+   ],
+   "panics": [
+    "thread 'h2_protected_sources_are_byte_identical' (1459722) panicked at crates/rodas5p-integrators/tests/ptsw2b_contracts.rs:1121:9:",
+    "assertion `left == right` failed: protected file changed: src/rodas5p_matrix_free_fast.rs"
+   ],
+   "command": "cargo +1.94.1 test --locked -j 4 --release --no-fail-fast -p rodas5p-integrators --test ppsw1_6b_contracts --test ptsw2b_contracts",
+   "git_head": "94d99ee0887adb2691bada4bcca21b6d723094a7",
+   "git_dirty_tracked": 0,
+   "exit_code": 101,
+   "seconds": 0.531261682510376,
+   "last_lines": [
+    "",
+    "test result: FAILED. 23 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "",
+    "error: test failed, to rerun pass `-p rodas5p-integrators --test ptsw2b_contracts`",
+    "error: 1 target failed:",
+    "    `-p rodas5p-integrators --test ptsw2b_contracts`"
+   ]
+  },
+  {
+   "name": "stage_clients",
+   "kind": "suite",
+   "present": true,
+   "log": "logs/checks/stage_clients.log",
+   "binaries": 16,
+   "passed": 55,
+   "failed": 0,
+   "ignored": 9,
+   "failing_tests": [],
+   "panics": [],
+   "command": "cargo +1.94.1 test --locked -j 4 --release --no-fail-fast -p rodas5p-integrators --test stage_clients_*",
+   "git_head": "94d99ee0887adb2691bada4bcca21b6d723094a7",
+   "git_dirty_tracked": 0,
+   "exit_code": 0,
+   "seconds": 15.028620958328247,
+   "last_lines": [
+    "     Running tests/stage_clients_speculative_problems.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/release/deps/stage_clients_speculative_problems-f3b5614baad368c4)",
+    "",
+    "running 0 tests",
+    "",
+    "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    ""
+   ]
+  },
+  {
+   "name": "mf_targets",
+   "kind": "suite",
+   "present": true,
+   "log": "logs/checks/mf_targets.log",
+   "binaries": 27,
+   "passed": 105,
+   "failed": 0,
+   "ignored": 26,
+   "failing_tests": [],
+   "panics": [],
+   "command": "cargo +1.94.1 test --locked -j 4 --release --no-fail-fast -p rodas5p-integrators --test a1_zero_tolerance_scale --test alg01_coupled_stage_target --test alg04_alg06 --test audit2_matrix_free_common_w_contracts --test declared_structure_routing --test int01_gcrodr_verified_reuse --test int01_posthoc_tolerance --test krylov_workspace_driver_contract --test matrix_free_problem_contracts --test native_reaudit_cache_contracts --test p0_partial_contracts --test residual_acceptance_contract --test rev03_export --test rnext01_residual_output --test rnext02_gmres_into_study --test rnext03_gcrodr_attribution --test rnext03_posthoc_invariant --test rnext07_model_epoch --test safe_recycle_policy --test shared_basis_mf_contracts --test sp01_dupfix_adoption --test spd04_ls_workspace_study --test spd07_mf_step_warm_start --test stage_residual_telemetry --test thread_transfer_mf_workspace --test time_fd_workspace_contracts --test zero_start_policy_holdout",
+   "git_head": "94d99ee0887adb2691bada4bcca21b6d723094a7",
+   "git_dirty_tracked": 0,
+   "exit_code": 0,
+   "seconds": 5.003134250640869,
+   "last_lines": [
+    "test separation_contract_and_telemetry_parity ... ok",
+    "test smoke_all_arms_e_normal ... ok",
+    "test smoke_all_problems ... ok",
+    "",
+    "test result: ok. 10 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 3.08s",
+    ""
+   ]
+  },
+  {
+   "name": "integrators_lib",
+   "kind": "suite",
+   "present": true,
+   "log": "logs/checks/integrators_lib.log",
+   "binaries": 1,
+   "passed": 141,
+   "failed": 0,
+   "ignored": 1,
+   "failing_tests": [],
+   "panics": [],
+   "command": "cargo +1.94.1 test --locked -j 4 --release --no-fail-fast -p rodas5p-integrators --lib",
+   "git_head": "94d99ee0887adb2691bada4bcca21b6d723094a7",
+   "git_dirty_tracked": 0,
+   "exit_code": 0,
+   "seconds": 0.19405627250671387,
+   "last_lines": [
+    "test unified_gates::qualification_tests::iterative_sequential_order_rows_survive_roundoff_level_refinement ... ok",
+    "test g4_s5b0_regime_atlas::stage_trajectory_geometry_tests::v37_outcome_semantics_reject_crossed_labels_flags_and_endpoint_evidence ... ok",
+    "test output::spd01_landing_property::fused_landing_equals_the_legacy_composition ... ok",
+    "",
+    "test result: ok. 141 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.14s",
+    ""
+   ]
+  },
+  {
+   "name": "mf_adaptive",
+   "kind": "suite",
+   "present": true,
+   "log": "logs/checks/mf_adaptive.log",
+   "binaries": 3,
+   "passed": 8,
+   "failed": 0,
+   "ignored": 1,
+   "failing_tests": [],
+   "panics": [],
+   "command": "cargo +1.94.1 test --locked -j 4 --release --no-fail-fast -p rodas5p-integrators --test mf_adaptive_*",
+   "git_head": "94d99ee0887adb2691bada4bcca21b6d723094a7",
+   "git_dirty_tracked": 0,
+   "exit_code": 0,
+   "seconds": 8.7491295337677,
+   "last_lines": [
+    "running 2 tests",
+    "test the_shipped_entries_return_the_bits_recorded_before_the_edit ... ok",
+    "test the_shipped_policy_named_explicitly_returns_the_recorded_bits ... ok",
+    "",
+    "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.64s",
+    ""
+   ]
+  },
+  {
+   "name": "facade",
+   "kind": "suite",
+   "present": true,
+   "log": "logs/checks/facade.log",
+   "binaries": 58,
+   "passed": 500,
+   "failed": 0,
+   "ignored": 0,
+   "failing_tests": [],
+   "panics": [],
+   "command": "cargo +1.94.1 test --locked -j 4 --release --no-fail-fast -p vigilode",
+   "git_head": "94d99ee0887adb2691bada4bcca21b6d723094a7",
+   "git_dirty_tracked": 0,
+   "exit_code": 0,
+   "seconds": 9.001540184020996,
+   "last_lines": [
+    "running 1 test",
+    "test crates/vigilode/src/lib.rs - (line 169) - compile fail ... ok",
+    "",
+    "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s",
+    "",
+    "all doctests ran in 6.81s; merged doctests compilation took 6.78s"
+   ]
+  },
+  {
+   "name": "clippy_krylov_vigilode",
+   "kind": "static",
+   "present": true,
+   "log": "logs/checks/clippy_krylov_vigilode.log",
+   "binaries": 0,
+   "passed": 0,
+   "failed": 0,
+   "ignored": 0,
+   "failing_tests": [],
+   "panics": [],
+   "command": "cargo +1.94.1 clippy --locked -j 4 --release -p rodas5p-krylov -p vigilode --all-targets --no-deps -- -D warnings",
+   "git_head": "94d99ee0887adb2691bada4bcca21b6d723094a7",
+   "git_dirty_tracked": 0,
+   "exit_code": 0,
+   "seconds": 16.253394603729248,
+   "last_lines": [
+    "    Checking rodas5p-core v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/crates/rodas5p-core)",
+    "    Checking rodas5p-krylov v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/crates/rodas5p-krylov)",
+    "    Checking rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/crates/rodas5p-integrators)",
+    "    Checking vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/crates/vigilode)",
+    "    Finished `release` profile [optimized] target(s) in 16.19s"
+   ]
+  },
+  {
+   "name": "clippy_integrators",
+   "kind": "static",
+   "present": true,
+   "log": "logs/checks/clippy_integrators.log",
+   "binaries": 0,
+   "passed": 0,
+   "failed": 0,
+   "ignored": 0,
+   "failing_tests": [],
+   "panics": [],
+   "command": "cargo +1.94.1 clippy --locked -j 4 --release -p rodas5p-integrators --lib --test mf_adaptive_measure --test mf_adaptive_contracts --test mf_adaptive_shipped_bits --test ppsw1_6b_contracts --no-deps -- -D warnings",
+   "git_head": "94d99ee0887adb2691bada4bcca21b6d723094a7",
+   "git_dirty_tracked": 0,
+   "exit_code": 0,
+   "seconds": 15.640126705169678,
+   "last_lines": [
+    "    Checking rodas5p-core v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/crates/rodas5p-core)",
+    "    Checking rodas5p-krylov v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/crates/rodas5p-krylov)",
+    "    Checking rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/crates/rodas5p-integrators)",
+    "    Finished `release` profile [optimized] target(s) in 15.60s"
+   ]
+  },
+  {
+   "name": "fmt",
+   "kind": "static",
+   "present": true,
+   "log": "logs/checks/fmt.log",
+   "binaries": 0,
+   "passed": 0,
+   "failed": 0,
+   "ignored": 0,
+   "failing_tests": [],
+   "panics": [],
+   "command": "cargo +1.94.1 fmt -p rodas5p-krylov -p rodas5p-integrators -p vigilode -- --check",
+   "git_head": "94d99ee0887adb2691bada4bcca21b6d723094a7",
+   "git_dirty_tracked": 0,
+   "exit_code": 0,
+   "seconds": 2.7620480060577393,
+   "last_lines": []
+  },
+  {
+   "name": "workspace_check",
+   "kind": "extra",
+   "present": true,
+   "log": "logs/checks/workspace_check.log",
+   "binaries": 0,
+   "passed": 0,
+   "failed": 0,
+   "ignored": 0,
+   "failing_tests": [],
+   "panics": [],
+   "command": "cargo +1.94.1 check --locked -j 4 --workspace --all-targets",
+   "git_head": "94d99ee0887adb2691bada4bcca21b6d723094a7",
+   "git_dirty_tracked": 0,
+   "exit_code": 0,
+   "seconds": 7.169601678848267,
+   "last_lines": [
+    "   Compiling rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/crates/rodas5p-fair-ab)",
+    "    Checking rodas5p-cli v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/crates/rodas5p-cli)",
+    "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.26s"
+   ]
+  },
+  {
+   "name": "loop_checker",
+   "kind": "checker",
+   "present": true,
+   "log": "logs/checks/loop_checker.log",
+   "binaries": 0,
+   "passed": 0,
+   "failed": 0,
+   "ignored": 0,
+   "failing_tests": [],
+   "panics": [
+    "ValueError: protected file changed: crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs"
+   ],
+   "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
+   "git_head": "94d99ee0887adb2691bada4bcca21b6d723094a7",
+   "git_dirty_tracked": 0,
+   "exit_code": 1,
+   "seconds": 0.1124887466430664,
+   "last_lines": [
+    "    main()",
+    "  File \"/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/research/production_loop_20261116/check_checkpoint.py\", line 77, in main",
+    "    require(git('hash-object', path) == expected, 'protected file changed: ' + path)",
+    "  File \"/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/research/production_loop_20261116/check_checkpoint.py\", line 28, in require",
+    "    raise ValueError(message)",
+    "ValueError: protected file changed: crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs"
+   ]
+  }
+ ]
+}

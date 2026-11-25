@@ -1,0 +1,26 @@
+# strace probe of the fix round (review S-N5): probe_calls.py (non-destructive: remove, rename, link, chmod and truncate target missing paths) under the selector's runner, trace parsed by trace_sets; 2026-11-24T13:22:48Z
+strace_works: /usr/bin/strace strace -- version 6.8 None
+runner: /usr/bin/strace -ff --seccomp-bpf -qq -y -o /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/probe_strace/work-88gb1d0x/trace/t -e trace=openat,?open,?openat2,?creat,execve,?execveat,?stat,?lstat,newfstatat,?statx,?access,faccessat,?faccessat2,?readlink,readlinkat,chdir,fchdir,?mkdir,mkdirat,?rename,?renameat,?renameat2,?link,linkat,?symlink,symlinkat,?unlink,unlinkat,?rmdir,?mknod,mknodat,utimensat,?utime,?utimes,?futimesat,?chmod,fchmodat,?fchmodat2,?truncate,?statfs,?getxattr,?lgetxattr,?listxattr,?llistxattr
+probe exit 0 
+trace lines: 98
+  newfstatat(AT_FDCWD</home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3>, "<repo>", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
+  mkdir("<repo>/data", 0777) = 0
+  mkdir("<repo>/data", 0777) = -1 EEXIST (File exists)
+  mkdir("<repo>/data/new", 0777) = 0
+  openat(AT_FDCWD</home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3>, "<repo>/data/b.txt", O_WRONLY|O_CREAT|O_EXCL|O_CLOEXEC, 0666) = 3<<repo>/data/b.txt>
+  rename("<repo>/data/missing.txt", "<repo>/data/x.txt") = -1 ENOENT (No such file or directory)
+  rename("<repo>/data/b.txt", "<repo>/data/new") = -1 EISDIR (Is a directory)
+  link("<repo>/data/missing.txt", "<repo>/data/h.txt") = -1 ENOENT (No such file or directory)
+  symlink("b.txt", "<repo>/data/b.txt") = -1 EEXIST (File exists)
+  unlink("<repo>/data/missing.txt") = -1 ENOENT (No such file or directory)
+  rmdir("<repo>/data/missing_dir") = -1 ENOENT (No such file or directory)
+  utimensat(AT_FDCWD</home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3>, "<repo>/data/missing.txt", NULL, 0) = -1 ENOENT (No such file or directory)
+  chmod("<repo>/data/missing.txt", 0644) = -1 ENOENT (No such file or directory)
+  truncate("<repo>/data/missing.txt", 0) = -1 ENOENT (No such file or directory)
+  chdir("<repo>/nowhere") = -1 ENOENT (No such file or directory)
+  statfs("<repo>/data", {f_type=EXT2_SUPER_MAGIC, f_bsize=4096, f_blocks=239817669, f_bfree=40702751, f_bavail=28502243, f_files=60989440, f_ffree=55812186, f_fsid={val=[0x5c6368b2, 0x51188212]}, f_name
+  getxattr("<repo>/data/b.txt", "user.x", 0x7c242d985020, 128) = -1 ENODATA (No data available)
+stats: {'trace_files': 1, 'traced_calls': 98}
+read: ['.', 'data', 'data/b.txt', 'data/new']
+dirs: []
+absent: ['data/h.txt', 'data/missing.txt', 'data/missing_dir', 'data/x.txt', 'nowhere']

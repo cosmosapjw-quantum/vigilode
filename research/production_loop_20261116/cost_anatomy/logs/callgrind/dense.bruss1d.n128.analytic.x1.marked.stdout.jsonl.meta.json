@@ -1,0 +1,37 @@
+{
+ "command": [
+  "taskset",
+  "-c",
+  "0-5,12-17",
+  "valgrind",
+  "--tool=callgrind",
+  "--callgrind-out-file=/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v04/research/production_loop_20261116/cost_anatomy/logs/callgrind/dense.bruss1d.n128.analytic.x1.marked.callgrind.out",
+  "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v04/release/v04-cost-anatomy-runner",
+  "single",
+  "--cell",
+  "dense.bruss1d.n128.analytic.x1",
+  "--arm",
+  "marked",
+  "--attempts",
+  "20"
+ ],
+ "exit_code": 0,
+ "loadavg_before": [
+  3.08,
+  3.15,
+  3.43
+ ],
+ "loadavg_after": [
+  3.24,
+  3.18,
+  3.44
+ ],
+ "started_unix": 1794844256.0454602,
+ "wall_seconds": 0.42229247093200684,
+ "log": "logs/callgrind/dense.bruss1d.n128.analytic.x1.marked.stdout.jsonl",
+ "log_sha256": "013efe3c545fb0fa44ad5dd524ed2d1c8cbd4e8b0ecdd3303d49ae2fd9b014fd",
+ "binary_sha256": "6c8024535a7f53a68c20033ec062b57645aa6ceb6325ed9e86002d19ab1769ec",
+ "role": "exploratory",
+ "attempt_budget": 20,
+ "arm": "marked"
+}

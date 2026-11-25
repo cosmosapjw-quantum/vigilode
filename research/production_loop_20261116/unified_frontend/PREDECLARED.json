@@ -1,0 +1,110 @@
+{
+ "schema": "vigilode.loop-l1.v03a.predeclared.v1",
+ "node": "V03_UNIFIED_FRONTEND (part A)",
+ "written": "2026-11-17 (KST), before any contract, reproduction or measurement run of this node and before any code of this node existed",
+ "base_commit": "c468478e73123a4625c6d20f7459a9f79cbf33de",
+ "branch": "research/production-loop-20261116-w2-v03",
+ "frozen_discriminator_verbatim": {
+  "source": "research/production_loop_20261116/PREREGISTRATION.md, table 'Frozen discriminators', row V03",
+  "pass": "100% decision equality of `route(General)` and `GeneralOde::select` on an exhaustive grid with zero callbacks; each adapter bitwise equal to the direct integrator call; refusal before any callback; default-route golden unchanged",
+  "kill_or_fallback": "default routing is not changed; an adapter may stay unavailable"
+ },
+ "timing": {
+  "statement": "The frozen row has no wall-time criterion. This node makes no wall-time claim and runs no authoritative timing block. Any elapsed time that appears in a log (cargo test durations) is diagnostic_only.",
+  "primary_metrics": "equality counts, callback-entry counters, driver work counters (deterministic)",
+  "timing_quality_rule_of_the_loop": "a timing cell would be authoritative only with 1-minute load average <= 8 before and after and (max - min) / median <= 10% over 7 repetitions after 2 warm-ups, re-measured at most twice with every measurement kept; not used here"
+ },
+ "D1_decision_equality": {
+  "phase_A_definition": "MethodRegistry::route with MethodChoice::General(policy) returns exactly the decision of GeneralOde::select(problem, options, policy) because it calls it.",
+  "grid": {
+   "identity": "the exhaustive decision grid of crates/vigilode/tests/default_path_golden.rs::decision_grid, re-enumerated in the same order by the contract test",
+   "jacobian_providers": ["dense", "banded(1,1)", "jvp", "finite-difference"],
+   "boolean_features": ["autonomous", "time_derivative", "mass (identity)", "events (one event)", "declared band (1,1)"],
+   "options": {"dense_output": [false, true], "interior_error": ["w-filtered-enforce", "enforce", "off"], "atol": ["scalar 1e-9", "vector 1e-9 * ones(n)"]},
+   "dimensions": [8, 64, 65, 500],
+   "policies": {"regime": ["unknown", "nonstiff", "stiff"], "derivatives": ["forbidden", "provided-only", "allow-finite-difference"], "allow_matrix_free": [false, true], "max_dense_dimension": [64, 1000]},
+   "entries": 221184,
+   "entries_formula": "128 feature rows * 12 option rows * 4 dimensions * 36 policies"
+  },
+  "equality": "For every entry: the canonical JSON (sorted keys) of the serde record of the returned selection, or of the returned refusal, of route(General) equals the one of GeneralOde::select. In addition every entry is compared with the decoded golden file crates/vigilode/tests/golden/default_path/decision_grid.json (table 'select'), so the comparison does not rest on the live function alone.",
+  "zero_callbacks": "Every callback of every grid problem (rhs, dense/band Jacobian, JVP, time derivative, event function) increments one shared atomic counter; the counter must read 0 after all route and select calls.",
+  "pass": "221184 of 221184 entries equal against select AND against the golden file, and the callback counter is 0.",
+  "phase_B": {
+   "condition": "GeneralOde::select is switched to the registry-derived selection only if the registry-derived selection equals the old body on (i) the 221184-entry golden grid and (ii) the extension grid below, with zero callbacks; the old body then stays in the crate as the test oracle. Otherwise the node stays at phase A and the differing cases are reported.",
+   "extension_grid": "the golden grid with two more Jacobian providers that the golden grid does not enumerate: SparseJvp with a banded pattern (tridiagonal) and SparseJvp with a non-banded pattern (tridiagonal plus one far off-diagonal entry); 6 providers * 32 feature rows * 12 option rows * 4 dimensions * 36 policies = 331776 entries. It is called 'extension grid', never 'golden grid'.",
+   "equality": "same canonical-JSON equality, registry-derived selection against the retained old body.",
+   "golden_check": "crates/vigilode/tests/default_path_golden.rs must pass unchanged after the switch (it calls GeneralOde::select)."
+  }
+ },
+ "D2_adapter_bitwise_equality": {
+  "definition_of_direct_call": {
+   "rodas5p": "vigilode::Rodas5p::solve(problem, span, y0, options)",
+   "dopri5": "vigilode::Dopri5::solve(problem, span, y0, options)",
+   "lawson-dopri5": "vigilode::LawsonDopri5::solve(flow, residual, span, y0, options)",
+   "ppsw1": "vigilode::PeerOde::solve(problem, span, y0, peer_options, allowed) (the task defines the PPSW1 adapter as 'through PeerOde')",
+   "bdf": "rodas5p_integrators::integrate_bdf_adaptive_observed on an OdeProblem that the test builds from plain closures, independently of the facade lowering",
+   "radau": "rodas5p_integrators::integrate_radau_adaptive_observed, same construction",
+   "pexprb": "rodas5p_integrators::integrate_pexprb54s4_fused_adaptive_observed, same construction",
+   "lagged-rodas5p": "rodas5p_integrators::integrate_rodas5p_lagged_observed, same construction"
+  },
+  "direct_call_configuration_for_integrator_crate_methods": "AdaptiveStepConfig { rtol, atol (scalar), initial_step = options.h0, max_attempts = options.max_steps, every other field default }; OutputSchedule [t0, t1]; BdfConfig::default(); RadauConfig::default(); FusedPhiKrylovConfig::default() with ParallelExecution::sequential; Rodas5pLaggedOptions::default().",
+  "compared_quantities": "every output time and every output state component as f64::to_bits; the success flag; accepted and rejected step counts and attempts where both sides expose them; every field of the driver work counters (serde record, floats as bit patterns).",
+  "fixtures": {
+   "robertson": "n=3, dense analytic Jacobian, autonomous, y0=(1,0,0), span (0, 40)",
+   "robertson_dae": "n=3 index-1 form with singular mass diag(1,1,0), dense analytic Jacobian, span (0, 40) (sequential dense route)",
+   "vanderpol": "n=2, mu=10, dense analytic Jacobian, autonomous, y0=(2,0), span (0, 5)",
+   "prothero_robinson_nonnormal": "n=2, L=[[-2,30],[0,-400]], phi(t)=(sin t + 1, cos 2t), non-autonomous, dense or JVP provider, span (0, 1) (the U07 contract problem)",
+   "brusselator_1d": "MOL, N=20 cells, n=40, interleaved (u,v), A=1, B=3, alpha=1/50, band (2,2); dense, banded and finite-difference providers",
+   "heat_reaction_jvp": "n=16, u_t = D u_xx + u(1-u) with homogeneous Dirichlet ends, D=1e-2 * (n+1)^2, JVP provider, span (0, 1)",
+   "lotka_volterra": "n=2, span (0, 10), y0=(1,1)",
+   "damped_rotation": "n=2, one DampedRotationBlock with a cubic residual, span (0, 5)"
+  },
+  "tolerances": "rtol 1e-6 and atol 1e-9 (scalar) unless the adapter row says otherwise; h0 1e-3; max_steps 100000. BDF2 and Radau rows may use rtol 1e-4 to keep the run short; the value used is printed in the test output and in RECEIPT.json.",
+  "minimum_coverage": "RODAS5P: one case per facade route (dense-fast, banded-fast, matrix-free, fast-dense, fast-banded-dense, sequential-dense). Every other adapter: at least one case per provider form that its descriptor declares available.",
+  "pass": "per adapter: all compared quantities equal on all its cases. An adapter that cannot be made bitwise equal is declared unavailable in its descriptor with the reason; it is never replaced by another method.",
+  "u11_note": "HIRES, Oregonator and Brusselator MOL N=32 are not used. No fixture of this node is called holdout or new."
+ },
+ "D3_refusal_before_any_callback": {
+  "definition": "MethodRegistry::route never enters user code. MethodRegistry::solve needs a plan, and a plan exists only after route returned Ok. Input validation of solve (span, state, tolerances, method parameters) also precedes every callback.",
+  "test": "A refusal matrix (every method id of the registry against requests with a mass matrix, events, dense output, a provider form the method does not lower, a missing permission, an unknown method id, a vector atol where unsupported, invalid h0) plus MethodChoice::Auto and every explicit method id over the whole 221184-entry grid; all problem callbacks share one atomic counter.",
+  "pass": "counter == 0 after all route calls and after every solve call that returns a refusal or an input error."
+ },
+ "D4_default_route_golden": {
+  "test": "cargo test -p vigilode --release --test default_path_golden after the last code change of this node, plus git diff of crates/vigilode/tests/golden/** and of crates/vigilode/tests/default_path_golden.rs against the base commit.",
+  "pass": "all golden tests pass, and the diff is empty (no golden byte and no line of the oracle changed)."
+ },
+ "peer_defects": {
+  "source": "research/production_loop_20261116/audit/audit_findings.json COD-02 and COD-04; probe source research/production_loop_20261116/audit/findings_code.json probe_sources['probe/src/main.rs'] (cases p1..p7)",
+  "failing_first_rule": "Each reproduction is first written against the public API of the base commit, run on the base sources, and its failing output is kept in logs/failing_first_peer_defects.log before selection.rs is changed. After the fix the same assertions must pass; typed assertions are added, none is removed.",
+  "cases": {
+   "p1_jvp_without_permission": {"finding": "COD-04a", "setup": "n=2 linear, JVP provider, allowed = {explicit_jacobian, dense_matrix, newton}", "base_evidence": "admitted as explicit-jacobian-dense, 4 user JVP callbacks, success", "expected_after_fix": "PeerOde::admission is Refused, PeerOde::solve is Err(Refused), 0 user callbacks"},
+   "p2a_starter_endpoint_rounds_above_t_end": {"finding": "COD-04b", "setup": "y'=1, zero dense Jacobian, span (0.3, 0.9), default options", "base_evidence": "success=false, failure=None, t_last=0.9000000000000001", "expected_after_fix": "success=true, last time == 0.9 bit for bit, |y_end - 0.6| <= 1e-12; never success=false without a reason"},
+   "p3_forcing_20cos20t": {"finding": "COD-02", "setup": "y'=20 cos 20t, zero dense Jacobian, span (0,1), rtol 1e-6, atol 1e-8", "reference": "exact y(1) = sin 20", "base_evidence": "success=true, |error| = 8.313 = 9.0e6 tolerance units", "expected_after_fix": "either success with |error| <= 1000 tolerance units (unit = atol + rtol*|y_exact|) or success=false with a typed reason"},
+   "p3b_forcing_200cos200t": {"finding": "COD-02", "setup": "y'=200 cos 200t, otherwise as p3", "reference": "exact y(1) = sin 200", "base_evidence": "success=true, |error| = 50.25 = 5.7e7 tolerance units", "expected_after_fix": "as p3"},
+   "p4_recoverable_jacobian": {"finding": "COD-04c", "setup": "y'=-y, dense Jacobian that returns Recoverable('user says shrink') from its 3rd call on, span (0,10)", "base_evidence": "52 rejections, 54 Jacobian callbacks, failure 't=2: InvalidInput(\"PPSW1 requires a finite, representably advancing time\")'", "expected_after_fix": "success=false; the reason carries the callback kind (recoverable), the callback (Jacobian) and the user's message; at most 6 user Jacobian callbacks"},
+   "p5_invalid_h0": {"finding": "COD-02", "setup": "y'=-y, h0 = -1, NaN, 0", "base_evidence": "NaN: success=true with h0 0.5; -1 and 0: Ok with an untyped starter failure string", "expected_after_fix": "Err(PeerSolveError::InvalidInput) for all three, 0 user callbacks"},
+   "p6_fatal_rhs": {"finding": "COD-04c/d", "setup": "y'=-y, RHS returns Fatal('user fatal') from its 41st call on, span (0,10)", "base_evidence": "failure 't=2: InvalidInput(\"fatal callback error: user fatal\")'", "expected_after_fix": "success=false; typed reason = fatal RHS callback error with the user's message, not InvalidInput; every returned state finite"},
+   "p7_declared_band": {"finding": "COD-04e", "setup": "n=3, dense provider with Problem::banded(1,1)", "base_evidence": "admission Admitted, solve Err(UnsupportedJacobian)", "expected_after_fix": "admission Refused and solve Err, both before any callback"}
+  },
+  "starter_error_control_rule": {
+   "why_adapter_side": "crates/rodas5p-integrators/src/ppsw1.rs is protected; ppsw1::start is one 5-stage Radau IIA step over [t0, t0 + 2 h0] with no error estimate.",
+   "estimate": "Step doubling on the adapter side. F = start(t0, y0, h0). A = start(t0, y0, h0/2) covers the first half, B = start(t0 + h0, A.y[5], h0/2) the second half. Reference values at the five non-initial nodes of F (fractions 1/4, 1/2, 7/10, 9/10, 1 of the interval): A.y[2], A.y[5], the degree-5 polynomial through the six node values of B evaluated at local fractions 0.4 and 0.8, and B.y[5]. est = max over the five nodes of ppsw1::error_norm(F.y[k], F.y[k] - ref_k, atol, rtol) with the caller's tolerances.",
+   "decision": "accept F iff est <= 1 (ppsw1::accepts). Otherwise h0 <- h0/2, F <- A (reused, not recomputed) and the estimate is repeated; at most 40 halvings, then a typed failure. A callback or solver error inside any of the three starter solves stops the run with a typed reason.",
+   "constants": {"max_halvings": 40, "accept_threshold": 1.0, "shrink_factor": 0.5},
+   "nature": "an estimate, not a bound (Richardson-type comparison: the half-step references carry about 1/64 of the interior and 1/512 of the endpoint error of F).",
+   "work": "every starter solve is charged to startup_work.",
+   "search_budget": "none: the constants are fixed here and are not tuned on the results."
+  },
+  "regression_check_exploratory": "Before the fix, FNV-1a digests of the PeerOde trajectories (times and states) of the four U07 cases (Prothero-Robinson, dense and JVP provider, threads 1 and 4, rtol 1e-8, atol 1e-10, h0 rule cap 0.01) are recorded on the base sources. After the fix the digests are compared: equality means the starter control accepted the first h0 and left the accepted trajectory bit for bit unchanged (startup work counters grow by the two control solves). Labelled exploratory; not a frozen criterion."
+ },
+ "auto_policy": {
+  "opt_in": "MethodChoice::Auto is never a default (owner decision OD-L1-3). GeneralOde, Rodas5p and every other existing frontend keep their behaviour.",
+  "ranking": "Candidates are the registry entries whose adapter is available and whose admission for the declared facts and the caller's capability set succeeds. Order: (1) regime fit (declared stiff: implicit methods before explicit ones; declared nonstiff or unknown: explicit before implicit), (2) qualification (production, scoped calibration, implemented-unqualified, reference-only), (3) registry order. The whole ranking with every refusal reason is returned in the plan.",
+  "measured_evidence": "Used only when the policy says so and only as data supplied by the caller (selection_evidence::CostEvidence per method with the callback units spent to obtain it); route stays pure. The supplied callback units are added to the work summary of the solution. No evidence is measured by route.",
+  "fallback": "Off unless the policy enables it. When enabled, a failed attempt is followed by the next ranked candidate, restarted at t0 (no state of the failed attempt is reused). Every attempt is kept with its route id, typed failure, accepted prefix and work; the total work includes failed attempts.",
+  "no_performance_claim": "This node makes no claim that Auto is faster or more accurate than any explicit choice."
+ },
+ "exclusion_rules": "None. Every executed contract case is reported; failed and negative runs stay in the logs.",
+ "result_files": "RECEIPT.json is produced by a script that parses the raw logs under logs/ (test result lines and QUAL lines printed by the tests); no number is typed in. REPORT_KO.md is rendered by a script from RECEIPT.json and from the registry table that a test prints.",
+ "edits_of_existing_tests": "crates/vigilode/tests/unified_method_capabilities.rs and unified_method_sessions.rs are edited only where an assertion pins a defect fixed by this node; each edit is listed with its reason in RECEIPT.json."
+}

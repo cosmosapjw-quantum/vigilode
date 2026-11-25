@@ -1,0 +1,113 @@
+{
+  "evidence_id": "EV-AUTH-002",
+  "task_id": "AUTH-002",
+  "claim_support": [
+    "derived",
+    "numerically-checked",
+    "implementation-verified"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "hold",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "cosmosapjw-quantum/vigilode",
+    "base_sha": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "worktree_head": "1403e1082c3a8d0d52d33a85924791238460b9d6",
+    "branch": "task/AUTH-002-20261106_v2",
+    "tree_sha": "8a236871948798cb2a40c8a5ea65112a045bf16d",
+    "input_hashes": [
+      {
+        "file": "crates/rodas5p-core/src/leja_action.rs",
+        "before_sha256": "7022021e9dbee528ed946fef5fecba0888959eacf39b9e7ee9fcc7344bf3746d",
+        "after_sha256": "9ae411315c98491ad69750da086f5980cc24ac30cc0d487a63240d9f48381fa3"
+      },
+      {
+        "file": "crates/rodas5p-core/tests/leja_total_contract.rs",
+        "before_sha256": "fce33c1929f9996389ab0415c625e56d2dadf1ad4548db7355be22e1d3e9a198",
+        "after_sha256": "0ca634e1eb9a0c7c427f1d0523dfa8e1e632fcb52ec6fc7691b8d9461d8a08ce"
+      }
+    ],
+    "identity_relation": "EXACT_REPRESENTED_OPERATOR_IDENTITY"
+  },
+  "command_records": [
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "rodas5p-core",
+        "--test",
+        "leja_total_contract"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-AUTH-002-20261106_v2",
+      "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+      "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
+      "exit_code": 0,
+      "stdout_artifact": "21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.51s",
+      "stderr_artifact": null
+    },
+    {
+      "argv": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-AUTH-002-20261106_v2",
+      "rustc": "rustc 1.99.0 (b940084d7 2026-09-28)",
+      "cargo": "cargo 1.99.0 (5f94df478 2026-08-27)",
+      "exit_code": 0,
+      "stdout_artifact": "",
+      "stderr_artifact": null
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode-task-worktrees/task-AUTH-002-20261106_v2",
+      "rustc": null,
+      "cargo": null,
+      "exit_code": 0,
+      "stdout_artifact": "",
+      "stderr_artifact": null
+    }
+  ],
+  "result": "Bound CertifiedNormalityWitness to exact canonical operator digest, dimension, scaling, and model epoch. Verified all identity fields at the Leja consumer seam (complex_leja_phi_action_into), rejecting same-dimension foreign operators (COMPLEX_LEJA_OPERATOR_MISMATCH) and stale model epochs (COMPLEX_LEJA_STALE_EPOCH). Enforced exact represented skew-symmetry (rejecting 1-ulp and tolerance-near defect perturbations at construction) and preserved zero-allocation in the hot loop.",
+  "limitations": [
+    "Overall qualification remains HOLD_NOT_RELEASE_QUALIFIED pending full workspace-level qualification and remaining audit findings resolution.",
+    "Certified normality is currently supported for dense skew-symmetric representations; general non-normal operators fail closed to EstimateOnly without outward perturbation bounds."
+  ],
+  "math_review": {
+    "definitions": "For dense matrix A in R^{n x n}, exact represented skew-symmetry requires A_{ii} == 0.0 and A_{ij} == -A_{ji} for all i, j in binary64. The imaginary spectrum is enclosed in [-i*beta, i*beta] where beta = mul_up(row_sum_max, scaling). The canonical operator digest is the 64-bit prefix of SHA-256 over binary64 entry representations.",
+    "assumptions": [
+      "Exact skew-symmetry guarantees normality (A^T A = A A^T) with purely imaginary eigenvalues.",
+      "Gershgorin disk theorem bounds imaginary eigenvalues by maximum absolute row sum.",
+      "Operator representation is immutable for the duration of the model epoch."
+    ],
+    "derivation": "A normal operator with purely imaginary spectrum satisfies ||exp(h A)||_2 = 1. Newton-Leja interpolation on imaginary Leja points yields certified truncation bounds via divided differences and outward capacity powers without subtractive cancellation.",
+    "roundoff_model": "Directed rounding (Interval arithmetic next_up/next_down, mul_up, add_up) bounds Gershgorin row sums and remainder terms. Skew-symmetry defect tolerance is 0 (exact floating point negation -x is bit-exact in IEEE-754).",
+    "counterexamples": [
+      "Matrix with diagonal MIN_POSITIVE is rejected.",
+      "Matrix with off-diagonal 1-ulp defect (next_up) is rejected.",
+      "Witness for operator A consumed with operator B of identical dimension is rejected.",
+      "Witness with epoch E consumed with config at epoch E+1 is rejected."
+    ]
+  },
+  "work_accounting": {
+    "rhs": null,
+    "jvp": null,
+    "jacobian": null,
+    "linear_iterations": null,
+    "factorizations": null,
+    "rejected_steps": null,
+    "speculative_work": null,
+    "refused_work": null,
+    "failed_attempts": null,
+    "unknown_counters": []
+  },
+  "decision_rationale": "Finding AUTH-002 is fully addressed by binding CertifiedNormalityWitness to the exact canonical operator digest and model epoch, validating both at the consumer seam (complex_leja_phi_action_into), and enforcing exact represented skew-symmetry. All contract tests pass and hot loop allocations remain 0."
+}

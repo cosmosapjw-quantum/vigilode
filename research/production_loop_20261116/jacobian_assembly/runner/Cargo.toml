@@ -1,0 +1,20 @@
+[package]
+name = "v08-assembly-runner"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+# Standalone runner of loop node V08, outside the repository workspace: it
+# links the facade (crates/vigilode) and the integrators crate so that the
+# assembly client can be compared with vigilode's own finite differences
+# and the facade's coloured JVP route can be measured.
+[workspace]
+
+[dependencies]
+vigilode = { path = "../../../../crates/vigilode" }
+rodas5p-integrators = { path = "../../../../crates/rodas5p-integrators" }
+rodas5p-core = { path = "../../../../crates/rodas5p-core" }
+serde_json = { version = "1.0.151", features = ["float_roundtrip"] }
+
+[profile.release]
+debug = false

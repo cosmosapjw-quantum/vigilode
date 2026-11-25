@@ -1,0 +1,208 @@
+NOTES of node V08_JACOBIAN_ASSEMBLY (loop L1, wave 2), builder worktree w2-v08
+branch research/production-loop-20261116-w2-v08, base 587a139501729bbe886bb2b8c49b0ef893705d08
+All times KST. Newest entry last.
+
+== 2026-11-23, entry 1 (start; nothing measured yet) ==
+
+READ SO FAR (file:line)
+- research/production_loop_20261116/PREREGISTRATION.md:32  frozen row V08: "Jacobian and trajectory bitwise
+  equal to sequential assembly; RHS calls = colours + 1; wall >= 1.5x on finite-difference problems with
+  n >= 64 and RHS cost >= 50 microseconds | kill < 1.1x". Rules at :11-17.
+- docs/agent/production_solver_program_20261112/TASK_CONTRACTS.json tasks[20] (V08): acceptance checks, the same
+  three lines plus "a wrong pattern fails closed"; failure_action "Opt-in execution policy only".
+- crates/rodas5p-integrators/src/client_stage.rs:36-60  trait StageLinearSystem (linearize / factor /
+  solve_in_place; the driver charges jacobian_builds before linearize).
+- crates/rodas5p-integrators/src/stage_clients/dense_lu.rs:160-262  DenseLuStageClient: linearize through
+  OdeProblem::dense_jacobian_into, W = I/(h gamma) - J (negate, add diagonal), lu_research::zero_skipping
+  or LuFactorization (faer). Its jacobian field is private (no setter).
+- crates/rodas5p-integrators/src/stage_clients/timed.rs  TimedStageClient + PhaseTimesHandle (linearize_ns
+  is the Jacobian phase).
+- crates/rodas5p-integrators/src/problem.rs:391-437  OdeProblem::new needs an explicit Jacobian or a JVP;
+  :645-664 eval_rhs_into (charges rhs_calls and rhs_evaluations, checks finite); :871-895
+  dense_jacobian_into. FINDING: rodas5p-integrators has NO finite-difference state Jacobian. The only
+  finite difference in problem.rs is the time derivative (:823-831).
+- The finite-difference Jacobian of the default path lives in the facade, crates/vigilode/src/fd.rs:
+  :443-455 increment(yj): raw = sqrt(EPS) * max(|yj|, 1); forward = yj + raw; shifted = forward if finite
+           else yj - raw; delta = shifted - yj  (the represented difference).
+  :476-509 DenseFdScratch::fill: matrix zeroed; f0 = rhs(t, y) into a zeroed buffer; shifted = y; for j in
+           0..n: shifted[j] = y_j shifted; f1 zeroed; rhs(t, shifted, f1); shifted[j] = y[j]; for i:
+           entry = (f1[i] - f0[i]) / delta; non-finite entry -> CoreError::NonFinite; matrix[(i,j)] = entry.
+  :581-622 BandedFdScratch::fill: groups = min(lower+upper+1, n); group g perturbs the columns
+           j = g, g+width, ...; entry = (f1[i] - f0[i]) / deltas[j] for i in the band rows of column j.
+  :220-223 Guard::fd_rhs and :103-134 Guard::vector_call: the facade wraps the user RHS (output filled
+           with NaN before the call, input checked finite); FD right-hand sides are counted by the Guard
+           (fd_rhs_calls), not by the driver's WorkCounters.
+  fd.rs is not in the protected list of this task but its bits are pinned by the default-path golden.
+
+DESIGN DECISIONS SO FAR
+- The client lives in rodas5p-integrators and cannot call vigilode::fd (dependency direction). It
+  re-implements the arithmetic of fd.rs:443-455 and :476-509 and cites those lines. Equality with the real
+  facade code is checked in the standalone runner (which may depend on both crates) through trajectories of
+  vigilode::solve with Jacobian::FiniteDifference; equality with a test-local transcription of fd.rs is
+  checked in the crate tests.
+- Right-hand sides are evaluated through OdeProblem::eval_rhs_into with per-worker WorkCounters that are
+  summed afterwards (integer sums, order independent).
+- Threaded modes use a rayon ThreadPool owned by the client (ThreadPoolBuilder::num_threads(P)), never the
+  global pool.
+- "wall" in the frozen row: primary = whole solve (client construction + integrate); secondary = the
+  Jacobian phase (TimedStageClient linearize_ns). To be frozen in PREDECLARED.json before any measurement.
+
+NEXT STEPS
+1. Read the client driver entry (rodas5p_fast.rs integrate_rodas5p_fast_client_observed_with_atol), the
+   dense identity test, banded_tight.rs, the facade solve.rs FD wiring and coloring.rs.
+2. Write PREDECLARED.json (problems, P, tolerances, wall definition, timing quality rule, verdict rule)
+   and commit it before any measurement run.
+3. Implement assembly.rs + tests (identity, counts, fail closed, alloc), commit.
+4. Measurement test target / runner, logs, parser, RESULTS.json, REPORT_KO.md (rendered by a script).
+
+== 2026-11-23, entry 2 (client and contract tests done; nothing timed yet) ==
+
+COMMITS SO FAR
+- 13123887 PREDECLARED.json (predeclared_commit 1312388740c0e7217aff08e465e0a2973a1d39a1), before any run.
+- d3f3eb37 client: src/stage_clients/assembly.rs + assembly/{engine,pattern}.rs.
+- 6003d327 tests: tests/stage_clients_assembly_{identity,problems}.rs (13 tests pass).
+- this commit: tests/stage_clients_assembly_alloc.rs (1 test passes) and these notes.
+
+DESIGN AS BUILT
+- AssemblyStageClient = finite-difference engine + an unchanged back end of the kit. The engine writes the
+  Jacobian into a shared slot in the layout of the back end (row-major n x n, or the BandedJacobianFn band
+  layout); the back end reads it through its normal provider (DenseLuStageClient: jacobian_into of an internal
+  view problem; BandedStageLu / BandedTightStageLu: the band fill callback). The provider refuses a request
+  for another (t, y) than the assembled one. One copy of the Jacobian per linearization.
+- Sequential dense build = fd.rs:476-509 statement for statement; sequential coloured build = fd.rs:581-622
+  for the Curtis-Powell-Reid first-fit groups (for a full band: j mod (lower + upper + 1), the facade's
+  groups).
+- Threaded build: three parallel passes in one pool.install (right-hand sides into per-task slots that own
+  their shifted state copy; entries per task; target by rows). No lock held during a right-hand side, no
+  per-thread scratch (a right-hand side that itself uses rayon cannot deadlock the client).
+- Failure order of the threaded build = the sequential one (first failing task in task order, base first);
+  difference: every right-hand side of the build has been entered, so rhs_calls of a failed build is larger.
+- Checks: every coloured build compares the rows a colour does not cover with the base evaluation (no extra
+  right-hand side); first linearization (and on request) compares 8 evenly spread single-column evaluations
+  made on the calling thread (+ the base evaluation again for threaded execution). Sequential dense route:
+  no check (it is the facade's algorithm; nothing to compare with).
+- Typed error AssemblyError (UncoveredRowChanged, UndeclaredEntry, AliasedEntry, NotReproducible, ...); the
+  driver gets CoreError::InvalidInput (fatal), the typed error stays in AssemblyReportHandle.
+
+FACTS FOUND WHILE TESTING
+- First-fit colouring of the cyclic tridiagonal pattern with n = 11 gives 5 groups (4 would do): the grouping
+  is deterministic, not minimal.
+- CoreError has no PartialEq/Clone: tests compare Debug strings.
+- Zero allocations per accepted step for the sequential modes on DenseLu(InPlace), BandedStageLu and
+  BandedTightStageLu; threaded modes 0-1 per step (reported, not asserted).
+
+NEXT STEPS
+1. tests/stage_clients_assembly_measure.rs (#[ignore]): modes identity, rhs_cost, timing; logs under
+   jacobian_assembly/logs/.
+2. Standalone runner (vigilode dependency): facade_identity and facade sparse_jvp measurement.
+3. build_results.py, build_report.py, RESULTS.json, REPORT_KO.md; reference error with SciPy.
+4. clippy, rustfmt --check, sentinels, loop checker, strict JSON load.
+
+== 2026-11-23 22:10, entry 3 (identity, fail-closed and facade logs done; timing pending on host load) ==
+
+DONE SINCE ENTRY 2
+- tests/stage_clients_assembly_measure.rs (ignored test; modes identity, failclosed, timing, single with a
+  final-state dump) and run_measurements.sh (commands of every log).
+- logs/identity_<cell>.log for the 5 declared cells: every arm (seq, t1, t2, t4, t6) equals the protected
+  driver run with reference finite differences in steps, final state, linearization points and assembled
+  Jacobians (fingerprints). nlkpp-dense-n400 and nlkpp-band-n4096-r24 reach t = 10 in 34 and 38 attempts
+  (the 48-attempt cap does not bind there); the two Brusselator sizes stop at the cap (48 attempts).
+- logs/failclosed.log: 7 negative controls end with InvalidInput and a typed AssemblyError, no build
+  completed; the counter-example (aliased pattern, check columns switched off) runs unnoticed, as documented.
+- runner/ (standalone, links vigilode): logs/facade.log. (1) facade identity: vigilode solve with
+  Jacobian::FiniteDifference equals the client driver + sequential assembly client bit for bit in 3 cases
+  (dense faer, dense in-place, banded), also with 3 workers. (2) facade coloured JVP route on the Brusselator
+  (n = 128): 4 colours, 4.0 JVP calls per Jacobian build (368 calls / 92 builds), recovered values equal the
+  analytic Jacobian bit for bit (508 entries), final state equal to the analytic band solve bit for bit.
+  Finding: vigilode Stats report jvp_calls = 0 for that route (the JVPs inside the band fill are not counted).
+- build_results.py (parser, verdict rules of PREDECLARED.json), build_report.py (REPORT_KO.md renderer),
+  reference_error.py (SciPy LSODA reference; analytic Jacobians checked against central differences),
+  run_checks.sh (tests, sentinels, clippy, rustfmt, loop checker, strict JSON).
+- reference/final_state_<cell>.bin: last accepted state of the sequential arm of the 3 qualifying problems.
+
+HOST
+- 1-minute load 12-15 since 21:57 (other agents of the group compile and test). Bounded wait for a load of
+  8 or less started 21:57:16, ends 22:17 at the latest; then the timing cells are measured anyway and
+  labelled by the quality rule (re-measurement at most twice, every try kept: logs/timing_<cell>_try<k>.log).
+
+REMAINING (mechanical, in this order)
+1. ./run_measurements.sh timing <cell> 1 for: nlkpp-dense-n400, nlkpp-band-n4096-r24, bruss1d-n131072,
+   bruss1d-n128-dense, bruss1d-n128-coloured; and ./run_measurements.sh timing nlkpp-band-n4096-r24 1
+   protected seq,t6 (secondary back end).
+2. ./run_measurements.sh perf <cell> <arm> for the qualifying cells, arms seq and t6.
+3. python3 -I reference_error.py <cell> >> logs/reference_error.log for the 3 qualifying cells.
+4. ./run_checks.sh; python3 -I build_results.py; python3 -I build_report.py; commit.
+
+== 2026-11-23 22:52, entry 4 (everything run; timing tries 1 and 2 done, try 3 is the last action) ==
+
+STATE
+- Frozen discriminators from the logs (build_results.py): identity PASS (30 client runs of the 5 declared
+  cells equal the protected driver runs), rhs_calls PASS, fail_closed PASS (7 negative controls).
+- Wall: two tries per cell so far, every ratio but one is diagnostic_only by the quality rule (1-minute load
+  above 8: other agents of the group compile and time, jobs of other projects run unpinned, also on the
+  timing cores). Consistent diagnostic picture over both tries, whole solve seq/tP:
+    nlkpp-dense-n400      t2 1.78/1.79, t4 2.96/3.05, t6 3.93/3.89  (right-hand side 102 us)
+    nlkpp-band-n4096-r24  t2 1.20/1.21, t4 1.29/1.46, t6 1.51/1.58  (banded_tight; 95 us, 49 colours)
+      secondary back end banded_protected: t6 1.36 (try 1), 1.37 (try 2, authoritative: load 6.4/6.7)
+    bruss1d-n131072       t2 0.93/0.91, t4 0.93/0.92, t6 0.99/0.94  (164-177 us, 5 colours)
+    controls              0.48-0.89 (threading loses)
+- Bounded wait: 21:57:16-22:17:46, one check per minute, load never at or below 8 (12-28). Try 1 measured
+  at 22:18 anyway. Try 2 at 22:35-22:49 when the load touched 8 (7.9 at the decision, 8.1-10.9 inside the
+  cells). No further waiting: try 3 is run once at the end, whatever the load.
+- Instruction counts (perf stat, one solve per arm, diagnostic): threading adds 0.3 % (dense), 2.6 % (wide
+  band), 8 % (narrow band).
+- Reference errors (SciPy 1.11.4 LSODA, NumPy 1.26.4: the versions "python3 -I" finds on this host):
+  3.0e-7 (dense), 6.6e-8 (wide band), 3.8e-6 (narrow band, 3.5 tolerance units); reference uncertainty
+  9e-10, 5e-10, 3e-9. First attempt failed for the banded problems (LSODA wants lband padding rows in the
+  banded Jacobian); corrected and rerun, noted in the log header.
+
+CORRECTIONS MADE (none touches a frozen number)
+- Contract tests used atol = 1e-2 rtol for every problem; PREDECLARED.json says rtol * b1 case scale (1) for
+  the Brusselator. Tests corrected (commit 01b21a63); all pass.
+- An expectation of mine in a test was wrong (first-fit colours of the cyclic pattern, n = 11: 5, not 4).
+
+FINDINGS FOR THE ORCHESTRATOR
+- rodas5p-integrators has no finite-difference state Jacobian; "the protected driver's finite-difference
+  path" is crates/vigilode/src/fd.rs, attached by the facade as a Jacobian callback. The client re-implements
+  that arithmetic; equality with the real fd.rs is shown through vigilode::Rodas5p::solve (logs/facade.log).
+- In bruss1d-n131072 only about a quarter of the Jacobian phase of this client is right-hand-side time; the
+  rest is entry extraction, the check and the copy into the back end (memory traffic). Threading cannot help
+  there; a tighter sequential path (no entry table, no copy) would.
+- vigilode Stats report jvp_calls = 0 for Jacobian::sparse_jvp on a banded pattern (368 JVP calls made).
+- Client construction (colouring, tables) costs 16-18 ms for n = 4096 with 49 colours: 4-7 % of the short
+  timed solves; it is inside the declared wall.
+
+REMAINING
+- ./run_checks.sh; ./run_measurements.sh timing <cell> 3 (5 cells + protected secondary);
+  python3 -I build_results.py; python3 -I build_report.py; commit.
+
+== 2026-11-23 22:55, entry 5 (final state of this builder session) ==
+
+DECISION ON THE THIRD TIMING TRY
+- The quality rule allows one first measurement and two re-measurements per cell. Two measurements are used
+  (try 1 after the bounded wait, try 2 when the load touched 8). The third is NOT used: with the other
+  agents of the group still building and timing and unpinned jobs of other projects on the timing cores,
+  the arm spreads of t4/t6 were 10-40 % even at a load near 8, so a third try now would most likely have been
+  diagnostic again and would have closed the cell for good. It is left for a quiet host.
+- What is left for the orchestrator (mechanical, about 5 minutes on a quiet host, load <= 6 before starting):
+    cd research/production_loop_20261116/jacobian_assembly
+    ./run_measurements.sh build        # only if the measurement binary is gone; the logs record its sha256
+    for cell in nlkpp-band-n4096-r24 nlkpp-dense-n400 bruss1d-n131072 bruss1d-n128-dense \
+        bruss1d-n128-coloured; do ./run_measurements.sh timing $cell 3; done
+    python3 -I build_results.py && python3 -I build_report.py
+  The parser takes, per worker count, the first try that meets the rule; nothing else has to be edited.
+  Expected from the diagnostic numbers (not a verdict): dense cell PASS (t2 alone gives 1.78), wide-band cell
+  around the 1.5 threshold at P = 6 (1.51, 1.58), narrow-band cell below 1.1 at every P (KILL) -> node rule
+  FAIL (mixed) under the strict reading declared in PREDECLARED.json.
+
+DEVIATIONS FROM THE LETTER OF PREDECLARED.json (all in REPORT_KO.md section 8)
+- The arm rotation of a timing cell has six members (the diagnostic prot arm included): round r starts with
+  arm r mod 6, not r mod 5.
+- Contract-test tolerances corrected to the declared ones (entry 4).
+- Reference solutions with SciPy 1.11.4 / NumPy 1.26.4 (what python3 -I finds here).
+
+FINAL CHECKS (logs/checks.log, all exit 0)
+- tests of this node: 14 passed (13 contracts + 1 allocation), measure ignored;
+- sentinels ppsw1_6b_contracts + ptsw2b_contracts: 61 passed;
+- kit tests of earlier nodes (dense identity, alloc, banded tight identity): 14 passed;
+- clippy -D warnings (lib + 4 test targets), rustfmt --check (8 files), loop checker PASS, strict JSON load.

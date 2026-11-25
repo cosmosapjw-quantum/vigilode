@@ -1,0 +1,954 @@
+{
+ "matched_status_counts": {
+  "DIAGNOSTIC_ONLY": 295,
+  "MATCHED": 80
+ },
+ "matched_basis_counts": {
+  "grid-clipped": 375
+ },
+ "matched_with_time_ratio": 80,
+ "corpus_problem_n": {
+  "robertson": 3,
+  "hires": 8,
+  "van-der-pol-mu1000": 2,
+  "brusselator-1d-n100": 100
+ },
+ "grid_points": 101,
+ "rust_arms_present": [
+  "cvode-bdf-band",
+  "cvode-bdf-dense",
+  "diffsol-bdf-dense",
+  "diffsol-bdf-sparse",
+  "dvode-mf21",
+  "dvode-mf24",
+  "internal-radau-iia3",
+  "radau5",
+  "radau5-band",
+  "rodas",
+  "rodas-band",
+  "vigilode",
+  "vigilode-banded"
+ ],
+ "free_stepping_vigilode_rows": 0,
+ "julia_rows": 36,
+ "julia_rows_with_error": 0,
+ "julia_problems": [
+  "brusselator-1d-n100",
+  "hires",
+  "robertson",
+  "van-der-pol-mu1000"
+ ],
+ "rust_problems": [
+  "brusselator-1d-n100",
+  "hires",
+  "robertson",
+  "van-der-pol-mu1000"
+ ],
+ "build_target_features": "fxsr,sse,sse2",
+ "build_git_dirty_context": "true",
+ "vigilode_clipping": [
+  {
+   "problem": "robertson",
+   "arm": "vigilode",
+   "rtol": 0.0001,
+   "accepted": 111,
+   "rejected": 2,
+   "output_clipped_steps": 99,
+   "clipped_fraction": 0.8918918918918919,
+   "free_steps_lower_bound": 12,
+   "error_common": 1.6710335124576048e-07,
+   "wall_ms": 0.083337
+  },
+  {
+   "problem": "robertson",
+   "arm": "vigilode",
+   "rtol": 1e-06,
+   "accepted": 122,
+   "rejected": 4,
+   "output_clipped_steps": 99,
+   "clipped_fraction": 0.8114754098360656,
+   "free_steps_lower_bound": 23,
+   "error_common": 5.1875870568563334e-08,
+   "wall_ms": 0.090901
+  },
+  {
+   "problem": "robertson",
+   "arm": "vigilode",
+   "rtol": 1e-08,
+   "accepted": 164,
+   "rejected": 5,
+   "output_clipped_steps": 99,
+   "clipped_fraction": 0.6036585365853658,
+   "free_steps_lower_bound": 65,
+   "error_common": 1.598293897480858e-09,
+   "wall_ms": 0.119866
+  },
+  {
+   "problem": "hires",
+   "arm": "vigilode",
+   "rtol": 0.0001,
+   "accepted": 132,
+   "rejected": 9,
+   "output_clipped_steps": 99,
+   "clipped_fraction": 0.75,
+   "free_steps_lower_bound": 33,
+   "error_common": 2.274124601220878e-05,
+   "wall_ms": 0.187524
+  },
+  {
+   "problem": "hires",
+   "arm": "vigilode",
+   "rtol": 1e-06,
+   "accepted": 265,
+   "rejected": 3,
+   "output_clipped_steps": 99,
+   "clipped_fraction": 0.37358490566037733,
+   "free_steps_lower_bound": 166,
+   "error_common": 1.435143936376217e-07,
+   "wall_ms": 0.344449
+  },
+  {
+   "problem": "hires",
+   "arm": "vigilode",
+   "rtol": 1e-08,
+   "accepted": 823,
+   "rejected": 7,
+   "output_clipped_steps": 99,
+   "clipped_fraction": 0.12029161603888214,
+   "free_steps_lower_bound": 724,
+   "error_common": 2.179527160959872e-09,
+   "wall_ms": 1.051182
+  },
+  {
+   "problem": "van-der-pol-mu1000",
+   "arm": "vigilode",
+   "rtol": 0.0001,
+   "accepted": 234,
+   "rejected": 82,
+   "output_clipped_steps": 99,
+   "clipped_fraction": 0.4230769230769231,
+   "free_steps_lower_bound": 135,
+   "error_common": 1.4416596941813983e-05,
+   "wall_ms": 0.181231
+  },
+  {
+   "problem": "van-der-pol-mu1000",
+   "arm": "vigilode",
+   "rtol": 1e-06,
+   "accepted": 411,
+   "rejected": 88,
+   "output_clipped_steps": 99,
+   "clipped_fraction": 0.24087591240875914,
+   "free_steps_lower_bound": 312,
+   "error_common": 4.597781188065817e-07,
+   "wall_ms": 0.283384
+  },
+  {
+   "problem": "van-der-pol-mu1000",
+   "arm": "vigilode",
+   "rtol": 1e-08,
+   "accepted": 960,
+   "rejected": 40,
+   "output_clipped_steps": 99,
+   "clipped_fraction": 0.103125,
+   "free_steps_lower_bound": 861,
+   "error_common": 1.2370673070132269e-08,
+   "wall_ms": 0.569584
+  },
+  {
+   "problem": "brusselator-1d-n100",
+   "arm": "vigilode",
+   "rtol": 0.0001,
+   "accepted": 105,
+   "rejected": 1,
+   "output_clipped_steps": 99,
+   "clipped_fraction": 0.9428571428571428,
+   "free_steps_lower_bound": 6,
+   "error_common": 2.2133697539580238e-05,
+   "wall_ms": 2.809168
+  },
+  {
+   "problem": "brusselator-1d-n100",
+   "arm": "vigilode-banded",
+   "rtol": 0.0001,
+   "accepted": 105,
+   "rejected": 1,
+   "output_clipped_steps": 99,
+   "clipped_fraction": 0.9428571428571428,
+   "free_steps_lower_bound": 6,
+   "error_common": 2.2133697539580238e-05,
+   "wall_ms": 1.680589
+  },
+  {
+   "problem": "brusselator-1d-n100",
+   "arm": "vigilode",
+   "rtol": 1e-06,
+   "accepted": 129,
+   "rejected": 3,
+   "output_clipped_steps": 99,
+   "clipped_fraction": 0.7674418604651163,
+   "free_steps_lower_bound": 30,
+   "error_common": 4.5444708086357004e-07,
+   "wall_ms": 3.579179
+  },
+  {
+   "problem": "brusselator-1d-n100",
+   "arm": "vigilode-banded",
+   "rtol": 1e-06,
+   "accepted": 129,
+   "rejected": 3,
+   "output_clipped_steps": 99,
+   "clipped_fraction": 0.7674418604651163,
+   "free_steps_lower_bound": 30,
+   "error_common": 4.5444708086357004e-07,
+   "wall_ms": 2.140065
+  },
+  {
+   "problem": "brusselator-1d-n100",
+   "arm": "vigilode",
+   "rtol": 1e-08,
+   "accepted": 228,
+   "rejected": 5,
+   "output_clipped_steps": 98,
+   "clipped_fraction": 0.4298245614035088,
+   "free_steps_lower_bound": 130,
+   "error_common": 6.258121960353745e-08,
+   "wall_ms": 6.112646
+  },
+  {
+   "problem": "brusselator-1d-n100",
+   "arm": "vigilode-banded",
+   "rtol": 1e-08,
+   "accepted": 228,
+   "rejected": 5,
+   "output_clipped_steps": 98,
+   "clipped_fraction": 0.4298245614035088,
+   "free_steps_lower_bound": 130,
+   "error_common": 6.258121960353745e-08,
+   "wall_ms": 3.61219
+  }
+ ],
+ "vigilode_vs_julia_rodas5p_steps": [
+  {
+   "problem": "robertson",
+   "rtol": 0.0001,
+   "vigilode_accepted": 111,
+   "vigilode_clipped": 99,
+   "julia_rodas5p_accepted": 36,
+   "ratio": 3.0833333333333335
+  },
+  {
+   "problem": "robertson",
+   "rtol": 1e-06,
+   "vigilode_accepted": 122,
+   "vigilode_clipped": 99,
+   "julia_rodas5p_accepted": 66,
+   "ratio": 1.8484848484848484
+  },
+  {
+   "problem": "robertson",
+   "rtol": 1e-08,
+   "vigilode_accepted": 164,
+   "vigilode_clipped": 99,
+   "julia_rodas5p_accepted": 162,
+   "ratio": 1.0123456790123457
+  },
+  {
+   "problem": "hires",
+   "rtol": 0.0001,
+   "vigilode_accepted": 132,
+   "vigilode_clipped": 99,
+   "julia_rodas5p_accepted": 81,
+   "ratio": 1.6296296296296295
+  },
+  {
+   "problem": "hires",
+   "rtol": 1e-06,
+   "vigilode_accepted": 265,
+   "vigilode_clipped": 99,
+   "julia_rodas5p_accepted": 258,
+   "ratio": 1.0271317829457365
+  },
+  {
+   "problem": "hires",
+   "rtol": 1e-08,
+   "vigilode_accepted": 823,
+   "vigilode_clipped": 99,
+   "julia_rodas5p_accepted": 873,
+   "ratio": 0.9427262313860252
+  },
+  {
+   "problem": "van-der-pol-mu1000",
+   "rtol": 0.0001,
+   "vigilode_accepted": 234,
+   "vigilode_clipped": 99,
+   "julia_rodas5p_accepted": 163,
+   "ratio": 1.4355828220858895
+  },
+  {
+   "problem": "van-der-pol-mu1000",
+   "rtol": 1e-06,
+   "vigilode_accepted": 411,
+   "vigilode_clipped": 99,
+   "julia_rodas5p_accepted": 381,
+   "ratio": 1.078740157480315
+  },
+  {
+   "problem": "van-der-pol-mu1000",
+   "rtol": 1e-08,
+   "vigilode_accepted": 960,
+   "vigilode_clipped": 99,
+   "julia_rodas5p_accepted": 975,
+   "ratio": 0.9846153846153847
+  },
+  {
+   "problem": "brusselator-1d-n100",
+   "rtol": 0.0001,
+   "vigilode_accepted": 105,
+   "vigilode_clipped": 99,
+   "julia_rodas5p_accepted": 46,
+   "ratio": 2.282608695652174
+  },
+  {
+   "problem": "brusselator-1d-n100",
+   "rtol": 1e-06,
+   "vigilode_accepted": 129,
+   "vigilode_clipped": 99,
+   "julia_rodas5p_accepted": 100,
+   "ratio": 1.29
+  },
+  {
+   "problem": "brusselator-1d-n100",
+   "rtol": 1e-08,
+   "vigilode_accepted": 228,
+   "vigilode_clipped": 98,
+   "julia_rodas5p_accepted": 228,
+   "ratio": 1.0
+  }
+ ],
+ "reproduced_rows": [
+  {
+   "key": [
+    "robertson",
+    0.0001,
+    "vigilode"
+   ],
+   "report_cells": [
+    "**VigilODE (Ours)**",
+    "\u2705 Success",
+    "1.671e-07",
+    "0.083",
+    "902",
+    "111",
+    "111/2",
+    "265 calls (22.5 KB)"
+   ],
+   "from_raw": {
+    "error": "1.671e-07",
+    "wall": "0.083",
+    "rhs": 902,
+    "jac": 111,
+    "alloc": "265 calls (22.5 KB)"
+   },
+   "raw_steps": {
+    "work": {
+     "accepted_steps": 111,
+     "factorizations": 113,
+     "jacobian_evaluations": 111,
+     "linear_solves": 904,
+     "nonlinear_failures": null,
+     "nonlinear_iterations": null,
+     "rejected_steps": 2,
+     "rhs_evaluations": 902,
+     "step_attempts": 113
+    },
+    "native_acc_rej": [
+     111,
+     2
+    ]
+   },
+   "match_error_wall_rhs_jac_alloc": true
+  },
+  {
+   "key": [
+    "hires",
+    1e-06,
+    "rodas"
+   ],
+   "report_cells": [
+    "**Hairer RODAS**",
+    "\u2705 Success",
+    "7.625e-07",
+    "0.325",
+    "2219",
+    "369",
+    "369/1",
+    "108 calls (17.3 KB)"
+   ],
+   "from_raw": {
+    "error": "7.625e-07",
+    "wall": "0.325",
+    "rhs": 2219,
+    "jac": 369,
+    "alloc": "108 calls (17.3 KB)"
+   },
+   "raw_steps": {
+    "work": {
+     "accepted_steps": 369,
+     "factorizations": 370,
+     "jacobian_evaluations": 369,
+     "linear_solves": 2220,
+     "nonlinear_failures": null,
+     "nonlinear_iterations": null,
+     "rejected_steps": 1,
+     "rhs_evaluations": 2219,
+     "step_attempts": 370
+    },
+    "native_acc_rej": [
+     null,
+     null
+    ]
+   },
+   "match_error_wall_rhs_jac_alloc": true
+  },
+  {
+   "key": [
+    "brusselator-1d-n100",
+    1e-08,
+    "vigilode-banded"
+   ],
+   "report_cells": [
+    "**VigilODE (Banded)**",
+    "\u2705 Success",
+    "6.258e-08",
+    "3.612",
+    "1859",
+    "228",
+    "228/5",
+    "155 calls (114.3 KB)"
+   ],
+   "from_raw": {
+    "error": "6.258e-08",
+    "wall": "3.612",
+    "rhs": 1859,
+    "jac": 228,
+    "alloc": "155 calls (114.3 KB)"
+   },
+   "raw_steps": {
+    "work": {
+     "accepted_steps": 228,
+     "factorizations": 233,
+     "jacobian_evaluations": 228,
+     "linear_solves": 1864,
+     "nonlinear_failures": null,
+     "nonlinear_iterations": null,
+     "rejected_steps": 5,
+     "rhs_evaluations": 1859,
+     "step_attempts": 233
+    },
+    "native_acc_rej": [
+     228,
+     5
+    ]
+   },
+   "match_error_wall_rhs_jac_alloc": true
+  }
+ ],
+ "matched_error_recomputed": [
+  {
+   "problem": "brusselator-1d-n100",
+   "baseline": "vigilode-banded",
+   "comparator": "rodas-band",
+   "baseline_E_range": [
+    6.258121960353745e-08,
+    2.2133697539580238e-05
+   ],
+   "comparator_E_range": [
+    9.896604167433167e-09,
+    0.00021053655608315342
+   ],
+   "n_tol_baseline": 3,
+   "overlap": [
+    6.258121960353745e-08,
+    2.2133697539580238e-05
+   ],
+   "E_star": 1.1769255653450425e-06,
+   "comparator_wall_over_vigilode_wall": 0.6929847751126872,
+   "same_tol_wall_ratio_comp_over_vig": {
+    "0.0001": 0.35683977462663385,
+    "1e-06": 0.6703885162366564,
+    "1e-08": 1.136277161500364
+   },
+   "same_tol_error_ratio_comp_over_vig": {
+    "0.0001": 9.512037277398624,
+    "1e-06": 2.2077910245331642,
+    "1e-08": 0.1581401613795611
+   }
+  },
+  {
+   "problem": "brusselator-1d-n100",
+   "baseline": "vigilode-banded",
+   "comparator": "radau5-band",
+   "baseline_E_range": [
+    6.258121960353745e-08,
+    2.2133697539580238e-05
+   ],
+   "comparator_E_range": [
+    7.4077804997091e-08,
+    6.664358204991959e-05
+   ],
+   "n_tol_baseline": 3,
+   "overlap": [
+    7.4077804997091e-08,
+    2.2133697539580238e-05
+   ],
+   "E_star": 1.280474806547016e-06,
+   "comparator_wall_over_vigilode_wall": 0.5407106374370818,
+   "same_tol_wall_ratio_comp_over_vig": {
+    "0.0001": 0.3642800232537521,
+    "1e-06": 0.48044288374418537,
+    "1e-08": 0.5261688892334013
+   },
+   "same_tol_error_ratio_comp_over_vig": {
+    "0.0001": 3.0109556675176052,
+    "1e-06": 3.7028106690537848,
+    "1e-08": 1.18370663701325
+   }
+  },
+  {
+   "problem": "brusselator-1d-n100",
+   "baseline": "vigilode-banded",
+   "comparator": "cvode-bdf-band",
+   "baseline_E_range": [
+    6.258121960353745e-08,
+    2.2133697539580238e-05
+   ],
+   "comparator_E_range": [
+    6.182064033228525e-07,
+    0.0015666344207922516
+   ],
+   "n_tol_baseline": 3,
+   "overlap": [
+    6.182064033228525e-07,
+    2.2133697539580238e-05
+   ],
+   "E_star": 3.6990800948586893e-06,
+   "comparator_wall_over_vigilode_wall": 1.4306267447196876,
+   "same_tol_wall_ratio_comp_over_vig": {
+    "0.0001": 0.7205765359644744,
+    "1e-06": 0.999358897977398,
+    "1e-08": 1.0572829779164439
+   },
+   "same_tol_error_ratio_comp_over_vig": {
+    "0.0001": 70.78051093771126,
+    "1e-06": 26.02273170555891,
+    "1e-08": 9.878465252663563
+   }
+  },
+  {
+   "problem": "brusselator-1d-n100",
+   "baseline": "vigilode-banded",
+   "comparator": "dvode-mf24",
+   "baseline_E_range": [
+    6.258121960353745e-08,
+    2.2133697539580238e-05
+   ],
+   "comparator_E_range": [
+    6.181829791333888e-07,
+    0.0014921170419564386
+   ],
+   "n_tol_baseline": 3,
+   "overlap": [
+    6.181829791333888e-07,
+    2.2133697539580238e-05
+   ],
+   "E_star": 3.6990100140787764e-06,
+   "comparator_wall_over_vigilode_wall": 0.4865642599471348,
+   "same_tol_wall_ratio_comp_over_vig": {
+    "0.0001": 0.27234082812632954,
+    "1e-06": 0.34328162929630646,
+    "1e-08": 0.3541436081712202
+   },
+   "same_tol_error_ratio_comp_over_vig": {
+    "0.0001": 67.41381729321022,
+    "1e-06": 26.019349258334966,
+    "1e-08": 9.878090952040914
+   }
+  },
+  {
+   "problem": "hires",
+   "baseline": "vigilode",
+   "comparator": "rodas",
+   "baseline_E_range": [
+    2.179527160959872e-09,
+    2.274124601220878e-05
+   ],
+   "comparator_E_range": [
+    8.459642725699697e-09,
+    5.157192254773321e-05
+   ],
+   "n_tol_baseline": 3,
+   "overlap": [
+    8.459642725699697e-09,
+    2.274124601220878e-05
+   ],
+   "E_star": 4.3861465593448797e-07,
+   "comparator_wall_over_vigilode_wall": 1.3325561111711919,
+   "same_tol_wall_ratio_comp_over_vig": {
+    "0.0001": 0.4638552931891385,
+    "1e-06": 0.9434575220134186,
+    "1e-08": 1.7249334558620675
+   },
+   "same_tol_error_ratio_comp_over_vig": {
+    "0.0001": 2.267770311268191,
+    "1e-06": 5.313193819635638,
+    "1e-08": 3.881411930638221
+   }
+  },
+  {
+   "problem": "hires",
+   "baseline": "vigilode",
+   "comparator": "radau5",
+   "baseline_E_range": [
+    2.179527160959872e-09,
+    2.274124601220878e-05
+   ],
+   "comparator_E_range": [
+    1.0081580152920457e-06,
+    3.15838953712019e-05
+   ],
+   "n_tol_baseline": 3,
+   "overlap": [
+    1.0081580152920457e-06,
+    2.274124601220878e-05
+   ],
+   "E_star": 4.788190623287314e-06,
+   "comparator_wall_over_vigilode_wall": 0.830048376394033,
+   "same_tol_wall_ratio_comp_over_vig": {
+    "0.0001": 0.5181896717220196,
+    "1e-06": 0.4904296427047255,
+    "1e-08": 0.2818332125169571
+   },
+   "same_tol_error_ratio_comp_over_vig": {
+    "0.0001": 1.3888375049566717,
+    "1e-06": 47.769851440189356,
+    "1e-08": 462.5581334109409
+   }
+  },
+  {
+   "problem": "hires",
+   "baseline": "vigilode",
+   "comparator": "cvode-bdf-dense",
+   "baseline_E_range": [
+    2.179527160959872e-09,
+    2.274124601220878e-05
+   ],
+   "comparator_E_range": [
+    1.6552532783618117e-07,
+    0.00030605006343407205
+   ],
+   "n_tol_baseline": 3,
+   "overlap": [
+    1.6552532783618117e-07,
+    2.274124601220878e-05
+   ],
+   "E_star": 1.9401680859075346e-06,
+   "comparator_wall_over_vigilode_wall": 4.552792175391097,
+   "same_tol_wall_ratio_comp_over_vig": {
+    "0.0001": 2.1807928585141103,
+    "1e-06": 2.6244349671504343,
+    "1e-08": 1.6231223517906508
+   },
+   "same_tol_error_ratio_comp_over_vig": {
+    "0.0001": 13.457928526421426,
+    "1e-06": 59.25249652607406,
+    "1e-08": 75.94552194673417
+   }
+  },
+  {
+   "problem": "hires",
+   "baseline": "vigilode",
+   "comparator": "dvode-mf21",
+   "baseline_E_range": [
+    2.179527160959872e-09,
+    2.274124601220878e-05
+   ],
+   "comparator_E_range": [
+    1.6683689172184834e-07,
+    0.0007920059116558984
+   ],
+   "n_tol_baseline": 3,
+   "overlap": [
+    1.6683689172184834e-07,
+    2.274124601220878e-05
+   ],
+   "E_star": 1.947839520740554e-06,
+   "comparator_wall_over_vigilode_wall": 1.3419447804666826,
+   "same_tol_wall_ratio_comp_over_vig": {
+    "0.0001": 1.0352594867856915,
+    "1e-06": 0.8047693562762557,
+    "1e-08": 0.44229828897374573
+   },
+   "same_tol_error_ratio_comp_over_vig": {
+    "0.0001": 34.826847712333134,
+    "1e-06": 62.546064169897654,
+    "1e-08": 76.54728727875671
+   }
+  },
+  {
+   "problem": "robertson",
+   "baseline": "vigilode",
+   "comparator": "rodas",
+   "baseline_E_range": [
+    1.598293897480858e-09,
+    1.6710335124576048e-07
+   ],
+   "comparator_E_range": [
+    9.251836563766875e-09,
+    2.1913346275386232e-05
+   ],
+   "n_tol_baseline": 3,
+   "overlap": [
+    9.251836563766875e-09,
+    1.6710335124576048e-07
+   ],
+   "E_star": 3.931937048050879e-08,
+   "comparator_wall_over_vigilode_wall": 0.7326870130995372,
+   "same_tol_wall_ratio_comp_over_vig": {
+    "0.0001": 0.20510697529308713,
+    "1e-06": 0.4024048140284486,
+    "1e-08": 0.8375102197453824
+   },
+   "same_tol_error_ratio_comp_over_vig": {
+    "0.0001": 131.13648596525192,
+    "1e-06": 7.675145303635462,
+    "1e-08": 5.788570286321625
+   }
+  },
+  {
+   "problem": "robertson",
+   "baseline": "vigilode",
+   "comparator": "radau5",
+   "baseline_E_range": [
+    1.598293897480858e-09,
+    1.6710335124576048e-07
+   ],
+   "comparator_E_range": [
+    4.444823399857662e-08,
+    1.5111091929479669e-05
+   ],
+   "n_tol_baseline": 3,
+   "overlap": [
+    4.444823399857662e-08,
+    1.6710335124576048e-07
+   ],
+   "E_star": 8.618264824265904e-08,
+   "comparator_wall_over_vigilode_wall": 0.47141984339753473,
+   "same_tol_wall_ratio_comp_over_vig": {
+    "0.0001": 0.21314662154865188,
+    "1e-06": 0.30287895622710426,
+    "1e-08": 0.3882418700882652
+   },
+   "same_tol_error_ratio_comp_over_vig": {
+    "0.0001": 90.42961626338446,
+    "1e-06": 15.446241373132347,
+    "1e-08": 27.809800230504198
+   }
+  },
+  {
+   "problem": "robertson",
+   "baseline": "vigilode",
+   "comparator": "cvode-bdf-dense",
+   "baseline_E_range": [
+    1.598293897480858e-09,
+    1.6710335124576048e-07
+   ],
+   "comparator_E_range": [
+    5.150933048508401e-08,
+    0.00028629115342772174
+   ],
+   "n_tol_baseline": 3,
+   "overlap": [
+    5.150933048508401e-08,
+    1.6710335124576048e-07
+   ],
+   "E_star": 9.277597611711209e-08,
+   "comparator_wall_over_vigilode_wall": 4.343818417562556,
+   "same_tol_wall_ratio_comp_over_vig": {
+    "0.0001": 1.9067041050193794,
+    "1e-06": 2.4815458575813247,
+    "1e-08": 3.48169622745399
+   },
+   "same_tol_error_ratio_comp_over_vig": {
+    "0.0001": 1713.2580004734352,
+    "1e-06": 39.11823587212333,
+    "1e-08": 32.22769639943577
+   }
+  },
+  {
+   "problem": "robertson",
+   "baseline": "vigilode",
+   "comparator": "dvode-mf21",
+   "baseline_E_range": [
+    1.598293897480858e-09,
+    1.6710335124576048e-07
+   ],
+   "comparator_E_range": [
+    5.522732973462555e-08,
+    0.00016968987777752958
+   ],
+   "n_tol_baseline": 3,
+   "overlap": [
+    5.522732973462555e-08,
+    1.6710335124576048e-07
+   ],
+   "E_star": 9.606597669836375e-08,
+   "comparator_wall_over_vigilode_wall": 1.3003359406713761,
+   "same_tol_wall_ratio_comp_over_vig": {
+    "0.0001": 0.47114726952014113,
+    "1e-06": 0.8466903554416344,
+    "1e-08": 0.999916573507083
+   },
+   "same_tol_error_ratio_comp_over_vig": {
+    "0.0001": 1015.478603585664,
+    "1e-06": 64.87702461301477,
+    "1e-08": 34.55392642221296
+   }
+  },
+  {
+   "problem": "van-der-pol-mu1000",
+   "baseline": "vigilode",
+   "comparator": "rodas",
+   "baseline_E_range": [
+    1.2370673070132269e-08,
+    1.4416596941813983e-05
+   ],
+   "comparator_E_range": [
+    5.990738679390517e-08,
+    0.00013314485825968435
+   ],
+   "n_tol_baseline": 3,
+   "overlap": [
+    5.990738679390517e-08,
+    1.4416596941813983e-05
+   ],
+   "E_star": 9.293334435201828e-07,
+   "comparator_wall_over_vigilode_wall": 1.1621885592062284,
+   "same_tol_wall_ratio_comp_over_vig": {
+    "0.0001": 0.39504830851234063,
+    "1e-06": 0.6604571888321147,
+    "1e-08": 1.0234469367117054
+   },
+   "same_tol_error_ratio_comp_over_vig": {
+    "0.0001": 9.235526164535418,
+    "1e-06": 14.371101865573785,
+    "1e-08": 4.842694205422457
+   }
+  },
+  {
+   "problem": "van-der-pol-mu1000",
+   "baseline": "vigilode",
+   "comparator": "radau5",
+   "baseline_E_range": [
+    1.2370673070132269e-08,
+    1.4416596941813983e-05
+   ],
+   "comparator_E_range": [
+    1.3476425264448465e-07,
+    9.540806614744659e-05
+   ],
+   "n_tol_baseline": 3,
+   "overlap": [
+    1.3476425264448465e-07,
+    1.4416596941813983e-05
+   ],
+   "E_star": 1.3938586415201237e-06,
+   "comparator_wall_over_vigilode_wall": 0.6476519378869064,
+   "same_tol_wall_ratio_comp_over_vig": {
+    "0.0001": 0.47144804144986235,
+    "1e-06": 0.4980415266916975,
+    "1e-08": 0.45315001825893986
+   },
+   "same_tol_error_ratio_comp_over_vig": {
+    "0.0001": 6.617932549027882,
+    "1e-06": 5.372854926998915,
+    "1e-08": 10.893849662057534
+   }
+  },
+  {
+   "problem": "van-der-pol-mu1000",
+   "baseline": "vigilode",
+   "comparator": "cvode-bdf-dense",
+   "baseline_E_range": [
+    1.2370673070132269e-08,
+    1.4416596941813983e-05
+   ],
+   "comparator_E_range": [
+    3.5019022670341458e-06,
+    0.0037181279174893084
+   ],
+   "n_tol_baseline": 3,
+   "overlap": [
+    3.5019022670341458e-06,
+    1.4416596941813983e-05
+   ],
+   "E_star": 7.105315863032123e-06,
+   "comparator_wall_over_vigilode_wall": 8.2954612789918,
+   "same_tol_wall_ratio_comp_over_vig": {
+    "0.0001": 2.4724522846532877,
+    "1e-06": 3.005236710611749,
+    "1e-08": 3.2969166970982333
+   },
+   "same_tol_error_ratio_comp_over_vig": {
+    "0.0001": 257.90607398513225,
+    "1e-06": 552.1394342427517,
+    "1e-08": 283.0809808957875
+   }
+  },
+  {
+   "problem": "van-der-pol-mu1000",
+   "baseline": "vigilode",
+   "comparator": "dvode-mf21",
+   "baseline_E_range": [
+    1.2370673070132269e-08,
+    1.4416596941813983e-05
+   ],
+   "comparator_E_range": [
+    0.0002546855881993076,
+    0.003710164685281279
+   ],
+   "n_tol_baseline": 3,
+   "status": "NO_OVERLAP",
+   "same_tol_wall_ratio_comp_over_vig": {
+    "0.0001": 0.7642842560047673,
+    "1e-06": 0.8461733901702283
+   },
+   "same_tol_error_ratio_comp_over_vig": {
+    "0.0001": 257.3537083859434,
+    "1e-06": 553.931511269783
+   }
+  }
+ ],
+ "rtols_per_problem": {
+  "brusselator-1d-n100": [
+   1e-08,
+   1e-06,
+   0.0001
+  ],
+  "hires": [
+   1e-08,
+   1e-06,
+   0.0001
+  ],
+  "robertson": [
+   1e-08,
+   1e-06,
+   0.0001
+  ],
+  "van-der-pol-mu1000": [
+   1e-08,
+   1e-06,
+   0.0001
+  ]
+ }
+}

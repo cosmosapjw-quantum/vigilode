@@ -31,6 +31,9 @@ pub type JvpFn =
 pub type TimeDerivativeFn =
     Arc<dyn Fn(f64, &[f64], &mut [f64]) -> Result<(), CallbackError> + Send + Sync>;
 
+/// A scalar invariant evaluation callback `I(y)`: computes a physical invariant.
+pub type InvariantFn = Arc<dyn Fn(&[f64]) -> f64 + Send + Sync>;
+
 /// How the solver obtains the Jacobian `df/dy`.
 #[derive(Clone, Default)]
 #[non_exhaustive]
@@ -50,6 +53,14 @@ pub enum Jacobian {
     /// A Jacobian-vector product only; runs the matrix-free (GMRES) protected
     /// driver and never assembles a matrix.
     Jvp(JvpFn),
+    /// A sparse Jacobian assembled from compressed JVP probes via Curtis–Powell–Reid
+    /// column colouring (or routed to matrix-free GMRES when non-banded).
+    SparseJvp {
+        /// Declared structural sparsity pattern.
+        pattern: crate::coloring::SparsityPattern,
+        /// Jacobian-vector product callback.
+        jvp: JvpFn,
+    },
     /// Forward differences of the right-hand side (the default).
     ///
     /// Column `j` uses the increment `sqrt(eps) * max(|y_j|, 1)`, taken as
@@ -94,6 +105,17 @@ impl Jacobian {
     {
         Self::Jvp(Arc::new(f))
     }
+
+    /// [`Jacobian::SparseJvp`] from a sparsity pattern and JVP closure.
+    pub fn sparse_jvp<F>(pattern: crate::coloring::SparsityPattern, f: F) -> Self
+    where
+        F: Fn(f64, &[f64], &[f64], &mut [f64]) -> Result<(), CallbackError> + Send + Sync + 'static,
+    {
+        Self::SparseJvp {
+            pattern,
+            jvp: Arc::new(f),
+        }
+    }
 }
 
 impl fmt::Debug for Jacobian {
@@ -106,6 +128,11 @@ impl fmt::Debug for Jacobian {
                 .field("upper", upper)
                 .finish_non_exhaustive(),
             Self::Jvp(_) => f.write_str("Jvp(..)"),
+            Self::SparseJvp { pattern, .. } => f
+                .debug_struct("SparseJvp")
+                .field("n", &pattern.n())
+                .field("nnz", &pattern.nnz())
+                .finish_non_exhaustive(),
             Self::FiniteDifference => f.write_str("FiniteDifference"),
         }
     }
@@ -126,6 +153,7 @@ pub struct Problem {
     pub(crate) time_derivative: Option<TimeDerivativeFn>,
     pub(crate) autonomous: bool,
     pub(crate) events: Vec<EventSpec>,
+    pub(crate) invariants: Vec<(&'static str, InvariantFn)>,
 }
 
 impl Problem {
@@ -147,6 +175,7 @@ impl Problem {
             time_derivative: None,
             autonomous: false,
             events: Vec::new(),
+            invariants: Vec::new(),
         }
     }
 
@@ -215,6 +244,11 @@ impl Problem {
         self
     }
 
+    /// Whether the problem was declared autonomous.
+    pub fn is_autonomous(&self) -> bool {
+        self.autonomous
+    }
+
     /// Add an event `g(t, y) = 0`, located after the run on the continuous
     /// extension of the accepted steps. Events are numbered in declaration
     /// order ([`crate::EventRecord::index`]).
@@ -278,6 +312,50 @@ impl Problem {
     pub fn dimension(&self) -> usize {
         self.dimension
     }
+
+    /// Register a physical invariant (mass, energy, momentum, etc.) with a diagnostic name.
+    /// The unified solver monitors this invariant and records maximum drift.
+    pub fn invariant<F>(mut self, name: &'static str, f: F) -> Self
+    where
+        F: Fn(&[f64]) -> f64 + Send + Sync + 'static,
+    {
+        self.invariants.push((name, Arc::new(f)));
+        self
+    }
+
+    /// Set a Jacobian-vector product callback directly on the problem.
+    pub fn jvp<F>(mut self, f: F) -> Self
+    where
+        F: Fn(f64, &[f64], &[f64], &mut [f64]) -> Result<(), CallbackError> + Send + Sync + 'static,
+    {
+        self.jacobian = Jacobian::jvp(f);
+        self
+    }
+
+    /// The right-hand side function.
+    pub fn rhs_fn(&self) -> &RhsFn {
+        &self.rhs
+    }
+
+    /// The Jacobian provider.
+    pub fn jacobian_provider(&self) -> &Jacobian {
+        &self.jacobian
+    }
+
+    /// The declared band, if any.
+    pub fn band(&self) -> Option<(usize, usize)> {
+        self.band
+    }
+
+    /// The mass matrix, if any.
+    pub fn mass_matrix(&self) -> Option<&[f64]> {
+        self.mass.as_deref()
+    }
+
+    /// The registered physical invariants.
+    pub fn invariants(&self) -> &[(&'static str, InvariantFn)] {
+        &self.invariants
+    }
 }
 
 impl fmt::Debug for Problem {
@@ -290,6 +368,7 @@ impl fmt::Debug for Problem {
             .field("time_derivative", &self.time_derivative.is_some())
             .field("autonomous", &self.autonomous)
             .field("events", &self.events.len())
+            .field("invariants", &self.invariants.len())
             .finish_non_exhaustive()
     }
 }

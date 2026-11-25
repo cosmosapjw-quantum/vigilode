@@ -1,0 +1,3279 @@
+diff --git a/crates/vigilode/examples/unified_production_solver.rs b/crates/vigilode/examples/unified_production_solver.rs
+index d66b3334..7eedb585 100644
+--- a/crates/vigilode/examples/unified_production_solver.rs
++++ b/crates/vigilode/examples/unified_production_solver.rs
+@@ -6,11 +6,12 @@
+ //! 1. One call (`VigilODE::solve`) over `Dopri5::solve`, `Rodas5p::solve` and
+ //!    `SwitchingSolver::solve`.
+ //! 2. Routing by declared facts: a supplied Jacobian or JVP runs RODAS5P (the facade picks
+-//!    the dense or the matrix-free driver family), a small problem that declares nothing
+-//!    gets a budgeted DOPRI5 trial.
++//!    the dense or the matrix-free driver family); a problem that declares nothing starts
++//!    DOPRI5 with forward break-even pilots of RODAS5P.
+ //! 3. The end-point drift of registered invariants.
+-//! 4. The fallback: RODAS5P continues from the last accepted state of a DOPRI5 trial that
+-//!    used up its attempt budget; both legs share `Options::max_steps`.
++//! 4. The handover: when a pilot (one RODAS5P attempt from DOPRI5's accepted state with the
++//!    step DOPRI5 advanced in its last `b` attempts) is accepted, RODAS5P continues from the
++//!    pilot's end point; DOPRI5, the pilots and RODAS5P share `Options::max_steps`.
+ //!
+ //! "Route taken" prints the driver identifier of each executed leg, read from the leg's
+ //! own run record.
+@@ -137,10 +138,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
+     // Problem 4: Fail-Closed Protected Fallback Demonstration
+     // -------------------------------------------------------------------------
+     println!("--- 4. Fail-Closed Fallback Demonstration ---");
+-    // System with stiff kinetics but without explicit Jacobian: nothing is declared and
+-    // the Jacobian at t0 is small, so DOPRI5 gets a trial of min(1000, max_steps / 2)
+-    // attempts. It does not finish, and RODAS5P (finite-difference Jacobian) continues
+-    // from its last accepted state with the attempts that are left.
++    // System with stiff kinetics but without explicit Jacobian: nothing is declared, so
++    // DOPRI5 starts with forward break-even pilots. When DOPRI5 has made b 2^k attempts
++    // (b = 4 for n = 3), one RODAS5P attempt from DOPRI5's accepted state tries the step
++    // that DOPRI5 advanced in its last b attempts; once a pilot is accepted, RODAS5P
++    // (finite-difference Jacobian) continues from the pilot's end point with the attempts
++    // that are left.
+     let fallback_prob = Problem::new(3, |_t, y, dy| {
+         dy[0] = -0.04 * y[0] + 1.0e4 * y[1] * y[2];
+         dy[1] = 0.04 * y[0] - 1.0e4 * y[1] * y[2] - 3.0e7 * y[1] * y[1];
+diff --git a/crates/vigilode/src/session.rs b/crates/vigilode/src/session.rs
+index e83c401d..17edc53d 100644
+--- a/crates/vigilode/src/session.rs
++++ b/crates/vigilode/src/session.rs
+@@ -8,7 +8,8 @@ use std::cell::{Cell, RefCell};
+ 
+ use rodas5p_core::{CoreError, CoreResult, WorkCounters};
+ use rodas5p_integrators::{
+-    Dopri5Session, NativeSessionAdvance, NativeSessionIdentity, NativeSessionMethod, OutputSchedule,
++    Dopri5Attempt, Dopri5Session, NativeSessionAdvance, NativeSessionIdentity, NativeSessionMethod,
++    OutputSchedule,
+ };
+ use serde::Serialize;
+ 
+@@ -165,6 +166,26 @@ impl ExplicitSession<'_> {
+         self.work.get()
+     }
+ 
++    /// Turn the native scalar attempt telemetry on or off; a pass-through to
++    /// `Dopri5Session::set_attempt_telemetry`. It makes no callback and changes neither the
++    /// step sequence nor the work counters. Changing it clears the last attempt record.
++    pub(crate) fn set_attempt_telemetry(&mut self, enabled: bool) {
++        self.native.set_attempt_telemetry(enabled);
++    }
++
++    /// The record of the most recent attempt since the telemetry was turned on; a
++    /// pass-through to `Dopri5Session::last_attempt`. A quota yield before a trial leaves it
++    /// unchanged.
++    pub(crate) fn last_attempt(&self) -> Option<Dopri5Attempt> {
++        self.native.last_attempt()
++    }
++
++    /// The largest growth factor of the session's step controller
++    /// (`AdaptiveStepConfig::max_factor` of the configuration the session was built with).
++    pub(crate) fn max_factor(&self) -> f64 {
++        self.adaptive.max_factor
++    }
++
+     /// Clone the fatal callback detail, if present.
+     pub fn callback_failure(&self) -> Option<ExplicitCallbackFailure> {
+         self.failure.borrow().clone()
+diff --git a/crates/vigilode/src/unified/analyzer.rs b/crates/vigilode/src/unified/analyzer.rs
+index f759754e..1207a43b 100644
+--- a/crates/vigilode/src/unified/analyzer.rs
++++ b/crates/vigilode/src/unified/analyzer.rs
+@@ -1,36 +1,27 @@
+ //! Preflight analysis: which entry point the router calls first, and why.
+ //!
+-//! The analysis reads declared facts. It asks the method registry which method a declared
+-//! regime selects, whether the explicit method admits the request and which driver family
+-//! of the RODAS5P facade is planned; it keeps no rule of its own about drivers. It makes
+-//! callbacks in one case only, the stiffness screen of a small problem that declares
+-//! nothing, and reports their number so that the router charges them.
++//! The analysis reads declared facts and makes no callback. It asks the method registry
++//! which method a declared regime selects, whether the explicit method admits the request
++//! and which driver family of the RODAS5P facade is planned; it keeps no rule of its own
++//! about drivers. A request that declares nothing runs the break-even route
++//! (`super::breakeven`): DOPRI5 with forward break-even pilots of RODAS5P.
+ //!
+-//! The analysis does not classify a problem as non-stiff. The logarithmic norm is not
+-//! computed: a contractive problem (the heat equation, `y' = -1e6 y`) is the standard
++//! The analysis does not classify a problem as stiff or non-stiff. The logarithmic norm is
++//! not computed: a contractive problem (the heat equation, `y' = -1e6 y`) is the standard
+ //! stiff case, not evidence for an explicit method.
+ 
+ use serde::Serialize;
+ 
+-use super::fallback::FallbackEngine;
+-use super::legs::CallbackStop;
++use super::breakeven::break_even_length;
+ use super::options::{SolverStrategy, VigilodeOptions};
+-use crate::error::{CallbackError, SolveError};
++use crate::error::SolveError;
+ use crate::explicit::ExplicitSolveError;
+ use crate::problem::Problem;
+ use crate::{
+-    Callback, JacobianForm, MethodChoice, MethodFacts, MethodRefusalReason, MethodRegistry,
+-    MethodRoute, MethodRouteRefusal, ProblemRegime,
++    JacobianForm, MethodChoice, MethodFacts, MethodRefusalReason, MethodRegistry, MethodRoute,
++    MethodRouteRefusal, ProblemRegime,
+ };
+ 
+-/// Largest dimension for which a problem that declares nothing gets an explicit trial.
+-/// Above it the request runs RODAS5P directly (the limit of the first unified router).
+-pub const EXPLICIT_TRIAL_MAX_DIMENSION: usize = 10;
+-
+-/// Length of the negative real stability interval of DOPRI5, to two digits: an explicit
+-/// step `h` is stable on a decaying mode `lambda` only while `h |lambda| <= 3.3`.
+-pub const DOPRI5_REAL_STABILITY_BOUND: f64 = 3.3;
+-
+ /// The entry point the router calls first. Each value has a driver of its own.
+ ///
+ /// The first unified router also had `Tier2MatrixFreeKrylov`, `Tier3Exponential` and
+@@ -91,28 +82,16 @@ pub enum RouteBasis {
+         reasons: Vec<MethodRefusalReason>,
+     },
+     /// The caller supplied a Jacobian, a Jacobian-vector product or a band. RODAS5P can
+-    /// use it, and nothing shows that the problem is non-stiff.
++    /// use it, and nothing shows that the problem is non-stiff (owner decision D2: the
++    /// request starts on RODAS5P).
+     SuppliedDerivative,
+-    /// Nothing is declared and the dimension is above [`EXPLICIT_TRIAL_MAX_DIMENSION`].
+-    DimensionAboveTrialLimit {
+-        /// The dimension.
+-        dimension: usize,
+-        /// The limit.
+-        limit: usize,
+-    },
+-    /// Nothing is declared and the attempt budget leaves no explicit trial.
+-    NoBudgetForTrial {
+-        /// `Options::max_steps`.
+-        max_steps: usize,
++    /// Nothing is declared: DOPRI5 with forward break-even pilots of RODAS5P (the
++    /// [module documentation](super) and [`super::PilotRecord`]); RODAS5P continues after an
++    /// accepted pilot or after a numerical DOPRI5 stop.
++    BreakEven {
++        /// The break-even length of the dimension ([`super::break_even_length`]).
++        b: usize,
+     },
+-    /// Nothing is declared and the stiffness screen found that an explicit trial cannot
+-    /// cover the span within its attempt budget ([`StiffnessScreen`]).
+-    StiffnessScreen,
+-    /// Nothing is declared and the screen found nothing: a budgeted explicit trial, then
+-    /// RODAS5P from its last accepted state if it does not finish.
+-    UndeclaredRegimeTrial,
+-    /// A callback of the stiffness screen failed fatally; no leg is started.
+-    PreflightCallbackFailed,
+ }
+ 
+ impl RouteBasis {
+@@ -127,72 +106,14 @@ impl RouteBasis {
+             Self::SuppliedDerivative => {
+                 "a derivative or a band is supplied and no regime is declared".into()
+             }
+-            Self::DimensionAboveTrialLimit { dimension, limit } => format!(
+-                "no declaration; dimension {dimension} is above the explicit trial limit {limit}"
++            Self::BreakEven { b } => format!(
++                "no declaration: DOPRI5 with forward break-even pilots of RODAS5P (b = {b})"
+             ),
+-            Self::NoBudgetForTrial { max_steps } => {
+-                format!("no declaration; an attempt budget of {max_steps} leaves no explicit trial")
+-            }
+-            Self::StiffnessScreen => {
+-                "no declaration; the charged stiffness screen shows that an explicit trial \
+-                 cannot cover the span within its attempt budget"
+-                    .into()
+-            }
+-            Self::UndeclaredRegimeTrial => {
+-                "no declaration and no evidence of stiffness at t0: budgeted explicit trial".into()
+-            }
+-            Self::PreflightCallbackFailed => {
+-                "a callback of the stiffness screen failed fatally".into()
+-            }
+         }
+     }
+ }
+ 
+-/// The stiffness screen: a lower bound of the Lipschitz constant of the right-hand side
+-/// at the initial point, compared with what an explicit trial can cover.
+-///
+-/// With `f0 = f(t0, y0)` and, for every coordinate `j`,
+-/// `delta_j = sqrt(eps) max(|y0_j|, 1)`, the screen forms
+-/// `L = max_j |f(t0, y0 + delta_j e_j) - f0|_2 / delta_j`. Every quotient is a difference
+-/// quotient of `f` along a segment, so `L` is a lower bound of the Lipschitz constant of
+-/// `f(t0, .)` near `y0`, up to rounding (for the linearisation, `L >= |J|_2 / sqrt(n)`).
+-/// DOPRI5 needs about `L (t1 - t0) / 3.3` steps for stability alone when `L` belongs to a
+-/// decaying mode. If that exceeds the attempt budget `B` of the trial,
+-/// `L (t1 - t0) > 3.3 B`, the trial is skipped and RODAS5P runs.
+-///
+-/// The screen can move a request from the explicit trial to RODAS5P, never the other way,
+-/// and a negative result is not evidence of non-stiffness: stiffness that develops after
+-/// `t0` (Robertson) is left to the trial budget and the fallback. A strongly oscillatory
+-/// or non-normal problem can be moved to RODAS5P although DOPRI5 would have finished; the
+-/// result is still error controlled.
+-///
+-/// The screen has a third outcome. Its probe points `y0 + delta_j e_j` are not on the
+-/// trajectory. A fatal callback error at one of them ends the solve with that error before
+-/// any leg runs, also for a problem that DOPRI5 alone would integrate (a finite-difference
+-/// Jacobian of `Rodas5p::solve` meets the same right-hand side).
+-///
+-/// Cost: `n + 1` right-hand-side calls and `O(n)` storage, with `n` at most
+-/// [`EXPLICIT_TRIAL_MAX_DIMENSION`]. Every call is charged.
+-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+-pub struct StiffnessScreen {
+-    /// `L`, when every difference quotient was formed and is finite.
+-    pub lipschitz_lower_bound: Option<f64>,
+-    /// `t1 - t0`.
+-    pub span: f64,
+-    /// Attempt budget `B` of the explicit trial.
+-    pub trial_attempts: usize,
+-    /// `3.3 B`.
+-    pub threshold: f64,
+-    /// `L (t1 - t0) > 3.3 B`.
+-    pub stiffness_evidence: bool,
+-    /// Whether every quotient was formed. A recoverable callback error or a non-finite
+-    /// value ends the screen early; it then shows nothing.
+-    pub completed: bool,
+-    /// Right-hand-side calls the screen made.
+-    pub rhs_calls: u64,
+-}
+-
+-/// What the analysis decided and what it cost.
++/// What the analysis decided. It makes no callback.
+ #[derive(Clone, Debug, Serialize)]
+ pub struct PreflightAnalysis {
+     /// The entry point the router calls first.
+@@ -207,18 +128,11 @@ pub struct PreflightAnalysis {
+     /// switching adapter, which the registry does not list. It is a plan: the route that
+     /// ran is read from the run record after the leg.
+     pub planned_route: Option<MethodRoute>,
+-    /// Attempt budget of the first leg.
++    /// Attempt budget of the first leg: `Options::max_steps`, the budget of the whole solve.
+     pub first_leg_attempts: usize,
+-    /// Whether RODAS5P continues from the last accepted state when the explicit leg stops
+-    /// for a numerical reason.
++    /// Whether RODAS5P may continue from DOPRI5's last accepted state: after an accepted
++    /// pilot or a numerical stop of DOPRI5 (the break-even route only).
+     pub fallback_to_rodas5p: bool,
+-    /// The stiffness screen, when it ran.
+-    pub screen: Option<StiffnessScreen>,
+-    /// Right-hand-side calls the analysis made (those of the screen). The router adds
+-    /// them to the counters of the solve.
+-    pub rhs_calls: u64,
+-    /// The fatal error of a screen callback. With it no leg is started.
+-    pub callback_failure: Option<CallbackStop>,
+ }
+ 
+ /// The preflight analysis of the router.
+@@ -271,15 +185,12 @@ impl PreflightAnalyzer {
+     /// 3. The registry does not admit DOPRI5 for the declared facts (a mass matrix, dense
+     ///    output, events): RODAS5P.
+     /// 4. A Jacobian, a Jacobian-vector product or a band is supplied: RODAS5P.
+-    /// 5. The dimension is above [`EXPLICIT_TRIAL_MAX_DIMENSION`], or the attempt budget
+-    ///    leaves no trial: RODAS5P with a finite-difference Jacobian.
+-    /// 6. Otherwise the [`StiffnessScreen`]. With evidence of stiffness RODAS5P runs;
+-    ///    without it DOPRI5 gets a trial of
+-    ///    [`FallbackEngine::explicit_trial_attempts`] attempts, and RODAS5P continues from
+-    ///    its last accepted state if it does not finish.
++    /// 5. Otherwise the break-even route ([`RouteBasis::BreakEven`]): DOPRI5 with forward
++    ///    break-even pilots of RODAS5P, for every dimension.
+     ///
+-    /// Rules 1 to 5 make no callback. `Err` is a refusal before any callback: malformed
+-    /// input, or a request that the RODAS5P facade does not support.
++    /// No rule makes a callback. `Err` is a refusal before any callback: malformed input,
++    /// or a request that the RODAS5P facade does not support; for the break-even route both
++    /// entry points are checked, so that a refusal never follows a callback.
+     pub fn analyze(
+         problem: &Problem,
+         span: (f64, f64),
+@@ -303,17 +214,14 @@ impl PreflightAnalyzer {
+ 
+         let facts = MethodFacts::of(problem, &opts.options);
+         let total = opts.options.max_steps;
+-        let analysis = |tier, basis, planned_route, attempts, fallback| PreflightAnalysis {
++        let analysis = |tier, basis, planned_route, fallback| PreflightAnalysis {
+             suggested_tier: tier,
+             basis,
+             facts,
+             regime: opts.regime,
+             planned_route,
+-            first_leg_attempts: attempts,
++            first_leg_attempts: total,
+             fallback_to_rodas5p: fallback,
+-            screen: None,
+-            rhs_calls: 0,
+-            callback_failure: None,
+         };
+         let implicit_route = || {
+             let choice = MethodChoice::Explicit(method_id(ProblemRegime::Stiff));
+@@ -327,7 +235,6 @@ impl PreflightAnalyzer {
+                 SelectedTier::TierProtectedReference,
+                 basis,
+                 Some(route),
+-                total,
+                 false,
+             ))
+         };
+@@ -346,7 +253,6 @@ impl PreflightAnalyzer {
+                         strategy: opts.strategy,
+                     },
+                     None,
+-                    total,
+                     false,
+                 ));
+             }
+@@ -379,139 +285,30 @@ impl PreflightAnalyzer {
+                 SelectedTier::Tier1Explicit,
+                 declared,
+                 Some(explicit_route),
+-                total,
+                 false,
+             ));
+         }
+ 
+-        // 4. and 5.: no regime is declared
++        // 4. a supplied derivative or band starts RODAS5P (owner decision D2)
+         if facts.jacobian != JacobianForm::FiniteDifference || facts.declared_band {
+             return implicit(RouteBasis::SuppliedDerivative);
+         }
+-        if n > EXPLICIT_TRIAL_MAX_DIMENSION {
+-            return implicit(RouteBasis::DimensionAboveTrialLimit {
+-                dimension: n,
+-                limit: EXPLICIT_TRIAL_MAX_DIMENSION,
+-            });
+-        }
+-        let trial = FallbackEngine::explicit_trial_attempts(total);
+-        if trial == 0 {
+-            return implicit(RouteBasis::NoBudgetForTrial { max_steps: total });
+-        }
+ 
+-        // 6. the screen. Its callbacks are made only for a request that both methods
+-        // accept, so that a refusal never follows a callback.
+-        let fallback_route = implicit_route()?;
+-        let mut trial_options = opts.options.clone();
+-        trial_options.max_steps = trial;
+-        if let Err(error) = crate::explicit::validate(problem, span, y0, &trial_options) {
++        // 5. the break-even route. Both entry points are checked before any callback.
++        implicit_route()?;
++        if let Err(error) = crate::explicit::validate(problem, span, y0, &opts.options) {
+             return Err(SolveError::InvalidInput(match error {
+                 ExplicitSolveError::InvalidInput(message) => message,
+                 other => other.to_string(),
+             }));
+         }
+-        let (screen, failure) = stiffness_screen(problem, span, y0, trial);
+-        let mut decided = if failure.is_some() {
+-            analysis(
+-                SelectedTier::Tier1Explicit,
+-                RouteBasis::PreflightCallbackFailed,
+-                Some(explicit_route),
+-                0,
+-                false,
+-            )
+-        } else if screen.stiffness_evidence {
+-            analysis(
+-                SelectedTier::TierProtectedReference,
+-                RouteBasis::StiffnessScreen,
+-                Some(fallback_route),
+-                total,
+-                false,
+-            )
+-        } else {
+-            analysis(
+-                SelectedTier::Tier1Explicit,
+-                RouteBasis::UndeclaredRegimeTrial,
+-                Some(explicit_route),
+-                trial,
+-                true,
+-            )
+-        };
+-        decided.screen = Some(screen);
+-        decided.rhs_calls = screen.rhs_calls;
+-        decided.callback_failure = failure;
+-        Ok(decided)
+-    }
+-}
+-
+-/// The [`StiffnessScreen`] of `(problem, span, y0)` for a trial of `trial_attempts`
+-/// attempts, and the fatal callback error that ended it, if any.
+-fn stiffness_screen(
+-    problem: &Problem,
+-    span: (f64, f64),
+-    y0: &[f64],
+-    trial_attempts: usize,
+-) -> (StiffnessScreen, Option<CallbackStop>) {
+-    let n = y0.len();
+-    let length = span.1 - span.0;
+-    let threshold = DOPRI5_REAL_STABILITY_BOUND * trial_attempts as f64;
+-    let mut screen = StiffnessScreen {
+-        lipschitz_lower_bound: None,
+-        span: length,
+-        trial_attempts,
+-        threshold,
+-        stiffness_evidence: false,
+-        completed: false,
+-        rhs_calls: 0,
+-    };
+-    let rhs = problem.rhs_fn();
+-    // One call of the right-hand side; `Ok(true)` if the output is finite.
+-    let call = |y: &[f64], out: &mut [f64], calls: &mut u64| {
+-        out.fill(f64::NAN);
+-        *calls += 1;
+-        match rhs(span.0, y, out) {
+-            Ok(()) => Ok(out.iter().all(|v| v.is_finite())),
+-            Err(CallbackError::Recoverable(_)) => Ok(false),
+-            Err(CallbackError::Fatal(message)) => Err(CallbackStop {
+-                callback: Callback::Rhs,
+-                t: span.0,
+-                message,
+-            }),
+-        }
+-    };
+-
+-    let mut f0 = vec![0.0; n];
+-    match call(y0, &mut f0, &mut screen.rhs_calls) {
+-        Ok(true) => {}
+-        Ok(false) => return (screen, None),
+-        Err(failure) => return (screen, Some(failure)),
+-    }
+-    let mut shifted = y0.to_vec();
+-    let mut f1 = vec![0.0; n];
+-    let mut bound = 0.0f64;
+-    for j in 0..n {
+-        let delta = f64::EPSILON.sqrt() * y0[j].abs().max(1.0);
+-        shifted[j] = y0[j] + delta;
+-        // the represented increment, as the finite-difference Jacobian of the facade takes it
+-        let step = shifted[j] - y0[j];
+-        let outcome = call(&shifted, &mut f1, &mut screen.rhs_calls);
+-        shifted[j] = y0[j];
+-        match outcome {
+-            Ok(true) => {}
+-            Ok(false) => return (screen, None),
+-            Err(failure) => return (screen, Some(failure)),
+-        }
+-        let difference = f1
+-            .iter()
+-            .zip(&f0)
+-            .map(|(a, b)| (a - b) * (a - b))
+-            .sum::<f64>()
+-            .sqrt();
+-        bound = bound.max(difference / step.abs());
+-    }
+-    if bound.is_finite() {
+-        screen.completed = true;
+-        screen.lipschitz_lower_bound = Some(bound);
+-        screen.stiffness_evidence = bound * length > threshold;
++        Ok(analysis(
++            SelectedTier::Tier1Explicit,
++            RouteBasis::BreakEven {
++                b: break_even_length(n),
++            },
++            Some(explicit_route),
++            true,
++        ))
+     }
+-    (screen, None)
+ }
+diff --git a/crates/vigilode/src/unified/breakeven.rs b/crates/vigilode/src/unified/breakeven.rs
+new file mode 100644
+index 00000000..2ce13e7f
+--- /dev/null
++++ b/crates/vigilode/src/unified/breakeven.rs
+@@ -0,0 +1,372 @@
++//! Forward break-even pilots: the route of a request that declares nothing.
++//!
++//! DOPRI5 integrates in a persistent session, one attempt per call. The route never
++//! classifies the problem; at geometrically spaced times it asks one question on the
++//! trajectory it is integrating: *DOPRI5 just spent `b` attempts, at least the cost of one
++//! RODAS5P attempt in every unit, to advance a length `H`. Can one RODAS5P attempt advance
++//! `H` from here?* If yes, the attempt is kept as the first step of a RODAS5P leg and RODAS5P
++//! continues to the end time (one way). If no, that one attempt is lost and DOPRI5 continues
++//! bit for bit as if no question had been asked: a pilot never touches the session.
++//!
++//! The rules, all without a tunable number except the doubling base 2:
++//!
++//! * `b` is [`break_even_length`] of the dimension: one fresh finite-difference RODAS5P
++//!   attempt costs at most `b` DOPRI5 attempts in right-hand-side calls and in operations.
++//! * DOPRI5's attempts count only after it located its step size: its first accepted attempt
++//!   that the controller did not cap at the largest growth factor, or that followed a
++//!   rejection. The initial step search and the growth ramp from a small `h0` do not count.
++//! * Pilot `k` (`k = 0, 1, ...`) is due when DOPRI5 has made at least `b 2^k` attempts and at
++//!   least `b` located ones. `H` is the length DOPRI5 advanced in its last `b` attempts (the
++//!   step it requested at the oldest of them when it advanced nothing). If the rest of the
++//!   span is not longer than `H`, no further pilot is made: DOPRI5 finishes for less.
++//! * The pilot is `Rodas5p::solve` from DOPRI5's last accepted state with `h0 = H` and
++//!   `max_steps = 1`: the first attempt of a direct RODAS5P run from that state. It is charged
++//!   to the counters and to the one attempt budget `Options::max_steps` of the solve.
++//! * An accepted pilot hands over (owner decision D3: one way); a lost pilot changes
++//!   nothing; a fatal callback inside a pilot ends the solve with its accepted prefix (owner
++//!   decision D1); a recoverable callback error only rejects the pilot's attempt.
++//!
++//! The design and its properties are in
++//! `research/production_loop_20261116/router_hyperparameter_free/DESIGN_RECOMMENDED.md`
++//! (sections 3 and 4).
++
++use std::collections::VecDeque;
++
++use rodas5p_core::WorkCounters;
++use serde::Serialize;
++
++use super::analyzer::{SelectedTier, method_id};
++use super::legs::{UnifiedLeg, UnifiedStop, registry_leg};
++use crate::explicit::{ExplicitSolution, ExplicitSolveError};
++use crate::options::Options;
++use crate::problem::Problem;
++use crate::session::{SessionAdvance, SessionEpochs};
++use crate::solution::{FailureReason, Solution, Status};
++use crate::{Dopri5, MethodResult, ProblemRegime, WorkRecord};
++
++/// Right-hand-side calls of one DOPRI5 attempt after the first (FSAL: six new stages).
++const DOPRI5_CALLBACKS: u128 = 6;
++/// Multiply-adds per component of one DOPRI5 attempt: 20 in the stages, 6 in the error
++/// estimate.
++const DOPRI5_MULTIPLY_ADDS: u128 = 26;
++/// Multiply-adds per component of one RODAS5P attempt: 28 entries of `A`, 28 of `C` and 8 of
++/// the solution weights (the coefficient snapshot of the protected method).
++const RODAS5P_MULTIPLY_ADDS: u128 = 64;
++
++/// The break-even length `b` of the route for dimension `n`: the least number of DOPRI5
++/// attempts that cost at least one fresh finite-difference RODAS5P attempt, both in
++/// right-hand-side calls and in operations.
++///
++/// Per attempt, DOPRI5 makes 6 calls and `52 n` operations; a fresh finite-difference
++/// RODAS5P attempt makes `n + 9` calls (`n` Jacobian columns, `f(t, y)` twice, 7 stages),
++/// `n + 11` for a non-autonomous problem (the finite-difference time derivative), and
++/// `(2 n^3 + 54 n^2 + 384 n) / 3` operations (the LU factorization `2 n^3 / 3`, eight solve
++/// pairs `16 n^2`, the finite-difference assembly `2 n^2`, 64 multiply-adds per component).
++/// `b` is the larger of the two ratios rounded up; the operation unit binds for every
++/// `n >= 1`, so `b = ceil((2 n^2 + 54 n + 384) / 156)`: 3, 4, 4, 5, 7, 8, 78 for
++/// `n = 1, 2, 3, 4, 8, 10, 64`. The LU count is an upper bound of the dense kernel, which
++/// skips zeros, so `b` is conservative for a sparse Jacobian stored dense.
++pub fn break_even_length(n: usize) -> usize {
++    let n = n as u128;
++    let callbacks = (n + 11).div_ceil(DOPRI5_CALLBACKS);
++    let operations = (2 * n * n + 54 * n + 384).div_ceil(2 * DOPRI5_MULTIPLY_ADDS * 3);
++    usize::try_from(callbacks.max(operations)).unwrap_or(usize::MAX)
++}
++
++/// Three times the operations of `attempts` DOPRI5 attempts (`52 n` each).
++fn dopri5_operations3(n: usize, attempts: usize) -> u128 {
++    3 * 2 * DOPRI5_MULTIPLY_ADDS * n as u128 * attempts as u128
++}
++
++/// Three times the operations of a RODAS5P run from its record: `128 n` per attempt,
++/// `2 n^3 / 3` per factorization, `2 n^2` per solve pair and per finite-difference build.
++fn rodas5p_operations3(n: usize, attempts: usize, counters: &WorkRecord) -> u128 {
++    let n = n as u128;
++    3 * 2 * RODAS5P_MULTIPLY_ADDS * n * attempts as u128
++        + 2 * n.pow(3) * u128::from(counters.direct_factorizations)
++        + 6 * n * n * (u128::from(counters.linear_solves) + u128::from(counters.jacobian_builds))
++}
++
++/// What one pilot showed.
++#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
++#[serde(rename_all = "kebab-case")]
++pub enum PilotVerdict {
++    /// Its attempt was accepted: it is the first step of the RODAS5P leg (handover).
++    Accepted,
++    /// Its attempt was not accepted: the attempt is lost and DOPRI5 continues unchanged.
++    Lost,
++    /// A callback failed fatally inside it: the solve ends (owner decision D1).
++    Fatal,
++    /// `Rodas5p::solve` refused the request before any callback; no further pilot is made.
++    Refused,
++}
++
++/// One pilot of the break-even route, written after it ran.
++#[derive(Clone, Debug, PartialEq, Serialize)]
++#[non_exhaustive]
++pub struct PilotRecord {
++    /// `k`: the pilot was due when DOPRI5 had made `b 2^k` attempts.
++    pub index: usize,
++    /// DOPRI5 attempts made when the pilot ran.
++    pub dopri5_attempts: usize,
++    /// `t_D`: DOPRI5's last accepted time, where the pilot started.
++    pub t: f64,
++    /// `H`: the pilot's step, the length DOPRI5 advanced in its last `b` attempts.
++    pub h: f64,
++    /// `b`: the DOPRI5 attempts the pilot is compared with.
++    pub window_attempts: usize,
++    /// Right-hand-side calls DOPRI5 made in those attempts (failed calls included).
++    pub window_callbacks: u64,
++    /// Operations of those attempts, `52 n` each.
++    pub window_operations: f64,
++    /// Attempts the pilot made.
++    pub pilot_attempts: usize,
++    /// Charged right-hand-side and time-derivative calls of the pilot.
++    pub pilot_callbacks: u64,
++    /// Operations of the pilot: `128 n` per attempt, `2 n^3 / 3` per factorization, `2 n^2`
++    /// per solve pair and per finite-difference build.
++    pub pilot_operations: f64,
++    /// What it showed.
++    pub verdict: PilotVerdict,
++    /// Why its run ended without an accepted step: the stop of its `Rodas5p::solve` call
++    /// or its refusal. `None` for an accepted pilot.
++    pub stop: Option<UnifiedStop>,
++}
++
++/// How the DOPRI5 session and its pilots ended.
++pub(super) enum Ending {
++    /// DOPRI5 reached the end time or stopped by itself (a callback, a numerical stop, its
++    /// attempt budget); its record says which.
++    Dopri5,
++    /// DOPRI5 and the lost pilots used up the attempt budget of the solve.
++    Budget,
++    /// A pilot was accepted: its leg record and its solution.
++    Handover(Box<(UnifiedLeg, Solution)>),
++    /// A callback failed fatally inside a pilot: the stop of its run.
++    Fatal(UnifiedStop),
++    /// The session refused a call (not expected: the route's target and epochs are fixed).
++    Session(String),
++}
++
++/// The DOPRI5 session's record and what the pilots did.
++pub(super) struct BreakEvenRun {
++    /// The break-even length of the run.
++    pub b: usize,
++    /// DOPRI5's record: the whole run, or its prefix up to the time it was left.
++    pub explicit: ExplicitSolution,
++    /// Every pilot, in order.
++    pub pilots: Vec<PilotRecord>,
++    /// Work of the pilots that are not the first step of a RODAS5P leg.
++    pub spare_work: WorkCounters,
++    /// Their attempts, accepted steps and rejected attempts.
++    pub spare_attempts: usize,
++    /// See [`BreakEvenRun::spare_attempts`].
++    pub spare_accepted: usize,
++    /// See [`BreakEvenRun::spare_attempts`].
++    pub spare_rejected: usize,
++    /// How the session ended.
++    pub ending: Ending,
++}
++
++/// One DOPRI5 attempt of the window: where it started, the step it asked for, its calls.
++#[derive(Clone, Copy)]
++struct WindowEntry {
++    t_before: f64,
++    requested_h: f64,
++    callbacks: u64,
++}
++
++/// Run DOPRI5 from `(span.0, y0)` with forward break-even pilots under the attempt budget
++/// `options.max_steps`. `Err` is a refusal of the DOPRI5 session before any callback.
++pub(super) fn run(
++    problem: &Problem,
++    span: (f64, f64),
++    y0: &[f64],
++    options: &Options,
++) -> Result<BreakEvenRun, ExplicitSolveError> {
++    let n = y0.len();
++    let b = break_even_length(n);
++    let total = options.max_steps;
++    let epochs = SessionEpochs::default();
++    let mut pilots: Vec<PilotRecord> = Vec::new();
++    let mut spare_work = WorkCounters::default();
++    let (mut spare_attempts, mut spare_accepted, mut spare_rejected) = (0usize, 0usize, 0usize);
++
++    let (ending, explicit) = Dopri5::with_session(
++        problem,
++        span,
++        y0,
++        options,
++        &[span.0, span.1],
++        epochs,
++        |session| {
++            session.set_attempt_telemetry(true);
++            let max_factor = session.max_factor();
++            // a pilot needs b DOPRI5 attempts; the window never holds more than b
++            let mut pilots_on = b <= total;
++            let mut window: VecDeque<WindowEntry> = VecDeque::new();
++            let mut window_callbacks = 0u64;
++            let (mut located, mut counted, mut previous_rejected) = (false, 0usize, false);
++            let (mut index, mut due) = (0usize, b);
++            loop {
++                let dopri5_attempts = session.checkpoint().attempts;
++                // the session enforces the budget alone while no pilot was made, so that
++                // its record is the one of Dopri5::solve
++                if spare_attempts > 0 && dopri5_attempts + spare_attempts >= total {
++                    return Ending::Budget;
++                }
++                match session.advance_to(span.1, 1, epochs) {
++                    Ok(SessionAdvance::Yield) => {}
++                    Ok(_) => return Ending::Dopri5,
++                    Err(error) => return Ending::Session(error.to_string()),
++                }
++                let Some(attempt) = session.last_attempt() else {
++                    continue;
++                };
++                if pilots_on {
++                    window.push_back(WindowEntry {
++                        t_before: attempt.t_before,
++                        requested_h: attempt.requested_h,
++                        callbacks: attempt.rhs_delta,
++                    });
++                    window_callbacks += attempt.rhs_delta;
++                    if window.len() > b
++                        && let Some(oldest) = window.pop_front()
++                    {
++                        window_callbacks -= oldest.callbacks;
++                    }
++                }
++                let checkpoint = session.checkpoint();
++                // the controller returns trial_h * max_factor exactly when it clamps
++                let capped = attempt.accepted
++                    && !attempt.clipped
++                    && checkpoint.proposed_h == attempt.trial_h * max_factor;
++                if located {
++                    counted += 1;
++                } else if attempt.accepted && (!capped || previous_rejected) {
++                    located = true;
++                    counted = 1;
++                }
++                previous_rejected = !attempt.accepted;
++                if !(pilots_on && counted >= b && checkpoint.attempts >= due) {
++                    continue;
++                }
++                let Some(first) = window.front().copied() else {
++                    continue;
++                };
++                let t_d = checkpoint.t;
++                let mut h = t_d - first.t_before;
++                if h <= 0.0 {
++                    // DOPRI5 advanced nothing in the window: the step it tried
++                    h = first.requested_h;
++                }
++                if span.1 - t_d <= h {
++                    // the horizon: DOPRI5 finishes the rest for less than a pilot shows
++                    pilots_on = false;
++                    window.clear();
++                    continue;
++                }
++                if checkpoint.attempts + spare_attempts >= total {
++                    // no attempt left for a pilot; the next call ends the run
++                    continue;
++                }
++                let y_d = checkpoint.y.to_vec();
++                let dopri5_attempts = checkpoint.attempts;
++                let mut pilot_options = options.clone();
++                pilot_options.h0 = h;
++                pilot_options.max_steps = 1;
++                let pilot = registry_leg(
++                    problem,
++                    SelectedTier::TierProtectedReference,
++                    method_id(ProblemRegime::Stiff),
++                    (t_d, span.1),
++                    &y_d,
++                    &pilot_options,
++                );
++                let mut record = PilotRecord {
++                    index,
++                    dopri5_attempts,
++                    t: t_d,
++                    h,
++                    window_attempts: window.len(),
++                    window_callbacks,
++                    window_operations: dopri5_operations3(n, window.len()) as f64 / 3.0,
++                    pilot_attempts: 0,
++                    pilot_callbacks: 0,
++                    pilot_operations: 0.0,
++                    verdict: PilotVerdict::Refused,
++                    stop: None,
++                };
++                index += 1;
++                due = due.saturating_mul(2);
++                let (leg, native) = match pilot {
++                    Ok((leg, MethodResult::Rodas5p(native))) => (leg, native),
++                    Ok((leg, _)) => {
++                        record.stop = Some(UnifiedStop::Other {
++                            message: format!(
++                                "the registry ran {} for a RODAS5P pilot",
++                                leg.driver_id
++                            ),
++                        });
++                        pilots.push(record);
++                        pilots_on = false;
++                        continue;
++                    }
++                    Err(error) => {
++                        record.stop = Some(UnifiedStop::Refused {
++                            tier: SelectedTier::TierProtectedReference,
++                            error: error.to_string(),
++                            prior: None,
++                        });
++                        pilots.push(record);
++                        pilots_on = false;
++                        continue;
++                    }
++                };
++                let counters = &leg.counters;
++                record.pilot_attempts = leg.attempts;
++                record.pilot_callbacks = counters.rhs_calls + counters.ft_calls;
++                record.pilot_operations =
++                    rodas5p_operations3(n, leg.attempts, counters) as f64 / 3.0;
++                let fatal = matches!(
++                    native.status,
++                    Status::Failed(FailureReason::CallbackFailed { .. })
++                );
++                if !fatal && leg.t_end > t_d {
++                    record.verdict = PilotVerdict::Accepted;
++                    pilots.push(record);
++                    return Ending::Handover(Box::new((leg, native)));
++                }
++                spare_work.accumulate(WorkCounters::from(&leg.counters));
++                spare_attempts += leg.attempts;
++                spare_accepted += leg.accepted_steps;
++                spare_rejected += leg.rejected_steps;
++                record.stop = leg.stop.clone();
++                if fatal {
++                    record.verdict = PilotVerdict::Fatal;
++                    pilots.push(record);
++                    // the run record's stop; `fatal` says its status is the callback failure
++                    let stop = leg.stop.unwrap_or(UnifiedStop::Rodas5p {
++                        reason: match native.status {
++                            Status::Failed(reason) => reason,
++                            Status::Success => FailureReason::MaxStepsReached { max_steps: 1 },
++                        },
++                    });
++                    return Ending::Fatal(stop);
++                }
++                record.verdict = PilotVerdict::Lost;
++                pilots.push(record);
++            }
++        },
++    )?;
++    Ok(BreakEvenRun {
++        b,
++        explicit,
++        pilots,
++        spare_work,
++        spare_attempts,
++        spare_accepted,
++        spare_rejected,
++        ending,
++    })
++}
+diff --git a/crates/vigilode/src/unified/fallback.rs b/crates/vigilode/src/unified/fallback.rs
+index e3f8d721..a327647d 100644
+--- a/crates/vigilode/src/unified/fallback.rs
++++ b/crates/vigilode/src/unified/fallback.rs
+@@ -1,29 +1,19 @@
+-//! The fallback rule of the router: when a second leg starts, and with which budget.
++//! The fallback rule of the router: when a RODAS5P leg follows a DOPRI5 leg that stopped,
++//! and with which budget.
+ //!
+ //! A fallback leg is `Rodas5p::solve` from the last accepted state of the leg that
+ //! stopped. It is not a transaction and nothing is rolled back: the accepted prefix of the
+-//! stopped leg is kept, and so is its work. The legs share one attempt budget,
+-//! `Options::max_steps`.
++//! stopped leg is kept, and so is its work. Every leg and every pilot of the break-even
++//! route is charged to one attempt budget, `Options::max_steps`.
+ 
+ use rodas5p_integrators::Dopri5StopReason;
+ 
+-/// Largest attempt budget of an explicit trial: a problem that DOPRI5 does not finish in
+-/// this many attempts continues on RODAS5P.
+-pub const EXPLICIT_TRIAL_ATTEMPT_LIMIT: usize = 1000;
+-
+-/// The fallback rule. Three pure functions; the router calls them and nothing else decides
+-/// a fallback.
++/// The fallback rule. Two pure functions; the router calls them and nothing else decides
++/// a fallback. (A handover after an accepted pilot is the break-even route's own rule.)
+ #[derive(Clone, Copy, Debug, Default)]
+ pub struct FallbackEngine;
+ 
+ impl FallbackEngine {
+-    /// Attempt budget of an explicit trial under a total budget of `max_steps`:
+-    /// `min(EXPLICIT_TRIAL_ATTEMPT_LIMIT, max_steps / 2)`, so that at least half of the
+-    /// total is left for the leg that follows. Zero means that no trial is made.
+-    pub fn explicit_trial_attempts(max_steps: usize) -> usize {
+-        EXPLICIT_TRIAL_ATTEMPT_LIMIT.min(max_steps / 2)
+-    }
+-
+     /// Attempts left for a further leg after `used` attempts of a total of `max_steps`.
+     pub fn remaining_attempts(max_steps: usize, used: usize) -> usize {
+         max_steps.saturating_sub(used)
+diff --git a/crates/vigilode/src/unified/legs.rs b/crates/vigilode/src/unified/legs.rs
+index 1be0c7b3..5c56e857 100644
+--- a/crates/vigilode/src/unified/legs.rs
++++ b/crates/vigilode/src/unified/legs.rs
+@@ -14,7 +14,7 @@ use serde::Serialize;
+ 
+ use super::analyzer::{SelectedTier, refusal_error};
+ use crate::error::{CallbackError, SolveError};
+-use crate::explicit::{ExplicitCallbackFailure, ExplicitSolveError};
++use crate::explicit::{ExplicitCallbackFailure, ExplicitSolution, ExplicitSolveError};
+ use crate::options::Options;
+ use crate::problem::{Jacobian, Problem};
+ use crate::solution::{Callback, FailureReason, StopRecord};
+@@ -80,11 +80,6 @@ pub enum UnifiedStop {
+         /// Whether every driver it entered returned a work record.
+         accounting_complete: bool,
+     },
+-    /// A callback of the preflight stiffness screen failed fatally; no leg was started.
+-    Preflight {
+-        /// The failure.
+-        callback: CallbackStop,
+-    },
+     /// The entry point of a further leg refused its input after an earlier leg had
+     /// integrated a prefix. The prefix and its work are kept.
+     Refused {
+@@ -171,7 +166,6 @@ impl UnifiedStop {
+                     _ => too_small,
+                 }
+             }
+-            Self::Preflight { callback } => failed(callback),
+             Self::Refused { prior, .. } => match prior {
+                 Some(prior) => prior.facade_reason(budget),
+                 None => too_small,
+@@ -183,7 +177,7 @@ impl UnifiedStop {
+     /// Whether [`UnifiedStop::facade_reason`] states this stop exactly.
+     pub fn is_exact(&self) -> bool {
+         match self {
+-            Self::Rodas5p { .. } | Self::Preflight { .. } => true,
++            Self::Rodas5p { .. } => true,
+             Self::Dopri5 {
+                 reason, callback, ..
+             } => {
+@@ -234,7 +228,7 @@ impl UnifiedStop {
+             Self::Refused { prior, .. } => prior
+                 .as_ref()
+                 .is_some_and(|prior| prior.is_attempt_budget()),
+-            Self::Preflight { .. } | Self::Other { .. } => false,
++            Self::Other { .. } => false,
+         }
+     }
+ }
+@@ -350,6 +344,55 @@ pub(super) fn registry_leg(
+     Ok((leg, solution.into_result()))
+ }
+ 
++/// The leg of a DOPRI5 run that the router drove itself (the break-even route), read from
++/// its record as [`registry_leg`] reads the record of `Dopri5::solve`. `route_id` is the
++/// registry's route of the explicit method for the same request.
++pub(super) fn explicit_leg(
++    native: &ExplicitSolution,
++    route_id: String,
++    span: (f64, f64),
++    attempt_budget: usize,
++) -> UnifiedLeg {
++    let stats = &native.stats;
++    UnifiedLeg {
++        tier: SelectedTier::Tier1Explicit,
++        driver_id: stats.method.to_owned(),
++        route_id,
++        segment_drivers: Vec::new(),
++        t_start: span.0,
++        t_end: native.final_time,
++        target: span.1,
++        success: native.success,
++        attempt_budget,
++        attempts: stats.attempts,
++        accepted_steps: stats.accepted_steps,
++        rejected_steps: stats.rejected_steps,
++        counters: (&stats.counters).into(),
++        stop: (!native.success).then(|| UnifiedStop::Dopri5 {
++            reason: native.stop_reason,
++            callback: native.callback_failure.clone(),
++            message: native.message.clone(),
++        }),
++    }
++}
++
++/// One RODAS5P leg from an accepted pilot and the RODAS5P run that continued from its end
++/// point: the pilot is the leg's first step. Span, attempts, steps and work are those of
++/// both runs; driver, route, success and stop are those of the run that continued.
++pub(super) fn rodas5p_leg_after_pilot(pilot: UnifiedLeg, rest: UnifiedLeg) -> UnifiedLeg {
++    let mut counters = WorkCounters::from(&pilot.counters);
++    counters.accumulate(WorkCounters::from(&rest.counters));
++    UnifiedLeg {
++        t_start: pilot.t_start,
++        attempt_budget: pilot.attempt_budget + rest.attempt_budget,
++        attempts: pilot.attempts + rest.attempts,
++        accepted_steps: pilot.accepted_steps + rest.accepted_steps,
++        rejected_steps: pilot.rejected_steps + rest.rejected_steps,
++        counters: (&counters).into(),
++        ..rest
++    }
++}
++
+ type Callback3 = Arc<dyn Fn(f64, &[f64], &mut [f64]) -> Result<(), CallbackError> + Send + Sync>;
+ type Callback4 =
+     Arc<dyn Fn(f64, &[f64], &[f64], &mut [f64]) -> Result<(), CallbackError> + Send + Sync>;
+diff --git a/crates/vigilode/src/unified/mod.rs b/crates/vigilode/src/unified/mod.rs
+index 3a813eb7..cf6eb14a 100644
+--- a/crates/vigilode/src/unified/mod.rs
++++ b/crates/vigilode/src/unified/mod.rs
+@@ -5,7 +5,7 @@
+ //!
+ //! | [`SelectedTier`] | Entry point | Driver that runs |
+ //! | --- | --- | --- |
+-//! | `Tier1Explicit` | `Dopri5::solve` | Dormand-Prince 5(4), right-hand side only |
++//! | `Tier1Explicit` | `Dopri5::solve`, or its persistent session on the break-even route | Dormand-Prince 5(4), right-hand side only |
+ //! | `TierProtectedReference` | `Rodas5p::solve` | the RODAS5P driver family that the facade selects from the declared structure: dense, banded, matrix-free (GMRES), fast dense with a continuous extension, or sequential dense (mass matrix) |
+ //! | `Tier5AdaptiveSwitching` | `SwitchingSolver::solve` | windows of DOPRI5 and RODAS5P |
+ //!
+@@ -13,23 +13,25 @@
+ //!
+ //! * **Routing by declared facts.** [`PreflightAnalyzer::analyze`] reads the strategy, the
+ //!   declared regime ([`VigilodeOptions::regime`]) and the declared structure of the
+-//!   problem. The method of a regime, the admission of the explicit method and the planned
+-//!   RODAS5P driver family come from the method registry (`MethodRegistry`). The
+-//!   logarithmic norm is not computed and contractivity is not taken for non-stiffness.
+-//! * **A charged stiffness screen** for a problem of dimension at most
+-//!   [`EXPLICIT_TRIAL_MAX_DIMENSION`] that declares nothing ([`StiffnessScreen`]): `n + 1`
+-//!   right-hand-side calls, all in the counters. It can only replace the explicit trial by
++//!   problem, and makes no callback. The method of a regime, the admission of the explicit
++//!   method and the planned RODAS5P driver family come from the method registry
++//!   (`MethodRegistry`). The logarithmic norm is not computed and contractivity is not
++//!   taken for non-stiffness. A supplied Jacobian, Jacobian-vector product or band starts
+ //!   RODAS5P.
+-//! * **A budgeted explicit trial with a fallback.** Without a declaration and without
+-//!   evidence of stiffness, DOPRI5 gets [`FallbackEngine::explicit_trial_attempts`]
+-//!   attempts; if it does not finish for a numerical reason, RODAS5P continues from its
+-//!   last accepted state with the attempts that are left of `Options::max_steps`.
++//! * **Forward break-even pilots** for a request that declares nothing, of any dimension
++//!   ([`RouteBasis::BreakEven`]): DOPRI5 integrates; when it has made `b 2^k` attempts
++//!   ([`break_even_length`] `b`), one RODAS5P attempt from its last accepted state asks
++//!   whether RODAS5P covers in one attempt what DOPRI5 covered in its last `b`. An accepted
++//!   pilot is the first step of a RODAS5P leg to the end time; a lost one leaves DOPRI5
++//!   bit for bit unchanged. Every pilot is charged and recorded ([`PilotRecord`]). After a
++//!   numerical DOPRI5 stop, RODAS5P continues from its last accepted state
++//!   ([`FallbackEngine`]). Legs and pilots share one attempt budget, `Options::max_steps`.
+ //! * **The executed route.** Every executed leg is a [`UnifiedLeg`] whose driver
+ //!   identifier is read from the leg's own run record after it ran;
+ //!   [`VigilodeSolution::route_history`] carries the same identifiers.
+ //! * **Typed stops.** A run that stops early is `Ok` with its accepted prefix, the work of
+-//!   every leg and of the preflight, and [`VigilodeSolution::stop`]: the reason the driver
+-//!   that stopped gave ([`UnifiedStop`]).
++//!   every leg and pilot, and [`VigilodeSolution::stop`]: the reason the driver that
++//!   stopped gave ([`UnifiedStop`]). A fatal callback inside a pilot ends the solve.
+ //!
+ //! What it does not do: it does not batch or vectorize the eight RODAS5P stages, it has no
+ //! exponential integrator, it attaches no Krylov recycling of its own (the matrix-free
+@@ -46,6 +48,7 @@
+ //! exactly as [`SolverStrategy::Auto`].
+ 
+ mod analyzer;
++mod breakeven;
+ mod fallback;
+ mod legs;
+ mod options;
+@@ -53,11 +56,9 @@ mod router;
+ mod solution;
+ mod workspace;
+ 
+-pub use analyzer::{
+-    DOPRI5_REAL_STABILITY_BOUND, EXPLICIT_TRIAL_MAX_DIMENSION, PreflightAnalysis,
+-    PreflightAnalyzer, RouteBasis, SelectedTier, StiffnessScreen,
+-};
+-pub use fallback::{EXPLICIT_TRIAL_ATTEMPT_LIMIT, FallbackEngine};
++pub use analyzer::{PreflightAnalysis, PreflightAnalyzer, RouteBasis, SelectedTier};
++pub use breakeven::{PilotRecord, PilotVerdict, break_even_length};
++pub use fallback::FallbackEngine;
+ pub use legs::{CallbackStop, UnifiedLeg, UnifiedStop};
+ pub use options::{PerformanceProfile, SolverStrategy, VigilodeOptions};
+ pub use router::VigilodeRouter;
+diff --git a/crates/vigilode/src/unified/options.rs b/crates/vigilode/src/unified/options.rs
+index 068b1e6e..4b4a923a 100644
+--- a/crates/vigilode/src/unified/options.rs
++++ b/crates/vigilode/src/unified/options.rs
+@@ -16,8 +16,8 @@ use crate::options::{Atol, InteriorError, Options, Tier};
+ pub enum SolverStrategy {
+     /// Route by declared facts ([`super::PreflightAnalyzer::analyze`] lists the rules):
+     /// the declared regime, what the explicit method admits, a supplied derivative or
+-    /// band, the dimension, and for a small problem without any declaration a charged
+-    /// stiffness screen followed by a budgeted explicit trial.
++    /// band; without any declaration DOPRI5 with forward break-even pilots of RODAS5P
++    /// ([`super::RouteBasis::BreakEven`]).
+     #[default]
+     Auto,
+     /// Routes exactly as [`SolverStrategy::Auto`]: no route of this release is faster
+diff --git a/crates/vigilode/src/unified/router.rs b/crates/vigilode/src/unified/router.rs
+index f576de4f..e984a74b 100644
+--- a/crates/vigilode/src/unified/router.rs
++++ b/crates/vigilode/src/unified/router.rs
+@@ -1,17 +1,23 @@
+-//! The router: runs the entry point that the preflight analysis names and, after an
+-//! explicit trial that stops for a numerical reason, RODAS5P from the last accepted state.
++//! The router: runs the entry point that the preflight analysis names; for a request that
++//! declares nothing, the break-even route (DOPRI5 with forward break-even pilots, then
++//! RODAS5P after an accepted pilot or a numerical DOPRI5 stop).
+ //!
+-//! It has three entry points and no driver of its own: `Dopri5::solve` and
+-//! `Rodas5p::solve` through the method registry, and `SwitchingSolver::solve`. What a
+-//! solution reports is read from the run record of the driver that ran.
++//! It has three entry points and no driver of its own: `Dopri5::solve` (or its persistent
++//! session, on the break-even route) and `Rodas5p::solve` through the method registry, and
++//! `SwitchingSolver::solve`. What a solution reports is read from the run record of the
++//! driver that ran.
+ 
+ use std::time::Instant;
+ 
+ use rodas5p_core::WorkCounters;
++use rodas5p_integrators::Dopri5StopReason;
+ 
+-use super::analyzer::{PreflightAnalysis, PreflightAnalyzer, SelectedTier, method_id};
++use super::analyzer::{PreflightAnalysis, PreflightAnalyzer, RouteBasis, SelectedTier, method_id};
++use super::breakeven::{self, BreakEvenRun, Ending, PilotRecord};
+ use super::fallback::FallbackEngine;
+-use super::legs::{UnifiedLeg, UnifiedStop, registry_leg, switching_leg};
++use super::legs::{
++    UnifiedLeg, UnifiedStop, explicit_leg, registry_leg, rodas5p_leg_after_pilot, switching_leg,
++};
+ use super::options::VigilodeOptions;
+ use super::solution::{RouteTransitionRecord, VigilodeSolution};
+ use super::workspace::VigilodeWorkspace;
+@@ -31,12 +37,12 @@ impl VigilodeRouter {
+     ///
+     /// `Err` means that nothing was integrated: malformed input, or a request that the
+     /// first entry point refused. Every run that started is `Ok`; if it stopped early it
+-    /// carries its accepted prefix, the work of every leg and of the preflight, and the
+-    /// typed stop ([`VigilodeSolution::stop`]).
++    /// carries its accepted prefix, the work of every leg and pilot, and the typed stop
++    /// ([`VigilodeSolution::stop`]).
+     ///
+-    /// The legs share one attempt budget, `Options::max_steps`: an explicit trial gets
+-    /// [`FallbackEngine::explicit_trial_attempts`] of it and the RODAS5P leg after it
+-    /// what is left. A leg that a fatal callback ended is not followed by another one.
++    /// The legs and the pilots share one attempt budget, `Options::max_steps`: a RODAS5P
++    /// leg after DOPRI5 gets what is left of it. A leg or a pilot that a fatal callback
++    /// ended is not followed by another one.
+     pub fn solve_with_workspace(
+         problem: &Problem,
+         span: (f64, f64),
+@@ -48,9 +54,6 @@ impl VigilodeRouter {
+         let analysis = PreflightAnalyzer::analyze(problem, span, y0, opts)?;
+         ws.reset(y0);
+         ws.checkpoint(span.0, y0);
+-        // the callbacks of the analysis are work of this solve
+-        ws.work_counters.rhs_calls += analysis.rhs_calls;
+-        ws.work_counters.rhs_evaluations += analysis.rhs_calls;
+ 
+         let run = Run {
+             problem,
+@@ -62,16 +65,21 @@ impl VigilodeRouter {
+             analysis,
+             legs: Vec::new(),
+             history: Vec::new(),
++            pilots: Vec::new(),
++            spare_attempts: 0,
++            spare_accepted: 0,
++            spare_rejected: 0,
++            pilot_stop: None,
+             refusal: None,
+             implicit: None,
+             explicit: None,
+             switching: None,
+         };
+-        if run.analysis.callback_failure.is_some() {
+-            return Ok(run.finish());
+-        }
+         match run.analysis.suggested_tier {
+-            SelectedTier::Tier1Explicit => run.explicit_then_fallback(),
++            SelectedTier::Tier1Explicit => match run.analysis.basis {
++                RouteBasis::BreakEven { .. } => run.break_even(),
++                _ => run.explicit(),
++            },
+             SelectedTier::TierProtectedReference => {
+                 let reason = run.analysis.basis.describe();
+                 let budget = run.analysis.first_leg_attempts;
+@@ -93,6 +101,15 @@ struct Run<'a> {
+     analysis: PreflightAnalysis,
+     legs: Vec<UnifiedLeg>,
+     history: Vec<RouteTransitionRecord>,
++    /// Every pilot of the break-even route.
++    pilots: Vec<PilotRecord>,
++    /// Attempts, accepted steps and rejected attempts of the pilots that are not the first
++    /// step of a leg (lost, refused and fatal pilots); their work is in the counters.
++    spare_attempts: usize,
++    spare_accepted: usize,
++    spare_rejected: usize,
++    /// The stop of a pilot that a fatal callback ended (owner decision D1).
++    pilot_stop: Option<UnifiedStop>,
+     /// The entry point of a further leg that refused its input, with its message.
+     refusal: Option<(SelectedTier, String)>,
+     implicit: Option<Solution>,
+@@ -107,8 +124,9 @@ impl Run<'_> {
+         options
+     }
+ 
++    /// Attempts of every leg and of every pilot that is not part of a leg.
+     fn used_attempts(&self) -> usize {
+-        self.legs.iter().map(|leg| leg.attempts).sum()
++        self.legs.iter().map(|leg| leg.attempts).sum::<usize>() + self.spare_attempts
+     }
+ 
+     /// Record an executed leg: its history entry, its work and its end point.
+@@ -130,61 +148,197 @@ impl Run<'_> {
+         self.legs.push(leg);
+     }
+ 
+-    /// The explicit leg and, when the analysis planned it and the stop allows it, RODAS5P
+-    /// from the last accepted state with the attempts that are left.
+-    fn explicit_then_fallback(mut self) -> Result<VigilodeSolution, SolveError> {
+-        let total = self.opts.options.max_steps;
++    /// The declared-nonstiff route: DOPRI5 with the whole attempt budget and no second
++    /// method.
++    fn explicit(mut self) -> Result<VigilodeSolution, SolveError> {
+         let options = self.leg_options(self.analysis.first_leg_attempts);
+-        let executed = registry_leg(
++        let (leg, native) = match registry_leg(
+             self.problem,
+             SelectedTier::Tier1Explicit,
+             method_id(ProblemRegime::Nonstiff),
+             self.span,
+             self.y0,
+             &options,
+-        );
+-        let (leg, native) = match executed {
+-            Ok((leg, MethodResult::Explicit(native))) => (leg, native),
+-            Ok(_) => {
++        )? {
++            (leg, MethodResult::Explicit(native)) => (leg, native),
++            _ => {
+                 return Err(SolveError::Driver(
+                     "the registry returned no DOPRI5 result for its explicit method".into(),
+                 ));
+             }
++        };
++        let end_state = if native.final_state.is_empty() {
++            self.y0.to_vec()
++        } else {
++            native.final_state.clone()
++        };
++        let reason = self.analysis.basis.describe();
++        self.record(leg, &end_state, reason);
++        self.explicit = Some(native);
++        Ok(self.finish())
++    }
++
++    /// The break-even route: DOPRI5 with forward break-even pilots, then RODAS5P after an
++    /// accepted pilot or a numerical DOPRI5 stop, all under one attempt budget.
++    fn break_even(mut self) -> Result<VigilodeSolution, SolveError> {
++        let total = self.opts.options.max_steps;
++        let options = self.leg_options(total);
++        let run = match breakeven::run(self.problem, self.span, self.y0, &options) {
++            Ok(run) => run,
+             // nothing was integrated
+-            Err(error) if self.analysis.fallback_to_rodas5p => {
++            Err(error) => {
+                 self.ws.work_counters.fallback_steps += 1;
+-                let reason = format!("Dopri5::solve refused before integrating: {error}");
++                let reason = format!("the DOPRI5 session refused before integrating: {error}");
+                 let (start, state) = (self.span.0, self.y0.to_vec());
+                 return self.rodas5p(start, state, total, reason);
+             }
+-            Err(error) => return Err(error),
+         };
+-        let checkpoint_time = native.final_time;
+-        let checkpoint = if native.final_state.is_empty() {
++        let BreakEvenRun {
++            b,
++            explicit,
++            pilots,
++            spare_work,
++            spare_attempts,
++            spare_accepted,
++            spare_rejected,
++            ending,
++        } = run;
++        self.pilots = pilots;
++        self.ws.work_counters.accumulate(spare_work);
++        self.spare_attempts = spare_attempts;
++        self.spare_accepted = spare_accepted;
++        self.spare_rejected = spare_rejected;
++
++        let route_id = self
++            .analysis
++            .planned_route
++            .map_or_else(|| method_id(ProblemRegime::Nonstiff).to_owned(), |r| r.id());
++        let mut leg = explicit_leg(&explicit, route_id, self.span, total);
++        let checkpoint_time = explicit.final_time;
++        let checkpoint = if explicit.final_state.is_empty() {
+             self.y0.to_vec()
+         } else {
+-            native.final_state.clone()
++            explicit.final_state.clone()
+         };
+-        let follow = !leg.success
+-            && self.analysis.fallback_to_rodas5p
+-            && FallbackEngine::follows_explicit_stop(
+-                native.stop_reason,
+-                native.callback_failure.is_some(),
+-            );
+-        let stop_text = native.message.clone();
++        let (stop_reason, callback_failed) =
++            (explicit.stop_reason, explicit.callback_failure.is_some());
++        let stop_text = explicit.message.clone();
++        match &ending {
++            Ending::Budget => {
++                leg.stop = Some(UnifiedStop::Dopri5 {
++                    reason: Some(Dopri5StopReason::AttemptBudget),
++                    callback: None,
++                    message: format!(
++                        "the attempt budget of the solve ({total}) is used up: {} DOPRI5 \
++                         attempts and {spare_attempts} pilot attempts",
++                        leg.attempts
++                    ),
++                });
++            }
++            Ending::Session(message) => {
++                leg.stop = Some(UnifiedStop::Other {
++                    message: message.clone(),
++                });
++            }
++            Ending::Dopri5 | Ending::Handover(_) | Ending::Fatal(_) => {}
++        }
+         let reason = self.analysis.basis.describe();
+         self.record(leg, &checkpoint, reason);
+-        self.explicit = Some(native);
+-        let remaining = FallbackEngine::remaining_attempts(total, self.used_attempts());
+-        if !follow || remaining == 0 {
+-            return Ok(self.finish());
++        self.explicit = Some(explicit);
++
++        match ending {
++            Ending::Dopri5 => {
++                let remaining = FallbackEngine::remaining_attempts(total, self.used_attempts());
++                let follow = !self.legs[0].success
++                    && FallbackEngine::follows_explicit_stop(stop_reason, callback_failed);
++                if !follow || remaining == 0 {
++                    return Ok(self.finish());
++                }
++                self.ws.work_counters.fallback_steps += 1;
++                let reason = format!(
++                    "DOPRI5 stopped at t = {checkpoint_time:e} ({stop_text}); RODAS5P continues \
++                     from that state with the {remaining} attempts left of {total}"
++                );
++                self.rodas5p(checkpoint_time, checkpoint, remaining, reason)
++            }
++            Ending::Handover(handover) => {
++                let (pilot_leg, pilot) = *handover;
++                self.handover(b, pilot_leg, pilot)
++            }
++            Ending::Fatal(stop) => {
++                self.pilot_stop = Some(stop);
++                Ok(self.finish())
++            }
++            Ending::Budget | Ending::Session(_) => Ok(self.finish()),
+         }
++    }
++
++    /// RODAS5P after an accepted pilot: the pilot is the first step of the RODAS5P leg, and
++    /// RODAS5P continues from its end point with `h0 = H` and the attempts left.
++    fn handover(
++        mut self,
++        b: usize,
++        pilot_leg: UnifiedLeg,
++        pilot: Solution,
++    ) -> Result<VigilodeSolution, SolveError> {
+         self.ws.work_counters.fallback_steps += 1;
++        let total = self.opts.options.max_steps;
++        let record = self.pilots.last().cloned();
++        let (t_d, h) = record
++            .as_ref()
++            .map_or((pilot_leg.t_start, 0.0), |r| (r.t, r.h));
++        let window = record.as_ref().map_or_else(String::new, |r| {
++            format!(
++                "window {} callbacks and {} operations, pilot {} callbacks and {} operations",
++                r.window_callbacks, r.window_operations, r.pilot_callbacks, r.pilot_operations
++            )
++        });
++        let t_pilot = pilot_leg.t_end;
++        let state = pilot.final_state().map_or_else(Vec::new, <[f64]>::to_vec);
++        // the pilot's attempt is charged with the leg it begins
++        let remaining =
++            FallbackEngine::remaining_attempts(total, self.used_attempts() + pilot_leg.attempts);
+         let reason = format!(
+-            "DOPRI5 stopped at t = {checkpoint_time:e} ({stop_text}); RODAS5P continues from \
+-             that state with the {remaining} attempts left of {total}"
++            "handover at t = {t_d:e}: one RODAS5P attempt from DOPRI5's accepted state advanced \
++             H = {h:e}, the length DOPRI5 advanced in its last {b} attempts ({window}); \
++             RODAS5P continues from t = {t_pilot:e} with h0 = H and the {remaining} attempts \
++             left of {total}"
+         );
+-        self.rodas5p(checkpoint_time, checkpoint, remaining, reason)
++        if remaining == 0 || state.is_empty() {
++            self.record(pilot_leg, &state, reason);
++            self.implicit = Some(pilot);
++            return Ok(self.finish());
++        }
++        let options = {
++            let mut options = self.leg_options(remaining);
++            options.h0 = h;
++            options
++        };
++        match registry_leg(
++            self.problem,
++            SelectedTier::TierProtectedReference,
++            method_id(ProblemRegime::Stiff),
++            (t_pilot, self.span.1),
++            &state,
++            &options,
++        ) {
++            Ok((rest, MethodResult::Rodas5p(native))) => {
++                let end_state = native.final_state().map_or(state, <[f64]>::to_vec);
++                self.record(rodas5p_leg_after_pilot(pilot_leg, rest), &end_state, reason);
++                self.implicit = Some(native);
++                Ok(self.finish())
++            }
++            Ok(_) => Err(SolveError::Driver(
++                "the registry returned no RODAS5P result for its stiff method".into(),
++            )),
++            // a prefix exists: keep it and the pilot's step, with the refusal
++            Err(error) => {
++                self.record(pilot_leg, &state, reason);
++                self.implicit = Some(pilot);
++                self.refusal = Some((SelectedTier::TierProtectedReference, error.to_string()));
++                Ok(self.finish())
++            }
++        }
+     }
+ 
+     /// A RODAS5P leg from `(t, y)` with `attempts` attempts.
+@@ -246,23 +400,35 @@ impl Run<'_> {
+         }
+     }
+ 
+-    /// Build the solution from the executed legs.
++    /// Build the solution from the executed legs and pilots.
+     fn finish(self) -> VigilodeSolution {
+         let dimension = self.y0.len();
+         let final_time = self.ws.checkpoint_time;
+         let final_state = self.ws.y_checkpoint[..dimension].to_vec();
+         let total = self.opts.options.max_steps;
+         let attempts = self.used_attempts();
+-        let accepted_steps: usize = self.legs.iter().map(|leg| leg.accepted_steps).sum();
+-        let rejected_steps: usize = self.legs.iter().map(|leg| leg.rejected_steps).sum();
++        let accepted_steps: usize = self
++            .legs
++            .iter()
++            .map(|leg| leg.accepted_steps)
++            .sum::<usize>()
++            + self.spare_accepted;
++        let rejected_steps: usize = self
++            .legs
++            .iter()
++            .map(|leg| leg.rejected_steps)
++            .sum::<usize>()
++            + self.spare_rejected;
+ 
+         let last = self.legs.last();
+-        let success = self.refusal.is_none() && last.is_some_and(|leg| leg.success);
++        let success = self.refusal.is_none()
++            && self.pilot_stop.is_none()
++            && last.is_some_and(|leg| leg.success);
+         let last_stop = last.and_then(|leg| leg.stop.clone());
+         let stop = if success {
+             None
+-        } else if let Some(callback) = self.analysis.callback_failure.clone() {
+-            Some(UnifiedStop::Preflight { callback })
++        } else if let Some(stop) = self.pilot_stop.clone() {
++            Some(stop)
+         } else if let Some((tier, error)) = self.refusal.clone() {
+             Some(UnifiedStop::Refused {
+                 tier,
+@@ -304,11 +470,7 @@ impl Run<'_> {
+                         native.schema,
+                         native.message.clone(),
+                     ),
+-                    (None, None) => (
+-                        "none",
+-                        "none",
+-                        "stopped in the preflight analysis; no driver ran".to_owned(),
+-                    ),
++                    (None, None) => ("none", "none", "no driver ran".to_owned()),
+                 };
+                 stats.route = RouteRecord {
+                     entry_point,
+@@ -354,6 +516,7 @@ impl Run<'_> {
+             elapsed_nanos: self.started.elapsed().as_nanos(),
+             stop,
+             legs: self.legs,
++            pilots: self.pilots,
+             analysis: self.analysis,
+             inner_solution: self.implicit,
+             explicit_solution: self.explicit,
+diff --git a/crates/vigilode/src/unified/solution.rs b/crates/vigilode/src/unified/solution.rs
+index 72026e42..66ad3895 100644
+--- a/crates/vigilode/src/unified/solution.rs
++++ b/crates/vigilode/src/unified/solution.rs
+@@ -4,12 +4,15 @@
+ use serde::{Deserialize, Serialize};
+ 
+ use super::analyzer::PreflightAnalysis;
++use super::breakeven::PilotRecord;
+ use super::legs::{UnifiedLeg, UnifiedStop};
+ use crate::explicit::ExplicitSolution;
+ use crate::solution::{Solution, Stats, Status};
+ use crate::switching::SwitchingSolution;
+ 
+-/// One executed leg in the route history, written after the leg ran.
++/// One executed leg in the route history, written after the leg ran. On the break-even
++/// route the entry of the RODAS5P leg after an accepted pilot is the handover: its `time` is
++/// the pilot's start `t_D`, and its `reason` states `H`, the window and the pilot costs.
+ #[derive(Clone, Debug, Serialize, Deserialize)]
+ pub struct RouteTransitionRecord {
+     /// Driver identifier of the leg before this one; `preflight` for the first leg.
+@@ -19,7 +22,8 @@ pub struct RouteTransitionRecord {
+     pub to_tier: String,
+     /// Start time of the leg.
+     pub time: f64,
+-    /// Why the leg was started: the basis of the analysis, or the stop of the leg before.
++    /// Why the leg was started: the basis of the analysis, the stop of the leg before, or
++    /// the handover after an accepted pilot.
+     pub reason: String,
+     /// Accepted steps of the legs before this one.
+     pub step_index: usize,
+@@ -43,13 +47,14 @@ pub struct VigilodeSolution {
+     pub final_state: Vec<f64>,
+     /// The record of the whole solve in the facade's `Stats` type: the span and the
+     /// initial state of the solve; `counters`, `attempts`, `accepted_steps` and
+-    /// `rejected_steps` summed over the preflight and every leg; `route` naming the driver
++    /// `rejected_steps` summed over every leg and every pilot; `route` naming the driver
+     /// of the last leg. When the last leg is RODAS5P, the driver-specific fields
+     /// (`driver_work`, `driver_counters`, `adaptive`, `stop`, `driver_message`) are those
+     /// of that leg; otherwise they are the empty placeholders of the type, and the
+     /// driver's own record is in [`VigilodeSolution::explicit_solution`] or
+     /// [`VigilodeSolution::switching_solution`]. `counters.fallback_steps` counts the
+-    /// RODAS5P legs that were started because another route did not finish.
++    /// RODAS5P legs that were started because another route did not finish or after an
++    /// accepted pilot.
+     pub stats: Stats,
+     /// One record per executed leg, in order.
+     pub route_history: Vec<RouteTransitionRecord>,
+@@ -63,12 +68,19 @@ pub struct VigilodeSolution {
+     /// Why the solve stopped before the end time, as the driver that stopped reported it;
+     /// `None` after a success.
+     pub stop: Option<UnifiedStop>,
+-    /// Every executed leg in order, with its driver, its span, its work and its stop.
++    /// Every executed leg in order, with its driver, its span, its work and its stop. After
++    /// a handover the RODAS5P leg starts with the accepted pilot: its span, attempts, steps
++    /// and work include the pilot's step.
+     pub legs: Vec<UnifiedLeg>,
+-    /// The preflight analysis: the first entry point, why, and what the analysis cost.
++    /// Every pilot of the break-even route in order (empty on the other routes). The work
++    /// of the pilots that are not the first step of a leg is in `stats.counters` and
++    /// `stats.attempts`, not in a leg.
++    pub pilots: Vec<PilotRecord>,
++    /// The preflight analysis: the first entry point and why.
+     pub analysis: PreflightAnalysis,
+-    /// The solution of the RODAS5P leg, unchanged from `Rodas5p::solve`. It covers that
+-    /// leg only: after an explicit trial it starts where the trial stopped.
++    /// The solution of the last RODAS5P run, unchanged from `Rodas5p::solve`. It covers that
++    /// run only: after DOPRI5 it starts where DOPRI5 stopped, after a handover where the
++    /// accepted pilot ended.
+     #[serde(skip)]
+     pub inner_solution: Option<Solution>,
+     /// The solution of the DOPRI5 leg, unchanged from `Dopri5::solve`.
+diff --git a/crates/vigilode/src/unified/workspace.rs b/crates/vigilode/src/unified/workspace.rs
+index 4369e53e..d44e829f 100644
+--- a/crates/vigilode/src/unified/workspace.rs
++++ b/crates/vigilode/src/unified/workspace.rs
+@@ -26,7 +26,7 @@ pub struct VigilodeWorkspace {
+     pub stage_scratch: Vec<f64>,
+     /// Time of the checkpoint.
+     pub checkpoint_time: f64,
+-    /// The work of the solve so far: the preflight and every leg.
++    /// The work of the solve so far: every leg and every pilot.
+     pub work_counters: WorkCounters,
+ }
+ 
+diff --git a/crates/vigilode/tests/unified_breakeven_contracts.rs b/crates/vigilode/tests/unified_breakeven_contracts.rs
+new file mode 100644
+index 00000000..c69103eb
+--- /dev/null
++++ b/crates/vigilode/tests/unified_breakeven_contracts.rs
+@@ -0,0 +1,1156 @@
++//! Contract tests of the forward break-even pilots (FBP) of the unified router: research
++//! loop L1, node V27_ROUTER_HYPERPARAMETER_FREE, phase 1, owner decision OD-L1-22. The
++//! design is `research/production_loop_20261116/router_hyperparameter_free/DESIGN_RECOMMENDED.md`
++//! (sections 3 and 4) and the problems are those of `PREDECLARED.json` in that directory.
++//!
++//! Part 1 holds the failing-first tests of `PREDECLARED.json` (`order_of_work`, phase 1).
++//! They use only names that exist both in the API of the base commit `1ffbda20` and in the
++//! API of this node, and were run against the base sources first
++//! (`router_hyperparameter_free/logs/failing_first_base.log`).
++//!
++//! Every test prints one `V27_RECORD {json}` line with the numbers it measured before it
++//! asserts.
++
++use std::sync::Arc;
++use std::sync::atomic::{AtomicU64, Ordering};
++
++use serde_json::{Value, json};
++use vigilode::prelude::*;
++
++// ---------------------------------------------------------------------------- records
++
++fn record(test: &str, fields: Value) {
++    println!("V27_RECORD {}", json!({ "test": test, "fields": fields }));
++}
++
++/// Callback entries counted inside the user closures.
++#[derive(Clone, Default)]
++struct Calls {
++    rhs: Arc<AtomicU64>,
++    fatal: Arc<AtomicU64>,
++}
++
++impl Calls {
++    fn rhs(&self) -> u64 {
++        self.rhs.load(Ordering::Relaxed)
++    }
++    fn fatal(&self) -> u64 {
++        self.fatal.load(Ordering::Relaxed)
++    }
++}
++
++fn bits(state: &[f64]) -> Vec<u64> {
++    state.iter().map(|v| v.to_bits()).collect()
++}
++
++fn has_rodas5p_leg(solution: &VigilodeSolution) -> bool {
++    solution
++        .legs
++        .iter()
++        .any(|leg| leg.tier == SelectedTier::TierProtectedReference)
++}
++
++fn leg_summary(solution: &VigilodeSolution) -> Value {
++    solution
++        .legs
++        .iter()
++        .map(|leg| {
++            json!({
++                "tier": format!("{:?}", leg.tier),
++                "driver": leg.driver_id,
++                "t_start": leg.t_start,
++                "t_end": leg.t_end,
++                "attempts": leg.attempts,
++                "rhs_calls": leg.counters.rhs_calls,
++                "success": leg.success,
++            })
++        })
++        .collect()
++}
++
++// ------------------------------------------------------------------------------ costs
++
++/// Break-even length of DESIGN_RECOMMENDED.md 3.2, `ceil((2 n^2 + 54 n + 384) / 156)`,
++/// restated here so that the tests do not depend on the implementation.
++fn break_even(n: u64) -> u64 {
++    (2 * n * n + 54 * n + 384).div_ceil(156)
++}
++
++/// Three times the operation count of `PREDECLARED.json` (`measures`): 52 n per DOPRI5
++/// attempt, 128 n per RODAS5P attempt, 2 n^3 / 3 per factorization, 2 n^2 per solve pair
++/// and per finite-difference build. Integers throughout.
++fn ops3(
++    n: u64,
++    dopri5_attempts: u64,
++    rodas5p_attempts: u64,
++    factorizations: u64,
++    solves: u64,
++    builds: u64,
++) -> u128 {
++    let n = u128::from(n);
++    156 * n * u128::from(dopri5_attempts)
++        + 384 * n * u128::from(rodas5p_attempts)
++        + 2 * n.pow(3) * u128::from(factorizations)
++        + 6 * n * n * (u128::from(solves) + u128::from(builds))
++}
++
++/// Charged callbacks and operations of a run, with its attempts by method.
++#[derive(Clone, Copy, Debug)]
++struct Cost {
++    callbacks: u64,
++    ops3: u128,
++    dopri5_attempts: u64,
++    rodas5p_attempts: u64,
++}
++
++impl Cost {
++    fn json(&self) -> Value {
++        json!({
++            "callbacks": self.callbacks,
++            "operations": (self.ops3 as f64) / 3.0,
++            "dopri5_attempts": self.dopri5_attempts,
++            "rodas5p_attempts": self.rodas5p_attempts,
++        })
++    }
++}
++
++/// The cost of a unified solve: DOPRI5 attempts are those of its DOPRI5 legs, every other
++/// attempt of the solve (RODAS5P legs and pilots) is a RODAS5P attempt.
++fn unified_cost(n: usize, solution: &VigilodeSolution) -> Cost {
++    let dopri5_attempts: u64 = solution
++        .legs
++        .iter()
++        .filter(|leg| leg.tier == SelectedTier::Tier1Explicit)
++        .map(|leg| leg.attempts as u64)
++        .sum();
++    let rodas5p_attempts = (solution.stats.attempts as u64).saturating_sub(dopri5_attempts);
++    let c = &solution.stats.counters;
++    Cost {
++        callbacks: c.rhs_calls + c.ft_calls + c.jvp_calls,
++        ops3: ops3(
++            n as u64,
++            dopri5_attempts,
++            rodas5p_attempts,
++            c.direct_factorizations,
++            c.linear_solves,
++            c.jacobian_builds,
++        ),
++        dopri5_attempts,
++        rodas5p_attempts,
++    }
++}
++
++fn dopri5_cost(n: usize, solution: &ExplicitSolution) -> Cost {
++    let attempts = solution.stats.attempts as u64;
++    Cost {
++        callbacks: solution.stats.counters.rhs_calls,
++        ops3: ops3(n as u64, attempts, 0, 0, 0, 0),
++        dopri5_attempts: attempts,
++        rodas5p_attempts: 0,
++    }
++}
++
++fn rodas5p_cost(n: usize, solution: &Solution) -> Cost {
++    let c = &solution.stats.counters;
++    let attempts = solution.stats.attempts as u64;
++    Cost {
++        callbacks: c.rhs_calls + c.ft_calls + c.jvp_calls,
++        ops3: ops3(
++            n as u64,
++            0,
++            attempts,
++            c.direct_factorizations,
++            c.linear_solves,
++            c.jacobian_builds,
++        ),
++        dopri5_attempts: 0,
++        rodas5p_attempts: attempts,
++    }
++}
++
++/// Largest number of pilots after `dopri5_attempts` DOPRI5 attempts:
++/// `1 + floor(log2(A_D / b))` when `A_D >= b`, else 0 (pilot k needs `A_D >= b 2^k`).
++fn max_pilots(dopri5_attempts: u64, b: u64) -> u64 {
++    let ratio = dopri5_attempts / b;
++    if ratio == 0 {
++        0
++    } else {
++        1 + u64::from(63 - ratio.leading_zeros())
++    }
++}
++
++// --------------------------------------------------------------------------- problems
++
++/// F2: `y' = -y` whose right-hand side fails fatally whenever `y > 1`.
++fn f2(calls: &Calls) -> Problem {
++    let (rhs, fatal) = (calls.rhs.clone(), calls.fatal.clone());
++    Problem::new(1, move |_t, y: &[f64], dy: &mut [f64]| {
++        rhs.fetch_add(1, Ordering::Relaxed);
++        if y[0] > 1.0 {
++            fatal.fetch_add(1, Ordering::Relaxed);
++            return Err(CallbackError::Fatal("F2: the state left [0, 1]".into()));
++        }
++        dy[0] = -y[0];
++        Ok(())
++    })
++    .autonomous()
++}
++
++/// Lorenz-96 with forcing 8: `y_i' = (y_{i+1} - y_{i-2}) y_{i-1} - y_i + 8`, cyclic.
++fn lorenz96(n: usize, calls: &Calls) -> Problem {
++    let rhs = calls.rhs.clone();
++    Problem::new(n, move |_t, y: &[f64], dy: &mut [f64]| {
++        rhs.fetch_add(1, Ordering::Relaxed);
++        for i in 0..n {
++            dy[i] = (y[(i + 1) % n] - y[(i + n - 2) % n]) * y[(i + n - 1) % n] - y[i] + 8.0;
++        }
++        Ok::<(), CallbackError>(())
++    })
++    .autonomous()
++}
++
++fn lorenz96_y0(n: usize) -> Vec<f64> {
++    let mut y0 = vec![8.0; n];
++    y0[19] += 0.01;
++    y0
++}
++
++fn robertson_fd(calls: &Calls) -> Problem {
++    let rhs = calls.rhs.clone();
++    Problem::new(3, move |_t, y: &[f64], dy: &mut [f64]| {
++        rhs.fetch_add(1, Ordering::Relaxed);
++        dy[0] = -0.04 * y[0] + 1.0e4 * y[1] * y[2];
++        dy[1] = 0.04 * y[0] - 1.0e4 * y[1] * y[2] - 3.0e7 * y[1] * y[1];
++        dy[2] = 3.0e7 * y[1] * y[1];
++        Ok::<(), CallbackError>(())
++    })
++    .autonomous()
++}
++
++fn oscillator(calls: &Calls) -> Problem {
++    let rhs = calls.rhs.clone();
++    Problem::new(2, move |_t, y: &[f64], dy: &mut [f64]| {
++        rhs.fetch_add(1, Ordering::Relaxed);
++        dy[0] = y[1];
++        dy[1] = -y[0];
++        Ok::<(), CallbackError>(())
++    })
++    .autonomous()
++}
++
++/// The Arenstorf orbit (restricted three-body problem), first-order form.
++fn arenstorf(calls: &Calls) -> Problem {
++    let rhs = calls.rhs.clone();
++    let mu = 0.012277471;
++    let mup = 1.0 - mu;
++    Problem::new(4, move |_t, y: &[f64], dy: &mut [f64]| {
++        rhs.fetch_add(1, Ordering::Relaxed);
++        let d1 = ((y[0] + mu).powi(2) + y[1] * y[1]).powf(1.5);
++        let d2 = ((y[0] - mup).powi(2) + y[1] * y[1]).powf(1.5);
++        dy[0] = y[2];
++        dy[1] = y[3];
++        dy[2] = y[0] + 2.0 * y[3] - mup * (y[0] + mu) / d1 - mu * (y[0] - mup) / d2;
++        dy[3] = y[1] - 2.0 * y[2] - mup * y[1] / d1 - mu * y[1] / d2;
++        Ok::<(), CallbackError>(())
++    })
++    .autonomous()
++}
++
++/// `y0` and one period of the orbit; the f64 values nearest to
++/// -2.00158510637908252240537862224 and 17.0652165601579625588917206249.
++const ARENSTORF_Y0: [f64; 4] = [0.994, 0.0, 0.0, -2.001_585_106_379_082_4];
++const ARENSTORF_PERIOD: f64 = 17.065_216_560_157_964;
++
++// ======================================================================================
++// Part 1: failing-first tests (public API of the base commit and of this node)
++// ======================================================================================
++
++#[test]
++fn f2_fatal_above_one_completes_under_auto() {
++    let test = "f2_fatal_above_one_completes_under_auto";
++    let span = (0.0, 1.0);
++    let direct_calls = Calls::default();
++    let direct = Dopri5::solve(&f2(&direct_calls), span, &[1.0], &Options::default())
++        .expect("direct DOPRI5 call");
++    let calls = Calls::default();
++    let solved = VigilODE::solve(&f2(&calls), span, &[1.0], SolverStrategy::Auto);
++    record(
++        test,
++        json!({
++            "outcome": match &solved {
++                Ok(solution) => format!("{:?}", solution.status),
++                Err(error) => format!("Err: {error}"),
++            },
++            "legs": solved.as_ref().map(leg_summary).unwrap_or(Value::Null),
++            "final_time": solved.as_ref().map(|s| s.final_time).ok(),
++            "fatal_entries": calls.fatal(),
++            "rhs_entries": calls.rhs(),
++            "direct": { "success": direct.success, "rhs_entries": direct_calls.rhs(),
++                        "fatal_entries": direct_calls.fatal() },
++        }),
++    );
++    assert!(
++        direct.success,
++        "Dopri5::solve completes F2: {}",
++        direct.message
++    );
++    let solution = solved.expect("F2 is a valid request");
++    assert!(
++        solution.success(),
++        "F2 must complete under Auto as it does under Dopri5::solve, got {:?}",
++        solution.status
++    );
++    assert_eq!(
++        calls.fatal(),
++        0,
++        "a callback was made at a state above 1, off the trajectory"
++    );
++}
++
++#[test]
++fn lorenz96_40_has_no_rodas5p_leg_and_costs_at_most_twice_dopri5() {
++    let test = "lorenz96_40_has_no_rodas5p_leg_and_costs_at_most_twice_dopri5";
++    let n = 40;
++    let span = (0.0, 10.0);
++    let y0 = lorenz96_y0(n);
++    let direct_calls = Calls::default();
++    let direct = Dopri5::solve(&lorenz96(n, &direct_calls), span, &y0, &Options::default())
++        .expect("direct DOPRI5 call");
++    let calls = Calls::default();
++    let unified = VigilODE::solve(&lorenz96(n, &calls), span, &y0, SolverStrategy::Auto)
++        .expect("unified solve");
++    let (cost, reference) = (unified_cost(n, &unified), dopri5_cost(n, &direct));
++    record(
++        test,
++        json!({
++            "legs": leg_summary(&unified),
++            "status": format!("{:?}", unified.status),
++            "unified": cost.json(),
++            "dopri5": reference.json(),
++            "rhs_entries": calls.rhs(),
++            "callback_ratio": cost.callbacks as f64 / reference.callbacks as f64,
++            "operation_ratio": cost.ops3 as f64 / reference.ops3 as f64,
++        }),
++    );
++    assert!(direct.success && unified.success());
++    assert!(
++        !has_rodas5p_leg(&unified),
++        "Lorenz-96 n = 40 is not stiff, yet a RODAS5P leg ran: {}",
++        leg_summary(&unified)
++    );
++    assert!(
++        cost.callbacks <= 2 * reference.callbacks,
++        "{} charged callbacks, more than twice the {} of Dopri5::solve",
++        cost.callbacks,
++        reference.callbacks
++    );
++    assert!(
++        cost.ops3 <= 2 * reference.ops3,
++        "{} operations, more than twice the {} of Dopri5::solve",
++        cost.ops3 as f64 / 3.0,
++        reference.ops3 as f64 / 3.0
++    );
++}
++
++#[test]
++fn robertson_40_charges_at_most_two_direct_rodas5p_plus_window_and_pilots() {
++    let test = "robertson_40_charges_at_most_two_direct_rodas5p_plus_window_and_pilots";
++    let n = 3usize;
++    let span = (0.0, 40.0);
++    let y0 = [1.0, 0.0, 0.0];
++    let direct_calls = Calls::default();
++    let direct = Rodas5p::solve(&robertson_fd(&direct_calls), span, &y0, &Options::default())
++        .expect("direct RODAS5P call");
++    let calls = Calls::default();
++    let unified = VigilODE::solve(&robertson_fd(&calls), span, &y0, SolverStrategy::Auto)
++        .expect("unified solve");
++    let (cost, reference) = (unified_cost(n, &unified), rodas5p_cost(n, &direct));
++    let nn = n as u64;
++    let b = break_even(nn);
++    // one DOPRI5 attempt: 6 callbacks and 52 n operations; one fresh finite-difference
++    // RODAS5P attempt of an autonomous problem: n + 9 callbacks, (2n^3 + 54n^2 + 384n) / 3
++    let pilots = max_pilots(cost.dopri5_attempts, b);
++    let bound_callbacks = 2 * reference.callbacks + 2 * b * 6 + pilots * (nn + 9);
++    let bound_ops3 = 2 * reference.ops3
++        + u128::from(2 * b * 156 * nn)
++        + u128::from(pilots) * u128::from(2 * nn.pow(3) + 54 * nn * nn + 384 * nn);
++    record(
++        test,
++        json!({
++            "legs": leg_summary(&unified),
++            "status": format!("{:?}", unified.status),
++            "unified": cost.json(),
++            "rodas5p": reference.json(),
++            "b": b,
++            "max_pilots": pilots,
++            "bound_callbacks": bound_callbacks,
++            "bound_operations": bound_ops3 as f64 / 3.0,
++            "rhs_entries": calls.rhs(),
++        }),
++    );
++    assert!(direct.is_success() && unified.success());
++    assert!(
++        cost.callbacks <= bound_callbacks,
++        "{} charged callbacks above 2 x {} (direct RODAS5P) + 2 b c_D + {} pilots = {}",
++        cost.callbacks,
++        reference.callbacks,
++        pilots,
++        bound_callbacks
++    );
++    assert!(
++        cost.ops3 <= bound_ops3,
++        "{} operations above the bound {}",
++        cost.ops3 as f64 / 3.0,
++        bound_ops3 as f64 / 3.0
++    );
++}
++
++#[test]
++fn oscillator_1000_has_no_rodas5p_leg() {
++    let test = "oscillator_1000_has_no_rodas5p_leg";
++    let calls = Calls::default();
++    let unified = VigilODE::solve(
++        &oscillator(&calls),
++        (0.0, 1000.0),
++        &[1.0, 0.0],
++        SolverStrategy::Auto,
++    )
++    .expect("unified solve");
++    let cost = unified_cost(2, &unified);
++    record(
++        test,
++        json!({
++            "legs": leg_summary(&unified),
++            "status": format!("{:?}", unified.status),
++            "unified": cost.json(),
++            "final_state_bits": bits(&unified.final_state),
++        }),
++    );
++    assert!(unified.success());
++    assert!(
++        !has_rodas5p_leg(&unified),
++        "the harmonic oscillator is not stiff, yet a RODAS5P leg ran: {}",
++        leg_summary(&unified)
++    );
++}
++
++#[test]
++fn arenstorf_has_no_rodas5p_leg() {
++    let test = "arenstorf_has_no_rodas5p_leg";
++    let calls = Calls::default();
++    let unified = VigilODE::solve(
++        &arenstorf(&calls),
++        (0.0, ARENSTORF_PERIOD),
++        &ARENSTORF_Y0,
++        SolverStrategy::Auto,
++    )
++    .expect("unified solve");
++    let cost = unified_cost(4, &unified);
++    record(
++        test,
++        json!({
++            "legs": leg_summary(&unified),
++            "status": format!("{:?}", unified.status),
++            "unified": cost.json(),
++            "final_state": unified.final_state,
++        }),
++    );
++    assert!(unified.success());
++    assert!(
++        !has_rodas5p_leg(&unified),
++        "the Arenstorf orbit is not stiff, yet a RODAS5P leg ran: {}",
++        leg_summary(&unified)
++    );
++}
++
++// ======================================================================================
++// Part 2: the DOPRI5 session that the break-even route drives
++// ======================================================================================
++
++fn lotka_volterra(calls: &Calls) -> Problem {
++    let rhs = calls.rhs.clone();
++    Problem::new(2, move |_t, y: &[f64], dy: &mut [f64]| {
++        rhs.fetch_add(1, Ordering::Relaxed);
++        dy[0] = 1.5 * y[0] - y[0] * y[1];
++        dy[1] = -3.0 * y[1] + y[0] * y[1];
++        Ok::<(), CallbackError>(())
++    })
++    .autonomous()
++}
++
++/// One DOPRI5 run through the public session with a quota of one attempt per call, as the
++/// break-even route drives it, and the direct `Dopri5::solve` with the same options.
++fn quota_one_and_direct(
++    build: &dyn Fn(&Calls) -> Problem,
++    span: (f64, f64),
++    y0: &[f64],
++    options: &Options,
++) -> (ExplicitSolution, ExplicitSolution, usize, u64, u64) {
++    let direct_calls = Calls::default();
++    let direct = Dopri5::solve(&build(&direct_calls), span, y0, options).expect("direct DOPRI5");
++    let calls = Calls::default();
++    let problem = build(&calls);
++    let (advances, session) = Dopri5::with_session(
++        &problem,
++        span,
++        y0,
++        options,
++        &[span.0, span.1],
++        vigilode::SessionEpochs::default(),
++        |session| {
++            let mut advances = 0usize;
++            loop {
++                let before = session.checkpoint().attempts;
++                let outcome = session
++                    .advance_to(span.1, 1, vigilode::SessionEpochs::default())
++                    .expect("a registered target");
++                advances += 1;
++                assert!(session.checkpoint().attempts <= before + 1, "quota of one");
++                if outcome != vigilode::SessionAdvance::Yield {
++                    break advances;
++                }
++            }
++        },
++    )
++    .expect("session run");
++    (session, direct, advances, calls.rhs(), direct_calls.rhs())
++}
++
++#[test]
++fn session_quota_one_advances_keep_the_bits_and_counters_of_dopri5_solve() {
++    let test = "session_quota_one_advances_keep_the_bits_and_counters_of_dopri5_solve";
++    type Case = (
++        &'static str,
++        Box<dyn Fn(&Calls) -> Problem>,
++        (f64, f64),
++        Vec<f64>,
++        usize,
++    );
++    let cases: Vec<Case> = vec![
++        (
++            "oscillator",
++            Box::new(oscillator),
++            (0.0, 10.0),
++            vec![1.0, 0.0],
++            100_000,
++        ),
++        (
++            "lotka-volterra",
++            Box::new(lotka_volterra),
++            (0.0, 100.0),
++            vec![1.0, 1.0],
++            100_000,
++        ),
++        ("f2", Box::new(f2), (0.0, 1.0), vec![1.0], 100_000),
++        // the session's own attempt budget ends the run
++        (
++            "robertson-budget-300",
++            Box::new(robertson_fd),
++            (0.0, 40.0),
++            vec![1.0, 0.0, 0.0],
++            300,
++        ),
++    ];
++    let mut rows = Vec::new();
++    for (name, build, span, y0, max_steps) in &cases {
++        let options = Options {
++            max_steps: *max_steps,
++            ..Options::default()
++        };
++        let (session, direct, advances, entries, direct_entries) =
++            quota_one_and_direct(&**build, *span, y0, &options);
++        let equal_stats = serde_json::to_value(&session.stats).unwrap()
++            == serde_json::to_value(&direct.stats).unwrap();
++        rows.push(json!({
++            "case": name, "advances": advances, "attempts": session.stats.attempts,
++            "direct_attempts": direct.stats.attempts, "success": session.success,
++            "stop_reason": format!("{:?}", session.stop_reason),
++            "final_state_bits_equal": bits(&session.final_state) == bits(&direct.final_state),
++            "stats_equal": equal_stats, "rhs_entries": [entries, direct_entries],
++        }));
++        assert_eq!(session.success, direct.success, "{name}");
++        assert_eq!(session.stop_reason, direct.stop_reason, "{name}");
++        assert_eq!(
++            session.final_time.to_bits(),
++            direct.final_time.to_bits(),
++            "{name}"
++        );
++        assert_eq!(
++            bits(&session.final_state),
++            bits(&direct.final_state),
++            "{name}"
++        );
++        assert!(equal_stats, "{name}: the work record differs");
++        assert_eq!(entries, direct_entries, "{name}: callback entries differ");
++    }
++    record(test, json!({ "cases": rows }));
++}
++
++// ======================================================================================
++// Part 3: the properties U1-U5 of DESIGN_RECOMMENDED.md 4.1 and owner decision D1
++// ======================================================================================
++
++use std::sync::Mutex;
++
++/// Every right-hand-side entry `(t, y)` in call order.
++type Log = Arc<Mutex<Vec<(f64, Vec<f64>)>>>;
++
++/// A problem whose right-hand side `f` records every entry in `log` and counts it.
++fn logged(
++    n: usize,
++    calls: &Calls,
++    log: &Log,
++    f: impl Fn(&[f64], &mut [f64]) + Send + Sync + 'static,
++) -> Problem {
++    let (rhs, log) = (calls.rhs.clone(), log.clone());
++    Problem::new(n, move |t: f64, y: &[f64], dy: &mut [f64]| {
++        rhs.fetch_add(1, Ordering::Relaxed);
++        log.lock().unwrap().push((t, y.to_vec()));
++        f(y, dy);
++        Ok::<(), CallbackError>(())
++    })
++    .autonomous()
++}
++
++fn damped_oscillator(y: &[f64], dy: &mut [f64]) {
++    dy[0] = y[1];
++    dy[1] = -1.0e4 * y[0] - 0.2 * y[1];
++}
++
++fn nonnormal(y: &[f64], dy: &mut [f64]) {
++    dy[0] = -y[0] + 1.0e3 * y[1];
++    dy[1] = -2.0 * y[1];
++}
++
++fn robertson_rhs(y: &[f64], dy: &mut [f64]) {
++    dy[0] = -0.04 * y[0] + 1.0e4 * y[1] * y[2];
++    dy[1] = 0.04 * y[0] - 1.0e4 * y[1] * y[2] - 3.0e7 * y[1] * y[1];
++    dy[2] = 3.0e7 * y[1] * y[1];
++}
++
++type Rhs = fn(&[f64], &mut [f64]);
++
++/// A named problem: dimension, right-hand side, initial state, span.
++type NamedCase = (&'static str, usize, Rhs, Vec<f64>, (f64, f64));
++
++/// The non-stiff problems of PREDECLARED.json used for U1 (no handover expected).
++fn non_stiff_cases() -> Vec<NamedCase> {
++    fn osc(y: &[f64], dy: &mut [f64]) {
++        dy[0] = y[1];
++        dy[1] = -y[0];
++    }
++    fn lv(y: &[f64], dy: &mut [f64]) {
++        dy[0] = 1.5 * y[0] - y[0] * y[1];
++        dy[1] = -3.0 * y[1] + y[0] * y[1];
++    }
++    fn l96(y: &[f64], dy: &mut [f64]) {
++        let n = y.len();
++        for i in 0..n {
++            dy[i] = (y[(i + 1) % n] - y[(i + n - 2) % n]) * y[(i + n - 1) % n] - y[i] + 8.0;
++        }
++    }
++    fn aren(y: &[f64], dy: &mut [f64]) {
++        let mu = 0.012277471;
++        let mup = 1.0 - mu;
++        let d1 = ((y[0] + mu).powi(2) + y[1] * y[1]).powf(1.5);
++        let d2 = ((y[0] - mup).powi(2) + y[1] * y[1]).powf(1.5);
++        dy[0] = y[2];
++        dy[1] = y[3];
++        dy[2] = y[0] + 2.0 * y[3] - mup * (y[0] + mu) / d1 - mu * (y[0] - mup) / d2;
++        dy[3] = y[1] - 2.0 * y[2] - mup * y[1] / d1 - mu * y[1] / d2;
++    }
++    vec![
++        ("osc_1", 2, osc, vec![1.0, 0.0], (0.0, 1.0)),
++        ("osc_10", 2, osc, vec![1.0, 0.0], (0.0, 10.0)),
++        ("osc_1000", 2, osc, vec![1.0, 0.0], (0.0, 1000.0)),
++        ("lotka_volterra", 2, lv, vec![1.0, 1.0], (0.0, 100.0)),
++        (
++            "arenstorf",
++            4,
++            aren,
++            ARENSTORF_Y0.to_vec(),
++            (0.0, ARENSTORF_PERIOD),
++        ),
++        ("lorenz96_40", 40, l96, lorenz96_y0(40), (0.0, 10.0)),
++        (
++            "damped_osc",
++            2,
++            damped_oscillator,
++            vec![1.0, 0.0],
++            (0.0, 10.0),
++        ),
++        ("nonnormal", 2, nonnormal, vec![1.0, 1.0], (0.0, 10.0)),
++    ]
++}
++
++fn pilot_sums(solution: &VigilodeSolution) -> (usize, u64, f64) {
++    solution.pilots.iter().fold((0, 0, 0.0), |(a, c, o), p| {
++        (
++            a + p.pilot_attempts,
++            c + p.pilot_callbacks,
++            o + p.pilot_operations,
++        )
++    })
++}
++
++#[test]
++fn break_even_length_is_the_table_of_the_design() {
++    let n = [1usize, 2, 3, 4, 8, 10, 28, 40, 64, 100, 1000];
++    let b: Vec<usize> = n.iter().map(|&n| vigilode::break_even_length(n)).collect();
++    record(
++        "break_even_length_is_the_table_of_the_design",
++        json!({ "n": n, "b": b }),
++    );
++    assert_eq!(b, [3, 4, 4, 5, 7, 8, 23, 37, 78, 166, 13170]);
++    for n in 1..=2000u64 {
++        assert_eq!(
++            vigilode::break_even_length(n as usize) as u64,
++            break_even(n)
++        );
++        // the operation unit binds: c_R <= b c_D in callbacks (n + 11 <= 6 b) as well
++        assert!(n + 11 <= 6 * break_even(n));
++    }
++}
++
++#[test]
++fn u1_a_run_without_handover_is_dopri5_solve_plus_its_pilots_within_twice_its_cost() {
++    let test = "u1_a_run_without_handover_is_dopri5_solve_plus_its_pilots_within_twice_its_cost";
++    let mut rows = Vec::new();
++    let mut lost_pilots = 0usize;
++    for (name, n, f, y0, span) in non_stiff_cases() {
++        let log: Log = Arc::default();
++        let direct_calls = Calls::default();
++        let direct = Dopri5::solve(
++            &logged(n, &direct_calls, &log, f),
++            span,
++            &y0,
++            &Options::default(),
++        )
++        .expect("direct DOPRI5");
++        let calls = Calls::default();
++        let unified = VigilODE::solve(&logged(n, &calls, &log, f), span, &y0, SolverStrategy::Auto)
++            .expect("unified solve");
++        let (cost, reference) = (unified_cost(n, &unified), dopri5_cost(n, &direct));
++        let (pilot_attempts, pilot_callbacks, pilot_operations) = pilot_sums(&unified);
++        let b = vigilode::break_even_length(n);
++        let explicit = unified
++            .explicit_solution
++            .as_ref()
++            .expect("the DOPRI5 record");
++        let equal_record = serde_json::to_value(&explicit.stats).unwrap()
++            == serde_json::to_value(&direct.stats).unwrap();
++        rows.push(json!({
++            "case": name, "b": b, "pilots": unified.pilots.len(),
++            "verdicts": unified.pilots.iter().map(|p| format!("{:?}", p.verdict)).collect::<Vec<_>>(),
++            "unified": cost.json(), "dopri5": reference.json(),
++            "pilot_callbacks": pilot_callbacks, "pilot_operations": pilot_operations,
++            "bits_equal": bits(&unified.final_state) == bits(&direct.final_state),
++            "dopri5_record_equal": equal_record,
++        }));
++        assert!(unified.success() && direct.success, "{name}");
++        assert!(!has_rodas5p_leg(&unified), "{name}: handed over");
++        lost_pilots += unified.pilots.len();
++        // the trajectory, the bits and the DOPRI5 record of Dopri5::solve
++        assert_eq!(
++            bits(&unified.final_state),
++            bits(&direct.final_state),
++            "{name}"
++        );
++        assert!(
++            equal_record,
++            "{name}: the DOPRI5 record differs from Dopri5::solve"
++        );
++        // plus exactly the pilots' work
++        assert_eq!(
++            unified.stats.attempts,
++            direct.stats.attempts + pilot_attempts,
++            "{name}"
++        );
++        assert_eq!(
++            cost.callbacks,
++            reference.callbacks + pilot_callbacks,
++            "{name}"
++        );
++        assert_eq!(calls.rhs(), cost.callbacks, "{name}: uncharged callbacks");
++        assert!(
++            unified
++                .pilots
++                .iter()
++                .all(|p| p.verdict == vigilode::PilotVerdict::Lost),
++            "{name}"
++        );
++        // at most twice the cost of Dopri5::solve in each unit (U1), and the pilots'
++        // number and spend of E10
++        assert!(cost.callbacks <= 2 * reference.callbacks, "{name}");
++        assert!(cost.ops3 <= 2 * reference.ops3, "{name}");
++        let a_d = direct.stats.attempts as u64;
++        assert!(
++            unified.pilots.len() as u64 <= max_pilots(a_d, b as u64),
++            "{name}: {} pilots after {a_d} DOPRI5 attempts",
++            unified.pilots.len()
++        );
++        assert!(pilot_callbacks <= reference.callbacks, "{name}");
++        assert!(pilot_operations <= reference.ops3 as f64 / 3.0, "{name}");
++    }
++    record(test, json!({ "cases": rows, "lost_pilots": lost_pilots }));
++    assert!(
++        lost_pilots > 0,
++        "no case made a pilot: the test shows nothing"
++    );
++}
++
++#[test]
++fn u2_dopri5_pilots_and_rodas5p_share_one_attempt_budget() {
++    let test = "u2_dopri5_pilots_and_rodas5p_share_one_attempt_budget";
++    let mut rows = Vec::new();
++    for max_steps in [100_000usize, 500, 50, 36, 35, 20, 9, 8, 5, 1] {
++        let calls = Calls::default();
++        let unified = VigilODE::solve(
++            &robertson_fd(&calls),
++            (0.0, 40.0),
++            &[1.0, 0.0, 0.0],
++            VigilodeOptions::default().max_steps(max_steps),
++        )
++        .expect("unified solve");
++        let counters = &unified.stats.counters;
++        let in_counters = counters.accepted_steps + counters.rejected_steps;
++        let legs: usize = unified.legs.iter().map(|leg| leg.attempts).sum();
++        let (pilot_attempts, _, _) = pilot_sums(&unified);
++        let accepted_pilot = unified
++            .pilots
++            .last()
++            .filter(|p| p.verdict == vigilode::PilotVerdict::Accepted)
++            .map_or(0, |p| p.pilot_attempts);
++        rows.push(json!({
++            "max_steps": max_steps, "success": unified.success(),
++            "status": format!("{:?}", unified.status), "attempts": unified.stats.attempts,
++            "leg_attempts": legs, "pilot_attempts": pilot_attempts, "pilots": unified.pilots.len(),
++            "legs": leg_summary(&unified),
++        }));
++        assert!(unified.stats.attempts <= max_steps, "{max_steps}");
++        assert_eq!(unified.stats.attempts as u64, in_counters, "{max_steps}");
++        // every attempt is in a leg or in a pilot that is not part of a leg
++        assert_eq!(
++            unified.stats.attempts,
++            legs + pilot_attempts - accepted_pilot,
++            "{max_steps}"
++        );
++        assert_eq!(counters.rhs_calls, calls.rhs(), "{max_steps}");
++        if !unified.success() {
++            assert_eq!(unified.stats.attempts, max_steps, "{max_steps}");
++            assert_eq!(
++                unified.status,
++                Status::Failed(FailureReason::MaxStepsReached { max_steps }),
++                "{max_steps}"
++            );
++        }
++    }
++    record(test, json!({ "cases": rows }));
++}
++
++/// Check the entry sequence of a unified run against the one of `Dopri5::solve`: the
++/// unified sequence is DOPRI5's with the pilots' blocks inserted, up to the handover; after
++/// an accepted pilot every entry is at or after the pilot's end. Returns the number of
++/// entries in pilot blocks.
++fn check_entries(
++    name: &str,
++    direct: &[(f64, Vec<f64>)],
++    unified: &[(f64, Vec<f64>)],
++    solution: &VigilodeSolution,
++) -> usize {
++    let same = |a: &(f64, Vec<f64>), b: &(f64, Vec<f64>)| {
++        a.0.to_bits() == b.0.to_bits() && bits(&a.1) == bits(&b.1)
++    };
++    let (t0, y0) = (solution.stats.t_span.0, &solution.stats.y0);
++    assert!(
++        same(&unified[0], &(t0, y0.clone())),
++        "{name}: the first entry is not DOPRI5's first stage at (t0, y0)"
++    );
++    let at_t0: Vec<_> = unified.iter().filter(|(t, _)| *t == t0).collect();
++    assert!(
++        at_t0.iter().all(|(_, y)| bits(y) == bits(y0)),
++        "{name}: an entry at t0 that is not DOPRI5's first stage"
++    );
++    let (mut i, mut j, mut in_pilots) = (0usize, 0usize, 0usize);
++    let mut pilots = solution.pilots.iter();
++    while i < unified.len() {
++        if j < direct.len() && same(&unified[i], &direct[j]) {
++            i += 1;
++            j += 1;
++            continue;
++        }
++        let pilot = pilots
++            .next()
++            .unwrap_or_else(|| panic!("{name}: entry {i} is neither DOPRI5's nor a pilot's"));
++        let block = &unified[i..i + pilot.pilot_callbacks as usize];
++        assert!(
++            block
++                .iter()
++                .all(|(t, _)| *t >= pilot.t && *t <= pilot.t + pilot.h),
++            "{name}: a pilot entry outside [t_D, t_D + H]"
++        );
++        assert!(
++            block
++                .iter()
++                .any(|(t, y)| t.to_bits() == pilot.t.to_bits() && y.len() == y0.len()),
++            "{name}: the pilot made no call at its start t_D"
++        );
++        in_pilots += block.len();
++        i += block.len();
++        if pilot.verdict == vigilode::PilotVerdict::Accepted {
++            let end = pilot.t + pilot.h;
++            assert!(
++                unified[i..].iter().all(|(t, _)| *t >= end * (1.0 - 1e-15)),
++                "{name}: an entry before the end of the accepted pilot"
++            );
++            return in_pilots;
++        }
++    }
++    assert_eq!(j, direct.len(), "{name}: DOPRI5 entries are missing");
++    assert!(pilots.next().is_none(), "{name}: a pilot made no entry");
++    in_pilots
++}
++
++#[test]
++fn u3_no_callback_before_dopri5s_first_stage_and_every_other_entry_is_a_pilots() {
++    let test = "u3_no_callback_before_dopri5s_first_stage_and_every_other_entry_is_a_pilots";
++    let mut cases = non_stiff_cases();
++    cases.push((
++        "robertson_40",
++        3,
++        robertson_rhs,
++        vec![1.0, 0.0, 0.0],
++        (0.0, 40.0),
++    ));
++    let mut rows = Vec::new();
++    for (name, n, f, y0, span) in cases {
++        let (direct_log, log): (Log, Log) = (Arc::default(), Arc::default());
++        Dopri5::solve(
++            &logged(n, &Calls::default(), &direct_log, f),
++            span,
++            &y0,
++            &Options::default(),
++        )
++        .expect("direct DOPRI5");
++        let calls = Calls::default();
++        let unified = VigilODE::solve(&logged(n, &calls, &log, f), span, &y0, SolverStrategy::Auto)
++            .expect("unified solve");
++        let (direct_log, log) = (direct_log.lock().unwrap(), log.lock().unwrap());
++        let in_pilots = check_entries(name, &direct_log, &log, &unified);
++        rows.push(json!({
++            "case": name, "entries": log.len(), "in_pilot_blocks": in_pilots,
++            "pilots": unified.pilots.len(), "charged": unified.stats.counters.rhs_calls,
++        }));
++        assert_eq!(
++            log.len() as u64,
++            unified.stats.counters.rhs_calls,
++            "{name}: uncharged"
++        );
++    }
++    // F2: no entry above 1, so no fatal error
++    let calls = Calls::default();
++    let solution = VigilODE::solve(&f2(&calls), (0.0, 1.0), &[1.0], SolverStrategy::Auto).unwrap();
++    rows.push(
++        json!({ "case": "f2", "fatal_entries": calls.fatal(), "success": solution.success() }),
++    );
++    record(test, json!({ "cases": rows }));
++    assert!(solution.success() && calls.fatal() == 0);
++}
++
++fn heat_fd(n: usize, calls: &Calls) -> Problem {
++    let rhs = calls.rhs.clone();
++    Problem::new(n, move |_t, y: &[f64], dy: &mut [f64]| {
++        rhs.fetch_add(1, Ordering::Relaxed);
++        let inv_dx2 = ((n + 1) as f64).powi(2);
++        for i in 0..n {
++            let left = if i == 0 { 0.0 } else { y[i - 1] };
++            let right = if i + 1 == n { 0.0 } else { y[i + 1] };
++            dy[i] = (left - 2.0 * y[i] + right) * inv_dx2;
++        }
++        Ok::<(), CallbackError>(())
++    })
++    .autonomous()
++}
++
++fn heat_sine(n: usize) -> Vec<f64> {
++    (1..=n)
++        .map(|i| (std::f64::consts::PI * i as f64 / (n + 1) as f64).sin())
++        .collect()
++}
++
++#[test]
++fn u4_a_handover_follows_an_accepted_pilot_and_is_recorded() {
++    let test = "u4_a_handover_follows_an_accepted_pilot_and_is_recorded";
++    type Case = (
++        &'static str,
++        usize,
++        Box<dyn Fn(&Calls) -> Problem>,
++        Vec<f64>,
++        (f64, f64),
++    );
++    let cases: Vec<Case> = vec![
++        (
++            "robertson_40",
++            3,
++            Box::new(robertson_fd),
++            vec![1.0, 0.0, 0.0],
++            (0.0, 40.0),
++        ),
++        (
++            "heat_fd_8",
++            8,
++            Box::new(|c| heat_fd(8, c)),
++            heat_sine(8),
++            (0.0, 100.0),
++        ),
++    ];
++    let mut rows = Vec::new();
++    for (name, n, build, y0, span) in cases {
++        let calls = Calls::default();
++        let unified = VigilODE::solve(&build(&calls), span, &y0, SolverStrategy::Auto).unwrap();
++        let pilot = unified.pilots.last().expect("a pilot").clone();
++        let b = vigilode::break_even_length(n);
++        let inner = unified.inner_solution.as_ref().expect("the RODAS5P run");
++        rows.push(json!({
++            "case": name, "pilots": serde_json::to_value(&unified.pilots).unwrap(),
++            "legs": leg_summary(&unified),
++            "history": serde_json::to_value(&unified.route_history).unwrap(),
++            "fallback_steps": unified.stats.counters.fallback_steps,
++            "callbacks": unified.stats.counters.rhs_calls,
++        }));
++        assert!(unified.success(), "{name}");
++        assert_eq!(pilot.verdict, vigilode::PilotVerdict::Accepted, "{name}");
++        assert!(
++            unified.pilots[..unified.pilots.len() - 1]
++                .iter()
++                .all(|p| p.verdict == vigilode::PilotVerdict::Lost)
++        );
++        // the evidence: one RODAS5P attempt covered H after b DOPRI5 attempts that cost at
++        // least as much in every unit
++        assert_eq!(pilot.window_attempts, b, "{name}");
++        assert_eq!(pilot.pilot_attempts, 1, "{name}");
++        assert!(pilot.h > 0.0 && pilot.t > span.0, "{name}");
++        assert!(pilot.window_callbacks >= pilot.pilot_callbacks, "{name}");
++        assert!(pilot.window_operations >= pilot.pilot_operations, "{name}");
++        assert!(pilot.dopri5_attempts >= b, "{name}");
++        // the legs: DOPRI5 to t_D, then RODAS5P from t_D starting with the pilot's step
++        assert_eq!(unified.legs.len(), 2, "{name}");
++        let (dopri5, rodas5p) = (&unified.legs[0], &unified.legs[1]);
++        assert_eq!(dopri5.tier, SelectedTier::Tier1Explicit);
++        assert_eq!(dopri5.t_end.to_bits(), pilot.t.to_bits(), "{name}");
++        assert_eq!(dopri5.attempts, pilot.dopri5_attempts, "{name}");
++        assert_eq!(rodas5p.tier, SelectedTier::TierProtectedReference);
++        assert_eq!(rodas5p.t_start.to_bits(), pilot.t.to_bits(), "{name}");
++        assert!(inner.t[0] > pilot.t && inner.t[0] <= pilot.t + pilot.h * (1.0 + 1e-15));
++        assert_eq!(
++            inner.stats.options.h0.to_bits(),
++            pilot.h.to_bits(),
++            "{name}: h0 = H"
++        );
++        // the route history records the handover
++        assert_eq!(unified.route_history.len(), 2, "{name}");
++        let entry = &unified.route_history[1];
++        assert_eq!(entry.time.to_bits(), pilot.t.to_bits(), "{name}");
++        assert!(entry.reason.starts_with("handover"), "{}", entry.reason);
++        assert_eq!(unified.stats.counters.fallback_steps, 1, "{name}");
++        assert_eq!(unified.stats.counters.rhs_calls, calls.rhs(), "{name}");
++    }
++    record(test, json!({ "cases": rows }));
++}
++
++#[test]
++fn u5_same_inputs_give_the_same_route_counters_and_bits() {
++    let test = "u5_same_inputs_give_the_same_route_counters_and_bits";
++    let digest = |solution: &VigilodeSolution| {
++        json!({
++            "legs": serde_json::to_value(&solution.legs).unwrap(),
++            "pilots": serde_json::to_value(&solution.pilots).unwrap(),
++            "history": serde_json::to_value(&solution.route_history).unwrap(),
++            "counters": serde_json::to_value(solution.stats.counters).unwrap(),
++            "status": serde_json::to_value(&solution.status).unwrap(),
++            "final_time": solution.final_time.to_bits(),
++            "final_state": bits(&solution.final_state),
++        })
++    };
++    let mut rows = Vec::new();
++    for (name, n, f, y0, span) in non_stiff_cases().into_iter().chain([(
++        "robertson_40",
++        3,
++        robertson_rhs as Rhs,
++        vec![1.0, 0.0, 0.0],
++        (0.0, 40.0),
++    )]) {
++        let run = || {
++            let log: Log = Arc::default();
++            let solution = VigilODE::solve(
++                &logged(n, &Calls::default(), &log, f),
++                span,
++                &y0,
++                SolverStrategy::Auto,
++            )
++            .unwrap();
++            digest(&solution)
++        };
++        let (first, second) = (run(), run());
++        rows.push(json!({ "case": name, "equal": first == second }));
++        assert_eq!(first, second, "{name}");
++    }
++    record(test, json!({ "cases": rows }));
++}
++
++#[test]
++fn d1_a_fatal_callback_inside_a_pilot_ends_the_solve_with_the_accepted_prefix() {
++    let test = "d1_a_fatal_callback_inside_a_pilot_ends_the_solve_with_the_accepted_prefix";
++    // N2: y1' = 0, y2' = -1000 y2, y0 = (1, 1); fatal whenever y1 > 1, which only a
++    // finite-difference column reaches
++    let calls = Calls::default();
++    let (rhs, fatal) = (calls.rhs.clone(), calls.fatal.clone());
++    let problem = Problem::new(2, move |_t, y: &[f64], dy: &mut [f64]| {
++        rhs.fetch_add(1, Ordering::Relaxed);
++        if y[0] > 1.0 {
++            fatal.fetch_add(1, Ordering::Relaxed);
++            return Err(CallbackError::Fatal("N2: y1 left [0, 1]".into()));
++        }
++        dy[0] = 0.0;
++        dy[1] = -1000.0 * y[1];
++        Ok(())
++    })
++    .autonomous();
++    let unified = VigilODE::solve(&problem, (0.0, 1.0), &[1.0, 1.0], SolverStrategy::Auto).unwrap();
++    record(
++        test,
++        json!({
++            "status": format!("{:?}", unified.status),
++            "stop": serde_json::to_value(&unified.stop).unwrap(),
++            "pilots": serde_json::to_value(&unified.pilots).unwrap(),
++            "legs": leg_summary(&unified),
++            "final_time": unified.final_time,
++            "fatal_entries": calls.fatal(),
++            "rhs_entries": calls.rhs(),
++            "rhs_charged": unified.stats.counters.rhs_calls,
++        }),
++    );
++    assert!(!unified.success());
++    let pilot = unified.pilots.last().expect("a pilot");
++    assert_eq!(unified.pilots.len(), 1, "the first pilot ends the solve");
++    assert_eq!(pilot.verdict, vigilode::PilotVerdict::Fatal);
++    match &unified.status {
++        Status::Failed(FailureReason::CallbackFailed {
++            callback, message, ..
++        }) => {
++            assert_eq!(*callback, vigilode::Callback::Rhs);
++            assert!(message.contains("N2"), "{message}");
++        }
++        other => panic!("expected the callback failure, got {other:?}"),
++    }
++    // the accepted prefix: DOPRI5 up to the pilot's start
++    assert_eq!(unified.legs.len(), 1);
++    assert_eq!(unified.final_time.to_bits(), pilot.t.to_bits());
++    assert!(unified.final_time > 0.0);
++    assert_eq!(calls.fatal(), 1, "a fatal callback is not called again");
++    assert_eq!(
++        unified.stats.counters.rhs_calls,
++        calls.rhs(),
++        "the failing call is charged"
++    );
++}
+diff --git a/crates/vigilode/tests/unified_router_contracts.rs b/crates/vigilode/tests/unified_router_contracts.rs
+index 38245cd7..5a338cb0 100644
+--- a/crates/vigilode/tests/unified_router_contracts.rs
++++ b/crates/vigilode/tests/unified_router_contracts.rs
+@@ -453,12 +453,15 @@ fn p1_label_equals_executed_driver_on_every_rodas5p_driver_family() {
+             &[1.0, 0.0],
+             auto().strategy(SolverStrategy::RobustStiff),
+         ),
++        // without the dimension limit of the screened trial (owner decision D5) an
++        // undeclared request of any dimension starts DOPRI5; the declared regime keeps the
++        // finite-difference dense family in the cases
+         rodas5p_label_case(
+-            "heat n=16, finite differences without structure, Auto",
++            "heat n=16, finite differences without structure, declared stiff",
+             &heat_fd(16, &calls),
+             (0.0, 0.01),
+             &heat0(16),
+-            auto(),
++            auto().regime(ProblemRegime::Stiff),
+         ),
+     ];
+     assert_label_cases(
+@@ -569,11 +572,71 @@ fn p1_stiff_contractive_scalar_with_dense_jacobian_is_not_explicit() {
+     );
+ }
+ 
++/// Shared body of the stiff contractive cases without a derivative. Owner decision D4
++/// (OD-L1-22): the V03b assertion "no DOPRI5 leg" becomes the same work bound plus a
++/// recorded handover of the break-even route.
++fn assert_bounded_with_a_recorded_handover(
++    test: &str,
++    problem: &Problem,
++    calls: &Calls,
++    span: (f64, f64),
++    y0: &[f64],
++    rho_bound: f64,
++) {
++    // one tenth of the least work DOPRI5 can do at its stability limit (PREDECLARED.json)
++    let bound = (0.1 * 6.0 * rho_bound * (span.1 - span.0) / 3.3).floor() as u64;
++    let solved = VigilODE::solve(problem, span, y0, SolverStrategy::Auto);
++    let (labels, success, charged) = match &solved {
++        Ok(solution) => (
++            labels(solution),
++            solution.success(),
++            solution.stats.counters.rhs_calls,
++        ),
++        Err(_) => (Vec::new(), false, 0),
++    };
++    let handover = solved.as_ref().ok().and_then(|solution| {
++        solution
++            .route_history
++            .iter()
++            .find(|entry| entry.reason.starts_with("handover"))
++            .map(|entry| entry.reason.clone())
++    });
++    let accepted = solved.as_ref().is_ok_and(|solution| {
++        solution
++            .pilots
++            .last()
++            .is_some_and(|pilot| pilot.verdict == vigilode::PilotVerdict::Accepted)
++    });
++    record(
++        test,
++        json!({
++            "labels": labels,
++            "success": success,
++            "rhs_calls_charged": charged,
++            "rhs_entries_at_the_boundary": calls.rhs(),
++            "rhs_bound": bound,
++            "handover": handover,
++            "pilots": solved.as_ref().ok().map(|s| serde_json::to_value(&s.pilots).unwrap()),
++            "error": solved.as_ref().err().map(|e| e.to_string()),
++        }),
++    );
++    assert!(success, "the stiff contractive problem must be solved");
++    assert!(
++        accepted && handover.is_some(),
++        "no recorded handover to RODAS5P: {labels:?}"
++    );
++    assert!(
++        calls.rhs() <= bound && charged <= bound,
++        "right-hand-side work {} (charged {charged}) exceeds the bound {bound}",
++        calls.rhs()
++    );
++}
++
+ #[test]
+-fn p1_stiff_contractive_heat_equation_without_jacobian_is_not_explicit() {
++fn p1_stiff_contractive_heat_equation_without_jacobian_is_bounded_and_hands_over() {
+     let calls = Calls::default();
+-    assert_not_explicit_and_bounded(
+-        "p1_stiff_contractive_heat_equation_without_jacobian_is_not_explicit",
++    assert_bounded_with_a_recorded_handover(
++        "p1_stiff_contractive_heat_equation_without_jacobian_is_bounded_and_hands_over",
+         &heat_fd(8, &calls),
+         &calls,
+         (0.0, 100.0),
+@@ -583,10 +646,10 @@ fn p1_stiff_contractive_heat_equation_without_jacobian_is_not_explicit() {
+ }
+ 
+ #[test]
+-fn p1_stiff_contractive_scalar_without_jacobian_is_not_explicit() {
++fn p1_stiff_contractive_scalar_without_jacobian_is_bounded_and_hands_over() {
+     let calls = Calls::default();
+-    assert_not_explicit_and_bounded(
+-        "p1_stiff_contractive_scalar_without_jacobian_is_not_explicit",
++    assert_bounded_with_a_recorded_handover(
++        "p1_stiff_contractive_scalar_without_jacobian_is_bounded_and_hands_over",
+         &scalar_fd(&calls),
+         &calls,
+         (0.0, 1.0),
+@@ -1183,9 +1246,8 @@ mod part2 {
+     use rodas5p_integrators::Dopri5StopReason;
+     use vigilode::coloring::SparsityPattern;
+     use vigilode::{
+-        EXPLICIT_TRIAL_ATTEMPT_LIMIT, EXPLICIT_TRIAL_MAX_DIMENSION, FallbackEngine, GeneralOde,
+-        GeneralOdePolicy, MethodChoice, MethodRegistry, PreflightAnalyzer, RouteBasis, StopReason,
+-        UnifiedStop, Unsupported,
++        FallbackEngine, GeneralOde, GeneralOdePolicy, MethodChoice, MethodRegistry,
++        PreflightAnalyzer, RouteBasis, StopReason, UnifiedStop, Unsupported, break_even_length,
+     };
+ 
+     type Build = Box<dyn Fn(&Calls) -> Problem>;
+@@ -1339,7 +1401,7 @@ mod part2 {
+         let mut tiers = std::collections::BTreeMap::<String, usize>::new();
+         let mut drivers = std::collections::BTreeMap::<String, usize>::new();
+         let mut routes = std::collections::BTreeMap::<String, usize>::new();
+-        let (mut cases, mut solved, mut refused, mut screened) = (0, 0, 0, 0);
++        let (mut cases, mut solved, mut refused, mut piloted) = (0, 0, 0, 0);
+         let mut failures: Vec<String> = Vec::new();
+         for n in [6usize, 12] {
+             let y0 = heat_sine(n);
+@@ -1375,7 +1437,14 @@ mod part2 {
+                             };
+                             solved += 1;
+                             let analysis = &solution.analysis;
+-                            screened += usize::from(analysis.screen.is_some());
++                            piloted += usize::from(!solution.pilots.is_empty());
++                            // the calls outside the replayed legs: those of the lost pilots
++                            let pilot_calls: u64 = solution
++                                .pilots
++                                .iter()
++                                .filter(|p| p.verdict != vigilode::PilotVerdict::Accepted)
++                                .map(|p| p.pilot_callbacks)
++                                .sum();
+                             *tiers
+                                 .entry(format!("{:?}", analysis.suggested_tier))
+                                 .or_default() += 1;
+@@ -1435,26 +1504,22 @@ mod part2 {
+                             }
+                             if (calls.rhs(), calls.jacobian(), calls.jvp())
+                                 != (
+-                                    direct_calls.rhs() + analysis.rhs_calls,
++                                    direct_calls.rhs() + pilot_calls,
+                                     direct_calls.jacobian(),
+                                     direct_calls.jvp(),
+                                 )
+                             {
+                                 problems.push(format!(
+-                                    "callback entries {:?} differ from the replay {:?} plus {} preflight calls",
++                                    "callback entries {:?} differ from the replay {:?} plus {} pilot calls",
+                                     (calls.rhs(), calls.jacobian(), calls.jvp()),
+                                     (direct_calls.rhs(), direct_calls.jacobian(), direct_calls.jvp()),
+-                                    analysis.rhs_calls
++                                    pilot_calls
+                                 ));
+                             }
+-                            if solution.stats.counters.rhs_calls
+-                                != direct_charged + analysis.rhs_calls
+-                            {
++                            if solution.stats.counters.rhs_calls != direct_charged + pilot_calls {
+                                 problems.push(format!(
+-                                    "charged rhs {} is not the replay's {} plus {} preflight calls",
+-                                    solution.stats.counters.rhs_calls,
+-                                    direct_charged,
+-                                    analysis.rhs_calls
++                                    "charged rhs {} is not the replay's {} plus {} pilot calls",
++                                    solution.stats.counters.rhs_calls, direct_charged, pilot_calls
+                                 ));
+                             }
+                             if !problems.is_empty() {
+@@ -1469,7 +1534,7 @@ mod part2 {
+             test,
+             json!({
+                 "cases": cases, "solved": solved, "refused_before_any_callback": refused,
+-                "with_stiffness_screen": screened, "failures": failures.len(),
++                "with_pilots": piloted, "failures": failures.len(),
+                 "tiers": tiers, "drivers": drivers, "routes": routes,
+                 "first_failures": failures.iter().take(5).collect::<Vec<_>>(),
+             }),
+@@ -1565,7 +1630,7 @@ mod part2 {
+             }
+         );
+         assert!(!unified.analysis.fallback_to_rodas5p);
+-        assert!(unified.analysis.screen.is_none() && unified.analysis.rhs_calls == 0);
++        assert!(unified.pilots.is_empty());
+         match &unified.stop {
+             Some(UnifiedStop::Dopri5 {
+                 reason, callback, ..
+@@ -1684,31 +1749,48 @@ mod part2 {
+         let problem = robertson_fd(&calls).invariant("mass", |y| y[0] + y[1] + y[2]);
+         let options = VigilodeOptions::default().max_steps(500);
+         let y0 = [1.0, 0.0, 0.0];
+-        let unified = VigilODE::solve(&problem, (0.0, 10.0), &y0, &options).unwrap();
++        let span = (0.0, 10.0);
++        let unified = VigilODE::solve(&problem, span, &y0, &options).unwrap();
+         assert_eq!(unified.legs.len(), 2);
+-        let (trial, fallback) = (&unified.legs[0], &unified.legs[1]);
+-        // the trial is Dopri5::solve with 250 attempts
+-        let mut trial_options = options.options.clone();
+-        trial_options.max_steps = 250;
++        let (explicit, implicit) = (&unified.legs[0], &unified.legs[1]);
++        let pilot = unified.pilots.last().expect("the accepted pilot");
++        let lost = || {
++            unified
++                .pilots
++                .iter()
++                .filter(|p| p.verdict == vigilode::PilotVerdict::Lost)
++        };
++        let lost_attempts: usize = lost().map(|p| p.pilot_attempts).sum();
++        let lost_rhs: u64 = lost().map(|p| p.pilot_callbacks).sum();
++        // the DOPRI5 leg is Dopri5::solve stopped after as many attempts
++        let mut explicit_options = options.options.clone();
++        explicit_options.max_steps = explicit.attempts;
+         let direct_calls = Calls::default();
+-        let direct_trial = Dopri5::solve(
++        let direct_explicit =
++            Dopri5::solve(&robertson_fd(&direct_calls), span, &y0, &explicit_options).unwrap();
++        // the RODAS5P leg is the accepted pilot, Rodas5p::solve from DOPRI5's last accepted
++        // state with h0 = H and one attempt, then Rodas5p::solve from its end point with
++        // h0 = H and the attempts left
++        let mut pilot_options = options.options.clone();
++        pilot_options.h0 = pilot.h;
++        pilot_options.max_steps = 1;
++        let direct_pilot = Rodas5p::solve(
+             &robertson_fd(&direct_calls),
+-            (0.0, 10.0),
+-            &y0,
+-            &trial_options,
++            (direct_explicit.final_time, span.1),
++            &direct_explicit.final_state,
++            &pilot_options,
+         )
+         .unwrap();
+-        // the fallback is Rodas5p::solve from the trial's last accepted state with the rest
+         let mut rest_options = options.options.clone();
+-        rest_options.max_steps = 250;
++        rest_options.h0 = pilot.h;
++        rest_options.max_steps = 500 - explicit.attempts - lost_attempts - 1;
+         let direct_rest = Rodas5p::solve(
+             &robertson_fd(&direct_calls),
+-            (direct_trial.final_time, 10.0),
+-            &direct_trial.final_state,
++            (*direct_pilot.t.last().unwrap(), span.1),
++            direct_pilot.final_state().unwrap(),
+             &rest_options,
+         )
+         .unwrap();
+-        let screen = unified.analysis.screen.expect("the screen ran");
+         let leg_rhs: u64 = unified.legs.iter().map(|leg| leg.counters.rhs_calls).sum();
+         let mass0: f64 = y0.iter().sum();
+         let mass1: f64 = unified.final_state.iter().sum();
+@@ -1716,9 +1798,9 @@ mod part2 {
+             test,
+             json!({
+                 "legs": serde_json::to_value(&unified.legs).unwrap(),
+-                "screen": serde_json::to_value(screen).unwrap(),
+-                "preflight_rhs_calls": unified.analysis.rhs_calls,
++                "pilots": serde_json::to_value(&unified.pilots).unwrap(),
+                 "leg_rhs_calls": leg_rhs,
++                "lost_pilot_rhs_calls": lost_rhs,
+                 "total_rhs_calls": unified.stats.counters.rhs_calls,
+                 "rhs_entries": calls.rhs(),
+                 "direct_rhs_entries": direct_calls.rhs(),
+@@ -1726,49 +1808,47 @@ mod part2 {
+             }),
+         );
+         assert_eq!(
+-            (
+-                trial.tier,
+-                trial.attempt_budget,
+-                trial.attempts,
+-                trial.success
+-            ),
+-            (SelectedTier::Tier1Explicit, 250, 250, false)
++            (explicit.tier, explicit.attempt_budget, explicit.success),
++            (SelectedTier::Tier1Explicit, 500, false)
+         );
+-        assert!(matches!(
+-            trial.stop,
+-            Some(UnifiedStop::Dopri5 {
+-                reason: Some(Dopri5StopReason::AttemptBudget),
+-                callback: None,
+-                ..
+-            })
+-        ));
+-        assert_eq!(trial.t_end.to_bits(), direct_trial.final_time.to_bits());
+         assert_eq!(
+-            (fallback.tier, fallback.attempt_budget, fallback.success),
+-            (SelectedTier::TierProtectedReference, 250, true)
++            explicit.t_end.to_bits(),
++            direct_explicit.final_time.to_bits()
+         );
+-        assert_eq!(fallback.t_start.to_bits(), trial.t_end.to_bits());
+-        assert_eq!(fallback.attempts, direct_rest.stats.attempts);
++        assert_eq!(explicit.t_end.to_bits(), pilot.t.to_bits());
+         assert_eq!(
+-            serde_json::to_value(fallback.counters).unwrap(),
+-            serde_json::to_value(direct_rest.stats.counters).unwrap()
++            (implicit.tier, implicit.success),
++            (SelectedTier::TierProtectedReference, true)
++        );
++        assert_eq!(implicit.t_start.to_bits(), explicit.t_end.to_bits());
++        assert_eq!(
++            implicit.attempts,
++            direct_pilot.stats.attempts + direct_rest.stats.attempts
++        );
++        assert_eq!(
++            implicit.counters.rhs_calls,
++            direct_pilot.stats.counters.rhs_calls + direct_rest.stats.counters.rhs_calls
+         );
+         assert_eq!(
+             bits(&unified.final_state),
+             bits(direct_rest.final_state().unwrap())
+         );
+-        // preflight + legs = total = what the callback boundary saw
+-        assert_eq!(screen.rhs_calls, 4, "n + 1 calls for n = 3");
+-        assert!(!screen.stiffness_evidence && screen.completed);
+-        assert_eq!(unified.analysis.rhs_calls, 4);
+-        assert_eq!(leg_rhs + 4, unified.stats.counters.rhs_calls);
++        // legs + lost pilots = total = what the callback boundary saw
++        assert_eq!(leg_rhs + lost_rhs, unified.stats.counters.rhs_calls);
+         assert_eq!(unified.stats.counters.rhs_calls, calls.rhs());
+-        assert_eq!(calls.rhs(), direct_calls.rhs() + 4);
+-        assert_eq!(unified.stats.attempts, 250 + direct_rest.stats.attempts);
++        assert_eq!(calls.rhs(), direct_calls.rhs() + lost_rhs);
++        assert_eq!(
++            unified.stats.attempts,
++            explicit.attempts + lost_attempts + implicit.attempts
++        );
+         assert_eq!(unified.stats.counters.fallback_steps, 1);
+-        // the solution of the RODAS5P leg is the direct one, and it starts at the checkpoint
++        // the solution of the last RODAS5P run is the direct one; it starts where the pilot
++        // ended
+         let inner = unified.inner_solution.as_ref().unwrap();
+-        assert_eq!(inner.t[0].to_bits(), trial.t_end.to_bits());
++        assert_eq!(
++            inner.t[0].to_bits(),
++            direct_pilot.t.last().unwrap().to_bits()
++        );
+         // the drift is measured from the initial state of the solve, not from the checkpoint
+         assert_eq!(unified.invariant_drift.len(), 1);
+         assert_eq!(
+@@ -1882,60 +1962,74 @@ mod part2 {
+     }
+ 
+     #[test]
+-    fn p2_stiffness_screen_is_a_charged_lower_bound() {
+-        let test = "p2_stiffness_screen_is_a_charged_lower_bound";
+-        let screen_of = |build: &dyn Fn(&Calls) -> Problem, span: (f64, f64), y0: &[f64]| {
++    fn p2_the_analysis_makes_no_callback_and_an_undeclared_request_runs_the_break_even_route() {
++        let test =
++            "p2_the_analysis_makes_no_callback_and_an_undeclared_request_runs_the_break_even_route";
++        let analysis_of = |build: &dyn Fn(&Calls) -> Problem, span: (f64, f64), y0: &[f64]| {
+             let calls = Calls::default();
+             let analysis =
+                 PreflightAnalyzer::analyze(&build(&calls), span, y0, &VigilodeOptions::default())
+                     .unwrap();
+-            (analysis, calls.rhs())
++            (analysis, calls.rhs() + calls.jacobian() + calls.jvp())
+         };
+-        let (scalar, scalar_entries) = screen_of(&scalar_fd, (0.0, 1.0), &[1.0]);
+         let heat8 = |c: &Calls| heat_fd(8, c);
+-        let (heat, heat_entries) = screen_of(&heat8, (0.0, 100.0), &heat_sine(8));
+-        let (short, _) = screen_of(&heat8, (0.0, 1.0), &heat_sine(8));
+-        let (robertson, _) = screen_of(&robertson_fd, (0.0, 10.0), &[1.0, 0.0, 0.0]);
+-        let (osc, osc_entries) = screen_of(&oscillator, (0.0, 1.0), &[1.0, 0.0]);
+-        let bound =
+-            |a: &vigilode::PreflightAnalysis| a.screen.unwrap().lipschitz_lower_bound.unwrap();
++        let heat64 = |c: &Calls| heat_fd(64, c);
++        let cases: Vec<(&str, usize, (vigilode::PreflightAnalysis, u64))> = vec![
++            ("scalar", 1, analysis_of(&scalar_fd, (0.0, 1.0), &[1.0])),
++            (
++                "heat_span_100",
++                8,
++                analysis_of(&heat8, (0.0, 100.0), &heat_sine(8)),
++            ),
++            (
++                "heat_span_1",
++                8,
++                analysis_of(&heat8, (0.0, 1.0), &heat_sine(8)),
++            ),
++            (
++                "heat_64",
++                64,
++                analysis_of(&heat64, (0.0, 10.0), &heat_sine(64)),
++            ),
++            (
++                "robertson",
++                3,
++                analysis_of(&robertson_fd, (0.0, 10.0), &[1.0, 0.0, 0.0]),
++            ),
++            (
++                "oscillator",
++                2,
++                analysis_of(&oscillator, (0.0, 1.0), &[1.0, 0.0]),
++            ),
++        ];
+         record(
+             test,
+             json!({
+-                "scalar": serde_json::to_value(scalar.screen).unwrap(),
+-                "heat_span_100": serde_json::to_value(heat.screen).unwrap(),
+-                "heat_span_1": serde_json::to_value(short.screen).unwrap(),
+-                "robertson": serde_json::to_value(robertson.screen).unwrap(),
+-                "oscillator": serde_json::to_value(osc.screen).unwrap(),
+-                "trial_limit": EXPLICIT_TRIAL_ATTEMPT_LIMIT,
+-                "dimension_limit": EXPLICIT_TRIAL_MAX_DIMENSION,
++                "cases": cases.iter().map(|(name, n, (analysis, entries))| json!({
++                    "case": name, "n": n, "entries": entries,
++                    "basis": serde_json::to_value(&analysis.basis).unwrap(),
++                })).collect::<Vec<_>>(),
+             }),
+         );
+-        // every call is reported, and it is n + 1
+-        assert_eq!((scalar.rhs_calls, scalar_entries), (2, 2));
+-        assert_eq!((heat.rhs_calls, heat_entries), (9, 9));
+-        assert_eq!((osc.rhs_calls, osc_entries), (3, 3));
+-        // the threshold is 3.3 times the trial budget min(1000, max_steps / 2)
+-        assert_eq!(scalar.screen.unwrap().trial_attempts, 1000);
+-        assert_eq!(scalar.screen.unwrap().threshold, 3300.0);
+-        // a lower bound: never above the spectral radius, at least the norm over sqrt(n)
+-        assert!((bound(&scalar) / 1.0e6 - 1.0).abs() < 1e-6);
+-        assert!(bound(&heat) <= 324.0 * (1.0 + 1e-6) && bound(&heat) >= 324.0 / 8f64.sqrt());
+-        assert!((bound(&osc) - 1.0).abs() < 1e-6);
+-        // evidence moves the request to RODAS5P; no evidence leaves a budgeted trial
+-        for stiff in [&scalar, &heat] {
+-            assert!(stiff.screen.unwrap().stiffness_evidence);
+-            assert_eq!(stiff.suggested_tier, SelectedTier::TierProtectedReference);
+-            assert_eq!(stiff.basis, RouteBasis::StiffnessScreen);
+-        }
+-        for open in [&short, &robertson, &osc] {
+-            assert!(!open.screen.unwrap().stiffness_evidence);
+-            assert_eq!(open.suggested_tier, SelectedTier::Tier1Explicit);
+-            assert_eq!(open.basis, RouteBasis::UndeclaredRegimeTrial);
+-            assert!(open.fallback_to_rodas5p, "no evidence is not non-stiffness");
+-            assert_eq!(open.first_leg_attempts, 1000);
++        // no callback, any dimension, the whole budget for the first leg
++        for (name, n, (analysis, entries)) in &cases {
++            assert_eq!(*entries, 0, "{name}");
++            assert_eq!(
++                analysis.suggested_tier,
++                SelectedTier::Tier1Explicit,
++                "{name}"
++            );
++            assert_eq!(
++                analysis.basis,
++                RouteBasis::BreakEven {
++                    b: break_even_length(*n)
++                },
++                "{name}"
++            );
++            assert!(analysis.fallback_to_rodas5p, "{name}");
++            assert_eq!(analysis.first_leg_attempts, 100_000, "{name}");
+         }
+-        // a declaration needs no callback
++        // a declaration needs no callback either
+         let calls = Calls::default();
+         let declared = PreflightAnalyzer::analyze(
+             &heat_dense(64, &calls),
+@@ -1946,15 +2040,11 @@ mod part2 {
+         .unwrap();
+         assert_eq!(declared.basis, RouteBasis::SuppliedDerivative);
+         assert_eq!(calls.rhs() + calls.jacobian(), 0);
+-        assert!(declared.screen.is_none());
+     }
+ 
+     #[test]
+-    fn p2_fallback_rule_and_trial_budget() {
+-        let test = "p2_fallback_rule_and_trial_budget";
+-        assert_eq!(FallbackEngine::explicit_trial_attempts(100_000), 1000);
+-        assert_eq!(FallbackEngine::explicit_trial_attempts(500), 250);
+-        assert_eq!(FallbackEngine::explicit_trial_attempts(1), 0);
++    fn p2_fallback_rule_and_one_attempt_budget() {
++        let test = "p2_fallback_rule_and_one_attempt_budget";
+         assert_eq!(FallbackEngine::remaining_attempts(500, 250), 250);
+         assert_eq!(FallbackEngine::remaining_attempts(500, 600), 0);
+         let follows: Vec<bool> = [
+@@ -1974,7 +2064,7 @@ mod part2 {
+             true
+         ));
+         assert!(!FallbackEngine::follows_explicit_stop(None, false));
+-        // a budget of one attempt leaves no trial: RODAS5P runs, and one attempt is made
++        // a budget of one attempt: DOPRI5 makes it, and no attempt is left for another
+         let calls = Calls::default();
+         let unified = VigilODE::solve(
+             &oscillator(&calls),
+@@ -1992,13 +2082,14 @@ mod part2 {
+                 "status": status_text(&unified.status),
+             }),
+         );
++        assert_eq!(unified.analysis.basis, RouteBasis::BreakEven { b: 4 });
++        assert_eq!(unified.legs.len(), 1);
++        assert!(unified.legs[0].driver_id.starts_with("dopri5"));
++        assert_eq!(unified.stats.attempts, 1);
+         assert_eq!(
+-            unified.analysis.basis,
+-            RouteBasis::NoBudgetForTrial { max_steps: 1 }
++            unified.status,
++            Status::Failed(FailureReason::MaxStepsReached { max_steps: 1 })
+         );
+-        assert_eq!(unified.legs.len(), 1);
+-        assert!(unified.legs[0].driver_id.starts_with("rodas5p"));
+-        assert!(unified.stats.attempts <= 1);
+     }
+ 
+     #[test]
+@@ -2127,11 +2218,16 @@ mod part2 {
+             assert!(!text.contains("NaN") && !text.contains("Infinity"));
+             sizes.push(text.len());
+         }
+-        // the third solve stops in the preflight screen: no leg, a typed stop
+-        assert!(solutions[2].legs.is_empty());
++        // the third solve stops at DOPRI5's first stage (there is no preflight call): one
++        // leg, the callback stop, no pilot
++        assert_eq!(solutions[2].legs.len(), 1);
++        assert!(solutions[2].pilots.is_empty());
+         assert!(matches!(
+             solutions[2].stop,
+-            Some(UnifiedStop::Preflight { .. })
++            Some(UnifiedStop::Dopri5 {
++                callback: Some(_),
++                ..
++            })
+         ));
+         // options: every regime round-trips, and a file written before the field existed parses
+         for regime in [

@@ -1,0 +1,66 @@
+{
+ "schema": "vigilode.loop-l1.v25.consistency.v1",
+ "rule": "The frozen consistency check of loop node V25 (PREDECLARED.json, consistency_of_the_two_right_hand_sides): before any reference is computed, the numpy and the Rust right-hand sides and Jacobian-vector products of each family agree at 20 deterministic states to 1e-12 in the max norm relative to 1 + |value|.",
+ "threshold": 1e-12,
+ "states": 20,
+ "statistic": "max_i |rust_i - numpy_i| / (1 + |numpy_i|) for f(t0, y_k) and J(t0, y_k) v_k",
+ "families": {
+  "ac3d": {
+   "binary_sha256": "9582b047669995dcfc3830f0675d39823f28ba7ba528d558d4625047c49f469f",
+   "git_head": "956b578d0b0148bb4aece843899fb5edf689d015",
+   "log": "logs/consistency/ac3d.log",
+   "family": "ac3d",
+   "states": 20,
+   "passes": true,
+   "exit_code": 0,
+   "max_d_f": 0.0,
+   "max_d_jv": 0.0,
+   "hex_file_sha256": "1b3a22989c03a8f7e90864b3fca5c9659193ddf863e3f9c7aa70ce8af8f139ab",
+   "hex_file_kept_at": "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v25/v25-bins/consistency/ac3d.consist.txt",
+   "all_components_bitwise_equal": true
+  },
+  "robertson_rd1d": {
+   "binary_sha256": "9582b047669995dcfc3830f0675d39823f28ba7ba528d558d4625047c49f469f",
+   "git_head": "956b578d0b0148bb4aece843899fb5edf689d015",
+   "log": "logs/consistency/robertson_rd1d.log",
+   "family": "robertson_rd1d",
+   "states": 20,
+   "passes": true,
+   "exit_code": 0,
+   "max_d_f": 0.0,
+   "max_d_jv": 0.0,
+   "hex_file_sha256": "b28c1b9b396f1688f50c681f372e48510370709e3721a04e8d5730a208b41f72",
+   "hex_file_kept_at": "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v25/v25-bins/consistency/robertson_rd1d.consist.txt",
+   "all_components_bitwise_equal": true
+  },
+  "schnakenberg2d": {
+   "binary_sha256": "9582b047669995dcfc3830f0675d39823f28ba7ba528d558d4625047c49f469f",
+   "git_head": "956b578d0b0148bb4aece843899fb5edf689d015",
+   "log": "logs/consistency/schnakenberg2d.log",
+   "family": "schnakenberg2d",
+   "states": 20,
+   "passes": true,
+   "exit_code": 0,
+   "max_d_f": 0.0,
+   "max_d_jv": 0.0,
+   "hex_file_sha256": "ee721431c613897becec37a790f2c5f83505dcfa0f7d0520be1ba43a793cd5e1",
+   "hex_file_kept_at": "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v25/v25-bins/consistency/schnakenberg2d.consist.txt",
+   "all_components_bitwise_equal": true
+  },
+  "porous2d": {
+   "binary_sha256": "9582b047669995dcfc3830f0675d39823f28ba7ba528d558d4625047c49f469f",
+   "git_head": "956b578d0b0148bb4aece843899fb5edf689d015",
+   "log": "logs/consistency/porous2d.log",
+   "family": "porous2d",
+   "states": 20,
+   "passes": true,
+   "exit_code": 0,
+   "max_d_f": 0.0,
+   "max_d_jv": 0.0,
+   "hex_file_sha256": "e7f7fe24411bdef3a8097c78c9f949e9c39327233d13ea48d03949b35708d400",
+   "hex_file_kept_at": "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v25/v25-bins/consistency/porous2d.consist.txt",
+   "all_components_bitwise_equal": true
+  }
+ },
+ "all_pass": true
+}

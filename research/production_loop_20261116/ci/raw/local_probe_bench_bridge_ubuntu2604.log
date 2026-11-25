@@ -1,0 +1,35 @@
+apt_exit=0
+image=26.04
+gcc 4:15.2.0-5ubuntu1
+libsundials-dev 7.1.1+dfsg1-10build3
+== variant a: packages of the workflow as it is
+command: gcc -O3 -fPIC -std=c11 -Wall -c /src/cvode_bridge.c -o /tmp/cvode_bridge.o
+                 from /usr/include/cvode/cvode.h:21,
+                 from /src/cvode_bridge.c:6:
+/usr/include/sundials/sundials_types.h:57:10: fatal error: mpi.h: No such file or directory
+   57 | #include <mpi.h>
+      |          ^~~~~~~
+compilation terminated.
+gcc_exit_a=1
+== variant b: plus libopenmpi-dev
+apt_exit_b=0
+libopenmpi-dev 5.0.10-1
+                 from /usr/include/cvode/cvode.h:21,
+                 from /src/cvode_bridge.c:6:
+/usr/include/sundials/sundials_types.h:57:10: fatal error: mpi.h: No such file or directory
+   57 | #include <mpi.h>
+      |          ^~~~~~~
+compilation terminated.
+gcc_exit_b=1
+== variant c: plus libopenmpi-dev and CPATH=/usr/include/x86_64-linux-gnu/mpi
+lrwxrwxrwx 1 root root 38 Nov 23 12:26 /usr/include/x86_64-linux-gnu/mpi -> /etc/alternatives/mpi-x86_64-linux-gnu
+gcc_exit_c=1
+8
+/src/cvode_bridge.c:31:20: error: unknown type name 'realtype'; did you mean 'sunrealtype'?
+/src/cvode_bridge.c:37:28: error: unknown type name 'realtype'; did you mean 'sunrealtype'?
+/src/cvode_bridge.c:49:27: error: unknown type name 'realtype'; did you mean 'sunrealtype'?
+/src/cvode_bridge.c:74:3: error: unknown type name 'realtype'; did you mean 'sunrealtype'?
+/src/cvode_bridge.c:87:22: error: 'bench_f' undeclared (first use in this function); did you mean 'bench_user'?
+/src/cvode_bridge.c:99:35: error: 'bench_jac_dense' undeclared (first use in this function); did you mean 'bench_jac_cb'?
+/src/cvode_bridge.c:99:53: error: 'bench_jac_band' undeclared (first use in this function); did you mean 'bench_jac_cb'?
+/src/cvode_bridge.c:102:41: error: passing argument 4 of 'CVode' from incompatible pointer type [-Wincompatible-pointer-types]

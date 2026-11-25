@@ -1,0 +1,61 @@
+{
+  "schema": "vigilode.loop-l1.v24-predeclared.v1",
+  "node": "V24_MF_ADAPTIVE_STAGE_SOLVE",
+  "date_kst": "2026-11-23",
+  "authority": "owner decision OD-L1-11 (OWNER_DECISIONS_20261116.json): the restart length and the cadence of the residual test of the protected matrix-free stage solve become adaptive; frozen discriminators before any run; the original stage residual must pass in every solve",
+  "frozen_before": "any edit of the protected matrix-free driver for this node and any run of its grids",
+  "prior_data": {
+    "source": "mf_stage_solve/RESULTS.json and REVIEW.json (node V17, stage client, not the protected driver)",
+    "shipped_policy": "restart length 40; the residual is tested once per restart cycle",
+    "numbers": "a per-stage client with a test after every Arnoldi column needs 0.359, 0.382, 0.216, 0.430 of the instructions of the shipped driver at matched achieved error on four families; exploratory: the shipped driver at restart 10 needs 0.26-0.37 of its own instructions at restart 40, and the per-column test at equal restart 10 needs 0.64-0.78"
+  },
+  "policy": {
+    "cadence": "the projected residual of the Arnoldi relation is tested after every Arnoldi column; when it meets the stage threshold of the shipped driver the cycle ends and the true residual of the iterate is formed and tested against the same threshold (the original stage residual test); if that test fails the solve continues",
+    "restart_length": "a cycle ends at the first column that meets the threshold, so its length follows the solve; the configured restart length stays the upper bound",
+    "variants_fixed_before_any_run": {
+      "P1": "upper bound of every cycle = the configured restart length (40)",
+      "P2": "upper bound 10 for the first cycle of a solve, doubled after each cycle that does not converge, up to the configured restart length"
+    },
+    "choice_of_the_variant": "on two development problems that are not part of the deciding grid (bruss1d n = 1024 and adr2d n = 1024 of crates/rodas5p-integrators/tests/stage_clients_krylov_problems.rs, the five tolerances below): the variant with the smaller geometric mean of instructions at matched achieved error; within 2 percent P1 is taken. The choice is committed before the deciding grid runs.",
+    "shipped_policy_kept": "the shipped policy stays selectable by an explicit option and keeps the driver identifier rodas5p-mf-fast-transformed-v1; the adaptive policy becomes the default of the matrix-free route and reports rodas5p-mf-fast-transformed-v2"
+  },
+  "deciding_grid": {
+    "families": "the four families of node V17 as finally run (mf_stage_solve/PREDECLARED.json, families_final): ac3d, cusp1d, burgers2d, grayscott2d",
+    "tolerances": {
+      "rtol": [
+        0.001,
+        0.0001,
+        1e-05,
+        1e-06,
+        1e-07
+      ],
+      "atol": "equal to rtol"
+    },
+    "reference_error_metric_matched_error_rule_and_timing": "those of mf_stage_solve/PREDECLARED.json, unchanged",
+    "arms": {
+      "S": "the driver with the shipped policy",
+      "N": "the driver with the chosen adaptive variant"
+    }
+  },
+  "discriminators": {
+    "D0_shipped_policy_is_unchanged": "arm S after the edit equals the driver before the edit bit for bit on the 20 cells (end state, step counts, every counter), recorded before the edit (commit A)",
+    "V_validity": "in every stage solve of every run of arm N the true residual of the returned iterate meets the stage threshold of the shipped driver, or the solve is reported as failed in the way the shipped driver reports it; the solve log is audited; violations: 0",
+    "A_accuracy": "in every cell the achieved error of arm N is at most 3 times that of arm S",
+    "P_instructions": "per family the geometric mean over the five tolerances of the instructions of arm N at matched achieved error is at most 0.50 of arm S; in no cell is it above 1.00",
+    "S_steps": "per family the geometric mean of the attempts of arm N is at most 1.05 of arm S; in no cell above 1.15",
+    "B_budget": "in no cell does arm N have more stage solves that exhaust the Krylov budget than arm S",
+    "T_time": "wall time under the quality rule of the loop, reported per family; not part of the verdict",
+    "G_golden": "the default-path golden records of the matrix-free route are re-pinned; a difference report lists every changed record; in each the end state differs from the old record by at most 10 (atol + rtol |y|) in every component and the attempts by at most 20 percent; records of every other route keep their bytes",
+    "R_suites": "sentinels (re-pinned for the edited protected file with old and new pins recorded), stage-client targets, matrix-free tests of the integrators and the facade suite pass; clippy and rustfmt clean"
+  },
+  "verdicts": {
+    "PASS": "D0, V, A, P, S, B, G and R hold",
+    "FAIL": "P, S, A or B fails with V intact: the adaptive policy stays opt-in, the default is not changed, the result is reported",
+    "KILL": "V is violated in any solve, or P is above 0.85 on two families: nothing is merged"
+  },
+  "not_changed": [
+    "the stage threshold (tolerance of the linear solve) and the controller constants",
+    "the Krylov method and its preconditioning",
+    "every other driver; LinearSolverConfig defaults of other routes; G0"
+  ]
+}

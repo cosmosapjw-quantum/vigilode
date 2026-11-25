@@ -77,11 +77,22 @@
 //! production kernels, one vector update for every iterate formed from the
 //! basis, `linear_iterations` per Arnoldi column and `linear_solves` for an
 //! accepted solve.
+//!
+//! # Column-tested restarted GMRES (loop L1 node V24)
+//!
+//! [`StagedGmresWorkspace::solve_column_tested_into`] is a second solver in
+//! this file (owner decision OD-L1-11): the restart loop of the shipped
+//! GMRES-into kernel ([`crate::solve_gmres_into_with_accounting`], no
+//! preconditioner) with a test of the projected residual after every Arnoldi
+//! column, so that a cycle ends at the first column that meets the
+//! threshold. It uses the storage of the workspace and the Givens helpers of
+//! the staged solver above and changes none of that solver's code paths.
 
 use crate::{
-    common::{residual_threshold, validate_tolerances},
-    gmres::arnoldi_happy_breakdown,
-    kernels::{axpy, two_pass_mgs_into},
+    accounting::{LoopExit, ResidualAccounting, reuse_final_residual},
+    common::{residual_threshold, true_residual_into, validate_tolerances},
+    gmres::{GmresConfig, arnoldi_happy_breakdown},
+    kernels::{axpy, normalize, two_pass_mgs_into},
     workspace::{ensure_len, ensure_pool},
 };
 use faer::Mat;
@@ -1000,6 +1011,318 @@ pub fn solve_staged_gmres(
         f64::NAN,
         &mut dummy_telemetry,
     )
+}
+
+/// The report of [`StagedGmresWorkspace::solve_column_tested_into`] (loop L1
+/// node V24). The solution is in the caller's output; a failed solve returns
+/// an error and no report.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct ColumnTestedGmresReport {
+    /// `||rhs||_2`.
+    pub right_norm: f64,
+    /// `max(atol, rtol ||rhs||_2)`: the threshold of every test of the solve.
+    pub threshold: f64,
+    /// The true residual norm of the start.
+    pub initial_residual_norm: f64,
+    /// The true residual norm of the returned iterate, as the final test saw
+    /// it (at most `threshold`).
+    pub residual_norm: f64,
+    /// The projected residual after the last Arnoldi column of the solve
+    /// (`NaN` when no cycle ran).
+    pub projected_residual: f64,
+    /// Arnoldi columns over all cycles.
+    pub columns: u64,
+    pub cycles: u64,
+    /// Cycles that ended at a column whose projected residual met the
+    /// threshold.
+    pub projected_exits: u64,
+    /// Projected exits whose iterate failed the true residual test, after
+    /// which the solve continued.
+    pub failed_confirmations: u64,
+    /// Cycles that ran to their upper bound without a projected exit or a
+    /// breakdown.
+    pub bound_exits: u64,
+    /// Columns of the longest cycle.
+    pub longest_cycle: u64,
+    /// True residuals formed with the operator at the top of a pass.
+    pub true_residuals: u64,
+    /// Krylov-category operator applications of the solve (columns and true
+    /// residuals).
+    pub matvecs: u64,
+    /// Diagnostic operator applications of the solve (the final residual
+    /// under [`ResidualAccounting::RecomputeFinal`]).
+    pub diagnostic_matvecs: u64,
+}
+
+/// The column monitor of [`StagedGmresWorkspace::solve_column_tested_into`]:
+/// `(cycle index from 0, columns of the cycle so far, projected residual,
+/// iterate of that column)`. With a monitor the iterate is formed after
+/// every column (one basis combination each); the solve itself is not
+/// changed by it. Contract tests only.
+pub type ColumnTestMonitor<'a> = dyn FnMut(u64, usize, f64, &[f64]) + 'a;
+
+impl StagedGmresWorkspace {
+    /// Restarted GMRES on `A x = rhs` with a residual test after every
+    /// Arnoldi column (loop L1 node V24, owner decision OD-L1-11).
+    ///
+    /// The loop is that of [`crate::solve_gmres_into_with_accounting`]
+    /// without a preconditioner, and it keeps that kernel's stopping rule:
+    ///
+    /// * At the top of every pass the true residual of the current iterate
+    ///   is formed (`rhs` itself for an all-zero iterate, otherwise
+    ///   `rhs - A x` with one counted Krylov application) and its 2-norm is
+    ///   compared with `max(atol, rtol ||rhs||_2)`. The loop ends only on
+    ///   this test. A budget of `max_arnoldi` columns that is used up, or a
+    ///   residual that cannot start a cycle, is `CoreError::LinearSolve`
+    ///   with the texts of that kernel.
+    /// * After the loop the final residual is reused or recomputed as
+    ///   `accounting` says and tested once more; `output` is written only
+    ///   when it meets the threshold.
+    ///
+    /// What differs is the cycle. The Arnoldi columns are those of that
+    /// kernel (the same two-pass modified Gram-Schmidt, breakdown test and
+    /// normalization); an incremental Givens QR of the Hessenberg matrix
+    /// gives the projected residual `|g_(j+1)|` of every column, and the
+    /// cycle ends at the first column where it is at most the threshold
+    /// (also at a happy breakdown, at the cycle's upper bound and with the
+    /// budget). The iterate is formed once, at the end of the cycle, by back
+    /// substitution, and the next pass tests its true residual: when that
+    /// test fails the solve continues from the iterate.
+    ///
+    /// The upper bound of a cycle is `min(first_cycle_columns, restart)` for
+    /// the first cycle of the solve and doubles after every cycle that is
+    /// followed by another one, up to `restart`: `first_cycle_columns =
+    /// restart` keeps every cycle at the configured restart length.
+    ///
+    /// Counters are charged as in that kernel, except that no preconditioner
+    /// application is made or counted.
+    #[allow(clippy::too_many_arguments)]
+    pub fn solve_column_tested_into(
+        &mut self,
+        op: &dyn LinearOperator,
+        rhs: &[f64],
+        x0: Option<&[f64]>,
+        config: &GmresConfig,
+        first_cycle_columns: usize,
+        accounting: ResidualAccounting,
+        output: &mut [f64],
+        counters: &mut WorkCounters,
+        mut monitor: Option<&mut ColumnTestMonitor<'_>>,
+    ) -> CoreResult<ColumnTestedGmresReport> {
+        config.validate()?;
+        if first_cycle_columns == 0 {
+            return Err(CoreError::InvalidInput(
+                "column-tested GMRES needs a positive first cycle length".into(),
+            ));
+        }
+        let n = op.dimension();
+        if rhs.len() != n || x0.is_some_and(|x| x.len() != n) {
+            return Err(CoreError::Dimension("Krylov system shape mismatch".into()));
+        }
+        if !rhs.iter().all(|v| v.is_finite())
+            || x0.is_some_and(|x| !x.iter().all(|v| v.is_finite()))
+        {
+            return Err(CoreError::NonFinite("Krylov input contains NaN/Inf".into()));
+        }
+        if output.len() != n {
+            return Err(CoreError::Dimension(
+                "GMRES output length differs from the system dimension".into(),
+            ));
+        }
+        let before = *counters;
+        let right_norm = safe_l2(rhs);
+        let threshold = residual_threshold("GMRES", config.rtol, config.atol, right_norm)?;
+        let columns = config.restart.min(config.max_arnoldi).min(n.max(1));
+        self.prepare(n, columns);
+        match x0 {
+            Some(initial) => self.x.copy_from_slice(initial),
+            None => self.x.fill(0.0),
+        }
+
+        let mut bound = first_cycle_columns.min(config.restart);
+        let (mut total, mut cycles) = (0usize, 0u64);
+        let (mut projected_exits, mut failed_confirmations, mut bound_exits) = (0u64, 0u64, 0u64);
+        let (mut true_residuals, mut longest_cycle) = (0u64, 0usize);
+        let mut initial_residual_norm = None;
+        let mut projected_residual = f64::NAN;
+        // The last cycle ended on the projected test; the next true residual
+        // confirms it or not.
+        let mut pending_confirmation = false;
+        let exit = loop {
+            let operator_residual = if self.x.iter().all(|value| *value == 0.0) {
+                self.residual.copy_from_slice(rhs);
+                false
+            } else {
+                true_residual_into(
+                    op,
+                    rhs,
+                    &self.x,
+                    &mut self.operator_output,
+                    &mut self.residual,
+                    counters,
+                    ApplyCategory::Krylov,
+                )?;
+                true_residuals += 1;
+                true
+            };
+            let residual_norm = if operator_residual {
+                safe_l2(&self.residual)
+            } else {
+                right_norm
+            };
+            if initial_residual_norm.is_none() {
+                initial_residual_norm = Some(residual_norm);
+            }
+            if residual_norm <= threshold {
+                break LoopExit {
+                    residual_norm,
+                    confirmed: operator_residual && cycles > 0,
+                };
+            }
+            if pending_confirmation {
+                failed_confirmations += 1;
+            }
+            if total >= config.max_arnoldi {
+                return Err(CoreError::LinearSolve(format!(
+                    "GMRES exhausted {} Arnoldi vectors",
+                    config.max_arnoldi
+                )));
+            }
+            // Without a preconditioner the start of the cycle is the true
+            // residual and its norm is the one just tested.
+            let beta = residual_norm;
+            if !(beta > f64::MIN_POSITIVE && beta.is_finite()) {
+                return Err(CoreError::LinearSolve(
+                    "GMRES preconditioned residual breakdown".into(),
+                ));
+            }
+            let steps = bound.min(config.max_arnoldi - total).min(n.max(1));
+            self.basis[0].copy_from_slice(&self.residual);
+            if normalize(&mut self.basis[0])? == 0.0 {
+                return Err(CoreError::LinearSolve("zero Arnoldi residual".into()));
+            }
+            self.g[..=steps].fill(0.0);
+            self.g[0] = beta;
+            // `built`: columns whose product was applied (charged to the
+            // budget); `used`: columns of the least-squares solution.
+            let (mut built, mut used) = (0usize, 0usize);
+            let (mut projected_exit, mut breakdown_exit) = (false, false);
+            for j in 0..steps {
+                let (previous, rest) = self.basis.split_at_mut(j + 1);
+                let w = &mut rest[0];
+                apply_counted(op, &previous[j], w, counters, ApplyCategory::Krylov)?;
+                two_pass_mgs_into(w, previous, &mut self.h_column, counters)?;
+                let h_next = safe_l2(w);
+                let breakdown = arnoldi_happy_breakdown(&self.h_column[..=j], h_next)?;
+                if breakdown {
+                    w.fill(0.0);
+                } else {
+                    for value in w.iter_mut() {
+                        *value /= h_next;
+                    }
+                }
+                built = j + 1;
+                for i in 0..=j {
+                    self.r[r_index(columns, i, j)] = self.h_column[i];
+                }
+                for i in 0..j {
+                    let (a, b) = (
+                        self.r[r_index(columns, i, j)],
+                        self.r[r_index(columns, i + 1, j)],
+                    );
+                    self.r[r_index(columns, i, j)] = self.cs[i] * a + self.sn[i] * b;
+                    self.r[r_index(columns, i + 1, j)] = -self.sn[i] * a + self.cs[i] * b;
+                }
+                let diagonal = self.r[r_index(columns, j, j)];
+                let den = diagonal.hypot(h_next);
+                if den == 0.0 || !den.is_finite() {
+                    // The column adds nothing the least-squares problem can
+                    // use: the cycle ends with the columns before it.
+                    break;
+                }
+                self.cs[j] = diagonal / den;
+                self.sn[j] = h_next / den;
+                self.r[r_index(columns, j, j)] = den;
+                self.g[j + 1] = -self.sn[j] * self.g[j];
+                self.g[j] *= self.cs[j];
+                used = j + 1;
+                projected_residual = self.g[j + 1].abs();
+                if let Some(monitor) = monitor.as_deref_mut() {
+                    correction_into(self, columns, used);
+                    self.candidate.copy_from_slice(&self.x);
+                    for (c, d) in self.candidate.iter_mut().zip(&self.correction) {
+                        *c += d;
+                    }
+                    monitor(cycles, used, projected_residual, &self.candidate);
+                }
+                if projected_residual <= threshold {
+                    projected_exit = true;
+                    break;
+                }
+                if breakdown {
+                    breakdown_exit = true;
+                    break;
+                }
+            }
+            total += built;
+            counters.linear_iterations += built as u64;
+            cycles += 1;
+            longest_cycle = longest_cycle.max(built);
+            if used == 0 {
+                return Err(CoreError::LinearSolve(
+                    "GMRES Arnoldi breakdown before the first column".into(),
+                ));
+            }
+            correction_into(self, columns, used);
+            axpy(1.0, &self.correction, &mut self.x, counters)?;
+            if projected_exit {
+                projected_exits += 1;
+            } else if !breakdown_exit && built == steps {
+                bound_exits += 1;
+            }
+            pending_confirmation = projected_exit;
+            bound = bound.saturating_mul(2).min(config.restart);
+        };
+
+        let residual_norm = if reuse_final_residual(accounting, exit, false) {
+            exit.residual_norm
+        } else {
+            true_residual_into(
+                op,
+                rhs,
+                &self.x,
+                &mut self.operator_output,
+                &mut self.residual,
+                counters,
+                ApplyCategory::Diagnostic,
+            )?;
+            safe_l2(&self.residual)
+        };
+        if !residual_norm.is_finite() || residual_norm > threshold {
+            return Err(CoreError::LinearSolve(format!(
+                "GMRES true residual {residual_norm:.3e} exceeds {threshold:.3e}"
+            )));
+        }
+        counters.linear_solves += 1;
+        output.copy_from_slice(&self.x);
+        let delta = counters.delta(before);
+        Ok(ColumnTestedGmresReport {
+            right_norm,
+            threshold,
+            initial_residual_norm: initial_residual_norm.unwrap_or(residual_norm),
+            residual_norm,
+            projected_residual,
+            columns: total as u64,
+            cycles,
+            projected_exits,
+            failed_confirmations,
+            bound_exits,
+            longest_cycle: longest_cycle as u64,
+            true_residuals,
+            matvecs: delta.linear_matvecs,
+            diagnostic_matvecs: delta.diagnostic_matvecs,
+        })
+    }
 }
 
 #[cfg(test)]

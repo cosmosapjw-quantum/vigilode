@@ -1,20 +1,24 @@
 //! [`Rodas5p::solve`]: validation, routing to a protected driver, and the
 //! run record.
 
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use std::fmt::Display;
 
 use rodas5p_core::{CoreError, CoreResult, DenseMatrix, LinearSolverConfig, WorkCounters};
 use rodas5p_integrators::{
-    AdaptiveDenseSegmentRun, AdaptiveFailureKind, AdaptiveStepConfig, BandedJacobian,
+    AdaptiveDenseSegmentRun, AdaptiveFailureKind, AdaptiveStepConfig, BandedJacobian, BandedKernel,
     DenseErrorControl, DriverPartial, DriverStopReason, FastInteriorControl, IntegrationMethod,
     InteriorSampling, JacobianIntoFn, ObservedIntegrationResult, OdeProblem, OutputSamplingPlan,
     OutputSchedule, RODAS5P_SEQUENTIAL_DENSE_DRIVER_ID, RoutedDriver, RoutedRun, RoutingError,
     RoutingOptions, StructureDeclaration, integrate_adaptive_dense_observed_with_partial,
     integrate_adaptive_dense_observed_with_segments, integrate_rodas5p_fast_banded_dense_observed,
-    integrate_rodas5p_fast_banded_dense_observed_with_atol, integrate_rodas5p_fast_banded_observed,
-    integrate_rodas5p_fast_banded_observed_with_atol, integrate_rodas5p_fast_dense_observed,
+    integrate_rodas5p_fast_banded_dense_observed_with_atol,
+    integrate_rodas5p_fast_banded_dense_observed_with_atol_and_kernel,
+    integrate_rodas5p_fast_banded_dense_observed_with_kernel,
+    integrate_rodas5p_fast_banded_observed, integrate_rodas5p_fast_banded_observed_with_atol,
+    integrate_rodas5p_fast_banded_observed_with_atol_and_kernel,
+    integrate_rodas5p_fast_banded_observed_with_kernel, integrate_rodas5p_fast_dense_observed,
     integrate_rodas5p_fast_dense_observed_with_atol, integrate_rodas5p_fast_observed_with_atol,
     integrate_rodas5p_routed_observed_with_options,
 };
@@ -24,9 +28,11 @@ use crate::{
     fd::{Guard, band_groups, banded_fd_fill, dense_fd_fill, dense_fd_jacobian, dense_from_band},
     options::{Atol, InteriorError, Options, Tier},
     problem::{Jacobian, Problem},
+    records::LuRecord,
     solution::{
-        Callback, DriverWork, Extension, FD_INCREMENT_RULE, FailureReason, JacobianRecord,
-        KrylovStartRecord, RouteRecord, STATS_SCHEMA, Solution, Stats, Status, StopRecord,
+        Callback, CallbackWork, DriverWork, Extension, FD_INCREMENT_RULE, FailureReason,
+        FiniteDifferenceWork, JacobianRecord, KrylovStartRecord, RouteRecord, STATS_SCHEMA,
+        Solution, Stats, Status, StopRecord,
     },
 };
 
@@ -47,6 +53,15 @@ const ENTRY_FAST_DENSE: &str = "integrate_rodas5p_fast_dense_observed";
 const ENTRY_FAST_DENSE_ATOL: &str = "integrate_rodas5p_fast_dense_observed_with_atol";
 const ENTRY_FAST_BANDED_DENSE: &str = "integrate_rodas5p_fast_banded_dense_observed";
 const ENTRY_FAST_BANDED_DENSE_ATOL: &str = "integrate_rodas5p_fast_banded_dense_observed_with_atol";
+/// The twins of the four banded entry points that take the kernel: called
+/// when [`banded_kernel`] chooses the Slices kernel.
+const ENTRY_BANDED_KERNEL: &str = "integrate_rodas5p_fast_banded_observed_with_kernel";
+const ENTRY_BANDED_ATOL_KERNEL: &str =
+    "integrate_rodas5p_fast_banded_observed_with_atol_and_kernel";
+const ENTRY_FAST_BANDED_DENSE_KERNEL: &str =
+    "integrate_rodas5p_fast_banded_dense_observed_with_kernel";
+const ENTRY_FAST_BANDED_DENSE_ATOL_KERNEL: &str =
+    "integrate_rodas5p_fast_banded_dense_observed_with_atol_and_kernel";
 /// Dense output under a mass matrix or `InteriorError::Enforce`.
 const ENTRY_SEQUENTIAL_DENSE: &str = "integrate_adaptive_dense_observed_with_segments";
 /// The same driver without the segment sink (mass matrix, no dense output).
@@ -56,6 +71,85 @@ const ENTRY_SEQUENTIAL_NO_SEGMENTS: &str = "integrate_adaptive_dense_observed_wi
 /// order 5(4), run through the protected drivers of `rodas5p-integrators`.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Rodas5p;
+
+impl Rodas5p {
+    pub(crate) fn empty_stats(problem: &Problem, opts: &Options, start: f64, y: &[f64]) -> Stats {
+        let adaptive = AdaptiveStepConfig {
+            rtol: opts.rtol,
+            atol: match &opts.atol {
+                Atol::Scalar(s) => *s,
+                Atol::Vector(v) => v.iter().copied().fold(0.0, f64::max),
+            },
+            initial_step: opts.h0,
+            max_attempts: opts.max_steps,
+            ..AdaptiveStepConfig::default()
+        };
+        let jacobian_record = match &problem.jacobian {
+            Jacobian::Dense(_) => JacobianRecord::Dense,
+            Jacobian::Banded { lower, upper, .. } => JacobianRecord::Banded {
+                lower: *lower,
+                upper: *upper,
+            },
+            Jacobian::Jvp(_) => JacobianRecord::Jvp,
+            Jacobian::SparseJvp { pattern, .. } => {
+                if pattern.is_banded() {
+                    let (lower, upper) = pattern.bandwidth();
+                    JacobianRecord::Banded { lower, upper }
+                } else {
+                    JacobianRecord::Jvp
+                }
+            }
+            Jacobian::FiniteDifference => match problem.band {
+                Some((lower, upper)) => JacobianRecord::FiniteDifferenceBanded {
+                    lower,
+                    upper,
+                    groups: (lower + upper + 1).min(problem.dimension),
+                    increment: FD_INCREMENT_RULE,
+                },
+                None => JacobianRecord::FiniteDifferenceDense {
+                    increment: FD_INCREMENT_RULE,
+                },
+            },
+        };
+        let lu = LuRecord::Faer;
+        Stats {
+            schema: STATS_SCHEMA,
+            options: opts.clone(),
+            matrix_free_linear: None,
+            adaptive: (&adaptive).into(),
+            t_span: (start, start),
+            y0: y.to_vec(),
+            dimension: problem.dimension,
+            autonomous: problem.autonomous,
+            time_derivative: problem.time_derivative.is_some(),
+            jacobian: jacobian_record,
+            tier_requested: opts.tier,
+            tier_executed: Tier::Protected,
+            route: RouteRecord {
+                entry_point: "progress_bound",
+                driver_id: "none",
+                routing: None,
+            },
+            attempts: 0,
+            accepted_steps: 0,
+            rejected_steps: 0,
+            internal_steps: 0,
+            output_clipped_steps: 0,
+            counters: (&WorkCounters::default()).into(),
+            driver_counters: (&WorkCounters::default()).into(),
+            driver_work: DriverWork::Dense {
+                jacobian_reuses: 0,
+                lu,
+            },
+            finite_difference: FiniteDifferenceWork::default(),
+            callbacks: CallbackWork::default(),
+            stop: None,
+            driver_message: "progress bound unreachable".into(),
+            terminal_event: None,
+            event_evaluations: 0,
+        }
+    }
+}
 
 /// The validated absolute tolerance: one value, or one per component.
 enum AtolSpec {
@@ -72,6 +166,31 @@ impl AtolSpec {
             Self::Scalar(a) => *a,
             Self::Vector(v) => v.iter().copied().fold(0.0, f64::max),
         }
+    }
+}
+
+/// The smallest half band width at which the banded routes of
+/// [`Rodas5p::solve`] run the Slices kernel of the protected banded driver.
+///
+/// A band with `lower >= BANDED_SLICES_MIN_HALF_WIDTH` and
+/// `upper >= BANDED_SLICES_MIN_HALF_WIDTH` runs on the Slices kernel, every
+/// other band on the Indexed kernel. The two kernels perform the same
+/// floating-point operations in the same order, so the results are the same
+/// bits; [`crate::Stats::route`] names the entry point and the driver that
+/// ran.
+///
+/// The value is the result of the width scan of loop L1 node V22: from this
+/// half band width on the Slices kernel needed at most 0.95 of the
+/// instructions and of the cycles of the Indexed kernel on every scanned
+/// problem; at half band width 5 it needed more cycles.
+pub const BANDED_SLICES_MIN_HALF_WIDTH: usize = 6;
+
+/// The kernel of the facade's banded routes for `band`.
+fn banded_kernel(band: &BandedJacobian) -> BandedKernel {
+    if band.lower.min(band.upper) >= BANDED_SLICES_MIN_HALF_WIDTH {
+        BandedKernel::Slices
+    } else {
+        BandedKernel::Indexed
     }
 }
 
@@ -341,18 +460,34 @@ impl Rodas5p {
                             &ode, t_span, y0, &adaptive, control, atol,
                         ),
                     ),
-                    (Some(band), AtolSpec::Scalar(_)) => (
-                        ENTRY_FAST_BANDED_DENSE,
-                        integrate_rodas5p_fast_banded_dense_observed(
-                            &ode, band, t_span, y0, &adaptive, control,
+                    (Some(band), AtolSpec::Scalar(_)) => match banded_kernel(band) {
+                        BandedKernel::Indexed => (
+                            ENTRY_FAST_BANDED_DENSE,
+                            integrate_rodas5p_fast_banded_dense_observed(
+                                &ode, band, t_span, y0, &adaptive, control,
+                            ),
                         ),
-                    ),
-                    (Some(band), AtolSpec::Vector(atol)) => (
-                        ENTRY_FAST_BANDED_DENSE_ATOL,
-                        integrate_rodas5p_fast_banded_dense_observed_with_atol(
-                            &ode, band, t_span, y0, &adaptive, control, atol,
+                        kernel => (
+                            ENTRY_FAST_BANDED_DENSE_KERNEL,
+                            integrate_rodas5p_fast_banded_dense_observed_with_kernel(
+                                &ode, band, t_span, y0, &adaptive, control, kernel,
+                            ),
                         ),
-                    ),
+                    },
+                    (Some(band), AtolSpec::Vector(atol)) => match banded_kernel(band) {
+                        BandedKernel::Indexed => (
+                            ENTRY_FAST_BANDED_DENSE_ATOL,
+                            integrate_rodas5p_fast_banded_dense_observed_with_atol(
+                                &ode, band, t_span, y0, &adaptive, control, atol,
+                            ),
+                        ),
+                        kernel => (
+                            ENTRY_FAST_BANDED_DENSE_ATOL_KERNEL,
+                            integrate_rodas5p_fast_banded_dense_observed_with_atol_and_kernel(
+                                &ode, band, t_span, y0, &adaptive, control, atol, kernel,
+                            ),
+                        ),
+                    },
                 };
                 let result = result.map_err(|e| driver_error(e, &guard))?;
                 let fast = result.fast;
@@ -380,17 +515,29 @@ impl Rodas5p {
                 }
             }
             Plan::Banded(band) => {
-                let (entry_point, result) = match &atol {
-                    AtolSpec::Scalar(_) => (
+                let (entry_point, result) = match (&atol, banded_kernel(&band)) {
+                    (AtolSpec::Scalar(_), BandedKernel::Indexed) => (
                         ENTRY_BANDED,
                         integrate_rodas5p_fast_banded_observed(
                             &ode, &band, t_span, y0, &adaptive, &schedule,
                         ),
                     ),
-                    AtolSpec::Vector(atol) => (
+                    (AtolSpec::Scalar(_), kernel) => (
+                        ENTRY_BANDED_KERNEL,
+                        integrate_rodas5p_fast_banded_observed_with_kernel(
+                            &ode, &band, t_span, y0, &adaptive, &schedule, kernel,
+                        ),
+                    ),
+                    (AtolSpec::Vector(atol), BandedKernel::Indexed) => (
                         ENTRY_BANDED_ATOL,
                         integrate_rodas5p_fast_banded_observed_with_atol(
                             &ode, &band, t_span, y0, &adaptive, &schedule, atol,
+                        ),
+                    ),
+                    (AtolSpec::Vector(atol), kernel) => (
+                        ENTRY_BANDED_ATOL_KERNEL,
+                        integrate_rodas5p_fast_banded_observed_with_atol_and_kernel(
+                            &ode, &band, t_span, y0, &adaptive, &schedule, atol, kernel,
                         ),
                     ),
                 };
@@ -516,6 +663,12 @@ impl Rodas5p {
         let mut counters: WorkCounters = driver_counters;
         counters.rhs_calls += fd.rhs_calls;
         counters.rhs_evaluations += fd.rhs_calls;
+        if let Jacobian::SparseJvp { pattern, .. } = &problem.jacobian
+            && !run.matrix_free
+        {
+            let (_, num_colors) = crate::coloring::column_coloring(pattern);
+            counters.jvp_vectors += (num_colors as u64) * counters.jacobian_builds;
+        }
 
         let status = match (guard.fatal(), guard.ceiling_hit()) {
             (Some(fatal), _) => Status::Failed(FailureReason::CallbackFailed {
@@ -613,6 +766,7 @@ impl Rodas5p {
             stats,
             status,
             events: Vec::new(),
+            splices: Vec::new(),
             extension: run.segments,
         };
         // Event callbacks are user code too: a fatal callback ends the run.
@@ -758,6 +912,14 @@ fn validate(
                 "the declared band {declared:?} differs from the Jacobian band ({lower}, {upper})"
             ));
         }
+    }
+    if let Jacobian::SparseJvp { pattern, .. } = &problem.jacobian
+        && pattern.n() != n
+    {
+        return invalid(format!(
+            "the sparsity pattern dimension {} differs from the problem dimension {n}",
+            pattern.n()
+        ));
     }
     if let Some(reason) = crate::capabilities::final_unsupported(problem) {
         return unsupported(reason);
@@ -906,6 +1068,62 @@ fn build(
                 JacobianRecord::Banded { lower, upper },
             )
         }
+        (Jacobian::SparseJvp { pattern, jvp: user }, _) => {
+            if pattern.is_banded() {
+                let (lower, upper) = pattern.bandwidth();
+                let width = lower + upper + 1;
+                let (colors, num_colors) = crate::coloring::column_coloring(pattern);
+                let mut seeds = vec![vec![0.0; n]; num_colors];
+                for (k, seed) in seeds.iter_mut().enumerate() {
+                    crate::coloring::seed_vector(&colors, k, seed);
+                }
+                let compressed_ws =
+                    Mutex::new((vec![vec![0.0; n]; num_colors], vec![0.0; pattern.nnz()]));
+                let pattern_arc = Arc::new(pattern.clone());
+                let colors_arc = Arc::new(colors);
+                let seeds_arc = Arc::new(seeds);
+                let fill: CoreRhs = {
+                    let (user, guard) = (user.clone(), guard.clone());
+                    Arc::new(move |t, y, out| {
+                        out.fill(0.0);
+                        let mut ws = compressed_ws.lock().expect("sparse JVP workspace mutex");
+                        let (ref mut compressed, ref mut values) = *ws;
+                        for (seed, comp_out) in seeds_arc.iter().zip(compressed.iter_mut()) {
+                            guard.vector_call(Callback::Jvp, t, y, comp_out, |buf| {
+                                user(t, y, seed, buf)
+                            })?;
+                        }
+                        crate::coloring::recover_values(
+                            &pattern_arc,
+                            &colors_arc,
+                            compressed,
+                            values,
+                        );
+                        let mut offset = 0usize;
+                        for i in 0..n {
+                            let r = pattern_arc.row(i);
+                            for &j in r {
+                                out[i * width + (j + lower - i)] = values[offset];
+                                offset += 1;
+                            }
+                        }
+                        finite(out, "sparse JVP assembled band Jacobian")
+                    })
+                };
+                jacobian = Some(band_as_dense(fill.clone(), n, lower, upper));
+                (
+                    Plan::Banded(BandedJacobian { lower, upper, fill }),
+                    JacobianRecord::Banded { lower, upper },
+                )
+            } else {
+                let (user, guard) = (user.clone(), guard.clone());
+                jvp = Some(Arc::new(move |t, y, v, out| {
+                    finite(v, "JVP direction")?;
+                    guard.vector_call(Callback::Jvp, t, y, out, |out| user(t, y, v, out))
+                }));
+                (Plan::Routed { declaration: None }, JacobianRecord::Jvp)
+            }
+        }
     };
 
     // The sequential dense driver reads the Jacobian through the dense
@@ -940,6 +1158,17 @@ fn build(
         None => ode,
     };
     Ok((ode, plan, record))
+}
+
+/// The driver-level problem of `problem` under the facade lowering: the
+/// [`build`] that [`Rodas5p::solve`] runs, with the callbacks wrapped by
+/// `guard`. Accessor for the registry adapters of `selection` (research loop
+/// L1, node V03); nothing on the RODAS5P path calls it or changes with it.
+pub(crate) fn lowered_driver_problem(
+    problem: &Problem,
+    guard: &Arc<Guard>,
+) -> Result<OdeProblem, SolveError> {
+    build(problem, guard, false).map(|(ode, _plan, _record)| ode)
 }
 
 /// A dense Jacobian assembled from a band fill. `OdeProblem` requires a

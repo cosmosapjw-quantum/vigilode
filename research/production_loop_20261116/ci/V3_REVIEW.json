@@ -1,0 +1,932 @@
+{
+  "schema": "vigilode.loop.ci-selection-v3-review.v1",
+  "run_id": "wf_99d5d9d2-ffe",
+  "base": "1ffbda20f0d8b7afab6d31134a1bea683f04ffda",
+  "merged": "8ce2a318 (builder head 1a1baf4c)",
+  "note": "Verbatim structured returns: builder (b0d4bc97), two adversarial reviewers, fix round (1a1baf4c), recheck. Open: M-N7 hosted duration of a full run with coverage and strace; R-1 (minor) artifact downloads of the same-image baseline scan.",
+  "build": {
+    "status": "done",
+    "summary": "CI selection v3 (OD-L1-19/20/21) is implemented in tools/ci/select_tests.py. For each target it records compile inputs (rustc dep-info), executed files (coverage), and read/dirs/absent paths (strace through cargo's runner with a seccomp filter), plus each package's library inputs. Rules 1-9 are in: image and PR-base full triggers, noop/body/structural classification, a directory rule, unmapped targets run, filtered baseline failures, and examples. The literal matcher is gone. Negative controls now run measured through a new `control` subcommand, and their failures are merged into outcome.failed. Workflows: test jobs queue instead of cancelling, strace is installed, python3 -u, branch passed through env, overwrite on upload, a self-test step. The A1 closure step is removed. The checker fix for F-08 is in. Verified: self-test passes and flags 25 problems in the v2 workflows. A local measured run of 7 targets plus 1 example passed with 0 entries lost; it found a strace_works bug, now fixed. 15/15 selection cases pass, plus the control and fake-gh probes, reachability 99/99, YAML parse and the loop checker. Of the 26 findings, 25 are fixed and F12 is not applicable. Rulings R1-R23 are in V3_NOTES.md; TRIAGE section 11 is written in Korean.",
+    "branch": "research/production-loop-20261116-w3-ci3",
+    "head_commit": "b0d4bc97ee7ab14831843d41e19a77c84f82c289",
+    "checks": [
+      {
+        "name": "selector self-test (verification 1)",
+        "command": "python3 -I tools/ci/select_tests.py self-test",
+        "exit_code": 0,
+        "result": "self-test passed (classification, -z parsing, dep-info normalisation, strace parsing, required features, baseline filtering, image/base triggers, map rules 3-8, fake-gh baseline lookup, workflow mechanics); against the v2 workflows the mechanics check reports 25 problems (v3_logs/self_test_against_v2_workflows.log)"
+      },
+      {
+        "name": "local measured run with coverage and strace (verification 2)",
+        "command": "taskset -c 0-5,12-17 python3 -u tools/ci/select_tests.py run --selection e2e_selection.json --mode normal --measure --jobs 2 (CARGO_TARGET_DIR=.../w3-ci3, VIGILODE_LLVM_BIN=.../w3-llvm/...)",
+        "exit_code": 0,
+        "result": "core residual_gain_contract, integrators lib/constants_provenance_contracts/generic_scope_contracts/ppsw1_6b_contracts/ptsw2b_contracts, cli alg02_predictive_controller all pass; example sp01_dupfix_profile compiled; 8 entries measured, 0 lost; first attempt exited 1 on a strace_works bug (fixed, log kept)"
+      },
+      {
+        "name": "selection cases on scratch commits (verification 2)",
+        "command": "python3 -I research/production_loop_20261116/ci/v3_selection_cases.py --repo <sparse shared clone> --base 4c2e41d4 --map v3_logs/map_e2e_plus_control.json",
+        "exit_code": 0,
+        "result": "15/15: F1, F2, F3, F4, F5, F6, F7 (+hybrid, +vigilode), F11, N1, N1-no-reader, N2, C1 (negative control), S1 select the named targets; the unrestricted select subcommand also selects every expected target"
+      },
+      {
+        "name": "control subcommand smoke test",
+        "command": "select_tests.py control ... --test prothero_robinson_wfiltered_enforce_kill_gate (recorded / wrong signature / unselected) and run --measure --control-maps --failed-controls",
+        "exit_code": 0,
+        "result": "recorded signature passes (exit 0), wrong signature fails (exit 1) and writes failed-controls.txt, unselected not run; merge puts the control entry in the map and the failure in outcome.failed"
+      },
+      {
+        "name": "baseline lookup probe with fake gh (F-09)",
+        "command": "PATH=<fake gh>:$PATH GITHUB_REPOSITORY=owner/repo select_tests.py baseline ... --head <sha>",
+        "exit_code": 0,
+        "result": "skips newer, non-ancestor, incomplete and HTTP-502 runs and picks run 101; a listing failure and a download failure each get their own note; a branch name containing shell syntax is not executed"
+      },
+      {
+        "name": "reachability checker (verification 3)",
+        "command": "python3 tools/check_ignored_tests_in_ci.py",
+        "exit_code": 0,
+        "result": "99 ignored tests: 99 reachable from CI, 0 documented exclusions; probe: an ignored test in crates/vigilode-bench is now unreachable (exit 1), and removing the control steps makes both controls unreachable"
+      },
+      {
+        "name": "YAML parse of the three workflows (verification 3)",
+        "command": "python3 yaml.safe_load of production.yml, ignored-tests.yml, a1-inner-tolerance-parity.yml (actionlint not installed)",
+        "exit_code": 0,
+        "result": "all parse; test and ignored-tests jobs have cancel-in-progress false; short jobs cancel on non-main refs; no workflow-level concurrency; no schedule; time limits 300/330 kept"
+      },
+      {
+        "name": "loop checker (verification 3)",
+        "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
+        "exit_code": 0,
+        "result": "PASS: strict JSON, task/DAG structure, ancestry, protected and evidence identities (no complaint)"
+      },
+      {
+        "name": "strace cost probe",
+        "command": "20000 stat / getppid calls with and without the runner's strace command, taskset -c 0-5,12-17",
+        "exit_code": 0,
+        "result": "traced call ~0.2-0.4 ms on this host at load ~190; untraced calls not slowed"
+      }
+    ],
+    "open_issues": [
+      "The hosted duration of a full run with coverage and strace has not been measured. If it exceeds the 300/330-minute limits, the job leaves no outcome and the next run is full again.",
+      "The first v3 run of each job is full: the schema was bumped and tools/ci/ changed.",
+      "R9 follows the design literally: a body change always selects the owning package's own lib/bin unit tests, because their dep-info lists every source of the crate. The alternative is to exempt them as for noop changes; the owner can choose that.",
+      "On the two negative cases: every crates/*/src file is read by generic_scope_contracts. So a comment-only change in a member source selects that one reader; it selects nothing only if that reader is removed (case N1-no-reader). A body change also selects the reader and the package's own lib unit tests (case N2).",
+      "Gaps that remain and are documented in TRIAGE 11.5: doc tests are not measured (no file access found in member doc comments); a noop change shifts spans (line!, panic locations); auto-trait leakage through body changes; inputs read only in some runs; build-script rerun inputs are not recorded; tests filtered with --skip other than the declared controls; reads that strace cannot see.",
+      "F14: no periodic full run, by owner decision OD-L1-21(4). A missed change is revisited only by the full suite before release.",
+      "A scratch `git commit-tree` made in the worktree during the baseline probe wrote one unreferenced commit object (ba8f64bc) into the shared object store. It is inert; all later scratch commits went to a clone in the scratchpad."
+    ],
+    "files_written": [
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/tools/ci/select_tests.py",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/tools/check_ignored_tests_in_ci.py",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/.github/workflows/production.yml",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/.github/workflows/ignored-tests.yml",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/.github/workflows/a1-inner-tolerance-parity.yml",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/research/production_loop_20261116/ci/V3_NOTES.md",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/research/production_loop_20261116/ci/TRIAGE_KO.md",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/research/production_loop_20261116/ci/v3_selection_cases.py",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/research/production_loop_20261116/ci/v3_logs/ (18 files: self_test.log, self_test_against_v2_workflows.log, e2e_run.log, e2e_attempt1_strace_works_bug.log, e2e_selection.json, e2e_outcome.json, e2e_map.json, map_e2e_plus_control.json, selection_cases.log, selection_cases.json, control_smoke.log, control_kill_gate_fragment.json, baseline_probe_f09.log, checker_probe_f08.log, check_ignored_tests_in_ci.log, workflows_yaml.log, check_checkpoint.log, strace_cost_probe.log)"
+    ],
+    "finding_status": [
+      {
+        "id": "F1",
+        "status": "fixed",
+        "how": "The other_rust class is removed. The #[path] file is in residual_gain_contract's compile set (dep-info). Case F1, a replay of 95d589e86, selects it."
+      },
+      {
+        "id": "F2",
+        "status": "fixed",
+        "how": "cli main.rs, which constants_provenance_contracts include_str!s, is in that test's compile set. It is selected for structural, body and comment-only changes (case F2, noop)."
+      },
+      {
+        "id": "F3",
+        "status": "fixed",
+        "how": "Rule 3 checks every mapped target of every scoped package. alg02_predictive_controller's compile set holds rnext_common/mod.rs (case F3)."
+      },
+      {
+        "id": "F4",
+        "status": "fixed",
+        "how": "The sha256 pins appear in the strace read sets of ptsw2b_contracts and ppsw1_6b_contracts (case F4)."
+      },
+      {
+        "id": "F5",
+        "status": "fixed",
+        "how": "Lib and bin unit-test artifacts (profile.test) are mapped. The integrators lib compile set holds tests/support/a02_packet_counter_contract.rs (case F5)."
+      },
+      {
+        "id": "F6",
+        "status": "fixed",
+        "how": "Files named only in the TOML table, including FROZEN_ZETA34_POLICY.json, are in constants_provenance_contracts' read set (case F6)."
+      },
+      {
+        "id": "F7",
+        "status": "fixed",
+        "how": "generic_scope_contracts has 308 read paths and 20 dirs, including the non-member crates. Added files select it through the directory-listing rule (cases F7, F7-hybrid, F7-vigilode)."
+      },
+      {
+        "id": "F8",
+        "status": "fixed",
+        "how": "The pull-request base sha is recorded, and a change since the baseline runs the whole suite (the owner's choice; the merge checkout is kept). Covered by the self-test of full_reasons."
+      },
+      {
+        "id": "F9",
+        "status": "fixed",
+        "how": "A failed control is written to failed-controls.txt and merged into outcome.failed, so rule 6 selects it again. The controls themselves are measured with the `control` subcommand (R11)."
+      },
+      {
+        "id": "F10",
+        "status": "fixed",
+        "how": "Targets whose required features are not enabled by default are never named. Baseline failures are filtered to current targets; deleted or unmet ones are dropped with a note (self-test)."
+      },
+      {
+        "id": "F11",
+        "status": "fixed",
+        "how": "Example compile sets are mapped, and a changed input compiles the example with `cargo test --no-run --example` (case F11)."
+      },
+      {
+        "id": "F12",
+        "status": "not_applicable",
+        "how": "The literal matcher is removed (R12); selection uses only measured inputs."
+      },
+      {
+        "id": "F13",
+        "status": "fixed",
+        "how": "git diff -z --name-status -M is parsed, and dep-info paths are joined to the repository root. Self-tested with quotes, tabs, non-ASCII names, a rename and a changed cwd."
+      },
+      {
+        "id": "F14",
+        "status": "fixed",
+        "how": "ImageOS and ImageVersion are recorded, and a change runs the whole suite. The periodic full run was declined by OD-L1-21(4); the full suite before release covers missed changes."
+      },
+      {
+        "id": "F-01",
+        "status": "fixed",
+        "how": "Concurrency is set per job: test and ignored-tests use cancel-in-progress false and queue; the short jobs still cancel on non-main refs. Checked by check_workflows."
+      },
+      {
+        "id": "F-02",
+        "status": "fixed",
+        "how": "Same fix as F10: required-features targets are never named, and baseline failures are filtered with notes."
+      },
+      {
+        "id": "F-03",
+        "status": "fixed",
+        "how": "Same fix as F9. Merging into outcome.failed was chosen over gating the upload; the control steps have ids kill-gate and stop-diff."
+      },
+      {
+        "id": "F-04",
+        "status": "fixed",
+        "how": "Same fix as F8: the pull-request base trigger with the merge checkout."
+      },
+      {
+        "id": "F-05",
+        "status": "fixed",
+        "how": "Only the step 'Run the workspace test closure' is removed from a1-inner-tolerance-parity.yml."
+      },
+      {
+        "id": "F-06",
+        "status": "fixed",
+        "how": "Every selector step runs with python3 -u, and stream() flushes each line."
+      },
+      {
+        "id": "F-07",
+        "status": "fixed",
+        "how": "The workflows no longer call `has`; the control subcommand fails its step on any error, and `has` exits 1 when the selection is missing. check_workflows requires `|| exit 1` if `has` comes back."
+      },
+      {
+        "id": "F-08",
+        "status": "fixed",
+        "how": "The checker counts --workspace only for tests under member directories; checker_probe_f08.log shows it."
+      },
+      {
+        "id": "F-09",
+        "status": "fixed",
+        "how": "A failed run listing and failed downloads each get their own note (fake-gh self-test and baseline_probe_f09.log)."
+      },
+      {
+        "id": "F-10",
+        "status": "fixed",
+        "how": "The 300/330-minute limits are kept (raised in 52eb089f) and asserted by the self-test. The hosted full-run time with strace is an open issue."
+      },
+      {
+        "id": "F-11",
+        "status": "fixed",
+        "how": "Both upload-artifact steps set overwrite: true."
+      },
+      {
+        "id": "F-12",
+        "status": "fixed",
+        "how": "BRANCH, HEAD_SHA, PR_BASE and FULL pass through the job env, and the branch is URL-encoded; the probe used shell syntax in a branch name."
+      }
+    ],
+    "key_numbers": [
+      "26 review findings: 25 fixed, 1 not applicable (F12)",
+      "local measured run: 8 map entries, 0 lost; 5 packages' library inputs recorded (non-Rust inputs: core fixture JSON, fair-ab reference script)",
+      "integrators lib unit tests: 141 passed, 1 ignored, 14.9 s; ppsw1_6b_contracts 70.6 s; alg02_predictive_controller 192 s (debug, coverage, strace, host load ~190)",
+      "traced syscalls per target: 95-126; generic_scope_contracts 1007 (read 308, dirs 20)",
+      "strace cost on this host: ~0.2-0.4 ms per traced call, untraced calls unaffected; estimated full-run cost in the tens of seconds",
+      "selection cases: 15/15 pass; the unrestricted CLI adds 448-449 unmeasured targets through rule 5 (expected with a 10-entry local map)",
+      "the self-test's workflow check flags 25 problems in the v2 workflows and 0 in v3",
+      "reachability: 99/99 ignored tests",
+      "kill-gate control entry: 17 executed files; the selector's own ignored-mode entry for that target: 0 executed files"
+    ],
+    "rulings": [
+      "R1: schemas bumped: coverage-map.v2, test-outcome.v2, test-selection.v3",
+      "R3: a fifth set, absent, records failed ENOENT/ENOTDIR probes; stat, access, readlink, execve, chdir and fchdir are also traced; strace -y; names that may be unknown on an architecture carry strace's '?' qualifier",
+      "R4: per-package inputs of the non-test library and binaries; a non-Rust input is structural; the inputs are united with the carried-over entry",
+      "R5: build-script rerun-if-changed inputs are not recorded",
+      "R7: directory rule uses the nearest ancestor that exists on both sides, plus created and removed directories",
+      "R8: noop changes count read sets and compile sets of every target except the owning crate's unit tests",
+      "R9: body changes apply rule 3 literally (the owning crate's unit tests are selected)",
+      "R10: doc tests run with any selected target of their package and on body changes; they are not traced",
+      "R11: negative controls are measured by the control subcommand; failures are merged into outcome.failed",
+      "R12: the literal matcher is removed",
+      "R15: the pull-request merge checkout is kept, with the base-sha trigger",
+      "R16: concurrency is set per job",
+      "R17: baseline lookup has no status filter, considers only runs with a lower id, and skips non-ancestor heads",
+      "R20: the self-test runs in CI and checks workflow mechanics"
+    ]
+  },
+  "reviews": [
+    {
+      "lens": "soundness of the selection",
+      "verdict": "sound_with_fixes",
+      "summary": "Reviewed b0d4bc97 read-and-run. Lens findings: F1-F13 closed (F12 N/A), F14 partly (image trigger added; path filters unchanged, no periodic run by owner). With v3 decide() and the builder's measured map, replays of 95d589e86 and ee138227 and cases F3-F7 select the named targets; a sweep of 1040 compile-time links of 588 units (w2-v24 dep-info) under noop/body/structural misses only own-crate lib/bin unit tests on noop (R8, by design). Probes: coverage attributes macro-generated and include!d fn regions to their own files; strace -ff -y traces children, cwd, stat/ls/absent probes. No major hole. Minor holes: (1) tokenizer drops operator spacing: '&&'->'& &' or '=>'->'= >' is noop, so executing targets are skipped; (2) path filters omit measured inputs (docs/, research/, fixtures/, tools/, .cargo/); (3) listing rule judges directory existence on PR heads, not the merge tree; (4) .gitattributes not global though it changes checked-out bytes; (5) mkdir/rename/unlink/utimensat/failed chdir untraced; (6) noop/doc-test invariants unenforced. Scope clean: allowed paths only, protected files untouched.",
+      "earlier_findings": [
+        {
+          "id": "F1",
+          "closed": true,
+          "evidence": "Real diff 95d589e86^..95d589e86 through v3 decide() with map_e2e_plus_control.json selects rodas5p-core residual_gain_contract (+doc): gain_witness.rs is in its compile and executed sets; no note. review-soundness/cases_v3.jsonl line 1."
+        },
+        {
+          "id": "F2",
+          "closed": true,
+          "evidence": "Real diff ee138227^..ee138227: main.rs and allocation_audit.rs classified body, three files structural; selects integrators constants_provenance_contracts through its compile set (cli main.rs). A comment-only edit of cli main.rs classifies noop and still selects it, because match_inputs (select_tests.py:786) exempts only own-crate lib/bin unit tests. cases_v3.jsonl lines 2-3."
+        },
+        {
+          "id": "F3",
+          "closed": true,
+          "evidence": "A change of crates/rodas5p-integrators/tests/rnext_common/mod.rs selects cli alg02_predictive_controller (compile set) and example sp01_dupfix_profile. cases_v3.jsonl."
+        },
+        {
+          "id": "F4",
+          "closed": true,
+          "evidence": "A change of tests/unified_candidate_contracts.rs selects ppsw1_6b_contracts and ptsw2b_contracts through their strace read sets (sha256 pins). cases_v3.jsonl."
+        },
+        {
+          "id": "F5",
+          "closed": true,
+          "evidence": "A change of tests/support/a02_packet_counter_contract.rs selects the integrators lib unit tests (profile.test artifact mapped, compile set). cases_v3.jsonl."
+        },
+        {
+          "id": "F6",
+          "closed": true,
+          "evidence": "A change of FROZEN_ZETA34_POLICY.json selects constants_provenance_contracts through its read set; a change of docs/CONSTANTS_PROVENANCE.toml selects it through its compile set. cases_v3.jsonl."
+        },
+        {
+          "id": "F7",
+          "closed": true,
+          "evidence": "Modified crates/vigilode-hybrid/src/lib.rs (read), added crates/vigilode-hybrid/src/ci_probe.rs and added crates/zz-new/src/lib.rs (dirs contains crates) all select generic_scope_contracts. cases_v3.jsonl."
+        },
+        {
+          "id": "F8",
+          "closed": true,
+          "evidence": "pr_base is recorded and a difference from the baseline is a full run (full_reasons, select_tests.py:947-951; production.yml:126,156; ignored-tests.yml:72,100), so base moves between runs no longer escape the diff. Residuals: the listing rule still computes directory existence on PR heads (new finding N3). pr_base comes from the event payload, not from the first parent of the checked-out merge commit. Not verified that the two always agree; deriving pr_base from HEAD^1 after checking HEAD^2 == HEAD_SHA would remove the assumption."
+        },
+        {
+          "id": "F9",
+          "closed": true,
+          "evidence": "The control subcommand writes <pkg>:<target> to failed-controls.txt on every failing verdict (select_tests.py:1422-1426). run merges it into outcome.failed with negative_control (1231-1233), and rule 6 re-adds the target (decide 911-923). Control steps run on !cancelled() with ids, and the control's own map entry selects its target (rule 3 on the #test key). The self-test passes, re-run by me with TMPDIR in scratch."
+        },
+        {
+          "id": "F10",
+          "closed": true,
+          "evidence": "scripts/f10_check.py on real cargo metadata: the 4 required-features tests and example audit2_bateman_local_six_case are in unmet and absent from unit_keys and from full-mode units. A change of tests/audit2_structured_correction_contracts.rs selects nothing, so no cargo error. Baseline failures of it and of a deleted target are dropped with notes."
+        },
+        {
+          "id": "F11",
+          "closed": true,
+          "evidence": "Example compile sets are recorded (Artifacts.add 598-599). The F3 case selects example sp01_dupfix_profile, and rule 5 compiles unmapped examples."
+        },
+        {
+          "id": "F12",
+          "closed": true,
+          "evidence": "Not applicable: the literal matcher is removed. Selection matches measured compile/executed/read/dirs/absent sets (match_inputs 781-800)."
+        },
+        {
+          "id": "F13",
+          "closed": true,
+          "evidence": "changed_entries uses git diff -z --name-status -M (443-445, self-test covers quotes, tabs, non-ASCII and renames). Dep-info entries are joined to the repository root in Repo.rel (480-491; the self-test checks this from another cwd)."
+        },
+        {
+          "id": "F14",
+          "closed": false,
+          "evidence": "Only the runner-image part is fixed (ImageOS/ImageVersion full trigger). The push and pull_request path filters still exclude measured inputs (production.yml:26-42, ignored-tests.yml:21-37), see new finding N2. There is no periodic full run, by owner decision OD-L1-21(4)."
+        }
+      ],
+      "findings": [
+        {
+          "id": "N1",
+          "severity": "minor",
+          "claim": "The change classifier loses the spacing between punctuation characters. A whitespace-only edit that splits or joins a multi-character operator is therefore classified noop. Noop ignores executed sets and own-crate unit tests, so the targets that run the changed code are not selected.",
+          "evidence": "rust_tokens emits every punctuation character as its own token (tools/ci/select_tests.py:342). classify_texts compares only (kind, value) (403-405). scripts/tok_probe.py classifies all of these as noop: '1 => 2' to '1 = > 2', 'check(x) && check(x)' to 'check(x) & &check(x)', '(0..5)' to '(0. .5)', '-> usize' to '- > usize', '+= 1' to '+ = 1'. With the measured map (scripts/joint_punct_decide.py), changing crates/rodas5p-integrators/src/integrate.rs:1057 'if success && collector.is_complete()' to 'if success & &collector.is_complete()' gives noop. It selects only the text readers generic_scope_contracts, ppsw1_6b_contracts and ptsw2b_contracts, not cli alg02_predictive_controller, which executes integrate.rs. '& &' evaluates the right operand unconditionally. The split forms are syntax errors that no selected target compiles when the file's crate has no other selected target (fair-ab, cli or vigilode sources: only the integrators reader runs).",
+          "fix": "Keep punctuation spacing in rust_tokens. For example, emit ('p', c + ('j' if the next character is punctuation else ''), line), or classify as body or structural any change of whitespace next to a punctuation token. Add the five probe pairs to self-test."
+        },
+        {
+          "id": "N2",
+          "severity": "minor",
+          "claim": "The trigger path filters of both test workflows still exclude inputs that v3 measures. A pull request whose whole diff lies outside them, or a push to main that touches only them, runs no test job, so the tests that read those inputs are not run on that change (F14 residual).",
+          "evidence": "production.yml:26-42 and ignored-tests.yml:21-37 list crates/**, Cargo.toml, Cargo.lock, rust-toolchain.toml (missing from ignored-tests' push list, as is ignored-tests.yml itself), the workflow and tools/ci/**. The measured map has inputs outside these paths: docs/CONSTANTS_PROVENANCE.toml, FROZEN_ZETA34_POLICY.json and two other research files (constants_provenance_contracts), research/stiff_native_benchmark_20261001/NATIVE.json (alg02), fixtures/rodas5p_coefficients_snapshot.json (core library input) and tools/reference_v2/generate_references_v2.py (fair-ab library input). 56 production-scope test or src files name research/, docs/, fixtures/ or tools/ paths; for example, r3_certified_budget_contracts reads fixtures/r3_certified_budget_fixtures.json. .cargo/ is a global prefix of the selector but not a trigger path. Pull-request filters use the three-dot PR diff, so the gap is data/docs-only PRs and main pushes. Those changes wait for a later pr_base change or crates/** push, and no periodic run exists.",
+          "fix": "Add research/**, docs/**, fixtures/**, tools/**, .cargo/** and **/.gitattributes to the pull_request and push paths of both workflows. Also add rust-toolchain.toml and ignored-tests.yml to the push list of ignored-tests. A selection with no affected target finishes in minutes."
+        },
+        {
+          "id": "N3",
+          "severity": "minor",
+          "claim": "For an added path, the listing rule decides directory existence on the PR head trees and checks the directories that the change creates only against absent. A directory that exists in the tested merge tree only through the base branch, and that a test listed, never selects that test.",
+          "evidence": "select() passes the baseline head and HEAD_SHA (PR heads) to existing_dirs (select_tests.py:997-1001), while the map is measured on GitHub's merge commit (R15). decide() puts directories missing at the base head into created (863-880). For status A, match_inputs checks created only against absent (790-793); only D checks read and dirs (794-797). Repro scripts/merge_tree_listing.py: an entry with dirs {research/new} and the change A research/new/x.json, with head trees lacking research/new, selects nothing. No current test lists such a directory: generic_scope_contracts lists crates/ and default_path_golden lists its golden dir.",
+          "fix": "In match_inputs, apply the D check to A as well: select when any created directory is in dirs or read."
+        },
+        {
+          "id": "N4",
+          "severity": "minor",
+          "claim": "A .gitattributes change alters the checked-out bytes of unchanged files without any blob change. It is neither global nor read by any target, so tests that hash or byte-compare those files are not selected.",
+          "evidence": "is_global (select_tests.py:258-259; GLOBAL_FILES/PREFIXES 90-91) has no .gitattributes. Scratch repo review-soundness/gitattr_probe_1: adding '*.json text eol=crlf' gives the diff 'A .gitattributes' only, while a fresh checkout of the unchanged x.json changes from sha256 b77a0d61... to 99768b46.... 28 production-scope test files use sha256 pins (e.g. constants_provenance_contracts), and research/rigorous_performance_audit_20261027/.gitattributes exists.",
+          "fix": "Treat .gitattributes at any depth as a global file, i.e. os.path.basename(path) == '.gitattributes' in is_global."
+        },
+        {
+          "id": "N5",
+          "severity": "minor",
+          "claim": "Path system calls whose result depends on existence or metadata are not traced: mkdir, rename, link, unlink, utimensat, chmod, truncate, statfs, xattr, and a failed chdir. A test that decides on them has no absent or read entry, and adding or removing that path does not select it (latent).",
+          "evidence": "TRACED (select_tests.py:95-96) covers open/openat/openat2/creat, execve(at), the stat family, the access family, readlink(at), chdir and fchdir. trace_events ignores failed chdir/fchdir (660-665). Examples: fs::create_dir returning AlreadyExists, rename with RENAME_NOREPLACE, a failing set_current_dir with ENOENT. The probe trace review-soundness/probe_strace/t.* shows the mkdir of 'mkdir -p' unrecorded. grep finds no member test applying these calls to repository paths today.",
+          "fix": "Add ?mkdir,mkdirat,?rename,renameat,?renameat2,?link,linkat,?symlink,symlinkat,?unlink,unlinkat,?rmdir,utimensat,?chmod,fchmodat,?truncate,?statfs,?getxattr,?lgetxattr,?listxattr,?llistxattr to TRACED, with the at-variants in AT_SYSCALLS and both paths parsed for rename and link. Record ENOENT or ENOTDIR as absent and any other result as read. Record a failed chdir with ENOENT or ENOTDIR as absent."
+        },
+        {
+          "id": "N6",
+          "severity": "minor",
+          "claim": "The noop rule and the unmeasured doc tests are sound only under invariants that nothing enforces. One later commit can make comment-only changes or doc tests silently unselected (latent).",
+          "evidence": "R8 (V3_NOTES.md:70-82) and R10 (90-94) assume three things. First, no assertion depends on line!/column!/file!/Location::caller/track_caller or panic locations. Second, no member's src include_str!s or include_bytes!s a .rs file (an own-crate text consumer that noop exempts). Third, no doc comment accesses repository files. My grep confirms all three today: no hits for any. self_test (select_tests.py:1555-1938) and check_workflows (1505-1552) test only selector functions and workflow text.",
+          "fix": "Add a self-test check that greps member sources and fails on line!(), column!(), Location::caller, #[track_caller], include_str!/include_bytes! of a .rs path under src/, and fs:: or include_* inside doc comments. Alternatively, classify a noop change that shifts line numbers in such a file as body."
+        }
+      ],
+      "checked": [
+        "Scope: git diff 1ffbda20..b0d4bc97 touches 26 paths, all under the allowed paths (tools/ci/**, tools/check_ignored_tests_in_ci.py, production.yml, ignored-tests.yml, a1 workflow, research/production_loop_20261116/ci/** without SELECTION_REVIEW.json). The a1 diff removes only the step 'Run the workspace test closure'. No protected file is changed. Loop checker: PASS, no complaint. git status --short: clean at b0d4bc97.",
+        "python3 -I -B tools/ci/select_tests.py self-test, run by me with TMPDIR in scratch: passed.",
+        "Sweep (scripts/sweep_v3.py, sweep_v3_full.json): 593 w2-v24 dep-info files gave 588 units and 1040 compile-time links. Each link went through v3 decide() for the production and ignored scopes, as noop, body or structural for package .rs sources and unclassified otherwise. The only misses are own-crate lib/bin unit tests on noop: 471 checks, by design (R8). Other misses: 0.",
+        "Cases F1-F7 (scripts/cases_v3.py, cases_v3.jsonl) used the builder's measured map, real diffs for 95d589e86 and ee138227, and synthetic changes for the rest. Every named target is selected.",
+        "Coverage probe (probe_macro, rustc 1.94.1, llvm-cov 21.1.8): regions of a macro_rules-generated fn are attributed to the macro's definition file, and those of an include!d fn to the included file, so the body rule finds them through executed sets. No member macro_rules contains fn items. The only include! in member src (packet_trajectory.rs:1684) includes a tests/support file, which goes through the compile set.",
+        "strace probe: strace 6.8 -y prints AT_FDCWD</cwd>. A probe test that spawns sh/cat/test -e/ls and python os.stat with current_dir, run under the v3 runner and parsed by trace_sets, records read f.txt and g.txt, dirs data/sub and absent absent.txt. Child processes, cwd and stat/listing/absent probes are handled.",
+        "Build scripts: integrators emits only profile env vars. fair-ab embeds git HEAD and the dirty flag, which only the VIGILODE_CODE_REVISION-gated campaign uses, so R5 holds. Of the CI-set env vars, member code reads only RAYON_NUM_THREADS (constant). Path env vars gate exporters and are unset in CI.",
+        "Subprocesses: tests spawn their own package binaries (CARGO_BIN_EXE, covered through -object bins), python3, timeout and git. git appears only in env-gated exporters; its .git reads are dropped. No test spawns another package's binary or cargo.",
+        "No tracked directory symlinks (15 file symlinks at the root). No #[coverage(off)]. No line!/column!/file!/Location in member code. No file access in member doc comments. No include_str! of .rs in member src. No proc macros reading files. Directory listings: generic_scope_contracts and default_path_golden only.",
+        "F10 (scripts/f10_check.py): required-features targets are never named, and baseline failures of them or of deleted targets are dropped with notes.",
+        "Map staleness: carried entries stay valid by induction along the ancestor chain of baselines (each run's diff covers skipped and incomplete runs). Reads that depend on time, CPU count or children killed on a wall-clock limit (e.g. triage_cli) can be missed; the builder documents this as a gap.",
+        "Rules checked: rule 5 (unmapped targets/controls), rule 6, rule 8 doc tests, structural closure over dev and normal deps, renames (D+A), type changes (structural), required features, the pr_base and image triggers, and baseline selection (ancestor skip, smaller run id, re-run attempts).",
+        "Workspace hygiene: my sweep script wrote one output file into the reviewed worktree root by mistake; I moved it to review-soundness/sweep_v3_full.json at once and the tree is clean again. Loading the module also refreshed the git-ignored tools/ci/__pycache__/select_tests.cpython-312.pyc at 21:47. All other scratch is under /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/review-soundness; the only build was the probe crate, with CARGO_TARGET_DIR=.../review-target-soundness."
+      ]
+    },
+    {
+      "lens": "CI mechanics",
+      "verdict": "sound_with_fixes",
+      "summary": "Reviewed b0d4bc97, lens CI mechanics. All 12 mechanics findings from v1 are closed: job-level queueing, required-features and stale targets never named (reproduced), failed controls merged and reselected (probe), pr_base trigger, A1 step removed, -u/flush, control fails on a missing selection, the F-08 probe, listing notes, limits kept, overwrite, branch via env. Self-test, a 2-target measured run on the real repo (0 lost) and the loop checker pass. All changed paths are allowed.\nNew findings:\n(1) major: the image trigger compares ImageVersion, but hosted ubuntu-latest serves 20261116.88.1 and .202.1 at the same time, even within one run, so about 3 runs in 10 go full.\n(2) major: dropping the A1 test step leaves about 186 non-ignored cli and fair-ab tests with no CI.\n(3) minor: dispatch and PR baselines force full runs; the path filters miss measured inputs outside crates/**; the listing has no head_repository filter; strace installs via apt every run; v2 hosted coverage runs already exceed v1 durations (>122 min).",
+      "earlier_findings": [
+        {
+          "id": "F-01",
+          "closed": true,
+          "evidence": "No workflow-level concurrency remains (yaml parse: top-level None in all three workflows). The test job has group production-test-${{ github.ref }} with cancel-in-progress false (production.yml:114-116); ignored-tests is the same (ignored-tests.yml:60-62). The short jobs keep their own cancelling groups (production.yml:73-75, 91-93, 178-180, 221-223, 254-256). GitHub keeps one pending job per group, so pushes coalesce, and the baseline is the newest complete run with id < current (select_tests.py:1456-1459). check_workflows passes in the self-test. Caveat: a workflow_dispatch run has ref refs/heads/<branch>, a different group, so it can overlap with PR runs."
+        },
+        {
+          "id": "F-02",
+          "closed": true,
+          "evidence": "Reproduced the original case against v3 with real cargo metadata via decide(): an edit of tests/audit2_structured_correction_contracts.rs plus baseline failures audit0930_reuse_certificate_contracts (unmet features) and gone_contracts (deleted). Selected: only the real baseline failure. Both were dropped with notes ('requires the features audit2-research', 'no longer a test target'). Full-mode units of integrators name 0 of the 5 unmet targets (280 units). Same as F10."
+        },
+        {
+          "id": "F-03",
+          "closed": true,
+          "evidence": "Scratch-workspace probe (review-CI/mini1-out). A control with the wrong signature exited 1 and wrote b:fail to failed-controls.txt. run merged it into outcome.failed with negative_control true (complete true). The next select added b:fail ('failed in the baseline run (negative control)'), so the control step would run again. Upload stays !cancelled(). Same as F9."
+        },
+        {
+          "id": "F-04",
+          "closed": true,
+          "evidence": "Closed by the owner-chosen alternative. PR_BASE=github.event.pull_request.base.sha is recorded (production.yml:126,156; select_tests.py:970-972), and a different base gives a full run (probe: 'pull-request base changed ... -> 33ba6347', full). The checkout is still the merge commit. Unverified on hosted data: whether payload base.sha always equals the merge's base (the base branch has not moved since 11-16). Same as F8."
+        },
+        {
+          "id": "F-05",
+          "closed": true,
+          "evidence": "The diff of a1-inner-tolerance-parity.yml removes exactly the 3 lines of step 'Run the workspace test closure'; the other steps are unchanged. See new finding N2: this leaves cli and fair-ab normal tests with no CI run."
+        },
+        {
+          "id": "F-06",
+          "closed": true,
+          "evidence": "Every selector and checker step uses python3 -u (production.yml:145,149,156,160; ignored-tests.yml:88,90,94,100,114,126,133). stream() flushes each line, including rendered diagnostics (select_tests.py:1149-1155). Probe logs stream test output line by line."
+        },
+        {
+          "id": "F-07",
+          "closed": true,
+          "evidence": "The workflows no longer call has; the control steps call 'select_tests.py control'. With a missing selection.json, control exits 1 (FileNotFoundError; review-CI/f07/log), so the step fails instead of printing 'not run'."
+        },
+        {
+          "id": "F-08",
+          "closed": true,
+          "evidence": "Reproduced on a git-archive export (review-CI/checker-probe). Unmodified: 99/99 reachable. An #[ignore] test added in crates/vigilode-bench/tests is reported as 'ignored tests not run by any workflow' (exit 1). The --workspace match is now limited to member dirs (check_ignored_tests_in_ci.py:113-114)."
+        },
+        {
+          "id": "F-09",
+          "closed": true,
+          "evidence": "A listing failure gets its own note with stderr (select_tests.py:1452-1454). A download failure other than 'no valid artifacts found' is listed in errors and counted in the note (1466-1471, 1494-1496). The self-test fake-gh cases (HTTP 403 listing, HTTP 502 download) pass; I ran the self-test, exit 0."
+        },
+        {
+          "id": "F-10",
+          "closed": true,
+          "evidence": "The raised limits are kept: test 300, ignored 330 (yaml parse). Risk remains: the live hosted v2 runs at a66215e7 (coverage, per-target, no strace) are test job of run 45378440406 and ignored job of run 45378440571. At 12:52 UTC both were still in their run step after 122-123 min, longer than every completed v1 full run (test 92-109, ignored 94-97 min). v3 adds strace and an apt install. See N7."
+        },
+        {
+          "id": "F-11",
+          "closed": true,
+          "evidence": "overwrite: true is set on both uploads (production.yml:173, ignored-tests.yml:144)."
+        },
+        {
+          "id": "F-12",
+          "closed": true,
+          "evidence": "BRANCH, HEAD_SHA, PR_BASE and FULL are job env vars (production.yml:124-127, ignored-tests.yml:70-73). The scripts use \"$BRANCH\" etc. and no ${{ github.head_ref }} appears in any run script. The REST query is urlencoded (select_tests.py:1449). The self-test passes branch 'x;$(false)' as data."
+        }
+      ],
+      "findings": [
+        {
+          "id": "N1",
+          "severity": "major",
+          "claim": "Rule 1 compares ImageVersion exactly. Hosted ubuntu-latest serves at least two image versions at once, so consecutive runs often differ and run the whole suite (coverage + strace) with no code change, defeating OD-L1-19 for roughly 3 runs in 10.",
+          "evidence": "select_tests.py:947-950 and 970-972 compare ImageVersion. Set-up-job logs (read-only gh api; review-CI/hosted/image_versions.tsv, ignored_job_images.tsv):\n- Run 45358324432, jobs started 2026-11-24T08:41:48Z: fmt on 20261116.88.1, clippy and docs on 20261116.202.1.\n- Runs 45163804110, 45187691774 and 45221470766 are mixed the same way.\n- ignored-tests job of run 45221470637 (16:53) ran on .88.1, between runs on .202.1.\n- 7 of 39 sampled ubuntu-latest jobs (11-23 11:17 to 11-24 09:04) ran on .88.1, so P(consecutive runs differ) is about 0.29.\n- The version also changes weekly (20261111.196.1 on 11-16/17).\nProbe with the same baseline: ImageVersion .202.1 gives 'selected'; .88.1 gives 'runner image version changed since the baseline: 20261116.202.1 -> 20261116.88.1', full.",
+          "fix": "Ask the owner what 'runner image' in OD-L1-21(1) means. Options: trigger on ImageOS only (optionally with a pinned runs-on label), keeping ImageVersion as information; or compare a fingerprint of what tests depend on (e.g. libc/libm package versions). Add a self-test case for two concurrent versions."
+        },
+        {
+          "id": "N2",
+          "severity": "major",
+          "claim": "Removing the A1 step 'Run the workspace test closure' leaves about 186 non-ignored tests of rodas5p-cli and rodas5p-fair-ab with no CI run. The v1 premise 'Production CI and Ignored long tests cover the workspace' is false for these packages.",
+          "evidence": "- Production test scope is core, krylov, integrators, vigilode, vigilode-coupled (production.yml:156); ignored-tests runs only --ignored.\n- A grep of all 31 workflows finds only 2 cli targets in A1 (a1-inner-tolerance-parity.yml:64-68) and 2 fair-ab targets in audit2 (tools/check-audit2-readiness.sh:22).\n- Crude #[test] count: cli 92 non-ignored (4 still run), fair-ab 116 (18 still run).\n- Hosted A1 run 45358324393 (2f663808) ran them in the removed step, 08:54-09:50 UTC: tests/cli_contracts.rs, triage_cli.rs, fair_ab_contracts.rs, paired_timing_contracts.rs and others (review-CI/hosted/a1_45358324393.log).\n- production.yml:59-60 still says 'rodas5p-cli is tested in a1-inner-tolerance-parity.yml'.",
+          "fix": "Take this back to the owner under OD-L1-21(3). Either add a normal-mode selected run for rodas5p-cli and rodas5p-fair-ab (a scoped selection step or job with its own artifact), or record that these tests run only in the release full suite. Correct the production.yml comment either way."
+        },
+        {
+          "id": "N3",
+          "severity": "minor",
+          "claim": "A workflow_dispatch baseline (pr_base None) forces the next PR run to be full, and the reverse also holds. A manual full dispatch on a PR branch (the input defaults to full) is followed by a second full PR run.",
+          "evidence": "full_reasons treats None as a value (select_tests.py:947-950). The run listing has no event filter (select_tests.py:1449-1458), and PR_BASE is empty for dispatch (production.yml:126). Probe case 3: baseline environment pr_base None, PR run with a base gives 'pull-request base changed since the baseline: None -> 33ba6347...', full. The full run is needed for soundness, since dispatch tests the branch tree and PR tests the merge tree, but it can be avoided by not using such baselines.",
+          "fix": "Filter the listing to runs of the current event (the event= query parameter, or r['event'] == GITHUB_EVENT_NAME). PR runs then take only PR runs as baseline, and the base trigger stays for real base changes."
+        },
+        {
+          "id": "N4",
+          "severity": "minor",
+          "claim": "The trigger path filters do not cover measured inputs outside crates/**. A push that changes only such inputs triggers neither job, so the change is tested only at a later triggered push; on main, not until the next crates/** push. This gap is not listed in TRIAGE 11.5.",
+          "evidence": "- production.yml:26-42 and ignored-tests.yml:21-37 cover crates/**, the manifests, the lock file, the toolchain file, tools/ci/** and the workflow file, plus one research path in ignored-tests.\n- The F1 replay commit 95d589e8 touches only research/reaudit_accuracy_speed_20261010/gain_witness.rs, which is in the compile set of core residual_gain_contract.\n- docs/CONSTANTS_PROVENANCE.toml, the FROZEN_ZETA34_POLICY.json read and fixtures/rodas5p_coefficients_snapshot.json are also measured inputs (v3_logs/e2e_map.json).\n- The global prefix .cargo/ (select_tests.py:91) is not a trigger either.",
+          "fix": "Widen the pull_request/push paths (e.g. the whole repository with paths-ignore for record-only directories), or have the owner accept and document the deferral."
+        },
+        {
+          "id": "N5",
+          "severity": "minor",
+          "claim": "The baseline lookup accepts any run whose head_branch matches. On this public repository, a fork PR from a branch with the same name could upload an outcome and map that the owner's next run uses, selecting nothing. This is pre-existing since v1, but in v3 the map steers the selection.",
+          "evidence": "select_tests.py:1449-1458 filters only by branch and run id. Run objects carry head_repository. The repo is public; forks_count is 0 today, so the risk is theoretical. All 100 listed runs come from cosmosapjw-quantum/vigilode.",
+          "fix": "Keep only runs with head_repository.full_name == GITHUB_REPOSITORY, together with the event filter of N3."
+        },
+        {
+          "id": "N6",
+          "severity": "minor",
+          "claim": "Every test job depends on apt to install strace. An apt failure fails the job before the self-test, baseline and select steps, although R18 makes a missing strace a degraded but valid mode of the selector.",
+          "evidence": "actions/runner-images images/ubuntu/toolsets/toolset-2604.json lists no strace, and ubuntu-latest jobs ran on ubuntu-26.04. The install step runs apt-get update && install without continue-on-error (production.yml:137-140, ignored-tests.yml:83-86).",
+          "fix": "Add continue-on-error: true (or a retry) to the install step. The selector then records 'strace is not installed', and rule 5 reruns the targets that lost their entries."
+        },
+        {
+          "id": "N7",
+          "severity": "minor",
+          "claim": "The duration of a hosted full run is still unknown, and the available evidence points up. Together with N1, more full runs bring a run close to the 300/330-minute limits; a timeout leaves no outcome, so the next run is full again.",
+          "evidence": "The live v2 runs (coverage, per-target commands, no strace) are test job of run 45378440406 and ignored job of run 45378440571. At 12:52 UTC both were in their run step after 122-123 min (review-CI/hosted/v2_progress.tsv), longer than all completed v1 full runs (test 92-109, ignored 94-97 min). Local per-target measurement overhead is small: profraw 0.9 MB, trace 312 KB, llvm-cov export 0.34 s and 166 MB.",
+          "fix": "Record the final durations of these two runs before merging. If a full run uses more than about two thirds of the limit, split the full mode or raise the limits within the 360-minute cap for hosted jobs."
+        },
+        {
+          "id": "N8",
+          "severity": "minor",
+          "claim": "The self-test both test jobs run reads and checks the unrelated a1-inner-tolerance-parity.yml. Renaming or deleting that workflow makes the Production and Ignored test jobs fail at the self-test step.",
+          "evidence": "select_tests.py:1519 opens a1-inner-tolerance-parity.yml unconditionally, and 1550 asserts on its content; the self-test runs in CI (production.yml:145, ignored-tests.yml:90).",
+          "fix": "Skip the A1 check when the file is missing (os.path.exists), or move the workflow checks to a separate step that does not gate the test selection."
+        }
+      ],
+      "checked": [
+        "Self-test: python3 -I -u tools/ci/select_tests.py self-test passes (exit 0; Python 3.12.3, strace 6.8, TMPDIR in review-CI/tmp).",
+        "Scratch-workspace probe (review-CI/mini1, mini1-out), run under the CI environment (RUSTFLAGS coverage, CARGO_TERM_COLOR=always, C.UTF-8):\n- failing-test rerun line parsed under --message-format=json-diagnostic-rendered-ansi; data/input.txt in read, data/maybe.txt in absent, coverage executed sets;\n- control: correct signature exit 0, wrong signature exit 1 and failed file written;\n- merge into outcome.failed, then rule 6 reselects;\n- image and base triggers fire; raw \\xff output does not crash stream() (stdout errors=surrogateescape).",
+        "Real-repo measured run of core residual_gain_contract and integrators generic_scope_contracts (review-CI/real1; CARGO_TARGET_DIR review-target-CI, builder's LLVM tools used read-only): complete, 0 lost, generic_scope_contracts read 308 / dirs 20 / 1007 traced calls, wall 60 s, max RSS 1.5 GB.",
+        "Footprint per target (review-CI/size1): test binary 161 MB, profraw 0.9 MB, trace 312 KB, llvm-cov export 0.34 s and 166 MB.",
+        "Reachability checker: 99/99 reachable; the F-08 probe on a git-archive export fails as intended. No ignored tests in required-features, example or bench targets; no custom harnesses; no cross-package or self feature activation.",
+        "YAML parse of the three workflows: job concurrency values, timeouts 300/330, no top-level groups. The A1 diff removes only the one step. No other workflow calls the selector.",
+        "Hosted evidence via read-only gh api: run lists, Set-up-job image versions, hosted A1 log, ubuntu-26.04 toolset, live v2 timings (review-CI/hosted/). No GitHub writes.",
+        "Scope: every changed path is inside the allowlist; no protected or forbidden file changed; loop checker PASS. git status shows only the untracked sweep_v3.json (created 21:50:20 +0900, not by this review). My importlib import rewrote the gitignored tools/ci/__pycache__/select_tests.cpython-312.pyc at 21:47:25 +0900. No commits or other edits."
+      ]
+    }
+  ],
+  "fix": {
+    "status": "done",
+    "summary": "Fix round done on research/production-loop-20261116-w3-ci3, head 1a1baf4c, not pushed. The task text cut off the mechanics review, so I read its full JSON from this run's workflow journal. Both majors were confirmed and fixed. M-N1: job logs show two image versions served in the same run, so the baseline is now the newest qualifying run on the same image; if none exists, the selection is full. M-N2: the removed A1 step was the only run of the cli and fair-ab tests. They now get their own queued job, test-cli-fair-ab, with its own artifact. Putting them in the test job was tried and reverted: that job's v2 full run is past 177 min against a 300-min limit. All minors are fixed except M-N7 (hosted duration), which is recorded and open. Verified: self-test; a measured run of every cli and fair-ab target (all pass, 0 entries lost); 21/21 selection cases; the reviewer's sweep (no new misses); strace 6.8 probe; reachability 99/99; YAML; loop checker PASS.",
+    "branch": "research/production-loop-20261116-w3-ci3",
+    "head_commit": "1a1baf4cfe4f3d19121ba66e7e85544be760a1b8",
+    "checks": [
+      {
+        "name": "selector self-test (new cases: operator spacing, .gitattributes, traced writes, created dirs, same-image/fork/event baselines, merge-commit base, check_sources, workflow variants)",
+        "command": "python3 -I tools/ci/select_tests.py self-test",
+        "exit_code": 0,
+        "result": "self-test passed (v3_logs/fix_self_test.log)"
+      },
+      {
+        "name": "workflow checks against the reviewed b0d4bc97 workflows",
+        "command": "check_workflows(<b0d4bc97 workflows>, members) via v3_logs/fix_checks_against_b0d4bc97_workflows.log",
+        "exit_code": 0,
+        "result": "6 problems flagged there (path filters x2, strace step x2, cli/fair-ab not selected, no job test-cli-fair-ab); 0 on the fix-round workflows; check_sources 0 hits"
+      },
+      {
+        "name": "measured run with coverage and the extended strace list",
+        "command": "taskset -c 0-5,12-17 python3 -u tools/ci/select_tests.py run --selection v3_logs/fix_e2e_selection.json --mode normal --measure --jobs 2 (all of fair-ab and cli, integrators constants_provenance_contracts and generic_scope_contracts, core residual_gain_contract)",
+        "exit_code": 0,
+        "result": "all pass, 43 entries measured, 0 lost; fair-ab 463 s, cli 592 s libtest; triage_cli 686 profiles 1.9 GB, 50697 traced calls; wall 1315 s"
+      },
+      {
+        "name": "selection cases on the merged map",
+        "command": "python3 -I research/production_loop_20261116/ci/v3_selection_cases.py --repo <sparse shared clone> --base 1288945b --map v3_logs/fix_map_merged.json",
+        "exit_code": 0,
+        "result": "21/21 OK: F1-F7, F11, N1, N1-no-reader, N2, C1, S1 plus S-N1, S-N3, S-N3-unlisted, S-N4 (full), M-N2, M-N2-cli"
+      },
+      {
+        "name": "compile-input sweep (reviewer script plus the new job's scope)",
+        "command": "python3 -I scratchpad/fix_sweep_v3.py v3_logs/fix_sweep_v3.json",
+        "exit_code": 0,
+        "result": "588 units, 1040 links; misses only own-crate lib/bin unit tests on noop (R8, by design)"
+      },
+      {
+        "name": "reviewer probes replayed",
+        "command": "review-soundness/scripts/{joint_punct_decide,merge_tree_listing,tok_probe}.py",
+        "exit_code": 0,
+        "result": "integrate.rs '& &' now body and selects cli alg02; the S-N3 case selects the listing test; the 5 operator pairs are no longer noop"
+      },
+      {
+        "name": "strace 6.8 probe of the new call list (non-destructive)",
+        "command": "python3 -I scratchpad/probe_strace/run_probe.py <worktree> <log>",
+        "exit_code": 0,
+        "result": "list accepted with --seccomp-bpf; read/absent parsed as expected (v3_logs/fix_strace_calls_probe.log)"
+      },
+      {
+        "name": "reachability checker",
+        "command": "python3 tools/check_ignored_tests_in_ci.py",
+        "exit_code": 0,
+        "result": "99/99 reachable"
+      },
+      {
+        "name": "YAML parse of the three workflows",
+        "command": "python3 yaml.safe_load (actionlint not installed)",
+        "exit_code": 0,
+        "result": "parsed; test/test-cli-fair-ab/ignored-tests queue; timeouts 300/120/330; no path filters, no schedule (v3_logs/fix_checks.log)"
+      },
+      {
+        "name": "loop checker",
+        "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
+        "exit_code": 0,
+        "result": "PASS, no complaint"
+      }
+    ],
+    "open_issues": [
+      "M-N7 is open. The live v2 hosted full runs (test job of run 45378440406, ignored job of run 45378440571, coverage, no strace) were still running at 13:48Z, after 179 min. The first v3 full run will show whether the 300/330-minute limits hold. If a run needs more than about 2/3 of its limit, splitting the full mode is an owner decision.",
+      "Owner decision: the new job test-cli-fair-ab gives the research crates rodas5p-cli and rodas5p-fair-ab a change-based CI test job (R27). The alternative is to run their tests only in the full suite before a release.",
+      "The first run of each test job is full, and so is the first run of test-cli-fair-ab (tools/ci changed; no baseline). The first run on each new image version is also full (R24).",
+      "The triage_cli target keeps 686 coverage profiles (1.9 GB) on disk until the measurement step that follows all tests. Hosted disk use for test-cli-fair-ab has not been measured.",
+      "check_sources (R33) now fails the CI self-test if line!/column!/Location::caller/track_caller, a .rs text include or file access in a doc test appears in member src. The remedy is to change the code or the rule. Its checks are single-line patterns."
+    ],
+    "key_numbers": [
+      "21/21 selection cases (15 earlier + 6 fix-round)",
+      "measured run: 43 entries, 0 lost; fair-ab 463 s, cli 592 s libtest (two_arm_v3 435 s vs 172 s hosted; triage_cli 256 s)",
+      "triage_cli: 686 profiles, 1.9 GB, 719 trace files, 50697 traced calls",
+      "extended strace list: +16 traced calls per target (generic_scope 1007->1023)",
+      "image versions in the reviewer's hosted samples: 6 of 39 jobs on 20261116.88.1, 33 on .202.1",
+      "check_workflows flags 6 problems in the b0d4bc97 workflows, 0 now; check_sources 0 hits in 264 files",
+      "reachability 99/99; sweep: 588 units, 1040 links, 0 misses outside R8"
+    ],
+    "rulings": [
+      "The task text cut off the mechanics review at 14000 characters. I read its full JSON (M-N1..M-N8, M-F-01..M-F-12) from this run's workflow journal.",
+      "R24 (M-N1): the owner's image rule stays literal (ImageOS and ImageVersion). The baseline is now the newest qualifying run on the same image; with none, the newest on another image is used and the selection is full. I did not adopt an ImageOS-only comparison: a new image version can change system libraries that bit-exact anchors depend on.",
+      "R25 (M-N3, M-N5): baseline candidates must have the current event and head_repository == GITHUB_REPOSITORY.",
+      "R26 (S-F8/M-F-04 residual): the recorded pr_base is the first parent of the checked-out merge commit when its second parent is the PR head; the payload base is kept as pr_base_payload.",
+      "R27 (M-N2): new queued job test-cli-fair-ab with its own artifact ci-test-outcome-test-cli-fair-ab and a 120-min limit. The first version added the two packages to the test job's scope (1288945b); I reverted it (16fc4504) because that job's full run is already past 177 min against a fixed 300-min limit.",
+      "R28 (S-N2, M-N4): no path filter at all on the two test workflows, not a longer list. A measured input can be any tracked file. Cost: data-only PRs and pushes to main (last push 2026-08-26) now trigger them.",
+      "R29 (S-N1): a marker token between adjacent punctuation characters. Over-selection is accepted (e.g. 'Vec<Vec<u8> >' is no longer noop).",
+      "R30-R35: an added path also selects targets that read or listed a directory it creates; .gitattributes at any depth is global; mkdir/rename/link/unlink/rmdir/utimensat/chmod/truncate/statfs/xattr calls are traced (success read, ENOENT/ENOTDIR absent; a failed chdir is absent); check_sources runs in the self-test; the strace install step has continue-on-error; the A1 check is conditional.",
+      "R36 (M-N7): limits unchanged per the design; durations recorded; the finding stays open."
+    ],
+    "finding_status": [
+      {
+        "id": "S-N1",
+        "status": "fixed",
+        "how": "Adjacent-punctuation marker in rust_tokens (R29). The reviewer's integrate.rs case is now body and selects cli alg02; 9 self-test pairs; case S-N1."
+      },
+      {
+        "id": "S-N2",
+        "status": "fixed",
+        "how": "Path filters removed from both test workflows (R28); check_workflows rejects them."
+      },
+      {
+        "id": "S-N3",
+        "status": "fixed",
+        "how": "Added paths check their created dirs against read/dirs (R30); the reviewer's repro now selects; self-test and case S-N3."
+      },
+      {
+        "id": "S-N4",
+        "status": "fixed",
+        "how": ".gitattributes at any depth is global (R31); case S-N4 gives full."
+      },
+      {
+        "id": "S-N5",
+        "status": "fixed",
+        "how": "Traced call list extended, multi-path arguments parsed, failed chdir recorded as absent (R32); strace 6.8 probe; measured run."
+      },
+      {
+        "id": "S-N6",
+        "status": "fixed",
+        "how": "check_sources in the self-test enforces the R8/R10 facts (R33); 0 hits today."
+      },
+      {
+        "id": "S-F1",
+        "status": "fixed",
+        "how": "Reviewer confirmed closed; case F1 still passes."
+      },
+      {
+        "id": "S-F2",
+        "status": "fixed",
+        "how": "Reviewer confirmed closed; case F2 still passes."
+      },
+      {
+        "id": "S-F3",
+        "status": "fixed",
+        "how": "Reviewer confirmed closed; case F3 still passes."
+      },
+      {
+        "id": "S-F4",
+        "status": "fixed",
+        "how": "Reviewer confirmed closed; case F4 still passes."
+      },
+      {
+        "id": "S-F5",
+        "status": "fixed",
+        "how": "Reviewer confirmed closed; case F5 still passes."
+      },
+      {
+        "id": "S-F6",
+        "status": "fixed",
+        "how": "Reviewer confirmed closed; case F6 still passes."
+      },
+      {
+        "id": "S-F7",
+        "status": "fixed",
+        "how": "Reviewer confirmed closed; cases F7, F7-hybrid and F7-vigilode still pass."
+      },
+      {
+        "id": "S-F8",
+        "status": "fixed",
+        "how": "Reviewer confirmed closed; the residual payload-base assumption is removed by R26."
+      },
+      {
+        "id": "S-F9",
+        "status": "fixed",
+        "how": "Reviewer confirmed closed."
+      },
+      {
+        "id": "S-F10",
+        "status": "fixed",
+        "how": "Reviewer confirmed closed."
+      },
+      {
+        "id": "S-F11",
+        "status": "fixed",
+        "how": "Reviewer confirmed closed; case F11 still passes."
+      },
+      {
+        "id": "S-F12",
+        "status": "not_applicable",
+        "how": "The literal matcher was removed."
+      },
+      {
+        "id": "S-F13",
+        "status": "fixed",
+        "how": "Reviewer confirmed closed."
+      },
+      {
+        "id": "S-F14",
+        "status": "fixed",
+        "how": "Image trigger (reviewer confirmed) plus path filters removed (R28). The periodic full run stays out by OD-L1-21(4)."
+      },
+      {
+        "id": "M-N1",
+        "status": "fixed",
+        "how": "Same-image baseline with a full-run fallback (R24); confirmed from job logs; self-test covers it."
+      },
+      {
+        "id": "M-N2",
+        "status": "fixed",
+        "how": "Job test-cli-fair-ab (R27); check_workflows requires every member to be covered; measured run of every target passes."
+      },
+      {
+        "id": "M-N3",
+        "status": "fixed",
+        "how": "Event filter on the baseline listing (R25)."
+      },
+      {
+        "id": "M-N4",
+        "status": "fixed",
+        "how": "Same fix as S-N2 (R28)."
+      },
+      {
+        "id": "M-N5",
+        "status": "fixed",
+        "how": "head_repository filter (R25)."
+      },
+      {
+        "id": "M-N6",
+        "status": "fixed",
+        "how": "continue-on-error on the strace install steps (R34)."
+      },
+      {
+        "id": "M-N7",
+        "status": "open",
+        "how": "Recorded: the v2 hosted full runs were still running after 179 min. Limits unchanged; the first v3 full run decides (R36)."
+      },
+      {
+        "id": "M-N8",
+        "status": "fixed",
+        "how": "A1 checked only when present (R35); self-test probe without A1."
+      },
+      {
+        "id": "M-F-01",
+        "status": "fixed",
+        "how": "Reviewer confirmed closed."
+      },
+      {
+        "id": "M-F-02",
+        "status": "fixed",
+        "how": "Reviewer confirmed closed."
+      },
+      {
+        "id": "M-F-03",
+        "status": "fixed",
+        "how": "Reviewer confirmed closed."
+      },
+      {
+        "id": "M-F-04",
+        "status": "fixed",
+        "how": "Reviewer confirmed closed; residual removed by R26."
+      },
+      {
+        "id": "M-F-05",
+        "status": "fixed",
+        "how": "Reviewer confirmed closed; its side effect (M-N2) is fixed."
+      },
+      {
+        "id": "M-F-06",
+        "status": "fixed",
+        "how": "Reviewer confirmed closed."
+      },
+      {
+        "id": "M-F-07",
+        "status": "fixed",
+        "how": "Reviewer confirmed closed."
+      },
+      {
+        "id": "M-F-08",
+        "status": "fixed",
+        "how": "Reviewer confirmed closed."
+      },
+      {
+        "id": "M-F-09",
+        "status": "fixed",
+        "how": "Reviewer confirmed closed."
+      },
+      {
+        "id": "M-F-10",
+        "status": "fixed",
+        "how": "Reviewer confirmed closed (limits kept); duration risk tracked as M-N7."
+      },
+      {
+        "id": "M-F-11",
+        "status": "fixed",
+        "how": "Reviewer confirmed closed."
+      },
+      {
+        "id": "M-F-12",
+        "status": "fixed",
+        "how": "Reviewer confirmed closed."
+      }
+    ],
+    "files_written": [
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/tools/ci/select_tests.py",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/.github/workflows/production.yml",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/.github/workflows/ignored-tests.yml",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/research/production_loop_20261116/ci/V3_NOTES.md",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/research/production_loop_20261116/ci/TRIAGE_KO.md",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/research/production_loop_20261116/ci/v3_selection_cases.py",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/research/production_loop_20261116/ci/v3_logs/ (fix_self_test.log, fix_checks.log, fix_checks_against_b0d4bc97_workflows.log, fix_strace_calls_probe.log, fix_tokenizer_probe.log, fix_reviewer_probes.log, fix_e2e_run.log, fix_e2e_outcome.json, fix_e2e_map.json, fix_e2e_selection.json, fix_map_merged.json, fix_selection_cases.log, fix_selection_cases.json, fix_sweep_v3.json)"
+    ]
+  },
+  "recheck": {
+    "lens": "recheck",
+    "verdict": "sound_with_fixes",
+    "summary": "I rechecked ci3 head 1a1baf4c. Both majors are fixed. M-N1: in a fake-gh replay with runs on image 20261116.202.1 (newest) and .88.1, b0d4bc97 picks the newest run and goes full on .88.1. The head picks the .88.1 run and stays in selected mode for test and test-cli-fair-ab. A new image still goes full (R24). M-N2: at b0d4bc97, no workflow ran the 208 non-ignored cli/fair-ab tests. The new job test-cli-fair-ab selects all 38 units in full mode, and 6 selected-mode cases pass. A local replay of its full run passed: 285 tests, 0 failed, 40 map entries, 0 lost. M-N3..M-N6, M-N8, S-N1..S-N6 and S-F14 are fixed. M-N7 stays open: the hosted v2 test job took 191 of 300 min (3 bit-anchor failures), and the ignored job is still running at 214 min. Re-runs: self-test passed, reachability 99/99, loop checker PASS, the builder's 21 cases 21/21, reviewer probes OK. One new minor: the same-image baseline scan downloads the artifact of every passed-over run (100 vs 1 on a new image, about 200 REST requests per job). Details: /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/recheck/",
+    "earlier_findings": [
+      {
+        "id": "M-N1",
+        "closed": true,
+        "evidence": "Replayed with a fake gh on the real ci3 history (recheck/m_n1/m_n1_repro.log, m_n1/out/m_n1_results.json). Runs: 310 on 20261116.202.1 (newest), 309 on .88.1 and 308 on .202.1, all complete at ancestors. The current run is on .88.1 at 1a1baf4c. With b0d4bc97, both jobs take baseline 310 and go full ('runner image version changed since the baseline: 20261116.202.1 -> 20261116.88.1'). With the head, test and test-cli-fair-ab take baseline 309 (note '1 on another runner image') and run in selected mode with no reasons. On .202.1 they take 310 and stay selected. On a new image 20261123.5.1 they fall back to 310 and go full (R24, by design). The listing query now has &event=pull_request. Self-test cases b3/b4 cover the same-image choice and the fallback."
+      },
+      {
+        "id": "M-N2",
+        "closed": true,
+        "evidence": "At b0d4bc97, a grep of every workflow finds only A1's 2 cli targets and the ignored-mode selection. A crude count gives 92 cli and 116 fair-ab non-ignored #[test]. At the head, production.yml:184-239 defines job test-cli-fair-ab: scope rodas5p-fair-ab rodas5p-cli, artifact ci-test-outcome-test-cli-fair-ab, queued group, 120 min, strace install with continue-on-error. The stale A1 comment is corrected. Its select without a baseline is full with 38 units: fair-ab lib, 20 tests and doc; cli 2 bins and 14 tests (recheck/m_n2/m_n2_cases.log). 6 selected-mode cases on the measured map pass: cli main.rs body change -> 11 cli targets; fair-ab body change; integrators structural change -> both packages whole; NATIVE.json read -> 3 cli targets; cli and fair-ab test-file edits. Local replay of the job's steps on a clone of 1a1baf4c (recheck/job/run.log, outcome.json): 40 commands exit 0, 285 tests passed, 0 failed, complete true, 40 map entries, 0 lost, about 26 min, peak RSS 1.6 GB, peak disk 2.2 GB of profiles and 10.5 GB target. The clone's git status stayed clean. The hosted A1 run 45358324393 passed every cli and fair-ab test. check_workflows fails when a member is in no job."
+      },
+      {
+        "id": "M-N3",
+        "closed": true,
+        "evidence": "The listing query carries event=<GITHUB_EVENT_NAME> (gh_calls.log of the M-N1 replay), and the loop also drops runs of other events (select_tests.py:1576-1578). Self-test b4 passes over a complete dispatch run on the same image."
+      },
+      {
+        "id": "M-N4",
+        "closed": true,
+        "evidence": "A YAML parse shows production.yml and ignored-tests.yml trigger on pull_request and push to main with no paths. check_workflows rejects a path filter (self-test probe)."
+      },
+      {
+        "id": "M-N5",
+        "closed": true,
+        "evidence": "Runs whose head_repository.full_name differs from GITHUB_REPOSITORY are passed over (select_tests.py:1579-1581). Self-test b4 reports '1 from another repository'."
+      },
+      {
+        "id": "M-N6",
+        "closed": true,
+        "evidence": "The Install strace step has continue-on-error: true in test, test-cli-fair-ab and ignored-tests (YAML parse). check_workflows enforces it for all three jobs."
+      },
+      {
+        "id": "M-N7",
+        "closed": false,
+        "evidence": "Still open, as R36 intends. Hosted v2 test job of run 45378440406 (coverage, one command per target, no strace): it finished at 14:01:35Z. Its run step took 191 of 300 min (64%). It failed on 3 bit-anchor targets: krylov gmres_staged_column_test_bits and staged_solve_telemetry, integrators stage_residual_telemetry (recheck/hosted/). The ignored-tests job of run 45378440571 was still in its run step at 14:25Z (214 of 330 min). There is no v3 hosted run yet. v3 adds strace, so its full run will probably pass the two-thirds mark the builder set."
+      },
+      {
+        "id": "M-N8",
+        "closed": true,
+        "evidence": "check_workflows reads a1-inner-tolerance-parity.yml only when the file exists (select_tests.py:1787). The self-test probe workspace without A1 reports no problem."
+      },
+      {
+        "id": "S-N1",
+        "closed": true,
+        "evidence": "The reviewer's tok_probe.py on the head classifies all 5 pairs as body or structural (they were noop). joint_punct_decide.py classifies the integrate.rs '& &' change as body and selects cli alg02_predictive_controller. Case S-N1 is OK, and the self-test has 9 operator pairs (recheck/reviewer_probes.log)."
+      },
+      {
+        "id": "S-N2",
+        "closed": true,
+        "evidence": "Same fix as M-N4: no trigger paths on either test workflow, and check_workflows rejects them."
+      },
+      {
+        "id": "S-N3",
+        "closed": true,
+        "evidence": "The reviewer's merge_tree_listing.py on the head selects lister ('observed research/new, which the change adds to'). For A, match_inputs checks created dirs against read/dirs (select_tests.py:867-869). Case S-N3 is OK, and S-N3-unlisted selects nothing."
+      },
+      {
+        "id": "S-N4",
+        "closed": true,
+        "evidence": "is_global is true for .gitattributes at the root and at any depth, and false for docs/gitattributes.md (recheck/minor_probes.log). In case S-N4 the select subcommand chooses mode full."
+      },
+      {
+        "id": "S-N5",
+        "closed": true,
+        "evidence": "Independent strace 6.8 probe with the extended TRACED list. A shell doing mkdir -p, mv, rm -f, touch, ln -s and a failed cd gives read {data/made, made/sub, a.txt, b.txt, lnk} and absent {data/gone.txt, data/nowhere} (recheck/minor_probes.log). In the job replay, triage_cli traced 52055 calls with no error."
+      },
+      {
+        "id": "S-N6",
+        "closed": true,
+        "evidence": "check_sources runs in the self-test. In a scratch clone, adding #[track_caller], line!() and include_str!(\"main.rs\") to cli src/main.rs gives 3 problems; the unchanged tree gives 0 (recheck/minor_probes.log)."
+      },
+      {
+        "id": "S-F14",
+        "closed": true,
+        "evidence": "The path-filter part is closed by S-N2/M-N4, and the image trigger is kept. A periodic full run stays excluded by owner decision OD-L1-21(4). The other earlier findings stay closed: their cases F1-F7, F11, C1 and S1 pass in the 21-case re-run."
+      }
+    ],
+    "findings": [
+      {
+        "id": "R-1",
+        "severity": "minor",
+        "claim": "The same-image baseline search (R24) downloads the artifact of every listed run until it finds a qualifying run on the current image. On the first run on a new image, or on a minority image whose last run is far back, that means up to 100 downloads per job, even when the selection then goes full anyway. b0d4bc97 downloaded one.",
+        "evidence": "recheck/scan_cost.log uses a fake gh with 100 complete runs on 20261116.202.1. A current run on 20261123.5.1 makes 100 downloads (b0d4bc97: 1). A current run on .88.1, whose only .88.1 run is 40 runs back, makes 39 downloads (b0d4bc97: 1). GH_DEBUG=api against the real repository: one gh run download is 2 REST requests (runs/{id}/artifacts and artifacts/{id}/zip) and takes about 1.7 s; a run without the artifact costs 1 request (recheck/ratelimit/dbg*.log). With three selecting jobs, a push on a new image can use about 600 of the GITHUB_TOKEN budget of 1,000 requests per hour per repository, plus about 3 minutes per job. The reviewer's samples show 3 image versions within 8 days. Once the budget runs out, listings and downloads fail and those runs go full.",
+        "fix": "Find candidates without downloading them. For example, put ImageOS/ImageVersion in the artifact name and list candidates with one call to GET /repos/{owner}/{repo}/actions/artifacts?name=<name>, which returns the workflow_run id, head_branch and head_sha. Then download only the chosen run. Alternatively, go full without scanning when no listed run has an artifact for this image. Also skip the lookup when FULL is true (main, dispatch with full)."
+      }
+    ],
+    "checked": [
+      "Head 1a1baf4c on research/production-loop-20261116-w3-ci3: the worktree was clean before and after, including ignored files (the tools/ci pyc predates this session). All scratch is under /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/recheck/. There were no commits and no GitHub writes; gh was used read-only for job status, logs, the artifact list and one artifact download into scratch.",
+      "Self-test: python3 -I -B -u tools/ci/select_tests.py self-test -> 'self-test passed' (recheck/self_test.log).",
+      "Reachability checker: '99 ignored tests: 99 reachable from CI', exit 0 (recheck/reachability.log).",
+      "Loop checker: PASS, with no complaint (recheck/loop_checker.log).",
+      "I read the full JSON of both reviews and of the fix report from this run's workflow journal (recheck/review_*.json, fix_report.json).",
+      "M-N1 replay with the b0d4bc97 and head selectors through baseline and select for both production jobs (recheck/scripts/m_n1_repro.py, m_n1/).",
+      "M-N2: workflow grep at both revisions, test counts, full-mode units and 6 selected-mode cases (recheck/scripts/m_n2_cases.py, m_n2/). Local replay of the job's steps (recheck/scripts/job_full_run.sh, job/run.log, disk.log). Deviations from the hosted job: no gh (so a full first run), --jobs 2, taskset 0-5,12-17, CARGO_BUILD_JOBS=4.",
+      "Builder's harness v3_selection_cases.py re-run in my own sparse shared clone: 21/21 OK (recheck/cases/selection_cases.log).",
+      "Reviewer probes re-run on the head: tok_probe, merge_tree_listing, joint_punct_decide (recheck/reviewer_probes.log).",
+      "YAML parse of the three workflows: no trigger path filters and no top-level concurrency. test, test-cli-fair-ab and ignored-tests queue (cancel-in-progress false) with limits of 300, 120 and 330 min, and continue-on-error on all three strace installs. The A1 diff removes only the closure step.",
+      "Hosted, read-only: in the A1 run 45358324393, cli and fair-ab passed; only integrators stage_clients_dense_lu_reuse_alloc failed. The v2 test job took 191 min and has 3 bit-anchor failures. The v2 ignored job was still running at 14:25Z (recheck/hosted/).",
+      "Local disk use of the new job's full run: 39 test binaries of about 200 MB each with coverage (7.1 GB in deps), 2.2 GB incremental (CI has CARGO_INCREMENTAL=0) and a 2.2 GB peak of profiles before the measurement step."
+    ]
+  }
+}

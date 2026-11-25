@@ -1,0 +1,16 @@
+# exploratory: default build (x86-64) against RUSTFLAGS='-C target-cpu=x86-64-v3'; whole runs of the drive mode; instructions:u from perf stat (not a timing run: non-timing cores, no lock)
+# binaries: default 54f4bc07fd76d069 v3 5d77cbeb0ce5df3b
+XFLAG build=v19x family=ac2d size=64 kernel=slices budget=8 instructions=1551224150 cycles=777100379 attempts=8 state_hash=45d4b1ecd3904a86 
+XFLAG build=v19x-v3 family=ac2d size=64 kernel=slices budget=8 instructions=963570474 cycles=607474907 attempts=8 state_hash=45d4b1ecd3904a86 
+XFLAG build=v19x family=ac2d size=64 kernel=indexed budget=8 instructions=7030240658 cycles=2176625583 attempts=8 state_hash=45d4b1ecd3904a86 
+XFLAG build=v19x-v3 family=ac2d size=64 kernel=indexed budget=8 instructions=6737410668 cycles=2174156247 attempts=8 state_hash=45d4b1ecd3904a86 
+XFLAG build=v19x family=bruss2d size=32 kernel=slices budget=8 instructions=759587263 cycles=361952112 attempts=8 state_hash=ee1dfb461c96fc82 
+XFLAG build=v19x-v3 family=bruss2d size=32 kernel=slices budget=8 instructions=472893379 cycles=278881913 attempts=8 state_hash=ee1dfb461c96fc82 
+XFLAG build=v19x family=ac3d size=16 kernel=slices budget=3 instructions=5688222669 cycles=2833052266 attempts=3 state_hash=27b47683419482c1 
+XFLAG build=v19x-v3 family=ac3d size=16 kernel=slices budget=3 instructions=2624996380 cycles=2022618332 attempts=3 state_hash=27b47683419482c1 
+XFLAG build=v19x family=ac3d size=16 kernel=indexed budget=3 instructions=34916774112 cycles=10161639361 attempts=3 state_hash=27b47683419482c1 
+XFLAG build=v19x-v3 family=ac3d size=16 kernel=indexed budget=3 instructions=33420200464 cycles=9999953547 attempts=3 state_hash=27b47683419482c1 
+XFLAG build=v19x family=bruss1d size=5000 kernel=indexed budget=20 instructions=478439498 cycles=179726581 attempts=20 state_hash=63313cb0f0fe60b4 
+XFLAG build=v19x-v3 family=bruss1d size=5000 kernel=indexed budget=20 instructions=437532658 cycles=179159488 attempts=20 state_hash=63313cb0f0fe60b4 
+XFLAG build=v19x family=bruss1d size=5000 kernel=slices budget=20 instructions=468874593 cycles=203860233 attempts=20 state_hash=63313cb0f0fe60b4 
+XFLAG build=v19x-v3 family=bruss1d size=5000 kernel=slices budget=20 instructions=461157172 cycles=179821503 attempts=20 state_hash=63313cb0f0fe60b4 

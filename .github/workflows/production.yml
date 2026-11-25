@@ -1,46 +1,62 @@
 name: Production CI
 
 # Builds and tests the production crates (vigilode facade and the crates under
-# it) on the toolchain pinned in rust-toolchain.toml. That pin equals the
-# workspace rust-version, so every job here is also the MSRV check.
+# it) on the toolchain pinned in rust-toolchain.toml; the job test-cli-fair-ab
+# also tests the other workspace members (rodas5p-fair-ab, rodas5p-cli). That
+# pin equals the workspace rust-version, so every job here is also the MSRV
+# check.
 #
-# The test job runs whole packages (no hand-maintained --test list), so a new
-# test target is picked up without editing this file.
+# The test job does not re-run the whole suite at every push (owner decisions
+# OD-L1-19, OD-L1-20 and OD-L1-21): tools/ci/select_tests.py runs the test
+# targets whose measured inputs changed since the last complete run of this
+# job, targets without a measurement and the targets that failed in that run.
+# Every run measures the inputs of the targets it runs (rustc dep-info,
+# coverage, and the files the test processes open, traced with strace) and
+# hands the map to the next run. The whole suite runs on main, when it is asked
+# for (workflow_dispatch with full), when no baseline or map is known, when the
+# runner image or the pull-request base changed since the baseline and when a
+# global file changes (workspace manifest or lock file, toolchain, .cargo/,
+# tools/ci/, a .gitattributes file, this file). The owner runs the whole suite
+# before a release.
+#
+# No path filter on the triggers: a measured input can be any tracked file
+# (research/, docs/, fixtures/, tools/ and more), and a run whose changes
+# affect no test ends after the selection step.
 
 on:
   workflow_dispatch:
+    inputs:
+      full:
+        description: 'Run the whole suite instead of the change-based selection'
+        type: boolean
+        default: true
   pull_request:
-    paths:
-      - 'crates/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
-      - 'rust-toolchain.toml'
-      - '.github/workflows/production.yml'
   push:
     branches: [main]
-    paths:
-      - 'crates/**'
-      - 'Cargo.toml'
-      - 'Cargo.lock'
-      - 'rust-toolchain.toml'
-      - '.github/workflows/production.yml'
 
 permissions:
   contents: read
+  # The test job reads earlier runs of this workflow and their outcome
+  # artifacts to find the baseline of its selection.
+  actions: read
 
-concurrency:
-  group: production-${{ github.ref }}
-  # Cancel superseded runs on pull-request refs only; every commit on main
-  # keeps its own result.
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+# Concurrency is set per job. The short jobs cancel superseded runs on
+# pull-request refs (every commit on main keeps its own result). The test job
+# queues instead (OD-L1-21): a cancelled test job leaves no outcome, so the
+# next run would repeat its selection; GitHub keeps the newest pending run of
+# the group, so pushes coalesce and the queued run's baseline is the run that
+# just finished.
 
-# Not tested here, on purpose: vigilode-hybrid (its own workspace),
-# rodas5p-fair-ab and rodas5p-cli are research and CLI crates, outside the
-# production gate. Existing workflows touch them: rodas5p-cli is tested in
-# a1-inner-tolerance-parity.yml and run in a1-two-arm-receipt.yml; the research
-# run of vigilode-hybrid is hybrid-structure-ad-20261020.yml (a research
-# branch, run_ci.sh); rodas5p-fair-ab is only compiled by
-# e4-fresh-clone-build.yml and has no test workflow.
+# The test job is the gate of the production crates. The job test-cli-fair-ab
+# runs the non-ignored tests of the other two workspace members, rodas5p-fair-ab
+# and rodas5p-cli, with the same selection and its own outcome artifact: the
+# workspace test closure of a1-inner-tolerance-parity.yml, their only other
+# run, was removed (OD-L1-21), and a job of its own keeps their full run out of
+# the time budget of the gate. Their ignored tests run in ignored-tests.yml.
+# fmt and clippy below cover the production crates only. Not tested here:
+# vigilode-hybrid and vigilode-bench, which are not workspace members
+# (vigilode-hybrid: hybrid-structure-ad-20261020.yml on a research branch;
+# vigilode-bench: the bench job below).
 
 env:
   CARGO_TERM_COLOR: always
@@ -50,6 +66,9 @@ jobs:
   fmt:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    concurrency:
+      group: production-fmt-${{ github.ref }}
+      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
     steps:
       - uses: actions/checkout@v4
       - name: Install the pinned Rust toolchain
@@ -65,6 +84,9 @@ jobs:
   clippy:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    concurrency:
+      group: production-clippy-${{ github.ref }}
+      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
     steps:
       - uses: actions/checkout@v4
       - name: Install the pinned Rust toolchain
@@ -81,27 +103,147 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    # A full run executes every target with coverage instrumentation and
+    # strace; a selection is much shorter.
+    timeout-minutes: 300
+    # Queued, never cancelled (OD-L1-21): see the note above the jobs.
+    concurrency:
+      group: production-test-${{ github.ref }}
+      cancel-in-progress: false
+    # Coverage instrumentation (OD-L1-20): every selected target records the
+    # source files it executes. Branch, heads and the full flag reach the
+    # scripts through the environment, never expanded inside a script.
+    env:
+      RUSTFLAGS: '-C instrument-coverage'
+      RUSTDOCFLAGS: '-C instrument-coverage'
+      LLVM_PROFILE_FILE: '${{ github.workspace }}/../coverage-unused/%p-%m.profraw'
+      BRANCH: ${{ github.head_ref || github.ref_name }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      PR_BASE: ${{ github.event.pull_request.base.sha }}
+      FULL: ${{ (github.event_name == 'workflow_dispatch' && inputs.full) || github.ref == 'refs/heads/main' }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Install the pinned Rust toolchain
         run: |
-          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal --component llvm-tools
           rustup override set "$RUST_TOOLCHAIN"
+      # The selector traces the files that the test processes open (OD-L1-21).
+      # Without strace it still runs every selected test, records why it could
+      # not trace and leaves those targets unmapped, so the next run measures
+      # them again: a failed installation does not stop the job.
+      - name: Install strace
+        continue-on-error: true
+        run: |
+          command -v strace >/dev/null || { sudo apt-get update && sudo apt-get install -y strace; }
+          strace -V | head -n 1
       - uses: Swatinem/rust-cache@v2.7.8
         with:
           shared-key: root
-      - name: Facade and light crates
-        run: cargo test --locked -p vigilode -p rodas5p-core -p rodas5p-krylov -p vigilode-coupled
-      # Every non-ignored target of the package (lib, integration tests, doc
-      # tests), so new test files are included automatically. #[ignore]d tests
-      # run in ignored-tests.yml.
-      - name: Integrators
-        run: cargo test --locked -p rodas5p-integrators
+      - name: Self-test of the test selection
+        run: python3 -u tools/ci/select_tests.py self-test
+      # The baseline is the newest complete run of this job on this branch, of
+      # the same event and repository, at an ancestor of the head, that ran on
+      # the same runner image (hosted runners serve several image versions at
+      # once); with none on this image, the newest on another image, and the
+      # selection runs the whole suite.
+      - name: Baseline of the test selection
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -u tools/ci/select_tests.py baseline --workflow production.yml --artifact ci-test-outcome-test --branch "$BRANCH" --run-id "$GITHUB_RUN_ID" --head "$HEAD_SHA" --out baseline.json
+      # Packages of the production gate; whole packages in full mode (lib,
+      # integration and doc tests), so a new test target needs no edit here.
+      # #[ignore]d tests run in ignored-tests.yml. The pull-request base of the
+      # checked-out merge commit and the runner image (ImageOS, ImageVersion)
+      # are recorded; a change of either since the baseline runs the whole
+      # suite.
+      - name: Select the tests
+        run: python3 -u tools/ci/select_tests.py select --baseline baseline.json --head "$HEAD_SHA" --pr-base "$PR_BASE" --workflow-file .github/workflows/production.yml --full "$FULL" --out selection.json --scope rodas5p-core rodas5p-krylov rodas5p-integrators vigilode vigilode-coupled
+      # One cargo test --no-fail-fast per target, measured: a failing test
+      # binary does not hide the binaries after it, and every target runs.
+      - name: Run the selected tests
+        run: python3 -u tools/ci/select_tests.py run --selection selection.json --mode normal --measure --baseline baseline.json --work-dir "$RUNNER_TEMP/ci-measure" --map-out map.json --outcome outcome.json
+      # The outcome (failing targets; complete = every selected command ran its
+      # tests) and the input map are the baseline of the next run of this job.
+      - name: Keep the outcome and the input map for the next run
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-test-outcome-test
+          path: |
+            outcome.json
+            selection.json
+            map.json
+          if-no-files-found: ignore
+          overwrite: true
+
+  # The non-ignored tests of rodas5p-fair-ab and rodas5p-cli (see the note
+  # above the jobs), selected and measured like the test job, with their own
+  # baseline: the artifact ci-test-outcome-test-cli-fair-ab.
+  test-cli-fair-ab:
+    runs-on: ubuntu-latest
+    # The hosted workspace closure of A1 ran these tests in about 14 minutes
+    # (debug, no coverage, run 45358324393); a full run here adds the build,
+    # coverage instrumentation and strace.
+    timeout-minutes: 120
+    # Queued, never cancelled (OD-L1-21): see the note above the jobs.
+    concurrency:
+      group: production-test-cli-fair-ab-${{ github.ref }}
+      cancel-in-progress: false
+    env:
+      RUSTFLAGS: '-C instrument-coverage'
+      RUSTDOCFLAGS: '-C instrument-coverage'
+      LLVM_PROFILE_FILE: '${{ github.workspace }}/../coverage-unused/%p-%m.profraw'
+      BRANCH: ${{ github.head_ref || github.ref_name }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      PR_BASE: ${{ github.event.pull_request.base.sha }}
+      FULL: ${{ (github.event_name == 'workflow_dispatch' && inputs.full) || github.ref == 'refs/heads/main' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install the pinned Rust toolchain
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal --component llvm-tools
+          rustup override set "$RUST_TOOLCHAIN"
+      # As in the test job: without strace the targets stay unmapped.
+      - name: Install strace
+        continue-on-error: true
+        run: |
+          command -v strace >/dev/null || { sudo apt-get update && sudo apt-get install -y strace; }
+          strace -V | head -n 1
+      - uses: Swatinem/rust-cache@v2.7.8
+        with:
+          shared-key: root
+      - name: Self-test of the test selection
+        run: python3 -u tools/ci/select_tests.py self-test
+      - name: Baseline of the test selection
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -u tools/ci/select_tests.py baseline --workflow production.yml --artifact ci-test-outcome-test-cli-fair-ab --branch "$BRANCH" --run-id "$GITHUB_RUN_ID" --head "$HEAD_SHA" --out baseline.json
+      - name: Select the tests
+        run: python3 -u tools/ci/select_tests.py select --baseline baseline.json --head "$HEAD_SHA" --pr-base "$PR_BASE" --workflow-file .github/workflows/production.yml --full "$FULL" --out selection.json --scope rodas5p-fair-ab rodas5p-cli
+      - name: Run the selected tests
+        run: python3 -u tools/ci/select_tests.py run --selection selection.json --mode normal --measure --baseline baseline.json --work-dir "$RUNNER_TEMP/ci-measure" --map-out map.json --outcome outcome.json
+      - name: Keep the outcome and the input map for the next run
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-test-outcome-test-cli-fair-ab
+          path: |
+            outcome.json
+            selection.json
+            map.json
+          if-no-files-found: ignore
+          overwrite: true
 
   docs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    concurrency:
+      group: production-docs-${{ github.ref }}
+      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
     steps:
       - uses: actions/checkout@v4
       - name: Install the pinned Rust toolchain
@@ -142,6 +284,9 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    concurrency:
+      group: production-semver-${{ github.ref }}
+      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
     # Non-blocking until the first published 0.x baseline; plan G-A makes it
     # blocking.
     continue-on-error: true
@@ -165,8 +310,16 @@ jobs:
           -p vigilode
 
   bench:
-    runs-on: ubuntu-latest
+    # ubuntu-24.04 ships SUNDIALS 6.4.1, the CVODE version the comparator
+    # bridge (crates/vigilode-bench/native/bridge) is written for and the
+    # benchmark evidence was produced with. ubuntu-26.04 ships SUNDIALS 7.1.1:
+    # its headers include mpi.h and no longer define the types the bridge
+    # uses, so the bridge does not compile there.
+    runs-on: ubuntu-24.04
     timeout-minutes: 90
+    concurrency:
+      group: production-bench-${{ github.ref }}
+      cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
     env:
       OPENBLAS_NUM_THREADS: 1
     steps:

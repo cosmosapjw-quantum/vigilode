@@ -1,0 +1,80 @@
+# node V26 checks
+# date: 2026-11-24T19:39:26+09:00
+# git head: 4b5697706a41d8f3b77e1844ee3acc26ea0a1813
+# git status (tracked changes): 0
+## clippy
+# command: taskset -c 0-5,12-17 cargo +1.94.1 clippy --locked -j 4 --release -p rodas5p-integrators --lib --test stage_clients_assembly_alloc --test stage_clients_assembly_identity --test stage_clients_assembly_measure --test stage_clients_assembly_problems --test stage_clients_assembly_check_corpus --test stage_clients_assembly_check_mc --test stage_clients_assembly_check_measure --no-deps -- -D warnings
+    Finished `release` profile [optimized] target(s) in 20.14s
+# exit code: 0
+## fmt
+# command: cargo +1.94.1 fmt -p rodas5p-integrators -- --check
+# exit code: 0
+## stage-client tests
+# command: taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test 'stage_clients_*'
+     Running tests/stage_clients_alloc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_alloc-3e13379013d7cd8e)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+     Running tests/stage_clients_assembly_alloc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_assembly_alloc-27ecfbba2224e7f2)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+     Running tests/stage_clients_assembly_check_corpus.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_assembly_check_corpus-bdab728e059a0a71)
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/stage_clients_assembly_check_mc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_assembly_check_mc-87366af99a3f1820)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 127.76s
+     Running tests/stage_clients_assembly_check_measure.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_assembly_check_measure-bae05b015b51428f)
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/stage_clients_assembly_identity.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_assembly_identity-52e2026284224a71)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+     Running tests/stage_clients_assembly_measure.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_assembly_measure-946386c11050eece)
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/stage_clients_assembly_problems.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_assembly_problems-0ad8d326389a6234)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/stage_clients_banded_tight_alloc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_banded_tight_alloc-070679195e42d6d9)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests/stage_clients_banded_tight_identity.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_banded_tight_identity-e0b30f48c960c56f)
+test result: ok. 7 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.96s
+     Running tests/stage_clients_dense_identity.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_dense_identity-ea7f4f6468efc8ba)
+test result: ok. 8 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.29s
+     Running tests/stage_clients_dense_lu_reuse_alloc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_dense_lu_reuse_alloc-9b8bca26614767f3)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.49s
+     Running tests/stage_clients_dense_lu_reuse_identity.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_dense_lu_reuse_identity-1f6e5dfd567cd2b9)
+test result: ok. 7 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 12.56s
+     Running tests/stage_clients_dense_lu_reuse_problems.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_dense_lu_reuse_problems-da0c118b0db1c41d)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/stage_clients_krylov_alloc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_krylov_alloc-03c9958be235ea2f)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.84s
+     Running tests/stage_clients_krylov_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_krylov_contracts-f29d2171e495db3e)
+test result: ok. 9 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 13.44s
+     Running tests/stage_clients_krylov_measure.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_krylov_measure-a6ef51f6c444aa9c)
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/stage_clients_krylov_problems.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_krylov_problems-020754c1a24aaa99)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/stage_clients_krylov_v17_alloc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_krylov_v17_alloc-8d0f33669096f96c)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.20s
+     Running tests/stage_clients_krylov_v17_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_krylov_v17_contracts-ba18eef3a034b22f)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 9.27s
+     Running tests/stage_clients_krylov_v17_measure.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_krylov_v17_measure-53ca16d423f30d0a)
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/stage_clients_krylov_v17_problems.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_krylov_v17_problems-924e570f47680447)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/stage_clients_speculative_alloc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_speculative_alloc-56558aeacccbde7f)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.42s
+     Running tests/stage_clients_speculative_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_speculative_contracts-6cbeca21ba59a6f4)
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.39s
+     Running tests/stage_clients_speculative_measure.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_speculative_measure-132cd0840f08bcca)
+test result: ok. 0 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests/stage_clients_speculative_problems.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_speculative_problems-f3b5614baad368c4)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+# exit code: 0
+## sentinels
+# command: taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test ppsw1_6b_contracts --test ptsw2b_contracts
+     Running tests/ppsw1_6b_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/ppsw1_6b_contracts-e2c2aa6559128625)
+test result: ok. 37 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.14s
+     Running tests/ptsw2b_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/ptsw2b_contracts-4d2519f3fa558faf)
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+# exit code: 0
+## loop checker
+# command: python3 -I research/production_loop_20261116/check_checkpoint.py
+  File "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v26/research/production_loop_20261116/check_checkpoint.py", line 28, in require
+    raise ValueError(message)
+ValueError: implementation changed; rerun affected tests/update checkpoint: crates/rodas5p-integrators/src/stage_clients/assembly.rs
+# exit code: 1
+# date at end: 2026-11-24T19:45:23+09:00

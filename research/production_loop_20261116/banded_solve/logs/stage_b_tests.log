@@ -1,0 +1,39 @@
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116/crates/rodas5p-integrators)
+    Finished `release` profile [optimized] target(s) in 10.80s
+     Running tests/stage_clients_banded_tight_alloc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_banded_tight_alloc-bdd25d5121d3ac2b)
+
+running 1 test
+V21B_ALLOC n=1000 accepted=82 rejected=10 steady_intervals=80 max_allocations_per_step=0
+test banded_tight_client_allocates_nothing_per_accepted_step ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/stage_clients_banded_tight_identity.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_banded_tight_identity-1af58c366204e79b)
+
+running 6 tests
+test a_singular_matrix_is_the_same_linear_solve_error ... ok
+V21B_IDENTITY case=brusselator-1d-500 rtol=1e-4 n=1000 band=2 fixed_offsets=true attempts=52 accepted=42 rejected=10 factorizations=52 solves=416 identical=1
+V21B_IDENTITY case=brusselator-1d-500 rtol=1e-6 n=1000 band=2 fixed_offsets=true attempts=92 accepted=82 rejected=10 factorizations=92 solves=736 identical=1
+V21B_IDENTITY case=brusselator-1d-500 rtol=1e-8 n=1000 band=2 fixed_offsets=true attempts=195 accepted=190 rejected=5 factorizations=195 solves=1560 identical=1
+V21B_IDENTITY case=brusselator-1d-5000 rtol=1e-4 n=10000 band=2 fixed_offsets=true attempts=52 accepted=42 rejected=10 factorizations=52 solves=416 identical=1
+V21B_IDENTITY case=brusselator-1d-5000 rtol=1e-6 n=10000 band=2 fixed_offsets=true attempts=92 accepted=82 rejected=10 factorizations=92 solves=736 identical=1
+V21B_IDENTITY case=brusselator-1d-5000 rtol=1e-8 n=10000 band=2 fixed_offsets=true attempts=195 accepted=190 rejected=5 factorizations=195 solves=1560 identical=1
+test brusselator_1000_and_10000_equal_the_protected_banded_driver ... ok
+V21B_IDENTITY case=fitzhugh-nagumo-1d-5000 rtol=1e-4 n=10000 band=2 fixed_offsets=true attempts=18 accepted=18 rejected=0 factorizations=18 solves=144 identical=1
+V21B_IDENTITY case=fitzhugh-nagumo-1d-5000 rtol=1e-6 n=10000 band=2 fixed_offsets=true attempts=31 accepted=31 rejected=0 factorizations=31 solves=248 identical=1
+V21B_IDENTITY case=fitzhugh-nagumo-1d-5000 rtol=1e-8 n=10000 band=2 fixed_offsets=true attempts=73 accepted=73 rejected=0 factorizations=73 solves=584 identical=1
+test fitzhugh_nagumo_10000_equals_the_protected_banded_driver ... ok
+V21B_IDENTITY case=brusselator-1d-2 rtol=1e-6 n=4 band=2 fixed_offsets=false attempts=103 accepted=89 rejected=14 factorizations=103 solves=824 identical=1
+V21B_IDENTITY case=brusselator-1d-3 rtol=1e-6 n=6 band=2 fixed_offsets=true attempts=94 accepted=83 rejected=11 factorizations=94 solves=752 identical=1
+test smallest_sizes_equal_the_protected_banded_driver ... ok
+V21B_IDENTITY case=allen-cahn-2d-32 rtol=1e-4 n=1024 band=32 fixed_offsets=false attempts=14 accepted=13 rejected=1 factorizations=14 solves=112 identical=1
+V21B_IDENTITY case=brusselator-1d-50000 rtol=1e-4 n=100000 band=2 fixed_offsets=true attempts=52 accepted=42 rejected=10 factorizations=52 solves=416 identical=1
+V21B_IDENTITY case=allen-cahn-2d-32 rtol=1e-6 n=1024 band=32 fixed_offsets=false attempts=18 accepted=18 rejected=0 factorizations=18 solves=144 identical=1
+test wide_band_allen_cahn_equals_the_protected_banded_driver ... ok
+V21B_IDENTITY case=brusselator-1d-50000 rtol=1e-6 n=100000 band=2 fixed_offsets=true attempts=92 accepted=82 rejected=10 factorizations=92 solves=736 identical=1
+V21B_IDENTITY case=brusselator-1d-50000 rtol=1e-8 n=100000 band=2 fixed_offsets=true attempts=195 accepted=190 rejected=5 factorizations=195 solves=1560 identical=1
+test brusselator_100000_equals_the_protected_banded_driver ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 9.93s
+
+# exit=0

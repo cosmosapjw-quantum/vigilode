@@ -1,0 +1,119 @@
+{
+  "schema": "vigilode.release-gate-matrix.v1",
+  "date_kst": "2026-11-16",
+  "owner_decision": "OD-L1-4",
+  "relation_to_g0": "G0 (PRODUCTION_GATE_MATRIX.json) is unchanged and remains the research gate for a new fast lane. This matrix judges release readiness of the scoped package with protected RODAS5P as default. Neither gate implies the other.",
+  "verdict": "NOT_MET",
+  "verdict_basis": "Node V01 audit of 2026-11-16 on loop commit 2dc9a2c5 (code identical to 074a5699): 6 axes NOT_MET, 2 PARTIAL, 0 MET. Statuses adopted from audit/R_GATE_PROPOSAL.json after orchestrator review.",
+  "axes": [
+    {
+      "id": "R1_CORRECTNESS",
+      "criterion": "Order, stiff convergence and agreement with independent references for every exposed method on a stratified battery.",
+      "status": "NOT_MET",
+      "evidence": [
+        "research/production_loop_20261116/audit/AUDIT_KO.md",
+        "research/production_loop_20261116/audit/audit_findings.json",
+        "research/production_loop_20261116/audit/R_GATE_PROPOSAL.json"
+      ],
+      "reasons": [
+        "One executed counterexample on an exposed method is enough to fail 'every exposed method'.",
+        "Protected RODAS5P correctness was not re-evaluated here; it is neither supported nor questioned by this audit."
+      ]
+    },
+    {
+      "id": "R2_ROBUSTNESS",
+      "criterion": "Typed failures, no silent fallback, session ownership, non-finite input and step-size underflow handling.",
+      "status": "NOT_MET",
+      "evidence": [
+        "research/production_loop_20261116/audit/AUDIT_KO.md",
+        "research/production_loop_20261116/audit/audit_findings.json",
+        "research/production_loop_20261116/audit/R_GATE_PROPOSAL.json"
+      ],
+      "reasons": [
+        "Three confirmed defects of the public PeerOde adapter contradict the typed-failure and refusal sub-criteria."
+      ]
+    },
+    {
+      "id": "R3_API",
+      "criterion": "One documented entry point, consistent options and solution view, capability and refusal semantics, MSRV and feature policy.",
+      "status": "NOT_MET",
+      "evidence": [
+        "research/production_loop_20261116/audit/AUDIT_KO.md",
+        "research/production_loop_20261116/audit/audit_findings.json",
+        "research/production_loop_20261116/audit/R_GATE_PROPOSAL.json"
+      ],
+      "reasons": [
+        "No single entry point exists on the judged head; V03 is the node that would change this."
+      ]
+    },
+    {
+      "id": "R4_REPRODUCIBILITY",
+      "criterion": "Clean-checkout build on the pinned toolchain, locked dependencies, deterministic tests, CI evidence on the judged head, independent rerun.",
+      "status": "NOT_MET",
+      "evidence": [
+        "research/production_loop_20261116/audit/AUDIT_KO.md",
+        "research/production_loop_20261116/audit/audit_findings.json",
+        "research/production_loop_20261116/audit/R_GATE_PROPOSAL.json"
+      ],
+      "reasons": [
+        "A flaky test target and the absence of any CI run on the head contradict two sub-criteria.",
+        "The executed reruns support the recorded U numbers; their raw logs were in scratch (copied to audit/raw_scratch)."
+      ]
+    },
+    {
+      "id": "R5_PERFORMANCE",
+      "criterion": "Matched-achieved-error work-precision against external solvers per regime; documented, not required to win.",
+      "status": "PARTIAL",
+      "evidence": [
+        "research/production_loop_20261116/audit/AUDIT_KO.md",
+        "research/production_loop_20261116/audit/audit_findings.json",
+        "research/production_loop_20261116/audit/R_GATE_PROPOSAL.json"
+      ],
+      "reasons": [
+        "Executed matched-error data exists only for small 0D/1D problems and, off the judged head, for two sphere problems.",
+        "The criterion asks for documentation per regime and does not require a win; three regimes have no run.",
+        "All wall figures in the cited sources are diagnostic_only."
+      ]
+    },
+    {
+      "id": "R6_PACKAGING",
+      "criterion": "Workspace membership, separation of research code from the production crates, licences, crate metadata.",
+      "status": "NOT_MET",
+      "evidence": [
+        "research/production_loop_20261116/audit/AUDIT_KO.md",
+        "research/production_loop_20261116/audit/audit_findings.json",
+        "research/production_loop_20261116/audit/R_GATE_PROPOSAL.json"
+      ],
+      "reasons": [
+        "Research modules are not separated from the production crate and two crates are outside every workspace command."
+      ]
+    },
+    {
+      "id": "R7_EVIDENCE_GOVERNANCE",
+      "criterion": "Ledger continuity, no evaluation without executed solver output, pre-registration before runs.",
+      "status": "NOT_MET",
+      "evidence": [
+        "research/production_loop_20261116/audit/AUDIT_KO.md",
+        "research/production_loop_20261116/audit/audit_findings.json",
+        "research/production_loop_20261116/audit/R_GATE_PROPOSAL.json"
+      ],
+      "reasons": [
+        "All three named sub-criteria have confirmed counterexamples, two of them verifier-confirmed."
+      ]
+    },
+    {
+      "id": "R8_GEOMETRY_SCOPE",
+      "criterion": "2D, 3D and sphere operators with stated limits and executed convergence and conservation contracts.",
+      "status": "PARTIAL",
+      "evidence": [
+        "research/production_loop_20261116/audit/AUDIT_KO.md",
+        "research/production_loop_20261116/audit/audit_findings.json",
+        "research/production_loop_20261116/audit/R_GATE_PROPOSAL.json"
+      ],
+      "reasons": [
+        "Convergence contracts are executed and reproduce, but the operators are test-only and conservation was not examined."
+      ]
+    }
+  ],
+  "promotion_rule": "Every axis needs an executed receipt on the judged head and an independent rerun. A release remains a separate owner decision."
+}

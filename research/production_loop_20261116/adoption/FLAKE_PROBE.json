@@ -1,0 +1,18 @@
+{
+  "schema": "vigilode.flake-probe.v1",
+  "date": "2026-11-16",
+  "test_binary": "rodas5p-core --test leja_setup_work_contract (5 tests, default test threads)",
+  "base_code_2dc9a2c5": {
+    "binary": "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v03g/release/deps/leja_setup_work_contract-859d7ab67e0eaeeb",
+    "runs": 200,
+    "failed": 3
+  },
+  "adopted_tree": {
+    "binary": "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/trial/release/deps/leja_setup_work_contract-859d7ab67e0eaeeb",
+    "runs": 200,
+    "failed": 2
+  },
+  "failing_test": "counted_action_records_cold_coefficient_table_without_changing_authority (crates/rodas5p-core/tests/leja_setup_work_contract.rs:149)",
+  "reading": "The assertion ties charged scalar proxy units to the observation that this call initialised a process-global table; concurrent tests race on those tables. The test file and leja_setup_work.rs are unchanged by the merge; leja_action.rs gains 1107 lines.",
+  "load_note": "host load average high; rates are diagnostic"
+}

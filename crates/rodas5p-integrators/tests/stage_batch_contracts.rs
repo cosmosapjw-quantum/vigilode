@@ -17,15 +17,30 @@ fn assert_rows_close(left: &[Vec<f64>], right: &[Vec<f64>], tolerance: f64) {
 
 #[test]
 fn local_rayon_pool_executes_rhs_rows_concurrently_and_preserves_order() -> CoreResult<()> {
-    use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::sync::OnceLock;
+    use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+    use std::time::Instant;
 
     let active = Arc::new(AtomicUsize::new(0));
     let maximum = Arc::new(AtomicUsize::new(0));
     let active_rhs = Arc::clone(&active);
     let maximum_rhs = Arc::clone(&maximum);
+    let parallel_phase = Arc::new(AtomicBool::new(false));
+    let parallel_rhs = Arc::clone(&parallel_phase);
+    let deadline = OnceLock::new();
     let rhs = Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
         let now = active_rhs.fetch_add(1, Ordering::SeqCst) + 1;
         maximum_rhs.fetch_max(now, Ordering::SeqCst);
+        // Bounded rendezvous, as in the stage-batch concurrency probe (loop L1 node V32, owner
+        // decision OD-L1-28): in the parallel phase a task stays active until two tasks have been
+        // active together or 2 s have passed, so the assertion below does not depend on when the
+        // fresh pool's workers start (a late second worker otherwise leaves the maximum at 1).
+        if parallel_rhs.load(Ordering::SeqCst) {
+            let until = *deadline.get_or_init(|| Instant::now() + Duration::from_secs(2));
+            while maximum_rhs.load(Ordering::SeqCst) < 2 && Instant::now() < until {
+                std::thread::sleep(Duration::from_micros(100));
+            }
+        }
         std::thread::sleep(Duration::from_millis(2));
         for (dst, src) in out.iter_mut().zip(y) {
             *dst = *src + t;
@@ -62,6 +77,7 @@ fn local_rayon_pool_executes_rhs_rows_concurrently_and_preserves_order() -> Core
         &mut serial_counters,
     )?;
     let mut parallel_counters = WorkCounters::default();
+    parallel_phase.store(true, Ordering::SeqCst);
     let parallel = problem.eval_rhs_stage_rows(
         &times,
         &states,

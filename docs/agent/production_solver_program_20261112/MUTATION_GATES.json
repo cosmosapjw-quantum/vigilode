@@ -98,15 +98,18 @@
     "claim promotion without receipt"
   ],
   "current_authorization": {
-    "source": "user request 2026-11-15",
-    "scope": "research, coding, audit, plans and push to isolated research branch",
+    "source": "user request 2026-11-16 and owner decisions OWNER_DECISIONS_20261116.json",
+    "scope": "research, coding, audit, plans and push to isolated research branches of loop L1; trial merge of the switcher lineage on a separate branch with conditional adoption; opt-in Auto routing; release gate matrix beside the unchanged G0; one PPSW1 decision experiment",
     "decision": "Exact local allowlists are implementation contracts, not repeated owner-approval requests.",
     "excluded": [
       "merge main",
       "release/default promotion",
       "destructive history rewrite",
-      "changes to frozen G0 or reference thresholds"
-    ]
+      "changes to frozen G0 or reference thresholds",
+      "change of protected RODAS5P sources outside a passed trial merge",
+      "change of the PPSW1 default sigma cap"
+    ],
+    "owner_decisions_20261123": "OD-L1-9 to OD-L1-12 (OWNER_DECISIONS_20261116.json): kernel of the facade's banded route, fix of the Rodas5p::capabilities defect, adaptive restart length and residual-test cadence of the protected matrix-free stage solve, workflow edits of ci/TRIAGE_KO.md and workspace version 0.2.0. Each edit of a protected file under these decisions is recorded in CHECKPOINT.json (epoch 3) with the decision id."
   },
   "policy_corrections_20261115": [
     {
@@ -133,12 +136,84 @@
     "crates/vigilode/tests/unified_method_capabilities.rs",
     "crates/vigilode-coupled/tests/structure_certificate_transfer.rs",
     "crates/vigilode/tests/unified_method_sessions.rs",
-    "crates/vigilode/tests/geometry_mol_contracts.rs"
+    "crates/vigilode/tests/geometry_mol_contracts.rs",
+    "research/production_loop_20261116/**",
+    "research/LEDGER.jsonl",
+    "crates/rodas5p-integrators/src/lib.rs",
+    "crates/rodas5p-integrators/src/stage_clients/**",
+    "crates/rodas5p-integrators/src/mol/**",
+    "crates/rodas5p-integrators/tests/stage_clients_*.rs",
+    "crates/rodas5p-integrators/tests/mol_*.rs",
+    "crates/vigilode/src/selection/**",
+    "crates/vigilode/src/solve.rs",
+    "crates/vigilode/tests/default_path_golden.rs",
+    "crates/vigilode/tests/golden/default_path/**",
+    "crates/vigilode/tests/unified_frontend_contracts.rs",
+    "crates/rodas5p-krylov/src/shared_basis_v2.rs",
+    "crates/rodas5p-krylov/tests/shared_basis_v2_*.rs",
+    "crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs",
+    "crates/rodas5p-integrators/tests/ptsw2b_contracts.rs",
+    "crates/rodas5p-core/tests/leja_setup_work_contract.rs",
+    "crates/vigilode/src/hybrid_automaton.rs",
+    ".github/workflows/production.yml",
+    ".github/workflows/ignored-tests.yml",
+    "tools/check_ignored_tests_in_ci.py",
+    "Cargo.toml",
+    "Cargo.lock",
+    "crates/vigilode-bench/Cargo.lock",
+    "crates/vigilode-hybrid/Cargo.lock",
+    "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+    "crates/rodas5p-integrators/src/rodas5p_fast_dense.rs",
+    "crates/rodas5p-integrators/tests/banded_kernel_entry_identity.rs",
+    "crates/vigilode/src/lib.rs",
+    "crates/vigilode/src/solution.rs",
+    "crates/vigilode/tests/banded_kernel_route_contracts.rs",
+    "crates/vigilode/tests/golden/banded_kernel_route/**",
+    "crates/vigilode/src/capabilities.rs",
+    "crates/vigilode/src/error.rs",
+    "crates/vigilode/tests/capabilities_contracts.rs",
+    "crates/vigilode/tests/capabilities_truth_contracts.rs",
+    "crates/vigilode/tests/golden/capabilities_truth/**",
+    "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+    "crates/rodas5p-integrators/src/routing.rs",
+    "crates/rodas5p-krylov/src/gmres_staged.rs",
+    "crates/rodas5p-integrators/tests/mf_adaptive_*.rs",
+    "crates/rodas5p-krylov/tests/gmres_staged_column_test_*.rs",
+    "tools/research_node_exemptions.txt",
+    "crates/vigilode/src/unified/**",
+    "crates/vigilode/src/registry.rs",
+    "crates/vigilode/tests/unified_router_contracts.rs",
+    "crates/vigilode/tests/unified_production_solver_contracts.rs",
+    "crates/vigilode/examples/unified_production_solver.rs",
+    "crates/rodas5p-integrators/tests/mf_confirm_*.rs",
+    "crates/vigilode/tests/facade_contracts.rs",
+    "tools/ci/**",
+    "crates/vigilode/src/session.rs",
+    "crates/vigilode/tests/unified_breakeven_*.rs",
+    ".github/workflows/a1-inner-tolerance-parity.yml",
+    "crates/rodas5p-integrators/tests/mf_budget_*.rs",
+    "crates/rodas5p-integrators/src/stage_batch.rs",
+    "crates/rodas5p-integrators/tests/stage_batch_probe_*.rs",
+    "crates/vigilode/tests/jvp_counter_*.rs",
+    "crates/rodas5p-integrators/tests/stage_batch_contracts.rs"
   ],
   "effective_policy_precedence": [
     "current user request",
     "active_allowlist and current_authorization",
     "effective gates",
     "historical policy_corrections as provenance only"
+  ],
+  "previous_authorizations": [
+    {
+      "source": "user request 2026-11-15",
+      "scope": "research, coding, audit, plans and push to isolated research branch",
+      "decision": "Exact local allowlists are implementation contracts, not repeated owner-approval requests.",
+      "excluded": [
+        "merge main",
+        "release/default promotion",
+        "destructive history rewrite",
+        "changes to frozen G0 or reference thresholds"
+      ]
+    }
   ]
 }

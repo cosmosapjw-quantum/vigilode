@@ -1,0 +1,20 @@
+# node V26 log
+# date: 2026-11-24T19:38:09+09:00
+# git head: 9c4b106f846f70a046d08c5860d494cec99eaeec
+# git status (tracked changes): 2
+# binary: /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_assembly_check_measure-bae05b015b51428f
+# binary sha256: 547232213bffe97e06bbed7935304de4e14f8d63ad31b8ceba39e6c9f885694b
+# rustc: rustc 1.94.1 (e408947bf 2026-03-25)
+# host: 7.0.0-43-generic, 24 logical cpus
+# loadavg at start: 6.80 9.49 7.27 2/6014 142692
+# command: V26_MODE=batched V26_ACTION=timing flock /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/timing.lock taskset -c 6-11 /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_assembly_check_measure-bae05b015b51428f --ignored --nocapture --exact v26_measure
+
+running 1 test
+V26_META_JSON {"action_env":"timing","arm_env":null,"arms_env":null,"atol":1e-8,"cell":"","cpus_allowed_list":"6-11","max_attempts":48,"mode":"batched","rounds_env":null,"rtol":1e-6,"what_env":null}
+V26_BATCHED_JSON {"action":"timing","loadavg_after":{"load_15m":7.27,"load_1m":6.8,"load_5m":9.49,"raw":"6.80 9.49 7.27 4/6047 143103"},"rounds":[{"batched_ns_for_n_states":11391508,"round":0,"single_ns_for_n_states":40864216,"warm_up":true},{"batched_ns_for_n_states":10268448,"round":1,"single_ns_for_n_states":41339152,"warm_up":true},{"batched_ns_for_n_states":10779983,"round":2,"single_ns_for_n_states":41452296,"warm_up":false},{"batched_ns_for_n_states":10377364,"round":3,"single_ns_for_n_states":41623910,"warm_up":false},{"batched_ns_for_n_states":11401207,"round":4,"single_ns_for_n_states":43134031,"warm_up":false},{"batched_ns_for_n_states":10712486,"round":5,"single_ns_for_n_states":41486220,"warm_up":false},{"batched_ns_for_n_states":10582962,"round":6,"single_ns_for_n_states":41371663,"warm_up":false},{"batched_ns_for_n_states":10510685,"round":7,"single_ns_for_n_states":41388015,"warm_up":false},{"batched_ns_for_n_states":10451743,"round":8,"single_ns_for_n_states":41292925,"warm_up":false}],"states":400}
+test v26_measure ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s
+
+# exit code: 0
+# loadavg at end: 6.80 9.49 7.27 3/6044 143104

@@ -1,0 +1,329 @@
+# e2e measured run (attempt 2, after the strace_works fix), started 2026-11-24T12:11:00Z, selector of the working tree on top of 0f5d4a7199bfa2b11b59091c4ecc1f39659b0e4b
+# env: CARGO_TARGET_DIR=/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3 RUSTFLAGS=-C instrument-coverage CARGO_BUILD_JOBS=4 taskset -c 0-5,12-17 VIGILODE_LLVM_BIN=/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-llvm/rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin
+# cargo: cargo 1.94.1 (29ea6fb6a 2026-03-24), rustc: rustc 1.94.1 (e408947bf 2026-03-25), strace: strace -- version 6.8, llvm-cov:   LLVM version 21.1.8-rust-1.94.1-stable
++ cargo test --locked --no-run --message-format=json-diagnostic-rendered-ansi -p rodas5p-core --test residual_gain_contract
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.36s
++ cargo test --locked --no-run --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --lib --test constants_provenance_contracts --test generic_scope_contracts --test ppsw1_6b_contracts --test ptsw2b_contracts --example sp01_dupfix_profile
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.37s
++ cargo test --locked --no-run --message-format=json-diagnostic-rendered-ansi -p rodas5p-cli --test alg02_predictive_controller
+   Compiling rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+   Compiling rodas5p-cli v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-cli)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 22.54s
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-core --test residual_gain_contract
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.26s
+     Running tests/residual_gain_contract.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/residual_gain_contract-f07b9aac19213566)
+
+running 7 tests
+test export_runs ... ignored
+test test_transport_two_sided_gain_scaling ... ok
+test test_assembly_uncertainty_validation ... ok
+test test_vg1_zero_allocation_hot_path ... ok
+test test_case_d_positives ... ok
+test test_case_c_negatives ... ok
+test test_case_a_retained_oracle_and_parity ... ok
+
+test result: ok. 6 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --lib
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.14s
+     Running unittests src/lib.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/rodas5p_integrators-fe17c5b2e4e75cfd)
+
+running 142 tests
+test adaptive::method_metadata_tests::rodas_controller_order_comes_from_method_estimator_metadata ... ok
+test adaptive::predictive_controller_tests::clipped_samples_update_the_history_only_when_informative ... ok
+test adaptive::predictive_controller_tests::first_acceptance_is_the_integral_factor ... ok
+test adaptive_output::tests::adaptive_output_session_large_clock_uses_represented_steps_and_strict_cap ... ok
+test adaptive::predictive_controller_tests::predictive_kinds_serialize_like_the_production_state ... ok
+test adaptive::predictive_controller_tests::integral_and_pi_are_unchanged_bit_for_bit ... ok
+test adaptive::predictive_controller_tests::history_free_proposal_of_the_predictive_kinds_is_the_integral_factor ... ok
+test adaptive::predictive_controller_tests::predictive_factor_on_hand_computed_cases ... ok
+test adaptive::predictive_controller_tests::test_jury_stability_unstable_rejected ... ok
+test adaptive::predictive_controller_tests::rejections_failures_and_zero_error_follow_the_production_rule ... ok
+test comparator_fidelity::tests::only_production_arms_admit_a_relative_reading ... ok
+test conditioned_polynomial::wp09_tests::test_chebyshev_interval_root_enclosure ... ok
+test conditioned_polynomial::wp09_tests::test_chart_declaration_from_gershgorin ... ok
+test adaptive_output::tests::rejected_final_landing_cannot_be_restored_by_rounding_residue ... ok
+test bound_pr101::tests::point_jvp_matches_scalar_jacobian_without_materializing_matrix ... ok
+test conditioned_polynomial::wp09_tests::test_skew_guard_triggers_quadratic_factor ... ok
+test conditioned_polynomial::wp09_tests::test_gershgorin_positive_spectrum_rejected ... ok
+test conditioned_polynomial::wp09_tests::test_gershgorin_intervals_and_certified_status ... ok
+test conservative_remap::tests::arithmetic_refusals_are_atomic_and_workspace_remains_reusable ... ok
+test adaptive_output::tests::adaptive_output_session_rejected_represented_trial_must_shrink ... ok
+test conservative_remap::tests::crossing_grid_has_hand_computed_projection_and_l1_change ... ok
+test adaptive_output::tests::adaptive_output_session_refusals_preserve_the_issued_transaction ... ok
+test conditioned_polynomial::wp09_tests::test_wp09_section_4_1_wolfram_counterexample ... ok
+test bound_pr101::tests::fallible_final_outward_add_is_charged_before_refusal ... ok
+test conservative_remap::tests::invalid_inputs_and_capacity_leave_output_unchanged ... ok
+test adaptive_output::tests::rejected_interior_landing_cannot_be_restored_by_rounding_residue ... ok
+test conservative_remap::tests::repeated_dimension_changes_reuse_backing_storage ... ok
+test adaptive::predictive_controller_tests::the_cap_holds_the_first_acceptance_after_a_rejection_or_failure ... ok
+test adaptive::predictive_controller_tests::test_jury_stability_h211b ... ok
+test conservative_remap::tests::nonuniform_refine_coarsen_preserves_integral_and_positivity ... ok
+test conditioned_polynomial::wp09_tests::test_gershgorin_symmetric_certified_vs_nonsymmetric_estimate ... ok
+test conservative_remap::tests::floating_mass_guard_refuses_before_commit ... ok
+test conservative_remap::tests::weighted_l1_contracts_for_two_densities ... ok
+test controller_telemetry::tests::the_events_follow_the_registered_definitions ... ok
+test dopri5::tests::test_compute_spectral_stability_benign_scalar ... ok
+test dopri5_dense::tests::failed_dense_preparation_never_publishes_partial_interval ... ok
+test dense_output_v2::dense_segment_tests::scalar_quartic_accessor_counts_exact_attempted_interval_calls ... ok
+test dopri5_stiffness::tests::weights_equal_tableau_difference_and_sum_to_zero ... ok
+test exponential::continuation_budget_guard_tests::invalid_row_shape_is_rejected_before_budget_reservation ... ok
+test exponential::continuation_budget_guard_tests::continuation_cap_admits_exactly_eighty_scalars_and_denies_jvp_81_before_call ... ok
+test conditioned_polynomial::wp09_tests::test_chebyshev_recurrence_expansion ... ok
+test dense_output_v2::failure_preservation_tests::post_work_dense_interpolation_error_preserves_work_diagnostics_and_prefix ... ok
+test g4_s5b0_regime_atlas::analytic_partial_t_tests::analytic_partial_t_matches_independent_centered_difference_without_rhs_calls ... ok
+test dense_output_v2::dense_segment_tests::curve_derivative_enclosure_falsifies_endpoint_midpoint_only_sampling ... ok
+test fourier_path_candidate::tests::roundtrip_and_conjugation_order ... ok
+test g4_s5b0_regime_atlas::causal_k1_policy_tests::causal_k1_comparator_fires_only_on_observed_feature ... ok
+test g4_s5b0_regime_atlas::live_rodas_step_tests::live_atlas_step_uses_wrms_inner_forcing ... ok
+test g4_s5b0_regime_atlas::stage_trajectory_geometry_tests::one_pair_wall_protocol_is_self_describing_and_identity_checked ... ignored, optimized all-six wall-contract check; run explicitly with --profile measurement
+test exponential::continuation_budget_guard_tests::zero_continuation_budget_invokes_no_underlying_jvp ... ok
+test conservative_remap::tests::zero_mass_and_invalid_tolerance_are_explicit ... ok
+test g4_s5b0_regime_atlas::stage_trajectory_geometry_tests::production_shadow_wall_protocol_is_frozen_and_alternating ... ok
+test g4_s5b0_regime_atlas::stage_trajectory_geometry_tests::stage_trajectory_shape_matches_power_law_and_rejects_nonpositive_inputs ... ok
+test n01_mass_action_client::tests::callback_sources_match_and_stale_epoch_refused ... ok
+test dopri5_stiffness::tests::scalar_linear_mode_is_recovered ... ok
+test dopri5_stiffness::tests::gate_flags_stiff_forced_regime_and_not_rotation ... ok
+test dopri5_stiffness::tests::degenerate_inputs_return_none ... ok
+test exponential::continuation_budget_guard_tests::over_cap_row_batch_is_denied_atomically_without_partial_execution ... ok
+test n01_mass_action_client::tests::callbacks_do_not_commit_partially_on_bad_state ... ok
+test fourier_path_certificate::tests::rotation_encloses_library_values ... ok
+test nonlinear_homotopy::tests::inward_projection_proves_represented_membership ... ok
+test output::transactional_dense_output_tests::late_preparation_refusal_invalidates_earlier_staged_rows ... ok
+test output::transactional_dense_output_tests::ordinary_collector_has_no_verified_radius_prefix ... ok
+test g4_s5b0_regime_atlas::reference_safety_label_tests::self_estimate_and_reference_label_are_independent_fields ... ok
+test fourier_path_certificate::tests::primitive_derivative_roundtrip ... ok
+test nonlinear_homotopy::tests::complex_prefix_preserves_causal_order_and_tree_shape ... ok
+test output::transactional_dense_output_tests::prepared_dense_interval_refusal_keeps_committed_prefix ... ok
+test output::transactional_dense_output_tests::verified_radius_mode_cannot_be_reentered_after_preparation ... ok
+test packet_window::outward_scalar_tests::output_precharge_survives_test_refusal_boundary ... ok
+test output::transactional_dense_output_tests::prepared_dense_interval_rejects_nonfinite_radius_without_commit ... ok
+test packet_window::packet_curve::degree_tests::maximum_degree_guard_checks_binary64_integer_domain_without_allocation ... ok
+test packet_window::outward_scalar_tests::rp_greater_than_energy_radius_controls_nonlinear_tail ... ok
+test ppsw1::tests::estimator_weights_at_sigma_one_match_exact_values ... ok
+test ppsw1::tests::radau_nodes_match_known_values_and_end_at_one ... ok
+test pr101_verified::tests::refused_final_add_keeps_both_attempted_products ... ok
+test pr101_verified::tests::refused_transport_stops_ledger_before_unexecuted_integral ... ok
+test problem::time_fd_workspace_tests::reused_scratch_matches_public_arithmetic_and_work ... ok
+test ppsw1::tests::gamma_is_a_root_of_the_defining_polynomial_to_double_precision ... ok
+test ppsw1::tests::radau_tableau_rows_integrate_polynomials_exactly ... ok
+test ptsw2b::tests::every_runtime_constant_is_certified_correctly_rounded ... ok
+test g4_s5b0_regime_atlas::trajectory_work_accounting_tests::trajectory_totals_charge_every_attempt ... ok
+test pr101_verified::tests::signed_zero_and_expansion_transport_are_finite ... ok
+test ptsw2b::tests::isqrt_is_floor_sqrt ... ok
+test radau::tests::real_eigenvector_matches_the_scipy_transform_column ... ok
+test ptsw2b::tests::starter_has_local_order_three_hence_u1_error_is_o_h_squared ... ok
+test raw_stage_target::tests::wp01b_raw_absolute_residual_budget_k_to_u_consistency ... ok
+test rodas5p_fast::banded_exact_tests::cache_hits_only_after_success_and_invalidates_on_changed_matrix ... ok
+test packet_trajectory::verified_transaction_private_tests::endpoint_admission_refusal_preserves_transaction_and_full_work ... ok
+test problem::time_fd_workspace_tests::shape_and_either_rhs_refusal_preserve_attempted_work ... ok
+test ptsw2b::tests::bad_input_gives_typed_errors_not_panics ... ok
+test rodas5p_fast::banded_exact_tests::failed_factorization_cannot_leave_a_live_key ... ok
+test rodas5p_fast::banded_exact_tests::cache_storage_is_only_allocated_for_opt_in_kernel ... ok
+test rodas5p_fast::banded_exact_tests::other_bandwidths_fall_back_without_changing_bits ... ok
+test rodas5p_fast::exact_band_cache::tests::changed_entry_misses ... ok
+test radau::tests::stage_lu_estimator_drops_exactly_one_factorization_per_trial ... ok
+test ptsw2b::tests::runtime_tableau_equals_the_correctly_rounded_exact_values ... ok
+test rodas5p_fast::exact_band_cache::tests::changed_shift_misses ... ok
+test rodas5p_fast::exact_band_cache::tests::failed_record_invalidates ... ok
+test rodas5p_fast::exact_band_cache::tests::explicit_invalidation_misses ... ok
+test rodas5p_fast::exact_band_cache::tests::shape_change_misses ... ok
+test rodas5p_fast::exact_band_cache::tests::nonfinite_shift_misses ... ok
+test rodas5p_fast::exact_band_cache::tests::identical_matrix_hits ... ok
+test rodas5p_fast::session_terminal_gate_tests::injected_clock_output_and_controller_refusals_are_sticky_at_the_accepted_prefix ... ok
+test rodas5p_fast::exact_band_cache::tests::signed_zero_is_conservative ... ok
+test rodas5p_fast::tests::fast_error_norm_refuses_overflowed_scalar_and_vector_scales ... ok
+test rodas5p_fast::tests::in_place_lu_solves_pivoted_and_banded_systems ... ok
+test rodas5p_fast_small::tests::every_small_option_set_has_its_own_driver_id ... ok
+test rodas5p_fast_small::tests::the_indexed_solve_equals_the_slice_solve_bitwise ... ok
+test rodas5p_lagged::stage_target_policy::n05_tests::normalized_stage_and_returned_center_errors_are_charged_without_budget_inflation ... ok
+test rodas5p_lagged::stage_target_policy::n05_tests::scope_checks_and_rotation_counterexample_do_not_grant_real_spectrum ... ok
+test rodas5p_fast::banded_exact_tests::exact_fixed_width_parity_including_pivot_swaps ... ok
+test rodas5p_fast_dense::tests::stage_rows_match_sequential_stages ... ok
+test rodas5p_matrix_free_fast::directional_quadratic_integration_tests::directional_quadratic_full_ivp_preserves_accuracy_and_reports_clone_storage ... ok
+test rodas5p_fast_small::tests::the_construction_check_refuses_a_table_off_by_one_bit ... ok
+test rodas5p_matrix_free_fast::directional_quadratic_integration_tests::directional_quadratic_option_refuses_incompatible_configuration ... ok
+test routing::tests::routing_rules_in_order ... ok
+test rodas5p_matrix_free_fast::directional_quadratic_integration_tests::directional_quadratic_refusal_preserves_previous_start_fallback ... ok
+test rodas5p_lagged::stage_target_policy::n05_tests::outward_assessment_covers_independent_actual_stage_perturbation ... ok
+test packet_trajectory::verified_transaction_private_tests::txn_fail_first_and_second_preserve_all_accepted_bits ... ok
+test sequential::forcing_resolution_tests::the_last_pass_is_judged_against_the_limit_of_its_own_estimate ... ok
+test rodas5p_lagged::stage_target_policy::n05_tests::spectral_bound_is_tighter_and_dominates_independent_forward_values ... ok
+test routing::tests::seeded_vectors_are_deterministic_and_in_range ... ok
+test routing::tests::verification_uses_the_jvp_when_present_and_charges_it ... ok
+test source_owned_graph_schur::c5_source_scoped_tests::actually_falls_back_to_original_full_band_w_on_residual_failure ... ok
+test routing::tests::a_band_narrower_than_the_jacobian_is_rejected ... ok
+test source_owned_graph_schur::c5_source_scoped_tests::exact_original_unscaled_w_candidate_and_work_count ... ok
+test source_owned_graph_schur::c5_source_scoped_tests::source_dimension_and_full_integer_feedback_guard ... ok
+test source_owned_graph_schur::c5_source_scoped_tests::fails_closed_for_changed_source_epoch ... ok
+test source_owned_graph_schur::c5_source_scoped_tests::refuses_rhs_callback_divergence_even_with_same_owner_name ... ok
+test source_owned_graph_schur::c5_source_scoped_tests::refuses_non_cooperative_or_missing_feedback_fvs ... ok
+test transaction::tests::wp03_confidence_rule_default_matches_wilson ... ok
+test transactional_q1_q2::tests::multi_row_failure_retains_later_row_shifted_work ... ok
+test unified_gates::qualification_tests::every_above_roundoff_order_must_meet_the_floor ... ok
+test unified_gates::qualification_tests::qualification_order_ignores_a_roundoff_contaminated_finest_pair ... ok
+test packet_trajectory::verified_transaction_private_tests::inherited_and_stationary_seeds_use_same_center_displacement_and_fixed_energy ... ok
+test unified_gates::qualification_tests::gate_against_a_reference_only_comparator_is_not_evaluated ... ok
+test transaction::tests::wp03_kl_upper_confidence_bound_properties ... ok
+test unified_gates::qualification_tests::qualification_order_keeps_the_finest_pair_when_it_is_above_roundoff ... ok
+test common_w_gate::tests::smoke_matrix_free_solutions_match_offline_materialized_direct_oracle ... ok
+test output::spd01_landing_property::fused_landing_equals_the_legacy_composition ... ok
+test unified_gates::qualification_tests::iterative_sequential_order_rows_survive_roundoff_level_refinement ... ok
+test g4_s5b0_regime_atlas::stage_trajectory_geometry_tests::v37_zero_cap_runner_emits_charged_exhaustions_without_endpoint_labels ... ok
+test g4_s5b0_regime_atlas::stage_trajectory_geometry_tests::v37_outcome_semantics_reject_crossed_labels_flags_and_endpoint_evidence ... ok
+
+test result: ok. 141 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 14.87s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --test constants_provenance_contracts
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.28s
+     Running tests/constants_provenance_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/constants_provenance_contracts-d92d76e498cca015)
+
+running 2 tests
+test source_artifact_hashes_are_current ... ok
+test constants_provenance_table_matches_source ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --test generic_scope_contracts
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.41s
+     Running tests/generic_scope_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/generic_scope_contracts-417f9d99cdfa9a46)
+
+running 4 tests
+test required_vectorized_jf_modules_exist_in_the_generic_base ... ok
+test bdf_v2_semantic_baseline_explicitly_retires_the_legacy_source_byte_freeze ... ok
+test radau3_cell_g_baseline_has_embedded_semantics_instead_of_a_source_byte_claim ... ok
+test generic_solver_core_does_not_embed_physical_client_bindings ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.74s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --test ppsw1_6b_contracts
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.14s
+     Running tests/ppsw1_6b_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/ppsw1_6b_contracts-9529a3d1f8ce6c20)
+
+running 37 tests
+test b2_gamma_is_the_root_of_the_printed_degree6_polynomial_to_60_digits ... ok
+test a2_derivative_class_is_exact_jacobian_or_jvp_frozen_at_step_start ... ok
+test a3_accepted_step_sigma_cap_is_1_10_and_the_paper_1_5_is_recorded_separately ... ok
+test a1_method_identity_is_distinct_and_opt_in ... ok
+test b5_tableau_is_total_on_positive_finite_sigma_and_typed_error_otherwise ... ok
+test c3_one_step_error_with_exact_stage_data_scales_like_h6 ... ok
+test b4_oracle_and_module_match_the_printed_pw04_sigma1_matrices ... ok
+test d2_perturbing_one_current_stage_input_changes_no_other_current_stage_output ... ok
+test c2_order6_residual_is_nonzero_so_variable_step_order_is_exactly_5 ... ok
+test d3_six_stages_share_one_factorization_and_satisfy_the_stage_equations ... ok
+test c1_order5_conditions_vanish_for_module_coefficients_at_variable_step ... ok
+test e2_accepted_attempt_commits_exactly_the_certified_update ... ok
+test e4_ratio_above_the_1_10_cap_is_a_typed_error_with_no_side_effects ... ok
+test d1_stage_inputs_use_only_previous_step_data_and_oracle_formulas ... ok
+test e1_rejected_attempt_leaves_history_and_controller_untouched_but_charges_work ... ok
+test b3_module_tableau_matches_the_high_precision_oracle_within_1e_13 ... ok
+test d6_jvp_only_problem_reproduces_explicit_jacobian_stage_solution ... ok
+test d4_advance_charges_one_factorization_six_solves_and_six_rhs_calls ... ok
+test e3_stale_attempt_is_refused_without_side_effects ... ok
+test g2_nothing_is_labelled_derivative_free ... ok
+test h2_estimator_is_zero_on_degree4_polynomials_and_nonzero_on_degree5 ... ok
+test h5_h0_rule_and_refusals ... ok
+test h7_starter_uses_forward_time_only_and_newton_only_in_the_starter ... ok
+test h1_estimator_weights_are_exact_lagrange_weights ... ok
+test g1_default_candidate_catalog_is_unchanged_and_peerw_stays_deferred ... ok
+test h6_starter_node_values_are_o_h0_to_the_5th_on_a_stiff_problem ... ok
+test f1_beta_is_nilpotent_so_the_stiff_limit_has_spectral_radius_zero ... ok
+test h3_error_norm_and_accept_rule ... ok
+test b1_exact_oracle_reproduces_the_pw04_structure ... ok
+test f2_stiff_limit_of_the_stability_matrix_is_minus_beta_over_gamma_with_rho_zero ... ok
+test h4_controller_formula_hysteresis_and_nan ... ok
+test d5_serial_and_two_thread_stage_solves_are_bitwise_identical ... ok
+test h8_try_step_rejects_on_estimator_and_commits_on_acceptance ... ok
+test g3_protected_sources_are_byte_identical ... ok
+test i1_end_to_end_prothero_robinson_with_real_starter_and_controller ... ok
+test i2_end_to_end_stiff_linear_system_with_real_starter_and_controller ... ok
+test f3_l_alpha_angle_is_57_54_degrees_within_0_05 has been running for over 60 seconds
+test f3_l_alpha_angle_is_57_54_degrees_within_0_05 ... ok
+
+test result: ok. 37 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 70.59s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --test ptsw2b_contracts
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.40s
+     Running tests/ptsw2b_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/ptsw2b_contracts-05113b33991ec159)
+
+running 24 tests
+test b2_exact_order3_condition_fails_so_order_is_exactly_two ... ok
+test b3_implementation_residuals_vanish_for_order2_and_not_for_order3 ... ok
+test c2_implementation_stiff_limit_matrix_matches_exact_and_is_nilpotent ... ok
+test d1_stage_inputs_use_only_previous_step_data_and_certified_formulas ... ok
+test e2_error_norm_is_componentwise_scaled_rms_of_the_embedded_difference ... ok
+test a1_certified_data_is_internally_consistent_in_exact_arithmetic ... ok
+test a2_implementation_coefficients_equal_certified_values ... ok
+test b1_exact_order2_conditions_vanish_identically_in_sigma ... ok
+test d2_perturbing_one_current_stage_input_changes_no_other_current_stage_output ... ok
+test c1_exact_stiff_limit_matrix_is_nilpotent_of_index_three_with_rho_zero ... ok
+test d3_both_stages_share_one_w_factor_and_satisfy_the_certified_stage_equations ... ok
+test d5_jvp_only_problem_reproduces_explicit_jacobian_stage_solution ... ok
+test e1_embedded_estimator_uses_its_own_exact_weights_and_is_order_one ... ok
+test d4_serial_and_two_thread_stage_solves_are_bitwise_identical ... ok
+test g2_method_identity_is_distinct_opt_in_control_with_the_declared_derivative_class ... ok
+test e3_controller_uses_certified_constants_clip_and_hysteresis ... ok
+test f1_rejected_attempt_does_not_mutate_history_or_controller_but_charges_work ... ok
+test f2_accepted_attempt_commits_exactly_the_certified_update ... ok
+test h1_default_candidate_catalog_is_unchanged_and_peerw_stays_deferred ... ok
+test j2_l_stable_damping_on_stiff_prothero_robinson ... ok
+test i1_startup_plan_is_forward_only_with_certified_times ... ok
+test g1_accepted_step_ceiling_is_the_owner_decided_1_10 ... ok
+test j1_observed_global_order_is_two_with_exact_startup ... ok
+test h2_protected_sources_are_byte_identical ... ok
+
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-cli --test alg02_predictive_controller
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.10s
+     Running tests/alg02_predictive_controller.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3/debug/deps/alg02_predictive_controller-c4d45a1b1d861603)
+
+running 19 tests
+test export_base ... ignored, base export of research/alg02_predictive_controller_20261008; release build; set ALG02_BASE
+test export_runs ... ignored, run export of research/alg02_predictive_controller_20261008; release build; set ALG02_RUNS
+test stiff_benchmark::spd01::spd01_identity_export ... ignored, identity export of research/spd01_fast_driver_overhead_20261005; release build; set SPD01_IDENTITY
+test stiff_benchmark::spd01::spd02_identity_export ... ignored, identity export of research/spd02_lu_column_extents_20261005; release build; set SPD02_IDENTITY
+test stiff_benchmark::spd01::spd03_identity_export ... ignored, identity export of research/spd03_banded_arm_instructions_20261005; release build; set SPD03_IDENTITY
+test stiff_benchmark::spd01::option_arms_keep_the_entry_validation ... ok
+test stiff_benchmark::sp03::the_sp03_arms_are_known_and_opt_in ... ok
+test stiff_benchmark::spd09::spd09_identity_export ... ignored, identity export of research/spd09_colext_threshold_20261007; release build; set SPD09_IDENTITY
+test stiff_benchmark::tests::analytic_jacobians_match_finite_differences ... ok
+test the_arms_differ_only_in_the_registered_field ... ok
+test stiff_benchmark::tests::in_place_jacobians_equal_the_explicit_ones ... ok
+test stiff_benchmark::sp03::the_jvp_only_brusselator_matches_the_benchmark_problem ... ok
+test stiff_benchmark::spd06::the_static_arms_are_known_and_equal_the_small_arm ... ok
+test stiff_benchmark::spd01::spd03_band_fill_equals_dense_fill ... ok
+test ladders_and_cells_are_the_registered_ones ... ok
+test stiff_benchmark::spd09::colext64_equals_the_legacy_driver_on_both_sides_of_the_threshold ... ok
+test stiff_benchmark::tests::every_arm_completes_a_loose_hires_run ... ok
+test stiff_benchmark::sp03::profile_run_reports_the_routing has been running for over 60 seconds
+test stiff_benchmark::sp03::the_routed_arm_equals_its_target_arm has been running for over 60 seconds
+test stiff_benchmark::sp03::the_routed_arm_equals_its_target_arm ... ok
+test stiff_benchmark::sp03::profile_run_reports_the_routing ... ok
+
+test result: ok. 13 passed; 0 failed; 6 ignored; 0 measured; 0 filtered out; finished in 192.13s
+
+	Command being timed: "taskset -c 0-5,12-17 python3 -u tools/ci/select_tests.py run --selection /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/e2e/selection.json --mode normal --measure --work-dir /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/e2e/measure2 --map-out /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/e2e/map.json --outcome /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/e2e/outcome.json --jobs 2"
+	User time (seconds): 85.61
+	System time (seconds): 3.77
+	Percent of CPU this job got: 27%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 5:27.56
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 1124804
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 3343
+	Minor (reclaiming a frame) page faults: 986299
+	Voluntary context switches: 38288
+	Involuntary context switches: 42639
+	Swaps: 0
+	File system inputs: 805920
+	File system outputs: 1812600
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0
+# exit 0 at 2026-11-24T12:16:29Z

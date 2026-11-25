@@ -1,0 +1,642 @@
+{
+  "schema": "vigilode.port-contracts.v1",
+  "date": "2026-11-16",
+  "status": "Updated 2026-11-17 after the adoption of the switcher lineage (V02) and wave 2 groups 1-2; fields status_20261117, result_this_loop and next_discriminator are current; rows of nodes still running are updated at the close of the loop.",
+  "rule": "A port keeps the original target and error; the discriminating experiment runs before any claim of benefit; evidence must come from executed runs.",
+  "items": [
+    {
+      "id": "P01",
+      "theme": "parallel/Krylov",
+      "name": "Shared Krylov basis across the 8 stage solves",
+      "source": "switcher 933922495045 (arrives by V02 merge if adopted, else blob-identical port): crates/rodas5p-krylov/src/shared_basis.rs + hook in rodas5p_matrix_free_fast.rs",
+      "computes": "min-residual solve over an accumulated subspace Q, Z=JQ for the single matrix W=I/(h*gamma)-J",
+      "target": "stage client (stage_clients/krylov.rs) + rodas5p-krylov/src/shared_basis_v2.rs",
+      "invariant": "true stage residual checked; every JVP charged; basis reset on new Jacobian",
+      "discriminator": "V06 frozen gate: JVP<=0.5x and instructions<=0.8x of per-stage GMRES with same preconditioner on 3 of 4 families",
+      "priority": "P1",
+      "loop_node": "V06",
+      "evidence_status": "never measured: ledger L-0209 is a simulation",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "paths": [
+            "crates/rodas5p-krylov/src/shared_basis.rs"
+          ]
+        }
+      ],
+      "head_paths": [
+        "crates/rodas5p-krylov/src/shared_basis.rs",
+        "crates/rodas5p-integrators/src/stage_clients/krylov.rs"
+      ],
+      "head_tests": [
+        "crates/rodas5p-integrators/tests/shared_basis_mf_contracts.rs",
+        "crates/rodas5p-integrators/tests/stage_clients_krylov_contracts.rs"
+      ],
+      "status_20261117": "PORTED_AND_MEASURED",
+      "result_this_loop": "V06 stage a FAIL on executed runs: JVP ratio of the shared basis to per-stage GMRES 1.12-1.78 on the three nonlinear families against the frozen 0.5 (research/production_loop_20261116/shared_krylov/RESULTS.json, ledger L-0315). The v2 kernel was not built. Leads moved to node V17 (residual test after every Arnoldi column; linear tolerance tied to the step tolerance).",
+      "next_discriminator": "none for the shared basis; see V17 for the two leads"
+    },
+    {
+      "id": "P02",
+      "theme": "Jacobian",
+      "name": "Coloured (Curtis-Powell-Reid) and threaded Jacobian assembly",
+      "source": "switcher 933922495045 (arrives by V02 merge if adopted, else blob-identical port): crates/vigilode/src/coloring.rs; banded grouping already in crates/vigilode/src/fd.rs:366",
+      "computes": "sparse J from colours+1 RHS or JVP calls; columns evaluated concurrently",
+      "target": "stage_clients/{assembly,coloring}.rs",
+      "invariant": "bitwise equal J and trajectory to sequential assembly; wrong pattern fails closed",
+      "discriminator": "V08 frozen gate: wall>=1.5x on FD problems n>=64",
+      "priority": "P1",
+      "loop_node": "V08",
+      "evidence_status": "never measured: ledger L-0214 is a simulation",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "paths": [
+            "crates/vigilode/src/coloring.rs"
+          ]
+        }
+      ],
+      "head_paths": [
+        "crates/vigilode/src/coloring.rs",
+        "crates/rodas5p-integrators/src/stage_clients/assembly.rs"
+      ],
+      "head_tests": [
+        "crates/vigilode/tests/sparse_jvp_contracts.rs",
+        "crates/rodas5p-integrators/tests/stage_clients_assembly_contracts.rs"
+      ],
+      "status_20261117": "PORTED_NOT_WIRED",
+      "result_this_loop": "the colouring module is at the head and serves Jacobian::sparse_jvp of the facade; the stage client assembly.rs is a stub. Node V08 (group 3 of wave 2) builds and measures the threaded and coloured assembly.",
+      "next_discriminator": "V08 frozen gate (wall >= 1.5x on finite-difference problems, n >= 64, right-hand side >= 50 microseconds; bitwise equal Jacobian)"
+    },
+    {
+      "id": "P03",
+      "theme": "geometry",
+      "name": "Spatial PDE battery v3 with sphere surface diffusion",
+      "source": "switcher 933922495045 (arrives by V02 merge if adopted, else blob-identical port): crates/vigilode-bench/src/pde_models/{spherical,gray_scott,allen_cahn,burgers,sine_gordon}.rs, spatial_grid.rs",
+      "computes": "finite-volume Laplace-Beltrami with weights (cos th- - cos th+)*dphi; 2D reaction-diffusion models",
+      "target": "crates/rodas5p-integrators/src/mol/ + battery v4 runner under the evidence root",
+      "invariant": "quadrature-weighted symmetry, conservation<=1e-12, second-order convergence",
+      "discriminator": "V11 gate",
+      "priority": "P1",
+      "loop_node": "V11",
+      "evidence_status": "executed campaign recorded on the switcher branch; rerun needed",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "paths": [
+            "crates/vigilode-bench/src/pde_models/spherical.rs",
+            "crates/vigilode-bench/src/pde_models/gray_scott.rs",
+            "crates/vigilode-bench/src/pde_models/allen_cahn.rs",
+            "crates/vigilode-bench/src/pde_models/burgers.rs",
+            "crates/vigilode-bench/src/pde_models/sine_gordon.rs",
+            "crates/vigilode-bench/src/spatial_grid.rs"
+          ]
+        }
+      ],
+      "head_paths": [
+        "crates/vigilode-bench/src/pde_models/spherical.rs",
+        "crates/vigilode-bench/src/spatial_grid.rs",
+        "crates/rodas5p-integrators/src/mol/mod.rs"
+      ],
+      "head_tests": [
+        "crates/rodas5p-integrators/tests/mol_contracts.rs"
+      ],
+      "status_20261117": "PORTED_NOT_WIRED",
+      "result_this_loop": "the PDE models are at the head inside crates/vigilode-bench, which is outside the workspace and declares rust-version 1.99.0 (hosted bench job fails for that reason, ci/TRIAGE_KO.md). Node V11 (group 4) moves operators to crates/rodas5p-integrators/src/mol/ and fixes the manifests.",
+      "next_discriminator": "V11 gate (second-order convergence, conservation <= 1e-12, matched-error table)"
+    },
+    {
+      "id": "P04",
+      "theme": "algebraic topology",
+      "name": "Oriented incidence operators D0, D1 and Hodge Laplacians",
+      "source": "074a5699: crates/vigilode-coupled/tests/structure_certificate_transfer.rs (test t1 only)",
+      "computes": "D1*D0=0 exactly, Betti numbers, harmonic dimension b1 on closed triangulations",
+      "target": "mol/complex.rs (discrete exterior calculus Laplacian for sphere meshes)",
+      "invariant": "D1*D0=0 in integer arithmetic; constants in the kernel; mass conservation of the induced FV operator",
+      "discriminator": "sphere diffusion: spectral check of the first 16 Laplace-Beltrami eigenvalues against l(l+1) at two refinements (second order), pole-free mesh versus lat-lon pole ring",
+      "priority": "P1",
+      "loop_node": "V11",
+      "evidence_status": "executed test, not a backend",
+      "source_refs": [
+        {
+          "rev": "074a5699",
+          "paths": [
+            "crates/vigilode-coupled/tests/structure_certificate_transfer.rs"
+          ]
+        }
+      ],
+      "head_paths": [
+        "crates/vigilode-coupled/tests/structure_certificate_transfer.rs",
+        "crates/rodas5p-integrators/src/mol/complex.rs"
+      ],
+      "head_tests": [
+        "crates/rodas5p-integrators/tests/mol_complex_contracts.rs"
+      ],
+      "status_20261117": "TEST_ONLY",
+      "result_this_loop": "unchanged: one test at the head; no backend. Planned inside V11 (mol/complex.rs).",
+      "next_discriminator": "as written (first 16 Laplace-Beltrami eigenvalues at two refinements)"
+    },
+    {
+      "id": "P05",
+      "theme": "dynamics",
+      "name": "DOPRI5 secant stiffness estimate",
+      "source": "switcher 933922495045 (arrives by V02 merge if adopted, else blob-identical port): crates/rodas5p-integrators/src/dopri5_stiffness.rs",
+      "computes": "stiffness ratio from stage secants of an explicit trial step, no extra RHS",
+      "target": "input of the opt-in Auto policy (V03)",
+      "invariant": "no extra callbacks; estimate reproduces the scalar linear mode",
+      "discriminator": "agreement with a reference stiff/non-stiff labelling >= 0.9 on problems outside the calibration set, measured by executed runs",
+      "priority": "P1",
+      "loop_node": "V03",
+      "evidence_status": "ledger L-0213 uses a literal 14/24; unmeasured",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "paths": [
+            "crates/rodas5p-integrators/src/dopri5_stiffness.rs"
+          ]
+        }
+      ],
+      "head_paths": [
+        "crates/rodas5p-integrators/src/dopri5_stiffness.rs"
+      ],
+      "head_tests": [
+        "crates/rodas5p-integrators/tests/dopri5_stiffness_guards.rs"
+      ],
+      "status_20261117": "PORTED_NOT_MEASURED",
+      "result_this_loop": "module and guard tests are at the head; no executed agreement study exists (ledger L-0213 was a literal count, superseded as INVALID by L-0311).",
+      "next_discriminator": "as written; run on the battery of V11 with labels from a stiff/non-stiff reference solver pair"
+    },
+    {
+      "id": "P06",
+      "theme": "dynamics",
+      "name": "Nonnormal observers (weighted logarithmic norm, transient growth)",
+      "source": "switcher 933922495045 (arrives by V02 merge if adopted, else blob-identical port): crates/rodas5p-core/src/nonnormal_observers.rs (+ authority fix on 612063db)",
+      "computes": "mu_H for a fixed SPD H; transient amplification bounds",
+      "target": "input of the opt-in Auto policy; diagnostic in Solution stats",
+      "invariant": "sign of the dissipative diagonal kept; eigenvalue-only tests are not used",
+      "discriminator": "on L=[[-1,100],[0,-1]] and on a 2D advection-diffusion operator the observer must flag transient growth that the spectral abscissa misses, at stated cost",
+      "priority": "P1",
+      "loop_node": "V03",
+      "evidence_status": "branch tests only",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "paths": [
+            "crates/rodas5p-core/src/nonnormal_observers.rs"
+          ]
+        },
+        {
+          "rev": "612063db",
+          "paths": [
+            "crates/rodas5p-core/src/nonnormal_observers.rs",
+            "crates/rodas5p-core/tests/nonnormal_observers_contracts.rs"
+          ]
+        }
+      ],
+      "head_paths": [
+        "crates/rodas5p-core/src/nonnormal_observers.rs"
+      ],
+      "head_tests": [
+        "crates/rodas5p-core/tests/nonnormal_observers_contracts.rs"
+      ],
+      "follow_up_612063db": "superseded at head by an independent implementation: sampled observer modes report SampledDiagnostic or EstimateOnly and only the verified full-slab mode reports Certified (crates/rodas5p-core/src/nonnormal_observers.rs:43-44, 307-310, 502-505, 683-686); a merge of 612063db conflicts in 3 hunks of this file and is not made",
+      "status_20261117": "PORTED_NOT_MEASURED",
+      "result_this_loop": "module and contract tests are at the head; the follow-up branch is superseded (field follow_up_612063db). Not an input of any route.",
+      "next_discriminator": "as written"
+    },
+    {
+      "id": "P07",
+      "theme": "symbolic dynamics",
+      "name": "Hybrid route automaton (dwell time, hysteresis, epoch invalidation)",
+      "source": "switcher 933922495045 (arrives by V02 merge if adopted, else blob-identical port): crates/vigilode/src/hybrid_automaton.rs, margin.rs",
+      "computes": "finite-state model of method switching with anti-chatter rules",
+      "target": "typed fallback of the opt-in Auto policy (V03)",
+      "invariant": "bounded number of switches per window; discarded work charged; state/history/controller atomic on rejection",
+      "discriminator": "replay of recorded switching traces: zero chatter cycles and identical charged work between model and live driver",
+      "priority": "P1",
+      "loop_node": "V03",
+      "evidence_status": "contract tests on branch; hysteresis node L-0212 FAIL",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "paths": [
+            "crates/vigilode/src/hybrid_automaton.rs",
+            "crates/vigilode/src/margin.rs"
+          ]
+        }
+      ],
+      "head_paths": [
+        "crates/vigilode/src/hybrid_automaton.rs",
+        "crates/vigilode/src/margin.rs"
+      ],
+      "head_tests": [
+        "crates/vigilode/tests/hybrid_automaton_contracts.rs"
+      ],
+      "status_20261117": "PORTED_NOT_WIRED",
+      "result_this_loop": "module and contract tests are at the head (crates/vigilode/src/hybrid_automaton.rs; its documentation link was repaired in this loop). Whether the unified frontend uses it is decided by the V03 nodes.",
+      "next_discriminator": "as written (replay of recorded switching traces)"
+    },
+    {
+      "id": "P08",
+      "theme": "Krylov",
+      "name": "Secant preconditioner",
+      "source": "switcher 933922495045 (arrives by V02 merge if adopted, else blob-identical port): crates/rodas5p-krylov/src/secant_preconditioner.rs",
+      "computes": "low-rank model from stage secants S=[Y_j-y_n], k<=6, no extra RHS",
+      "target": "right preconditioner of the Krylov stage clients",
+      "invariant": "preconditioner fixed within a step; true residual unchanged",
+      "discriminator": "GMRES iterations reduced >= 1.5x at equal residual on 2D MOL",
+      "priority": "P2",
+      "loop_node": "V06",
+      "evidence_status": "branch tests only",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "paths": [
+            "crates/rodas5p-krylov/src/secant_preconditioner.rs"
+          ]
+        }
+      ],
+      "head_paths": [
+        "crates/rodas5p-krylov/src/secant_preconditioner.rs"
+      ],
+      "head_tests": [
+        "crates/rodas5p-krylov/tests/secant_preconditioner_contracts.rs"
+      ],
+      "status_20261117": "PORTED_NOT_MEASURED",
+      "result_this_loop": "module and contract tests are at the head; never combined with a stage client.",
+      "next_discriminator": "as written; the Krylov stage client of V06/V17 is the place to measure it"
+    },
+    {
+      "id": "P09",
+      "theme": "Krylov",
+      "name": "N02 triggered flexible GMRES",
+      "source": "rei 6844c8fe: crates/rodas5p-krylov/src/gmres_into_triggered.rs",
+      "computes": "Givens-triggered right-FGMRES",
+      "target": "new file in rodas5p-krylov (the rei and switcher lines both edit gmres_into.rs: do not merge that file)",
+      "invariant": "opt-in; HOLD",
+      "discriminator": "matvec count versus gmres_into at equal residual on the stage systems of the battery",
+      "priority": "P2",
+      "loop_node": "-",
+      "evidence_status": "native tests on the rei branch",
+      "source_refs": [
+        {
+          "rev": "6844c8fe",
+          "paths": [
+            "crates/rodas5p-krylov/src/gmres_into_triggered.rs"
+          ]
+        }
+      ],
+      "head_paths": [
+        "crates/rodas5p-krylov/src/gmres_into_triggered.rs"
+      ],
+      "head_tests": [],
+      "status_20261117": "NOT_PORTED",
+      "result_this_loop": "source present on the rei line only (278 lines). A port is a new file plus one module line in crates/rodas5p-krylov/src/lib.rs, which is outside the allowlist of this loop.",
+      "next_discriminator": "as written"
+    },
+    {
+      "id": "P10",
+      "theme": "certificates",
+      "name": "N03 stage interval certificate",
+      "source": "rei 6844c8fe: crates/rodas5p-krylov/src/stage_interval_certificate.rs",
+      "computes": "source-conditional interval gate on the original stage residual",
+      "target": "verification layer for stage clients",
+      "invariant": "source interval assumptions explicit",
+      "discriminator": "13 native tests rerun on the loop branch",
+      "priority": "P2",
+      "loop_node": "-",
+      "evidence_status": "reported, not rerun",
+      "source_refs": [
+        {
+          "rev": "6844c8fe",
+          "paths": [
+            "crates/rodas5p-krylov/src/stage_interval_certificate.rs"
+          ]
+        }
+      ],
+      "head_paths": [
+        "crates/rodas5p-krylov/src/stage_interval_certificate.rs"
+      ],
+      "head_tests": [],
+      "status_20261117": "NOT_PORTED",
+      "result_this_loop": "source present on the rei line only (292 lines).",
+      "next_discriminator": "as written"
+    },
+    {
+      "id": "P11",
+      "theme": "events",
+      "name": "Affine event certificate",
+      "source": "origin/research/sym02-native-affine 8357faa5 (PR102/103): crates/rodas5p-integrators/src/affine_event_certificate.rs",
+      "computes": "quartic dense polynomial, Bernstein residual, Dini carry, transversality for scalar-affine events",
+      "target": "in-loop event location (release-gate axes R1/R3: events are post-processed today)",
+      "invariant": "scalar-affine events only",
+      "discriminator": "event time error against a root-polished reference on 3 problems; no missed sign change",
+      "priority": "P2",
+      "loop_node": "-",
+      "evidence_status": "13+8 tests reported on the branch",
+      "source_refs": [
+        {
+          "rev": "8357faa5",
+          "paths": [
+            "crates/rodas5p-integrators/src/affine_event_certificate.rs"
+          ]
+        }
+      ],
+      "head_paths": [
+        "crates/rodas5p-integrators/src/affine_event_certificate.rs"
+      ],
+      "head_tests": [],
+      "status_20261117": "NOT_PORTED",
+      "result_this_loop": "source present on the sym02 branch only (705 lines).",
+      "next_discriminator": "as written"
+    },
+    {
+      "id": "P12",
+      "theme": "parallel",
+      "name": "Work-efficient (Blelloch) and chain-parallel affine scan",
+      "source": "research/vigilode-dyn-symbolic-c8-20261102 3336d682: R4_CANDIDATES_AND_ROUTER.md sections A.4-A.5",
+      "computes": "O(m) work, O(log m) span, order-preserving scan for the inner path solve",
+      "target": "source_owned_graph_schur.rs is protected: a new client only",
+      "invariant": "original W residual and reassociation rounding checked",
+      "discriminator": "against the existing Hillis-Steele loop on ring48/96: work <= 2m and equal residual",
+      "priority": "P2",
+      "loop_node": "-",
+      "evidence_status": "design document only; the native graph-Schur route is 2.24x slower",
+      "source_refs": [
+        {
+          "rev": "3336d682",
+          "paths": [
+            "research/vigilode_dynamical_symbolic_router_20261102/R4_CANDIDATES_AND_ROUTER.md"
+          ]
+        }
+      ],
+      "head_paths": [],
+      "head_tests": [],
+      "status_20261117": "DESIGN_ONLY",
+      "result_this_loop": "unchanged.",
+      "next_discriminator": "as written"
+    },
+    {
+      "id": "P13",
+      "theme": "algebraic",
+      "name": "Chebyshev-product resolvent and complex Leja points",
+      "source": "switcher 933922495045 (arrives by V02 merge if adopted, else blob-identical port) and 612063db: conditioned_polynomial.rs, leja_action.rs",
+      "computes": "q(z)=prod T_dj((z-c_j)/rho_j); phi_k on imaginary Leja points with a normality witness bound to operator identity",
+      "target": "exponential lane (pexprb adapter of V03)",
+      "invariant": "full-space witness and original residual kept",
+      "discriminator": "phi-action error against the certified bound on a nonnormal operator",
+      "priority": "P2",
+      "loop_node": "-",
+      "evidence_status": "branch tests only",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "paths": [
+            "crates/rodas5p-integrators/src/conditioned_polynomial.rs",
+            "crates/rodas5p-core/src/leja_action.rs"
+          ]
+        },
+        {
+          "rev": "612063db",
+          "paths": [
+            "crates/rodas5p-integrators/src/conditioned_polynomial.rs",
+            "crates/rodas5p-core/src/leja_action.rs",
+            "crates/rodas5p-core/tests/leja_total_contract.rs",
+            "crates/rodas5p-integrators/tests/conditioned_polynomial_contracts.rs"
+          ]
+        }
+      ],
+      "head_paths": [
+        "crates/rodas5p-integrators/src/conditioned_polynomial.rs",
+        "crates/rodas5p-core/src/leja_action.rs"
+      ],
+      "head_tests": [
+        "crates/rodas5p-integrators/tests/conditioned_polynomial_contracts.rs",
+        "crates/rodas5p-core/tests/leja_total_contract.rs"
+      ],
+      "follow_up_612063db": "superseded at head by an independent implementation: the Leja witness carries the canonical digest of the operator and a mismatch is refused (crates/rodas5p-core/src/leja_action.rs:2920-2946, 3367-3433; test test_auth_002_normality_witness_identity_binding); only VerifiedSpectralEnclosure can mint a certified Gershgorin source (crates/rodas5p-integrators/src/conditioned_polynomial.rs:817-952; test auth_003_negative_control_caller_arbitrary_intervals_cannot_mint_certified); a merge conflicts in 16 hunks of the two files and is not made",
+      "status_20261117": "PORTED_NOT_MEASURED",
+      "result_this_loop": "modules and tests are at the head; the follow-up branch is superseded (field follow_up_612063db).",
+      "next_discriminator": "as written"
+    },
+    {
+      "id": "P14",
+      "theme": "homotopy",
+      "name": "Preconditioned fixed-point homotopy",
+      "source": "switcher 933922495045 (arrives by V02 merge if adopted, else blob-identical port) and 612063db: crates/vigilode-coupled/src/rhs_homotopy.rs",
+      "computes": "T(x)=x-P(x-G(x)) with a sealed bound sup||I-P dF||<=q<1 on a ball",
+      "target": "vigilode-coupled only",
+      "invariant": "a fixed point gives F=0 only for nonsingular P; finite queries cannot bound the derivative supremum (x12 blocker)",
+      "discriminator": "restricted polynomial lane with Bernstein enclosure and a replay verifier before any port",
+      "priority": "P3",
+      "loop_node": "-",
+      "evidence_status": "blocked pending the restricted lane",
+      "source_refs": [
+        {
+          "rev": "93392249",
+          "paths": [
+            "crates/vigilode-coupled/src/rhs_homotopy.rs"
+          ]
+        },
+        {
+          "rev": "612063db",
+          "paths": [
+            "crates/vigilode-coupled/src/rhs_homotopy.rs",
+            "crates/vigilode-coupled/src/lib.rs",
+            "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs"
+          ]
+        }
+      ],
+      "head_paths": [
+        "crates/vigilode-coupled/src/rhs_homotopy.rs"
+      ],
+      "head_tests": [
+        "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs"
+      ],
+      "follow_up_612063db": "superseded at head by an independent implementation: tests caller_scalar_evidence_cannot_authorize_contraction_certificate and independent_checker_tamper_suite_rejects_all_corrupted_artifacts (crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs:366, 393); 41 of the 44 items that 52dec17e adds to rhs_homotopy.rs exist at head by name; a merge conflicts in 9 hunks and is not made",
+      "status_20261117": "PORTED_BLOCKED",
+      "result_this_loop": "module at the head; the follow-up branch is superseded (field follow_up_612063db); still blocked on the restricted polynomial lane.",
+      "next_discriminator": "as written"
+    },
+    {
+      "id": "P15",
+      "theme": "causal",
+      "name": "RVJ N3R/N3H/N4 represented-clock envelopes",
+      "source": "PR139-147 branches: research/rvj_n3r_represented_upper_20261030/rust, research/rvj_n4_cert_kernel_rawu8_20261030/rust",
+      "computes": "upward error envelope for represented sources, exact clock horizon, two-window error inheritance",
+      "target": "specialised collective client",
+      "invariant": "rank-2 source, h<=1/4, degree<=9",
+      "discriminator": "branch receipts rerun",
+      "priority": "P3",
+      "loop_node": "-",
+      "evidence_status": "branch receipts 716/716, 358/358, 240/240 reported",
+      "source_refs": [
+        {
+          "rev": "origin/research/rvj-n4b-two-window-20261031",
+          "paths": [
+            "research/rvj_n3r_represented_upper_20261030/rust",
+            "research/rvj_n4_cert_kernel_rawu8_20261030/rust"
+          ]
+        }
+      ],
+      "head_paths": [],
+      "head_tests": [],
+      "status_20261117": "NOT_PORTED",
+      "result_this_loop": "both source directories exist on origin/research/rvj-n4b-two-window-20261031 (and on the earlier rvj-n3r, rvj-n4 branches).",
+      "next_discriminator": "as written"
+    },
+    {
+      "id": "P16",
+      "theme": "symbolic dynamics",
+      "name": "Guarded transition words with product-norm bounds",
+      "source": "lineage PORT_SYMBOLIC (design only)",
+      "computes": "error-transfer matrices under dwell rules",
+      "target": "Auto policy proof obligations",
+      "invariant": "bound must be evaluated on the real error-transfer map",
+      "discriminator": "U10 found majorants valid but 1e15-1e176 loose: a tighter bound on one switching pair first",
+      "priority": "P3",
+      "loop_node": "-",
+      "evidence_status": "design only",
+      "source_refs": [],
+      "head_paths": [],
+      "head_tests": [],
+      "status_20261117": "DESIGN_ONLY",
+      "result_this_loop": "unchanged.",
+      "next_discriminator": "as written"
+    },
+    {
+      "id": "P17",
+      "theme": "algebraic geometry",
+      "name": "Whole-slab trace certificate in time",
+      "source": "074a5699: crates/vigilode-coupled/src/trace_certificate.rs::certify_trace_path",
+      "computes": "continuous multiplicity-preserving trace bound with propagated time error",
+      "target": "vigilode-coupled certificate boundary",
+      "invariant": "fixed model; trace is the sum over all complex roots, not a selected branch",
+      "discriminator": "slab time-error propagation on the triple-root case a=b=3/4",
+      "priority": "P3",
+      "loop_node": "-",
+      "evidence_status": "NOT_RUN",
+      "source_refs": [
+        {
+          "rev": "074a5699",
+          "paths": [
+            "crates/vigilode-coupled/src/trace_certificate.rs"
+          ]
+        }
+      ],
+      "head_paths": [
+        "crates/vigilode-coupled/src/trace_certificate.rs"
+      ],
+      "head_tests": [
+        "crates/vigilode-coupled/tests/trace_certificate_allocations.rs"
+      ],
+      "status_20261117": "PORTED_NOT_MEASURED",
+      "result_this_loop": "module at the head; the slab experiment was not run.",
+      "next_discriminator": "as written"
+    },
+    {
+      "id": "P18",
+      "theme": "algebraic geometry",
+      "name": "Cyclic closure and cofactor chart certificate boundary",
+      "source": "074a5699: crates/vigilode-coupled/src/cyclic_closure.rs, crates/vigilode/src/cofactor_chart.rs",
+      "computes": "original-equation slab certificate with Bernstein bound",
+      "target": "certificate boundary port as U08 did for the trace",
+      "invariant": "fixed model, selected branch, incoming radius, clock continuity",
+      "discriminator": "counterexample suite of U08 extended to the closure",
+      "priority": "P3",
+      "loop_node": "-",
+      "evidence_status": "source present, boundary not ported",
+      "source_refs": [
+        {
+          "rev": "074a5699",
+          "paths": [
+            "crates/vigilode-coupled/src/cyclic_closure.rs",
+            "crates/vigilode/src/cofactor_chart.rs"
+          ]
+        }
+      ],
+      "head_paths": [
+        "crates/vigilode-coupled/src/cyclic_closure.rs",
+        "crates/vigilode/src/cofactor_chart.rs"
+      ],
+      "head_tests": [],
+      "status_20261117": "PORTED_NOT_WIRED",
+      "result_this_loop": "modules at the head; no certificate boundary.",
+      "next_discriminator": "as written"
+    },
+    {
+      "id": "P19",
+      "theme": "archive",
+      "name": "RVJ archive members (shift_jet, fusion, fft_bridge, witness_lift, fourier_volterra)",
+      "source": "vigilode_RVJ_full_history_20261004.tar.zst (sha256 de25f591...)",
+      "computes": "dense-J shared resolvent, rank-3 C[xi]/(xi^3-s^2 xi), FFT predictor, regular-chart witness",
+      "target": "none yet",
+      "invariant": "per HISTORY_RECOVERY.json routes",
+      "discriminator": "byte and behaviour comparison with head before any port",
+      "priority": "P3",
+      "loop_node": "-",
+      "evidence_status": "hashes verified; comparison NOT_RUN",
+      "source_refs": [
+        {
+          "rev": "074a5699",
+          "paths": [
+            "research/production_unification_20261115/HISTORY_RECOVERY.json"
+          ]
+        }
+      ],
+      "head_paths": [],
+      "head_tests": [],
+      "status_20261117": "ARCHIVE",
+      "result_this_loop": "unchanged; routes recorded in research/production_unification_20261115/HISTORY_RECOVERY.json.",
+      "next_discriminator": "as written"
+    },
+    {
+      "id": "P20",
+      "theme": "matrix-free",
+      "name": "PR33 matrix-free W correction; residual_gain/polynomial_action extensions",
+      "source": "981bf1bc (origin/research/audit2-matrix-free-w); 76e59c69 (origin/audit/rvj-reaudit-remaining-20261011)",
+      "computes": "W correction for matrix-free stages; extended residual-gain and polynomial actions",
+      "target": "check first whether head supersedes them",
+      "invariant": "-",
+      "discriminator": "semantic diff against head",
+      "priority": "P3",
+      "loop_node": "-",
+      "evidence_status": "UNVERIFIED whether superseded",
+      "source_refs": [
+        {
+          "rev": "981bf1bc",
+          "paths": [
+            "crates/rodas5p-integrators/src/audit2_research/matrix_free.rs",
+            "crates/rodas5p-integrators/tests/audit2_matrix_free_contracts.rs"
+          ]
+        },
+        {
+          "rev": "76e59c69",
+          "paths": []
+        }
+      ],
+      "head_paths": [
+        "crates/rodas5p-integrators/src/audit2_matrix_free_research.rs"
+      ],
+      "head_tests": [
+        "crates/rodas5p-integrators/tests/audit2_matrix_free_contracts.rs"
+      ],
+      "superseded_at_head": "the eight public items of 981bf1bc (run_audit2_matrix_free_correction, MatrixFree*) do not exist at head by name; head has the renamed successor crates/rodas5p-integrators/src/audit2_matrix_free_research.rs (run_audit2_matrix_free_common_w_correction, Audit2MatrixFreeCorrection*) with tests/audit2_matrix_free_common_w_contracts.rs; 76e59c69 is a pre-registration text only",
+      "status_20261117": "SUPERSEDED",
+      "result_this_loop": "see field superseded_at_head.",
+      "next_discriminator": "none"
+    }
+  ],
+  "lineage_check_20261117": "Trial merge of 612063db (7 commits of the switcher follow-up branch, not an ancestor of the loop head) on a scratch branch: conflicts in 8 files and 38 hunks (1777 conflict lines); aborted and removed. The four authority fixes of that branch are present at the head as independent implementations with their own tests (see P06, P13, P14); the branch is not merged.",
+  "status_vocabulary": {
+    "PORTED_AND_MEASURED": "code at the head and an executed discriminating experiment exists",
+    "PORTED_NOT_MEASURED": "code and its own tests at the head, no executed discriminating experiment",
+    "PORTED_NOT_WIRED": "code at the head, not reachable from a stage client or from the facade route it was meant for",
+    "PORTED_BLOCKED": "code at the head, blocked by a stated precondition",
+    "TEST_ONLY": "exists only inside a test",
+    "NOT_PORTED": "source exists on another line only",
+    "DESIGN_ONLY": "no code",
+    "SUPERSEDED": "the head holds a successor",
+    "ARCHIVE": "recorded archive member"
+  }
+}

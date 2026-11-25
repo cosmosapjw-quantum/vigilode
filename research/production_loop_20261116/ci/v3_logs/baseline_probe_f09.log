@@ -1,0 +1,9 @@
+## 1: listing of 6 runs (current run 105): 106 is newer, 104 has a head that is not an ancestor, 103 is incomplete, 102 fails to download (HTTP 502), 101 is complete
+download of run 102 failed (exit 1): HTTP 502: Bad Gateway
+{'base': '1ffbda20f0d8b7afab6d31134a1bea683f04ffda', 'run_id': 101, 'failed': [{'package': 'vigilode', 'target': 'lib'}], 'environment': {'image_os': 'ubuntu24', 'image_version': '20261117.1', 'pr_base': '074a5699'}, 'note': 'run 101 ran its selection to the end at 1ffbda20 (newer runs skipped: 1 not complete, 1 not an ancestor); 1 artifact downloads failed', 'errors': ['download of run 102 failed (exit 1): HTTP 502: Bad Gateway']} map_path set: True
+## 2: the run listing fails
+stderr: HTTP 403: Resource not accessible by integration (rate limited)
+{'base': None, 'note': 'the run listing failed (exit 1): HTTP 403: Resource not accessible by integration (rate limited)'}
+## 3: no repository
+{'base': None, 'note': 'no GitHub repository or gh in this environment'}
+branch name with shell syntax was passed as data

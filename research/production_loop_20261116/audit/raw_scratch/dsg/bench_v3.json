@@ -1,0 +1,932 @@
+{
+ "per_problem_matched": {
+  "allen-cahn-2d": {
+   "DIAGNOSTIC_ONLY|dense": 130,
+   "DIAGNOSTIC_ONLY|grid-clipped": 130
+  },
+  "burgers-2d": {
+   "DIAGNOSTIC_ONLY|dense": 130,
+   "DIAGNOSTIC_ONLY|grid-clipped": 130
+  },
+  "gray-scott-2d": {
+   "DIAGNOSTIC_ONLY|dense": 130,
+   "DIAGNOSTIC_ONLY|grid-clipped": 130
+  },
+  "semilinear-advection-diffusion-2d": {
+   "DIAGNOSTIC_ONLY|dense": 130,
+   "DIAGNOSTIC_ONLY|grid-clipped": 130
+  },
+  "semilinear-advection-diffusion-3d": {
+   "DIAGNOSTIC_ONLY|dense": 130,
+   "DIAGNOSTIC_ONLY|grid-clipped": 130
+  },
+  "sine-gordon-2d": {
+   "DIAGNOSTIC_ONLY|dense": 130,
+   "DIAGNOSTIC_ONLY|grid-clipped": 130
+  },
+  "sphere-photon-2d": {
+   "DIAGNOSTIC_ONLY|dense": 78,
+   "DIAGNOSTIC_ONLY|grid-clipped": 130,
+   "MATCHED|dense": 52
+  },
+  "sphere-photon-3d": {
+   "DIAGNOSTIC_ONLY|dense": 94,
+   "DIAGNOSTIC_ONLY|grid-clipped": 130,
+   "MATCHED|dense": 36
+  },
+  "spherical-diffusion-2d": {
+   "DIAGNOSTIC_ONLY|dense": 130,
+   "DIAGNOSTIC_ONLY|grid-clipped": 130
+  }
+ },
+ "non_matched_reasons": {
+  "neither arm brackets the level": 262,
+  "the baseline does not bracket the level": 148,
+  "the comparator does not bracket the level": 22,
+  "reference-disputed": 1820
+ },
+ "matched_time_ratio_summary": [
+  {
+   "problem": "sphere-photon-2d",
+   "baseline": "vigilode-banded-dense",
+   "arm": "cvode-bdf-band",
+   "n_levels": 5,
+   "median_time_ratio": 2.0872498109574456
+  },
+  {
+   "problem": "sphere-photon-2d",
+   "baseline": "vigilode-banded-dense",
+   "arm": "diffsol-bdf-sparse",
+   "n_levels": 6,
+   "median_time_ratio": 1.7775649074750337
+  },
+  {
+   "problem": "sphere-photon-2d",
+   "baseline": "vigilode-banded-dense",
+   "arm": "dvode-mf24",
+   "n_levels": 5,
+   "median_time_ratio": 0.622791445562597
+  },
+  {
+   "problem": "sphere-photon-2d",
+   "baseline": "vigilode-banded-dense",
+   "arm": "radau5-band",
+   "n_levels": 4,
+   "median_time_ratio": 0.6180235054178909
+  },
+  {
+   "problem": "sphere-photon-2d",
+   "baseline": "vigilode-banded-dense",
+   "arm": "rodas-band",
+   "n_levels": 6,
+   "median_time_ratio": 0.8517501355733624
+  },
+  {
+   "problem": "sphere-photon-2d",
+   "baseline": "vigilode-dense",
+   "arm": "cvode-bdf-dense",
+   "n_levels": 5,
+   "median_time_ratio": 5.051906199045153
+  },
+  {
+   "problem": "sphere-photon-2d",
+   "baseline": "vigilode-dense",
+   "arm": "diffsol-bdf-dense",
+   "n_levels": 6,
+   "median_time_ratio": 3.354245391754806
+  },
+  {
+   "problem": "sphere-photon-2d",
+   "baseline": "vigilode-dense",
+   "arm": "dvode-mf21",
+   "n_levels": 5,
+   "median_time_ratio": 1.0384126414096548
+  },
+  {
+   "problem": "sphere-photon-2d",
+   "baseline": "vigilode-dense",
+   "arm": "radau5",
+   "n_levels": 4,
+   "median_time_ratio": 1.4805717486978793
+  },
+  {
+   "problem": "sphere-photon-2d",
+   "baseline": "vigilode-dense",
+   "arm": "rodas",
+   "n_levels": 6,
+   "median_time_ratio": 1.6687736163009395
+  },
+  {
+   "problem": "sphere-photon-3d",
+   "baseline": "vigilode-banded-dense",
+   "arm": "cvode-bdf-band",
+   "n_levels": 3,
+   "median_time_ratio": 3.6018775689459575
+  },
+  {
+   "problem": "sphere-photon-3d",
+   "baseline": "vigilode-banded-dense",
+   "arm": "diffsol-bdf-sparse",
+   "n_levels": 4,
+   "median_time_ratio": 5.339440104189025
+  },
+  {
+   "problem": "sphere-photon-3d",
+   "baseline": "vigilode-banded-dense",
+   "arm": "dvode-mf24",
+   "n_levels": 3,
+   "median_time_ratio": 0.6524210514727413
+  },
+  {
+   "problem": "sphere-photon-3d",
+   "baseline": "vigilode-banded-dense",
+   "arm": "radau5-band",
+   "n_levels": 3,
+   "median_time_ratio": 1.0144333252227202
+  },
+  {
+   "problem": "sphere-photon-3d",
+   "baseline": "vigilode-banded-dense",
+   "arm": "rodas-band",
+   "n_levels": 5,
+   "median_time_ratio": 0.8050595931493865
+  },
+  {
+   "problem": "sphere-photon-3d",
+   "baseline": "vigilode-dense",
+   "arm": "cvode-bdf-dense",
+   "n_levels": 3,
+   "median_time_ratio": 11.705635456877294
+  },
+  {
+   "problem": "sphere-photon-3d",
+   "baseline": "vigilode-dense",
+   "arm": "diffsol-bdf-dense",
+   "n_levels": 4,
+   "median_time_ratio": 9.711416058630295
+  },
+  {
+   "problem": "sphere-photon-3d",
+   "baseline": "vigilode-dense",
+   "arm": "dvode-mf21",
+   "n_levels": 3,
+   "median_time_ratio": 1.866373649407337
+  },
+  {
+   "problem": "sphere-photon-3d",
+   "baseline": "vigilode-dense",
+   "arm": "radau5",
+   "n_levels": 3,
+   "median_time_ratio": 4.7437748489504
+  },
+  {
+   "problem": "sphere-photon-3d",
+   "baseline": "vigilode-dense",
+   "arm": "rodas",
+   "n_levels": 5,
+   "median_time_ratio": 2.905473094680597
+  }
+ ],
+ "vigilode_steps": [
+  {
+   "problem": "sphere-photon-2d",
+   "arm": "vigilode-dense",
+   "rtol": 0.0001,
+   "accepted": 7,
+   "wall_ms": 0.357013,
+   "clipped": 0,
+   "err": 3.375600324819245e-06
+  },
+  {
+   "problem": "sphere-photon-2d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 0.0001,
+   "accepted": 7,
+   "wall_ms": 0.333218,
+   "clipped": 0,
+   "err": 3.375600324819245e-06
+  },
+  {
+   "problem": "sphere-photon-2d",
+   "arm": "vigilode-banded",
+   "rtol": 0.0001,
+   "accepted": 102,
+   "wall_ms": 2.81578,
+   "clipped": 99,
+   "err": 4.17275077263591e-12
+  },
+  {
+   "problem": "sphere-photon-2d",
+   "arm": "vigilode-dense",
+   "rtol": 1e-06,
+   "accepted": 8,
+   "wall_ms": 0.377843,
+   "clipped": 0,
+   "err": 9.70032474848533e-08
+  },
+  {
+   "problem": "sphere-photon-2d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 1e-06,
+   "accepted": 8,
+   "wall_ms": 0.358496,
+   "clipped": 0,
+   "err": 9.70032474848533e-08
+  },
+  {
+   "problem": "sphere-photon-2d",
+   "arm": "vigilode-banded",
+   "rtol": 1e-06,
+   "accepted": 102,
+   "wall_ms": 2.751448,
+   "clipped": 99,
+   "err": 4.17275077263591e-12
+  },
+  {
+   "problem": "sphere-photon-2d",
+   "arm": "vigilode-dense",
+   "rtol": 1e-08,
+   "accepted": 13,
+   "wall_ms": 0.552732,
+   "clipped": 0,
+   "err": 1.152281743465752e-09
+  },
+  {
+   "problem": "sphere-photon-2d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 1e-08,
+   "accepted": 13,
+   "wall_ms": 0.527164,
+   "clipped": 0,
+   "err": 1.152281743465752e-09
+  },
+  {
+   "problem": "sphere-photon-2d",
+   "arm": "vigilode-banded",
+   "rtol": 1e-08,
+   "accepted": 102,
+   "wall_ms": 2.736179,
+   "clipped": 99,
+   "err": 4.17275077263591e-12
+  },
+  {
+   "problem": "semilinear-advection-diffusion-2d",
+   "arm": "vigilode-dense",
+   "rtol": 0.0001,
+   "accepted": 10,
+   "wall_ms": 0.469115,
+   "clipped": 0,
+   "err": 2.3024636957163143e-05
+  },
+  {
+   "problem": "semilinear-advection-diffusion-2d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 0.0001,
+   "accepted": 10,
+   "wall_ms": 0.428317,
+   "clipped": 0,
+   "err": 2.3024636957163143e-05
+  },
+  {
+   "problem": "semilinear-advection-diffusion-2d",
+   "arm": "vigilode-banded",
+   "rtol": 0.0001,
+   "accepted": 102,
+   "wall_ms": 2.759103,
+   "clipped": 99,
+   "err": 4.2920033398289415e-11
+  },
+  {
+   "problem": "semilinear-advection-diffusion-2d",
+   "arm": "vigilode-dense",
+   "rtol": 1e-06,
+   "accepted": 20,
+   "wall_ms": 0.856364,
+   "clipped": 0,
+   "err": 1.210753314430227e-07
+  },
+  {
+   "problem": "semilinear-advection-diffusion-2d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 1e-06,
+   "accepted": 20,
+   "wall_ms": 0.74775,
+   "clipped": 0,
+   "err": 1.210753314430227e-07
+  },
+  {
+   "problem": "semilinear-advection-diffusion-2d",
+   "arm": "vigilode-banded",
+   "rtol": 1e-06,
+   "accepted": 102,
+   "wall_ms": 2.763611,
+   "clipped": 99,
+   "err": 4.2920033398289415e-11
+  },
+  {
+   "problem": "semilinear-advection-diffusion-2d",
+   "arm": "vigilode-dense",
+   "rtol": 1e-08,
+   "accepted": 47,
+   "wall_ms": 1.825161,
+   "clipped": 0,
+   "err": 1.1449415005066614e-09
+  },
+  {
+   "problem": "semilinear-advection-diffusion-2d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 1e-08,
+   "accepted": 47,
+   "wall_ms": 1.66555,
+   "clipped": 0,
+   "err": 1.1449415005066614e-09
+  },
+  {
+   "problem": "semilinear-advection-diffusion-2d",
+   "arm": "vigilode-banded",
+   "rtol": 1e-08,
+   "accepted": 102,
+   "wall_ms": 2.790913,
+   "clipped": 99,
+   "err": 4.2920033398289415e-11
+  },
+  {
+   "problem": "semilinear-advection-diffusion-3d",
+   "arm": "vigilode-dense",
+   "rtol": 0.0001,
+   "accepted": 7,
+   "wall_ms": 1.792921,
+   "clipped": 0,
+   "err": 5.536496852199042e-06
+  },
+  {
+   "problem": "semilinear-advection-diffusion-3d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 0.0001,
+   "accepted": 7,
+   "wall_ms": 2.029467,
+   "clipped": 0,
+   "err": 5.536496852199042e-06
+  },
+  {
+   "problem": "semilinear-advection-diffusion-3d",
+   "arm": "vigilode-banded",
+   "rtol": 0.0001,
+   "accepted": 102,
+   "wall_ms": 23.687954,
+   "clipped": 99,
+   "err": 2.920294525484653e-11
+  },
+  {
+   "problem": "semilinear-advection-diffusion-3d",
+   "arm": "vigilode-dense",
+   "rtol": 1e-06,
+   "accepted": 10,
+   "wall_ms": 2.453706,
+   "clipped": 0,
+   "err": 6.953310067210524e-08
+  },
+  {
+   "problem": "semilinear-advection-diffusion-3d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 1e-06,
+   "accepted": 10,
+   "wall_ms": 2.821149,
+   "clipped": 0,
+   "err": 6.953310067210524e-08
+  },
+  {
+   "problem": "semilinear-advection-diffusion-3d",
+   "arm": "vigilode-banded",
+   "rtol": 1e-06,
+   "accepted": 102,
+   "wall_ms": 23.153787,
+   "clipped": 99,
+   "err": 2.920294525484653e-11
+  },
+  {
+   "problem": "semilinear-advection-diffusion-3d",
+   "arm": "vigilode-dense",
+   "rtol": 1e-08,
+   "accepted": 21,
+   "wall_ms": 4.804689,
+   "clipped": 0,
+   "err": 8.617138485461322e-10
+  },
+  {
+   "problem": "semilinear-advection-diffusion-3d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 1e-08,
+   "accepted": 21,
+   "wall_ms": 5.580663,
+   "clipped": 0,
+   "err": 8.617138485461322e-10
+  },
+  {
+   "problem": "semilinear-advection-diffusion-3d",
+   "arm": "vigilode-banded",
+   "rtol": 1e-08,
+   "accepted": 102,
+   "wall_ms": 23.050713,
+   "clipped": 99,
+   "err": 2.920294525484653e-11
+  },
+  {
+   "problem": "sphere-photon-3d",
+   "arm": "vigilode-dense",
+   "rtol": 0.0001,
+   "accepted": 6,
+   "wall_ms": 2.251105,
+   "clipped": 0,
+   "err": 2.325687198421935e-06
+  },
+  {
+   "problem": "sphere-photon-3d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 0.0001,
+   "accepted": 6,
+   "wall_ms": 1.916824,
+   "clipped": 0,
+   "err": 2.325687198421935e-06
+  },
+  {
+   "problem": "sphere-photon-3d",
+   "arm": "vigilode-banded",
+   "rtol": 0.0001,
+   "accepted": 102,
+   "wall_ms": 23.821657,
+   "clipped": 99,
+   "err": 2.1144054968825634e-12
+  },
+  {
+   "problem": "sphere-photon-3d",
+   "arm": "vigilode-dense",
+   "rtol": 1e-06,
+   "accepted": 8,
+   "wall_ms": 2.886703,
+   "clipped": 0,
+   "err": 5.685706726650394e-08
+  },
+  {
+   "problem": "sphere-photon-3d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 1e-06,
+   "accepted": 8,
+   "wall_ms": 2.410895,
+   "clipped": 0,
+   "err": 5.685706726650394e-08
+  },
+  {
+   "problem": "sphere-photon-3d",
+   "arm": "vigilode-banded",
+   "rtol": 1e-06,
+   "accepted": 102,
+   "wall_ms": 24.168229,
+   "clipped": 99,
+   "err": 2.1144054968825634e-12
+  },
+  {
+   "problem": "sphere-photon-3d",
+   "arm": "vigilode-dense",
+   "rtol": 1e-08,
+   "accepted": 11,
+   "wall_ms": 3.763115,
+   "clipped": 0,
+   "err": 1.1713831948088226e-09
+  },
+  {
+   "problem": "sphere-photon-3d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 1e-08,
+   "accepted": 11,
+   "wall_ms": 3.152555,
+   "clipped": 0,
+   "err": 1.1713831948088226e-09
+  },
+  {
+   "problem": "sphere-photon-3d",
+   "arm": "vigilode-banded",
+   "rtol": 1e-08,
+   "accepted": 102,
+   "wall_ms": 22.947217,
+   "clipped": 99,
+   "err": 2.1144054968825634e-12
+  },
+  {
+   "problem": "spherical-diffusion-2d",
+   "arm": "vigilode-dense",
+   "rtol": 0.0001,
+   "accepted": 6,
+   "wall_ms": 0.236526,
+   "clipped": 0,
+   "err": 3.4195946763277747e-06
+  },
+  {
+   "problem": "spherical-diffusion-2d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 0.0001,
+   "accepted": 6,
+   "wall_ms": 0.234603,
+   "clipped": 0,
+   "err": 3.4195946763277747e-06
+  },
+  {
+   "problem": "spherical-diffusion-2d",
+   "arm": "vigilode-banded",
+   "rtol": 0.0001,
+   "accepted": 102,
+   "wall_ms": 2.25413,
+   "clipped": 99,
+   "err": 1.728850046949506e-11
+  },
+  {
+   "problem": "spherical-diffusion-2d",
+   "arm": "vigilode-dense",
+   "rtol": 1e-06,
+   "accepted": 7,
+   "wall_ms": 0.291229,
+   "clipped": 0,
+   "err": 7.703796903871159e-08
+  },
+  {
+   "problem": "spherical-diffusion-2d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 1e-06,
+   "accepted": 7,
+   "wall_ms": 0.295087,
+   "clipped": 0,
+   "err": 7.703796903871159e-08
+  },
+  {
+   "problem": "spherical-diffusion-2d",
+   "arm": "vigilode-banded",
+   "rtol": 1e-06,
+   "accepted": 102,
+   "wall_ms": 2.550779,
+   "clipped": 99,
+   "err": 1.728850046949506e-11
+  },
+  {
+   "problem": "spherical-diffusion-2d",
+   "arm": "vigilode-dense",
+   "rtol": 1e-08,
+   "accepted": 11,
+   "wall_ms": 0.41355,
+   "clipped": 0,
+   "err": 1.3782975485631217e-09
+  },
+  {
+   "problem": "spherical-diffusion-2d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 1e-08,
+   "accepted": 11,
+   "wall_ms": 0.394503,
+   "clipped": 0,
+   "err": 1.3782975485631217e-09
+  },
+  {
+   "problem": "spherical-diffusion-2d",
+   "arm": "vigilode-banded",
+   "rtol": 1e-08,
+   "accepted": 102,
+   "wall_ms": 2.33879,
+   "clipped": 99,
+   "err": 1.728850046949506e-11
+  },
+  {
+   "problem": "allen-cahn-2d",
+   "arm": "vigilode-dense",
+   "rtol": 0.0001,
+   "accepted": 6,
+   "wall_ms": 0.241094,
+   "clipped": 0,
+   "err": 2.6431778830484004e-05
+  },
+  {
+   "problem": "allen-cahn-2d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 0.0001,
+   "accepted": 6,
+   "wall_ms": 0.22826,
+   "clipped": 0,
+   "err": 2.6431778830484004e-05
+  },
+  {
+   "problem": "allen-cahn-2d",
+   "arm": "vigilode-banded",
+   "rtol": 0.0001,
+   "accepted": 102,
+   "wall_ms": 2.016453,
+   "clipped": 99,
+   "err": 5.897444122520216e-11
+  },
+  {
+   "problem": "allen-cahn-2d",
+   "arm": "vigilode-dense",
+   "rtol": 1e-06,
+   "accepted": 7,
+   "wall_ms": 0.248769,
+   "clipped": 0,
+   "err": 4.3398896029285526e-07
+  },
+  {
+   "problem": "allen-cahn-2d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 1e-06,
+   "accepted": 7,
+   "wall_ms": 0.243069,
+   "clipped": 0,
+   "err": 4.3398896029285526e-07
+  },
+  {
+   "problem": "allen-cahn-2d",
+   "arm": "vigilode-banded",
+   "rtol": 1e-06,
+   "accepted": 102,
+   "wall_ms": 1.862451,
+   "clipped": 99,
+   "err": 5.897444122520216e-11
+  },
+  {
+   "problem": "allen-cahn-2d",
+   "arm": "vigilode-dense",
+   "rtol": 1e-08,
+   "accepted": 13,
+   "wall_ms": 0.362794,
+   "clipped": 0,
+   "err": 2.769364989976205e-09
+  },
+  {
+   "problem": "allen-cahn-2d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 1e-08,
+   "accepted": 13,
+   "wall_ms": 0.369697,
+   "clipped": 0,
+   "err": 2.769364989976205e-09
+  },
+  {
+   "problem": "allen-cahn-2d",
+   "arm": "vigilode-banded",
+   "rtol": 1e-08,
+   "accepted": 102,
+   "wall_ms": 1.843596,
+   "clipped": 99,
+   "err": 5.897444122520216e-11
+  },
+  {
+   "problem": "gray-scott-2d",
+   "arm": "vigilode-dense",
+   "rtol": 0.0001,
+   "accepted": 7,
+   "wall_ms": 0.648713,
+   "clipped": 0,
+   "err": 1.584680812787158e-05
+  },
+  {
+   "problem": "gray-scott-2d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 0.0001,
+   "accepted": 7,
+   "wall_ms": 0.643423,
+   "clipped": 0,
+   "err": 1.584680812787158e-05
+  },
+  {
+   "problem": "gray-scott-2d",
+   "arm": "vigilode-banded",
+   "rtol": 0.0001,
+   "accepted": 103,
+   "wall_ms": 6.313494,
+   "clipped": 99,
+   "err": 3.2164929434052574e-11
+  },
+  {
+   "problem": "gray-scott-2d",
+   "arm": "vigilode-dense",
+   "rtol": 1e-06,
+   "accepted": 8,
+   "wall_ms": 0.772176,
+   "clipped": 0,
+   "err": 1.7887056149279721e-07
+  },
+  {
+   "problem": "gray-scott-2d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 1e-06,
+   "accepted": 8,
+   "wall_ms": 0.773067,
+   "clipped": 0,
+   "err": 1.7887056149279721e-07
+  },
+  {
+   "problem": "gray-scott-2d",
+   "arm": "vigilode-banded",
+   "rtol": 1e-06,
+   "accepted": 103,
+   "wall_ms": 6.218095,
+   "clipped": 99,
+   "err": 3.2164929434052574e-11
+  },
+  {
+   "problem": "gray-scott-2d",
+   "arm": "vigilode-dense",
+   "rtol": 1e-08,
+   "accepted": 12,
+   "wall_ms": 1.174244,
+   "clipped": 0,
+   "err": 1.7971795018370518e-09
+  },
+  {
+   "problem": "gray-scott-2d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 1e-08,
+   "accepted": 12,
+   "wall_ms": 1.127556,
+   "clipped": 0,
+   "err": 1.7971795018370518e-09
+  },
+  {
+   "problem": "gray-scott-2d",
+   "arm": "vigilode-banded",
+   "rtol": 1e-08,
+   "accepted": 103,
+   "wall_ms": 6.296593,
+   "clipped": 99,
+   "err": 3.2164929434052574e-11
+  },
+  {
+   "problem": "burgers-2d",
+   "arm": "vigilode-dense",
+   "rtol": 0.0001,
+   "accepted": 8,
+   "wall_ms": 0.340351,
+   "clipped": 0,
+   "err": 8.240756150485682e-05
+  },
+  {
+   "problem": "burgers-2d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 0.0001,
+   "accepted": 8,
+   "wall_ms": 0.378354,
+   "clipped": 0,
+   "err": 8.240756150485682e-05
+  },
+  {
+   "problem": "burgers-2d",
+   "arm": "vigilode-banded",
+   "rtol": 0.0001,
+   "accepted": 101,
+   "wall_ms": 2.785172,
+   "clipped": 99,
+   "err": 2.0349504520671266e-07
+  },
+  {
+   "problem": "burgers-2d",
+   "arm": "vigilode-dense",
+   "rtol": 1e-06,
+   "accepted": 19,
+   "wall_ms": 0.990297,
+   "clipped": 0,
+   "err": 1.8885075858563957e-06
+  },
+  {
+   "problem": "burgers-2d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 1e-06,
+   "accepted": 19,
+   "wall_ms": 1.205874,
+   "clipped": 0,
+   "err": 1.8885075858563957e-06
+  },
+  {
+   "problem": "burgers-2d",
+   "arm": "vigilode-banded",
+   "rtol": 1e-06,
+   "accepted": 101,
+   "wall_ms": 2.790371,
+   "clipped": 99,
+   "err": 2.0349504520671266e-07
+  },
+  {
+   "problem": "burgers-2d",
+   "arm": "vigilode-dense",
+   "rtol": 1e-08,
+   "accepted": 45,
+   "wall_ms": 2.086154,
+   "clipped": 0,
+   "err": 2.145953095249814e-08
+  },
+  {
+   "problem": "burgers-2d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 1e-08,
+   "accepted": 45,
+   "wall_ms": 2.449669,
+   "clipped": 0,
+   "err": 2.145953095249814e-08
+  },
+  {
+   "problem": "burgers-2d",
+   "arm": "vigilode-banded",
+   "rtol": 1e-08,
+   "accepted": 108,
+   "wall_ms": 3.124972,
+   "clipped": 99,
+   "err": 1.4302830569292834e-08
+  },
+  {
+   "problem": "sine-gordon-2d",
+   "arm": "vigilode-dense",
+   "rtol": 0.0001,
+   "accepted": 8,
+   "wall_ms": 0.305877,
+   "clipped": 0,
+   "err": 2.7934912324595445e-05
+  },
+  {
+   "problem": "sine-gordon-2d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 0.0001,
+   "accepted": 8,
+   "wall_ms": 0.356502,
+   "clipped": 0,
+   "err": 2.7934912324595445e-05
+  },
+  {
+   "problem": "sine-gordon-2d",
+   "arm": "vigilode-banded",
+   "rtol": 0.0001,
+   "accepted": 102,
+   "wall_ms": 2.632253,
+   "clipped": 99,
+   "err": 3.3111159811602126e-11
+  },
+  {
+   "problem": "sine-gordon-2d",
+   "arm": "vigilode-dense",
+   "rtol": 1e-06,
+   "accepted": 13,
+   "wall_ms": 0.428558,
+   "clipped": 0,
+   "err": 1.7892307983626162e-07
+  },
+  {
+   "problem": "sine-gordon-2d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 1e-06,
+   "accepted": 13,
+   "wall_ms": 0.513518,
+   "clipped": 0,
+   "err": 1.7892307983626162e-07
+  },
+  {
+   "problem": "sine-gordon-2d",
+   "arm": "vigilode-banded",
+   "rtol": 1e-06,
+   "accepted": 102,
+   "wall_ms": 2.637212,
+   "clipped": 99,
+   "err": 3.3111159811602126e-11
+  },
+  {
+   "problem": "sine-gordon-2d",
+   "arm": "vigilode-dense",
+   "rtol": 1e-08,
+   "accepted": 26,
+   "wall_ms": 0.738893,
+   "clipped": 0,
+   "err": 1.679821373434816e-09
+  },
+  {
+   "problem": "sine-gordon-2d",
+   "arm": "vigilode-banded-dense",
+   "rtol": 1e-08,
+   "accepted": 26,
+   "wall_ms": 0.898774,
+   "clipped": 0,
+   "err": 1.679821373434816e-09
+  },
+  {
+   "problem": "sine-gordon-2d",
+   "arm": "vigilode-banded",
+   "rtol": 1e-08,
+   "accepted": 102,
+   "wall_ms": 2.685323,
+   "clipped": 99,
+   "err": 3.3111159811602126e-11
+  }
+ ],
+ "problem_n": {
+  "sphere-photon-2d": 86,
+  "semilinear-advection-diffusion-2d": 96,
+  "semilinear-advection-diffusion-3d": 216,
+  "sphere-photon-3d": 302,
+  "spherical-diffusion-2d": 64,
+  "allen-cahn-2d": 64,
+  "gray-scott-2d": 128,
+  "burgers-2d": 72,
+  "sine-gordon-2d": 72
+ }
+}

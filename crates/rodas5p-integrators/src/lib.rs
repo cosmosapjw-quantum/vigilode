@@ -46,6 +46,14 @@ pub use directional_quadratic::{
 };
 mod dopri5;
 mod dopri5_dense;
+pub mod dopri5_stiffness;
+pub use dopri5_stiffness::{
+    DOPRI5_REAL_AXIS_BOUNDARY, DOPRI5_Y7_MINUS_Y6, NonlinearStiffCalibration,
+    NonnormalLinearCalibration, OffRegistryBrusselatorCalibration, ScalarLinearCalibration,
+    SecantCalibrationReport, SecantClassification, SecantScreenGuard, SecantStatus,
+    calibrate_secant_screen, dopri5_secant_h_lambda, dopri5_secant_h_lambda_guarded,
+    dopri5_stability_limited,
+};
 mod quotient_flow;
 pub use quotient_flow::{
     DampedRotationAffineWorkspace, DampedRotationBlock, DampedRotationFlow, LawsonDopri5Result,
@@ -54,6 +62,10 @@ pub use quotient_flow::{
     integrate_lawson_dopri5_observed_with_norm,
 };
 pub mod conditioned_polynomial;
+pub use conditioned_polynomial::{
+    CertificateStatus, ChebyshevClusterGenerator, ChebyshevInterval, GeneratedChebyshevPolynomial,
+    SpectralSource, compute_skew_metric, gershgorin_intervals,
+};
 mod exponential;
 pub mod fixed_point_continuation;
 pub mod fourier_path_candidate;
@@ -103,6 +115,8 @@ mod sabr;
 mod scientific_corpus_v2;
 mod scientific_validity_v2_gate;
 mod sequential;
+#[expect(clippy::neg_cmp_op_on_partial_ord, clippy::needless_range_loop)]
+#[cfg_attr(test, expect(clippy::items_after_test_module))]
 pub mod source_owned_graph_schur;
 mod stage_batch;
 mod stage_chart_candidate;
@@ -112,6 +126,24 @@ mod transactional_q1_q2;
 mod unified_gates;
 mod unified_screen;
 mod v38d_performance_tournament;
+
+// Loop L1 (2026-11-16) opt-in modules.
+pub mod mol;
+pub mod stage_clients;
+
+// Loop L1 node V22 (owner decision OD-L1-9): banded entry points that take the kernel.
+pub use rodas5p_fast::integrate_rodas5p_fast_banded_observed_with_atol_and_kernel;
+pub use rodas5p_fast_dense::{
+    RODAS5P_FAST_BANDED_DENSE_SLICES_DRIVER_ID,
+    integrate_rodas5p_fast_banded_dense_observed_with_atol_and_kernel,
+    integrate_rodas5p_fast_banded_dense_observed_with_kernel,
+};
+
+// Loop L1 node V24 (owner decision OD-L1-11): policy of the matrix-free stage solve.
+pub use rodas5p_matrix_free_fast::{
+    MfStageSolvePolicy, MfStageSolveRecord, MfStageSolveStatistics,
+    RODAS5P_MF_FAST_ADAPTIVE_DRIVER_ID, integrate_rodas5p_mf_fast_observed_with_stage_solve_policy,
+};
 
 #[cfg(feature = "audit2-bateman-authority")]
 pub use audit2_bateman_real_client_research::{
@@ -251,11 +283,11 @@ pub use dense_output_v2::{
 };
 pub use dopri5::{
     DOPRI5_A, DOPRI5_ADAPTIVE_METHOD, DOPRI5_B, DOPRI5_B_EMBEDDED, DOPRI5_C, Dopri5Attempt,
-    Dopri5AttemptErrorNorm, Dopri5Config, Dopri5IntegrationResult, Dopri5Session, Dopri5StopReason,
-    Dopri5Workspace, NativeSessionAdvance, NativeSessionCheckpoint, NativeSessionIdentity,
-    NativeSessionMethod, NativeSessionTelemetry, integrate_dopri5_dense_observed,
-    integrate_dopri5_dense_observed_with_norm, integrate_dopri5_observed,
-    integrate_dopri5_observed_with_norm,
+    Dopri5AttemptErrorNorm, Dopri5Config, Dopri5IntegrationResult, Dopri5Session,
+    Dopri5SpectralDiagnosis, Dopri5StopReason, Dopri5Workspace, NativeSessionAdvance,
+    NativeSessionCheckpoint, NativeSessionIdentity, NativeSessionMethod, NativeSessionTelemetry,
+    StabilityModeClass, integrate_dopri5_dense_observed, integrate_dopri5_dense_observed_with_norm,
+    integrate_dopri5_observed, integrate_dopri5_observed_with_norm,
 };
 pub use dopri5_dense::DOPRI5_DENSE_P;
 pub use exponential::{

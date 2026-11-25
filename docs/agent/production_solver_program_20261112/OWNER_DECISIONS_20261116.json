@@ -1,0 +1,222 @@
+{
+  "schema": "vigilode.owner-decisions.v1",
+  "date_kst": "2026-11-16",
+  "source": "Owner answers to four multiple-choice questions asked in the planning session of 2026-11-16, followed by owner approval of the plan (research/production_loop_20261116/PLAN_KO.md). The selected option labels are quoted verbatim.",
+  "decisions": [
+    {
+      "id": "OD-L1-1",
+      "topic": "switcher-v2 lineage (93392249) integration",
+      "selected": "시험 병합 후 조건부 채택 (Recommended)",
+      "meaning": "Merge on a separate integration branch; adopt only if the 1.94.1 build, the full tests and bitwise identity of the protected RODAS5P paths pass; otherwise port additive modules only. Ledger rows backed by simulation scripts get superseding INVALID rows; existing rows are kept.",
+      "gate_effect": "Explicit conditional owner approval for the protected-blob changes that the merge brings (MUTATION_GATES immutable list), valid only if the stated conditions hold; the blob delta list is reported in the wave report."
+    },
+    {
+      "id": "OD-L1-2",
+      "topic": "PPSW1 (Peer-W) track",
+      "selected": "결정 실험 1회 후 판정 (Recommended)",
+      "meaning": "One pre-registered decision experiment (sigma_max=1.5 stability with the independent oracle, per-step cost at equal implementation maturity, large-n regime with reference to the REI 46k run); freeze as opt-in comparator if the criteria fail."
+    },
+    {
+      "id": "OD-L1-3",
+      "topic": "automatic routing and fallback (G3)",
+      "selected": "opt-in Auto만 (Recommended)",
+      "meaning": "Registry-based single entry point, explicit method choice, opt-in Auto policy and typed fallback with charged work and preserved prefix. Default routing and protected RODAS5P unchanged; promotion is a separate decision."
+    },
+    {
+      "id": "OD-L1-4",
+      "topic": "qualification standard",
+      "selected": "G0 유지 + 릴리스 게이트 신설 (Recommended)",
+      "meaning": "G0 stays unchanged. A separate release-readiness gate (R-gate) for the scoped package with protected RODAS5P as default is defined and judged per axis."
+    },
+    {
+      "id": "OD-L1-5",
+      "topic": "adoption of the trial merge of 93392249 although the frozen rule is formally not met",
+      "selected": "조정 후 채택 (Recommended)",
+      "asked_after": "wave 1 gates: T1 PASS, T5 PASS, T2 1210 passed / 2 failed (source-pinning sentinels g3, h2), T3 strict FAIL by 600 added serde keys with 0 changed values, T6 FAIL",
+      "meaning": "Adopt the merge on the loop branch. Re-pin sentinels g3 and h2 to the post-merge bytes with a record of old and new pins; regenerate the one golden file whose only difference is added keys; add INVALID superseding rows for L-0209..L-0214; the unified router defects are handled in V03 (real dispatch or removal); hook settings are not edited, only reported."
+    },
+    {
+      "id": "OD-L1-6",
+      "topic": "declaration of loop modules in rodas5p-integrators/src/lib.rs",
+      "selected": "g3 허용 줄 확장 (Recommended)",
+      "meaning": "The owner allowlist of sentinel g3 is extended: besides `pub mod ppsw1;` the file may hold the loop L1 module lines; the allowed lines are named in the test."
+    },
+    {
+      "id": "OD-L1-7",
+      "topic": "hosted CI evidence",
+      "selected": "draft PR 생성 (Recommended)",
+      "meaning": "Open a draft pull request from the loop branch to research/production-unification-20261115, titled as not a release, never merged by the agent, to run production.yml."
+    },
+    {
+      "id": "OD-L1-8",
+      "topic": "evidence branches v15 and trial whose push was denied by the permission classifier",
+      "selected": "직접 push하겠음",
+      "meaning": "The owner pushes research/production-loop-20261116-v15 and -trial manually; the agent does not retry."
+    },
+    {
+      "id": "OD-L1-9",
+      "date_kst": "2026-11-23 21:08",
+      "topic": "kernel of the facade's banded route (Indexed today; the Slices kernel of the same file returns identical bits with 0.16-0.22 of the instructions on wide bands, node V21)",
+      "selected": "1. 승인",
+      "meaning": "The facade's banded route may use the Slices kernel. Results must stay bit-identical; the kernel is chosen so that narrow bands do not become slower. The protected file may be edited for this change only; sentinels and the checkpoint are re-pinned with this decision."
+    },
+    {
+      "id": "OD-L1-10",
+      "date_kst": "2026-11-23 21:08",
+      "topic": "defect of Rodas5p::capabilities found by node V03 part A and its review (a general sparse-JVP provider is admitted on the sequential route although the driver refuses it; 352 distinct grid plans cannot run)",
+      "selected": "2. 결함 수정 승인",
+      "meaning": "The defect is fixed: the capability answer must name what runs, and what cannot run is refused before any callback. Golden files that record the old answer are re-pinned with a documented difference."
+    },
+    {
+      "id": "OD-L1-11",
+      "date_kst": "2026-11-23 21:08",
+      "topic": "restart length (40) and residual-test cadence (once per cycle) of the protected matrix-free driver (node V17 and its review)",
+      "selected": "3. adaptive하게 변경",
+      "meaning": "The restart length and the cadence of the residual test of the protected matrix-free stage solve become adaptive. Frozen discriminators are pre-registered before any run; the original stage residual must pass in every solve."
+    },
+    {
+      "id": "OD-L1-12",
+      "date_kst": "2026-11-23 21:08",
+      "topic": "items that were waiting since the hosted CI triage: workflow edits, version 0.2.0 for the semver job, push of the branches -v15 and -trial",
+      "selected": "4. 수정 승인. 자동 push 가능하게 교정.",
+      "meaning": "The workflow edits of ci/TRIAGE_KO.md and the version bump to 0.2.0 are approved. The agent sets up the permission so that pushes of the research branches are not blocked, and pushes research/production-loop-20261116-v15 and -trial itself. This replaces OD-L1-8."
+    },
+    {
+      "id": "OD-L1-13",
+      "date_kst": "2026-11-23 22:41",
+      "topic": "ledger rows L-0317 to L-0320, which break the row schema (claim longer than 600 characters; verdict KILL), reported to the owner at 22:30",
+      "selected": "1. 제자리 수정 허용. append-only 원칙은 유연하게 적용하고 고정된 원칙으로 사용하지 말것",
+      "meaning": "The four rows are corrected in place. The append-only rule of the ledger is applied with judgment and is not a fixed rule."
+    },
+    {
+      "id": "OD-L1-14",
+      "date_kst": "2026-11-23 22:41",
+      "topic": "research/qualification/, adopted with the switcher lineage without pre-registration and without a ledger row (open since the hosted CI triage)",
+      "selected": "2. 필요한 파일들은 남길것",
+      "meaning": "The files that are needed stay in the tree."
+    },
+    {
+      "id": "OD-L1-15",
+      "date_kst": "2026-11-24 17:18",
+      "topic": "default of the matrix-free stage solve after node V24 (frozen verdict FAIL by rule B; the variant P1, not chosen by V24, had the budget counts of the shipped policy on the seen grid)",
+      "selected": "1. P1을 새 문제로 재시험 후 결과에 따라 경제적인 방향으로 adaptive로 전환여부 결정.",
+      "meaning": "P1 is re-tested on problem families not used before; by the results the matrix-free route switches to the adaptive policy if that is the economical choice (node V25)."
+    },
+    {
+      "id": "OD-L1-16",
+      "date_kst": "2026-11-24 17:18",
+      "topic": "default of the pattern check of the opt-in client AssemblyStageClient (node V08, review finding F-01: 8 sampled columns are not fail-closed in general)",
+      "selected": "2. n회 추가가 벡터화/병렬화가 가능한지 먼저 시험",
+      "meaning": "Before the default is decided, test whether the n additional right-hand sides of the full check can be vectorized or parallelized (node V26)."
+    },
+    {
+      "id": "OD-L1-17",
+      "date_kst": "2026-11-24 17:18",
+      "topic": "Auto route of the unified router (node V03 part B): the constants 1000, 10 and 3.3 B, the rule for a supplied derivative, the off-trajectory probes of the stiffness screen",
+      "selected": "3. 최대한 hyperparameter 없는 방향으로 설계",
+      "meaning": "The route is redesigned so that as few hyperparameters as possible remain (node V27). Ruling of the agent: the design is presented to the owner before it is implemented, because it changes the behaviour of the route."
+    },
+    {
+      "id": "OD-L1-18",
+      "date_kst": "2026-11-24 17:18",
+      "topic": "split of the ignored-tests job (measurement programs against contract tests)",
+      "selected": "4. 필요한 경우 먼저 설명하고 지시 승인 후 진행",
+      "meaning": "If a split is needed, the agent first explains it and changes the workflows only after the owner approves."
+    },
+    {
+      "id": "OD-L1-19",
+      "date_kst": "2026-11-24 17:50",
+      "topic": "CI test jobs (answer to the split of the ignored-tests job, item 4 of 2026-11-24)",
+      "selected": "test job은 누적해서 실행하지 말고 새로 실행해야 하는 것이나 이전 변경에 영향받는 것만 재실행하는 방향으로 수정. full suite는 최종 release 전에 실행 예정.",
+      "meaning": "The CI test jobs no longer re-run the whole suite at every push: they run new tests and the tests that the changes since the last complete run can affect. The whole suite runs before the final release. Supersedes the split proposed for the ignored-tests job (options A and B)."
+    },
+    {
+      "id": "OD-L1-20",
+      "date_kst": "2026-11-24 18:06",
+      "topic": "finer, coverage-based test selection inside a crate (proposed 2026-11-24 after OD-L1-19)",
+      "selected": "잘게 고르는 단계 승인",
+      "meaning": "Approved: the CI selection records, for every test target, the source files it executes (coverage) and selects, for a change inside function bodies, only the targets that execute the changed file; structural changes keep the package-level rule."
+    },
+    {
+      "id": "OD-L1-21",
+      "date_kst": "2026-11-24 19:59",
+      "topic": "CI selection v3 after the adversarial review of the change-based selection (four points proposed 2026-11-24 19:56 KST)",
+      "selected": "전부 승인",
+      "meaning": "Approved: (1) v3 design: the inputs of every test target are measured at every run and recorded in the map: rustc dep-info (compile inputs, every package, lib and bin unit tests included), coverage (executed sources) and the files and directories the test process opens (strace with a seccomp filter); a changed path selects every target whose recorded inputs contain it; unmapped and new targets run; no map means a full run; the structural rule and the full suite before release stay; a change of the runner image or of the pull-request base since the baseline means a full run; the reviewer's alternative (literal matching plus a hand-kept table) is not adopted. (2) The test jobs queue instead of cancelling (concurrency cancel-in-progress false for the test and ignored-tests jobs; short jobs keep cancelling). (3) The step 'Run the workspace test closure' of a1-inner-tolerance-parity.yml is removed. (4) No periodic full run."
+    },
+    {
+      "id": "OD-L1-22",
+      "date_kst": "2026-11-24 19:59",
+      "topic": "node V27: approval of the recommended design (forward break-even pilots) and its owner decisions D1-D6, requested 2026-11-24 19:20 KST and still open when the owner wrote 'approve all'",
+      "selected": "전부 승인",
+      "meaning": "Interpretation recorded by the orchestrator and stated to the owner in the reply: 'all' covers both open requests, the CI points of OD-L1-21 and the V27 design. Approved: the design router_hyperparameter_free/DESIGN_RECOMMENDED.md with D1 (a fatal callback inside a pilot ends the solve), D2 (a supplied Jacobian, JVP or band starts RODAS5P), D3 (one-way handover; a return path is a later node), D4 (the V03b assertion 'no DOPRI5 leg' for P_heat_fd and P_scalar_fd becomes the work bound W plus a recorded handover), D5 (the public names of today's route are removed), D6 (no declared-price option and no counting in the protected dense kernel now), the doubling base 2 and the declared losses. Implementation and evaluation follow router_hyperparameter_free/PREDECLARED.json; the Auto route changes only if E1-E10 pass."
+    },
+    {
+      "id": "OD-L1-23",
+      "date_kst": "2026-11-24 23:45",
+      "topic": "node V25 follow-up: rule B of the matrix-free stage solve P1",
+      "selected": "권고사항 수용 및 CI job 유지",
+      "meaning": "Accepted recommendation: pre-register a test of rule B alone (replay of identical stage systems and totals over several perturbed trajectories per cell) and make P1 the default of the matrix-free route if it passes (node V28, mf_p1_budget/PREDECLARED.json, addendum A9)."
+    },
+    {
+      "id": "OD-L1-24",
+      "date_kst": "2026-11-24 23:45",
+      "topic": "node V26 follow-up: default first-use pattern check of the opt-in assembly client",
+      "selected": "권고사항 수용 및 CI job 유지",
+      "meaning": "Accepted recommendation: the default first-use check becomes the multi-colouring check MC on the routes where it applies (coloured, banded); the dense route keeps Sample(8) because MC does not apply there; FA, FA_P and MC_P stay selectable; the documentation states the limits of MC found by the review (L-0338). Node V29."
+    },
+    {
+      "id": "OD-L1-25",
+      "date_kst": "2026-11-24 23:45",
+      "topic": "CI: the change-based job test-cli-fair-ab added in the fix round of the CI selection v3",
+      "selected": "권고사항 수용 및 CI job 유지",
+      "meaning": "Keep the job: rodas5p-cli and rodas5p-fair-ab get their own queued, change-based CI test job (the removal of the A1 workspace step had left about 200 of their tests without any CI run)."
+    },
+    {
+      "id": "OD-L1-26",
+      "date_kst": "2026-11-25 09:21",
+      "topic": "V27b: corrected re-evaluation of the FBP Auto route",
+      "selected": "남은 노드들을 이어서 마저 진행해. 수정은 전부 승인할게.",
+      "meaning": "Run V27b as proposed on 2026-11-25 00:4x: fix the two conflicting sentences of the V27 pre-registration (E1 over undeclared cases only, E3 without the runs that owner decision D1 ends), diagnose E7 (P_scalar_fd accuracy) and correct the design if needed, and evaluate on a fresh problem set under a new pre-registration (node V30)."
+    },
+    {
+      "id": "OD-L1-27",
+      "date_kst": "2026-11-25 09:21",
+      "topic": "V29 follow-up: default first-use check on wide declared bands",
+      "selected": "남은 노드들을 이어서 마저 진행해. 수정은 전부 승인할게.",
+      "meaning": "The default first-use check of the coloured route takes CheckColumns::All where the multi-colouring check would need at least n right-hand sides (All is exact up to rounding and not more expensive); MultiColouring otherwise (node V31)."
+    },
+    {
+      "id": "OD-L1-28",
+      "date_kst": "2026-11-25 09:21",
+      "topic": "Protected file crates/rodas5p-integrators/src/stage_batch.rs: concurrency probe",
+      "selected": "남은 노드들을 이어서 마저 진행해. 수정은 전부 승인할게.",
+      "meaning": "Change the protected stage_batch.rs so that its concurrency probe waits, with a bound, until a second task is active; parallel-observed and the scientific checksum then no longer depend on the scheduler; the checksum composition stays (node V32; fixes the flaky CLI test of CI triage section 12.1)."
+    },
+    {
+      "id": "OD-L1-29",
+      "date_kst": "2026-11-25 09:21",
+      "topic": "CI: liveness of the ignored-tests job",
+      "selected": "남은 노드들을 이어서 마저 진행해. 수정은 전부 승인할게.",
+      "meaning": "Edit tools/ci/select_tests.py and the workflows so that a full selection that cannot finish inside the job limit still seeds the next run: per-target incremental outcome and input map, a self time budget, save steps that run on cancellation, baselines from incomplete outcomes for the targets they measured (node V33; CI triage section 12.2)."
+    },
+    {
+      "id": "OD-L1-30",
+      "date_kst": "2026-11-25 09:21",
+      "topic": "Remaining nodes of the loop",
+      "selected": "남은 노드들을 이어서 마저 진행해. 수정은 전부 승인할게.",
+      "meaning": "Resume the paused nodes and finish the remaining ones: the independent review of V22, V23 (capabilities truth), the jvp_calls counter of the banded sparse-JVP route (node V34), group 4 (V09, V10, V11), V12 and V13 with the final whole-branch review. The authorization limits of not_authorized stay."
+    }
+  ],
+  "plan_approval": {
+    "approved": true,
+    "includes": "commit and standalone push of research branches of this loop after each wave"
+  },
+  "not_authorized": [
+    "merge to main",
+    "release or default promotion",
+    "change of G0, tolerances or protected RODAS5P controller constants",
+    "force push or history rewrite",
+    "change of the PPSW1 default sigma cap"
+  ]
+}

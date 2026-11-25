@@ -1,0 +1,394 @@
+# synthesis-stage spot checks, loop L1 audit; 2026-11-16T17:43:38+09:00; loop HEAD 2dc9a2c5778ac5b3ac960b0f6741aa5916122384
+
+## C01 EVD-01/02/03: subprocess, os.system and open( counts in the six switcher eval scripts at 933922495045796c99c530b0f1f1efd8fec83ed0
+research/k1_shared_krylov_basis_20261104/eval_k1.py subprocess=0 os_system=0 open_calls=0
+research/b7_first_batch_20261104/eval_b7.py subprocess=0 os_system=0 open_calls=0
+research/c1_coloured_assembly_20261104/eval_c1.py subprocess=0 os_system=0 open_calls=0
+research/d1_stiffness_gate_20261104/eval_d1.py subprocess=0 os_system=0 open_calls=1
+research/h1_hysteresis_band_20261104/eval_h1.py subprocess=0 os_system=0 open_calls=1
+research/e1r_work_model_v2_20261104/eval_e1r.py subprocess=3 os_system=0 open_calls=3
+
+## C02 EVD-01..04: ledger rows L-0205..L-0214 on the switcher line
+L-0205 PASS supersedes= None commit= a4b08c59 cmd= cargo build --release --locked --offline --example evidence_switch_bench --examp
+L-0206 PASS supersedes= None commit= d164d116 cmd= cargo test --locked --offline -p vigilode --test work_model_contracts; python3 r
+L-0207 INVALID supersedes= L-0206 commit= 4339facc cmd= UNRECORDED: python3 -I tools/agent_reproduce_e1_prereg.py lands in the G1 commit
+L-0208 PASS supersedes= L-0205 commit= a4b08c59 cmd= cargo build --release --locked --offline --example evidence_switch_bench --examp
+L-0209 FAIL supersedes= None commit= 4339facc cmd= python3 research/k1_shared_krylov_basis_20261104/eval_k1.py
+L-0210 FAIL supersedes= None commit= 4339facc cmd= python3 research/b7_first_batch_20261104/eval_b7.py
+L-0211 FAIL supersedes= L-0205 commit= 4339facc cmd= python3 research/e1r_work_model_v2_20261104/eval_e1r.py
+L-0212 FAIL supersedes= None commit= 4339facc cmd= python3 research/h1_hysteresis_band_20261104/eval_h1.py
+L-0213 FAIL supersedes= None commit= 4339facc cmd= python3 research/d1_stiffness_gate_20261104/eval_d1.py
+L-0214 PASS supersedes= None commit= 4339facc cmd= python3 research/c1_coloured_assembly_20261104/eval_c1.py
+
+$ git -C /home/cosmosapjw/vigilode ls-tree -r --name-only 933922495045796c99c530b0f1f1efd8fec83ed0 | grep -cE 'k1_shared_basis_bench|b7_first_batch_bench'
+0
+[exit 1]
+
+$ git -C /home/cosmosapjw/vigilode log --all --oneline -- '*k1_shared_basis_bench*' '*b7_first_batch_bench*' | wc -l
+0
+[exit 0]
+
+## C03 EVD-06: workflows on origin/main (local ref, no fetch) and production.yml triggers
+
+$ git ls-tree --name-only origin/main .github/workflows/
+.github/workflows/a1-inner-tolerance-parity.yml
+.github/workflows/a1-two-arm-receipt.yml
+.github/workflows/a2-a3-gmres-inner-cycle.yml
+.github/workflows/e4-fresh-clone-build.yml
+[exit 0]
+
+$ git log -1 --format='%H %ad' --date=iso origin/main
+8d0c79184e09efb5bdadc24a6315c60a71a44264 2026-08-26 15:10:12 +0900
+[exit 0]
+
+$ ls .github/workflows | wc -l
+31
+[exit 0]
+
+$ sed -n '10,25p' .github/workflows/production.yml
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'crates/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'rust-toolchain.toml'
+      - '.github/workflows/production.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'crates/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'rust-toolchain.toml'
+[exit 0]
+
+## C04 EVD-07: ledger tail and research-node check
+
+$ wc -l < research/LEDGER.jsonl; grep -c 'production_unification' research/LEDGER.jsonl; tail -n 1 research/LEDGER.jsonl | cut -c1-160
+202
+0
+{"claim": "Loop L1 baseline at 074a5699 on toolchain 1.94.1 in release mode is not green with default test threads: facade, core and krylov give 789 passed, 2 f
+[exit 0]
+
+$ python3 -I tools/check-research-node.py --base bee5563c51264a7da19c519295bdda2fb317caef
+FAIL: new node research/production_unification_20261115/: missing PREREGISTRATION.md (pre-registration)
+FAIL: new node research/production_unification_20261115/: no research/LEDGER.jsonl row whose outputs_sha256 covers it
+check-research-node: FAIL (202 ledger rows, base=bee5563c51264a7da19c519295bdda2fb317caef, new nodes=['production_loop_20261116', 'production_unification_20261115'])
+[exit 1]
+
+## C05 EVD-10a: literal G0 passes and the SUNDIALS string in the U11 evaluator
+
+$ sed -n '111,122p' research/production_unification_20261115/production_holdout/evaluate.py
+        "fast_newton_eq_0": {"max": max(e["newton_max"] for e in criteria_rows),
+                             "pass": all(e["newton_max"] == 0 for e in criteria_rows)},
+        "depth_p95_le_6_max_le_8": {"candidate_stage_depth": 1, "pass": True,
+                                    "note": "method-stage depth; inner span = one LU + one solve phase per step"},
+        "fallback_le_0_1": {"fallback_fraction": 0.0, "pass": True},
+    }
+    conj = all(v["pass"] for v in g0.values())
+    out = {"schema": "vigilode.u11-evaluation.v1", "rows": [x for v in arms.values() for x in v],
+           "criteria_by_problem": criteria_rows, "g0": g0, "conjunction_pass": conj,
+           "verdict": "HOLD" if not conj else "CANDIDATE_MEETS_G0 (release still requires owner approval)",
+           "not_run": ["CVODE BDF (SUNDIALS not installed)", "reference RODAS5P (Julia)",
+                       "isolated-process RSS per arm", "independent reviewer rerun"]}
+[exit 0]
+
+$ ls /usr/lib/x86_64-linux-gnu/libsundials_cvode.so.6; dpkg -s libsundials-dev 2>/dev/null | grep -E '^(Status|Version)'
+/usr/lib/x86_64-linux-gnu/libsundials_cvode.so.6
+Status: install ok installed
+Version: 6.4.1+dfsg1-3build4
+[exit 0]
+
+## C06 EVD-08: process-global live-byte counter in the sp02 test
+
+$ grep -n 'global_allocator\|LIVE_BYTES\|Mutex\|serial\|#\[test\]' crates/rodas5p-krylov/tests/sp02_workspace_charge.rs | head -40
+21:static LIVE_BYTES: AtomicUsize = AtomicUsize::new(0);
+26:        LIVE_BYTES.fetch_add(layout.size(), Ordering::SeqCst);
+31:        LIVE_BYTES.fetch_add(layout.size(), Ordering::SeqCst);
+37:            LIVE_BYTES.fetch_add(new_size - layout.size(), Ordering::SeqCst);
+39:            LIVE_BYTES.fetch_sub(layout.size() - new_size, Ordering::SeqCst);
+44:        LIVE_BYTES.fetch_sub(layout.size(), Ordering::SeqCst);
+49:#[global_allocator]
+53:    LIVE_BYTES.load(Ordering::SeqCst)
+85:#[test]
+118:#[test]
+173:#[test]
+[exit 0]
+
+## C07 EVD-09a: matched status counts in the spatial grid v2 raw file against the receipt text
+
+$ git -C /home/cosmosapjw/vigilode show 933922495045796c99c530b0f1f1efd8fec83ed0:bench/out/adversarial_spatial_grid_v2_results.json | python3 -I -c 'import json,sys,collections; d=json.load(sys.stdin); print(len(d["matched"]), dict(collections.Counter(m["status"] for m in d["matched"])))'
+1040 {'DIAGNOSTIC_ONLY': 952, 'MATCHED': 88}
+[exit 0]
+
+$ git -C /home/cosmosapjw/vigilode show 933922495045796c99c530b0f1f1efd8fec83ed0:docs/agent/production_solver_qualification_20261107_v3/FINAL_REPORT_KO.md | grep -n '953' | cut -c1-160
+30:| **동일 오차 대비 성능 (Matched Work-Precision)** | `NOT_ESTABLISHED (DIAGNOSTIC_ONLY)` | `EV-V3-ACHIEVED-WP-20261107`, `EV-V3-BENCH-PROTOCOL-202611
+73:    - 953개 매칭 행 전수 `DIAGNOSTIC_ONLY` 처리(외삽 및 조작 금지 규칙 준수).
+[exit 0]
+
+## C08 EVD-05: agent_gate.py edits inside gated commits
+
+$ git -C /home/cosmosapjw/vigilode log --format='%h %ad %s' --date=short 4339facc..933922495045796c99c530b0f1f1efd8fec83ed0 -- tools/agent_gate.py | cat
+16eb1b87 2026-11-04 feat(vigilode): X7 sparse-JVP assembled route (node C1)
+8800fb9a 2026-11-04 docs(research): X3 K1 shared Krylov basis node (preregistered)
+f6f439cd 2026-11-04 feat(rodas5p-integrators): X2 opt-in shared Krylov basis in MF RODAS5P
+d098ce9e 2026-11-04 feat(rodas5p-krylov): X1 shared per-step Krylov basis (unused, opt-in)
+052ba6d0 2026-11-03 feat(rodas5p-integrators): X4 DOPRI5 secant stiffness estimate
+ef7b4207 2026-11-03 chore(agent): install switcher-v2 remediation design bundle
+[exit 0]
+
+## C09 COD-05/06: switcher router dispatch, failure mapping, accounting check
+
+$ git -C /home/cosmosapjw/vigilode show 933922495045796c99c530b0f1f1efd8fec83ed0:crates/vigilode/src/unified/router.rs | sed -n '60,76p;283,292p'
+                &mut route_history,
+                start_instant,
+            ),
+            SelectedTier::Tier2MatrixFreeKrylov
+            | SelectedTier::Tier4StagedRodas5p
+            | SelectedTier::TierProtectedReference
+            | SelectedTier::Tier3Exponential => Self::dispatch_rodas5p_tier(
+                problem,
+                span,
+                y0,
+                opts,
+                ws,
+                &analysis,
+                &mut route_history,
+                start_instant,
+            ),
+        }
+                Ok(VigilodeSolution {
+                    success: switch_sol.success,
+                    status: if switch_sol.success {
+                        Status::Success
+                    } else {
+                        Status::Failed(FailureReason::MaxStepsReached {
+                            max_steps: opts.options.max_steps,
+                        })
+                    },
+                    final_time,
+[exit 0]
+
+$ git -C /home/cosmosapjw/vigilode show 933922495045796c99c530b0f1f1efd8fec83ed0:crates/vigilode/src/hybrid_automaton.rs | sed -n '313,321p'
+
+    /// Checks that all spent work is fully accounted for without omission.
+    pub fn accounting_complete(&self) -> bool {
+        let mut sum = self.committed_work;
+        sum.accumulate(self.refused_work);
+        sum.accumulate(self.pending_speculative_work);
+        sum == self.total_work()
+    }
+}
+[exit 0]
+
+## C10 COD-07: preflight contractivity rule and n*n workspace
+
+$ git -C /home/cosmosapjw/vigilode show 933922495045796c99c530b0f1f1efd8fec83ed0:crates/vigilode/src/unified/analyzer.rs | sed -n '172,192p'
+                let mu2 = observer.compute_mu(&dense_mat).ok();
+
+                let is_contracting = mu2.is_some_and(|m| m <= 0.0);
+                let dt = span.1 - span.0;
+
+                // Nonstiff detection: contractive flow with moderate interval
+                let suggested_tier = if is_contracting
+                    && dt <= 100.0
+                    && opts.strategy != SolverStrategy::RobustStiff
+                {
+                    SelectedTier::Tier1Explicit
+                } else if has_band {
+                    SelectedTier::Tier4StagedRodas5p
+                } else {
+                    SelectedTier::TierProtectedReference
+                };
+
+                Ok(PreflightAnalysis {
+                    suggested_tier,
+                    is_stiff: !is_contracting,
+                    estimated_mu2: mu2,
+[exit 0]
+
+$ git -C /home/cosmosapjw/vigilode show 933922495045796c99c530b0f1f1efd8fec83ed0:crates/vigilode/src/unified/workspace.rs | sed -n '40,50p'
+        let n = dimension.max(1);
+        let m = max_krylov_dim.max(1);
+        Self {
+            dimension,
+            max_krylov_dim: m,
+            stage_vectors: vec![0.0; 8 * n],
+            krylov_basis: vec![0.0; (m + 1) * n],
+            linear_scratch: vec![0.0; n * n],
+            y_checkpoint: vec![0.0; n],
+            y_scratch: vec![0.0; n],
+            dy_scratch: vec![0.0; n],
+[exit 0]
+
+## C11 COD-09/10: reject files, workspace members, entry-point counts
+
+$ git ls-files | grep -E '\.rej$'
+crates/rodas5p-integrators/src/dense_output_v2.rs.rej
+research/production_reaudit_20261021/evidence/port/dense_patch_context.rej
+[exit 0]
+
+$ sed -n '1,12p' Cargo.toml
+[workspace]
+resolver = "2"
+members = [
+  "crates/rodas5p-core",
+  "crates/rodas5p-krylov",
+  "crates/rodas5p-integrators",
+  "crates/rodas5p-fair-ab",
+  "crates/rodas5p-cli",
+  "crates/vigilode",
+  "crates/vigilode-coupled",
+]
+
+[exit 0]
+
+$ grep -nE 'pub fn solve[a-z_]*\(' crates/vigilode/src/*.rs | wc -l; grep -c 'PeerOde\|MethodRegistry\|ProductionSolver\|AutomaticOde' README.md; sed -n '3,4p' crates/vigilode/README.md
+18
+0
+One problem type, one options type, one solver and one result over the
+protected RODAS5P drivers. See the crate documentation (`cargo doc -p vigilode
+[exit 0]
+
+## C12 DSG-09/10 and COD-01 call site: OD-15 text, cap constant, tableau call, runner profile
+
+$ grep -n 'OD-15' docs/agent/unified_local_agent_20261109/OWNER_DECISIONS_20261110.json | cut -c1-260
+95:      "id": "OD-15",
+115:      "value": "approved to apply OD-15..17 to the PW04 plan; PW04 code/RED tests still need derivative-class and allowlist approval",
+[exit 0]
+
+$ sed -n '57,58p' crates/rodas5p-integrators/src/ppsw1.rs; grep -n 'tableau(sigma)' crates/rodas5p-integrators/src/ppsw1.rs
+pub const ACCEPTED_STEP_SIGMA_MAX: f64 = 1.10;
+pub const PAPER_STEP_RATIO_BOUND: f64 = 1.5;
+408:    let tab = tableau(sigma)?;
+[exit 0]
+
+$ cat research/production_unification_20261115/production_holdout/runner/Cargo.toml; sed -n '33,40p' Cargo.toml
+[package]
+name = "u11-holdout-runner"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+# Independent runner outside the repository workspace (see PREREGISTRATION.json).
+[workspace]
+
+[dependencies]
+vigilode = { path = "../../../../crates/vigilode" }
+serde_json = { version = "1.0.151", features = ["float_roundtrip"] }
+
+[profile.release]
+debug = false
+thiserror = "2.0.19"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+
+[exit 0]
+
+## C13 DSG-07: speed arm in the U11 evaluator and commit times of preregistration and evaluator
+
+$ sed -n '86,90p' research/production_unification_20261115/production_holdout/evaluate.py
+                        if sc and sb:
+                            step_ratios.append(sc / sb)
+                        if wc and wb and cand == "ppsw1_t6":
+                            speed_ratios.append(wb / wc)
+                        entry.setdefault("matched", []).append(
+[exit 0]
+
+$ git log --format='%h %ad %s' --date=iso -- research/production_unification_20261115/production_holdout/evaluate.py | cat; echo --; git log --format='%h %ad %s' --date=iso -- research/production_unification_20261115/production_holdout/PREREGISTRATION.json | cat
+074a5699 2026-11-16 09:36:12 +0900 research(u11): production holdout evaluation - HOLD
+--
+745ffafb 2026-11-16 09:28:25 +0900 research(u11): pre-register production holdout before any run
+[exit 0]
+
+## C14 lineage: ancestry, unique commits, protected files changed on the switcher line, absence from lineage documents
+
+$ git merge-base 933922495045796c99c530b0f1f1efd8fec83ed0 2dc9a2c5778ac5b3ac960b0f6741aa5916122384; git merge-base --is-ancestor 933922495045796c99c530b0f1f1efd8fec83ed0 2dc9a2c5778ac5b3ac960b0f6741aa5916122384; echo switcher_is_ancestor_of_loop_exit=$?; echo switcher_only=$(git rev-list --count 2dc9a2c5778ac5b3ac960b0f6741aa5916122384..933922495045796c99c530b0f1f1efd8fec83ed0) loop_only=$(git rev-list --count 933922495045796c99c530b0f1f1efd8fec83ed0..2dc9a2c5778ac5b3ac960b0f6741aa5916122384)
+569ce02629498fec133db9ce368eb303ba943b69
+switcher_is_ancestor_of_loop_exit=1
+switcher_only=52 loop_only=138
+[exit 0]
+
+$ git merge-base 6844c8fe18361f3c2243ee2db95bbf3d68a6ce7b 2dc9a2c5778ac5b3ac960b0f6741aa5916122384; git merge-base --is-ancestor 6844c8fe18361f3c2243ee2db95bbf3d68a6ce7b 2dc9a2c5778ac5b3ac960b0f6741aa5916122384; echo rei_is_ancestor_of_loop_exit=$?; echo rei_only=$(git rev-list --count 2dc9a2c5778ac5b3ac960b0f6741aa5916122384..6844c8fe18361f3c2243ee2db95bbf3d68a6ce7b); git log -1 --format='%H %ad %s' --date=iso 6844c8fe18361f3c2243ee2db95bbf3d68a6ce7b; git branch -a --contains 6844c8fe18361f3c2243ee2db95bbf3d68a6ce7b | cat
+2d430a7aa81070da17a7a5dba60a2d56639b82db
+rei_is_ancestor_of_loop_exit=1
+rei_only=287
+6844c8fe18361f3c2243ee2db95bbf3d68a6ce7b 2026-11-16 00:05:34 +0900 code(rei): bridge committed Peer-W to full coupled 46k source with low-rank W
++ research/vigilode-rei-peer-native-20261115
+  remotes/origin/research/vigilode-rei-igm-photon-fusion-20261101
+[exit 0]
+
+$ git log -1 --format='%H %ad' --date=iso $(git merge-base 6844c8fe18361f3c2243ee2db95bbf3d68a6ce7b 2dc9a2c5778ac5b3ac960b0f6741aa5916122384)
+2d430a7aa81070da17a7a5dba60a2d56639b82db 2026-10-29 15:01:15 +0900
+[exit 0]
+
+$ git log -1 --format='%H %ad' --date=iso 569ce02629498fec133db9ce368eb303ba943b69; echo rei_only_dated_before_20261115=$(git rev-list --count --before=2026-11-15T00:00:00+09:00 2dc9a2c5778ac5b3ac960b0f6741aa5916122384..6844c8fe18361f3c2243ee2db95bbf3d68a6ce7b)
+569ce02629498fec133db9ce368eb303ba943b69 2026-11-02 16:03:12 +0900
+rei_only_dated_before_20261115=283
+[exit 0]
+
+$ echo followup_only_vs_switcher=$(git rev-list --count 933922495045796c99c530b0f1f1efd8fec83ed0..612063db); git branch -a --contains 612063db | cat
+followup_only_vs_switcher=7
+  research/vig-authority-followup-20261105
+  remotes/origin/research/vig-authority-followup-20261105
+[exit 0]
+
+$ git diff --stat=200 569ce02629498fec133db9ce368eb303ba943b69 933922495045796c99c530b0f1f1efd8fec83ed0 -- fixtures/rodas5p_coefficients_snapshot.json crates/rodas5p-core/src/coefficients.rs crates/rodas5p-core/src/work.rs crates/rodas5p-integrators/src/sequential.rs crates/rodas5p-integrators/src/parallel.rs crates/rodas5p-integrators/src/stage_batch.rs crates/rodas5p-integrators/src/ptsw2b.rs crates/rodas5p-integrators/src/candidates.rs crates/rodas5p-integrators/src/source_owned_graph_schur.rs crates/rodas5p-integrators/src/rodas5p_fast.rs crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs crates/rodas5p-integrators/src/rodas5p_fast_dense.rs crates/rodas5p-integrators/src/rodas5p_lagged.rs crates/rodas5p-integrators/src/client_stage.rs crates/rodas5p-integrators/src/adaptive.rs crates/rodas5p-krylov/src/block_gmres.rs crates/vigilode/src/lib.rs crates/vigilode/src/automatic.rs crates/vigilode/src/switching.rs Cargo.toml Cargo.lock rust-toolchain.toml | cat
+ Cargo.toml                                                 |    2 +-
+ crates/rodas5p-integrators/src/adaptive.rs                 |   65 ++++++-
+ crates/rodas5p-integrators/src/rodas5p_fast.rs             |   97 +++++++---
+ crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs |   78 +++++++-
+ crates/rodas5p-integrators/src/sequential.rs               |    4 +-
+ crates/vigilode/src/lib.rs                                 |   35 +++-
+ crates/vigilode/src/switching.rs                           | 1374 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----------------------------
+ rust-toolchain.toml                                        |    2 +-
+ 8 files changed, 1306 insertions(+), 351 deletions(-)
+[exit 0]
+
+$ git diff --stat=200 569ce02629498fec133db9ce368eb303ba943b69 2dc9a2c5778ac5b3ac960b0f6741aa5916122384 -- fixtures/rodas5p_coefficients_snapshot.json crates/rodas5p-core/src/coefficients.rs crates/rodas5p-core/src/work.rs crates/rodas5p-integrators/src/sequential.rs crates/rodas5p-integrators/src/parallel.rs crates/rodas5p-integrators/src/stage_batch.rs crates/rodas5p-integrators/src/ptsw2b.rs crates/rodas5p-integrators/src/candidates.rs crates/rodas5p-integrators/src/source_owned_graph_schur.rs crates/rodas5p-integrators/src/rodas5p_fast.rs crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs crates/rodas5p-integrators/src/rodas5p_fast_dense.rs crates/rodas5p-integrators/src/rodas5p_lagged.rs crates/rodas5p-integrators/src/client_stage.rs crates/rodas5p-integrators/src/adaptive.rs crates/rodas5p-krylov/src/block_gmres.rs crates/vigilode/src/lib.rs crates/vigilode/src/automatic.rs crates/vigilode/src/switching.rs Cargo.toml Cargo.lock rust-toolchain.toml | cat
+ crates/rodas5p-integrators/src/ptsw2b.rs | 1013 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 1013 insertions(+)
+[exit 0]
+
+$ git show 933922495045796c99c530b0f1f1efd8fec83ed0:rust-toolchain.toml | sed -n 2p; git show 2dc9a2c5778ac5b3ac960b0f6741aa5916122384:rust-toolchain.toml | sed -n 2p
+channel = "stable"
+channel = "1.94.1"
+[exit 0]
+
+$ cd research/production_unification_20261115 && for p in 93392249 612063db 6844c8fe switcher rei REI 569ce026; do echo "$p lineage.json=$(grep -c -- $p lineage.json) LINEAGE.md=$(grep -c -- $p LINEAGE.md) HISTORY_RECOVERY.json=$(grep -c -- $p HISTORY_RECOVERY.json) git_inventory.json=$(grep -c -- $p git_inventory.json)"; done; sha256sum lineage.json; grep -n 'lineage.json' CHECKPOINT.json | cut -c1-140
+93392249 lineage.json=0 LINEAGE.md=0 HISTORY_RECOVERY.json=0 git_inventory.json=2
+612063db lineage.json=0 LINEAGE.md=0 HISTORY_RECOVERY.json=0 git_inventory.json=2
+6844c8fe lineage.json=0 LINEAGE.md=0 HISTORY_RECOVERY.json=0 git_inventory.json=0
+switcher lineage.json=0 LINEAGE.md=0 HISTORY_RECOVERY.json=0 git_inventory.json=8
+rei lineage.json=0 LINEAGE.md=0 HISTORY_RECOVERY.json=0 git_inventory.json=53
+REI lineage.json=0 LINEAGE.md=0 HISTORY_RECOVERY.json=0 git_inventory.json=23
+569ce026 lineage.json=0 LINEAGE.md=0 HISTORY_RECOVERY.json=0 git_inventory.json=5
+8c5cf94ff68e6682e1995eb3c6fa3f65d9c563bfbe2bb63bc6459378fe59828b  lineage.json
+83:    "research/production_unification_20261115/lineage.json": "8c5cf94ff68e6682e1995eb3c6fa3f65d9c563bfbe2bb63bc6459378fe59828b",
+[exit 0]
+
+refs of the two absent lineages as recorded in git_inventory.json:
+  origin/archive/vigilode-preimport-v35-source-20261101 ab017f8c 2026-08-18 ancestor_of_base= False
+  origin/governance/rei-igm-mission-realignment-20261101 5839c15a 2026-11-01 ancestor_of_base= False
+  origin/research/bassrei-port-20261021 555e71e0 2026-10-22 ancestor_of_base= True
+  origin/research/switcher-v2-20261103 93392249 2026-11-08 ancestor_of_base= False
+  origin/research/vig-authority-followup-20261105 612063db 2026-11-06 ancestor_of_base= False
+  origin/research/vigilode-rei-f05-native-nonphoto-20261102 dee7812c 2026-11-02 ancestor_of_base= False
+  origin/research/vigilode-rei-f05-native-photo-thermal-20261102 4327f283 2026-11-02 ancestor_of_base= False
+  origin/research/vigilode-rei-f05-native-rank3-20261101 ce83c644 2026-11-01 ancestor_of_base= False
+  origin/research/vigilode-rei-fiveclock-nonauton-ft-dopri-20261101 ac099196 2026-11-01 ancestor_of_base= False
+  origin/research/vigilode-rei-igm-five-clock-rodas5p-20261101 d99c3f06 2026-11-01 ancestor_of_base= False
+  origin/research/vigilode-rei-igm-photon-fusion-20261101 c1132ed4 2026-11-02 ancestor_of_base= False
+  origin/research/vigilode-rei-igm-source-moment-native-20261101 60a425a2 2026-11-01 ancestor_of_base= False
+  origin/research/vigilode-rei-igm-vperf-scoped-20261101 ab52c102 2026-11-01 ancestor_of_base= False
+tracks: 14 distinct source commits cited by lineage tracks: 2
+  3336d682 ancestor_of_loop_head= False switcher_only= False rei_only= False
+  bee5563c ancestor_of_loop_head= True switcher_only= False rei_only= False
+
+# end

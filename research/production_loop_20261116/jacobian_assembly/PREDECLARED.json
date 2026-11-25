@@ -1,0 +1,167 @@
+{
+  "schema": "vigilode.loop_l1.v08.predeclared.v1",
+  "node": "V08_JACOBIAN_ASSEMBLY",
+  "written_before_any_measurement": true,
+  "date_kst": "2026-11-23",
+  "base_commit": "587a139501729bbe886bb2b8c49b0ef893705d08",
+  "branch": "research/production-loop-20261116-w2-v08",
+  "frozen_row": {
+    "source": "research/production_loop_20261116/PREREGISTRATION.md line 32 and TASK_CONTRACTS.json tasks[20]",
+    "pass": "Jacobian and trajectory bitwise equal to sequential assembly; RHS calls = colours + 1 for the coloured route; a wrong pattern fails closed; wall >= 1.5x on finite-difference problems with n >= 64 and RHS cost >= 50 microseconds",
+    "kill": "wall < 1.1x",
+    "thresholds_are_not_moved": true
+  },
+  "what_was_known_before_this_file": [
+    "No solver run, no timing and no right-hand-side cost measurement of any declared problem was made before this file was committed. Sizes were chosen from operation counts only (see problems[].cost_estimate).",
+    "Read before writing: cost_anatomy/REPORT_KO.md (V04): with a finite-difference Jacobian the Jacobian phase is 46.3-93.8 % of a dense run at n >= 128 and 3.6-9.3 % of a banded run with 5 column groups. This is why both a wide-band and a narrow-band sparse problem are declared: the Amdahl bound of the narrow-band problem is below 1.5 before any measurement, and it is declared anyway because it is the classical sparse finite-difference case."
+  ],
+  "client": {
+    "file": "crates/rodas5p-integrators/src/stage_clients/assembly.rs (+ assembly/ submodules)",
+    "routes": {
+      "dense": "one right-hand side per column plus the base evaluation (n + 1 per build), arithmetic of crates/vigilode/src/fd.rs:443-455 (increment) and :476-509 (column loop)",
+      "coloured": "greedy first-fit column grouping in natural column order (Curtis-Powell-Reid) of a declared sparsity pattern; one right-hand side per colour plus the base evaluation (colours + 1 per build); entry arithmetic of crates/vigilode/src/fd.rs:581-622"
+    },
+    "execution": {
+      "sequential": "everything on the calling thread, no thread pool is created",
+      "threaded": "a rayon ThreadPool owned by the client with exactly P threads (ThreadPoolBuilder::num_threads(P)); the global pool is never used; the calling thread sleeps during a build; opt-in through an explicit purity acknowledgement"
+    },
+    "linear_back_ends": {
+      "dense_lu": "stage_clients/dense_lu.rs DenseLuStageClient (unchanged) with the mode the protected dense driver picks for the first Jacobian (DenseLuMode::protected_choice)",
+      "banded_protected": "BandedStageLu of rodas5p_fast.rs (kernel Indexed; unchanged)",
+      "banded_tight": "stage_clients/banded_tight.rs BandedTightStageLu (V21; unchanged; bit-identical to the Indexed kernel)"
+    },
+    "verification_defaults_used_in_every_timed_arm": {
+      "first_use_check_columns": 8,
+      "meaning": "at the first linearization of a client 8 evenly spread columns are evaluated one at a time on the calling thread and compared bit for bit with the assembled entries (coloured route: also every row outside the declared pattern of the column must be unchanged); threaded execution adds one base evaluation on the calling thread. Applies to the coloured route (both executions) and to the threaded dense route; the sequential dense route has nothing to verify and makes exactly n + 1 calls per build.",
+      "every_build_check_of_the_coloured_route": "rows not covered by any column of a colour must be bitwise unchanged in that colour's evaluation (no extra right-hand side)",
+      "accounting": "right-hand sides of an assembly and of a verification are counted separately by the client; the frozen count 'colours + 1' is the assembly count per build"
+    }
+  },
+  "problems": [
+    {
+      "id": "nlkpp-dense-n400",
+      "class": "qualifying",
+      "route": "dense",
+      "back_end": "dense_lu (protected choice of the first Jacobian)",
+      "n": 400,
+      "definition": "nonlocal Fisher-KPP on (0, L), L = 40, n = 400 cells, h = L/n, x_i = (i + 1/2) h, zero-flux boundaries (ghost values u_{-1} = u_0, u_n = u_{n-1}): du_i/dt = D (u_{i-1} - 2 u_i + u_{i+1}) / h^2 + mu u_i (1 - h sum_{j=0}^{n-1} phi(|i - j| h) u_j), D = 1, mu = 1, phi(x) = exp(-x / sigma) / (2 sigma), sigma = 5 (kernel table of n entries, plain left-to-right summation over j)",
+      "y0": "u_i(0) = 0.1 + 0.8 exp(-(x_i - L/2)^2 / 20)",
+      "span": [0.0, 10.0],
+      "jacobian_structure": "every entry nonzero (dense)",
+      "cost_estimate": "n^2 = 160000 multiply-adds in a serial reduction, about 0.6-0.7 ns each: 100-110 microseconds per right-hand side",
+      "nature_of_cost": "the nonlocal competition term is an O(n^2) quadrature; no artificial delay or repetition"
+    },
+    {
+      "id": "nlkpp-band-n4096-r24",
+      "class": "qualifying",
+      "route": "coloured",
+      "back_end": "banded_tight (primary); banded_protected as a labelled secondary cell (arms sequential and P = 6 only)",
+      "n": 4096,
+      "definition": "the same equation with L = 409.6, n = 4096, h = 0.1 and the compact kernel phi(x) = c (1 - (x / rho)^2) for |x| < rho, 0 otherwise, rho = (R + 1/2) h, R = 24 cells, c chosen so that h sum_{d=-R}^{R} phi(|d| h) = 1; the sum runs over j with |i - j| <= R inside the domain",
+      "y0": "u_i(0) = 0.1 + 0.8 exp(-(x_i - L/2)^2 / 20) + 0.05 sin(2 pi x_i / 12.8)",
+      "span": [0.0, 10.0],
+      "declared_pattern": "full band lower = upper = 24 (49 entries per interior row); expected colours 49",
+      "cost_estimate": "4096 * 49 = 200704 multiply-adds, 120-140 microseconds",
+      "nature_of_cost": "finite-range nonlocal quadrature; wide band, many colours"
+    },
+    {
+      "id": "bruss1d-n131072",
+      "class": "qualifying",
+      "route": "coloured",
+      "back_end": "banded_tight",
+      "n": 131072,
+      "definition": "1D Brusselator of crates/rodas5p-integrators/tests/b1_problems/mod.rs with 65536 cells, unknowns interleaved (u_i, v_i): du_i/dt = 1 + u_i^2 v_i - 4 u_i + c (u_{i-1} - 2 u_i + u_{i+1}), dv_i/dt = 3 u_i - u_i^2 v_i + c (v_{i-1} - 2 v_i + v_{i+1}), c = (cells + 1)^2 / 50, boundary values u = 1, v = 3",
+      "y0": "u_i = 1 + sin(2 pi x_i), v_i = 3, x_i = (i + 1) / (cells + 1)",
+      "span": [0.0, 10.0],
+      "declared_pattern": "full band lower = upper = 2 (the grouping of the facade's banded finite-difference route); expected colours 5",
+      "cost_estimate": "65536 cells, 1-4 ns per cell plus 2 MB of memory traffic: 65-260 microseconds",
+      "nature_of_cost": "size of a classical method-of-lines system; narrow band, few colours. Amdahl bound of the whole solve below 1.5 by structure (6 of at least 14 right-hand sides per step are in the Jacobian)."
+    },
+    {
+      "id": "bruss1d-n128-dense",
+      "class": "control_cheap_rhs",
+      "route": "dense",
+      "back_end": "dense_lu (protected choice)",
+      "n": 128,
+      "definition": "the same Brusselator with 64 cells",
+      "span": [0.0, 10.0],
+      "expectation": "right-hand side far below 50 microseconds; threading is expected to lose"
+    },
+    {
+      "id": "bruss1d-n128-coloured",
+      "class": "control_cheap_rhs",
+      "route": "coloured",
+      "back_end": "banded_tight",
+      "n": 128,
+      "definition": "the same Brusselator with 64 cells, full band lower = upper = 2",
+      "span": [0.0, 10.0],
+      "expectation": "threading is expected to lose"
+    }
+  ],
+  "tolerances": {
+    "timed_cells": {"rtol": 1e-06, "atol_every_component": 1e-08},
+    "contract_tests": {"rtol": [0.0001, 1e-06, 1e-08], "atol": "rtol times the case scale of b1_problems, or 1e-2 rtol for the nonlocal problems"},
+    "controller": "AdaptiveStepConfig::default() except rtol, atol, initial_step = 1e-6, min_step = 1e-14, max_step = span length, max_attempts (below); nothing else is changed"
+  },
+  "run_length": {
+    "rule": "every timed and every identity run of a declared problem ends after max_attempts = 48 step attempts (accepted and rejected together) or at the end of the span, whichever comes first. The driver then returns its accepted prefix (success = false, partial record). The same value is used in every arm and in the protected driver, so every arm integrates the same attempts.",
+    "reason": "bounds the time for which the shared timing lock is held without choosing a span from a trial run; the per-step composition (one Jacobian, one factorization, eight stages) does not change along a run"
+  },
+  "workers": {"P": [1, 2, 4, 6], "arms": ["seq", "t1", "t2", "t4", "t6"], "seq": "sequential execution (no pool)", "tP": "threaded execution with P pool threads"},
+  "wall": {
+    "primary_whole_solve": "std::time::Instant around: construction of the client (buffers, colouring of the pattern, the thread pool of a threaded arm) and the driver call integrate_rodas5p_fast_client_observed_with_atol until it returns. Problem construction, the right-hand-side cost calibration and the fingerprints are outside.",
+    "secondary_jacobian_phase": "PhaseTimes::linearize_ns of TimedStageClient wrapped around the assembly client in the same run (assembly, checks and the copy into the back end)",
+    "also_reported": "factor_ns and solve_ns of the same wrapper; the wall of the sequential arm relative to the protected driver with a sequential finite-difference Jacobian callback (overhead of the client, diagnostic)",
+    "speed_up": "median over the 7 timed repetitions of the seq arm divided by the median of the tP arm, same cell, same invocation"
+  },
+  "timing_protocol": {
+    "cpu": "flock /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/timing.lock taskset -c 6-11 for authoritative runs; builds and all other runs on taskset -c 0-5,12-17",
+    "per_cell": "one process invocation per cell; arms interleaved round-robin (round r starts with arm r mod 5); 2 warm-up rounds, then 7 timed rounds",
+    "load": "/proc/loadavg read before and after each cell and printed in the log",
+    "quality_rule": "a cell is authoritative only if the 1-minute load average is at most 8 before and after and (max - min) / median over the 7 repetitions is at most 0.10 in the seq arm and in the tP arm of the ratio in question; a cell that misses may be measured again at most twice; every measurement is kept; the verdict uses the first measurement that meets the rule; otherwise the ratio is diagnostic_only",
+    "bounded_wait": "at most 20 minutes in total for this node, one load check per minute, then measure anyway",
+    "instructions": "perf stat -e instructions:u of one solve per arm of the qualifying cells is reported as a diagnostic (threading adds instructions; it is not a discriminator of this node)"
+  },
+  "rhs_cost": {
+    "method": "on the timing cores under the timing lock: median over 7 batches of the wall time per call of OdeProblem::eval_rhs_into at y0 (batch length chosen so that a batch lasts at least 5 ms, at least 16 calls), after one warm-up batch",
+    "qualification": "a problem of class 'qualifying' counts for the wall verdict only if this median is at least 50 microseconds. If it is below, the problem is reported as not qualifying and is not replaced or resized."
+  },
+  "verdict_rules": {
+    "identity": "PASS only if, for every declared problem and every arm, (a) the fingerprint of all assembled Jacobians (bits of every stored entry at every linearization) and (b) the fingerprint of the accepted trajectory (bits of t and y of every accepted step) and the step statistics equal those of the seq arm of the same route, and the seq arm equals the protected driver (dense: integrate_rodas5p_fast_observed_with_atol; banded: integrate_rodas5p_fast_banded_observed_with_atol, kernel Indexed) run with a sequential finite-difference Jacobian callback transcribed from fd.rs. One difference anywhere is FAIL. The equality with the facade's own finite-difference code is checked separately in the standalone runner through vigilode's solve (labelled facade_identity).",
+    "rhs_calls": "PASS only if in every run of the coloured route the client's assembly count equals builds * (colours + 1) exactly, and in every run of the dense route builds * (n + 1); verification calls are listed separately and must equal the declared numbers (8 per verification, plus 1 in threaded arms)",
+    "fail_closed": "PASS only if every negative control ends with an error and no accepted step: (1) a pattern that omits a coupling whose rows are not covered by the colour (caught at the first build), (2) a pattern whose omitted coupling is aliased into a declared entry (caught by the first-use check columns), (3) a right-hand side that is not a pure function (returns a different value on every call) in a threaded arm, (4) a request for a full check (all columns) on demand with a wrong pattern. The typed error is read from the client's report handle and from the direct verify call.",
+    "wall_cell": "for a qualifying problem: best = max over P in {2, 4, 6} of the whole-solve speed-up among authoritative ratios. Cell PASS if best >= 1.5; cell KILL if the speed-up is < 1.1 at every P in {2, 4, 6}; otherwise cell FAIL (between). If no ratio of the cell is authoritative: NOT_DECIDABLE, with the diagnostic numbers.",
+    "wall_node": "PASS only if every qualifying problem (rhs_cost rule) has cell PASS; KILL only if every qualifying problem has cell KILL; otherwise FAIL with the per-cell table (the regime where the lever pays). Controls never enter the verdict.",
+    "wall_reading_note": "the frozen row does not say how several qualifying problems are combined. This file fixes the strict reading (all declared qualifying problems) before any measurement; the cell verdicts are reported individually so that another reading can be recomputed from the same numbers, and the report states the per-route outcome (dense route: nlkpp-dense-n400; coloured route: the two banded problems).",
+    "jacobian_phase": "reported next to every whole-solve number; never used for PASS or KILL"
+  },
+  "matched_error": {
+    "argument": "all arms of a cell produce the same accepted states bit for bit (checked in every timed run by the fingerprint of the final state and in the identity pass by the full fingerprints), so the achieved global error is the same number in every arm; the speed-up is a comparison at exactly matched error",
+    "documentation_of_the_error_level": "the achieved global error of the common trajectory of each qualifying problem at its last accepted time is reported against an independent reference: SciPy solve_ivp LSODA (banded Jacobian options where the problem is banded) with rtol = 1e-12, atol = 1e-14; reference uncertainty = max norm of the difference to a second LSODA solve with rtol = 1e-10, atol = 1e-12. Exploratory documentation, not a discriminator. If a reference cannot be computed within 15 minutes of wall time it is reported with the exact obstacle."
+  },
+  "facade_coloured_route": {
+    "label": "separate measurement, replaces the invalidated ledger row L-0214 (a simulation) with an executed number; not a frozen discriminator of V08",
+    "code_under_test": "crates/vigilode: Jacobian::sparse_jvp with crates/vigilode/src/coloring.rs (banded pattern, assembled into the band of the banded driver)",
+    "problem": "1D Brusselator, 64 cells (n = 128), analytic JVP, declared pattern = the true sparsity (4 entries per interior row inside the band lower = upper = 2). Not a holdout configuration.",
+    "measured": [
+      "colours of coloring::column_coloring for the pattern",
+      "JVP calls per Jacobian build from the Stats of a vigilode solve (rtol 1e-6, atol 1e-8, span [0, 10])",
+      "the values recovered by coloring::recover_values from the compressed JVP products against the analytic dense Jacobian at y0 and at the final state of the solve: number of entries with different bits and the largest absolute difference",
+      "the final state of that solve against the same solve with the analytic band Jacobian (Jacobian::banded): number of components with different bits and the largest absolute difference"
+    ]
+  },
+  "facade_identity": {
+    "label": "separate check of the citation: the client's sequential modes against vigilode's own finite-difference code",
+    "cases": [
+      "dense: vigilode solve with Jacobian::FiniteDifference and a vector atol (route integrate_rodas5p_fast_observed_with_atol) against the client driver with the sequential dense route and DenseLu back end: nlkpp dense with n = 96 on [0, 2] and the Brusselator with 32 cells (n = 64) on [0, 10], rtol 1e-6, atol 1e-8; compared: bits of the final state, accepted and rejected steps",
+      "banded: vigilode solve with Problem::banded(2, 2) and Jacobian::FiniteDifference (banded driver) against the client driver with the sequential coloured route, full band pattern and banded_protected back end: Brusselator with 64 cells (n = 128) on [0, 10]"
+    ]
+  },
+  "exclusion_rules": [
+    "no run is dropped; a run that ends with an error is kept in the log and reported",
+    "a timing cell that misses the quality rule is kept and labelled diagnostic_only",
+    "a qualifying problem below 50 microseconds per right-hand side is kept in the tables as not qualifying"
+  ],
+  "search_budget": "no parameter search: one colouring (greedy, natural order), one set of sizes, one tolerance for timing, the worker counts above. Extra measurements are labelled exploratory.",
+  "results_pipeline": "the measurement programs print one JSON object per line behind a fixed tag; build_results.py reads only the raw logs under logs/ and writes RESULTS.json; build_report.py renders REPORT_KO.md from RESULTS.json and this file"
+}

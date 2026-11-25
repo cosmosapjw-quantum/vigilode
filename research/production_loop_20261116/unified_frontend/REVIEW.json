@@ -1,0 +1,365 @@
+{
+  "schema": "vigilode.loop_l1.node_review.v1",
+  "node": "V03_UNIFIED_FRONTEND_A",
+  "provenance": "builder report: run wf_7beb7c33-487 (2026-11-17); review: run wf_f2599e6f-a4a (2026-11-23)",
+  "builder_report": {
+    "status": "done",
+    "summary": "V03 part A is complete; all four frozen criteria pass on logs from a clean tree at b52f79cd. New entry point in crates/vigilode/src/selection/: MethodChoice {General, Auto, Explicit}, pure MethodRegistry::route, MethodRegistry::solve, borrowed SolutionView. Phase B reached: GeneralOde::select is now derived from the method catalog and the old body is kept as GeneralOde::select_reference; decisions are identical on 221184 golden-grid and 331776 extension-grid entries with zero callbacks, and the nine golden files are byte-identical. Eight adapters (RODAS5P on all six facade routes, DOPRI5, PPSW1, Lawson, BDF, Radau, PEXPRB, lagged RODAS5P) are bitwise equal to their direct calls in 25 cases; ppsw1 matrix-free stays unavailable. The eight PeerOde defect reproductions (COD-02, COD-04) fail on base and pass after the adapter-side fix. Facade suite: 497 passed, 0 failed; no existing test was edited. Two things need a ruling: Phase B rests on a new catalog while the U06 MethodRequest/query are unchanged, and a facade defect was found where Rodas5p::capabilities names a driver that does not run for general sparse-JVP problems (not fixed). No timing was run.",
+    "branch": "research/production-loop-20261116-w2-v03",
+    "head_commit": "eb42b5ca077b423de8043777d1bacad7c31bf050",
+    "predeclared_commit": "00d327647538eda44d640f19dad5b317d818a7b9",
+    "checks": [
+      {
+        "name": "contract tests (unified_frontend_contracts)",
+        "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test unified_frontend_contracts -- --nocapture --test-threads 1",
+        "exit_code": 0,
+        "result": "31 passed, 0 failed (logs/contracts.log, commit b52f79cd, clean tree)"
+      },
+      {
+        "name": "existing registry, PeerOde and selection tests, unedited",
+        "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test unified_method_capabilities --test unified_method_sessions --test production_selection_contracts --test geometry_mol_contracts",
+        "exit_code": 0,
+        "result": "23 passed, 0 failed"
+      },
+      {
+        "name": "default-path golden oracle, run 1",
+        "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test default_path_golden -- --nocapture --test-threads 1",
+        "exit_code": 0,
+        "result": "11 passed; 9 golden files reported identical"
+      },
+      {
+        "name": "default-path golden oracle, run 2",
+        "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test default_path_golden -- --nocapture --test-threads 1",
+        "exit_code": 0,
+        "result": "11 passed; same 9 files and byte counts as run 1; git diff of tests/golden and default_path_golden.rs against base is empty"
+      },
+      {
+        "name": "decision grids in the debug profile (exploratory)",
+        "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 -p vigilode --test unified_frontend_contracts -- d1_ --nocapture --test-threads 1",
+        "exit_code": 0,
+        "result": "2 passed with debug assertions on: the fallback of the catalog-derived selection to the reference body was never taken"
+      },
+      {
+        "name": "whole facade suite",
+        "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --no-fail-fast",
+        "exit_code": 0,
+        "result": "497 passed, 0 failed, 0 ignored over 57 result lines (logs/full_suite.log); every pre-existing test passes; no existing test file was edited"
+      },
+      {
+        "name": "clippy",
+        "command": "taskset -c 0-5,12-17 cargo +1.94.1 clippy --locked -j 4 --release -p vigilode --all-targets --no-deps -- -D warnings",
+        "exit_code": 0,
+        "result": "no warnings"
+      },
+      {
+        "name": "format check",
+        "command": "taskset -c 0-5,12-17 cargo +1.94.1 fmt -p vigilode -- --check",
+        "exit_code": 0,
+        "result": "clean"
+      },
+      {
+        "name": "rustdoc",
+        "command": "RUSTDOCFLAGS='-D warnings' taskset -c 0-5,12-17 cargo +1.94.1 doc -j 4 -p vigilode --no-deps --locked",
+        "exit_code": 0,
+        "result": "no warnings"
+      },
+      {
+        "name": "loop checker",
+        "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
+        "exit_code": 0,
+        "result": "verbatim: 'PASS: strict JSON, task/DAG structure, ancestry, protected and evidence identities' / 'Scope: checkpoint reproducibility. Production HOLD; no new numerical qualification.' Also exit 0 when re-run at head eb42b5ca; no path complaint"
+      },
+      {
+        "name": "strict JSON load of written JSON files",
+        "command": "python3 -I json.loads(..., parse_constant=raise) on PREDECLARED.json and RECEIPT.json",
+        "exit_code": 0,
+        "result": "both load without NaN or Infinity (16001 and 85633 bytes)"
+      },
+      {
+        "name": "failing-first PeerOde defect reproductions on base sources",
+        "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test unified_frontend_contracts -- --nocapture --test-threads 1 (at commit 00d32764, selection.rs unchanged from base)",
+        "exit_code": 101,
+        "result": "expected failure: 8 failed, 1 passed (logs/failing_first_peer_defects.log); the same 8 tests pass after the fix"
+      },
+      {
+        "name": "changed and protected paths against base",
+        "command": "git diff --name-status c468478e HEAD; git diff --stat c468478e HEAD -- <protected paths>",
+        "exit_code": 0,
+        "result": "changed: selection.rs, selection/{frontend,adapters,peer}.rs, solve.rs (+11 lines, one pub(crate) accessor), tests/unified_frontend_contracts.rs, research/production_loop_20261116/unified_frontend/**; protected paths diff empty"
+      }
+    ],
+    "discriminators": [
+      {
+        "name": "D1 decision equality of route(General) and GeneralOde::select on the exhaustive grid with zero callbacks",
+        "frozen_threshold": "100% of the 221184 golden-grid entries, 0 callback entries",
+        "measured": "221184/221184 equal to select, 221184/221184 equal to the decoded golden file decision_grid.json, 221184/221184 equal to the retained reference body; callback entries 0",
+        "verdict": "PASS"
+      },
+      {
+        "name": "D2 each adapter bitwise equal to the direct integrator call",
+        "frozen_threshold": "every adapter, all compared quantities equal (time and state bits, success, step counts, attempts, work counters)",
+        "measured": "8/8 adapters, 25/25 cases: rodas5p 7 (all six facade routes), dopri5 + General 3, bdf 3, radau 3, pexprb 1, lagged rodas5p 3, ppsw1 4, lawson 1. ppsw1-6b-matrix-free-common-w declared unavailable with its reason",
+        "verdict": "PASS"
+      },
+      {
+        "name": "D3 refusal before any callback",
+        "frozen_threshold": "callback counter 0 after every route call and every refused solve call",
+        "measured": "405504 route calls (66672 plans, 338832 refusals) over 9216 grid problems, 9 method ids plus an unknown id, 2 parameter sets, 24 Auto policies: 0 callbacks; 68 refused solve calls over 8/8 available methods: 0 callbacks",
+        "verdict": "PASS"
+      },
+      {
+        "name": "D4 default-route golden unchanged",
+        "frozen_threshold": "golden tests pass and no golden byte or oracle line changed",
+        "measured": "two consecutive runs exit 0 with 11 passed each; 9 golden files identical with the same byte counts; git diff of tests/golden and default_path_golden.rs against base: 0 lines",
+        "verdict": "PASS"
+      },
+      {
+        "name": "Phase B condition (task deliverable, not part of the frozen row)",
+        "frozen_threshold": "registry-derived selection equals the old body on the golden grid and on the predeclared extension grid, zero callbacks, golden oracle unchanged",
+        "measured": "331776/331776 extension-grid entries (23 distinct outcomes) and 221184/221184 golden entries equal, 0 callbacks. Met through the new catalog (MethodFacts, route variants on the RODAS5P entry); U06 MethodRequest and query() unchanged",
+        "verdict": "PASS"
+      },
+      {
+        "name": "PeerOde defects COD-02 and COD-04 (task deliverable)",
+        "frozen_threshold": "each reproduction fails first on base sources and passes after the adapter-side fix",
+        "measured": "8/8 failed on base, 8/8 pass after the fix. y'=20cos20t: 9.007e6 -> 0.0155 tolerance units; y'=200cos200t: 5.688e7 -> 0.0349. U07 trajectory digests unchanged in 4/4 cases (exploratory)",
+        "verdict": "PASS"
+      },
+      {
+        "name": "wall time",
+        "frozen_threshold": "none in the V03 row",
+        "measured": "no timing run; elapsed times in logs are diagnostic_only (1-minute load average 20-44 during the node)",
+        "verdict": "NOT_RUN"
+      }
+    ],
+    "key_numbers": [
+      "D1: 221184/221184 decisions equal to select, to the golden file and to the reference body; 0 callbacks",
+      "Phase B: 331776/331776 extension-grid decisions equal; 23 distinct outcomes; 0 callbacks",
+      "D2: 8 adapters, 25 cases, all bitwise equal to the direct call",
+      "D3: 405504 route calls and 68 refused solve calls, 0 callbacks",
+      "D4: 9 golden files byte-identical in two runs; diff against base empty",
+      "Facade suite: 497 passed, 0 failed, 0 ignored; contract target 31 passed",
+      "PeerOde y'=20cos20t: error 9.007e6 -> 0.0155 tolerance units, h0 0.5 -> 0.015625 (5 halvings), 363 Peer steps",
+      "PeerOde y'=200cos200t: error 5.688e7 -> 0.0349 tolerance units, h0 0.5 -> 0.001953125",
+      "PeerOde U07 cases: trajectory digest unchanged in 4/4; startup Jacobian builds 2 -> 4, startup RHS calls 16 -> 48",
+      "Facade defect: capability query names a driver that does not run in 704 of 18432 RODAS5P grid requests (general sparse-JVP with dense output or vector atol); executed run shows 8 Jacobian builds and 128 JVP calls at n=16",
+      "Fallback example (Robertson, budget 500): dopri5 fails at t=0.7103 with 3001 RHS calls, rodas5p succeeds with 279; total 3280"
+    ],
+    "rulings": [
+      "Phase B is claimed, but its precondition is met through a new catalog, not by editing the U06 table: MethodFacts carries the request extension and the RODAS5P catalog entry carries six exact route variants (banded-fast and sequential-dense included). MethodRequest, descriptors() and query() are unchanged because tests/geometry_mol_contracts.rs (outside the allowlist) uses the MethodRequest struct literal and U06 tests r1/r5 pin the six entries. query() therefore still disagrees with select in the COD-03 cases; routing goes through route().",
+      "GeneralOde::select keeps its receipt (implicit_route) on the facade capability query, so default routing is unchanged; plans of route() name the driver that actually runs.",
+      "No existing test was edited. PeerSolution keeps failure: Option<String> (now the display text of the typed reason) and gains reason and starter, so unified_method_sessions.rs passes as is.",
+      "Integrator-crate adapters accept only the provider forms their driver problem takes natively (BDF, Radau: Dense and Jvp; PEXPRB: Jvp and autonomous; lagged: Dense); everything else is a typed refusal.",
+      "Auto fallback restarts at t0 with the next admitted candidate and reuses no state of the failed attempt; measured evidence is used only as caller-supplied CostEvidence.",
+      "PeerOde starter control follows PREDECLARED.json: step doubling at the five non-initial nodes, accept at estimate <= 1, halve h0, at most 40 halvings.",
+      "The U06 radau-iia3 descriptor said 2 stages / order 3; corrected to 3 stages / order 5 to match radau.rs.",
+      "One launch of the full suite was stopped by me while still compiling, before any test ran, to add the route-variant table; its partial log was removed. No test result was discarded."
+    ],
+    "open_issues": [
+      "Owner decision needed: for a general (non-banded) sparse-JVP provider Rodas5p::capabilities answers MatrixFree, but Rodas5p::solve runs the fast dense driver (dense output) or the dense fast driver (vector atol) on a Jacobian built from n JVP columns. Not fixed (capabilities.rs and the RODAS5P path of solve.rs are outside this node). On the default path GeneralOde::select therefore does not apply max_dense_dimension for such a problem with a vector atol; the old body decides the same.",
+      "Reviewer should judge whether Phase B is accepted as implemented: the legacy MethodRegistry::query(&MethodRequest) still disagrees with select in the COD-03 cases.",
+      "BDF, Radau, PEXPRB and lagged drivers return no last accepted state on failure and no record after a fatal callback error; the view then holds only the reached output samples (t0) and callback-boundary counts. A better prefix needs edits in rodas5p-integrators.",
+      "PeerOde now charges two extra starter solves per run and may halve h0; PPSW1 startup counters of U11/V10 change (trajectories were bit-identical in the four U07 cases).",
+      "API changes to check at merge with the concurrent unified-router group: RegistryRefusal gained ProviderFormUnsupported; many new public names are re-exported at the crate root (Method*, JacobianForm, SolutionView, Peer*).",
+      "GeneralOde::select now builds the catalog on every call (small heap allocations; no callback, no numerical workspace).",
+      "Auto and fallback have contract tests only; no performance evidence. A caller-requested output grid is not implemented.",
+      "A declared band on a dense provider is verified by the protected router with callbacks; that refusal (SolveError::StructureRefused) is a solve-time error of the direct call, not a routing refusal.",
+      "Still not reachable from the facade: ppsw1-6b-matrix-free-common-w (no end-to-end driver or matrix-free starter), small/batch RODAS5P, SABR, homotopy, transactional q1/q2, PTSW2B, vigilode-coupled."
+    ],
+    "files_written": [
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/crates/vigilode/src/selection.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/crates/vigilode/src/selection/frontend.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/crates/vigilode/src/selection/adapters.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/crates/vigilode/src/selection/peer.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/crates/vigilode/src/solve.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/crates/vigilode/tests/unified_frontend_contracts.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/research/production_loop_20261116/unified_frontend/PREDECLARED.json",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/research/production_loop_20261116/unified_frontend/RECEIPT.json",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/research/production_loop_20261116/unified_frontend/REPORT_KO.md",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/research/production_loop_20261116/unified_frontend/NOTES.txt",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/research/production_loop_20261116/unified_frontend/run_checks.sh",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/research/production_loop_20261116/unified_frontend/build_receipt.py",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/research/production_loop_20261116/unified_frontend/build_report.py",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/research/production_loop_20261116/unified_frontend/logs/failing_first_peer_defects.log",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/research/production_loop_20261116/unified_frontend/logs/peer_defects_after_fix.log",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/research/production_loop_20261116/unified_frontend/logs/contracts.log",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/research/production_loop_20261116/unified_frontend/logs/existing_registry_tests.log",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/research/production_loop_20261116/unified_frontend/logs/default_path_golden_run1.log",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/research/production_loop_20261116/unified_frontend/logs/default_path_golden_run2.log",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/research/production_loop_20261116/unified_frontend/logs/decision_grid_debug_profile.log",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/research/production_loop_20261116/unified_frontend/logs/full_suite.log",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/research/production_loop_20261116/unified_frontend/logs/clippy.log",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/research/production_loop_20261116/unified_frontend/logs/fmt_check.log",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/research/production_loop_20261116/unified_frontend/logs/doc.log",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/research/production_loop_20261116/unified_frontend/logs/check_checkpoint.log",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/research/production_loop_20261116/unified_frontend/logs/changed_paths.log",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/research/production_loop_20261116/unified_frontend/logs/golden_diff.log",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v03/research/production_loop_20261116/unified_frontend/logs/protected_diff.log"
+    ]
+  },
+  "review": {
+    "node": "V03_UNIFIED_FRONTEND_A",
+    "verdict": "accept_with_corrections",
+    "summary": "Accept with corrections. Scope, protection and commit order are clean (28 paths inside the allowlist, protected diff empty, PREDECLARED 00d32764 before the first log, loop checker PASS). All four frozen discriminators reproduce: 31 contract tests with every QUAL record byte-equal to the builder's log, golden oracle twice (9 files identical, equal to base blobs), full suite 497/0; receipt and report regenerate from the committed logs. Independent checks: failing-first rerun on a scratch copy of base (8 fail, 1 pass, same records); 300000 random fact combinations give select == select_reference with 0 callbacks; 37/37 adapter cases on other fixtures are bitwise equal; Auto used no capability outside the allowed set in 25328 executed attempts. Corrections: (1) major: the claim that RODAS5P plans equal the driver that runs (18432/18432) is a model comparison; 352 distinct grid plans (general sparse-JVP on the sequential route) cannot run; (2) PPSW1 ignores an invalid Options::h0; (3) a false band declaration is refused after 2 callbacks; (4) an edited plan runs without re-admission; (5) PeerOde runs change beyond startup counters; (6) label fixes.",
+    "scope_ok": true,
+    "protected_ok": true,
+    "predeclared_before_results": true,
+    "discriminator_checks": [
+      {
+        "name": "D1 decision equality of route(General) and GeneralOde::select on the exhaustive grid with zero callbacks",
+        "builder_value": "221184/221184 equal to select, to the decoded golden file and to the retained reference body; callback entries 0",
+        "reviewer_value": "Re-run (release and debug profile): identical counts, QUAL record byte-equal to logs/contracts.log:36. Callbacks are counted (one shared atomic incremented in every rhs, Jacobian, band, JVP, time-derivative and event callback of every grid problem), not asserted. After phase B route-vs-select is a self-comparison; the independent content is the decoded golden file (221184) and the retained body. Reviewer fuzz beyond the grid: 300000 random fact combinations (12 dimensions, random bandwidths and patterns, mass, 0-2 events, tiers, 11 ceilings): select == select_reference 300000/300000, route(General) equal 300000/300000, 0 callbacks.",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "D2 each adapter bitwise equal to the direct integrator call",
+        "builder_value": "8/8 adapters, 25/25 cases",
+        "reviewer_value": "Re-run: 8 adapter records byte-equal to the builder's (25 cases). BDF, Radau, PEXPRB and lagged are compared with integrator-crate calls on a driver problem built from plain closures; RODAS5P, DOPRI5, Lawson with the unchanged facade calls; PPSW1 with PeerOde::solve, which this node modified (predeclared). Reviewer spot check on fixtures the builder did not use (HIRES, Oregonator dense/JVP, forced Van der Pol non-autonomous, Allen-Cahn JVP; three option sets including a 12-attempt budget failure and h0 = 0.25): 37/37 bitwise equal in times, states, counters, attempts and messages.",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "D3 refusal before any callback",
+        "builder_value": "405504 route calls (66672 plans, 338832 refusals) and 68 refused solve calls: 0 callbacks",
+        "reviewer_value": "Re-run: same counts (logs/contracts.log:56 and :58). Reviewer: 110592 Auto route calls and 300000 General routes with 0 callbacks. PASS for routing refusals and for input validation of span, state and tolerances. To be stated with the verdict: (a) a false band declaration on a dense provider is refused by solve after 2 callbacks, as in the direct call; (b) the predeclared 'invalid h0' row was not run through MethodRegistry::solve, and PPSW1 ignores an invalid Options::h0 instead of refusing; (c) 352 distinct grid plans cannot run and fail in solve with a driver error, before any callback.",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "D4 default-route golden unchanged",
+        "builder_value": "two runs, 11 passed each; 9 golden files identical; git diff of tests/golden and default_path_golden.rs against base empty",
+        "reviewer_value": "Two re-runs at eb42b5ca: 11 passed each, the same 9 files reported identical with the same byte counts; sha256 of the 9 golden files equals the base blobs; git diff of golden directory and oracle against c468478e empty.",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "Phase B condition (deliverable)",
+        "builder_value": "331776/331776 extension-grid and 221184/221184 golden entries equal, 0 callbacks; met through a new catalog; U06 MethodRequest and query() unchanged",
+        "reviewer_value": "Reproduced, including the debug-profile run (the fallback to the reference body is never taken). select_reference is the old body unchanged (the diff inserts only the new header). By code reading and by the 300000-sample fuzz the two bodies agree on all inputs. Accept as implemented with a label correction: select delegates to MethodRegistry::general_selection; the catalog supplies the method per regime and the route-variant flags, while the mass/events/dense-output refusals and the derivative-policy rules stay code; the U06 descriptors were not made exact and query() still disagrees with select.",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "PeerOde defects COD-02 and COD-04 (deliverable)",
+        "builder_value": "8/8 failed on base, 8/8 pass after the fix; y'=20cos20t: 9.007e6 -> 0.0155 tolerance units",
+        "reviewer_value": "Independent failing-first: scratch copy of base c468478e plus the builder's test file of commit 5c9a6c3e as a standalone package: 8 FAILED, 1 passed, QUAL records byte-equal to logs/failing_first_peer_defects.log; the same file against HEAD: 9 passed; the cod* assertions are unchanged between 5c9a6c3e and HEAD. Audit probe (verbatim) on HEAD: y'=20cos20t error 1.43e-8 = 0.0155 units; h0 NaN, -1, 0 give Err(InvalidInput) with 0 callbacks; span (0.3, 0.9) succeeds with t_last == 0.9 bit for bit. Reviewer sweep: 63 forcing cases (omega 1 to 5000) all succeed, worst error 1.76 units; 4000 random spans all land exactly on t_end.",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      }
+    ],
+    "findings": [
+      {
+        "id": "R-01",
+        "severity": "major",
+        "claim": "RECEIPT.json D3 field rodas5p_plans_equal_to_the_route_that_runs = [18432, 18432], REPORT_KO.md section 6 ('the plans equal the driver family that is executed in 18432 / 18432') and commit 05565f5c ('plans name the driver that runs').",
+        "evidence": "The field is fed by the test's comparison with a hand-written rule (tests/unified_frontend_contracts.rs:1362-1399), not by executed runs; commit 05565f5c renamed it from rodas5p_admissions_equal_to_capabilities. 18432 counts requests (plans and refusals, each twice for two parameter sets), not plans. Executed by the reviewer: 'extra rodas_grid' (n=4, real callbacks, 1728 requests, 693 plans): 627 run, all on the planned route; all 66 plans rodas5p/sequential-dense for a general-pattern Jacobian::SparseJvp (mass matrix, or dense output with InteriorError::Enforce) return Err(driver error: ... direct linear solver or explicit preconditioner requires an explicit Jacobian) from MethodRegistry::solve and from direct Rodas5p::solve, 0 callbacks. 'extra builder_grid_rodas' on the builder's extension grid: 9216 distinct requests, 3696 plans, 352 such plans (704 in the builder's doubled count), 66/66 executed at n=8 fail the same way. Files: /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v03/review-scratch/extra_rodas_grid.jsonl and extra_builder_grid_rodas.jsonl.",
+        "correction": "Relabel the field and the report sentence as 'admission equals Rodas5p::capabilities and a stated rule for what runs (not executed)'; state that 352 distinct grid requests (704 of 18432) get a plan that cannot run. Add to the open issues for the owner: Rodas5p::capabilities admits a general sparse-JVP provider on the sequential route although the driver refuses it (pre-existing; capabilities.rs and the RODAS5P path of solve.rs are outside this node). No frozen verdict changes: the refusal precedes every callback and the adapter still equals the direct call."
+      },
+      {
+        "id": "R-02",
+        "severity": "minor",
+        "claim": "D3: refused solve calls make no callback (68 calls); PREDECLARED.json lists 'invalid h0' in the D3 refusal matrix.",
+        "evidence": "d3_solve_refuses_malformed_input_before_any_callback has four rows (short y0, NaN y0, reversed span, NaN rtol) and no h0 row. Reviewer probe 'extra unified_h0' with Options::h0 = NaN, -1, 0, +inf through MethodRegistry::solve: dopri5, rodas5p, bdf, radau, pexprb, lagged and lawson return Err with 0 callbacks; ppsw1 with default MethodParams returns Ok(success) after 1744 callbacks, because peer_options (selection/frontend.rs:1656-1674) never reads options.h0. File: review-scratch/extra_unified_h0.jsonl.",
+        "correction": "Add the h0 row to the D3 test and either validate Options::h0 in the PPSW1 adapter or state in D3 and in the report that the PPSW1 adapter ignores Options::h0 (first step from the PPSW1 rule or from MethodParams::peer)."
+      },
+      {
+        "id": "R-03",
+        "severity": "minor",
+        "claim": "Doc of MethodRegistry::solve (selection/frontend.rs:1718-1719): Err means the primary method refused its input before any callback; D3 row of the report states refusal before any callback without exception.",
+        "evidence": "Reviewer probe 'extra structure': dense provider that is not tridiagonal with Problem::banded(1,1): route returns the plan rodas5p/banded-fast with 0 callbacks; MethodRegistry::solve returns Err(structure refused: band verification rejected the declaration ...) after 2 user callbacks, for Explicit and for General, identical to direct Rodas5p::solve. REPORT_KO.md section 9 mentions the case; the D3 row, the doc comment and the builder's final report do not. File: review-scratch/extra_structure.jsonl.",
+        "correction": "State D3 as 'routing refusals and input validation precede every callback'; name SolveError::StructureRefused (band verification at t0, y0) as the known solve-time exception; correct the doc comment."
+      },
+      {
+        "id": "R-04",
+        "severity": "minor",
+        "claim": "PREDECLARED D3 definition: solve needs a plan, and a plan exists only after route returned Ok.",
+        "evidence": "MethodRoutePlan and MethodRoute have public mutable fields and MethodRegistry::solve checks only MethodFacts equality. Reviewer probe (mutated_plan in 'extra structure'): route(Explicit(\"radau-iia3\")) on a finite-difference-provider problem is refused (ProviderFormUnsupported); a dopri5 plan for the same problem whose route field was replaced by a Radau route gives solve Ok(success, driver integrate_radau_adaptive_observed, 940 callbacks).",
+        "correction": "Make route and fallbacks private with accessors, or re-run admission of every route in solve. Until then document that the refusal guarantee holds for unedited plans only."
+      },
+      {
+        "id": "R-05",
+        "severity": "minor",
+        "claim": "REPORT_KO.md section 2 lists PeerOde among the frontends that behave as before; open issue: 'PeerOde now charges two extra starter solves per run and may halve h0; startup counters of U11/V10 change'; exploratory regression: 4 of 4 U07 trajectories unchanged.",
+        "evidence": "PeerOde::solve and PeerOde::admission were changed by this node. Audit-probe Oregonator configuration (rtol = tol, atol = tol/100, h0_rule_h_max 3.6, span 360), base scratch build against HEAD: tol 1e-4 attempts 2432 and 2432 with identical end state; tol 1e-6 attempts 3341 -> 3175; tol 1e-8 5186 -> 4715, end states differ in the 12th digit (review-scratch/oregonator_peer_base_vs_head.txt). Also newly refused: h0 = +inf, non-finite tolerances, h0_rule_h_max NaN or <= 0. Startup RHS calls 16 -> 48. Oregonator is a consumed U11 configuration, used here as a development check only.",
+        "correction": "Remove PeerOde from the 'unchanged' list. Word the open issue as: attempt counts and trajectories of PeerOde runs change whenever the starter control halves h0 (seen at tol <= 1e-6 on the Oregonator configuration); relevant for V10 and for any re-run of U11 numbers on this branch."
+      },
+      {
+        "id": "R-06",
+        "severity": "minor",
+        "claim": "Ruling 1: 'MethodRequest, descriptors() and query() are unchanged'; 'Phase B reached: select is derived from the method catalog'; D2 table rows; 'public API additive'.",
+        "evidence": "(a) selection.rs:681-689 changes the radau-iia3 descriptor (stages 2 -> 3, order 3 -> 5, tableau text), which ruling 6 itself reports; the correction is right (RadauConfig::default() is RadauIiaStages::Three, order 5). (b) general_selection (frontend.rs:1085-1152) reads from the catalog the method per regime, the derivative-free flag and the route-variant flags; the three surface refusals, the derivative-policy rules and the RODAS5P admission through Rodas5p::capabilities are code. (c) The 'dopri5' D2 row of 3 cases holds two GeneralOde::solve cases, one of which runs RODAS5P; the PPSW1 direct call is the facade PeerOde::solve modified by this node; \"bitwise_equal\": true in the QUAL rows is a literal printed after the assertions pass. (d) No public item was removed (37 base items present, 33 new names, all 57 resolve at the crate root in a compile check), but RegistryRefusal, an exhaustive enum, gained a variant and PeerSolution, without non_exhaustive, gained two public fields (both disclosed). (e) Diagnostic only: one GeneralOde::select call costs about 0.40 microseconds against about 9 ns for the retained body (ratio 44).",
+        "correction": "Ruling 1: 'the MethodRequest schema, query() and five of six descriptors are unchanged; the radau-iia3 descriptor was corrected'. Phase B: 'select delegates to a catalog-backed registry function; U06 query() is not the routing authority and still disagrees with select'. Label the D2 rows as they are (DOPRI5 1 case plus 2 general-plan cases; PPSW1 against the facade function)."
+      },
+      {
+        "id": "R-07",
+        "severity": "minor",
+        "claim": "PREDECLARED protocol: 'rtol 1e-6 and atol 1e-9; BDF2 and Radau rows may use rtol 1e-4'; 'a refusal matrix (every method id of the registry ...)'; evidence rule: failed and negative runs are kept.",
+        "evidence": "BDF cases run with atol 1e-8 and the Lawson case with rtol 1e-8, atol 1e-11 (both printed in the case rows). The typed refusal matrix covers 4 of 9 ids against the six request kinds (all ids are in the purity test). run_checks.sh truncates logs/<name>.log on every run, so runs before the final pass of 15:34 KST are not kept, and NOTES.txt says a partial full-suite log was removed before any test ran; neither can be verified. PREDECLARED.json was touched by one commit only (00d32764), and the later parser changes add fields without changing a pass rule.",
+        "correction": "Record the tolerance deviations in the report. No verdict depends on them: every discriminator is a deterministic equality that the reviewer reproduced on the final commit. For later nodes let the runner append a timestamp to the log name instead of truncating."
+      }
+    ],
+    "reran": [
+      {
+        "command": "git -C <w2-v03> diff --name-only c468478e..HEAD; git status --short; git diff --stat c468478e HEAD -- <protected paths>; python3 -I research/production_loop_20261116/check_checkpoint.py",
+        "result": "28 changed paths, all inside the allowlist; status clean (only ignored __pycache__ and .mypy_cache in the evidence directory); protected diff empty; no Cargo.toml, Cargo.lock or toolchain change; checker prints PASS. solve.rs gains one pub(crate) accessor only; no existing test file edited.",
+        "exit_code": 0
+      },
+      {
+        "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test unified_frontend_contracts -- --nocapture --test-threads 4",
+        "result": "31 passed, 0 failed (same test binary hash as the builder's log); all 31 QUAL records byte-equal to logs/contracts.log (review-scratch/compare_qual.py).",
+        "exit_code": 0
+      },
+      {
+        "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test default_path_golden -- --nocapture --test-threads 4 (twice)",
+        "result": "11 passed each; 9 golden files reported identical with the builder's byte counts; sha256 of the golden files equals the base blobs.",
+        "exit_code": 0
+      },
+      {
+        "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --no-fail-fast -- --test-threads 4",
+        "result": "57 test binaries, 497 passed, 0 failed, 0 ignored; same set of test names and statuses as logs/full_suite.log.",
+        "exit_code": 0
+      },
+      {
+        "command": "cargo +1.94.1 test --locked -j 4 --release -p vigilode --test unified_method_capabilities --test unified_method_sessions --test production_selection_contracts --test geometry_mol_contracts --test automatic_adapter_contracts --test automatic_availability_contracts --test unified_production_solver_contracts --test production_contracts --test capabilities_contracts",
+        "result": "all nine targets pass (6, 6, 6, 5, 4, 10, 6, 7, 1 tests).",
+        "exit_code": 0
+      },
+      {
+        "command": "cargo +1.94.1 test --locked -j 4 -p vigilode --test unified_frontend_contracts -- d1_ d3_route (debug profile); cargo fmt -p vigilode -- --check; cargo clippy --locked --release -p vigilode --all-targets --no-deps -- -D warnings; RUSTDOCFLAGS='-D warnings' cargo doc -p vigilode --no-deps --locked",
+        "result": "debug profile: 3 passed, d1 QUAL records equal to the builder's; fmt, clippy and rustdoc exit 0.",
+        "exit_code": 0
+      },
+      {
+        "command": "standalone package review-scratch/probe_base (git archive of base c468478e + builder test file of commit 5c9a6c3e): cargo +1.94.1 test --locked -j 4 --release --test contracts_failing_first -- --nocapture --test-threads 1",
+        "result": "8 FAILED, 1 passed, panics at the same lines; QUAL records byte-equal to logs/failing_first_peer_defects.log. The same file in review-scratch/probe_head against HEAD sources: 9 passed.",
+        "exit_code": 101
+      },
+      {
+        "command": "audit probe (verbatim from audit/findings_code.json) 'peer' on base and on HEAD: release/v03-review-probe-base peer; release/v03-review-probe-head peer",
+        "result": "Base reproduces p1-p7 as in the audit. HEAD: p1 refused with 0 JVP callbacks; p2a/b/c success with t_last == t_end; p3 error 1.43e-8 (0.0155 units), p3b 0.0349 units; p4 and p6 typed callback failures; p5a/b/c Err(InvalidInput); p7 admission Refused and solve Err.",
+        "exit_code": 0
+      },
+      {
+        "command": "release/extra peer_forcing; release/extra peer_h0_spans (reviewer probes, review-scratch/probe_head/src/bin/extra.rs)",
+        "result": "63 forcing cases (omega 1..5000, 3 tolerances, 3 h0 options): 0 failures, worst success error 1.76 tolerance units. h0 NaN, -1, 0, +inf: Err(InvalidInput), 0 callbacks. 4000 random spans on two problems: all succeed, last time equals t_end bit for bit, no failure without a reason.",
+        "exit_code": 0
+      },
+      {
+        "command": "release/extra d2_spot; release/extra select_fuzz 300000; release/extra auto",
+        "result": "d2_spot: 37/37 cases bitwise equal. select_fuzz: select == select_reference 300000/300000, route(General) equal 300000/300000, 0 callbacks. auto: 110592 Auto route calls with 0 callbacks, 26720 plans with no planned need outside the allowed set, 25328 executed attempts (2884 solutions with fallback attempts) with 0 capability violations and executed route == planned route in all.",
+        "exit_code": 0
+      },
+      {
+        "command": "release/extra unified_h0; release/extra structure; release/extra rodas_grid; release/extra builder_grid_rodas; release/extra select_cost",
+        "result": "unified_h0: 7 of 8 methods refuse an invalid Options::h0 with 0 callbacks, PPSW1 runs (1744 callbacks). structure: false band declaration refused by solve after 2 callbacks; edited plan runs Radau without admission. rodas_grid: 627/627 running plans run on the planned route, 66 sequential-dense plans of a general sparse-JVP provider return a driver error with 0 callbacks. builder_grid_rodas: 352 such plans among 3696 on the builder's grid. select_cost (diagnostic_only): 9 ns against 0.40 microseconds per call.",
+        "exit_code": 0
+      },
+      {
+        "command": "python3 -I review-scratch/recompute_verdicts.py; builder's build_receipt.py and build_report.py run on scratch copies of the committed logs and receipt",
+        "result": "Recomputed from RECEIPT.json: D1 PASS, D2 PASS, D3 PASS, D4 PASS, phase B PASS, PeerOde defects PASS; nine reported numbers traced to raw log lines (contracts.log:36, :34, :56, :58, :16, failing_first_peer_defects.log:10, full_suite.log:71..843, golden logs). Rebuilt RECEIPT.json differs from the committed one only in head_commit_when_built; regenerated REPORT_KO.md is byte-identical. There is no RESULTS.json; the result file of this node is RECEIPT.json.",
+        "exit_code": 0
+      }
+    ]
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "evidence_id": "EV-V3-REFERENCE-LADDER-20261107",
+  "task_id": "V3-REFERENCE-LADDER",
+  "claim_support": [
+    "NUMERICALLY_CHECKED",
+    "IMPLEMENTATION_VERIFIED"
+  ],
+  "test_verdict": "PASS",
+  "work_decision": "continue",
+  "failure_kind": "none",
+  "source_identity": {
+    "repository": "https://github.com/cosmosapjw-quantum/vigilode",
+    "branch": "research/switcher-v2-20261103",
+    "head": "bcf6fcefa8322f7e8d4454ab40498256f4ff1e22",
+    "tree": "076c5d01e8419b1b8f0d88ca2d0de04407e21aa2",
+    "worktree_clean": true
+  },
+  "command_records": [
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "crates/vigilode-bench/Cargo.toml",
+        "--test",
+        "qualification_reference_ladder_contract"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "toolchain": "cargo 1.99.0",
+      "exit_code": 0,
+      "verdict": "PASS"
+    }
+  ],
+  "result": "3/3 reference ladder contracts passed. Validated multi-level decreasing-tolerance ladder ([1e-10, 1e-11, 1e-12] with atol factors [1.0, 0.1, 0.01]) under tier radau5_cvode_refinement_v1. Verified decisive cross-checking between independent solver implementations (Hairer RADAU5 Fortran vs LLNL SUNDIALS CVODE C). Confirmed fail-closed independent_level_pass logic on failed runs, excessive discrepancy, or nonfinite outputs. Explicitly documented that cross-family numerical agreement establishes empirical reference uncertainty rather than a rigorous continuous interval enclosure.",
+  "limitations": [
+    "Empirical reference uncertainty bounds cross-family solver agreement on the discrete grid; it does not constitute a computer-assisted continuous-time existence and uniqueness enclosure."
+  ]
+}

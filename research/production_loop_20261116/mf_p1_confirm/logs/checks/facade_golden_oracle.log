@@ -1,0 +1,21 @@
+# V25_CHECK {"name": "facade_golden_oracle", "command": ["taskset", "-c", "0-5,12-17", "cargo", "+1.94.1", "test", "--locked", "-j", "4", "--release", "--no-fail-fast", "-p", "vigilode", "--test", "default_path_golden"], "date": "2026-11-24T18:56:02+0900", "git_head": "8a4557f0c97ab6bf30ea6eb92cb28ab047b7b040"}
+
+running 11 tests
+test format_helpers_are_bit_faithful ... ok
+test golden_directory_is_exactly_the_listed_files ... ok
+test rodas5p_contracts ... ok
+test dopri5 ... ok
+test production_automatic ... ok
+test rodas5p_vanderpol ... ok
+test rodas5p_robertson ... ok
+test rodas5p_hires ... ok
+test decision_grid ... ok
+test general_ode ... ok
+test rodas5p_brusselator ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.75s
+
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v25/crates/vigilode)
+    Finished `release` profile [optimized] target(s) in 26.77s
+     Running tests/default_path_golden.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v25/release/deps/default_path_golden-3cfa60341d062694)
+# V25_CHECK_END {"exit_code": 0, "seconds": 27.537911653518677}

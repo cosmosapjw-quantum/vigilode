@@ -1,0 +1,460 @@
+{
+  "schema": "vigilode.loop_l1.node_review.v1",
+  "node": "V24_MF_ADAPTIVE_STAGE_SOLVE",
+  "provenance": {
+    "workflow_run": "wf_6d64a847-033",
+    "builder_agent": {
+      "label": "build:v24",
+      "agent_id": "a5c92ebc07c18b76b"
+    },
+    "reviewer_agent": {
+      "label": "review:v24",
+      "agent_id": "a1259be6de0b052fc"
+    },
+    "base_commit": "892132e5d879b5d8c2740ef7a73946fd2b1d25f9",
+    "builder_branch_head": "28e7fca4ceab40741cebca2abdc4e74cad79cfc4",
+    "note": "builder_report and review are the structured answers of the two agents, verbatim. At the merge the orchestrator re-pinned the sentinels h2 and g3 (SENTINEL_REPIN_MERGE.json)."
+  },
+  "builder_report": {
+    "status": "partial",
+    "summary": "V24 frozen verdict: FAIL (B fails, V intact). The adaptive stage solve is implemented as an opt-in policy (MfStageSolvePolicy Shipped/P1/P2; kernel StagedGmresWorkspace::solve_column_tested_into); defaults of driver and router are unchanged, step 5 was not carried out, golden files untouched. Variant by the frozen rule on the development cells: P2 (score 0.216 against 0.264). Deciding grid = families_final of V17 (fhn3d, cusp1d, burgers2d, bruss1d), 20 cells: D0 PASS (20/20 and 10/10 cells bit-identical), V PASS (37823 solves audited, 0 violations), A PASS (max 1.40), P PASS (0.320, 0.334, 0.201, 0.319; max cell 0.521), S PASS (max 1.026), B FAIL in one cell (cusp1d rtol 1e-6: 13 budget-exhausted solves against 11). T: wall speed-up 3.98, 3.21, 6.42, 3.63, all cells authoritative. Exploratory: on identical stage systems P2 loses 8 and gains 3 budget-edge systems of 28811, P1 none; P1 equals S's budget counts in every cell (ratios 0.376, 0.394, 0.231, 0.446). R: 1035 tests pass, 1 fails: sentinel h2 (ptsw2b_contracts.rs) pins the edited driver file and is outside the write list.",
+    "branch": "research/production-loop-20261116-w2-v24",
+    "head_commit": "28e7fca4ceab40741cebca2abdc4e74cad79cfc4",
+    "predeclared_commit": "2ddeb9fbded9dfbd695c51699eebf5cad17b1988",
+    "checks": [
+      {
+        "name": "krylov suite (all 36 test binaries, with gmres_staged_column_test_bits and _contracts)",
+        "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release --no-fail-fast -p rodas5p-krylov",
+        "exit_code": 0,
+        "result": "166 passed, 0 failed"
+      },
+      {
+        "name": "sentinels",
+        "command": "cargo +1.94.1 test --locked -j 4 --release --no-fail-fast -p rodas5p-integrators --test ppsw1_6b_contracts --test ptsw2b_contracts",
+        "exit_code": 101,
+        "result": "60 passed, 1 failed: ptsw2b_contracts::h2_protected_sources_are_byte_identical ('protected file changed: src/rodas5p_matrix_free_fast.rs'). g3 of ppsw1_6b_contracts passes after the re-pin (37 passed). h2 pins the same driver file, is protected and is not in the write list of the node"
+      },
+      {
+        "name": "stage-client targets",
+        "command": "cargo +1.94.1 test --locked -j 4 --release --no-fail-fast -p rodas5p-integrators --test 'stage_clients_*'",
+        "exit_code": 0,
+        "result": "16 binaries, 55 passed, 0 failed, 9 ignored"
+      },
+      {
+        "name": "matrix-free and router targets of the integrators (27 targets fixed in PROTOCOL.json before the edit)",
+        "command": "cargo +1.94.1 test --locked -j 4 --release --no-fail-fast -p rodas5p-integrators --test <27 targets>",
+        "exit_code": 0,
+        "result": "105 passed, 0 failed, 26 ignored"
+      },
+      {
+        "name": "integrators library unit tests",
+        "command": "cargo +1.94.1 test --locked -j 4 --release --no-fail-fast -p rodas5p-integrators --lib",
+        "exit_code": 0,
+        "result": "141 passed, 0 failed, 1 ignored"
+      },
+      {
+        "name": "new integrators targets",
+        "command": "cargo +1.94.1 test --locked -j 4 --release --no-fail-fast -p rodas5p-integrators --test 'mf_adaptive_*'",
+        "exit_code": 0,
+        "result": "8 passed, 0 failed, 1 ignored (the measurement program)"
+      },
+      {
+        "name": "facade suite (golden oracle included)",
+        "command": "cargo +1.94.1 test --locked -j 4 --release --no-fail-fast -p vigilode",
+        "exit_code": 0,
+        "result": "58 binaries, 500 passed, 0 failed; log research/production_loop_20261116/mf_adaptive/logs/checks/facade.log; no file under crates/vigilode changed"
+      },
+      {
+        "name": "clippy krylov and vigilode",
+        "command": "cargo +1.94.1 clippy --locked -j 4 --release -p rodas5p-krylov -p vigilode --all-targets --no-deps -- -D warnings",
+        "exit_code": 0,
+        "result": "clean"
+      },
+      {
+        "name": "clippy integrators library and new or edited test targets",
+        "command": "cargo +1.94.1 clippy --locked -j 4 --release -p rodas5p-integrators --lib --test mf_adaptive_measure --test mf_adaptive_contracts --test mf_adaptive_shipped_bits --test ppsw1_6b_contracts --no-deps -- -D warnings",
+        "exit_code": 0,
+        "result": "clean"
+      },
+      {
+        "name": "rustfmt",
+        "command": "cargo +1.94.1 fmt -p rodas5p-krylov -p rodas5p-integrators -p vigilode -- --check",
+        "exit_code": 0,
+        "result": "clean"
+      },
+      {
+        "name": "workspace check (extra)",
+        "command": "cargo +1.94.1 check --locked -j 4 --workspace --all-targets",
+        "exit_code": 0,
+        "result": "every crate and target of the workspace compiles"
+      },
+      {
+        "name": "loop checker",
+        "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
+        "exit_code": 1,
+        "result": "verbatim last line: 'ValueError: protected file changed: crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs'. With the checker's require collecting in memory (checker_report.py, nothing written to the checker) the complete list is that line and 'implementation changed; rerun affected tests/update checkpoint: crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs'. Both paths are allowed by the task; no changed path is outside the write list"
+      },
+      {
+        "name": "strict JSON load of every JSON file written",
+        "command": "python3 -I (json.loads with parse_constant and duplicate-key refusal) over research/production_loop_20261116/mf_adaptive/*.json",
+        "exit_code": 0,
+        "result": "8 files load strictly (CHECKER_REPORT, CHOICE, PREDECLARED, PROTOCOL, RECORDING_A, RESULTS, R_SUITES, SENTINEL_REPIN)"
+      },
+      {
+        "name": "frozen files untouched",
+        "command": "git diff --stat 892132e5 HEAD -- mf_adaptive/PREDECLARED.json PREREGISTRATION.md CHECKPOINT.json research/LEDGER.jsonl docs/",
+        "exit_code": 0,
+        "result": "empty diff; sha256 of PREDECLARED.json is 2ed7ca7d6c64bba0cddaaaf20b5a6460acb57cf46838bb420b0ec94a74a55375 as in addendum A6"
+      }
+    ],
+    "discriminators": [
+      {
+        "name": "D0",
+        "frozen_threshold": "arm S after the edit equals the driver before the edit bit for bit on the 20 cells (end state, step counts, every counter), recorded before the edit (commit A)",
+        "measured": "20 of 20 deciding cells and 10 of 10 development cells equal to RECORDING_A.json in every recorded field through the entries route, route_ls and audit; the policy entry with Shipped named explicitly equals route; commit A recording also equals V17 arm A in 20 of 20 cells",
+        "verdict": "PASS"
+      },
+      {
+        "name": "V",
+        "frozen_threshold": "true residual of every returned iterate of arm N meets the stage threshold of the shipped driver or the solve is reported as failed the shipped way; violations 0",
+        "measured": "37823 completed solves on the deciding grid, each rebuilt and checked independently and by the driver's own records: 0 violations, largest residual/threshold 0.99998; 151 solves failed by budget exhaustion and were reported as failed attempts; 0 violations also in the development and exploratory audited runs; audit-on and audit-off runs identical in every cell",
+        "verdict": "PASS"
+      },
+      {
+        "name": "A",
+        "frozen_threshold": "achieved error of N at most 3 times that of S in every cell",
+        "measured": "largest ratio per family 1.000, 1.401 (cusp1d rtol 1e-6), 1.000, 1.000",
+        "verdict": "PASS"
+      },
+      {
+        "name": "P",
+        "frozen_threshold": "instructions of N at matched achieved error at most 0.50 of S per family; no cell above 1.00",
+        "measured": "family numbers (V17 matched-error statistic) fhn3d 0.320, cusp1d 0.334, burgers2d 0.201, bruss1d 0.319; largest cell number 0.456, 0.473, 0.394, 0.521; equal-tolerance geometric means 0.308, 0.321, 0.197, 0.364",
+        "verdict": "PASS"
+      },
+      {
+        "name": "S",
+        "frozen_threshold": "attempts of N at most 1.05 of S per family (geometric mean); no cell above 1.15",
+        "measured": "geometric means 1.0000, 1.0061, 1.0000, 1.0000; largest cell 1.0257 (cusp1d)",
+        "verdict": "PASS"
+      },
+      {
+        "name": "B",
+        "frozen_threshold": "in no cell more budget-exhausting stage solves in N than in S",
+        "measured": "cusp1d per cell S/N: 55/55, 46/46, 34/34, 11/13, 3/3; 0/0 in every cell of the other three families. One cell violates the rule (cusp1d rtol 1e-6)",
+        "verdict": "FAIL"
+      },
+      {
+        "name": "T",
+        "frozen_threshold": "none: wall time reported per family, not part of the verdict",
+        "measured": "wall speed-up S/N at matched error fhn3d 3.98, cusp1d 3.21, burgers2d 6.42, bruss1d 3.63; all 20 cells authoritative (two fhn3d cells on their second measurement after a load of 8.39); longest invocation under the timing lock 46.5 s",
+        "verdict": "NOT_DECIDABLE"
+      },
+      {
+        "name": "G",
+        "frozen_threshold": "golden records of the matrix-free route re-pinned within 10 (atol + rtol |y|) and 20 percent attempts; other routes keep their bytes",
+        "measured": "not evaluated: step 5 was not reached because B fails; the default was not switched and 0 golden files changed",
+        "verdict": "NOT_RUN"
+      },
+      {
+        "name": "R",
+        "frozen_threshold": "sentinels (re-pinned with old and new pins recorded), stage-client targets, matrix-free tests, facade suite pass; clippy and rustfmt clean",
+        "measured": "1035 tests passed, 1 failed, 37 ignored; clippy and rustfmt clean. The one failure is ptsw2b_contracts::h2_protected_sources_are_byte_identical, a second sentinel that pins the edited driver file and may not be edited by this node",
+        "verdict": "FAIL"
+      },
+      {
+        "name": "node verdict (frozen rules)",
+        "frozen_threshold": "PASS: D0, V, A, P, S, B, G, R hold. FAIL: P, S, A or B fails with V intact. KILL: a V violation or P above 0.85 on two families",
+        "measured": "B fails with V intact; no family above 0.85",
+        "verdict": "FAIL"
+      }
+    ],
+    "open_issues": [
+      "Owner decision needed: the frozen verdict is FAIL, so the adaptive policy is opt-in only. Exploratory data (not usable for a verdict) show that the variant not chosen, P1, has the budget behaviour of the shipped policy on every replayed system and in every cell, with matched-error instruction ratios 0.376, 0.394, 0.231, 0.446 and a largest error ratio of 2.60 on cusp1d; adopting P1 would need a new pre-registration and a confirmation on problems or sizes not yet seen.",
+      "Sentinel h2 (crates/rodas5p-integrators/tests/ptsw2b_contracts.rs:1070-1071) pins the sha256 of src/rodas5p_matrix_free_fast.rs and fails on this branch. The file is protected and outside the write list. Two lines are needed at merge: the h2 pin, and the g3 pin of tests/ptsw2b_contracts.rs; both resulting hashes are computed in mf_adaptive/SENTINEL_REPIN.json (second_sentinel_not_repinned).",
+      "The frozen PREDECLARED.json names the deciding families twice and inconsistently: by reference (families_final of mf_stage_solve/PREDECLARED.json = fhn3d, cusp1d, burgers2d, bruss1d) and by a list (ac3d, cusp1d, burgers2d, grayscott2d = the block V17 withdrew; no reference and no generator exists for ac3d and grayscott2d). The reference was followed; the reading was written to PROTOCOL.json before any run. A reviewer ruling is needed.",
+      "A later switch of the default cannot pass the facade suite inside this write list: crates/vigilode/tests/capabilities_contracts.rs:116 and crates/vigilode/tests/facade_contracts.rs:258-281, 929-971, 1038 pin the v1 identifier or the bits of the shipped entry for the default JVP route (recorded in PROTOCOL.json before any run).",
+      "The task text places the shipped restart cycle in gmres_staged.rs; it is in crates/rodas5p-krylov/src/gmres_into.rs (not in the write list, not edited). The adaptive kernel was added to gmres_staged.rs as new items; crates/rodas5p-krylov/src/lib.rs is not in the write list, so its report type ColumnTestedGmresReport is reachable only through the method of the exported StagedGmresWorkspace and still needs a re-export line.",
+      "The development problem dev06_bruss1d (512 cells) is the same equation as the deciding family bruss1d (700 cells) at another size; the cell is outside the deciding grid as the frozen text requires.",
+      "Loop checker complains about two paths the task allows (the driver file and ppsw1_6b_contracts.rs); the checkpoint needs their new pins at merge.",
+      "A git-ignored .mypy_cache that a session hook created in mf_stage_solve/ was moved out of the worktree to /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/v24-bins/moved_out_mypy_cache_mf_stage_solve."
+    ],
+    "key_numbers": [
+      "Choice on development cells: matched-error instruction ratio against S, dev06_bruss1d P1 0.339 / P2 0.248, dev06_adr2d P1 0.205 / P2 0.188; scores 0.2637 and 0.2162, ratio 0.820 < 0.98, P2 chosen",
+      "P family numbers (N = P2): fhn3d 0.320, cusp1d 0.334, burgers2d 0.201, bruss1d 0.319; largest cell 0.521 (bruss1d rtol 1e-3)",
+      "V: 37823 completed solves audited, 0 violations, largest residual/threshold 0.99998; 151 failed solves",
+      "B: cusp1d rtol 1e-6, 13 against 11; family totals 151 against 149",
+      "S: largest attempts ratio 1.0257; A: largest error ratio 1.401",
+      "T: wall speed-up at matched error 3.98, 3.21, 6.42, 3.63 (authoritative)",
+      "Exploratory replay on the 28811 stage systems of the cusp1d runs of S: shipped solved and P2 exhausted the budget in 8, the reverse in 3; P1 0 and 0; the systems P2 loses are solved by the shipped kernel with exactly 200 columns",
+      "Exploratory P1 on the deciding grid: 0.376, 0.394, 0.231, 0.446; budget counts equal to S in every cell; 0 audit violations; largest error ratio 2.602",
+      "Exploratory ReuseConfirmed: P2R 0.313, 0.330, 0.194, 0.315; SR 0.993, 1.002, 0.994, 0.996",
+      "Instructions of arm S after the edit over before the edit (different binaries): 1.00007 to 1.00013",
+      "R: 1035 passed, 1 failed (h2), 37 ignored; facade 500 passed",
+      "Sentinel g3 pin of the driver file: a6d138f0da89... -> 6136f83b304c... (SENTINEL_REPIN.json)"
+    ],
+    "rulings": [
+      "Deciding grid = families_final of mf_stage_solve/PREDECLARED.json (fhn3d, cusp1d, burgers2d, bruss1d), fixed in PROTOCOL.json before any run",
+      "Adaptive arms keep the residual accounting of the route (RecomputeFinal); ReuseConfirmed measured only as exploratory",
+      "P family number = the V17 matched-error statistic (imported from mf_stage_solve/parse_results.py); cell number = ratio at the error arm S achieved in the cell; S evaluated at equal tolerance",
+      "B counted by the kernel error text 'GMRES exhausted', for both policies, in the driver's statistics",
+      "The chosen variant P2 reports rodas5p-mf-fast-transformed-v2; P1 keeps a candidate identifier; the shipped policy keeps v1 and is the default everywhere",
+      "Step 5 not carried out because the frozen rule gives FAIL: no default switch, no golden re-pin",
+      "ptsw2b_contracts.rs, the facade tests and rodas5p-krylov/src/lib.rs were not edited although they block R and a clean re-export: outside the write list"
+    ],
+    "files_written": [
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/research/production_loop_20261116/mf_adaptive/NOTES.txt",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/research/production_loop_20261116/mf_adaptive/PROTOCOL.json",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/research/production_loop_20261116/mf_adaptive/RECORDING_A.json",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/research/production_loop_20261116/mf_adaptive/CHOICE.json",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/research/production_loop_20261116/mf_adaptive/RESULTS.json",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/research/production_loop_20261116/mf_adaptive/REPORT_KO.md",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/research/production_loop_20261116/mf_adaptive/R_SUITES.json",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/research/production_loop_20261116/mf_adaptive/SENTINEL_REPIN.json",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/research/production_loop_20261116/mf_adaptive/CHECKER_REPORT.json",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/research/production_loop_20261116/mf_adaptive/run_measurements.py",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/research/production_loop_20261116/mf_adaptive/parse_results.py",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/research/production_loop_20261116/mf_adaptive/make_report.py",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/research/production_loop_20261116/mf_adaptive/run_checks.py",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/research/production_loop_20261116/mf_adaptive/repin_sentinel.py",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/research/production_loop_20261116/mf_adaptive/checker_report.py",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/research/production_loop_20261116/mf_adaptive/logs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/crates/rodas5p-krylov/src/gmres_staged.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/crates/rodas5p-krylov/tests/gmres_staged_column_test_bits.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/crates/rodas5p-krylov/tests/gmres_staged_column_test_contracts.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/crates/rodas5p-integrators/src/routing.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/crates/rodas5p-integrators/src/lib.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/crates/rodas5p-integrators/tests/mf_adaptive_measure.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/crates/rodas5p-integrators/tests/mf_adaptive_contracts.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w2-v24/crates/rodas5p-integrators/tests/mf_adaptive_shipped_bits.rs"
+    ]
+  },
+  "review": {
+    "node": "V24_MF_ADAPTIVE_STAGE_SOLVE",
+    "verdict": "accept_with_corrections",
+    "summary": "Read-and-run review of V24 at 28e7fca4: the work is sound; every number I checked is reproduced. Frozen verdict FAIL confirmed (B fails in one cell, V intact); default unchanged, policy opt-in, golden files untouched. Scope and protection rules hold; PROTOCOL.json and CHOICE.json precede the runs they govern (commit times, log headers). The measurement binaries of commit A, development, deciding grid and head rebuild byte-identically from the committed trees. Own re-runs: 90 commit-A, 120 shipped, 120 P2, 40 P1, 60 development runs equal the logs in every counter and state bit; instructions within 1e-6. Own per-solve recount: 37823 solves of N, 0 violations, largest residual/threshold 0.999977; the 151 failed solves are budget exhaustion. Recomputed: A 1.401; P 0.320, 0.334, 0.201, 0.319 (max cell 0.521); S max 1.026; B cusp1d 1e-6 13 against 11; choice P2 (0.2162 against 0.2637). R re-run: 1035 passed, 1 failed (sentinel h2); its re-pin hashes are correct. Corrections: the family list of the frozen file contradicts its own reference (builder's reading is that of the A6 row; B fails on cusp1d under both); two wrong labels (checkpoint pins, typed times); more in findings.",
+    "scope_ok": true,
+    "protected_ok": true,
+    "predeclared_before_results": true,
+    "discriminator_checks": [
+      {
+        "name": "D0",
+        "builder_value": "20 of 20 deciding and 10 of 10 development cells equal to RECORDING_A.json through route, route_ls and audit; policy_shipped equals route",
+        "reviewer_value": "Measurement binary rebuilt from a git-archive export of commit A (5d802c8d; driver, gmres_staged.rs, routing.rs, lib.rs byte-identical to the base): sha256 3a4877913dc0..., byte-identical to the builder's. Its 90 runs (30 cells, entries route, route_ls, audit) against 90 runs of the head binary (a030068160c9...) with the shipped policy: 90 of 90 equal in attempts, accepted, rejected, every work counter, end-time bits, end-state bits, driver identifier, solve-log hash and residual audit. policy_shipped equals route in 30 of 30 cells. The builder's record_a and d0 logs equal my runs (90 of 90, 120 of 120). The small-system bit tests added at commit A pass on the unedited commit-A sources and at head.",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "V",
+        "builder_value": "37823 completed solves on the deciding grid, 0 violations, largest residual/threshold 0.99998; 151 solves failed by budget exhaustion and were reported as failed attempts",
+        "reviewer_value": "Code: solve_column_tested_into leaves its loop only when the true residual rhs - A x, formed with a new operator application at the top of a pass, is at most max(atol, rtol ||rhs||) (same expression, same GmresConfig object as the shipped call); under RecomputeFinal it is formed once more and tested; the budget test comes after the residual test, so a solve ending at 200 columns is returned only if it passes. Own per-solve dump (reviewer_v24_audit.rs, own right-hand side and J U_i) and recount: 37823 solves, 0 above the threshold by my residual, 0 by the driver's records, largest ratio 0.999977, driver's threshold equal to mine in every solve, counts equal to linear_solves in all 20 cells, end states equal to the builder's runs. 151 failing systems replayed: all 'GMRES exhausted 200 Arnoldi vectors'. Development cells 4840 solves and exploratory P1 37611 solves: 0 violations. Audit-on equals audit-off in every cell.",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "A",
+        "builder_value": "largest error ratio per family 1.000, 1.401 (cusp1d rtol 1e-6), 1.000, 1.000",
+        "reviewer_value": "From the end-state bits of the route logs and the V17 references with my own error function: 1.0000, 1.4014 (9.393e-07 against 6.702e-07), 1.0000, 1.0000; threshold 3; no cell is reference limited (errors at least 5e-08, u_ref at most 1.2e-10).",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "P",
+        "builder_value": "family numbers 0.320, 0.334, 0.201, 0.319; largest cell number 0.456, 0.473, 0.394, 0.521; no family above 0.85",
+        "reviewer_value": "Own implementation of the V17 matched-error rule on the raw perf files (instructions minus median of three SETUP runs): 0.3198, 0.3336, 0.2007, 0.3190; largest cell numbers 0.4558, 0.4732, 0.3943, 0.5206. Geometric mean of the five cell numbers (literal wording of the frozen sentence): 0.308, 0.319, 0.197, 0.364. Same values from my own runs of the byte-identical final binary; instruction counts of the 40 runs within 9.97e-07 of the builder's.",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "S",
+        "builder_value": "geometric means 1.0000, 1.0061, 1.0000, 1.0000; largest cell 1.0257 (cusp1d)",
+        "reviewer_value": "Attempts from the route logs: fhn3d, burgers2d, bruss1d identical in all cells; cusp1d 405/412, 558/544, 690/689, 866/853, 1233/1226; geometric mean 1.0061, largest 1.0257 (thresholds 1.05 and 1.15).",
+        "reviewer_verdict": "PASS",
+        "agrees": true
+      },
+      {
+        "name": "B",
+        "builder_value": "cusp1d S/N 55/55, 46/46, 34/34, 11/13, 3/3; 0/0 elsewhere; one cell violates",
+        "reviewer_value": "Same from three sources: the driver statistic budget_exhausted_solves of the audit runs, the counter linear_solve_failures of the route runs, and my replay of every failing stage system (error text). N has more than S in cusp1d rtol 1e-6 only (13 against 11). Consistent with linear_iterations minus logged columns = 200 per failed solve.",
+        "reviewer_verdict": "FAIL",
+        "agrees": true
+      },
+      {
+        "name": "T",
+        "builder_value": "wall speed-up S/N at matched error 3.98, 3.21, 6.42, 3.63; all 20 cells authoritative",
+        "reviewer_value": "From the raw timing logs: 3.976, 3.208, 6.424, 3.631; 20 of 20 cells meet the declared rule (prefix flock + taskset -c 6-11, both orders, 2 + 7 rounds, load at most 8, spread at most 10 percent); fhn3d 1e-6 and 1e-7 on try 2 after 8.39; longest invocation 46.5 s. Two cells re-measured by me under the lock: burgers2d 1e-5 7.54 (builder 7.51), fhn3d 1e-3 2.59 (2.62). No threshold: reported only.",
+        "reviewer_verdict": "NOT_DECIDABLE",
+        "agrees": true
+      },
+      {
+        "name": "G",
+        "builder_value": "not evaluated: step 5 not reached; 0 golden files changed",
+        "reviewer_value": "No path under crates/vigilode is changed against the base; MfStageSolvePolicy::default, RoutingOptions::default and the facade's RoutingOptions literal give Shipped; default_path_golden (11 tests), facade_contracts (20) and capabilities_contracts (1) pass at head. No golden difference report exists because no record changed.",
+        "reviewer_verdict": "NOT_RUN",
+        "agrees": true
+      },
+      {
+        "name": "R",
+        "builder_value": "1035 passed, 1 failed, 37 ignored; the failure is ptsw2b_contracts::h2_protected_sources_are_byte_identical; clippy and rustfmt clean",
+        "reviewer_value": "Own run of the builder's commands from the worktree: krylov 36 binaries 166 passed; sentinels 60 passed, 1 failed (h2: 'protected file changed: src/rodas5p_matrix_free_fast.rs'); stage clients 55 passed, 9 ignored; 27 matrix-free targets 105 passed, 26 ignored; library 141 passed, 1 ignored; new targets 8 passed, 1 ignored; facade 58 binaries 500 passed; total 1035 passed, 1 failed, 37 ignored. clippy -D warnings (krylov, vigilode all targets; integrators lib and the four new or edited targets), cargo fmt --check and cargo check --workspace --all-targets exit 0.",
+        "reviewer_verdict": "FAIL",
+        "agrees": true
+      },
+      {
+        "name": "node verdict (frozen rules)",
+        "builder_value": "FAIL: B fails with V intact; no family above 0.85",
+        "reviewer_value": "Recomputed from the leaf numbers of RESULTS.json with my own script and from the raw logs: D0 PASS, V PASS, A PASS, P PASS, S PASS, B FAIL, G NOT_RUN, R FAIL; no V violation and no P family above 0.85, so not KILL. The failure action was followed: default of driver, router and facade unchanged, adaptive policy opt-in.",
+        "reviewer_verdict": "FAIL",
+        "agrees": true
+      }
+    ],
+    "findings": [
+      {
+        "id": "F1",
+        "severity": "major",
+        "claim": "Deciding grid = families_final of V17 (fhn3d, cusp1d, burgers2d, bruss1d), 20 cells",
+        "evidence": "The frozen mf_adaptive/PREDECLARED.json (sha256 2ed7ca7d..., unchanged) says 'the four families of node V17 as finally run (mf_stage_solve/PREDECLARED.json, families_final): ac3d, cusp1d, burgers2d, grayscott2d'. In mf_stage_solve/PREDECLARED.json the block 'families' (withdrawn by V17 amendment A1 before any run) is ac3d, cusp1d, burgers2d, grayscott2d and 'families_final' is fhn3d, cusp1d, burgers2d, bruss1d; references exist only for the latter four. The A6 row of PREREGISTRATION.md says 'the four families and five tolerances of node V17, its references', and the prior numbers quoted in the frozen file (0.359, 0.382, 0.216, 0.430) are those of the final four. The builder wrote its reading to PROTOCOL.json in commit 2ddeb9fb (23:06:15), before the first run (23:10:47), and lists it in REPORT_KO.md section 10.4.",
+        "correction": "This is a defect of the frozen file, not of the build. The record of the node must state that the deciding grid is the one of the A6 row (V17 families as run), that the list of names in PREDECLARED.json is a transcription of the withdrawn block, and that ac3d and grayscott2d cannot be evaluated (no reference). The node verdict does not depend on the reading: B fails on cusp1d, which both lists contain, and V is intact. The statements that A, P and S hold on four families apply to fhn3d, cusp1d, burgers2d, bruss1d."
+      },
+      {
+        "id": "F2",
+        "severity": "minor",
+        "claim": "The variant was chosen on two development problems outside the deciding grid",
+        "evidence": "dev06_bruss1d is v06::bruss1d(512, 8.0), n = 1024; the deciding bruss1d is v06::bruss1d(700, 8.0), n = 1400: same generator, other size. The choice rests mostly on that problem (matched-error ratio against S: P1 0.3386, P2 0.2482 there; 0.2053 and 0.1883 on adr2d; my recomputation from the builder's logs and from my own 66 runs of the byte-identical development binary gives scores 0.263675 and 0.216202, ratio 0.8200, so P2 by the frozen rule). On the deciding bruss1d the same ordering appears (P2 0.319, exploratory P1 0.446).",
+        "correction": "Label: the development cells are outside the deciding grid, the family bruss1d is not. The P number of bruss1d carries a selection effect; the P verdict does not depend on it (both variants below 0.50). The builder states the overlap in PROTOCOL.json and REPORT_KO.md section 6."
+      },
+      {
+        "id": "F3",
+        "severity": "minor",
+        "claim": "V: 37823 completed solves, each rebuilt and checked independently and by the driver's own records: 0 violations (the solve log is audited)",
+        "evidence": "The committed logs hold per run only the sums formed inside the measurement binary (residual_audit: checks, failures, max_ratio; record_audit; a sha256 of the solve log). No per-solve residual or threshold is stored, so the count cannot be redone from the repository alone. I recounted with my own target /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v24/review-scratch/src-head/crates/rodas5p-integrators/tests/reviewer_v24_audit.rs (export of the head commit, separate target directory) and recount_rv.py in the same scratch directory: 37823 solves, 0 violations, largest ratio 0.999977 (cusp1d 1e-7), 4 completed solves with exactly 200 columns all within the threshold, 151 failed solves all budget exhaustion.",
+        "correction": "No change of the verdict (V PASS confirmed). If the recount shall be reproducible from the repository, the measurement target should write one line per solve (residual norm, norm of the right-hand side, threshold, columns)."
+      },
+      {
+        "id": "F4",
+        "severity": "minor",
+        "claim": "P: instructions of N at matched achieved error at most 0.50 of S per family: 0.320, 0.334, 0.201, 0.319",
+        "evidence": "The frozen sentence asks for 'the geometric mean over the five tolerances'. The builder's deciding family number is the V17 statistic (geometric mean over 201 points of the matched error range), declared in PROTOCOL.json before the runs; the geometric mean of the five cell numbers is reported next to it: 0.308, 0.319, 0.197, 0.364 (my recomputation the same). Cell numbers of 5 of 20 cells are the ratio at equal tolerance because the S point lies outside the matched range (rule declared before the runs).",
+        "correction": "Label the family number as the V17 201-point statistic in the record. Under the literal reading the verdict is the same (PASS, largest 0.364)."
+      },
+      {
+        "id": "F5",
+        "severity": "minor",
+        "claim": "SENTINEL_REPIN.json, not_pinned_by_this_sentinel: 'src/routing.rs and crates/rodas5p-krylov/src/gmres_staged.rs (pinned by the loop checkpoint only)'",
+        "evidence": "research/production_loop_20261116/CHECKPOINT.json pins neither file: of the node's edited files protected_blob_sha1 holds only rodas5p_matrix_free_fast.rs and implemented_source_sha256 only ppsw1_6b_contracts.rs (plus the unedited ptsw2b_contracts.rs). The checker run with its require collecting names exactly two paths (the driver and ppsw1_6b_contracts.rs), although routing.rs and gmres_staged.rs changed.",
+        "correction": "Correct the note: the two files are covered by the allowlist of MUTATION_GATES.json, not by a hash. At merge the orchestrator updates CHECKPOINT.json for the driver blob and for ppsw1_6b_contracts.rs."
+      },
+      {
+        "id": "F6",
+        "severity": "minor",
+        "claim": "PROTOCOL.json: 'written 2026-11-23 23:10 KST'; amendments P-1 and P-2 dated '2026-11-23 23:25 KST'; NOTES.txt: '23:27 KST: commit A'",
+        "evidence": "git: PROTOCOL.json was first committed at 23:06:15 (2ddeb9fb); P-1 and P-2 are part of commit 5d802c8d of 23:17:55, before their own date; commit A is that same commit. The typed times are estimates, not clock readings. Apart from 'amendments' the content of PROTOCOL.json is unchanged since its first commit (semantic comparison of the three versions).",
+        "correction": "Do not use the typed times as evidence of order; annotate them. The order itself holds by commit times and by the dates the runner wrote into the log headers: protocol 23:06:15 before the first run 23:10:47; choice rule 23:36:28 before the development runs 23:36:39; CHOICE.json 23:37:01 and the verdict rules 23:42:06 before the first run of arm N on the deciding grid 23:42:33. All log headers show a clean tracked tree except two timing logs of try 2."
+      },
+      {
+        "id": "F7",
+        "severity": "minor",
+        "claim": "The chosen adaptive variant (P2) reports rodas5p-mf-fast-transformed-v2",
+        "evidence": "MfStageSolvePolicy::driver_id maps ColumnTestedDoubling to RODAS5P_MF_FAST_ADAPTIVE_DRIVER_ID = 'rodas5p-mf-fast-transformed-v2' and ColumnTested to 'rodas5p-mf-fast-transformed-v2-candidate-p1'. The frozen design ties v2 to the adaptive policy that becomes the default; the verdict is FAIL and no default was switched.",
+        "correction": "Owner decision at merge: whether an opt-in variant that failed the frozen verdict keeps the identifier v2. A later default (for example P1 after a new pre-registration) would otherwise need another name."
+      },
+      {
+        "id": "F8",
+        "severity": "minor",
+        "claim": "Doc comment of MfStageSolvePolicy: under every policy 'an iterate is returned only if its true residual is at most max(|gamma| atol_lin, rtol_lin ||rhs||_2)'",
+        "evidence": "attempt_inner refuses an adaptive policy without GMRES-into, without GMRES or with a staged stage target (tested in mf_adaptive_contracts.rs), but not together with the shared-basis hook (rodas5p_matrix_free_fast.rs:3113-3133) or the directional-quadratic proposals (:3223-3244), which can accept a stage before the policy's solve, as they can under the shipped policy. With ls_workspace an adaptive run is labelled with the least-squares workspace although the kernel does not use it (stated in the function's doc). None of these options is on in any run of the node. Doc comments outside the write list that cite line numbers of the driver (tests/stage_clients_krylov_v17_contracts.rs:214, tests/residual_acceptance_contract.rs:41) are 141 to 227 lines off after the edit.",
+        "correction": "State that the sentence covers the GMRES-into solves of the policy and that the measured validity (V) covers the default workspace settings. The stale line references are cosmetic and outside the node's write list."
+      },
+      {
+        "id": "F9",
+        "severity": "minor",
+        "claim": "R FAIL: the one failure is ptsw2b_contracts::h2_protected_sources_are_byte_identical, a second sentinel that pins the edited driver file and is outside the write list",
+        "evidence": "Own run: ppsw1_6b_contracts 37 passed (g3 passes with the new pin 6136f83b304c...), ptsw2b_contracts 23 passed, 1 failed (left 6136f83b..., right a6d138f0...). ptsw2b_contracts.rs is unchanged (sha256 e0e54c37...); the old pin occurs once, at line 1071. Replacing it gives sha256 217732bebfb13d985afd69a4fe5234d769be6e7bd75d7ef5ee806d4ffc1ed4c9, the value SENTINEL_REPIN.json names for g3. No other pin of the old driver hash exists under crates, tools, .github or the checkpoint. The loop checker exits 1 with 'ValueError: protected file changed: crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs'; with require collecting it reports that line and 'implementation changed; rerun affected tests/update checkpoint: crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs', and no path outside the allowlist.",
+        "correction": "None for the builder: R cannot hold inside the write list, and the obstacle was written to PROTOCOL.json (P-1) before the driver edit. A merge needs the two pin lines (h2, and g3's pin of tests/ptsw2b_contracts.rs) and the checkpoint entries changed by the orchestrator; without them the hosted test job fails on h2."
+      },
+      {
+        "id": "F10",
+        "severity": "minor",
+        "claim": "B FAIL in one cell (cusp1d rtol 1e-6: 13 against 11); exploratory: on identical stage systems P2 loses 8 and gains 3 of 28811, P1 none; P1 equals S's budget counts in every cell (ratios 0.376, 0.394, 0.231, 0.446)",
+        "evidence": "Confirmed from the logs and by my runs: shadow logs 28811 systems, 8 and 3 for P2, 0 and 0 for P1, replay differs from the driver in 0 systems; P1 (40 runs repeated by me, equal in every field) has 55, 46, 34, 11, 3 and matched-error ratios 0.376, 0.394, 0.231, 0.446, largest error ratio 2.602 on cusp1d, 0 violations. The two runs of the failing cell follow different trajectories (853 against 866 attempts). My per-solve dump adds: the shipped policy completes 241 cusp1d solves with exactly 200 columns (48, 31, 23, 85, 54 per tolerance), P2 4. The count used for B (attempts failed with 'GMRES exhausted') was declared before the runs and is the usage of the V17 review (149 for the shipped driver).",
+        "correction": "None: the FAIL stands under the pre-declared reading and decides by two solves at the budget edge. The P1 numbers come from a grid already seen and cannot stand in for a verdict, as the builder writes; adopting P1 needs a new pre-registration on unseen problems."
+      },
+      {
+        "id": "REV-1",
+        "severity": "minor",
+        "claim": "Reviewer's own side effects during the review (all reverted)",
+        "evidence": "(a) My first build of the commit-A export used the given CARGO_TARGET_DIR with the export inside it. Cargo's unit names do not depend on the source path, so the build replaced the head artifacts of core, krylov, integrators and mf_adaptive_measure, and cargo then reported the builder's worktree as up to date while the binary was the commit-A one. Repaired: export files touched, the node's targets rebuilt from the worktree; the measurement binary is again a030068160c9... (its hash before my build), no fingerprint or .d file of the target directory names review-scratch, later export builds used review-scratch/target-export. (b) A session hook created .mypy_cache in mf_adaptive/ and mf_stage_solve/ of the builder's worktree when Python files were opened (git-ignored); both were moved to review-scratch/moved_out_of_worktree. End state: git status --short --ignored empty, HEAD 28e7fca4, no file in the worktree newer than the builder's last commit; target directory 3.6 GB.",
+        "correction": "For the orchestrator: one CARGO_TARGET_DIR must not serve two source trees at different commits; cargo decides freshness by modification time and silently reuses the other tree's artifacts. The builder's single-worktree runs are not affected (binaries reproduced byte for byte)."
+      }
+    ],
+    "reran": [
+      {
+        "command": "git -C <worktree> diff --name-status 892132e5..HEAD; git status --short --ignored; git log with commit times; per-commit file lists",
+        "exit_code": 0,
+        "result": "888 changed paths: 10 under crates (lib.rs, rodas5p_matrix_free_fast.rs, routing.rs, ppsw1_6b_contracts.rs, gmres_staged.rs, 3 mf_adaptive_*.rs, 2 gmres_staged_column_test_*.rs), 878 under research/production_loop_20261116/mf_adaptive/, none of them PREDECLARED.json; clean tree; 17 commits, linear, not pushed, trailers present; removed driver lines are the import list, the driver field and the early return only."
+      },
+      {
+        "command": "git archive <commit> Cargo.toml Cargo.lock rust-toolchain.toml crates fixtures | tar -x; cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test mf_adaptive_measure --no-run (commits 5d802c8d, 3c7c7325, 7fb23b63 and the worktree at head)",
+        "exit_code": 0,
+        "result": "sha256 of the four binaries equal to the builder's preserved ones: commit A 3a4877913dc0..., development de8b86ffbed5..., final f35805e9c687..., head a030068160c9...; driver code between development, final and head differs only in identifier strings and comments."
+      },
+      {
+        "command": "python3 -I review-scratch/rerun.py A; compare_reruns.py A (commit-A binary, arm S, entries route, route_ls, audit, 30 cells)",
+        "exit_code": 0,
+        "result": "108 runs exit 0; 90 of 90 cell runs equal to logs/record_a in every result field and state bit; 20 of 20 route runs equal to V17 arm A."
+      },
+      {
+        "command": "python3 -I review-scratch/rerun.py headS; headP2; final; headP1; compare_reruns.py",
+        "exit_code": 0,
+        "result": "head binary, arm S: 120 of 120 runs equal to logs/d0 and 90 of 90 equal to my commit-A runs; policy_shipped equals route 30 of 30. P2: 60 of 60 (head) and 60 of 60 (final binary) equal to logs/runs, d0, dev_repeat; instruction counts of 40 runs within 9.97e-07. P1: 40 of 40 equal to logs/exploratory."
+      },
+      {
+        "command": "python3 -I review-scratch/rerun.py dev; compare_reruns.py dev (development binary; S, P1, P2 on 10 cells)",
+        "exit_code": 0,
+        "result": "66 runs; 60 of 60 equal to logs/dev; choice recomputed with my own code from the builder's logs and from my runs: scores P1 0.263675, P2 0.216202, ratio 0.8200, P2."
+      },
+      {
+        "command": "review-scratch/bin/reviewer_v24_audit (RV_FAMILY, RV_RTOL, RV_ARM) for S, P1, P2 on 20 deciding and 10 development cells; python3 -I review-scratch/recount_rv.py rv2",
+        "exit_code": 0,
+        "result": "90 runs exit 0. P2 deciding grid: 37823 solves, 0 violations, max 0.999977, 151 budget failures by replay, 0 other. S: 37606 solves, 0 violations, 149. P1: 37611 solves, 0 violations, 149. cusp1d budget counts S 55, 46, 34, 11, 3; P2 55, 46, 34, 13, 3; P1 55, 46, 34, 11, 3. End states equal to the builder's runs in every cell."
+      },
+      {
+        "command": "test binaries built from the worktree: gmres_staged_column_test_bits, gmres_staged_column_test_contracts, mf_adaptive_contracts, mf_adaptive_shipped_bits, ppsw1_6b_contracts",
+        "exit_code": 0,
+        "result": "2 + 9 + 6 + 2 + 37 passed, 0 failed; the two bit tests also pass on the unedited commit-A export (2 and 1 passed)."
+      },
+      {
+        "command": "ptsw2b_contracts test binary built from the worktree",
+        "exit_code": 101,
+        "result": "23 passed, 1 failed: h2_protected_sources_are_byte_identical, 'protected file changed: src/rodas5p_matrix_free_fast.rs'."
+      },
+      {
+        "command": "review-scratch/run_R.sh: cargo +1.94.1 test --locked -j 4 --release --no-fail-fast for -p rodas5p-krylov; the 27 matrix-free targets; --lib; --test 'mf_adaptive_*'; --test 'stage_clients_*'; -p vigilode; cargo check --locked --workspace --all-targets",
+        "exit_code": 0,
+        "result": "166; 105 (26 ignored); 141 (1 ignored); 8 (1 ignored); 55 (9 ignored); 500 passed in 58 binaries; 0 failed; workspace check exit 0. With the sentinels: 1035 passed, 1 failed, 37 ignored."
+      },
+      {
+        "command": "cargo +1.94.1 clippy --locked -j 4 --release -p rodas5p-krylov -p vigilode --all-targets --no-deps -- -D warnings; same for -p rodas5p-integrators --lib --test mf_adaptive_measure --test mf_adaptive_contracts --test mf_adaptive_shipped_bits --test ppsw1_6b_contracts; cargo +1.94.1 fmt -p rodas5p-krylov -p rodas5p-integrators -p vigilode -- --check",
+        "exit_code": 0,
+        "result": "all three exit 0, no warning, no format difference."
+      },
+      {
+        "command": "python3 -I research/production_loop_20261116/check_checkpoint.py (worktree root)",
+        "exit_code": 1,
+        "result": "last line 'ValueError: protected file changed: crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs'; with require collecting in memory (own wrapper) two messages: that one and 'implementation changed; rerun affected tests/update checkpoint: crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs'; both paths are allowed by the task, no path outside the allowlist."
+      },
+      {
+        "command": "python3 -I review-scratch/recompute.py; verdict_from_results.py; timing_check.py; parse_results.py recording, choice, results in a scratch copy of the committed logs",
+        "exit_code": 0,
+        "result": "D0, V, A, P, S PASS and B FAIL from the raw logs and from RESULTS.json; timing 3.976, 3.208, 6.424, 3.631 with 20 of 20 cells authoritative; RECORDING_A.json, CHOICE.json and RESULTS.json regenerated by the builder's parser equal the committed files except the generation time and the git block; 8 JSON files and 1494 JSON log lines load strictly."
+      },
+      {
+        "command": "flock /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/timing.lock taskset -c 6-11 <final binary> with V24_MODE=TIMING V24_ARMS=S,P2 V24_ROUNDS=9 (burgers2d 1e-5, fhn3d 1e-3)",
+        "exit_code": 0,
+        "result": "lock held 6.5 s and 19.4 s at a load of 3.8 to 4.3; medians S 0.6342 s, P2 0.0842 s, ratio 7.54 (builder 7.51); S 1.5516 s, P2 0.5994 s, ratio 2.59 (builder 2.62); spreads at most 1.4 percent."
+      }
+    ]
+  }
+}

@@ -1,0 +1,3132 @@
+{
+ "schema": "vigilode.loop-l1.v03a.receipt.v1",
+ "node": "V03_UNIFIED_FRONTEND (part A)",
+ "generated_by": "build_receipt.py: every number is parsed from logs/*.log",
+ "base_commit": "c468478e73123a4625c6d20f7459a9f79cbf33de",
+ "head_commit_when_built": "b52f79cd8d72c697945dde37b36c2da3c2ec2669",
+ "code_commit_of_the_runs": "b52f79cd8d72c697945dde37b36c2da3c2ec2669",
+ "runs_on_that_commit": {
+  "logs": [
+   "contracts",
+   "existing_registry_tests",
+   "default_path_golden_run1",
+   "default_path_golden_run2",
+   "full_suite",
+   "clippy",
+   "fmt_check",
+   "doc",
+   "check_checkpoint",
+   "changed_paths",
+   "golden_diff",
+   "protected_diff",
+   "decision_grid_debug_profile"
+  ],
+  "tracked_files_modified_in_the_worktree_during_a_run": {},
+  "source_paths_changed_between_that_commit_and_head": []
+ },
+ "predeclared": "PREDECLARED.json (commit 00d32764, before any run)",
+ "timing": "no wall-time claim; elapsed times in the logs are diagnostic_only",
+ "phase_reached": "B",
+ "discriminators": {
+  "D1_decision_equality": {
+   "frozen": "100% decision equality of route(General) and GeneralOde::select on an exhaustive grid with zero callbacks",
+   "threshold": "221184 of 221184 entries, 0 callback entries",
+   "measured": {
+    "callback_entries": 0,
+    "entries": 221184,
+    "equal_to_golden_file": 221184,
+    "equal_to_reference_body": 221184,
+    "equal_to_select": 221184,
+    "golden_file_entries": 221184
+   },
+   "differing_examples": [],
+   "verdict": "PASS"
+  },
+  "D1_phase_B": {
+   "condition": "registry-derived selection equals the retained old body on the golden grid and on the extension grid, zero callbacks, golden oracle unchanged",
+   "threshold": "331776 of 331776 extension entries and 221184 of 221184 golden entries",
+   "measured": {
+    "extension_grid": {
+     "callback_entries": 0,
+     "distinct_outcomes": 23,
+     "entries": 331776,
+     "general_selection_equal_to_reference": 331776,
+     "select_equal_to_reference": 331776
+    },
+    "extension_outcome_counts": {
+     "{\"refused\":\"dense-dimension-limit\"}": 348,
+     "{\"refused\":\"dense-output\"}": 41472,
+     "{\"refused\":\"derivatives-forbidden\"}": 4608,
+     "{\"refused\":\"events\"}": 82944,
+     "{\"refused\":\"mass-matrix\"}": 165888,
+     "{\"refused\":\"matrix-free-not-enabled\"}": 840,
+     "{\"refused\":\"missing-jacobian\"}": 768,
+     "{\"refused\":\"missing-time-derivative\"}": 960,
+     "{\"refused\":{\"implicit\":\"band-declaration-on-jvp-problem\"}}": 336,
+     "{\"refused\":{\"implicit\":\"vector-atol-on-matrix-free-route\"}}": 672,
+     "{\"refused\":{\"implicit\":\"vector-atol-with-declared-band-on-dense\"}}": 336,
+     "{\"selected\":{\"derivatives\":\"allow-finite-difference\",\"implicit_route\":\"banded-fast\",\"method\":\"rodas5p\",\"regime\":\"stiff\"}}": 2064,
+     "{\"selected\":{\"derivatives\":\"allow-finite-difference\",\"implicit_route\":\"dense-fast\",\"method\":\"rodas5p\",\"regime\":\"stiff\"}}": 576,
+     "{\"selected\":{\"derivatives\":\"allow-finite-difference\",\"implicit_route\":\"matrix-free\",\"method\":\"rodas5p\",\"regime\":\"stiff\"}}": 480,
+     "{\"selected\":{\"derivatives\":\"allow-finite-difference\",\"implicit_route\":null,\"method\":\"dopri5\",\"regime\":\"nonstiff\"}}": 4608,
+     "{\"selected\":{\"derivatives\":\"allow-finite-difference\",\"implicit_route\":null,\"method\":\"dopri5\",\"regime\":\"unknown\"}}": 4608,
+     "{\"selected\":{\"derivatives\":\"forbidden\",\"implicit_route\":null,\"method\":\"dopri5\",\"regime\":\"nonstiff\"}}": 4608,
+     "{\"selected\":{\"derivatives\":\"forbidden\",\"implicit_route\":null,\"method\":\"dopri5\",\"regime\":\"unknown\"}}": 4608,
+     "{\"selected\":{\"derivatives\":\"provided-only\",\"implicit_route\":\"banded-fast\",\"method\":\"rodas5p\",\"regime\":\"stiff\"}}": 1260,
+     "{\"selected\":{\"derivatives\":\"provided-only\",\"implicit_route\":\"dense-fast\",\"method\":\"rodas5p\",\"regime\":\"stiff\"}}": 216,
+     "{\"selected\":{\"derivatives\":\"provided-only\",\"implicit_route\":\"matrix-free\",\"method\":\"rodas5p\",\"regime\":\"stiff\"}}": 360,
+     "{\"selected\":{\"derivatives\":\"provided-only\",\"implicit_route\":null,\"method\":\"dopri5\",\"regime\":\"nonstiff\"}}": 4608,
+     "{\"selected\":{\"derivatives\":\"provided-only\",\"implicit_route\":null,\"method\":\"dopri5\",\"regime\":\"unknown\"}}": 4608
+    },
+    "golden_grid_equal_to_reference_body": 221184,
+    "debug_profile_run": {
+     "exit_code": 0,
+     "passed": 2,
+     "failed": 0,
+     "meaning": "debug assertions on: the fallback to the reference body was never taken"
+    }
+   },
+   "differing_examples": [],
+   "verdict": "PASS"
+  },
+  "D2_adapter_bitwise_equality": {
+   "frozen": "each adapter bitwise equal to the direct integrator call",
+   "measured": {
+    "adapters": 8,
+    "adapters_equal": 8,
+    "cases": 25,
+    "cases_bitwise_equal": 25
+   },
+   "verdict": "PASS"
+  },
+  "D3_refusal_before_any_callback": {
+   "frozen": "refusal before any callback",
+   "measured": {
+    "route_calls": 405504,
+    "route_plans": 66672,
+    "route_refusals": 338832,
+    "route_callback_entries": 0,
+    "rodas5p_plans_equal_to_the_route_that_runs": [
+     18432,
+     18432
+    ],
+    "rodas5p_capability_query_names_another_driver_than_runs": 704,
+    "refused_solve_calls": 68,
+    "solve_methods_checked": [
+     8,
+     8
+    ],
+    "solve_callback_entries": 0,
+    "typed_refusal_rows": 24
+   },
+   "verdict": "PASS"
+  },
+  "D4_default_route_golden": {
+   "frozen": "default-route golden unchanged",
+   "measured": {
+    "run1": {
+     "exit_code": 0,
+     "passed": 11,
+     "failed": 0,
+     "ignored": 0,
+     "binaries": 1
+    },
+    "run2": {
+     "exit_code": 0,
+     "passed": 11,
+     "failed": 0,
+     "ignored": 0,
+     "binaries": 1
+    },
+    "golden_files_identical_bytes": {
+     "decision_grid": 488690,
+     "dopri5": 86128,
+     "general_ode": 286767,
+     "production_automatic": 402073,
+     "rodas5p_brusselator": 564956,
+     "rodas5p_contracts": 154604,
+     "rodas5p_hires": 170461,
+     "rodas5p_robertson": 370941,
+     "rodas5p_vanderpol": 158780
+    },
+    "two_runs_report_the_same_files": true,
+    "git_diff_of_golden_and_oracle_against_base": []
+   },
+   "verdict": "PASS"
+  }
+ },
+ "adapters": [
+  {
+   "method": "rodas5p",
+   "test": "d2_rodas5p_adapter_is_bitwise_the_direct_call_on_every_facade_route",
+   "test_status": "ok",
+   "cases": 7,
+   "cases_bitwise_equal": 7,
+   "routes": [
+    "rodas5p/banded-fast",
+    "rodas5p/dense-fast",
+    "rodas5p/fast-banded-dense",
+    "rodas5p/fast-dense",
+    "rodas5p/matrix-free",
+    "rodas5p/sequential-dense"
+   ],
+   "verdict": "PASS",
+   "case_rows": [
+    {
+     "accepted": 34,
+     "bitwise_equal": true,
+     "case": "robertson/dense-fast",
+     "driver": "rodas5p-fast-transformed-v2",
+     "entry_point": "integrate_rodas5p_routed_observed",
+     "final_state_bits": [
+      "3fe6e80d2ff7550e",
+      "3ee3436fcd46f80e",
+      "3fd22fbf1931bb49"
+     ],
+     "jacobian_builds": 34,
+     "n_outputs": 2,
+     "rejected": 1,
+     "rhs_calls": 279,
+     "route": "rodas5p/dense-fast"
+    },
+    {
+     "accepted": 30,
+     "bitwise_equal": true,
+     "case": "brusselator_1d/banded-provider/banded-fast",
+     "driver": "rodas5p-fast-banded-v1",
+     "entry_point": "integrate_rodas5p_fast_banded_observed",
+     "final_state_bits": [
+      "3fef9ab04c10d987",
+      "4006d8823765d582",
+      "3fef27541ab157c7",
+      "4005cc39770edf17",
+      "3feea1cb0c3ea6be",
+      "4004f08e1e07807e",
+      "3fee119b85b47864",
+      "40045289eba4d9b8",
+      "3fed82aec8059ac5",
+      "4003f80d13451329",
+      "3fecfcef2654e623",
+      "4003e2685563e29e",
+      "3fec7f30e2260ab0",
+      "4004109422a0f4fb",
+      "3febfe90c5c0f162",
+      "4004802b3500974b",
+      "3feb69fd444ecbb5",
+      "40052cfab2bc07b1",
+      "3feab1175f596a01",
+      "40060f6eb1e05ff4",
+      "3fe9cccbade901d3",
+      "40071a9148536d44",
+      "3fe8c6b64b0e7ec4",
+      "40083ab86705cb06",
+      "3fe7bbc3fa433ec8",
+      "40095606a6379656",
+      "3fe6d82551ac8958",
+      "400a4f31c3baf139",
+      "3fe64e3499b9e394",
+      "400b09d2f5d4d8c2",
+      "3fe64c5d7f56382a",
+      "400b6eca1222461f",
+      "3fe6f4fa15b4cd59",
+      "400b6fa02d404151",
+      "3fe85800d9e85210",
+      "400b08d3f56024c1",
+      "3fea6d2994762787",
+      "400a436782ddabd1",
+      "3fed0fa27bd2b91d",
+      "40093561a70b01c2"
+     ],
+     "jacobian_builds": 30,
+     "n_outputs": 2,
+     "rejected": 0,
+     "rhs_calls": 240,
+     "route": "rodas5p/banded-fast"
+    },
+    {
+     "accepted": 30,
+     "bitwise_equal": true,
+     "case": "brusselator_1d/finite-difference-band/banded-fast",
+     "driver": "rodas5p-fast-banded-v1",
+     "entry_point": "integrate_rodas5p_fast_banded_observed",
+     "final_state_bits": [
+      "3fef9ab04c10a382",
+      "4006d8823765f1f9",
+      "3fef27541ab191ba",
+      "4005cc39770edd33",
+      "3feea1cb0c3f6f27",
+      "4004f08e1e0757af",
+      "3fee119b85b5b2c4",
+      "40045289eba4a1d6",
+      "3fed82aec806f2d9",
+      "4003f80d1344d992",
+      "3fecfcef265685d6",
+      "4003e2685563a267",
+      "3fec7f30e227faf2",
+      "4004109422a0a21c",
+      "3febfe90c5c3555f",
+      "4004802b35002ee9",
+      "3feb69fd4451c07c",
+      "40052cfab2bb80c7",
+      "3feab1175f5c524e",
+      "40060f6eb1dfd176",
+      "3fe9cccbadea97a4",
+      "40071a9148531a23",
+      "3fe8c6b64b0e72ca",
+      "40083ab86705cf0e",
+      "3fe7bbc3fa421738",
+      "40095606a637d409",
+      "3fe6d82551ab7401",
+      "400a4f31c3bb28ec",
+      "3fe64e3499b9780b",
+      "400b09d2f5d4eb08",
+      "3fe64c5d7f56479c",
+      "400b6eca122241f4",
+      "3fe6f4fa15b4dffe",
+      "400b6fa02d40427b",
+      "3fe85800d9e814a9",
+      "400b08d3f56039bd",
+      "3fea6d299475ae62",
+      "400a436782ddce25",
+      "3fed0fa27bd24c91",
+      "40093561a70b1eca"
+     ],
+     "jacobian_builds": 30,
+     "n_outputs": 2,
+     "rejected": 0,
+     "rhs_calls": 420,
+     "route": "rodas5p/banded-fast"
+    },
+    {
+     "accepted": 8,
+     "bitwise_equal": true,
+     "case": "heat_reaction_jvp/matrix-free",
+     "driver": "rodas5p-mf-fast-transformed-v1",
+     "entry_point": "integrate_rodas5p_routed_observed",
+     "final_state_bits": [
+      "3fd173aff5c936c0",
+      "3fdfbac235c73315",
+      "3fe528387b2a434d",
+      "3fe8e593d925ea42",
+      "3feb7708ccb260c0",
+      "3fed2a6d4f4354c3",
+      "3fee33b9bec6c77c",
+      "3feeb16b979ba140",
+      "3feeb16b979ba143",
+      "3fee33b9bec6c77c",
+      "3fed2a6d4f4354c0",
+      "3feb7708ccb260bd",
+      "3fe8e593d925ea41",
+      "3fe528387b2a4350",
+      "3fdfbac235c73318",
+      "3fd173aff5c936c2"
+     ],
+     "jacobian_builds": 0,
+     "n_outputs": 2,
+     "rejected": 0,
+     "rhs_calls": 64,
+     "route": "rodas5p/matrix-free"
+    },
+    {
+     "accepted": 35,
+     "bitwise_equal": true,
+     "case": "robertson/dense-output/fast-dense",
+     "driver": "rodas5p-fast-dense-v1",
+     "entry_point": "integrate_rodas5p_fast_dense_observed",
+     "final_state_bits": [
+      "3fe6e80da014a416",
+      "3ee34370ea731e78",
+      "3fd22fbe38f4e2ee"
+     ],
+     "jacobian_builds": 35,
+     "n_outputs": 36,
+     "rejected": 1,
+     "rhs_calls": 322,
+     "route": "rodas5p/fast-dense"
+    },
+    {
+     "accepted": 30,
+     "bitwise_equal": true,
+     "case": "brusselator_1d/banded-provider/dense-output/fast-banded-dense",
+     "driver": "rodas5p-fast-banded-dense-v1",
+     "entry_point": "integrate_rodas5p_fast_banded_dense_observed",
+     "final_state_bits": [
+      "3fef9ab04c10d987",
+      "4006d8823765d582",
+      "3fef27541ab157c7",
+      "4005cc39770edf17",
+      "3feea1cb0c3ea6be",
+      "4004f08e1e07807e",
+      "3fee119b85b47864",
+      "40045289eba4d9b8",
+      "3fed82aec8059ac5",
+      "4003f80d13451329",
+      "3fecfcef2654e623",
+      "4003e2685563e29e",
+      "3fec7f30e2260ab0",
+      "4004109422a0f4fb",
+      "3febfe90c5c0f162",
+      "4004802b3500974b",
+      "3feb69fd444ecbb5",
+      "40052cfab2bc07b1",
+      "3feab1175f596a01",
+      "40060f6eb1e05ff4",
+      "3fe9cccbade901d3",
+      "40071a9148536d44",
+      "3fe8c6b64b0e7ec4",
+      "40083ab86705cb06",
+      "3fe7bbc3fa433ec8",
+      "40095606a6379656",
+      "3fe6d82551ac8958",
+      "400a4f31c3baf139",
+      "3fe64e3499b9e394",
+      "400b09d2f5d4d8c2",
+      "3fe64c5d7f56382a",
+      "400b6eca1222461f",
+      "3fe6f4fa15b4cd59",
+      "400b6fa02d404151",
+      "3fe85800d9e85210",
+      "400b08d3f56024c1",
+      "3fea6d2994762787",
+      "400a436782ddabd1",
+      "3fed0fa27bd2b91d",
+      "40093561a70b01c2"
+     ],
+     "jacobian_builds": 30,
+     "n_outputs": 31,
+     "rejected": 0,
+     "rhs_calls": 270,
+     "route": "rodas5p/fast-banded-dense"
+    },
+    {
+     "accepted": 34,
+     "bitwise_equal": true,
+     "case": "robertson_dae/mass/sequential-dense",
+     "driver": "rodas5p-sequential-dense-v2",
+     "entry_point": "integrate_adaptive_dense_observed_with_partial",
+     "final_state_bits": [
+      "3fe6e80d2ff755cb",
+      "3ee3436fcd46fa2d",
+      "3fd22fbf1931b9dd"
+     ],
+     "jacobian_builds": 35,
+     "n_outputs": 2,
+     "rejected": 1,
+     "rhs_calls": 280,
+     "route": "rodas5p/sequential-dense"
+    }
+   ]
+  },
+  {
+   "method": "dopri5",
+   "test": "d2_dopri5_adapter_and_general_plan_are_bitwise_the_direct_calls",
+   "test_status": "ok",
+   "cases": 3,
+   "cases_bitwise_equal": 3,
+   "routes": [
+    "dopri5/rhs-only",
+    "rodas5p/dense-fast"
+   ],
+   "verdict": "PASS",
+   "case_rows": [
+    {
+     "accepted": 91,
+     "bitwise_equal": true,
+     "case": "lotka_volterra/dopri5",
+     "final_state_bits": [
+      "3ff06bf3fb848229",
+      "3fed1c0ff340f8ed"
+     ],
+     "rejected": 14,
+     "rhs_calls": 631,
+     "route": "dopri5/rhs-only"
+    },
+    {
+     "bitwise_equal": true,
+     "case": "lotka_volterra/general-default",
+     "final_state_bits": [
+      "3ff06bf3fb848229",
+      "3fed1c0ff340f8ed"
+     ],
+     "route": "dopri5/rhs-only"
+    },
+    {
+     "bitwise_equal": true,
+     "case": "robertson/general-stiff-provided",
+     "final_state_bits": [
+      "3fe6e80d2ff7550e",
+      "3ee3436fcd46f80e",
+      "3fd22fbf1931bb49"
+     ],
+     "route": "rodas5p/dense-fast"
+    }
+   ]
+  },
+  {
+   "method": "bdf1-bdf2-variable",
+   "test": "d2_bdf_adapter_is_bitwise_the_direct_call",
+   "test_status": "ok",
+   "cases": 3,
+   "cases_bitwise_equal": 3,
+   "routes": [
+    "bdf1-bdf2-variable/explicit-jacobian-dense-newton",
+    "bdf1-bdf2-variable/jvp-columns-dense-newton"
+   ],
+   "verdict": "PASS",
+   "case_rows": [
+    {
+     "accepted": 204,
+     "atol": 1e-08,
+     "attempts": 378,
+     "bitwise_equal": true,
+     "case": "robertson/bdf1-bdf2-variable",
+     "driver": "rodas5p_integrators::integrate_bdf_adaptive_observed",
+     "final_state_bits": [
+      "3fe6e7b61c7f948f",
+      "3ee3429203d22d9a",
+      "3fd2306d41dccf0d"
+     ],
+     "jacobian_builds": 382,
+     "jvp_calls": 0,
+     "nonlinear_iterations": 979,
+     "rejected": 175,
+     "rhs_calls": 1371,
+     "route": "bdf1-bdf2-variable/explicit-jacobian-dense-newton",
+     "rtol": 0.0001
+    },
+    {
+     "accepted": 219,
+     "atol": 1e-08,
+     "attempts": 421,
+     "bitwise_equal": true,
+     "case": "vanderpol/bdf1-bdf2-variable",
+     "driver": "rodas5p_integrators::integrate_bdf_adaptive_observed",
+     "final_state_bits": [
+      "3ff9a270f71227dc",
+      "bfb9f1f5eef7ad2b"
+     ],
+     "jacobian_builds": 429,
+     "jvp_calls": 0,
+     "nonlinear_iterations": 757,
+     "rejected": 203,
+     "rhs_calls": 1186,
+     "route": "bdf1-bdf2-variable/explicit-jacobian-dense-newton",
+     "rtol": 0.0001
+    },
+    {
+     "accepted": 90,
+     "atol": 1e-08,
+     "attempts": 162,
+     "bitwise_equal": true,
+     "case": "prothero_robinson_nonnormal_jvp/bdf1-bdf2-variable",
+     "driver": "rodas5p_integrators::integrate_bdf_adaptive_observed",
+     "final_state_bits": [
+      "3ffd76a411c1e18b",
+      "bfdaa219d0662672"
+     ],
+     "jacobian_builds": 166,
+     "jvp_calls": 332,
+     "nonlinear_iterations": 166,
+     "rejected": 74,
+     "rhs_calls": 332,
+     "route": "bdf1-bdf2-variable/jvp-columns-dense-newton",
+     "rtol": 0.0001
+    }
+   ]
+  },
+  {
+   "method": "radau-iia3",
+   "test": "d2_radau_adapter_is_bitwise_the_direct_call",
+   "test_status": "ok",
+   "cases": 3,
+   "cases_bitwise_equal": 3,
+   "routes": [
+    "radau-iia3/explicit-jacobian-dense-newton",
+    "radau-iia3/jvp-columns-dense-newton"
+   ],
+   "verdict": "PASS",
+   "case_rows": [
+    {
+     "accepted": 57,
+     "atol": 1e-09,
+     "attempts": 60,
+     "bitwise_equal": true,
+     "case": "robertson/radau-iia3",
+     "driver": "rodas5p_integrators::integrate_radau_adaptive_observed",
+     "final_state_bits": [
+      "3fe6e80e2b24cd95",
+      "3ee3437248d3ccdb",
+      "3fd22fbd22d1d330"
+     ],
+     "jacobian_builds": 60,
+     "jvp_calls": 0,
+     "nonlinear_iterations": 334,
+     "rejected": 3,
+     "rhs_calls": 1241,
+     "route": "radau-iia3/explicit-jacobian-dense-newton",
+     "rtol": 1e-06
+    },
+    {
+     "accepted": 48,
+     "atol": 1e-09,
+     "attempts": 51,
+     "bitwise_equal": true,
+     "case": "vanderpol/radau-iia3",
+     "driver": "rodas5p_integrators::integrate_radau_adaptive_observed",
+     "final_state_bits": [
+      "3ff9a2a79d201c18",
+      "bfb9f16ab79c8838"
+     ],
+     "jacobian_builds": 51,
+     "jvp_calls": 0,
+     "nonlinear_iterations": 239,
+     "rejected": 3,
+     "rhs_calls": 921,
+     "route": "radau-iia3/explicit-jacobian-dense-newton",
+     "rtol": 1e-06
+    },
+    {
+     "accepted": 12,
+     "atol": 1e-09,
+     "attempts": 12,
+     "bitwise_equal": true,
+     "case": "prothero_robinson_nonnormal_jvp/radau-iia3",
+     "driver": "rodas5p_integrators::integrate_radau_adaptive_observed",
+     "final_state_bits": [
+      "3ffd76aa498c9983",
+      "bfdaa2269229d30a"
+     ],
+     "jacobian_builds": 12,
+     "jvp_calls": 24,
+     "nonlinear_iterations": 12,
+     "rejected": 0,
+     "rhs_calls": 84,
+     "route": "radau-iia3/jvp-columns-dense-newton",
+     "rtol": 1e-06
+    }
+   ]
+  },
+  {
+   "method": "pexprb54s4-fused",
+   "test": "d2_pexprb_adapter_is_bitwise_the_direct_call",
+   "test_status": "ok",
+   "cases": 1,
+   "cases_bitwise_equal": 1,
+   "routes": [
+    "pexprb54s4-fused/jvp-phi-krylov"
+   ],
+   "verdict": "PASS",
+   "case_rows": [
+    {
+     "accepted": 8,
+     "atol": 1e-09,
+     "attempts": 8,
+     "bitwise_equal": true,
+     "case": "heat_reaction_jvp/pexprb54s4-fused",
+     "driver": "rodas5p_integrators::integrate_pexprb54s4_fused_adaptive_observed",
+     "final_state_bits": [
+      "3fd173aff66880e0",
+      "3fdfbac22a43f6e5",
+      "3fe5283874d00de2",
+      "3fe8e593d8b62216",
+      "3feb7708d1b5afce",
+      "3fed2a6d54b3b990",
+      "3fee33b9c09b8ff1",
+      "3feeb16b95ef4858",
+      "3feeb16b95ef4858",
+      "3fee33b9c09b8ff1",
+      "3fed2a6d54b3b991",
+      "3feb7708d1b5afce",
+      "3fe8e593d8b62216",
+      "3fe5283874d00de3",
+      "3fdfbac22a43f6e7",
+      "3fd173aff66880e2"
+     ],
+     "jacobian_builds": 0,
+     "jvp_calls": 354,
+     "nonlinear_iterations": 0,
+     "rejected": 0,
+     "rhs_calls": 32,
+     "route": "pexprb54s4-fused/jvp-phi-krylov",
+     "rtol": 1e-06
+    }
+   ]
+  },
+  {
+   "method": "rodas5p-lagged-richardson-v1",
+   "test": "d2_lagged_rodas5p_adapter_is_bitwise_the_direct_call",
+   "test_status": "ok",
+   "cases": 3,
+   "cases_bitwise_equal": 3,
+   "routes": [
+    "rodas5p-lagged-richardson-v1/explicit-jacobian-dense-lagged-lu"
+   ],
+   "verdict": "PASS",
+   "case_rows": [
+    {
+     "accepted": 34,
+     "atol": 1e-09,
+     "attempts": 35,
+     "bitwise_equal": true,
+     "case": "robertson/rodas5p-lagged-richardson-v1",
+     "driver": "rodas5p_integrators::integrate_rodas5p_lagged_observed",
+     "final_state_bits": [
+      "3fe6e80d2f8ed484",
+      "3ee3436fcc138b62",
+      "3fd22fbf1a02bed4"
+     ],
+     "jacobian_builds": 34,
+     "jvp_calls": 0,
+     "nonlinear_iterations": 0,
+     "rejected": 1,
+     "rhs_calls": 279,
+     "route": "rodas5p-lagged-richardson-v1/explicit-jacobian-dense-lagged-lu",
+     "rtol": 1e-06
+    },
+    {
+     "accepted": 30,
+     "atol": 1e-09,
+     "attempts": 30,
+     "bitwise_equal": true,
+     "case": "brusselator_1d/rodas5p-lagged-richardson-v1",
+     "driver": "rodas5p_integrators::integrate_rodas5p_lagged_observed",
+     "final_state_bits": [
+      "3fef9ab04b7206f1",
+      "4006d882379b98f6",
+      "3fef2754198807d8",
+      "4005cc39777369c4",
+      "3feea1cb0aaa0ef0",
+      "4004f08e1e8fb301",
+      "3fee119b83d85cbe",
+      "40045289ec43b658",
+      "3fed82aec605f2ba",
+      "4003f80d13ed81a8",
+      "3fecfcef24531e26",
+      "4003e2685609e2a7",
+      "3fec7f30e03fcd64",
+      "40041094233a3805",
+      "3febfe90c40fc54e",
+      "4004802b3584bc55",
+      "3feb69fd42e7744c",
+      "40052cfab324d312",
+      "3feab1175e4a78af",
+      "40060f6eb22a1ede",
+      "3fe9cccbad3906e3",
+      "40071a91487d611c",
+      "3fe8c6b64abb0ae2",
+      "40083ab867123fa2",
+      "3fe7bbc3fa41bfc7",
+      "40095606a62b59a4",
+      "3fe6d82551ecdd6e",
+      "400a4f31c39c44f1",
+      "3fe64e349a293ab7",
+      "400b09d2f5aa5ac2",
+      "3fe64c5d7fe0e0e6",
+      "400b6eca11f246ea",
+      "3fe6f4fa1646cc4d",
+      "400b6fa02d1099e9",
+      "3fe85800da6db7f5",
+      "400b08d3f536402c",
+      "3fea6d2994dc3175",
+      "400a436782be69d7",
+      "3fed0fa27c0a232c",
+      "40093561a6fa4498"
+     ],
+     "jacobian_builds": 30,
+     "jvp_calls": 0,
+     "nonlinear_iterations": 0,
+     "rejected": 0,
+     "rhs_calls": 240,
+     "route": "rodas5p-lagged-richardson-v1/explicit-jacobian-dense-lagged-lu",
+     "rtol": 1e-06
+    },
+    {
+     "accepted": 13,
+     "atol": 1e-09,
+     "attempts": 13,
+     "bitwise_equal": true,
+     "case": "prothero_robinson_nonnormal_dense/rodas5p-lagged-richardson-v1",
+     "driver": "rodas5p_integrators::integrate_rodas5p_lagged_observed",
+     "final_state_bits": [
+      "3ffd76aa4700b6e4",
+      "bfdaa2262d4f5d12"
+     ],
+     "jacobian_builds": 13,
+     "jvp_calls": 0,
+     "nonlinear_iterations": 0,
+     "rejected": 0,
+     "rhs_calls": 130,
+     "route": "rodas5p-lagged-richardson-v1/explicit-jacobian-dense-lagged-lu",
+     "rtol": 1e-06
+    }
+   ]
+  },
+  {
+   "method": "ppsw1-6b-schmitt-weiner-singly-implicit-peer-w",
+   "test": "d2_ppsw1_adapter_is_bitwise_the_direct_call",
+   "test_status": "ok",
+   "cases": 4,
+   "cases_bitwise_equal": 4,
+   "routes": [
+    "ppsw1-6b-schmitt-weiner-singly-implicit-peer-w/explicit-jacobian-dense",
+    "ppsw1-6b-schmitt-weiner-singly-implicit-peer-w/jvp-columns-dense"
+   ],
+   "verdict": "PASS",
+   "case_rows": [
+    {
+     "accepted": 135,
+     "atol": 1e-09,
+     "bitwise_equal": true,
+     "case": "prothero_robinson_nonnormal_dense/shared-options",
+     "final_state_bits": [
+      "3ffd76aa47828721",
+      "bfdaa22657545514"
+     ],
+     "n_outputs": 136,
+     "rejected": 0,
+     "route": "ppsw1-6b-schmitt-weiner-singly-implicit-peer-w/explicit-jacobian-dense",
+     "rtol": 1e-06,
+     "starter_halvings": 0
+    },
+    {
+     "accepted": 143,
+     "atol": 1e-10,
+     "bitwise_equal": true,
+     "case": "prothero_robinson_nonnormal_dense/peer-options",
+     "final_state_bits": [
+      "3ffd76aa47829044",
+      "bfdaa22657538128"
+     ],
+     "n_outputs": 144,
+     "rejected": 0,
+     "route": "ppsw1-6b-schmitt-weiner-singly-implicit-peer-w/explicit-jacobian-dense",
+     "rtol": 1e-08,
+     "starter_halvings": 0
+    },
+    {
+     "accepted": 135,
+     "atol": 1e-09,
+     "bitwise_equal": true,
+     "case": "prothero_robinson_nonnormal_jvp/shared-options",
+     "final_state_bits": [
+      "3ffd76aa47828721",
+      "bfdaa22657545514"
+     ],
+     "n_outputs": 136,
+     "rejected": 0,
+     "route": "ppsw1-6b-schmitt-weiner-singly-implicit-peer-w/jvp-columns-dense",
+     "rtol": 1e-06,
+     "starter_halvings": 0
+    },
+    {
+     "accepted": 143,
+     "atol": 1e-10,
+     "bitwise_equal": true,
+     "case": "prothero_robinson_nonnormal_jvp/peer-options",
+     "final_state_bits": [
+      "3ffd76aa47829044",
+      "bfdaa22657538128"
+     ],
+     "n_outputs": 144,
+     "rejected": 0,
+     "route": "ppsw1-6b-schmitt-weiner-singly-implicit-peer-w/jvp-columns-dense",
+     "rtol": 1e-08,
+     "starter_halvings": 0
+    }
+   ]
+  },
+  {
+   "method": "lawson-dopri5-declared-damped-rotation",
+   "test": "d2_lawson_adapter_is_bitwise_the_direct_call_and_needs_its_declaration",
+   "test_status": "ok",
+   "cases": 1,
+   "cases_bitwise_equal": 1,
+   "routes": [
+    "lawson-dopri5-declared-damped-rotation/declared-damped-rotation-rhs-only"
+   ],
+   "verdict": "PASS",
+   "case_rows": [
+    {
+     "accepted": 649,
+     "bitwise_equal": true,
+     "case": "damped_rotation/lawson",
+     "final_state_bits": [
+      "3fbed48ef1b94ad1",
+      "bfdf073c71488910"
+     ],
+     "rejected": 0,
+     "rhs_calls": 3895,
+     "route": "lawson-dopri5-declared-damped-rotation/declared-damped-rotation-rhs-only"
+    }
+   ]
+  }
+ ],
+ "peer_defects": {
+  "source": "audit findings COD-02 and COD-04",
+  "reproductions": [
+   {
+    "test": "cod02_p3_fast_forcing_20_is_error_controlled_or_refused",
+    "base_sources": "FAILED",
+    "after_fix": "ok"
+   },
+   {
+    "test": "cod02_p3b_fast_forcing_200_is_error_controlled_or_refused",
+    "base_sources": "FAILED",
+    "after_fix": "ok"
+   },
+   {
+    "test": "cod02_p5_invalid_h0_is_refused_before_any_callback",
+    "base_sources": "FAILED",
+    "after_fix": "ok"
+   },
+   {
+    "test": "cod04a_p1_jvp_provider_needs_the_jvp_permission",
+    "base_sources": "FAILED",
+    "after_fix": "ok"
+   },
+   {
+    "test": "cod04b_p2a_starter_endpoint_above_t_end_is_a_success_with_exact_endpoint",
+    "base_sources": "FAILED",
+    "after_fix": "ok"
+   },
+   {
+    "test": "cod04c_p4_recoverable_jacobian_error_is_reported_as_itself",
+    "base_sources": "FAILED",
+    "after_fix": "ok"
+   },
+   {
+    "test": "cod04cd_p6_fatal_rhs_error_is_reported_as_a_fatal_callback",
+    "base_sources": "FAILED",
+    "after_fix": "ok"
+   },
+   {
+    "test": "cod04e_p7_declared_band_is_refused_by_admission_too",
+    "base_sources": "FAILED",
+    "after_fix": "ok"
+   }
+  ],
+  "all_failed_on_base_and_pass_after_fix": true,
+  "failing_first_log": {
+   "log": "logs/failing_first_peer_defects.log",
+   "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test unified_frontend_contracts -- --nocapture --test-threads 1",
+   "commit": "00d327647538eda44d640f19dad5b317d818a7b9 (selection.rs unchanged from base c468478e: yes)",
+   "date": "2026-11-17T14:16:06+09:00",
+   "loadavg_before": null,
+   "loadavg_after": null,
+   "worktree_dirty_files": null,
+   "exit_code": 101,
+   "binaries": [
+    {
+     "binary": "tests/unified_frontend_contracts.rs",
+     "result": "FAILED",
+     "passed": 1,
+     "failed": 8,
+     "ignored": 0,
+     "filtered_out": 0
+    }
+   ],
+   "tests": {
+    "passed": 1,
+    "failed": 8,
+    "ignored": 0,
+    "binaries": 1
+   },
+   "failed_tests": [
+    "cod02_p3_fast_forcing_20_is_error_controlled_or_refused",
+    "cod02_p3b_fast_forcing_200_is_error_controlled_or_refused",
+    "cod02_p5_invalid_h0_is_refused_before_any_callback",
+    "cod04a_p1_jvp_provider_needs_the_jvp_permission",
+    "cod04b_p2a_starter_endpoint_above_t_end_is_a_success_with_exact_endpoint",
+    "cod04c_p4_recoverable_jacobian_error_is_reported_as_itself",
+    "cod04cd_p6_fatal_rhs_error_is_reported_as_a_fatal_callback",
+    "cod04e_p7_declared_band_is_refused_by_admission_too"
+   ]
+  },
+  "forcing_cases": {
+   "cod02_p3": {
+    "base_sources": {
+     "success": true,
+     "h0": 0.5,
+     "abs_error": 8.31322207926079,
+     "error_in_tolerance_units": 9007275.429075394
+    },
+    "after_fix": {
+     "success": true,
+     "h0": 0.015625,
+     "abs_error": 1.4312726559495559e-08,
+     "error_in_tolerance_units": 0.015507665864483025,
+     "accepted_peer_steps": 363,
+     "rejected_peer_steps": 13,
+     "startup_jacobian_builds": 14
+    }
+   },
+   "cod02_p3b": {
+    "base_sources": {
+     "success": true,
+     "h0": 0.5,
+     "abs_error": 50.24527499380263,
+     "error_in_tolerance_units": 56883763.996879764
+    },
+    "after_fix": {
+     "success": true,
+     "h0": 0.001953125,
+     "abs_error": 3.081109911651225e-08,
+     "error_in_tolerance_units": 0.03488191259465352,
+     "accepted_peer_steps": 3437,
+     "rejected_peer_steps": 84,
+     "startup_jacobian_builds": 20
+    }
+   }
+  },
+  "other_cases_after_fix": {
+   "cod02_p5": [
+    {
+     "h0": "negative",
+     "outcome": "Err(InvalidInput(\"h0 must be finite and positive\"))",
+     "user_callbacks": 0
+    },
+    {
+     "h0": "nan",
+     "outcome": "Err(InvalidInput(\"h0 must be finite and positive\"))",
+     "user_callbacks": 0
+    },
+    {
+     "h0": "zero",
+     "outcome": "Err(InvalidInput(\"h0 must be finite and positive\"))",
+     "user_callbacks": 0
+    },
+    {
+     "h0": "infinite",
+     "outcome": "Err(InvalidInput(\"h0 must be finite and positive\"))",
+     "user_callbacks": 0
+    }
+   ],
+   "cod04a_p1": {
+    "admission": "Refused { method_id: \"ppsw1-6b-schmitt-weiner-singly-implicit-peer-w\", reasons: [Permission { variant: \"jvp-columns-dense\", phase: PerStep }, Permission { variant: \"jvp-columns-dense\", phase: Startup }] }",
+    "error": "Refused([Permission { variant: \"jvp-columns-dense\", phase: PerStep }, Permission { variant: \"jvp-columns-dense\", phase: Startup }])",
+    "solve_is_err": true,
+    "user_callbacks": 0
+   },
+   "cod04b_p2": [
+    {
+     "failure": null,
+     "span": [
+      0.3,
+      0.9
+     ],
+     "success": true,
+     "t_last": "0.9",
+     "y_last": 0.6000000000000029
+    },
+    {
+     "failure": null,
+     "span": [
+      0.2,
+      0.9
+     ],
+     "success": true,
+     "t_last": "0.9",
+     "y_last": 0.7000000000000032
+    },
+    {
+     "failure": null,
+     "span": [
+      0.0,
+      1.0
+     ],
+     "success": true,
+     "t_last": "1.0",
+     "y_last": 1.0000000000000047
+    }
+   ],
+   "cod04c_p4": {
+    "accepted_peer_steps": 0,
+    "failure": "recoverable callback error (Jacobian, starter phase, t = 0e0): user says shrink",
+    "rejected_peer_steps": 0,
+    "success": false,
+    "user_jacobian_callbacks": 3
+   },
+   "cod04cd_p6": {
+    "failure": "fatal callback error (Rhs, starter phase, t = 1.8602401356562195e0): user fatal",
+    "n_outputs": 0,
+    "success": false,
+    "user_rhs_callbacks": 41
+   },
+   "cod04e_p7": {
+    "admission": "Refused { method_id: \"ppsw1-6b-schmitt-weiner-singly-implicit-peer-w\", reasons: [ProviderFormUnsupported] }",
+    "solve": "Some(UnsupportedJacobian)",
+    "user_callbacks": 0
+   }
+  },
+  "other_cases_on_base": {
+   "cod02_p5": [
+    {
+     "h0": "negative",
+     "outcome": "Ok(success=false, failure=Some(\"starter: InvalidInput(\\\"first step size h0 must be finite and positive\\\")\"), h0=-1.0)",
+     "user_callbacks": 0
+    },
+    {
+     "h0": "nan",
+     "outcome": "Ok(success=true, failure=None, h0=0.5)",
+     "user_callbacks": 17
+    },
+    {
+     "h0": "zero",
+     "outcome": "Ok(success=false, failure=Some(\"starter: InvalidInput(\\\"first step size h0 must be finite and positive\\\")\"), h0=0.0)",
+     "user_callbacks": 0
+    },
+    {
+     "h0": "infinite",
+     "outcome": "Ok(success=true, failure=None, h0=0.5)",
+     "user_callbacks": 17
+    }
+   ],
+   "cod04a_p1": {
+    "admission": "Admitted { method_id: \"ppsw1-6b-schmitt-weiner-singly-implicit-peer-w\", variant: \"explicit-jacobian-dense\", qualification: ScopedCalibration, access: ExplicitApiOnly }",
+    "error": null,
+    "solve_is_err": false,
+    "user_callbacks": 20
+   },
+   "cod04b_p2": null,
+   "cod04c_p4": {
+    "accepted_peer_steps": 0,
+    "failure": "t=2: InvalidInput(\"PPSW1 requires a finite, representably advancing time\")",
+    "rejected_peer_steps": 52,
+    "success": false,
+    "user_jacobian_callbacks": 54
+   },
+   "cod04cd_p6": {
+    "failure": "t=2: InvalidInput(\"fatal callback error: user fatal\")",
+    "n_outputs": 1,
+    "success": false,
+    "user_rhs_callbacks": 41
+   },
+   "cod04e_p7": {
+    "admission": "Admitted { method_id: \"ppsw1-6b-schmitt-weiner-singly-implicit-peer-w\", variant: \"explicit-jacobian-dense\", qualification: ScopedCalibration, access: ExplicitApiOnly }",
+    "solve": "Some(UnsupportedJacobian)",
+    "user_callbacks": 0
+   }
+  },
+  "typed_assertions": {
+   "peer_typed_recoverable_jacobian": {
+    "accepted": 74,
+    "failing_jacobian_calls": 1,
+    "reason": "Callback { phase: Step, callback: Jacobian, recoverable: true, t: 5.027774653060079, message: \"user says shrink\" }",
+    "rejected": 5
+   },
+   "peer_typed_fatal_rhs": {
+    "accepted": 73,
+    "last_t": 4.933443024890244,
+    "reason": "Callback { phase: Step, callback: Rhs, recoverable: false, t: 5.008908327426112, message: \"user fatal\" }"
+   },
+   "peer_starter_record": {
+    "forcing_halvings": 5,
+    "zero_scale_reason": "Some(StarterErrorAboveTolerance { h0: 4.547473508864641e-13, estimate: NaN, halvings: 40 })",
+    "zero_scale_startup_jacobian_builds": 84
+   }
+  },
+  "u07_trajectory_regression_exploratory": [
+   {
+    "jacobian": "dense",
+    "threads": 1,
+    "trajectory_fnv1a64_base": "11f88b8ffe6c8d47",
+    "trajectory_fnv1a64_after_fix": "11f88b8ffe6c8d47",
+    "trajectory_unchanged": true,
+    "startup_jacobian_builds": [
+     2,
+     4
+    ],
+    "startup_rhs_calls": [
+     16,
+     48
+    ],
+    "step_rhs_calls": [
+     858,
+     858
+    ]
+   },
+   {
+    "jacobian": "dense",
+    "threads": 4,
+    "trajectory_fnv1a64_base": "11f88b8ffe6c8d47",
+    "trajectory_fnv1a64_after_fix": "11f88b8ffe6c8d47",
+    "trajectory_unchanged": true,
+    "startup_jacobian_builds": [
+     2,
+     4
+    ],
+    "startup_rhs_calls": [
+     16,
+     48
+    ],
+    "step_rhs_calls": [
+     858,
+     858
+    ]
+   },
+   {
+    "jacobian": "jvp",
+    "threads": 1,
+    "trajectory_fnv1a64_base": "11f88b8ffe6c8d47",
+    "trajectory_fnv1a64_after_fix": "11f88b8ffe6c8d47",
+    "trajectory_unchanged": true,
+    "startup_jacobian_builds": [
+     2,
+     4
+    ],
+    "startup_rhs_calls": [
+     16,
+     48
+    ],
+    "step_rhs_calls": [
+     858,
+     858
+    ]
+   },
+   {
+    "jacobian": "jvp",
+    "threads": 4,
+    "trajectory_fnv1a64_base": "11f88b8ffe6c8d47",
+    "trajectory_fnv1a64_after_fix": "11f88b8ffe6c8d47",
+    "trajectory_unchanged": true,
+    "startup_jacobian_builds": [
+     2,
+     4
+    ],
+    "startup_rhs_calls": [
+     16,
+     48
+    ],
+    "step_rhs_calls": [
+     858,
+     858
+    ]
+   }
+  ]
+ },
+ "auto": {
+  "ranking": {
+   "evidence_callback_units": 18,
+   "ranking_rows": [
+    {
+     "method_id": "dopri5",
+     "moved_by_evidence": false,
+     "qualification": "production",
+     "rank": null,
+     "refusals": [
+      "regime-mismatch"
+     ],
+     "regime_fit": false,
+     "route": null
+    },
+    {
+     "method_id": "rodas5p",
+     "moved_by_evidence": false,
+     "qualification": "production",
+     "rank": 0,
+     "refusals": [],
+     "regime_fit": true,
+     "route": {
+      "facade_route": "dense-fast",
+      "method_id": "rodas5p",
+      "needs": {
+       "automatic_differentiation": false,
+       "dense_matrix": true,
+       "explicit_jacobian": true,
+       "finite_difference": false,
+       "newton": false,
+       "provided_jvp": false
+      },
+      "qualification": "production",
+      "variant": "dense-fast"
+     }
+    },
+    {
+     "method_id": "ppsw1-6b-schmitt-weiner-singly-implicit-peer-w",
+     "moved_by_evidence": false,
+     "qualification": "scoped-calibration",
+     "rank": 1,
+     "refusals": [],
+     "regime_fit": true,
+     "route": {
+      "facade_route": null,
+      "method_id": "ppsw1-6b-schmitt-weiner-singly-implicit-peer-w",
+      "needs": {
+       "automatic_differentiation": false,
+       "dense_matrix": true,
+       "explicit_jacobian": true,
+       "finite_difference": false,
+       "newton": true,
+       "provided_jvp": false
+      },
+      "qualification": "scoped-calibration",
+      "variant": "explicit-jacobian-dense"
+     }
+    },
+    {
+     "method_id": "ppsw1-6b-matrix-free-common-w",
+     "moved_by_evidence": false,
+     "qualification": "implemented-unqualified",
+     "rank": null,
+     "refusals": [
+      "adapter-unavailable"
+     ],
+     "regime_fit": true,
+     "route": null
+    },
+    {
+     "method_id": "bdf1-bdf2-variable",
+     "moved_by_evidence": false,
+     "qualification": "implemented-unqualified",
+     "rank": 2,
+     "refusals": [],
+     "regime_fit": true,
+     "route": {
+      "facade_route": null,
+      "method_id": "bdf1-bdf2-variable",
+      "needs": {
+       "automatic_differentiation": false,
+       "dense_matrix": true,
+       "explicit_jacobian": true,
+       "finite_difference": false,
+       "newton": true,
+       "provided_jvp": false
+      },
+      "qualification": "implemented-unqualified",
+      "variant": "explicit-jacobian-dense-newton"
+     }
+    },
+    {
+     "method_id": "radau-iia3",
+     "moved_by_evidence": false,
+     "qualification": "reference-implementation-only",
+     "rank": 4,
+     "refusals": [],
+     "regime_fit": true,
+     "route": {
+      "facade_route": null,
+      "method_id": "radau-iia3",
+      "needs": {
+       "automatic_differentiation": false,
+       "dense_matrix": true,
+       "explicit_jacobian": true,
+       "finite_difference": false,
+       "newton": true,
+       "provided_jvp": false
+      },
+      "qualification": "reference-implementation-only",
+      "variant": "explicit-jacobian-dense-newton"
+     }
+    },
+    {
+     "method_id": "pexprb54s4-fused",
+     "moved_by_evidence": false,
+     "qualification": "implemented-unqualified",
+     "rank": null,
+     "refusals": [
+      {
+       "registry": "provider-form-unsupported"
+      }
+     ],
+     "regime_fit": true,
+     "route": null
+    },
+    {
+     "method_id": "rodas5p-lagged-richardson-v1",
+     "moved_by_evidence": false,
+     "qualification": "implemented-unqualified",
+     "rank": 3,
+     "refusals": [],
+     "regime_fit": true,
+     "route": {
+      "facade_route": null,
+      "method_id": "rodas5p-lagged-richardson-v1",
+      "needs": {
+       "automatic_differentiation": false,
+       "dense_matrix": true,
+       "explicit_jacobian": true,
+       "finite_difference": false,
+       "newton": false,
+       "provided_jvp": false
+      },
+      "qualification": "implemented-unqualified",
+      "variant": "explicit-jacobian-dense-lagged-lu"
+     }
+    },
+    {
+     "method_id": "lawson-dopri5-declared-damped-rotation",
+     "moved_by_evidence": false,
+     "qualification": "implemented-unqualified",
+     "rank": null,
+     "refusals": [
+      "explicit-choice-only"
+     ],
+     "regime_fit": false,
+     "route": null
+    }
+   ],
+   "stiff_full_permission": [
+    "rodas5p",
+    "ppsw1-6b-schmitt-weiner-singly-implicit-peer-w",
+    "bdf1-bdf2-variable",
+    "rodas5p-lagged-richardson-v1",
+    "radau-iia3"
+   ],
+   "stiff_general_policy": [
+    "rodas5p"
+   ],
+   "with_measured_evidence": [
+    "rodas5p",
+    "ppsw1-6b-schmitt-weiner-singly-implicit-peer-w",
+    "rodas5p-lagged-richardson-v1",
+    "bdf1-bdf2-variable",
+    "radau-iia3"
+   ]
+  },
+  "fallback": {
+   "attempts": [
+    {
+     "failure": "DOPRI5 attempt budget exhausted (AttemptBudget)",
+     "prefix_end": 0.7102640057483135,
+     "route": "dopri5/rhs-only",
+     "success": false,
+     "work": {
+      "accepted_steps": 476,
+      "factorizations": 0,
+      "jacobian_builds": 0,
+      "jvp_calls": 0,
+      "linear_solves": 0,
+      "nonlinear_iterations": 0,
+      "rejected_steps": 24,
+      "rhs_calls": 3001,
+      "time_derivative_calls": 0
+     }
+    },
+    {
+     "failure": null,
+     "prefix_end": 40.0,
+     "route": "rodas5p/dense-fast",
+     "success": true,
+     "work": {
+      "accepted_steps": 34,
+      "factorizations": 35,
+      "jacobian_builds": 34,
+      "jvp_calls": 0,
+      "linear_solves": 280,
+      "nonlinear_iterations": 0,
+      "rejected_steps": 1,
+      "rhs_calls": 279,
+      "time_derivative_calls": 0
+     }
+    }
+   ],
+   "total_work": {
+    "accepted_steps": 510,
+    "factorizations": 35,
+    "jacobian_builds": 34,
+    "jvp_calls": 0,
+    "linear_solves": 280,
+    "nonlinear_iterations": 0,
+    "rejected_steps": 25,
+    "rhs_calls": 3280,
+    "time_derivative_calls": 0
+   },
+   "without_permission_attempts": 1
+  }
+ },
+ "view_typed_failures": [
+  {
+   "failure": "DOPRI5 attempt budget exhausted (AttemptBudget)",
+   "method": "dopri5",
+   "prefix_end": 0.29738254842632905,
+   "rhs_calls": 31
+  },
+  {
+   "failure": "attempt budget of 5 steps reached",
+   "method": "rodas5p",
+   "prefix_end": 0.0009638165263210587,
+   "rhs_calls": 39
+  },
+  {
+   "failure": "attempt budget of 5 steps reached",
+   "method": "radau-iia3",
+   "prefix_end": 0.0,
+   "rhs_calls": 121
+  },
+  {
+   "failure": "Rhs callback failed at t = 2e-4: model left its domain",
+   "method": "bdf1-bdf2-variable",
+   "prefix_end": 0.0,
+   "rhs_calls": 31
+  },
+  {
+   "failure": "recoverable callback error (Jacobian, step phase, t = 5.002161221455267e0): user says shrink",
+   "method": "ppsw1-6b-schmitt-weiner-singly-implicit-peer-w",
+   "prefix_end": 5.002161221455267,
+   "rhs_calls": 586
+  }
+ ],
+ "executed_route_vs_capability_query": {
+  "general_surface_vector_atol": {
+   "dimension": 16,
+   "max_dense_dimension": 4,
+   "plan_needs_dense_matrix": true,
+   "planned_route_of_route_general": "rodas5p/dense-fast",
+   "select_equals_reference_body": true,
+   "select_implicit_route": "Some(MatrixFree)"
+  },
+  "requests": [
+   {
+    "accepted": 8,
+    "capability_query_route": "MatrixFree",
+    "entry_point": "integrate_rodas5p_routed_observed",
+    "executed_driver": "rodas5p-mf-fast-transformed-v1",
+    "executed_route": "rodas5p/matrix-free",
+    "jacobian_builds": 0,
+    "jvp_calls": 1023,
+    "planned_route": "rodas5p/matrix-free",
+    "request": "plain"
+   },
+   {
+    "accepted": 8,
+    "capability_query_route": "MatrixFree",
+    "entry_point": "integrate_rodas5p_fast_dense_observed",
+    "executed_driver": "rodas5p-fast-dense-v1",
+    "executed_route": "rodas5p/fast-dense",
+    "jacobian_builds": 8,
+    "jvp_calls": 128,
+    "planned_route": "rodas5p/fast-dense",
+    "request": "dense output"
+   },
+   {
+    "accepted": 8,
+    "capability_query_route": "MatrixFree",
+    "entry_point": "integrate_rodas5p_fast_observed_with_atol",
+    "executed_driver": "rodas5p-fast-transformed-v2",
+    "executed_route": "rodas5p/dense-fast",
+    "jacobian_builds": 8,
+    "jvp_calls": 128,
+    "planned_route": "rodas5p/dense-fast",
+    "request": "vector atol"
+   }
+  ]
+ },
+ "cod03_audit_cases": [
+  {
+   "auto_under_the_same_policy": "rodas5p/banded-fast",
+   "case": "c01_banded_provider_n1000_stiff_provided",
+   "route_general_equal": true,
+   "select": "Ok(GeneralSelection { method: Rodas5p, regime: Stiff, derivatives: ProvidedOnly, implicit_route: Some(BandedFast) })"
+  },
+  {
+   "auto_under_the_same_policy": "rodas5p/banded-fast",
+   "case": "c02_fd_declared_band_n1000_stiff_allowfd",
+   "route_general_equal": true,
+   "select": "Ok(GeneralSelection { method: Rodas5p, regime: Stiff, derivatives: AllowFiniteDifference, implicit_route: Some(BandedFast) })"
+  },
+  {
+   "auto_under_the_same_policy": null,
+   "case": "c03_jvp_n3_stiff_allowfd_no_matrix_free",
+   "route_general_equal": true,
+   "select": "Err(MatrixFreeNotEnabled)"
+  },
+  {
+   "auto_under_the_same_policy": null,
+   "case": "c04_dense_n3_nonautonomous_no_ft_stiff_provided",
+   "route_general_equal": true,
+   "select": "Err(MissingTimeDerivative)"
+  },
+  {
+   "auto_under_the_same_policy": null,
+   "case": "c05_dense_n3_event_stiff_provided",
+   "route_general_equal": true,
+   "select": "Err(Events)"
+  },
+  {
+   "auto_under_the_same_policy": "rodas5p/sequential-dense",
+   "case": "c06_dense_n3_mass_stiff_provided",
+   "route_general_equal": true,
+   "select": "Err(MassMatrix)"
+  },
+  {
+   "auto_under_the_same_policy": "dopri5/rhs-only",
+   "case": "c07_dense_n3_regime_unknown_provided",
+   "route_general_equal": true,
+   "select": "Ok(GeneralSelection { method: Dopri5, regime: Unknown, derivatives: ProvidedOnly, implicit_route: None })"
+  },
+  {
+   "auto_under_the_same_policy": "rodas5p/fast-dense",
+   "case": "c08_dense_n3_dense_output_stiff_provided",
+   "route_general_equal": true,
+   "select": "Err(DenseOutput)"
+  },
+  {
+   "auto_under_the_same_policy": null,
+   "case": "c09_jvp_n3_vector_atol_stiff_provided_matrix_free",
+   "route_general_equal": true,
+   "select": "Err(Implicit(VectorAtolOnMatrixFreeRoute))"
+  },
+  {
+   "auto_under_the_same_policy": null,
+   "case": "c10_dense_provider_declared_band_n100_control",
+   "route_general_equal": true,
+   "select": "Err(DenseDimensionLimit)"
+  },
+  {
+   "auto_under_the_same_policy": "rodas5p/dense-fast",
+   "case": "c11_dense_n3_stiff_provided_control",
+   "route_general_equal": true,
+   "select": "Ok(GeneralSelection { method: Rodas5p, regime: Stiff, derivatives: ProvidedOnly, implicit_route: Some(DenseFast) })"
+  },
+  {
+   "auto_under_the_same_policy": "rodas5p/banded-fast",
+   "case": "c12_banded_provider_n10_label",
+   "route_general_equal": true,
+   "select": "Ok(GeneralSelection { method: Rodas5p, regime: Stiff, derivatives: ProvidedOnly, implicit_route: Some(BandedFast) })"
+  },
+  {
+   "auto_under_the_same_policy": "rodas5p/fast-dense",
+   "case": "c13_dense_n3_event_dense_output",
+   "route_general_equal": true,
+   "select": "Err(Events)"
+  }
+ ],
+ "method_catalog": [
+  {
+   "auto_rankable": true,
+   "availability": {
+    "state": "available"
+   },
+   "declared_band": true,
+   "descriptor": {
+    "access": "general-ode-selectable",
+    "evidence": "vigilode explicit contracts",
+    "history_steps": 1,
+    "method_id": "dopri5",
+    "order": 5,
+    "qualification": "production",
+    "route": "vigilode::Dopri5::solve",
+    "stages": 7,
+    "startup": "none",
+    "tableau_identity": "Dormand-Prince 5(4), FSAL",
+    "variants": [
+     {
+      "fallback": null,
+      "label": "rhs-only",
+      "per_step": {
+       "automatic_differentiation": false,
+       "dense_matrix": false,
+       "explicit_jacobian": false,
+       "finite_difference": false,
+       "newton": false,
+       "provided_jvp": false
+      },
+      "startup": {
+       "automatic_differentiation": false,
+       "dense_matrix": false,
+       "explicit_jacobian": false,
+       "finite_difference": false,
+       "newton": false,
+       "provided_jvp": false
+      },
+      "supports_dense_output": false,
+      "supports_events": false,
+      "supports_mass": false
+     }
+    ],
+    "version": "u06-2026-11-15"
+   },
+   "direct_call": "vigilode::Dopri5::solve(problem, span, y0, options)",
+   "failure_prefix": "the outputs reached and the last accepted state",
+   "jacobian_forms": [],
+   "route_variants": [],
+   "stiff_capable": false,
+   "vector_atol": true
+  },
+  {
+   "auto_rankable": true,
+   "availability": {
+    "state": "available"
+   },
+   "declared_band": true,
+   "descriptor": {
+    "access": "general-ode-selectable",
+    "evidence": "vigilode facade and capabilities contracts",
+    "history_steps": 1,
+    "method_id": "rodas5p",
+    "order": 5,
+    "qualification": "production",
+    "route": "vigilode::Rodas5p::solve",
+    "stages": 8,
+    "startup": "none",
+    "tableau_identity": "RODAS5P, fixtures/rodas5p_coefficients_snapshot.json",
+    "variants": [
+     {
+      "fallback": null,
+      "label": "explicit-jacobian-dense",
+      "per_step": {
+       "automatic_differentiation": false,
+       "dense_matrix": true,
+       "explicit_jacobian": true,
+       "finite_difference": false,
+       "newton": false,
+       "provided_jvp": false
+      },
+      "startup": {
+       "automatic_differentiation": false,
+       "dense_matrix": false,
+       "explicit_jacobian": false,
+       "finite_difference": false,
+       "newton": false,
+       "provided_jvp": false
+      },
+      "supports_dense_output": true,
+      "supports_events": true,
+      "supports_mass": true
+     },
+     {
+      "fallback": null,
+      "label": "finite-difference-dense",
+      "per_step": {
+       "automatic_differentiation": false,
+       "dense_matrix": true,
+       "explicit_jacobian": false,
+       "finite_difference": true,
+       "newton": false,
+       "provided_jvp": false
+      },
+      "startup": {
+       "automatic_differentiation": false,
+       "dense_matrix": false,
+       "explicit_jacobian": false,
+       "finite_difference": false,
+       "newton": false,
+       "provided_jvp": false
+      },
+      "supports_dense_output": true,
+      "supports_events": true,
+      "supports_mass": true
+     },
+     {
+      "fallback": null,
+      "label": "jvp-matrix-free",
+      "per_step": {
+       "automatic_differentiation": false,
+       "dense_matrix": false,
+       "explicit_jacobian": false,
+       "finite_difference": false,
+       "newton": false,
+       "provided_jvp": true
+      },
+      "startup": {
+       "automatic_differentiation": false,
+       "dense_matrix": false,
+       "explicit_jacobian": false,
+       "finite_difference": false,
+       "newton": false,
+       "provided_jvp": false
+      },
+      "supports_dense_output": false,
+      "supports_events": false,
+      "supports_mass": false
+     }
+    ],
+    "version": "u06-2026-11-15"
+   },
+   "direct_call": "vigilode::Rodas5p::solve(problem, span, y0, options)",
+   "failure_prefix": "the outputs reached and the last accepted state",
+   "jacobian_forms": [
+    "dense",
+    "banded",
+    "jvp",
+    "sparse-jvp-banded",
+    "sparse-jvp-general",
+    "finite-difference"
+   ],
+   "route_variants": [
+    {
+     "dense_matrix": true,
+     "facade_route": "dense-fast",
+     "label": "dense-fast",
+     "matrix_free": false,
+     "supports_dense_output": false,
+     "supports_events": false,
+     "supports_mass": false
+    },
+    {
+     "dense_matrix": false,
+     "facade_route": "banded-fast",
+     "label": "banded-fast",
+     "matrix_free": false,
+     "supports_dense_output": false,
+     "supports_events": false,
+     "supports_mass": false
+    },
+    {
+     "dense_matrix": false,
+     "facade_route": "matrix-free",
+     "label": "matrix-free",
+     "matrix_free": true,
+     "supports_dense_output": false,
+     "supports_events": false,
+     "supports_mass": false
+    },
+    {
+     "dense_matrix": true,
+     "facade_route": "fast-dense",
+     "label": "fast-dense",
+     "matrix_free": false,
+     "supports_dense_output": true,
+     "supports_events": true,
+     "supports_mass": false
+    },
+    {
+     "dense_matrix": false,
+     "facade_route": "fast-banded-dense",
+     "label": "fast-banded-dense",
+     "matrix_free": false,
+     "supports_dense_output": true,
+     "supports_events": true,
+     "supports_mass": false
+    },
+    {
+     "dense_matrix": true,
+     "facade_route": "sequential-dense",
+     "label": "sequential-dense",
+     "matrix_free": false,
+     "supports_dense_output": true,
+     "supports_events": true,
+     "supports_mass": true
+    }
+   ],
+   "stiff_capable": true,
+   "vector_atol": true
+  },
+  {
+   "auto_rankable": true,
+   "availability": {
+    "state": "available"
+   },
+   "declared_band": false,
+   "descriptor": {
+    "access": "explicit-api-only",
+    "evidence": "research/production_unification_20261115/peer_qualification",
+    "history_steps": 2,
+    "method_id": "ppsw1-6b-schmitt-weiner-singly-implicit-peer-w",
+    "order": 5,
+    "qualification": "scoped-calibration",
+    "route": "rodas5p_integrators::ppsw1::Session",
+    "stages": 6,
+    "startup": "Radau IIA (5 stages) over 2 h0, dense 5n LU, simplified Newton",
+    "tableau_identity": "Schmitt-Weiner SINUM 42(1) 2004, method 6b; route-R1 oracle",
+    "variants": [
+     {
+      "fallback": null,
+      "label": "explicit-jacobian-dense",
+      "per_step": {
+       "automatic_differentiation": false,
+       "dense_matrix": true,
+       "explicit_jacobian": true,
+       "finite_difference": false,
+       "newton": false,
+       "provided_jvp": false
+      },
+      "startup": {
+       "automatic_differentiation": false,
+       "dense_matrix": true,
+       "explicit_jacobian": true,
+       "finite_difference": false,
+       "newton": true,
+       "provided_jvp": false
+      },
+      "supports_dense_output": false,
+      "supports_events": false,
+      "supports_mass": false
+     },
+     {
+      "fallback": null,
+      "label": "jvp-columns-dense",
+      "per_step": {
+       "automatic_differentiation": false,
+       "dense_matrix": true,
+       "explicit_jacobian": false,
+       "finite_difference": false,
+       "newton": false,
+       "provided_jvp": true
+      },
+      "startup": {
+       "automatic_differentiation": false,
+       "dense_matrix": true,
+       "explicit_jacobian": false,
+       "finite_difference": false,
+       "newton": true,
+       "provided_jvp": true
+      },
+      "supports_dense_output": false,
+      "supports_events": false,
+      "supports_mass": false
+     }
+    ],
+    "version": "u06-2026-11-15"
+   },
+   "direct_call": "vigilode::PeerOde::solve(problem, span, y0, peer_options, allowed)",
+   "failure_prefix": "the outputs reached and the last accepted state",
+   "jacobian_forms": [
+    "dense",
+    "jvp"
+   ],
+   "route_variants": [],
+   "stiff_capable": true,
+   "vector_atol": false
+  },
+  {
+   "auto_rankable": true,
+   "availability": {
+    "reason": "no end-to-end driver: the matrix-free common-W backend is a stage backend of ppsw1::Session; PeerOde lowers the dense backend only and there is no matrix-free starter",
+    "state": "unavailable"
+   },
+   "declared_band": false,
+   "descriptor": {
+    "access": "explicit-api-only",
+    "evidence": "research/production_unification_20261115/matrix_free_w",
+    "history_steps": 2,
+    "method_id": "ppsw1-6b-matrix-free-common-w",
+    "order": 5,
+    "qualification": "implemented-unqualified",
+    "route": "rodas5p_integrators::ppsw1::linear_backend::LinearBackend",
+    "stages": 6,
+    "startup": "dense PPSW1 starter (no matrix-free starter)",
+    "tableau_identity": "as ppsw1-6b; JVP W = I - gamma h J(t_m, y_m), GMRES",
+    "variants": [
+     {
+      "fallback": null,
+      "label": "jvp-steps-explicit-jacobian-startup",
+      "per_step": {
+       "automatic_differentiation": false,
+       "dense_matrix": false,
+       "explicit_jacobian": false,
+       "finite_difference": false,
+       "newton": false,
+       "provided_jvp": true
+      },
+      "startup": {
+       "automatic_differentiation": false,
+       "dense_matrix": true,
+       "explicit_jacobian": true,
+       "finite_difference": false,
+       "newton": true,
+       "provided_jvp": false
+      },
+      "supports_dense_output": false,
+      "supports_events": false,
+      "supports_mass": false
+     },
+     {
+      "fallback": null,
+      "label": "jvp-steps-jvp-columns-startup",
+      "per_step": {
+       "automatic_differentiation": false,
+       "dense_matrix": false,
+       "explicit_jacobian": false,
+       "finite_difference": false,
+       "newton": false,
+       "provided_jvp": true
+      },
+      "startup": {
+       "automatic_differentiation": false,
+       "dense_matrix": true,
+       "explicit_jacobian": false,
+       "finite_difference": false,
+       "newton": true,
+       "provided_jvp": true
+      },
+      "supports_dense_output": false,
+      "supports_events": false,
+      "supports_mass": false
+     }
+    ],
+    "version": "u06-2026-11-15"
+   },
+   "direct_call": "none (rodas5p_integrators::ppsw1::linear_backend::LinearBackend)",
+   "failure_prefix": "the outputs reached and the last accepted state",
+   "jacobian_forms": [],
+   "route_variants": [],
+   "stiff_capable": true,
+   "vector_atol": false
+  },
+  {
+   "auto_rankable": true,
+   "availability": {
+    "state": "available"
+   },
+   "declared_band": false,
+   "descriptor": {
+    "access": "explicit-api-only",
+    "evidence": "crates/rodas5p-integrators/src/bdf.rs contracts",
+    "history_steps": 2,
+    "method_id": "bdf1-bdf2-variable",
+    "order": 2,
+    "qualification": "implemented-unqualified",
+    "route": "rodas5p_integrators::integrate_bdf_adaptive_observed",
+    "stages": 1,
+    "startup": "BDF1 steps",
+    "tableau_identity": "variable-step BDF1/BDF2 (bdf.rs)",
+    "variants": [
+     {
+      "fallback": null,
+      "label": "explicit-jacobian-dense-newton",
+      "per_step": {
+       "automatic_differentiation": false,
+       "dense_matrix": true,
+       "explicit_jacobian": true,
+       "finite_difference": false,
+       "newton": true,
+       "provided_jvp": false
+      },
+      "startup": {
+       "automatic_differentiation": false,
+       "dense_matrix": true,
+       "explicit_jacobian": true,
+       "finite_difference": false,
+       "newton": true,
+       "provided_jvp": false
+      },
+      "supports_dense_output": false,
+      "supports_events": false,
+      "supports_mass": false
+     },
+     {
+      "fallback": null,
+      "label": "jvp-columns-dense-newton",
+      "per_step": {
+       "automatic_differentiation": false,
+       "dense_matrix": true,
+       "explicit_jacobian": false,
+       "finite_difference": false,
+       "newton": true,
+       "provided_jvp": true
+      },
+      "startup": {
+       "automatic_differentiation": false,
+       "dense_matrix": true,
+       "explicit_jacobian": false,
+       "finite_difference": false,
+       "newton": true,
+       "provided_jvp": true
+      },
+      "supports_dense_output": false,
+      "supports_events": false,
+      "supports_mass": false
+     }
+    ],
+    "version": "u06-2026-11-15"
+   },
+   "direct_call": "rodas5p_integrators::integrate_bdf_adaptive_observed(ode, span, y0, BdfConfig::default(), adaptive, [t0, t1])",
+   "failure_prefix": "the output samples reached (t0 for the end-point schedule): the driver exposes no last accepted state",
+   "jacobian_forms": [
+    "dense",
+    "jvp"
+   ],
+   "route_variants": [],
+   "stiff_capable": true,
+   "vector_atol": false
+  },
+  {
+   "auto_rankable": true,
+   "availability": {
+    "state": "available"
+   },
+   "declared_band": false,
+   "descriptor": {
+    "access": "explicit-api-only",
+    "evidence": "CLI comparator fidelity: reference-implementation-only",
+    "history_steps": 1,
+    "method_id": "radau-iia3",
+    "order": 5,
+    "qualification": "reference-implementation-only",
+    "route": "rodas5p_integrators::integrate_radau_adaptive_observed",
+    "stages": 3,
+    "startup": "none",
+    "tableau_identity": "3-stage Radau IIA, order 5, embedded order-3 estimate (radau.rs)",
+    "variants": [
+     {
+      "fallback": null,
+      "label": "explicit-jacobian-dense-newton",
+      "per_step": {
+       "automatic_differentiation": false,
+       "dense_matrix": true,
+       "explicit_jacobian": true,
+       "finite_difference": false,
+       "newton": true,
+       "provided_jvp": false
+      },
+      "startup": {
+       "automatic_differentiation": false,
+       "dense_matrix": false,
+       "explicit_jacobian": false,
+       "finite_difference": false,
+       "newton": false,
+       "provided_jvp": false
+      },
+      "supports_dense_output": false,
+      "supports_events": false,
+      "supports_mass": false
+     },
+     {
+      "fallback": null,
+      "label": "jvp-columns-dense-newton",
+      "per_step": {
+       "automatic_differentiation": false,
+       "dense_matrix": true,
+       "explicit_jacobian": false,
+       "finite_difference": false,
+       "newton": true,
+       "provided_jvp": true
+      },
+      "startup": {
+       "automatic_differentiation": false,
+       "dense_matrix": false,
+       "explicit_jacobian": false,
+       "finite_difference": false,
+       "newton": false,
+       "provided_jvp": false
+      },
+      "supports_dense_output": false,
+      "supports_events": false,
+      "supports_mass": false
+     }
+    ],
+    "version": "u06-2026-11-15"
+   },
+   "direct_call": "rodas5p_integrators::integrate_radau_adaptive_observed(ode, span, y0, RadauConfig::default(), adaptive, [t0, t1])",
+   "failure_prefix": "the output samples reached (t0 for the end-point schedule): the driver exposes no last accepted state",
+   "jacobian_forms": [
+    "dense",
+    "jvp"
+   ],
+   "route_variants": [],
+   "stiff_capable": true,
+   "vector_atol": false
+  },
+  {
+   "auto_rankable": true,
+   "availability": {
+    "state": "available"
+   },
+   "declared_band": false,
+   "descriptor": {
+    "access": "explicit-api-only",
+    "evidence": "integrator-crate exponential contracts; no facade qualification",
+    "history_steps": 1,
+    "method_id": "pexprb54s4-fused",
+    "order": 5,
+    "qualification": "implemented-unqualified",
+    "route": "rodas5p_integrators::integrate_pexprb54s4_fused_adaptive_observed",
+    "stages": 4,
+    "startup": "none",
+    "tableau_identity": "PEXPRB54s4 exponential Rosenbrock 5(4), fused phi-Krylov (exponential.rs, pexprb54s4_tableau)",
+    "variants": [
+     {
+      "fallback": null,
+      "label": "jvp-phi-krylov",
+      "per_step": {
+       "automatic_differentiation": false,
+       "dense_matrix": false,
+       "explicit_jacobian": false,
+       "finite_difference": false,
+       "newton": false,
+       "provided_jvp": true
+      },
+      "startup": {
+       "automatic_differentiation": false,
+       "dense_matrix": false,
+       "explicit_jacobian": false,
+       "finite_difference": false,
+       "newton": false,
+       "provided_jvp": false
+      },
+      "supports_dense_output": false,
+      "supports_events": false,
+      "supports_mass": false
+     }
+    ],
+    "version": "v03-2026-11-17"
+   },
+   "direct_call": "rodas5p_integrators::integrate_pexprb54s4_fused_adaptive_observed(ode, span, y0, adaptive, [t0, t1], FusedPhiKrylovConfig::default(), sequential)",
+   "failure_prefix": "the output samples reached (t0 for the end-point schedule): the driver exposes no last accepted state",
+   "jacobian_forms": [
+    "jvp"
+   ],
+   "route_variants": [],
+   "stiff_capable": true,
+   "vector_atol": false
+  },
+  {
+   "auto_rankable": true,
+   "availability": {
+    "state": "available"
+   },
+   "declared_band": false,
+   "descriptor": {
+    "access": "explicit-api-only",
+    "evidence": "integrator-crate lagged contracts; kill gate of the lagged-LU node (HIRES failed); no facade qualification",
+    "history_steps": 1,
+    "method_id": "rodas5p-lagged-richardson-v1",
+    "order": 5,
+    "qualification": "implemented-unqualified",
+    "route": "rodas5p_integrators::integrate_rodas5p_lagged_observed",
+    "stages": 8,
+    "startup": "none",
+    "tableau_identity": "RODAS5P stage equations with a lagged LU as Richardson preconditioner (rodas5p_lagged.rs)",
+    "variants": [
+     {
+      "fallback": null,
+      "label": "explicit-jacobian-dense-lagged-lu",
+      "per_step": {
+       "automatic_differentiation": false,
+       "dense_matrix": true,
+       "explicit_jacobian": true,
+       "finite_difference": false,
+       "newton": false,
+       "provided_jvp": false
+      },
+      "startup": {
+       "automatic_differentiation": false,
+       "dense_matrix": false,
+       "explicit_jacobian": false,
+       "finite_difference": false,
+       "newton": false,
+       "provided_jvp": false
+      },
+      "supports_dense_output": false,
+      "supports_events": false,
+      "supports_mass": false
+     }
+    ],
+    "version": "v03-2026-11-17"
+   },
+   "direct_call": "rodas5p_integrators::integrate_rodas5p_lagged_observed(ode, span, y0, adaptive, [t0, t1], Rodas5pLaggedOptions::default())",
+   "failure_prefix": "the output samples reached (t0 for the end-point schedule): the driver exposes no last accepted state",
+   "jacobian_forms": [
+    "dense"
+   ],
+   "route_variants": [],
+   "stiff_capable": true,
+   "vector_atol": false
+  },
+  {
+   "auto_rankable": false,
+   "availability": {
+    "state": "available"
+   },
+   "declared_band": true,
+   "descriptor": {
+    "access": "explicit-api-only",
+    "evidence": "vigilode lawson contracts; no method qualification",
+    "history_steps": 1,
+    "method_id": "lawson-dopri5-declared-damped-rotation",
+    "order": 5,
+    "qualification": "implemented-unqualified",
+    "route": "vigilode::LawsonDopri5::solve",
+    "stages": 7,
+    "startup": "none",
+    "tableau_identity": "Lawson transform of Dormand-Prince 5(4) for a declared damped-rotation linear part",
+    "variants": [
+     {
+      "fallback": null,
+      "label": "declared-damped-rotation-rhs-only",
+      "per_step": {
+       "automatic_differentiation": false,
+       "dense_matrix": false,
+       "explicit_jacobian": false,
+       "finite_difference": false,
+       "newton": false,
+       "provided_jvp": false
+      },
+      "startup": {
+       "automatic_differentiation": false,
+       "dense_matrix": false,
+       "explicit_jacobian": false,
+       "finite_difference": false,
+       "newton": false,
+       "provided_jvp": false
+      },
+      "supports_dense_output": false,
+      "supports_events": false,
+      "supports_mass": false
+     }
+    ],
+    "version": "v03-2026-11-17"
+   },
+   "direct_call": "vigilode::LawsonDopri5::solve(flow, residual_problem, span, y0, options)",
+   "failure_prefix": "the outputs reached and the last accepted state",
+   "jacobian_forms": [],
+   "route_variants": [],
+   "stiff_capable": false,
+   "vector_atol": true
+  }
+ ],
+ "commands": [
+  {
+   "log": "logs/contracts.log",
+   "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test unified_frontend_contracts -- --nocapture --test-threads 1",
+   "commit": "b52f79cd8d72c697945dde37b36c2da3c2ec2669",
+   "date": "2026-11-17T15:34:08+09:00",
+   "loadavg_before": "17.55 23.63 29.02 13/7898 1163829",
+   "loadavg_after": "17.55 23.63 29.02 5/7873 1163964",
+   "worktree_dirty_files": "0",
+   "exit_code": 0,
+   "binaries": [
+    {
+     "binary": "tests/unified_frontend_contracts.rs",
+     "result": "ok",
+     "passed": 31,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    }
+   ],
+   "tests": {
+    "passed": 31,
+    "failed": 0,
+    "ignored": 0,
+    "binaries": 1
+   },
+   "failed_tests": []
+  },
+  {
+   "log": "logs/existing_registry_tests.log",
+   "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test unified_method_capabilities --test unified_method_sessions --test production_selection_contracts --test geometry_mol_contracts",
+   "commit": "b52f79cd8d72c697945dde37b36c2da3c2ec2669",
+   "date": "2026-11-17T15:34:10+09:00",
+   "loadavg_before": "17.55 23.63 29.02 5/7873 1163990",
+   "loadavg_after": "17.55 23.63 29.02 7/7885 1164231",
+   "worktree_dirty_files": "0",
+   "exit_code": 0,
+   "binaries": [
+    {
+     "binary": "tests/geometry_mol_contracts.rs",
+     "result": "ok",
+     "passed": 5,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/production_selection_contracts.rs",
+     "result": "ok",
+     "passed": 6,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/unified_method_capabilities.rs",
+     "result": "ok",
+     "passed": 6,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/unified_method_sessions.rs",
+     "result": "ok",
+     "passed": 6,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    }
+   ],
+   "tests": {
+    "passed": 23,
+    "failed": 0,
+    "ignored": 0,
+    "binaries": 4
+   },
+   "failed_tests": []
+  },
+  {
+   "log": "logs/default_path_golden_run1.log",
+   "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test default_path_golden -- --nocapture --test-threads 1",
+   "commit": "b52f79cd8d72c697945dde37b36c2da3c2ec2669",
+   "date": "2026-11-17T15:34:10+09:00",
+   "loadavg_before": "17.55 23.63 29.02 8/7885 1164257",
+   "loadavg_after": "16.70 23.35 28.91 8/7873 1164383",
+   "worktree_dirty_files": "0",
+   "exit_code": 0,
+   "binaries": [
+    {
+     "binary": "tests/default_path_golden.rs",
+     "result": "ok",
+     "passed": 11,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    }
+   ],
+   "tests": {
+    "passed": 11,
+    "failed": 0,
+    "ignored": 0,
+    "binaries": 1
+   },
+   "failed_tests": []
+  },
+  {
+   "log": "logs/default_path_golden_run2.log",
+   "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test default_path_golden -- --nocapture --test-threads 1",
+   "commit": "b52f79cd8d72c697945dde37b36c2da3c2ec2669",
+   "date": "2026-11-17T15:34:12+09:00",
+   "loadavg_before": "16.70 23.35 28.91 8/7873 1164409",
+   "loadavg_after": "16.70 23.35 28.91 10/7884 1164758",
+   "worktree_dirty_files": "0",
+   "exit_code": 0,
+   "binaries": [
+    {
+     "binary": "tests/default_path_golden.rs",
+     "result": "ok",
+     "passed": 11,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    }
+   ],
+   "tests": {
+    "passed": 11,
+    "failed": 0,
+    "ignored": 0,
+    "binaries": 1
+   },
+   "failed_tests": []
+  },
+  {
+   "log": "logs/full_suite.log",
+   "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --no-fail-fast",
+   "commit": "b52f79cd8d72c697945dde37b36c2da3c2ec2669",
+   "date": "2026-11-17T15:34:24+09:00",
+   "loadavg_before": "17.24 23.24 28.81 10/7883 1165855",
+   "loadavg_after": "17.39 23.01 28.65 14/7884 1167500",
+   "worktree_dirty_files": "0",
+   "exit_code": 0,
+   "binaries": [
+    {
+     "binary": "unittests src/lib.rs",
+     "result": "ok",
+     "passed": 60,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/adaptive_entry_contracts.rs",
+     "result": "ok",
+     "passed": 10,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/automatic_adapter_contracts.rs",
+     "result": "ok",
+     "passed": 4,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/automatic_availability_contracts.rs",
+     "result": "ok",
+     "passed": 10,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/capabilities_contracts.rs",
+     "result": "ok",
+     "passed": 1,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/causal_budget_contracts.rs",
+     "result": "ok",
+     "passed": 8,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/cofactor_chart_contracts.rs",
+     "result": "ok",
+     "passed": 4,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/comparator_dominance_contracts.rs",
+     "result": "ok",
+     "passed": 3,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/default_path_golden.rs",
+     "result": "ok",
+     "passed": 11,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/entry_checkpoint_seed_contracts.rs",
+     "result": "ok",
+     "passed": 5,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/events_contracts.rs",
+     "result": "ok",
+     "passed": 15,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/evidence_switch_contracts.rs",
+     "result": "ok",
+     "passed": 7,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/execution_identity_drift.rs",
+     "result": "ok",
+     "passed": 6,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/execution_policy_contracts.rs",
+     "result": "ok",
+     "passed": 9,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/explicit_contracts.rs",
+     "result": "ok",
+     "passed": 8,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/explicit_ensemble_contracts.rs",
+     "result": "ok",
+     "passed": 4,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/explicit_hardening_contracts.rs",
+     "result": "ok",
+     "passed": 5,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/facade_contracts.rs",
+     "result": "ok",
+     "passed": 20,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/fd_allocation_contracts.rs",
+     "result": "ok",
+     "passed": 15,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/fd_chebyshev_contracts.rs",
+     "result": "ok",
+     "passed": 3,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/frontier_affine_facade.rs",
+     "result": "ok",
+     "passed": 3,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/frontier_fatal_session_contracts.rs",
+     "result": "ok",
+     "passed": 3,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/frontier_switch_contracts.rs",
+     "result": "ok",
+     "passed": 6,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/geometry_mol_contracts.rs",
+     "result": "ok",
+     "passed": 5,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/hermite_splice_contracts.rs",
+     "result": "ok",
+     "passed": 7,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/holdout_and_global_order_contracts.rs",
+     "result": "ok",
+     "passed": 6,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/hybrid_automaton_contracts.rs",
+     "result": "ok",
+     "passed": 9,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/lawson_contracts.rs",
+     "result": "ok",
+     "passed": 6,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/local_bottleneck_models.rs",
+     "result": "ok",
+     "passed": 9,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/oscillatory_chart_contracts.rs",
+     "result": "ok",
+     "passed": 10,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/p0_api_contracts.rs",
+     "result": "ok",
+     "passed": 9,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/p0_contracts.rs",
+     "result": "ok",
+     "passed": 24,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/production_contracts.rs",
+     "result": "ok",
+     "passed": 7,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/production_hotloop_allocation_contracts.rs",
+     "result": "ok",
+     "passed": 5,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/production_rhs_contracts.rs",
+     "result": "ok",
+     "passed": 3,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/production_selection_contracts.rs",
+     "result": "ok",
+     "passed": 6,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/production_session_contracts.rs",
+     "result": "ok",
+     "passed": 9,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/production_setup_contracts.rs",
+     "result": "ok",
+     "passed": 5,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/records_contracts.rs",
+     "result": "ok",
+     "passed": 3,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/registry_contracts.rs",
+     "result": "ok",
+     "passed": 5,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/return_sentinel_contracts.rs",
+     "result": "ok",
+     "passed": 7,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/selection_evidence_contracts.rs",
+     "result": "ok",
+     "passed": 6,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/sparse_jvp_contracts.rs",
+     "result": "ok",
+     "passed": 3,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/strict_return_work_contracts.rs",
+     "result": "ok",
+     "passed": 4,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/switcher_v2_admission_contracts.rs",
+     "result": "ok",
+     "passed": 6,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/switching_contracts.rs",
+     "result": "ok",
+     "passed": 19,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/switching_economy_contracts.rs",
+     "result": "ok",
+     "passed": 13,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/switching_integration_contracts.rs",
+     "result": "ok",
+     "passed": 6,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/switching_persistent_explicit.rs",
+     "result": "ok",
+     "passed": 6,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/switching_v2_remediation_contracts.rs",
+     "result": "ok",
+     "passed": 17,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/unified_frontend_contracts.rs",
+     "result": "ok",
+     "passed": 31,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/unified_method_capabilities.rs",
+     "result": "ok",
+     "passed": 6,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/unified_method_sessions.rs",
+     "result": "ok",
+     "passed": 6,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/unified_production_solver_contracts.rs",
+     "result": "ok",
+     "passed": 6,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/work_model_contracts.rs",
+     "result": "ok",
+     "passed": 9,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "doc-tests vigilode",
+     "result": "ok",
+     "passed": 3,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "doc-tests vigilode",
+     "result": "ok",
+     "passed": 1,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    }
+   ],
+   "tests": {
+    "passed": 497,
+    "failed": 0,
+    "ignored": 0,
+    "binaries": 57
+   },
+   "failed_tests": []
+  },
+  {
+   "log": "logs/clippy.log",
+   "command": "taskset -c 0-5,12-17 cargo +1.94.1 clippy --locked -j 4 --release -p vigilode --all-targets --no-deps -- -D warnings",
+   "commit": "b52f79cd8d72c697945dde37b36c2da3c2ec2669",
+   "date": "2026-11-17T15:34:41+09:00",
+   "loadavg_before": "17.39 23.01 28.65 12/7884 1167526",
+   "loadavg_after": "17.13 22.52 28.34 6/7891 1169345",
+   "worktree_dirty_files": "0",
+   "exit_code": 0,
+   "binaries": [],
+   "tests": {
+    "passed": 0,
+    "failed": 0,
+    "ignored": 0,
+    "binaries": 0
+   },
+   "failed_tests": []
+  },
+  {
+   "log": "logs/fmt_check.log",
+   "command": "taskset -c 0-5,12-17 cargo +1.94.1 fmt -p vigilode -- --check",
+   "commit": "b52f79cd8d72c697945dde37b36c2da3c2ec2669",
+   "date": "2026-11-17T15:35:05+09:00",
+   "loadavg_before": "17.13 22.52 28.34 4/7891 1169371",
+   "loadavg_after": "17.13 22.52 28.34 6/7891 1169406",
+   "worktree_dirty_files": "0",
+   "exit_code": 0,
+   "binaries": [],
+   "tests": {
+    "passed": 0,
+    "failed": 0,
+    "ignored": 0,
+    "binaries": 0
+   },
+   "failed_tests": []
+  },
+  {
+   "log": "logs/doc.log",
+   "command": "env RUSTDOCFLAGS=-D warnings taskset -c 0-5,12-17 cargo +1.94.1 doc -j 4 -p vigilode --no-deps --locked",
+   "commit": "b52f79cd8d72c697945dde37b36c2da3c2ec2669",
+   "date": "2026-11-17T15:35:05+09:00",
+   "loadavg_before": "17.13 22.52 28.34 6/7891 1169432",
+   "loadavg_after": "17.13 22.52 28.34 5/7892 1169453",
+   "worktree_dirty_files": "0",
+   "exit_code": 0,
+   "binaries": [],
+   "tests": {
+    "passed": 0,
+    "failed": 0,
+    "ignored": 0,
+    "binaries": 0
+   },
+   "failed_tests": []
+  },
+  {
+   "log": "logs/check_checkpoint.log",
+   "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
+   "commit": "b52f79cd8d72c697945dde37b36c2da3c2ec2669",
+   "date": "2026-11-17T15:35:05+09:00",
+   "loadavg_before": "17.13 22.52 28.34 5/7892 1169479",
+   "loadavg_after": "17.13 22.52 28.34 6/7892 1169541",
+   "worktree_dirty_files": "0",
+   "exit_code": 0,
+   "binaries": [],
+   "tests": {
+    "passed": 0,
+    "failed": 0,
+    "ignored": 0,
+    "binaries": 0
+   },
+   "failed_tests": []
+  },
+  {
+   "log": "logs/failing_first_peer_defects.log",
+   "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test unified_frontend_contracts -- --nocapture --test-threads 1",
+   "commit": "00d327647538eda44d640f19dad5b317d818a7b9 (selection.rs unchanged from base c468478e: yes)",
+   "date": "2026-11-17T14:16:06+09:00",
+   "loadavg_before": null,
+   "loadavg_after": null,
+   "worktree_dirty_files": null,
+   "exit_code": 101,
+   "binaries": [
+    {
+     "binary": "tests/unified_frontend_contracts.rs",
+     "result": "FAILED",
+     "passed": 1,
+     "failed": 8,
+     "ignored": 0,
+     "filtered_out": 0
+    }
+   ],
+   "tests": {
+    "passed": 1,
+    "failed": 8,
+    "ignored": 0,
+    "binaries": 1
+   },
+   "failed_tests": [
+    "cod02_p3_fast_forcing_20_is_error_controlled_or_refused",
+    "cod02_p3b_fast_forcing_200_is_error_controlled_or_refused",
+    "cod02_p5_invalid_h0_is_refused_before_any_callback",
+    "cod04a_p1_jvp_provider_needs_the_jvp_permission",
+    "cod04b_p2a_starter_endpoint_above_t_end_is_a_success_with_exact_endpoint",
+    "cod04c_p4_recoverable_jacobian_error_is_reported_as_itself",
+    "cod04cd_p6_fatal_rhs_error_is_reported_as_a_fatal_callback",
+    "cod04e_p7_declared_band_is_refused_by_admission_too"
+   ]
+  },
+  {
+   "log": "logs/peer_defects_after_fix.log",
+   "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test unified_frontend_contracts --test unified_method_sessions --test unified_method_capabilities -- --nocapture --test-threads 1",
+   "commit": null,
+   "date": "2026-11-17T14:24:01+09:00",
+   "loadavg_before": null,
+   "loadavg_after": null,
+   "worktree_dirty_files": null,
+   "exit_code": 0,
+   "binaries": [
+    {
+     "binary": "tests/unified_frontend_contracts.rs",
+     "result": "ok",
+     "passed": 9,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/unified_method_capabilities.rs",
+     "result": "ok",
+     "passed": 6,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    },
+    {
+     "binary": "tests/unified_method_sessions.rs",
+     "result": "ok",
+     "passed": 6,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 0
+    }
+   ],
+   "tests": {
+    "passed": 21,
+    "failed": 0,
+    "ignored": 0,
+    "binaries": 3
+   },
+   "failed_tests": []
+  },
+  {
+   "log": "logs/decision_grid_debug_profile.log",
+   "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 -p vigilode --test unified_frontend_contracts -- d1_ --nocapture --test-threads 1",
+   "commit": "b52f79cd8d72c697945dde37b36c2da3c2ec2669",
+   "date": "2026-11-17T15:34:14+09:00",
+   "loadavg_before": "16.70 23.35 28.91 10/7884 1164784",
+   "loadavg_after": "17.24 23.24 28.81 8/7884 1165820",
+   "worktree_dirty_files": "0",
+   "exit_code": 0,
+   "binaries": [
+    {
+     "binary": "tests/unified_frontend_contracts.rs",
+     "result": "ok",
+     "passed": 2,
+     "failed": 0,
+     "ignored": 0,
+     "filtered_out": 29
+    }
+   ],
+   "tests": {
+    "passed": 2,
+    "failed": 0,
+    "ignored": 0,
+    "binaries": 1
+   },
+   "failed_tests": []
+  }
+ ],
+ "full_suite": {
+  "exit_code": 0,
+  "passed": 497,
+  "failed": 0,
+  "ignored": 0,
+  "binaries": 57,
+  "failed_tests": [],
+  "all_pre_existing_tests_pass": true
+ },
+ "lints": {
+  "clippy_exit_code": 0,
+  "fmt_check_exit_code": 0,
+  "doc_exit_code": 0,
+  "loop_checker_exit_code": 0,
+  "loop_checker_output": [
+   "PASS: strict JSON, task/DAG structure, ancestry, protected and evidence identities",
+   "Scope: checkpoint reproducibility. Production HOLD; no new numerical qualification."
+  ]
+ },
+ "changed_paths": [
+  {
+   "status": "M",
+   "path": "crates/vigilode/src/selection.rs"
+  },
+  {
+   "status": "A",
+   "path": "crates/vigilode/src/selection/adapters.rs"
+  },
+  {
+   "status": "A",
+   "path": "crates/vigilode/src/selection/frontend.rs"
+  },
+  {
+   "status": "A",
+   "path": "crates/vigilode/src/selection/peer.rs"
+  },
+  {
+   "status": "M",
+   "path": "crates/vigilode/src/solve.rs"
+  },
+  {
+   "status": "A",
+   "path": "crates/vigilode/tests/unified_frontend_contracts.rs"
+  },
+  {
+   "status": "A",
+   "path": "research/production_loop_20261116/unified_frontend/NOTES.txt"
+  },
+  {
+   "status": "A",
+   "path": "research/production_loop_20261116/unified_frontend/PREDECLARED.json"
+  },
+  {
+   "status": "A",
+   "path": "research/production_loop_20261116/unified_frontend/build_receipt.py"
+  },
+  {
+   "status": "A",
+   "path": "research/production_loop_20261116/unified_frontend/build_report.py"
+  },
+  {
+   "status": "A",
+   "path": "research/production_loop_20261116/unified_frontend/logs/failing_first_peer_defects.log"
+  },
+  {
+   "status": "A",
+   "path": "research/production_loop_20261116/unified_frontend/logs/peer_defects_after_fix.log"
+  },
+  {
+   "status": "A",
+   "path": "research/production_loop_20261116/unified_frontend/run_checks.sh"
+  }
+ ],
+ "changed_paths_outside_the_task_allowlist": [],
+ "protected_paths_diff_against_base": [],
+ "edits_of_existing_tests": []
+}

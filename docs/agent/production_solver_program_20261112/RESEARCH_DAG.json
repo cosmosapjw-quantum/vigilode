@@ -244,6 +244,326 @@
         "U09_GEOMETRY_MOL",
         "U10_SWITCH_ERROR_AND_NOVELTY"
       ]
+    },
+    {
+      "id": "V00_LOOP_BOOTSTRAP",
+      "turn": "20261116-loop",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "research/production_loop_20261116/PREREGISTRATION.md",
+      "depends": []
+    },
+    {
+      "id": "V01_AUDIT_RGATE",
+      "turn": "20261116-loop",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "research/production_loop_20261116/audit/AUDIT_KO.md",
+      "depends": [
+        "V00_LOOP_BOOTSTRAP"
+      ]
+    },
+    {
+      "id": "V03G_DEFAULT_PATH_GOLDEN",
+      "turn": "20261116-loop",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "research/production_loop_20261116/golden_oracle/RECEIPT.json",
+      "depends": [
+        "V00_LOOP_BOOTSTRAP"
+      ]
+    },
+    {
+      "id": "V02_TRIAL_MERGE",
+      "turn": "20261116-loop",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "research/production_loop_20261116/trial_merge/T_GATES.json",
+      "depends": [
+        "V00_LOOP_BOOTSTRAP",
+        "V03G_DEFAULT_PATH_GOLDEN"
+      ]
+    },
+    {
+      "id": "V15_STAGE_CLIENT_KIT",
+      "turn": "20261116-loop",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "research/production_loop_20261116/client_kit/RECEIPT.json",
+      "depends": [
+        "V00_LOOP_BOOTSTRAP"
+      ]
+    },
+    {
+      "id": "V05_STAGE_THEORY",
+      "turn": "20261116-loop",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "research/production_loop_20261116/theory/THEORY.md",
+      "depends": [
+        "V00_LOOP_BOOTSTRAP"
+      ]
+    },
+    {
+      "id": "V04_STAGE_COST_ANATOMY",
+      "turn": "20261116-loop",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "research/production_loop_20261116/cost_anatomy/RESULTS.json",
+      "depends": [
+        "V15_STAGE_CLIENT_KIT"
+      ]
+    },
+    {
+      "id": "V06_SHARED_KRYLOV_BASIS",
+      "turn": "20261116-loop",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "research/production_loop_20261116/shared_krylov/RESULTS.json",
+      "depends": [
+        "V15_STAGE_CLIENT_KIT",
+        "V02_TRIAL_MERGE"
+      ]
+    },
+    {
+      "id": "V07_SPECULATIVE_JACOBIAN",
+      "turn": "20261116-loop",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "research/production_loop_20261116/speculative_jacobian/RESULTS.json",
+      "depends": [
+        "V15_STAGE_CLIENT_KIT",
+        "V05_STAGE_THEORY",
+        "V04_STAGE_COST_ANATOMY"
+      ]
+    },
+    {
+      "id": "V08_JACOBIAN_ASSEMBLY",
+      "turn": "20261116-loop",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "RUN",
+      "depends": [
+        "V15_STAGE_CLIENT_KIT"
+      ]
+    },
+    {
+      "id": "V09_LAGGED_LARGE_N",
+      "turn": "20261116-loop",
+      "status": "PLANNED",
+      "evidence": "NOT_RUN",
+      "depends": [
+        "V00_LOOP_BOOTSTRAP"
+      ]
+    },
+    {
+      "id": "V10_PPSW1_DECISION",
+      "turn": "20261116-loop",
+      "status": "PLANNED",
+      "evidence": "NOT_RUN",
+      "depends": [
+        "V01_AUDIT_RGATE"
+      ]
+    },
+    {
+      "id": "V11_GEOMETRY_MOL",
+      "turn": "20261116-loop",
+      "status": "PLANNED",
+      "evidence": "NOT_RUN",
+      "depends": [
+        "V00_LOOP_BOOTSTRAP"
+      ]
+    },
+    {
+      "id": "V14_SCHWARZ_BLOCK",
+      "turn": "20261116-loop",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "research/production_loop_20261116/schwarz_screen/README.md",
+      "depends": [
+        "V05_STAGE_THEORY"
+      ]
+    },
+    {
+      "id": "V16_LEVEL_TABLEAU_SEARCH",
+      "turn": "20261116-loop",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "RUN",
+      "depends": [
+        "V05_STAGE_THEORY"
+      ]
+    },
+    {
+      "id": "V17_MATRIX_FREE_STAGE_SOLVE",
+      "turn": "20261116-loop",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "RUN",
+      "depends": [
+        "V04_STAGE_COST_ANATOMY",
+        "V06_SHARED_KRYLOV_BASIS"
+      ]
+    },
+    {
+      "id": "V18_DENSE_LU_CLIENT",
+      "turn": "20261116-loop",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "RUN",
+      "depends": [
+        "V04_STAGE_COST_ANATOMY",
+        "V15_STAGE_CLIENT_KIT"
+      ]
+    },
+    {
+      "id": "V03_UNIFIED_FRONTEND",
+      "turn": "20261116-loop",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "RUN",
+      "depends": [
+        "V02_TRIAL_MERGE",
+        "V03G_DEFAULT_PATH_GOLDEN",
+        "V15_STAGE_CLIENT_KIT"
+      ]
+    },
+    {
+      "id": "V12_PORT_PLAN",
+      "turn": "20261116-loop",
+      "status": "IN_PROGRESS",
+      "evidence": "research/production_loop_20261116/port_plan/port_contracts.json",
+      "depends": [
+        "V02_TRIAL_MERGE"
+      ]
+    },
+    {
+      "id": "V13_CLOSEOUT",
+      "turn": "20261116-loop",
+      "status": "PLANNED",
+      "evidence": "NOT_RUN",
+      "depends": [
+        "V01_AUDIT_RGATE"
+      ]
+    },
+    {
+      "id": "V19_BANDED_SOLVE_KERNEL",
+      "turn": "20261116-loop",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "RUN",
+      "depends": [
+        "V04_STAGE_COST_ANATOMY",
+        "V15_STAGE_CLIENT_KIT"
+      ]
+    },
+    {
+      "id": "V21_BANDED_TIGHT_KERNEL",
+      "turn": "20261116-loop",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "RUN",
+      "depends": [
+        "V19_BANDED_SOLVE_KERNEL",
+        "V15_STAGE_CLIENT_KIT"
+      ]
+    },
+    {
+      "id": "V22_FACADE_BANDED_KERNEL",
+      "turn": "20261116-loop",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "RUN",
+      "depends": [
+        "V21_BANDED_TIGHT_KERNEL",
+        "V03G_DEFAULT_PATH_GOLDEN"
+      ]
+    },
+    {
+      "id": "V23_CAPABILITIES_TRUTH",
+      "turn": "20261116-loop",
+      "status": "PLANNED",
+      "evidence": "NOT_RUN",
+      "depends": [
+        "V03_UNIFIED_FRONTEND"
+      ]
+    },
+    {
+      "id": "V24_MF_ADAPTIVE_STAGE_SOLVE",
+      "turn": "20261116-loop",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "RUN",
+      "depends": [
+        "V17_MATRIX_FREE_STAGE_SOLVE"
+      ]
+    },
+    {
+      "id": "V25_MF_P1_CONFIRMATION",
+      "turn": "20261116-loop",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "research/production_loop_20261116/mf_p1_confirm/RESULTS.json",
+      "depends": [
+        "V24_MF_ADAPTIVE_STAGE_SOLVE"
+      ]
+    },
+    {
+      "id": "V26_ASSEMBLY_FULL_CHECK",
+      "turn": "20261116-loop",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "research/production_loop_20261116/assembly_check/RESULTS.json",
+      "depends": [
+        "V08_JACOBIAN_ASSEMBLY"
+      ]
+    },
+    {
+      "id": "V27_ROUTER_HYPERPARAMETER_FREE",
+      "turn": "20261116-loop",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "research/production_loop_20261116/router_hyperparameter_free/RESULTS.json",
+      "depends": [
+        "V03_UNIFIED_FRONTEND"
+      ]
+    },
+    {
+      "id": "V28_MF_P1_BUDGET_FOLLOWUP",
+      "turn": "20261116-loop",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "research/production_loop_20261116/mf_p1_budget/RESULTS.json",
+      "depends": [
+        "V25_MF_P1_CONFIRMATION"
+      ]
+    },
+    {
+      "id": "V29_ASSEMBLY_DEFAULT_MC",
+      "turn": "20261116-loop",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "research/production_loop_20261116/assembly_default/RESULTS.json",
+      "depends": [
+        "V26_ASSEMBLY_FULL_CHECK"
+      ]
+    },
+    {
+      "id": "V30_ROUTER_BREAKEVEN_V27B",
+      "turn": "20261116-loop",
+      "status": "PLANNED",
+      "evidence": "NOT_RUN",
+      "depends": [
+        "V27_ROUTER_HYPERPARAMETER_FREE"
+      ]
+    },
+    {
+      "id": "V31_ASSEMBLY_DEFAULT_WIDE_BAND",
+      "turn": "20261116-loop",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "research/production_loop_20261116/assembly_wide_band/RESULTS.json",
+      "depends": [
+        "V29_ASSEMBLY_DEFAULT_MC"
+      ]
+    },
+    {
+      "id": "V32_STAGE_BATCH_PROBE",
+      "turn": "20261116-loop",
+      "status": "COMPLETE_SCOPED",
+      "evidence": "research/production_loop_20261116/stage_batch_probe/RESULTS.json",
+      "depends": []
+    },
+    {
+      "id": "V33_CI_IGNORED_LIVENESS",
+      "turn": "20261116-loop",
+      "status": "PLANNED",
+      "evidence": "NOT_RUN",
+      "depends": []
+    },
+    {
+      "id": "V34_JVP_CALLS_COUNTER",
+      "turn": "20261116-loop",
+      "status": "PLANNED",
+      "evidence": "NOT_RUN",
+      "depends": [
+        "V23_CAPABILITIES_TRUTH"
+      ]
     }
   ],
   "continuation_base": "bee5563c51264a7da19c519295bdda2fb317caef",
@@ -252,23 +572,37 @@
   "realization_map": {
     "T02_PPSW1_QUALIFICATION": [
       "U02_PEER_TRANSACTION_IDENTITY",
-      "U03_PEER_INDEPENDENT_QUALIFICATION"
+      "U03_PEER_INDEPENDENT_QUALIFICATION",
+      "V10_PPSW1_DECISION"
     ],
     "T03_PEER_MATRIX_FREE_BLOCK_KRYLOV": [
       "U01_PEER_RHS_PARALLEL",
-      "U04_COMMON_W_MATRIX_FREE"
+      "U04_COMMON_W_MATRIX_FREE",
+      "V06_SHARED_KRYLOV_BASIS"
     ],
     "T04_UNIFIED_FRONTEND": [
       "U06_UNIFIED_CAPABILITY_REGISTRY",
-      "U07_TRANSACTIONAL_KERNEL_ADAPTERS"
+      "U07_TRANSACTIONAL_KERNEL_ADAPTERS",
+      "V03G_DEFAULT_PATH_GOLDEN",
+      "V02_TRIAL_MERGE",
+      "V03_UNIFIED_FRONTEND"
     ],
     "T05_GEOMETRY_MOL": [
-      "U09_GEOMETRY_MOL"
+      "U09_GEOMETRY_MOL",
+      "V11_GEOMETRY_MOL",
+      "V14_SCHWARZ_BLOCK"
     ],
     "T06_NOVELTY_AND_RELEASE_REVIEW": [
       "U10_SWITCH_ERROR_AND_NOVELTY",
-      "U11_PRODUCTION_HOLDOUT"
+      "U11_PRODUCTION_HOLDOUT",
+      "V01_AUDIT_RGATE",
+      "V13_CLOSEOUT"
     ]
   },
-  "aggregation_rule": "T nodes are coarse objectives; U nodes are their concrete work units. A scoped U completion never automatically qualifies the parent or changes G0. Parent completion requires all its stated scientific acceptance evidence."
+  "aggregation_rule": "T nodes are coarse objectives; U nodes are their concrete work units. A scoped U completion never automatically qualifies the parent or changes G0. Parent completion requires all its stated scientific acceptance evidence.",
+  "loop_20261116": {
+    "base": "074a5699a348abd15fe8a235ec5a695354e8cd8c",
+    "checkpoint": "research/production_loop_20261116/CHECKPOINT.json",
+    "release_gate": "docs/agent/production_solver_program_20261112/RELEASE_GATE_MATRIX.json"
+  }
 }

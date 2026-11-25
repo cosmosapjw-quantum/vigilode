@@ -1,0 +1,782 @@
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116/crates/rodas5p-integrators)
+    Finished `release` profile [optimized] target(s) in 4m 29s
+     Running unittests src/lib.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/rodas5p_integrators-b1d256518e39c12c)
+
+running 142 tests
+test adaptive::method_metadata_tests::rodas_controller_order_comes_from_method_estimator_metadata ... ok
+test adaptive::predictive_controller_tests::first_acceptance_is_the_integral_factor ... ok
+test adaptive::predictive_controller_tests::history_free_proposal_of_the_predictive_kinds_is_the_integral_factor ... ok
+test adaptive::predictive_controller_tests::rejections_failures_and_zero_error_follow_the_production_rule ... ok
+test adaptive::predictive_controller_tests::test_jury_stability_h211b ... ok
+test adaptive::predictive_controller_tests::test_jury_stability_unstable_rejected ... ok
+test adaptive::predictive_controller_tests::the_cap_holds_the_first_acceptance_after_a_rejection_or_failure ... ok
+test bound_pr101::tests::fallible_final_outward_add_is_charged_before_refusal ... ok
+test adaptive::predictive_controller_tests::predictive_factor_on_hand_computed_cases ... ok
+test adaptive::predictive_controller_tests::clipped_samples_update_the_history_only_when_informative ... ok
+test adaptive_output::tests::adaptive_output_session_rejected_represented_trial_must_shrink ... ok
+test adaptive_output::tests::rejected_final_landing_cannot_be_restored_by_rounding_residue ... ok
+test adaptive_output::tests::rejected_interior_landing_cannot_be_restored_by_rounding_residue ... ok
+test conditioned_polynomial::wp09_tests::test_chebyshev_recurrence_expansion ... ok
+test adaptive::predictive_controller_tests::predictive_kinds_serialize_like_the_production_state ... ok
+test adaptive::predictive_controller_tests::integral_and_pi_are_unchanged_bit_for_bit ... ok
+test conditioned_polynomial::wp09_tests::test_gershgorin_positive_spectrum_rejected ... ok
+test bound_pr101::tests::point_jvp_matches_scalar_jacobian_without_materializing_matrix ... ok
+test comparator_fidelity::tests::only_production_arms_admit_a_relative_reading ... ok
+test conservative_remap::tests::arithmetic_refusals_are_atomic_and_workspace_remains_reusable ... ok
+test conditioned_polynomial::wp09_tests::test_chart_declaration_from_gershgorin ... ok
+test conditioned_polynomial::wp09_tests::test_chebyshev_interval_root_enclosure ... ok
+test conditioned_polynomial::wp09_tests::test_skew_guard_triggers_quadratic_factor ... ok
+test conditioned_polynomial::wp09_tests::test_wp09_section_4_1_wolfram_counterexample ... ok
+test conditioned_polynomial::wp09_tests::test_gershgorin_intervals_and_certified_status ... ok
+test conservative_remap::tests::crossing_grid_has_hand_computed_projection_and_l1_change ... ok
+test conditioned_polynomial::wp09_tests::test_gershgorin_symmetric_certified_vs_nonsymmetric_estimate ... ok
+test adaptive_output::tests::adaptive_output_session_refusals_preserve_the_issued_transaction ... ok
+test adaptive_output::tests::adaptive_output_session_large_clock_uses_represented_steps_and_strict_cap ... ok
+test conservative_remap::tests::floating_mass_guard_refuses_before_commit ... ok
+test conservative_remap::tests::invalid_inputs_and_capacity_leave_output_unchanged ... ok
+test conservative_remap::tests::nonuniform_refine_coarsen_preserves_integral_and_positivity ... ok
+test conservative_remap::tests::repeated_dimension_changes_reuse_backing_storage ... ok
+test conservative_remap::tests::weighted_l1_contracts_for_two_densities ... ok
+test conservative_remap::tests::zero_mass_and_invalid_tolerance_are_explicit ... ok
+test controller_telemetry::tests::the_events_follow_the_registered_definitions ... ok
+test dense_output_v2::dense_segment_tests::curve_derivative_enclosure_falsifies_endpoint_midpoint_only_sampling ... ok
+test dense_output_v2::dense_segment_tests::scalar_quartic_accessor_counts_exact_attempted_interval_calls ... ok
+test dopri5::tests::test_compute_spectral_stability_benign_scalar ... ok
+test dopri5_dense::tests::failed_dense_preparation_never_publishes_partial_interval ... ok
+test dopri5_stiffness::tests::degenerate_inputs_return_none ... ok
+test dopri5_stiffness::tests::gate_flags_stiff_forced_regime_and_not_rotation ... ok
+test dopri5_stiffness::tests::scalar_linear_mode_is_recovered ... ok
+test dopri5_stiffness::tests::weights_equal_tableau_difference_and_sum_to_zero ... ok
+test exponential::continuation_budget_guard_tests::continuation_cap_admits_exactly_eighty_scalars_and_denies_jvp_81_before_call ... ok
+test exponential::continuation_budget_guard_tests::invalid_row_shape_is_rejected_before_budget_reservation ... ok
+test exponential::continuation_budget_guard_tests::over_cap_row_batch_is_denied_atomically_without_partial_execution ... ok
+test exponential::continuation_budget_guard_tests::zero_continuation_budget_invokes_no_underlying_jvp ... ok
+test fourier_path_candidate::tests::roundtrip_and_conjugation_order ... ok
+test fourier_path_certificate::tests::primitive_derivative_roundtrip ... ok
+test fourier_path_certificate::tests::rotation_encloses_library_values ... ok
+test g4_s5b0_regime_atlas::analytic_partial_t_tests::analytic_partial_t_matches_independent_centered_difference_without_rhs_calls ... ok
+test g4_s5b0_regime_atlas::causal_k1_policy_tests::causal_k1_comparator_fires_only_on_observed_feature ... ok
+test g4_s5b0_regime_atlas::stage_trajectory_geometry_tests::one_pair_wall_protocol_is_self_describing_and_identity_checked ... ignored, optimized all-six wall-contract check; run explicitly with --profile measurement
+test g4_s5b0_regime_atlas::reference_safety_label_tests::self_estimate_and_reference_label_are_independent_fields ... ok
+test g4_s5b0_regime_atlas::stage_trajectory_geometry_tests::production_shadow_wall_protocol_is_frozen_and_alternating ... ok
+test g4_s5b0_regime_atlas::stage_trajectory_geometry_tests::stage_trajectory_shape_matches_power_law_and_rejects_nonpositive_inputs ... ok
+test n01_mass_action_client::tests::callback_sources_match_and_stale_epoch_refused ... ok
+test n01_mass_action_client::tests::callbacks_do_not_commit_partially_on_bad_state ... ok
+test nonlinear_homotopy::tests::inward_projection_proves_represented_membership ... ok
+test output::transactional_dense_output_tests::late_preparation_refusal_invalidates_earlier_staged_rows ... ok
+test output::transactional_dense_output_tests::ordinary_collector_has_no_verified_radius_prefix ... ok
+test output::transactional_dense_output_tests::prepared_dense_interval_refusal_keeps_committed_prefix ... ok
+test output::transactional_dense_output_tests::prepared_dense_interval_rejects_nonfinite_radius_without_commit ... ok
+test output::transactional_dense_output_tests::verified_radius_mode_cannot_be_reentered_after_preparation ... ok
+test g4_s5b0_regime_atlas::live_rodas_step_tests::live_atlas_step_uses_wrms_inner_forcing ... ok
+test dense_output_v2::failure_preservation_tests::post_work_dense_interpolation_error_preserves_work_diagnostics_and_prefix ... ok
+test packet_window::outward_scalar_tests::rp_greater_than_energy_radius_controls_nonlinear_tail ... ok
+test packet_window::packet_curve::degree_tests::maximum_degree_guard_checks_binary64_integer_domain_without_allocation ... ok
+test packet_window::outward_scalar_tests::output_precharge_survives_test_refusal_boundary ... ok
+test nonlinear_homotopy::tests::complex_prefix_preserves_causal_order_and_tree_shape ... ok
+test ppsw1::tests::estimator_weights_at_sigma_one_match_exact_values ... ok
+test ppsw1::tests::gamma_is_a_root_of_the_defining_polynomial_to_double_precision ... ok
+test ppsw1::tests::radau_nodes_match_known_values_and_end_at_one ... ok
+test pr101_verified::tests::refused_final_add_keeps_both_attempted_products ... ok
+test pr101_verified::tests::signed_zero_and_expansion_transport_are_finite ... ok
+test problem::time_fd_workspace_tests::reused_scratch_matches_public_arithmetic_and_work ... ok
+test pr101_verified::tests::refused_transport_stops_ledger_before_unexecuted_integral ... ok
+test ppsw1::tests::radau_tableau_rows_integrate_polynomials_exactly ... ok
+test problem::time_fd_workspace_tests::shape_and_either_rhs_refusal_preserve_attempted_work ... ok
+test packet_trajectory::verified_transaction_private_tests::endpoint_admission_refusal_preserves_transaction_and_full_work ... ok
+test ptsw2b::tests::isqrt_is_floor_sqrt ... ok
+test g4_s5b0_regime_atlas::trajectory_work_accounting_tests::trajectory_totals_charge_every_attempt ... ok
+test ptsw2b::tests::runtime_tableau_equals_the_correctly_rounded_exact_values ... ok
+test ptsw2b::tests::starter_has_local_order_three_hence_u1_error_is_o_h_squared ... ok
+test radau::tests::real_eigenvector_matches_the_scipy_transform_column ... ok
+test raw_stage_target::tests::wp01b_raw_absolute_residual_budget_k_to_u_consistency ... ok
+test rodas5p_fast::banded_exact_tests::cache_hits_only_after_success_and_invalidates_on_changed_matrix ... ok
+test rodas5p_fast::banded_exact_tests::cache_storage_is_only_allocated_for_opt_in_kernel ... ok
+test rodas5p_fast::banded_exact_tests::failed_factorization_cannot_leave_a_live_key ... ok
+test rodas5p_fast::exact_band_cache::tests::changed_entry_misses ... ok
+test rodas5p_fast::banded_exact_tests::other_bandwidths_fall_back_without_changing_bits ... ok
+test radau::tests::stage_lu_estimator_drops_exactly_one_factorization_per_trial ... ok
+test rodas5p_fast::exact_band_cache::tests::changed_shift_misses ... ok
+test rodas5p_fast::exact_band_cache::tests::explicit_invalidation_misses ... ok
+test rodas5p_fast::exact_band_cache::tests::failed_record_invalidates ... ok
+test rodas5p_fast::exact_band_cache::tests::identical_matrix_hits ... ok
+test rodas5p_fast::exact_band_cache::tests::nonfinite_shift_misses ... ok
+test rodas5p_fast::exact_band_cache::tests::shape_change_misses ... ok
+test rodas5p_fast::exact_band_cache::tests::signed_zero_is_conservative ... ok
+test rodas5p_fast::session_terminal_gate_tests::injected_clock_output_and_controller_refusals_are_sticky_at_the_accepted_prefix ... ok
+test rodas5p_fast::tests::fast_error_norm_refuses_overflowed_scalar_and_vector_scales ... ok
+test rodas5p_fast::tests::in_place_lu_solves_pivoted_and_banded_systems ... ok
+test packet_trajectory::verified_transaction_private_tests::txn_fail_first_and_second_preserve_all_accepted_bits ... ok
+test rodas5p_fast_small::tests::every_small_option_set_has_its_own_driver_id ... ok
+test rodas5p_fast_dense::tests::stage_rows_match_sequential_stages ... ok
+test rodas5p_fast_small::tests::the_construction_check_refuses_a_table_off_by_one_bit ... ok
+test rodas5p_fast_small::tests::the_indexed_solve_equals_the_slice_solve_bitwise ... ok
+test rodas5p_lagged::stage_target_policy::n05_tests::scope_checks_and_rotation_counterexample_do_not_grant_real_spectrum ... ok
+test rodas5p_lagged::stage_target_policy::n05_tests::outward_assessment_covers_independent_actual_stage_perturbation ... ok
+test rodas5p_lagged::stage_target_policy::n05_tests::normalized_stage_and_returned_center_errors_are_charged_without_budget_inflation ... ok
+test rodas5p_lagged::stage_target_policy::n05_tests::spectral_bound_is_tighter_and_dominates_independent_forward_values ... ok
+test rodas5p_matrix_free_fast::directional_quadratic_integration_tests::directional_quadratic_option_refuses_incompatible_configuration ... ok
+test routing::tests::a_band_narrower_than_the_jacobian_is_rejected ... ok
+test routing::tests::routing_rules_in_order ... ok
+test routing::tests::seeded_vectors_are_deterministic_and_in_range ... ok
+test routing::tests::verification_uses_the_jvp_when_present_and_charges_it ... ok
+test sequential::forcing_resolution_tests::the_last_pass_is_judged_against_the_limit_of_its_own_estimate ... ok
+test rodas5p_matrix_free_fast::directional_quadratic_integration_tests::directional_quadratic_refusal_preserves_previous_start_fallback ... ok
+test source_owned_graph_schur::c5_source_scoped_tests::actually_falls_back_to_original_full_band_w_on_residual_failure ... ok
+test common_w_gate::tests::smoke_matrix_free_solutions_match_offline_materialized_direct_oracle ... ok
+test rodas5p_matrix_free_fast::directional_quadratic_integration_tests::directional_quadratic_full_ivp_preserves_accuracy_and_reports_clone_storage ... ok
+test source_owned_graph_schur::c5_source_scoped_tests::exact_original_unscaled_w_candidate_and_work_count ... ok
+test source_owned_graph_schur::c5_source_scoped_tests::fails_closed_for_changed_source_epoch ... ok
+test ptsw2b::tests::every_runtime_constant_is_certified_correctly_rounded ... ok
+test source_owned_graph_schur::c5_source_scoped_tests::source_dimension_and_full_integer_feedback_guard ... ok
+test packet_trajectory::verified_transaction_private_tests::inherited_and_stationary_seeds_use_same_center_displacement_and_fixed_energy ... ok
+test transaction::tests::wp03_confidence_rule_default_matches_wilson ... ok
+test source_owned_graph_schur::c5_source_scoped_tests::refuses_rhs_callback_divergence_even_with_same_owner_name ... ok
+test transaction::tests::wp03_kl_upper_confidence_bound_properties ... ok
+test transactional_q1_q2::tests::multi_row_failure_retains_later_row_shifted_work ... ok
+test unified_gates::qualification_tests::every_above_roundoff_order_must_meet_the_floor ... ok
+test unified_gates::qualification_tests::gate_against_a_reference_only_comparator_is_not_evaluated ... ok
+test unified_gates::qualification_tests::qualification_order_ignores_a_roundoff_contaminated_finest_pair ... ok
+test unified_gates::qualification_tests::qualification_order_keeps_the_finest_pair_when_it_is_above_roundoff ... ok
+test rodas5p_fast::banded_exact_tests::exact_fixed_width_parity_including_pivot_swaps ... ok
+test source_owned_graph_schur::c5_source_scoped_tests::refuses_non_cooperative_or_missing_feedback_fvs ... ok
+test ptsw2b::tests::bad_input_gives_typed_errors_not_panics ... ok
+test g4_s5b0_regime_atlas::stage_trajectory_geometry_tests::v37_zero_cap_runner_emits_charged_exhaustions_without_endpoint_labels ... ok
+test unified_gates::qualification_tests::iterative_sequential_order_rows_survive_roundoff_level_refinement ... ok
+test g4_s5b0_regime_atlas::stage_trajectory_geometry_tests::v37_outcome_semantics_reject_crossed_labels_flags_and_endpoint_evidence ... ok
+test output::spd01_landing_property::fused_landing_equals_the_legacy_composition ... ok
+
+test result: ok. 141 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests/a1_zero_tolerance_scale.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/a1_zero_tolerance_scale-32940eb2aaa0fd55)
+
+running 9 tests
+test fast_small_driver_accepts_a_zero_component_with_zero_atol ... ok
+test fast_small_batch_driver_accepts_a_zero_component_with_zero_atol ... ok
+test fast_dense_driver_accepts_a_zero_component_with_zero_atol ... ok
+test fast_banded_driver_accepts_a_zero_component_with_zero_atol ... ok
+test lagged_driver_refuses_a_zero_richardson_weight_with_a_typed_error ... ok
+test lagged_driver_with_forced_refresh_accepts_a_zero_component_with_zero_atol ... ok
+test matrix_free_fast_driver_accepts_a_zero_component_with_zero_atol ... ok
+test protected_sequential_driver_accepts_a_zero_component_with_zero_atol ... ok
+test staged_coupled_target_refuses_a_zero_start_weight_with_a_typed_error ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/alg01_coupled_stage_target.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/alg01_coupled_stage_target-2c678bd691e845e9)
+
+running 14 tests
+test export_base ... ignored, base export of research/alg01_coupled_stage_target_20261008; release build
+test export_base_alg03 ... ignored, base export of research/alg03_stage_budget_guard_20261008; release build
+test export_runs ... ignored, recorded run of research/alg01_coupled_stage_target_20261008; release build
+test export_runs_alg03 ... ignored, recorded run of research/alg03_stage_budget_guard_20261008; release build
+test e05_unit_rhs_matches_the_committed_anchor ... ok
+test frontier_grid_is_one_to_ten_decades_in_half_decades ... ok
+test staged_policies_refuse_other_solvers ... ok
+test lu_twin_agrees_with_the_matrix_free_u_form_step ... ok
+test transfer_constants_reproduce_the_pilot_table ... ok
+test coupled_targets_follow_the_registered_rule ... ok
+test staged_policies_integrate_small_cases_without_a_duplicate_residual ... ok
+test legacy_policy_is_the_gmres_into_driver_bit_for_bit ... ok
+test guard_classification_does_not_change_the_run ... ok
+test legacy_rows_reproduce_the_base_export_on_small_cases ... ok
+
+test result: ok. 10 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/alg04_alg06.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/alg04_alg06-358bc601ba6a5535)
+
+running 14 tests
+test export_runs_alg04 ... ignored, recorded run of research/alg04_coupled_target_v2_20261010; release build
+test export_runs_alg06 ... ignored, recorded run of research/alg06_guard_v2_20261010; release build
+test dup_fix_needs_gmres_into ... ok
+test g3_needs_a_coupled_target ... ok
+test b3_is_coupled_guarded2_where_nothing_fires ... ok
+test g3_charges_the_fallback_residual_to_the_attempt_error ... ok
+test g3_rejections_take_the_local_error_path ... ok
+test coupled_guarded2_is_coupled_guarded_above_the_restart_length ... ok
+test classifying_accepted_guard_aborts_does_not_change_the_run ... ok
+test legacy_ladder_at_the_alg04_budget_reproduces_the_alg01_base ... ok
+test dup_fix_is_legacy_without_the_diagnostic_residual ... ok
+test alg04_cells_are_the_alg01_base_cells ... ok
+test base_references_cover_every_problem ... ok
+test alg06_cells_are_the_alg03_base_cells_and_the_spd07_set ... ok
+
+test result: ok. 12 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+     Running tests/audit2_matrix_free_common_w_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/audit2_matrix_free_common_w_contracts-1c16488b526557f0)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/banded_kernel_entry_identity.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/banded_kernel_entry_identity-ae6e12c282a73f85)
+
+running 5 tests
+test the_dense_output_twins_refuse_the_other_kernels ... ok
+test the_exchange_chain_exchanges_rows ... ok
+test a_run_stopped_by_its_budget_keeps_its_partial_record ... ok
+test endpoint_twins_equal_the_existing_entry_points ... ok
+test dense_output_twins_equal_the_existing_entry_points ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running tests/declared_structure_routing.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/declared_structure_routing-72eac388c66d58b3)
+
+running 6 tests
+test export_runs ... ignored, recorded run of research/sp03_declared_structure_routing_20261010; release build; set SP03_RUNS
+test the_transcribed_problems_are_consistent ... ok
+test a_dense_declaration_above_eight_records_its_fallback ... ok
+test band_verification_is_charged_and_reported ... ok
+test every_malformed_declaration_is_refused_before_any_step ... ok
+test routed_equals_its_target_driver_on_quick_cells ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/int01_gcrodr_verified_reuse.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/int01_gcrodr_verified_reuse-5b3d48f5ad4cdd8a)
+
+running 2 tests
+test fresh_family_cold_gmres_only ... ignored, development check of research/int01_gcrodr_verified_reuse_20261003: cold GMRES on the fresh family only
+test gcrodr_verified_reuse ... ignored, research run of research/int01_gcrodr_verified_reuse_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/int01_posthoc_tolerance.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/int01_posthoc_tolerance-379a9138ac8244f5)
+
+running 1 test
+test gcrodr_reuse_tolerance_posthoc ... ignored, post-hoc diagnostic of research/int01_gcrodr_verified_reuse_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/krylov_workspace_driver_contract.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/krylov_workspace_driver_contract-f0ce12aa14181ac3)
+
+running 9 tests
+test export_runs ... ignored, export SP02 runs to RUNS.json
+test caller_parity_attempt_and_trajectory ... ok
+test faer_premise_pinned ... ok
+test forced_failure_rollback_gmres_and_lgmres ... ok
+test nonfinite_jvp_rejection_rollback ... ok
+test refusal_contracts ... ok
+test snapshot_rollback_restores_system_identity_under_same_token ... ok
+test warmed_krylov_solves_and_snapshot_rollback_allocate_zero ... ok
+test workspace_growth_reuse_and_clone ... ok
+
+test result: ok. 8 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/matrix_free_problem_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/matrix_free_problem_contracts-fbfc0cd1b3a96817)
+
+running 2 tests
+test supplied_jvp_matches_the_explicit_jacobian_action ... ok
+test jvp_only_clone_hides_explicit_jacobian_and_builds_matrix_free_shifted_operator ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/mf_adaptive_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/mf_adaptive_contracts-1487c53c5e8841a7)
+
+running 6 tests
+test the_identifiers_name_the_policies ... ok
+test the_router_runs_and_reports_the_policy_it_is_given ... ok
+test the_adaptive_policies_are_refused_where_they_do_not_apply ... ok
+test every_adaptive_stage_solve_meets_the_threshold_of_the_shipped_driver ... ok
+test an_adaptive_run_stays_within_the_golden_band_of_the_shipped_run_with_fewer_columns ... ok
+test a_solve_that_exhausts_the_budget_is_a_failed_attempt_under_every_policy ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.14s
+
+     Running tests/mf_adaptive_measure.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/mf_adaptive_measure-c3fd5d1cd14a16f1)
+
+running 1 test
+test v24_run ... ignored, measurement program: run with --ignored --nocapture and the V24_* variables
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/mf_adaptive_shipped_bits.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/mf_adaptive_shipped_bits-da24030d90525003)
+
+running 2 tests
+test the_shipped_entries_return_the_bits_recorded_before_the_edit ... ok
+test the_shipped_policy_named_explicitly_returns_the_recorded_bits ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.80s
+
+     Running tests/native_reaudit_cache_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/native_reaudit_cache_contracts-701cae85bd3807e8)
+
+running 8 tests
+test a_cloned_problem_same_state_changed_step_still_reuses_the_cache ... ok
+test a_failed_time_derivative_refresh_is_also_atomic ... ok
+test a_nonfinite_time_and_overflowing_error_scale_are_not_admissible ... ok
+test a_failed_fresh_callback_cannot_leave_an_old_linearization_reusable ... ok
+test a_reuse_hint_does_not_override_state_or_time_identity ... ok
+test the_public_attempt_cannot_bypass_the_identity_mass_contract ... ok
+test nonfinite_or_negative_output_tolerances_are_rejected_before_work ... ok
+test a_same_named_different_callback_is_not_the_same_frozen_problem ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p0_partial_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/p0_partial_contracts-e3de245916663eae)
+
+running 9 tests
+test fast_banded_partial_after_a_latched_rhs_failure_and_none_on_success ... ok
+test fast_dense_partial_reports_the_attempt_budget_and_the_last_accepted_state ... ok
+test fast_dense_partial_is_none_on_success_and_the_run_is_bit_identical ... ok
+test router_carries_the_partial_record_of_the_routed_driver ... ok
+test segment_driver_reports_a_partial_record_on_failure ... ok
+test every_step_sampling_off_is_the_named_driver_and_wfiltered_samples_every_step ... ok
+test matrix_free_partial_after_a_latched_rhs_failure_and_none_on_success ... ok
+test fast_dense_partial_after_a_latched_rhs_failure ... ok
+test segment_driver_with_output_time_sampling_is_the_named_driver_bit_for_bit ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/ppsw1_6b_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/ppsw1_6b_contracts-e2c2aa6559128625)
+
+running 37 tests
+test a1_method_identity_is_distinct_and_opt_in ... ok
+test a2_derivative_class_is_exact_jacobian_or_jvp_frozen_at_step_start ... ok
+test a3_accepted_step_sigma_cap_is_1_10_and_the_paper_1_5_is_recorded_separately ... ok
+test b2_gamma_is_the_root_of_the_printed_degree6_polynomial_to_60_digits ... ok
+test b5_tableau_is_total_on_positive_finite_sigma_and_typed_error_otherwise ... ok
+test c1_order5_conditions_vanish_for_module_coefficients_at_variable_step ... ok
+test c2_order6_residual_is_nonzero_so_variable_step_order_is_exactly_5 ... ok
+test d3_six_stages_share_one_factorization_and_satisfy_the_stage_equations ... ok
+test d2_perturbing_one_current_stage_input_changes_no_other_current_stage_output ... ok
+test d4_advance_charges_one_factorization_six_solves_and_six_rhs_calls ... ok
+test c3_one_step_error_with_exact_stage_data_scales_like_h6 ... ok
+test d6_jvp_only_problem_reproduces_explicit_jacobian_stage_solution ... ok
+test e1_rejected_attempt_leaves_history_and_controller_untouched_but_charges_work ... ok
+test e3_stale_attempt_is_refused_without_side_effects ... ok
+test e4_ratio_above_the_1_10_cap_is_a_typed_error_with_no_side_effects ... ok
+test b4_oracle_and_module_match_the_printed_pw04_sigma1_matrices ... ok
+test f2_stiff_limit_of_the_stability_matrix_is_minus_beta_over_gamma_with_rho_zero ... ok
+test g2_nothing_is_labelled_derivative_free ... ok
+test f1_beta_is_nilpotent_so_the_stiff_limit_has_spectral_radius_zero ... ok
+test d5_serial_and_two_thread_stage_solves_are_bitwise_identical ... ok
+test h2_estimator_is_zero_on_degree4_polynomials_and_nonzero_on_degree5 ... ok
+test h3_error_norm_and_accept_rule ... ok
+test h4_controller_formula_hysteresis_and_nan ... ok
+test h5_h0_rule_and_refusals ... ok
+test d1_stage_inputs_use_only_previous_step_data_and_oracle_formulas ... ok
+test h8_try_step_rejects_on_estimator_and_commits_on_acceptance ... ok
+test h7_starter_uses_forward_time_only_and_newton_only_in_the_starter ... ok
+test g1_default_candidate_catalog_is_unchanged_and_peerw_stays_deferred ... ok
+test h1_estimator_weights_are_exact_lagrange_weights ... ok
+test h6_starter_node_values_are_o_h0_to_the_5th_on_a_stiff_problem ... ok
+test e2_accepted_attempt_commits_exactly_the_certified_update ... ok
+test b3_module_tableau_matches_the_high_precision_oracle_within_1e_13 ... ok
+test b1_exact_oracle_reproduces_the_pw04_structure ... ok
+test i1_end_to_end_prothero_robinson_with_real_starter_and_controller ... ok
+test g3_protected_sources_are_byte_identical ... ok
+test i2_end_to_end_stiff_linear_system_with_real_starter_and_controller ... ok
+test f3_l_alpha_angle_is_57_54_degrees_within_0_05 ... ok
+
+test result: ok. 37 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.48s
+
+     Running tests/ptsw2b_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/ptsw2b_contracts-4d2519f3fa558faf)
+
+running 24 tests
+test a1_certified_data_is_internally_consistent_in_exact_arithmetic ... ok
+test b2_exact_order3_condition_fails_so_order_is_exactly_two ... ok
+test b3_implementation_residuals_vanish_for_order2_and_not_for_order3 ... ok
+test c1_exact_stiff_limit_matrix_is_nilpotent_of_index_three_with_rho_zero ... ok
+test a2_implementation_coefficients_equal_certified_values ... ok
+test c2_implementation_stiff_limit_matrix_matches_exact_and_is_nilpotent ... ok
+test b1_exact_order2_conditions_vanish_identically_in_sigma ... ok
+test d1_stage_inputs_use_only_previous_step_data_and_certified_formulas ... ok
+test d2_perturbing_one_current_stage_input_changes_no_other_current_stage_output ... ok
+test d3_both_stages_share_one_w_factor_and_satisfy_the_certified_stage_equations ... ok
+test d5_jvp_only_problem_reproduces_explicit_jacobian_stage_solution ... ok
+test e2_error_norm_is_componentwise_scaled_rms_of_the_embedded_difference ... ok
+test e3_controller_uses_certified_constants_clip_and_hysteresis ... ok
+test d4_serial_and_two_thread_stage_solves_are_bitwise_identical ... ok
+test e1_embedded_estimator_uses_its_own_exact_weights_and_is_order_one ... ok
+test g1_accepted_step_ceiling_is_the_owner_decided_1_10 ... ok
+test g2_method_identity_is_distinct_opt_in_control_with_the_declared_derivative_class ... ok
+test f1_rejected_attempt_does_not_mutate_history_or_controller_but_charges_work ... ok
+test i1_startup_plan_is_forward_only_with_certified_times ... ok
+test h1_default_candidate_catalog_is_unchanged_and_peerw_stays_deferred ... ok
+test j2_l_stable_damping_on_stiff_prothero_robinson ... ok
+test f2_accepted_attempt_commits_exactly_the_certified_update ... ok
+test j1_observed_global_order_is_two_with_exact_startup ... ok
+test h2_protected_sources_are_byte_identical ... ok
+
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/residual_acceptance_contract.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/residual_acceptance_contract-41ca550a97282619)
+
+running 9 tests
+test accurate_seam_is_accepted_at_every_scale ... ok
+test finite_scale_control_behaves_as_before ... ok
+test recorded_overflow_counterexample_is_rejected ... ok
+test unrepresentable_inputs_reject ... ok
+test driver_finite_control_is_unchanged ... ok
+test driver_rejects_overflowing_fallback_transactionally ... ok
+test driver_accepts_accurate_fallback_at_finite_and_overflowing_scale ... ok
+test power_of_two_rescaling_into_overflow_never_creates_acceptance ... ok
+test decision_matches_old_rule_wherever_old_intermediates_are_finite ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+
+     Running tests/rev03_export.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/rev03_export-9fe8bbff934a2025)
+
+running 1 test
+test export_fresh_step_sizes ... ignored, export of research/rev03_one_sided_acceptance_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rnext01_residual_output.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/rnext01_residual_output-011f3b8edb29691b)
+
+running 1 test
+test export_one_step_comparisons ... ignored, export of research/rnext01_residual_output_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rnext02_gmres_into_study.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/rnext02_gmres_into_study-0fdb7d8a9dbe22d0)
+
+running 1 test
+test gmres_into_study ... ignored, research run of research/rnext02_gmres_into_20261003; release build, one test thread
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rnext03_gcrodr_attribution.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/rnext03_gcrodr_attribution-3181ad730fca5eb4)
+
+running 1 test
+test gcrodr_attribution ... ignored, research run of research/rnext03_gcrodr_attribution_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rnext03_posthoc_invariant.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/rnext03_posthoc_invariant-2606160698762e39)
+
+running 1 test
+test recycle_invariant_probe ... ignored, post-hoc diagnostic of research/rnext03_gcrodr_attribution_20261003; release build
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rnext07_model_epoch.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/rnext07_model_epoch-30185e5e92ac140a)
+
+running 1 test
+test model_epoch_contract ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/safe_recycle_policy.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/safe_recycle_policy-81f7acbb04edf3c6)
+
+running 4 tests
+test export_legacy_base ... ignored, base export of research/safe_recycle_policy_20261004; release build
+test export_policies ... ignored, recorded run of research/safe_recycle_policy_20261004; release build
+test cold_stage_solve_leaves_carried_state ... ok
+test refreshed_stage_solve_equals_traced_rev01c_call ... ok
+
+test result: ok. 2 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/shared_basis_mf_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/shared_basis_mf_contracts-f307a64d6773445b)
+
+running 3 tests
+test shared_basis_workspace_configuration_and_accessors ... ok
+test shared_basis_on_heat_uses_fewer_jvps_at_matched_steps ... ok
+test shared_basis_off_is_bit_identical ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+     Running tests/sp01_dupfix_adoption.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/sp01_dupfix_adoption-8ade264fa3c16689)
+
+running 7 tests
+test export_runs ... ignored, recorded export of research/sp01_dupfix_adoption_20261010; release build
+test the_registered_cells ... ok
+test explicit_w_jacobi_sequential_steps ... ok
+test dup_fix_is_unchanged ... ok
+test the_accounting_entry_points_reproduce_the_default_drivers ... ok
+test the_kform_step_loop_is_the_comparator ... ok
+test both_accountings_agree_and_differ_by_the_observed_count ... ok
+
+test result: ok. 6 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+     Running tests/spd04_ls_workspace_study.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/spd04_ls_workspace_study-62c4ee466248b701)
+
+running 1 test
+test spd04_ls_workspace_study ... ignored, research run of research/spd04_ls_workspace_20261007; release build, one test thread
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/spd07_mf_step_warm_start.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/spd07_mf_step_warm_start-92c97d9bc17ac828)
+
+running 6 tests
+test export_base ... ignored, base export of research/spd07_mf_step_warm_start_20261007; release build
+test export_runs ... ignored, recorded run of research/spd07_mf_step_warm_start_20261007; release build
+test sequential_step_refuses_step_indexed_starts ... ok
+test recorded_step_starts_each_stage_from_its_own_solution ... ok
+test step_indexed_starts_are_used ... ok
+test default_guesses_reproduce_the_base_export ... ok
+
+test result: ok. 4 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/stage_clients_alloc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_alloc-3e13379013d7cd8e)
+
+running 1 test
+test dense_client_allocates_nothing_per_accepted_step ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+     Running tests/stage_clients_assembly_alloc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_assembly_alloc-27ecfbba2224e7f2)
+
+running 1 test
+test sequential_assembly_allocates_nothing_per_accepted_step ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/stage_clients_assembly_identity.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_assembly_identity-52e2026284224a71)
+
+running 13 tests
+test checks_can_be_switched_off_and_requested ... ok
+test configurations_that_cannot_work_are_refused ... ok
+test a_dense_pattern_on_the_coloured_route_is_the_dense_route ... ok
+test the_groups_are_curtis_powell_reid_first_fit ... ok
+test an_impure_right_hand_side_fails_closed ... ok
+test a_wrong_pattern_fails_closed ... ok
+test threaded_right_hand_sides_run_on_the_clients_own_pool ... ok
+test failures_are_reported_as_the_sequential_build_meets_them ... ok
+test a_run_cut_by_the_attempt_budget_is_reproduced_too ... ok
+test right_hand_side_calls_are_colours_plus_one_per_build ... ok
+test every_mode_assembles_the_reference_jacobian_bit_for_bit ... ok
+test the_coloured_route_reproduces_the_protected_banded_driver ... ok
+test every_mode_reproduces_the_protected_dense_driver ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+     Running tests/stage_clients_assembly_measure.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_assembly_measure-946386c11050eece)
+
+running 1 test
+test v08_measure ... ignored, measurement program of loop node V08; run it alone with V08_MODE set
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/stage_clients_assembly_problems.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_assembly_problems-0ad8d326389a6234)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/stage_clients_banded_tight_alloc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_banded_tight_alloc-070679195e42d6d9)
+
+running 1 test
+test banded_tight_client_allocates_nothing_per_accepted_step ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/stage_clients_banded_tight_identity.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_banded_tight_identity-e0b30f48c960c56f)
+
+running 8 tests
+test brusselator_100000_equals_the_protected_banded_driver ... ignored, long: n = 100000; run with --include-ignored for the evidence log
+test a_singular_matrix_is_the_same_linear_solve_error ... ok
+test a_singular_pivot_in_the_last_columns_is_the_same_error ... ok
+test a_solve_before_a_factorization_does_not_panic ... ok
+test smallest_sizes_equal_the_protected_banded_driver ... ok
+test wide_band_allen_cahn_equals_the_protected_banded_driver ... ok
+test fitzhugh_nagumo_10000_equals_the_protected_banded_driver ... ok
+test brusselator_1000_and_10000_equal_the_protected_banded_driver ... ok
+
+test result: ok. 7 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.99s
+
+     Running tests/stage_clients_dense_identity.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_dense_identity-ea7f4f6468efc8ba)
+
+running 10 tests
+test diagnostic_single_arm_for_instruction_count ... ignored, diagnostic single arm for perf stat: set STAGE_CLIENTS_ARM, _CASE and _RUNS
+test diagnostic_wall_ratio_client_over_protected ... ignored, diagnostic wall time: run alone with --ignored --nocapture --test-threads=1
+test protected_choice_follows_the_policy_and_misuse_is_refused ... ok
+test dense_client_reproduces_protected_driver_robertson ... ok
+test dense_client_reproduces_protected_driver_hires ... ok
+test dense_client_reproduces_protected_driver_brusselator_n32 ... ok
+test dense_client_reproduces_protected_driver_brusselator_n100 ... ok
+test faer_mode_off_policy_is_a_valid_solver_of_the_named_problems ... ok
+test timed_wrapper_is_result_neutral_and_counts_match_driver ... ok
+test dense_client_reproduces_protected_driver_meanfield_brusselator_n100_faer ... ok
+
+test result: ok. 8 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.33s
+
+     Running tests/stage_clients_dense_lu_reuse_alloc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_dense_lu_reuse_alloc-9b8bca26614767f3)
+
+running 1 test
+test reuse_client_allocates_nothing_per_attempt_after_warm_up ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.44s
+
+     Running tests/stage_clients_dense_lu_reuse_identity.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_dense_lu_reuse_identity-1f6e5dfd567cd2b9)
+
+running 8 tests
+test reuse_client_reproduces_protected_driver_on_the_faer_path_n2048 ... ignored, the order 2048 takes minutes: run with --ignored --nocapture
+test misuse_is_refused ... ok
+test singular_matrix_gives_the_typed_error_of_the_protected_path ... ok
+test factors_permutation_and_solves_equal_the_protected_kernel ... ok
+test threaded_run_follows_the_sequential_run ... ok
+test reuse_client_reproduces_protected_driver_on_the_client_kit_set ... ok
+test threaded_factorization_is_a_partial_pivoting_lu ... ok
+test reuse_client_reproduces_protected_driver_on_the_faer_path_n128_n512 ... ok
+
+test result: ok. 7 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 10.26s
+
+     Running tests/stage_clients_dense_lu_reuse_problems.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_dense_lu_reuse_problems-da0c118b0db1c41d)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/stage_clients_krylov_alloc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_krylov_alloc-03c9958be235ea2f)
+
+running 1 test
+test krylov_clients_allocate_nothing_per_accepted_step ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.60s
+
+     Running tests/stage_clients_krylov_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_krylov_contracts-f29d2171e495db3e)
+
+running 10 tests
+test merged_hook_solution_meets_the_protected_threshold ... ignored, fails by design: the merged hook's stopping test is not the protected driver's
+test an_exhausted_budget_and_a_missing_setup_are_typed_errors ... ok
+test family_jvps_and_diagonals_are_the_derivative_of_the_right_hand_side ... ok
+test the_merged_hook_accepts_residuals_far_above_the_protected_threshold ... ok
+test single_solves_meet_the_rule_and_the_shared_basis_is_reused ... ok
+test the_audit_reports_solves_that_miss_the_threshold ... ok
+test the_shipped_cadence_client_reproduces_the_protected_driver ... ok
+test every_jvp_is_accounted_for ... ok
+test every_arm_reproduces_itself_bit_for_bit ... ok
+test the_audit_checks_every_solve_and_leaves_the_run_unchanged ... ok
+
+test result: ok. 9 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 5.40s
+
+     Running tests/stage_clients_krylov_measure.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_krylov_measure-a6ef51f6c444aa9c)
+
+running 1 test
+test v06_run ... ignored, measurement program: run with --ignored --nocapture and the V06_* variables
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/stage_clients_krylov_problems.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_krylov_problems-020754c1a24aaa99)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/stage_clients_krylov_v17_alloc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_krylov_v17_alloc-8d0f33669096f96c)
+
+running 1 test
+test v17_clients_allocate_nothing_per_accepted_step ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.62s
+
+     Running tests/stage_clients_krylov_v17_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_krylov_v17_contracts-ba18eef3a034b22f)
+
+running 11 tests
+test arm_b_and_the_protected_kernel_stop_at_the_same_residual ... ok
+test arm_c_accepts_at_the_larger_of_the_two_thresholds ... ok
+test the_routed_configuration_has_the_constants_of_arm_b ... ok
+test the_client_threshold_is_the_protected_threshold ... ok
+test the_step_tied_bound_is_the_declared_formula ... ok
+test v17_family_jvps_and_diagonals_match_the_right_hand_side ... ok
+test the_audit_of_arm_c_tests_against_the_threshold_of_arm_c ... ok
+test the_protected_check_detects_a_mismatched_stage_system ... ok
+test the_shipped_cadence_client_does_the_work_of_the_protected_driver ... ok
+test every_arm_reproduces_itself_bit_for_bit ... ok
+test the_checks_cover_every_solve_and_leave_the_runs_unchanged ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.41s
+
+     Running tests/stage_clients_krylov_v17_measure.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_krylov_v17_measure-53ca16d423f30d0a)
+
+running 1 test
+test v17_run ... ignored, measurement program: run with --ignored --nocapture and the V17_* variables
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/stage_clients_krylov_v17_problems.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_krylov_v17_problems-924e570f47680447)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/stage_clients_speculative_alloc.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_speculative_alloc-56558aeacccbde7f)
+
+running 1 test
+test speculative_client_allocates_nothing_per_accepted_step ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.30s
+
+     Running tests/stage_clients_speculative_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_speculative_contracts-6cbeca21ba59a6f4)
+
+running 17 tests
+test closed_forms_solve_their_equations ... ok
+test exact_mode_reproduces_protected_driver_robertson ... ok
+test misuse_is_refused_and_a_lost_point_falls_back_to_the_exact_jacobian ... ok
+test recorded_calls_match_an_independent_k_form_step ... ok
+test recording_wrapper_is_result_neutral_call_by_call ... ok
+test the_time_derivative_is_evaluated_at_accepted_states_only ... ok
+test exact_mode_reproduces_protected_driver_hires ... ok
+test models_agree_bitwise_with_the_repository_definitions ... ok
+test exact_mode_reproduces_protected_driver_nonautonomous ... ok
+test exact_mode_reproduces_protected_driver_brusselator_n32 ... ok
+test an_attempt_that_failed_with_an_error_is_retried_with_the_exact_jacobian ... ok
+test recorded_calls_are_the_stage_arguments_in_stage_order ... ok
+test recording_wrapper_is_result_neutral_for_the_protected_driver ... ok
+test model_jacobians_match_finite_differences ... ok
+test exact_mode_reproduces_protected_driver_brusselator_n100 ... ok
+test modes_evaluate_the_jacobian_at_the_declared_points ... ok
+test exact_mode_reproduces_protected_driver_meanfield_brusselator_n100_faer ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.27s
+
+     Running tests/stage_clients_speculative_measure.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_speculative_measure-132cd0840f08bcca)
+
+running 3 tests
+test measure_adaptive ... ignored, measurement program: run alone with --ignored --nocapture --test-threads=1
+test measure_fixed_step ... ignored, measurement program: run alone with --ignored --nocapture --test-threads=1
+test measure_model_probes ... ignored, measurement program: run alone with --ignored --nocapture --test-threads=1
+
+test result: ok. 0 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/stage_clients_speculative_problems.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_clients_speculative_problems-f3b5614baad368c4)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/stage_residual_telemetry.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/stage_residual_telemetry-02586fa3a2609daa)
+
+running 6 tests
+test export_runs ... ignored, recorded run of research/as04_stage_residual_telemetry_20261011; release build
+test test_workspace_clone_telemetry_isolation ... ok
+test test_d1_transactional_failure ... ok
+test test_d2_epoch_and_generation ... ok
+test test_telemetry_off_and_reserved_capacity_contract ... ok
+test test_r_parity_on_off_and_alg06_anchor ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.22s
+
+     Running tests/thread_transfer_mf_workspace.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/thread_transfer_mf_workspace-c6e4e8a2f4b78856)
+
+running 1 test
+test matrix_free_u_form_driver ... ignored, research run of research/thread_transfer_mf_workspace_20261002 (about 2 min in release); run by the ignored-tests CI job in the measurement profile
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/time_fd_workspace_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/time_fd_workspace_contracts-86b20676619f2595)
+
+running 2 tests
+test dense_fd_scratch_matches_stack_callback_with_no_extra_step_allocations ... ok
+test matrix_free_fd_scratch_matches_stack_callback_with_no_extra_step_allocations ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/zero_start_policy_holdout.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/zero_start_policy_holdout-e19019d241bb76cf)
+
+running 12 tests
+test export_base ... ignored, SP04 base export across 6 cells and 8 comparator arms; release build
+test export_runs ... ignored, SP04 runs export across 6 cells and 11 arms (8 comparator + 3 new); release build
+test current_w_preserves_buffer_capacity ... ok
+test first_stage_solve_zero_start_parity ... ok
+test zero_allocation_in_explicit_zero_hot_loop ... ok
+test smoke_e_normal_g_z ... ok
+test current_w_contract ... ok
+test default_entry_point_equals_g_p ... ok
+test vg3_base_json_bitwise_anchor ... ok
+test separation_contract_and_telemetry_parity ... ok
+test smoke_all_arms_e_normal ... ok
+test smoke_all_problems ... ok
+
+test result: ok. 10 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 3.40s
+

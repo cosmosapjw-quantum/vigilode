@@ -1,0 +1,44 @@
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116/crates/vigilode)
+    Finished `release` profile [optimized] target(s) in 21.84s
+     Running tests/banded_kernel_route_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/banded_kernel_route_contracts-e9f52f86019e1afe)
+
+running 3 tests
+test the_kernel_changes_at_the_declared_width ... ok
+V22_D2_LABELS width=6 runs_on_slices=28 runs_on_indexed=36
+test the_route_labels_follow_the_width_rule ... ok
+test banded_facade_runs_keep_their_record ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+     Running tests/default_path_golden.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w2-v06/release/deps/default_path_golden-3cfa60341d062694)
+
+running 11 tests
+test format_helpers_are_bit_faithful ... ok
+test golden_directory_is_exactly_the_listed_files ... ok
+golden rodas5p_contracts: identical (154604 bytes)
+test rodas5p_contracts ... ok
+golden dopri5: identical (86128 bytes)
+test dopri5 ... ok
+golden production_automatic: identical (402073 bytes)
+test production_automatic ... ok
+golden rodas5p_robertson: identical (370941 bytes)
+test rodas5p_robertson ... ok
+golden rodas5p_vanderpol: identical (158780 bytes)
+test rodas5p_vanderpol ... ok
+golden rodas5p_hires: identical (170461 bytes)
+test rodas5p_hires ... ok
+golden decision_grid: identical (488690 bytes)
+test decision_grid ... ok
+golden general_ode: identical (286767 bytes)
+test general_ode ... ok
+golden rodas5p_brusselator: identical (564956 bytes)
+test rodas5p_brusselator ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.73s
+
+
+D2_GOLDEN records 64 against commit 66c558a0 (recorded before the facade edit): changed field sets {'none': 36, 'driver_id + entry_point': 28}
+D2_GOLDEN width W = 6; bands whose records changed (labels only): [(6, 6), (8, 8), (12, 12), (16, 16), (32, 32)]
+D2_GOLDEN bands whose records are unchanged: [(1, 8), (1, 16), (2, 2), (3, 3), (4, 4), (8, 1), (16, 1)]
+D2_GOLDEN holds: True
+d2_compare exit=0
