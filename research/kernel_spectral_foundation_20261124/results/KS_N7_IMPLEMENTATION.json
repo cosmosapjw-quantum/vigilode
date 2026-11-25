@@ -1,0 +1,495 @@
+{
+ "schema": "vigilode-ks-n7-implementation-v1",
+ "task": "KS-N7",
+ "title": "Two-for-one real FFT on the periodic box",
+ "branch": "research/stage-lattice-referee-20261124-ksn7",
+ "code_commit": "4539eada625aba94c3fef017ac48f50a9da61339",
+ "generated_by": "research/kernel_spectral_foundation_20261124/ks_n7/make_results.py",
+ "notes": "research/kernel_spectral_foundation_20261124/ks_n7/NOTES.txt",
+ "environment": {
+  "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "cargo": "cargo 1.94.1 (29ea6fb6a 2026-03-24)",
+  "cpu": "AMD Ryzen 9 5900X 12-Core Processor",
+  "kernel": "7.0.0-43-generic",
+  "taskset": "0-5,12-17",
+  "loadavg_at_env_record": "30.74 21.27 16.22 32/6039 2786468",
+  "perf": "perf version 7.0.14",
+  "host_note": "agent host shared with other batch jobs (load average 10-30): every timing here is diagnostic"
+ },
+ "api": {
+  "enum": "vigilode::spatial::separable::BoxTransform { Complex (default), PairedReal } (non_exhaustive, FromStr/Display: complex, paired-real, alias paired)",
+  "setter": "SeparableStages::with_box_transform(self, BoxTransform) -> Self; getter box_transform()",
+  "prepared_solver": "SeparableStages::stage_solver(z) -> impl FnMut(&mut [f64]) -> Result<(), SolveError> + Send (plans and buffers built once)",
+  "default": "Complex (unchanged); only the owner-host timing cell may change it",
+  "sphere": "ignores the setting (its kernel always pairs rings); test asserts identical bits"
+ },
+ "checks": [
+  {
+   "name": "spatial_separable tests",
+   "command": "cargo +1.94.1 test --locked -j 4 --release -p vigilode --test spatial_separable -- --nocapture",
+   "exit_code": 0,
+   "result": "ok: 9 passed, 0 failed, 3 ignored",
+   "log": "research/kernel_spectral_foundation_20261124/ks_n7/logs/spatial_separable_test.log"
+  },
+  {
+   "name": "clippy",
+   "command": "cargo +1.94.1 clippy --locked -j 4 -p vigilode --all-targets --release --no-deps -- -D warnings",
+   "exit_code": 0,
+   "result": "pass",
+   "detail": "    Finished `release` profile [optimized] target(s) in 44.11s",
+   "log": "research/kernel_spectral_foundation_20261124/ks_n7/logs/clippy.log"
+  },
+  {
+   "name": "fmt check",
+   "command": "cargo +1.94.1 fmt -p vigilode -p rodas5p-integrators -- --check",
+   "exit_code": 0,
+   "result": "pass",
+   "detail": "",
+   "log": "research/kernel_spectral_foundation_20261124/ks_n7/logs/fmt_check.log"
+  },
+  {
+   "name": "verify_run",
+   "command": "python3 -I research/kernel_spectral_foundation_20261124/scripts/verify_run.py",
+   "exit_code": 0,
+   "result": "pass",
+   "detail": "OK: 11 stages, 16 claims, 8 plan tasks, 3 timed grids, foundation checks pass",
+   "log": "research/kernel_spectral_foundation_20261124/ks_n7/logs/verify_run.log"
+  }
+ ],
+ "agreement_with_complex": {
+  "statement": "||x_paired - x_complex||_inf <= 1e-13 S/(z - c), S = ((z - c) + rho_bar)||x_complex||_inf + ||b||_inf; on the box ||W^{-1}||_inf = 1/(z - c) (M-matrix, W 1 = (z - c) 1), so the T1 bound on both residuals implies 2e-13 S/(z - c)",
+  "grids": 16,
+  "shifts": "(z, c) in (0.5, 0), (10, -1), (3, 1), (1e4, 0), (1e-3, 0)",
+  "right_hand_sides": "three noise seeds and one with rows alternating in scale by 1e8",
+  "cases": 320,
+  "differing_cases": 236,
+  "max_relative_difference": 1.874e-15,
+  "max_normalized_difference": 5.346e-16,
+  "bound_normalized": 1e-13,
+  "worst_case": "box-37x6 z=0.5 c=0 rows-1e8-apart",
+  "test": "crates/vigilode/tests/spatial_separable.rs::paired_real_box_transform_agrees_with_the_complex_transform",
+  "verdict": "PASS"
+ },
+ "t1_t2": {
+  "statement": "backward error ||b - W x||_inf / S <= 1e-13 and stage mass defect |(z - c) M(x) - M(b)| / (sum A_i S) <= 1e-13, the scales of separable_stage_solves_are_exact_and_mass_consistent",
+  "paired_real": {
+   "transform": "paired-real",
+   "solves": 320,
+   "max_backward_error": 8.11e-16,
+   "max_mass_defect": 4.545e-17,
+   "bound": 1e-13
+  },
+  "complex_same_cases": {
+   "transform": "complex",
+   "solves": 320,
+   "max_backward_error": 7.271e-16,
+   "max_mass_defect": 4.545e-17,
+   "bound": 1e-13
+  },
+  "default_arm_existing_test_SL_N5_T1T2": {
+   "max_backward_error": 3.373e-16,
+   "max_mass_defect": 5.11e-17
+  },
+  "default_arm_recorded_before": {
+   "max_backward_error": 3.4e-16,
+   "max_mass_defect": 5.1e-17,
+   "source": "RUN.json claims K5, K4"
+  },
+  "test": "crates/vigilode/tests/spatial_separable.rs::paired_real_box_solves_meet_the_t1_t2_bounds",
+  "verdict": "PASS"
+ },
+ "route": {
+  "rows": [
+   {
+    "case": "box-12x10",
+    "mode": "Trusted",
+    "transform": "complex",
+    "error": 6.635e-11,
+    "attempts": 34,
+    "solves": 272,
+    "max_mass_defect": 1.258e-15,
+    "max_backward_error": 0.0
+   },
+   {
+    "case": "box-12x10",
+    "mode": "Trusted",
+    "transform": "paired-real",
+    "error": 6.635e-11,
+    "attempts": 34,
+    "solves": 272,
+    "max_mass_defect": 1.231e-15,
+    "max_backward_error": 0.0
+   },
+   {
+    "case": "box-12x10",
+    "mode": "Verified { max_corrections: 4, tolerance: 1e-10 }",
+    "transform": "complex",
+    "error": 6.635e-11,
+    "attempts": 34,
+    "solves": 272,
+    "max_mass_defect": 1.258e-15,
+    "max_backward_error": 4.926e-16
+   },
+   {
+    "case": "box-12x10",
+    "mode": "Verified { max_corrections: 4, tolerance: 1e-10 }",
+    "transform": "paired-real",
+    "error": 6.635e-11,
+    "attempts": 34,
+    "solves": 272,
+    "max_mass_defect": 1.231e-15,
+    "max_backward_error": 4.572e-16
+   },
+   {
+    "case": "box-4x6x5",
+    "mode": "Trusted",
+    "transform": "complex",
+    "error": 5.079e-11,
+    "attempts": 46,
+    "solves": 368,
+    "max_mass_defect": 9.494e-16,
+    "max_backward_error": 0.0
+   },
+   {
+    "case": "box-4x6x5",
+    "mode": "Trusted",
+    "transform": "paired-real",
+    "error": 5.079e-11,
+    "attempts": 46,
+    "solves": 368,
+    "max_mass_defect": 1.175e-15,
+    "max_backward_error": 0.0
+   },
+   {
+    "case": "box-4x6x5",
+    "mode": "Verified { max_corrections: 4, tolerance: 1e-10 }",
+    "transform": "complex",
+    "error": 5.079e-11,
+    "attempts": 46,
+    "solves": 368,
+    "max_mass_defect": 9.494e-16,
+    "max_backward_error": 6.12e-16
+   },
+   {
+    "case": "box-4x6x5",
+    "mode": "Verified { max_corrections: 4, tolerance: 1e-10 }",
+    "transform": "paired-real",
+    "error": 5.079e-11,
+    "attempts": 46,
+    "solves": 368,
+    "max_mass_defect": 1.175e-15,
+    "max_backward_error": 6.062e-16
+   }
+  ],
+  "complex_vs_paired_final_states": [
+   {
+    "case": "box-12x10",
+    "mode": "Trusted",
+    "max_difference": 1.11e-15,
+    "relative_difference": 1.796e-15
+   },
+   {
+    "case": "box-12x10",
+    "mode": "Verified { max_corrections: 4, tolerance: 1e-10 }",
+    "max_difference": 1.11e-15,
+    "relative_difference": 1.796e-15
+   },
+   {
+    "case": "box-4x6x5",
+    "mode": "Trusted",
+    "max_difference": 1.332e-15,
+    "relative_difference": 2.197e-15
+   },
+   {
+    "case": "box-4x6x5",
+    "mode": "Verified { max_corrections: 4, tolerance: 1e-10 }",
+    "max_difference": 1.332e-15,
+    "relative_difference": 2.197e-15
+   }
+  ],
+  "statement": "whole IVPs (12x10 box of T3, 4x6x5 box) on the separable route with PairedReal match the dense matrix-exponential reference within 1e-6 max|reference| (T3 envelope), mass defect <= 1e-12, Verified without corrections, and agree with the Complex route within the same envelope",
+  "verdict": "PASS"
+ },
+ "selection_and_reuse": {
+  "statement": "Complex is the default; names parse and print; the sphere ignores the setting (identical bits); stage_solver returns the bits of fresh solve_stage calls solve after solve and refuses like solve_stage",
+  "verdict": "PASS"
+ },
+ "fft_work_analytic": {
+  "statement": "complex FFT lines per direction, counted from the code structure (x: packed lines; y: batched lines of the half; z: gathered lines of the half)",
+  "grids": [
+   {
+    "cells": [
+     256,
+     256
+    ],
+    "complex_lines": {
+     "x": 256,
+     "y": 256,
+     "z": 0
+    },
+    "paired_real_lines": {
+     "x": 128,
+     "y": 129,
+     "z": 0
+    },
+    "line_count_ratio": 0.501953125,
+    "points_transformed_ratio": 0.501953125,
+    "complex_buffer_values": 65536,
+    "paired_real_half_values": 33024
+   },
+   {
+    "cells": [
+     128,
+     128,
+     64
+    ],
+    "complex_lines": {
+     "x": 8192,
+     "y": 8192,
+     "z": 16384
+    },
+    "paired_real_lines": {
+     "x": 4096,
+     "y": 4160,
+     "z": 8320
+    },
+    "line_count_ratio": 0.505859375,
+    "points_transformed_ratio": 0.5052083333333334,
+    "complex_buffer_values": 1048576,
+    "paired_real_half_values": 532480
+   }
+  ]
+ },
+ "smoke_timings": {
+  "label": "diagnostic only: agent host under load, few solves; not a verdict",
+  "runs": [
+   {
+    "ks_n7": "box_stage_solve",
+    "arm": "complex",
+    "transform": "complex",
+    "grid": "128x128x64",
+    "n": 1048576,
+    "solves": 5,
+    "scope": "prepared",
+    "median_s": 0.036327084,
+    "min_s": 0.034262879,
+    "max_s": 0.036895743,
+    "prepare_s": 0.010118415,
+    "max_backward_error": 3.338e-16,
+    "z": 471.8371,
+    "log": "research/kernel_spectral_foundation_20261124/ks_n7/logs/smoke_complex_128x128x64_prepared.log",
+    "load_at_start": "24.52 17.45 14.62 38/6030 2724419",
+    "label": "diagnostic"
+   },
+   {
+    "ks_n7": "box_stage_solve",
+    "arm": "complex",
+    "transform": "complex",
+    "grid": "256x256",
+    "n": 65536,
+    "solves": 30,
+    "scope": "prepared",
+    "median_s": 0.001471837,
+    "min_s": 0.001426196,
+    "max_s": 0.001674387,
+    "prepare_s": 0.000518373,
+    "max_backward_error": 1.768e-16,
+    "z": 471.8371,
+    "log": "research/kernel_spectral_foundation_20261124/ks_n7/logs/smoke_complex_256x256_prepared.log",
+    "load_at_start": "24.52 17.45 14.62 33/6029 2724382",
+    "label": "diagnostic"
+   },
+   {
+    "ks_n7": "box_stage_solve",
+    "arm": "complex",
+    "transform": "complex",
+    "grid": "256x256",
+    "n": 65536,
+    "solves": 10,
+    "scope": "solve_stage",
+    "median_s": 0.001538643,
+    "min_s": 0.001471912,
+    "max_s": 0.002053646,
+    "prepare_s": 0.0,
+    "max_backward_error": 1.768e-16,
+    "z": 471.8371,
+    "log": "research/kernel_spectral_foundation_20261124/ks_n7/logs/smoke_complex_256x256_solve_stage.log",
+    "load_at_start": "24.52 17.45 14.62 37/6031 2724476",
+    "label": "diagnostic"
+   },
+   {
+    "ks_n7": "box_stage_solve",
+    "arm": "paired",
+    "transform": "paired-real",
+    "grid": "128x128x64",
+    "n": 1048576,
+    "solves": 5,
+    "scope": "prepared",
+    "median_s": 0.010914967,
+    "min_s": 0.009128036,
+    "max_s": 0.012540791,
+    "prepare_s": 0.004297933,
+    "max_backward_error": 3.895e-16,
+    "z": 471.8371,
+    "log": "research/kernel_spectral_foundation_20261124/ks_n7/logs/smoke_paired_128x128x64_prepared.log",
+    "load_at_start": "24.52 17.45 14.62 33/6030 2724456",
+    "label": "diagnostic"
+   },
+   {
+    "ks_n7": "box_stage_solve",
+    "arm": "paired",
+    "transform": "paired-real",
+    "grid": "256x256",
+    "n": 65536,
+    "solves": 30,
+    "scope": "prepared",
+    "median_s": 0.00029501,
+    "min_s": 0.000278288,
+    "max_s": 0.00039018,
+    "prepare_s": 0.000343502,
+    "max_backward_error": 2.251e-16,
+    "z": 471.8371,
+    "log": "research/kernel_spectral_foundation_20261124/ks_n7/logs/smoke_paired_256x256_prepared.log",
+    "load_at_start": "24.52 17.45 14.62 34/6030 2724401",
+    "label": "diagnostic"
+   },
+   {
+    "ks_n7": "box_stage_solve",
+    "arm": "paired",
+    "transform": "paired-real",
+    "grid": "256x256",
+    "n": 65536,
+    "solves": 10,
+    "scope": "solve_stage",
+    "median_s": 0.000392545,
+    "min_s": 0.000342791,
+    "max_s": 0.000786382,
+    "prepare_s": 0.0,
+    "max_backward_error": 2.251e-16,
+    "z": 471.8371,
+    "log": "research/kernel_spectral_foundation_20261124/ks_n7/logs/smoke_paired_256x256_solve_stage.log",
+    "load_at_start": "24.52 17.45 14.62 39/6031 2724494",
+    "label": "diagnostic"
+   }
+  ],
+  "ratios": [
+   {
+    "grid": "128x128x64",
+    "scope": "prepared",
+    "median_s_complex": 0.036327084,
+    "median_s_paired_real": 0.010914967,
+    "paired_over_complex": 0.3004636155216862,
+    "label": "diagnostic"
+   },
+   {
+    "grid": "256x256",
+    "scope": "prepared",
+    "median_s_complex": 0.001471837,
+    "median_s_paired_real": 0.00029501,
+    "paired_over_complex": 0.2004365972590715,
+    "label": "diagnostic"
+   },
+   {
+    "grid": "256x256",
+    "scope": "solve_stage",
+    "median_s_complex": 0.001538643,
+    "median_s_paired_real": 0.000392545,
+    "paired_over_complex": 0.25512415810555145,
+    "label": "diagnostic"
+   }
+  ]
+ },
+ "perf_smoke": {
+  "label": "diagnostic only: one arm per process under perf stat, instructions:u and cycles:u of the whole test process",
+  "runs": [
+   {
+    "transform": "complex",
+    "grid": "256x256",
+    "solves": 120,
+    "median_s": 0.001467391,
+    "instructions_u": 1171292241,
+    "cycles_u": 802696180,
+    "log": "research/kernel_spectral_foundation_20261124/ks_n7/logs/perfsmoke_complex_256x256_120.log",
+    "label": "diagnostic"
+   },
+   {
+    "transform": "complex",
+    "grid": "256x256",
+    "solves": 20,
+    "median_s": 0.001477676,
+    "instructions_u": 204516179,
+    "cycles_u": 139242243,
+    "log": "research/kernel_spectral_foundation_20261124/ks_n7/logs/perfsmoke_complex_256x256_20.log",
+    "label": "diagnostic"
+   },
+   {
+    "transform": "paired-real",
+    "grid": "256x256",
+    "solves": 120,
+    "median_s": 0.000288486,
+    "instructions_u": 458270417,
+    "cycles_u": 169576313,
+    "log": "research/kernel_spectral_foundation_20261124/ks_n7/logs/perfsmoke_paired_256x256_120.log",
+    "label": "diagnostic"
+   },
+   {
+    "transform": "paired-real",
+    "grid": "256x256",
+    "solves": 20,
+    "median_s": 0.000285761,
+    "instructions_u": 85677696,
+    "cycles_u": 32435713,
+    "log": "research/kernel_spectral_foundation_20261124/ks_n7/logs/perfsmoke_paired_256x256_20.log",
+    "label": "diagnostic"
+   }
+  ],
+  "marginal_per_solve": {
+   "complex": {
+    "solves_difference": 100,
+    "instructions_u_per_solve": 9667760.62,
+    "cycles_u_per_solve": 6634539.37
+   },
+   "paired-real": {
+    "solves_difference": 100,
+    "instructions_u_per_solve": 3725927.21,
+    "cycles_u_per_solve": 1371406.0
+   },
+   "paired_over_complex": {
+    "instructions_u_per_solve": 0.3853971313989775,
+    "cycles_u_per_solve": 0.20670704076325347
+   },
+   "label": "diagnostic (difference of two runs per arm cancels setup; loaded agent host)"
+  }
+ },
+ "discriminators": [
+  {
+   "name": "agreement with Complex",
+   "frozen_threshold": "||x_p - x_c||_inf <= 1e-13 S/(z - c) on every case",
+   "measured": "max normalized 5.346e-16, max relative 1.874e-15 over 320 cases",
+   "verdict": "PASS"
+  },
+  {
+   "name": "T1/T2 bounds for PairedReal",
+   "frozen_threshold": "backward error <= 1e-13 and mass defect <= 1e-13 (T1/T2 scales)",
+   "measured": "backward 8.110e-16, mass 4.545e-17 over 320 solves",
+   "verdict": "PASS"
+  },
+  {
+   "name": "default Complex arm unchanged (existing T1/T2 test)",
+   "frozen_threshold": "existing T1/T2 assertions; recorded maxima 3.4e-16 / 5.1e-17",
+   "measured": "backward 3.373e-16, mass 5.110e-17",
+   "verdict": "PASS"
+  },
+  {
+   "name": "box stage solve time PairedReal / Complex at 256x256",
+   "frozen_threshold": "<= 0.6 (PLAN.json KS-N7 acceptance; kill: no gain)",
+   "measured": "not measured here: owner-host preregistered cell of the orchestrator",
+   "verdict": "NOT_RUN"
+  }
+ ],
+ "caveats": [
+  "The timing smoke compares implementations, not the pairing alone: besides halving the FFT lines, PairedReal writes the half spectra x-mode-major during the separation (no strided gather/scatter along y) and divides without per-element integer index arithmetic, while the Complex arm's division loop computes x, y, z from the flat index by integer division and remainder for every element and its y and z transforms gather and scatter strided lines (stride nx and nx ny). A Complex arm with the same layout and loop would isolate the pairing; it was not built (the Complex arm is kept unchanged as the default and baseline).",
+  "Per solve, the measurement process also copies the right-hand side (n values) outside the timed region; whole-process perf counts include it in both arms.",
+  "The largest backward error of the measurement test is taken over the first and the last solve (every solve has the same input and returns the same bits)."
+ ]
+}

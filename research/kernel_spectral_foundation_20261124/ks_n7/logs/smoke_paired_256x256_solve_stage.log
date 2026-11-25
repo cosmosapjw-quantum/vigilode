@@ -1,0 +1,17 @@
+# command: KS_N7_ARM=paired KS_N7_GRID=256x256 KS_N7_SCOPE=solve_stage KS_N7_SOLVES=10 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test spatial_separable -- --ignored --exact measure_box_transform_one_arm --nocapture
+# started: 2026-11-25T09:47:23+09:00
+# head: 4539eada625aba94c3fef017ac48f50a9da61339
+# load: 24.52 17.45 14.62 39/6031 2724494
+# label: diagnostic smoke run (agent host under load; not a timing verdict)
+    Finished `release` profile [optimized] target(s) in 0.05s
+     Running tests/spatial_separable.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/ksn7/release/deps/spatial_separable-3d3a502cd0e35586)
+
+running 1 test
+
+KS_N7_MEASURE {"ks_n7":"box_stage_solve","arm":"paired","transform":"paired-real","grid":"256x256","n":65536,"solves":10,"scope":"solve_stage","median_s":0.000392545,"min_s":0.000342791,"max_s":0.000786382,"prepare_s":0.000000000,"max_backward_error":2.251e-16,"z":4.718371e2}
+test measure_box_transform_one_arm ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.01s
+
+# exit: 0
+# finished: 2026-11-25T09:47:24+09:00
