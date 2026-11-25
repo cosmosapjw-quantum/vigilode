@@ -1,0 +1,22 @@
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-integrators)
+    Finished `release` profile [optimized] target(s) in 58.99s
+     Running tests/retro_portfolio_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/retro_portfolio_contracts-17c5d9ff6cfe4289)
+
+running 1 test
+test bounded_adaptive_portfolio_constructs ... FAILED
+
+failures:
+
+---- bounded_adaptive_portfolio_constructs stdout ----
+
+thread 'bounded_adaptive_portfolio_constructs' (844506) panicked at crates/rodas5p-integrators/tests/retro_portfolio_contracts.rs:4:5:
+assertion failed: Portfolio::new(2, 4).is_ok()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    bounded_adaptive_portfolio_constructs
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test retro_portfolio_contracts`

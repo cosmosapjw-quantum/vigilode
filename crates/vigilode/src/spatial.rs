@@ -274,3 +274,6 @@ pub use separable::{
     BoxTransform, SEPARABLE_STAGE_CLIENT_ID, SeparableMode, SeparableReport, SeparableStages,
     SpectralBounds,
 };
+
+mod portfolio;
+pub use portfolio::{EndpointRequest, adaptive_endpoint, adaptive_stage};

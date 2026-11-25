@@ -1,0 +1,76 @@
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-integrators)
+    Finished `release` profile [optimized] target(s) in 1m 11s
+     Running tests/retro_portfolio_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/retro_portfolio_contracts-17c5d9ff6cfe4289)
+
+running 8 tests
+test affine_forecast_and_green_all_modes ... RECEIPT {"attempts":[{"bound":0.0003143962327271391,"elapsed_ns":120496,"reason":null,"route":"AffineRetro","status":"Qualified"}],"call":0,"family":"affine","selected":"AffineRetro","total_ns":120496}
+RECEIPT {"attempts":[{"bound":0.0005824062036559654,"elapsed_ns":44664,"reason":null,"route":"AffineUniform","status":"Qualified"}],"call":1,"family":"affine","selected":"AffineUniform","total_ns":44664}
+RECEIPT {"attempts":[{"bound":0.001874166405402278,"elapsed_ns":37109,"reason":null,"route":"AffineForward","status":"Qualified"}],"call":2,"family":"affine","selected":"AffineForward","total_ns":37109}
+RECEIPT {"attempts":[{"bound":0.2554499563625525,"elapsed_ns":941105,"reason":null,"route":"AffineForward","status":"Qualified"}],"call":0,"family":"affine","selected":"AffineForward","total_ns":941105}
+RECEIPT {"attempts":[{"bound":0.3536708142538324,"elapsed_ns":762661,"reason":null,"route":"AffineUniform","status":"Qualified"}],"call":1,"family":"affine","selected":"AffineUniform","total_ns":762661}
+RECEIPT {"attempts":[{"bound":0.3536708142538324,"elapsed_ns":623910,"reason":null,"route":"AffineRetro","status":"Qualified"}],"call":2,"family":"affine","selected":"AffineRetro","total_ns":623910}
+RECEIPT {"attempts":[{"bound":0.001874166405402278,"elapsed_ns":24566,"reason":null,"route":"AffineForward","status":"Qualified"}],"call":0,"family":"affine-wrong","selected":"AffineForward","total_ns":24566}
+RECEIPT {"attempts":[{"bound":2.8635505831849988e-6,"elapsed_ns":934093,"reason":null,"route":"Green","status":"Qualified"}],"call":0,"family":"green","selected":"Green","total_ns":934093}
+RECEIPT {"attempts":[{"bound":2.8635505831849988e-6,"elapsed_ns":706666,"reason":null,"route":"GreenHalf","status":"Qualified"}],"call":1,"family":"green","selected":"GreenHalf","total_ns":706666}
+RECEIPT {"attempts":[{"bound":5.530961620443906e-7,"elapsed_ns":1027799,"reason":null,"route":"GreenQuarter","status":"Qualified"}],"call":2,"family":"green","selected":"GreenQuarter","total_ns":1027799}
+ok
+test bounded_adaptive_portfolio_constructs ... ok
+test cubic_all_routes_confluent_and_deformed ... RECEIPT {"attempts":[{"bound":1.0779057687578862e-15,"elapsed_ns":8536,"reason":null,"route":"CubicFolded","status":"Qualified"}],"call":0,"family":"cubic","selected":"CubicFolded","total_ns":8536}
+RECEIPT {"attempts":[{"bound":1.0779057687578862e-15,"elapsed_ns":5520,"reason":null,"route":"CubicBlock","status":"Qualified"}],"call":1,"family":"cubic","selected":"CubicBlock","total_ns":5520}
+RECEIPT {"attempts":[{"bound":1.0779057687578862e-15,"elapsed_ns":3016,"reason":null,"route":"CubicFolded","status":"Qualified"}],"call":2,"family":"cubic","selected":"CubicFolded","total_ns":3016}
+RECEIPT {"attempts":[{"bound":1.0779057687578862e-15,"elapsed_ns":3536,"reason":null,"route":"CubicBlock","status":"Qualified"}],"call":3,"family":"cubic","selected":"CubicBlock","total_ns":3536}
+RECEIPT {"attempts":[{"bound":1.148767071806166e-15,"elapsed_ns":4158,"reason":null,"route":"CubicFolded","status":"Qualified"}],"call":0,"family":"cubic","selected":"CubicFolded","total_ns":4158}
+RECEIPT {"attempts":[{"bound":1.1071337083827226e-15,"elapsed_ns":2254,"reason":null,"route":"CubicBlock","status":"Qualified"}],"call":1,"family":"cubic","selected":"CubicBlock","total_ns":2254}
+RECEIPT {"attempts":[{"bound":1.148767071806166e-15,"elapsed_ns":3236,"reason":null,"route":"CubicFolded","status":"Qualified"}],"call":2,"family":"cubic","selected":"CubicFolded","total_ns":3236}
+RECEIPT {"attempts":[{"bound":1.1071337083827226e-15,"elapsed_ns":1923,"reason":null,"route":"CubicBlock","status":"Qualified"}],"call":3,"family":"cubic","selected":"CubicBlock","total_ns":1923}
+RECEIPT {"attempts":[{"bound":1.169467112640053e-15,"elapsed_ns":5721,"reason":null,"route":"CubicFolded","status":"Qualified"}],"call":0,"family":"cubic","selected":"CubicFolded","total_ns":5721}
+RECEIPT {"attempts":[{"bound":1.1712018361160298e-15,"elapsed_ns":2024,"reason":null,"route":"CubicBlock","status":"Qualified"}],"call":1,"family":"cubic","selected":"CubicBlock","total_ns":2024}
+RECEIPT {"attempts":[{"bound":1.169467112640053e-15,"elapsed_ns":5470,"reason":null,"route":"CubicFolded","status":"Qualified"}],"call":2,"family":"cubic","selected":"CubicFolded","total_ns":5470}
+RECEIPT {"attempts":[{"bound":1.1712018361160298e-15,"elapsed_ns":1823,"reason":null,"route":"CubicBlock","status":"Qualified"}],"call":3,"family":"cubic","selected":"CubicBlock","total_ns":1823}
+ok
+test exploration_recovery_no_cached_answer_and_contract_isolation ... RECEIPT {"attempts":[{"bound":1.0,"elapsed_ns":130,"reason":"original bound exceeds contract or is invalid","route":"Jet2","status":"Rejected"},{"bound":1e-8,"elapsed_ns":40,"reason":null,"route":"Jet4","status":"Qualified"}],"call":0,"family":"selector","selected":"Jet4","total_ns":170}
+RECEIPT {"attempts":[{"bound":1e-8,"elapsed_ns":30,"reason":null,"route":"Jet6","status":"Qualified"}],"call":1,"family":"selector","selected":"Jet6","total_ns":30}
+RECEIPT {"attempts":[{"bound":1e-8,"elapsed_ns":30,"reason":null,"route":"Jet2","status":"Qualified"}],"call":2,"family":"selector","selected":"Jet2","total_ns":30}
+RECEIPT {"attempts":[{"bound":1e-8,"elapsed_ns":30,"reason":null,"route":"Jet4","status":"Qualified"}],"call":3,"family":"selector","selected":"Jet4","total_ns":30}
+RECEIPT {"attempts":[{"bound":1e-8,"elapsed_ns":30,"reason":null,"route":"Jet6","status":"Qualified"}],"call":4,"family":"selector","selected":"Jet6","total_ns":30}
+RECEIPT {"attempts":[{"bound":1e-8,"elapsed_ns":30,"reason":null,"route":"Jet2","status":"Qualified"}],"call":5,"family":"selector","selected":"Jet2","total_ns":30}
+ok
+test fourier_all_paths_retain_original_certificate ... RECEIPT {"attempts":[{"bound":5.013880843296368e-12,"elapsed_ns":50276150,"reason":null,"route":"FourierDirect","status":"Qualified"}],"call":0,"family":"fourier","selected":"FourierDirect","total_ns":50276150}
+RECEIPT {"attempts":[{"bound":5.0186382391734255e-12,"elapsed_ns":61688572,"reason":null,"route":"FftFull","status":"Qualified"}],"call":1,"family":"fourier","selected":"FftFull","total_ns":61688572}
+RECEIPT {"attempts":[{"bound":5.016762842568742e-12,"elapsed_ns":65136972,"reason":null,"route":"FftCrt","status":"Qualified"}],"call":2,"family":"fourier","selected":"FftCrt","total_ns":65136972}
+RECEIPT {"attempts":[{"bound":5.0166192265215325e-12,"elapsed_ns":57739552,"reason":null,"route":"FourierLegacy","status":"Qualified"}],"call":3,"family":"fourier","selected":"FourierLegacy","total_ns":57739552}
+RECEIPT {"attempts":[{"bound":3.820503685124399e-12,"elapsed_ns":55250272,"reason":null,"route":"FourierDirect","status":"Qualified"}],"call":0,"family":"fourier","selected":"FourierDirect","total_ns":55250272}
+RECEIPT {"attempts":[{"bound":3.820638049450211e-12,"elapsed_ns":60562349,"reason":null,"route":"FftFull","status":"Qualified"}],"call":1,"family":"fourier","selected":"FftFull","total_ns":60562349}
+RECEIPT {"attempts":[{"bound":3.820638657140409e-12,"elapsed_ns":55258518,"reason":null,"route":"FftCrt","status":"Qualified"}],"call":2,"family":"fourier","selected":"FftCrt","total_ns":55258518}
+RECEIPT {"attempts":[{"bound":3.820636592365022e-12,"elapsed_ns":57192326,"reason":null,"route":"FourierLegacy","status":"Qualified"}],"call":3,"family":"fourier","selected":"FourierLegacy","total_ns":57192326}
+ok
+test measure_policy ... ignored, owner-host adaptive selection cost, including exploration and retries
+test nonlinear_discrete_and_physical_contracts_not_interchangeable ... RECEIPT {"attempts":[{"bound":1.2047481068311328e-13,"elapsed_ns":60203,"reason":null,"route":"NonlinearSequential","status":"Qualified"}],"call":0,"family":"nonlinear","selected":"NonlinearSequential","total_ns":60203}
+RECEIPT {"attempts":[{"bound":3.5030277290015732e-12,"elapsed_ns":63079,"reason":null,"route":"Jet4","status":"Qualified"}],"call":1,"family":"nonlinear","selected":"Jet4","total_ns":63079}
+RECEIPT {"attempts":[{"bound":7.65990413459372e-11,"elapsed_ns":76613,"reason":null,"route":"NonlinearChord","status":"Qualified"}],"call":2,"family":"nonlinear","selected":"NonlinearChord","total_ns":76613}
+RECEIPT {"attempts":[{"bound":6.002143226879753e-16,"elapsed_ns":78126,"reason":null,"route":"Jet2","status":"Qualified"}],"call":3,"family":"nonlinear","selected":"Jet2","total_ns":78126}
+RECEIPT {"attempts":[{"bound":1.1622647289044608e-15,"elapsed_ns":64150,"reason":null,"route":"Jet6","status":"Qualified"}],"call":4,"family":"nonlinear","selected":"Jet6","total_ns":64150}
+RECEIPT {"attempts":[{"bound":3.5029461969982023e-12,"elapsed_ns":113152,"reason":null,"route":"JetMulti","status":"Qualified"}],"call":5,"family":"nonlinear","selected":"JetMulti","total_ns":113152}
+RECEIPT {"attempts":[{"bound":9.129979593418303e-6,"elapsed_ns":124113,"reason":null,"route":"NativeRodas","status":"Qualified"}],"call":0,"family":"physical","selected":"NativeRodas","total_ns":124113}
+RECEIPT {"attempts":[{"bound":7.490637300522463e-7,"elapsed_ns":1121764,"reason":null,"route":"Green","status":"Qualified"}],"call":1,"family":"physical","selected":"Green","total_ns":1121764}
+RECEIPT {"attempts":[{"bound":0.00018131521704856503,"elapsed_ns":164298,"reason":null,"route":"NonlinearSequential","status":"Qualified"}],"call":2,"family":"physical","selected":"NonlinearSequential","total_ns":164298}
+RECEIPT {"attempts":[{"bound":0.0001813152003833719,"elapsed_ns":214472,"reason":null,"route":"Jet4","status":"Qualified"}],"call":3,"family":"physical","selected":"Jet4","total_ns":214472}
+RECEIPT {"attempts":[{"bound":0.00018102048559647725,"elapsed_ns":193583,"reason":null,"route":"NonlinearChord","status":"Qualified"}],"call":4,"family":"physical","selected":"NonlinearChord","total_ns":193583}
+RECEIPT {"attempts":[{"bound":0.00018261760685504754,"elapsed_ns":150181,"reason":null,"route":"Jet2","status":"Qualified"}],"call":5,"family":"physical","selected":"Jet2","total_ns":150181}
+RECEIPT {"attempts":[{"bound":0.00018131521764064526,"elapsed_ns":155953,"reason":null,"route":"Jet6","status":"Qualified"}],"call":6,"family":"physical","selected":"Jet6","total_ns":155953}
+RECEIPT {"attempts":[{"bound":0.00018131520038386129,"elapsed_ns":201238,"reason":null,"route":"JetMulti","status":"Qualified"}],"call":7,"family":"physical","selected":"JetMulti","total_ns":201238}
+RECEIPT {"attempts":[{"bound":18404.564901857935,"elapsed_ns":107111,"reason":"original bound exceeds contract or is invalid","route":"NativeRodas","status":"Rejected"}],"call":0,"family":"stiff-coarse-reject","selected":null,"total_ns":107111}
+RECEIPT {"attempts":[{"bound":18404.564901861784,"elapsed_ns":86903,"reason":"original bound exceeds contract or is invalid","route":"NativeRodas","status":"Rejected"},{"bound":1.0744737080417039e-33,"elapsed_ns":8767400,"reason":null,"route":"Green","status":"Qualified"}],"call":0,"family":"stiff-green-recovery","selected":"Green","total_ns":8854303}
+ok
+test temporal_all_routes_original_node_output ... RECEIPT {"attempts":[{"bound":1.0777898699655338e-15,"elapsed_ns":22752,"reason":null,"route":"TemporalSequential","status":"Qualified"}],"call":0,"family":"temporal","selected":"TemporalSequential","total_ns":22752}
+RECEIPT {"attempts":[{"bound":1.0777898699655338e-15,"elapsed_ns":77786,"reason":null,"route":"TemporalScan","status":"Qualified"}],"call":1,"family":"temporal","selected":"TemporalScan","total_ns":77786}
+RECEIPT {"attempts":[{"bound":1.215035565561752e-15,"elapsed_ns":102172,"reason":null,"route":"TemporalPadded","status":"Qualified"}],"call":2,"family":"temporal","selected":"TemporalPadded","total_ns":102172}
+RECEIPT {"attempts":[{"bound":1.0979590361931265e-15,"elapsed_ns":141416,"reason":null,"route":"TemporalCrt","status":"Qualified"}],"call":3,"family":"temporal","selected":"TemporalCrt","total_ns":141416}
+RECEIPT {"attempts":[{"bound":1.0777898699655338e-15,"elapsed_ns":10820,"reason":null,"route":"TemporalSequential","status":"Qualified"}],"call":4,"family":"temporal","selected":"TemporalSequential","total_ns":10820}
+RECEIPT {"attempts":[{"bound":1.0777898699655338e-15,"elapsed_ns":54542,"reason":null,"route":"TemporalScan","status":"Qualified"}],"call":5,"family":"temporal","selected":"TemporalScan","total_ns":54542}
+RECEIPT {"attempts":[{"bound":1.215035565561752e-15,"elapsed_ns":98054,"reason":null,"route":"TemporalPadded","status":"Qualified"}],"call":6,"family":"temporal","selected":"TemporalPadded","total_ns":98054}
+RECEIPT {"attempts":[{"bound":1.0979590361931265e-15,"elapsed_ns":136266,"reason":null,"route":"TemporalCrt","status":"Qualified"}],"call":7,"family":"temporal","selected":"TemporalCrt","total_ns":136266}
+ok
+
+test result: ok. 7 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.48s
+

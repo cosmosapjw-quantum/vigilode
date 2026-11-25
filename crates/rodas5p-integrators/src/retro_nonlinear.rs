@@ -369,6 +369,48 @@ impl<'a> Window<'a> {
     pub fn theta(&self) -> f64 {
         self.theta
     }
+    pub(crate) fn initial(&self) -> &[f64] {
+        &self.y0
+    }
+    pub(crate) fn model(&self) -> &Model {
+        self.model
+    }
+    // Exact source conversion only. No approximate alignment or discarded
+    // term. The Green constructor independently checks its infinity norm
+    // admission. Each cubic coordinate may occur at most once.
+    pub(crate) fn compatible_green(&self) -> CoreResult<crate::retro_green::Model> {
+        let n = self.dimension();
+        let mut k = vec![0.; n];
+        let mut c = self.model.a.as_slice().to_vec();
+        for i in 0..n {
+            k[i] = -self.model.a[(i, i)];
+            c[i * n + i] = 0.;
+        }
+        let mut beta = vec![0.; n];
+        let mut seen = vec![false; n];
+        for term in &self.model.terms {
+            if term.degree != 3 {
+                return Err(bad("Green conversion degree"));
+            }
+            let mut axis = None;
+            for (i, &v) in term.v.iter().enumerate() {
+                if v == 0. {
+                    continue;
+                }
+                if v.abs() != 1. || axis.is_some() {
+                    return Err(bad("Green conversion direction"));
+                }
+                axis = Some(i);
+            }
+            let i = axis.ok_or_else(|| bad("Green conversion zero direction"))?;
+            if seen[i] {
+                return Err(bad("Green conversion duplicate term"));
+            }
+            seen[i] = true;
+            beta[i] = term.beta;
+        }
+        crate::retro_green::Model::new(k, self.model.b.clone(), c, beta)
+    }
     fn local_residual(&self, a: &[f64], b: &[f64], w: &mut Work) -> CoreResult<Vec<f64>> {
         let mid = self.stage(a, b);
         w.source_evals += 1;

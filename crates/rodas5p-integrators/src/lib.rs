@@ -694,3 +694,6 @@ pub mod retro_temporal;
 
 /// Opt-in research: nonlinear temporal residual jets.
 pub mod retro_nonlinear;
+
+/// Opt-in research: contract-preserving adaptive portfolio.
+pub mod retro_portfolio;

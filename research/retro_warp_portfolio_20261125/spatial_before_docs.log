@@ -1,0 +1,71 @@
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-integrators)
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/vigilode)
+warning: missing documentation for a struct field
+   --> crates/vigilode/src/spatial/portfolio.rs:114:5
+    |
+114 |     pub problem: &'a crate::Problem,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+note: the lint level is defined here
+   --> crates/vigilode/src/lib.rs:185:9
+    |
+185 | #![warn(missing_docs)]
+    |         ^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> crates/vigilode/src/spatial/portfolio.rs:115:5
+    |
+115 |     pub span: (f64, f64),
+    |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> crates/vigilode/src/spatial/portfolio.rs:116:5
+    |
+116 |     pub initial: &'a [f64],
+    |     ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> crates/vigilode/src/spatial/portfolio.rs:117:5
+    |
+117 |     pub options: &'a crate::Options,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> crates/vigilode/src/spatial/portfolio.rs:118:5
+    |
+118 |     pub stages: &'a SeparableStages,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> crates/vigilode/src/spatial/portfolio.rs:119:5
+    |
+119 |     pub replay_safe: bool,
+    |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> crates/vigilode/src/spatial/portfolio.rs:120:5
+    |
+120 |     pub absolute_tolerance: f64,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `vigilode` (lib) generated 7 warnings
+    Finished `release` profile [optimized] target(s) in 1m 19s
+     Running tests/spatial_portfolio.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/spatial_portfolio-69162b3cbfbc60d5)
+
+running 3 tests
+test actual_spatial_ivp_same_certified_endpoint ... SPATIAL_IVP {"attempts":[{"bound":2.9825031333530205e-12,"elapsed_ns":237656,"reason":null,"route":"SpatialNative","status":"Qualified"}],"call":0,"selected":"SpatialNative","total_ns":237656}
+SPATIAL_IVP {"attempts":[{"bound":2.9813929103283954e-12,"elapsed_ns":67496,"reason":null,"route":"SpatialIvPPaired","status":"Qualified"}],"call":1,"selected":"SpatialIvPPaired","total_ns":67496}
+SPATIAL_IVP {"attempts":[{"bound":2.9813929103283954e-12,"elapsed_ns":52349,"reason":null,"route":"SpatialIvPComplex","status":"Qualified"}],"call":2,"selected":"SpatialIvPComplex","total_ns":52349}
+ok
+test paired_complex_and_direct_share_original_stage_certificate ... SPATIAL {"attempts":[{"bound":4.703028090426011e-17,"elapsed_ns":40556,"reason":null,"route":"SpatialPaired","status":"Qualified"}],"call":0,"selected":"SpatialPaired","total_ns":40556}
+SPATIAL {"attempts":[{"bound":5.0114233750441095e-17,"elapsed_ns":28894,"reason":null,"route":"SpatialComplex","status":"Qualified"}],"call":1,"selected":"SpatialComplex","total_ns":28894}
+SPATIAL {"attempts":[{"bound":3.623644594262664e-17,"elapsed_ns":35487,"reason":null,"route":"SpatialDirect","status":"Qualified"}],"call":2,"selected":"SpatialDirect","total_ns":35487}
+SPATIAL {"attempts":[{"bound":4.703028090426011e-17,"elapsed_ns":28213,"reason":null,"route":"SpatialPaired","status":"Qualified"}],"call":3,"selected":"SpatialPaired","total_ns":28213}
+SPATIAL {"attempts":[{"bound":5.0114233750441095e-17,"elapsed_ns":27481,"reason":null,"route":"SpatialComplex","status":"Qualified"}],"call":4,"selected":"SpatialComplex","total_ns":27481}
+SPATIAL {"attempts":[{"bound":3.623644594262664e-17,"elapsed_ns":34003,"reason":null,"route":"SpatialDirect","status":"Qualified"}],"call":5,"selected":"SpatialDirect","total_ns":34003}
+ok
+test wrong_operator_mass_agreement_is_not_authority ... SPATIAL_WRONG {"attempts":[{"bound":0.0006086593264906149,"elapsed_ns":34405,"reason":"original bound exceeds contract or is invalid","route":"SpatialPaired","status":"Rejected"},{"bound":0.0006086593264905656,"elapsed_ns":27812,"reason":"original bound exceeds contract or is invalid","route":"SpatialComplex","status":"Rejected"},{"bound":4.548830448116961e-17,"elapsed_ns":36418,"reason":null,"route":"SpatialDirect","status":"Qualified"}],"selected":"SpatialDirect"}
+ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

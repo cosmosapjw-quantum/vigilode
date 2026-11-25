@@ -1,0 +1,11 @@
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-integrators)
+error[E0433]: failed to resolve: use of unresolved module or unlinked crate `serde_json`
+   --> crates/rodas5p-integrators/src/retro_portfolio.rs:484:13
+    |
+484 |             serde_json::to_vec(&(slabs, targets, cap)).map_err(|_| inva...
+    |             ^^^^^^^^^^ use of unresolved module or unlinked crate `serde_json`
+    |
+    = help: if you wanted to use a crate named `serde_json`, use `cargo add serde_json` to add it to your `Cargo.toml`
+
+For more information about this error, try `rustc --explain E0433`.
+error: could not compile `rodas5p-integrators` (lib) due to 1 previous error
