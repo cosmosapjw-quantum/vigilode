@@ -1,0 +1,115 @@
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/vigilode)
+    Finished `release` profile [optimized] target(s) in 38.40s
+     Running tests/spatial_diffusion.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/spatial_diffusion-143679ff964209ca)
+
+running 7 tests
+SPATIAL {"grid":"sphere_Y11","n_theta":12,"relative_spatial_residual_area_norm":0.00962253713121806}
+test checked_grid_construction_and_buffers ... SPATIAL {"grid":"sphere_Y11","n_theta":24,"relative_spatial_residual_area_norm":0.0026512010634017922}
+ok
+test dense_output_on_small_mesh_has_an_explicit_rhs_only_fallback ... ok
+SPATIAL {"grid":"sphere_Y11","n_theta":48,"relative_spatial_residual_area_norm":0.0007174422398399379}
+test arbitrary_fields_conserve_weighted_mass_and_dissipate_energy ... ok
+test nonzonal_spherical_harmonic_refines_in_the_area_norm ... ok
+SPATIAL {"accepted_steps":6,"direct_factorizations":0,"eigenvector_defect":2.3092638912203256e-14,"endpoint_max_error":1.975298813405857e-10,"grid":"box2","jvp_vectors":805,"n":96,"routes":[{"from_tier":"preflight","reason":"a derivative or a band is supplied and no regime is declared","step_index":0,"time":0.0,"to_tier":"rodas5p-mf-fast-transformed-v1"}],"semidiscrete_eigenvalue":-4.928460746153837}
+SPATIAL {"accepted_steps":17,"arnoldi_columns":4316,"budget_exhausted_solves":0,"case":"v24_spatial","direct_factorizations":0,"endpoint_max_error":4.7196573038643663e-11,"failed_confirmations":0,"geometry":"box2","jvp_vectors":4604,"linear_solve_failures":0,"other_linear_failures":0,"policy":"mf-stage-solve-shipped-v1","rejected_steps":1}
+SPATIAL {"accepted_steps":17,"case":"multimode","direct_factorizations":0,"endpoint_max_error":4.7196573038643663e-11,"grid":"box2","jvp_vectors":4604,"rhs_calls":143}
+SPATIAL {"accepted_steps":17,"arnoldi_columns":705,"budget_exhausted_solves":0,"case":"v24_spatial","direct_factorizations":0,"endpoint_max_error":4.7268742739414726e-11,"failed_confirmations":0,"geometry":"box2","jvp_vectors":993,"linear_solve_failures":0,"other_linear_failures":0,"policy":"mf-stage-solve-column-tested-v1","rejected_steps":1}
+SPATIAL {"accepted_steps":17,"arnoldi_columns":705,"budget_exhausted_solves":0,"case":"v24_spatial","direct_factorizations":0,"endpoint_max_error":4.7268742739414726e-11,"failed_confirmations":0,"geometry":"box2","jvp_vectors":993,"linear_solve_failures":0,"other_linear_failures":0,"policy":"mf-stage-solve-column-tested-doubling-v1","rejected_steps":1}
+SPATIAL {"accepted_steps":6,"direct_factorizations":0,"eigenvector_defect":1.9095836023552692e-14,"endpoint_max_error":1.76057168843613e-10,"grid":"box3","jvp_vectors":768,"n":336,"routes":[{"from_tier":"preflight","reason":"a derivative or a band is supplied and no regime is declared","step_index":0,"time":0.0,"to_tier":"rodas5p-mf-fast-transformed-v1"}],"semidiscrete_eigenvalue":-6.694577704496269}
+SPATIAL {"accepted_steps":4,"direct_factorizations":0,"eigenvector_defect":1.249000902703301e-16,"endpoint_max_error":3.3306690738754696e-16,"grid":"sphere","jvp_vectors":160,"n":200,"routes":[{"from_tier":"preflight","reason":"a derivative or a band is supplied and no regime is declared","step_index":0,"time":0.0,"to_tier":"rodas5p-mf-fast-transformed-v1"}],"semidiscrete_eigenvalue":-0.17460916741126611}
+test unified_solver_tracks_semidiscrete_spectrum_without_assembling_a_jacobian ... ok
+SPATIAL {"accepted_steps":17,"case":"multimode","direct_factorizations":0,"endpoint_max_error":3.931313607985487e-11,"grid":"box3","jvp_vectors":5712,"rhs_calls":136}
+SPATIAL {"accepted_steps":17,"arnoldi_columns":5440,"budget_exhausted_solves":0,"case":"v24_spatial","direct_factorizations":0,"endpoint_max_error":3.931313607985487e-11,"failed_confirmations":0,"geometry":"box3","jvp_vectors":5712,"linear_solve_failures":0,"other_linear_failures":0,"policy":"mf-stage-solve-shipped-v1","rejected_steps":0}
+SPATIAL {"accepted_steps":17,"arnoldi_columns":660,"budget_exhausted_solves":0,"case":"v24_spatial","direct_factorizations":0,"endpoint_max_error":3.939365500471581e-11,"failed_confirmations":0,"geometry":"box3","jvp_vectors":932,"linear_solve_failures":0,"other_linear_failures":0,"policy":"mf-stage-solve-column-tested-v1","rejected_steps":0}
+SPATIAL {"accepted_steps":17,"arnoldi_columns":660,"budget_exhausted_solves":0,"case":"v24_spatial","direct_factorizations":0,"endpoint_max_error":3.939365500471581e-11,"failed_confirmations":0,"geometry":"box3","jvp_vectors":932,"linear_solve_failures":0,"other_linear_failures":0,"policy":"mf-stage-solve-column-tested-doubling-v1","rejected_steps":0}
+SPATIAL {"accepted_steps":16,"case":"multimode","direct_factorizations":0,"endpoint_max_error":2.846821112179043e-10,"grid":"sphere","jvp_vectors":5712,"rhs_calls":135}
+test multimode_endpoints_match_independent_face_assembly_exponential ... ok
+SPATIAL {"accepted_steps":16,"arnoldi_columns":5440,"budget_exhausted_solves":0,"case":"v24_spatial","direct_factorizations":0,"endpoint_max_error":2.846821112179043e-10,"failed_confirmations":0,"geometry":"sphere","jvp_vectors":5712,"linear_solve_failures":0,"other_linear_failures":0,"policy":"mf-stage-solve-shipped-v1","rejected_steps":1}
+SPATIAL {"accepted_steps":16,"arnoldi_columns":741,"budget_exhausted_solves":0,"case":"v24_spatial","direct_factorizations":0,"endpoint_max_error":2.848321578596824e-10,"failed_confirmations":0,"geometry":"sphere","jvp_vectors":1013,"linear_solve_failures":0,"other_linear_failures":0,"policy":"mf-stage-solve-column-tested-v1","rejected_steps":1}
+SPATIAL {"accepted_steps":16,"arnoldi_columns":741,"budget_exhausted_solves":0,"case":"v24_spatial","direct_factorizations":0,"endpoint_max_error":2.848321578596824e-10,"failed_confirmations":0,"geometry":"sphere","jvp_vectors":1013,"linear_solve_failures":0,"other_linear_failures":0,"policy":"mf-stage-solve-column-tested-doubling-v1","rejected_steps":1}
+test stage_gmres_policies_on_independently_referenced_diffusion ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/spatial_separable.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/spatial_separable-3d3a502cd0e35586)
+
+running 14 tests
+test measure_box_transform_one_arm ... ignored, timing measurement; one arm per process, see KS_N7_ARM/KS_N7_GRID/KS_N7_SOLVES
+test measure_separable_against_preconditioned_gmres_stage_solves ... ignored, timing diagnostic; run with --ignored --nocapture
+test measure_separable_against_the_shipped_matrix_free_route ... ignored, timing diagnostic; run with --ignored --nocapture
+test box_transform_selection_defaults_parses_and_reuses_prepared_solvers ... ok
+test inertia_counts_the_modes_beyond_the_stage_pencil ... ok
+test separable_requests_outside_the_matrix_free_route_are_refused_before_any_callback ... ok
+SL_N5_T1T2 {"max_backward_error":3.373e-16,"max_mass_defect":5.110e-17}
+test separable_stage_solves_are_exact_and_mass_consistent ... ok
+
+KS_N7B_RECORD {"box_12x10":["complex","paired-real"],"sphere_7x10":null}
+test the_run_record_names_the_box_transform_that_ran ... ok
+
+KS_N7_T3 {"case":"box-12x10","mode":"Trusted","transform":"complex","error":6.635e-11,"attempts":34,"solves":272,"max_mass_defect":1.258e-15,"max_backward_error":0.000e0}
+
+KS_N7_T3 {"case":"box-12x10","mode":"Trusted","transform":"paired-real","error":6.635e-11,"attempts":34,"solves":272,"max_mass_defect":1.231e-15,"max_backward_error":0.000e0}
+
+KS_N7_T3_ROUTES {"case":"box-12x10","mode":"Trusted","max_difference":1.110e-15,"relative_difference":1.796e-15}
+
+KS_N7B_DEFAULT {"default":"paired-real","default_record":"paired-real","complex_record":"complex","sphere_record":null,"default_equals_paired_bits":true,"attempts_default":34,"attempts_complex":34,"error_default":6.635e-11,"error_complex":6.635e-11,"default_vs_complex":1.110e-15,"max_mass_defect_default":1.231e-15,"max_mass_defect_complex":1.258e-15,"max_backward_error_default":4.572e-16,"max_backward_error_complex":4.926e-16}
+
+KS_N7_T3 {"case":"box-12x10","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","transform":"complex","error":6.635e-11,"attempts":34,"solves":272,"max_mass_defect":1.258e-15,"max_backward_error":4.926e-16}
+test the_box_defaults_to_the_paired_real_transform ... ok
+
+KS_N7_T3 {"case":"box-12x10","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","transform":"paired-real","error":6.635e-11,"attempts":34,"solves":272,"max_mass_defect":1.231e-15,"max_backward_error":4.572e-16}
+
+KS_N7_T3_ROUTES {"case":"box-12x10","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","max_difference":1.110e-15,"relative_difference":1.796e-15}
+SL_N5_T3 {"case":"sphere-8x16","mode":"Trusted","error":8.600e-11,"attempts":61,"solves":488,"mass_drift":4.282e-16}
+SL_N5_T5 {"mode":"verified","error":5.165e-11,"corrections_per_solve":2.222,"refused_solves":0,"attempts":63}
+SL_N5_T3 {"case":"sphere-8x16","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","error":8.600e-11,"attempts":61,"solves":488,"mass_drift":4.282e-16}
+
+KS_N7_T3 {"case":"box-4x6x5","mode":"Trusted","transform":"complex","error":5.079e-11,"attempts":46,"solves":368,"max_mass_defect":9.494e-16,"max_backward_error":0.000e0}
+
+KS_N7_T3 {"case":"box-4x6x5","mode":"Trusted","transform":"paired-real","error":5.079e-11,"attempts":46,"solves":368,"max_mass_defect":1.175e-15,"max_backward_error":0.000e0}
+
+KS_N7_T3_ROUTES {"case":"box-4x6x5","mode":"Trusted","max_difference":1.332e-15,"relative_difference":2.197e-15}
+SL_N5_T5 {"mode":"trusted-mismatched","error":2.291e-9,"attempts":819}
+
+KS_N7_T3 {"case":"box-4x6x5","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","transform":"complex","error":5.079e-11,"attempts":46,"solves":368,"max_mass_defect":9.494e-16,"max_backward_error":6.120e-16}
+
+KS_N7_T3 {"case":"box-4x6x5","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","transform":"paired-real","error":5.079e-11,"attempts":46,"solves":368,"max_mass_defect":1.175e-15,"max_backward_error":6.062e-16}
+
+KS_N7_T3_ROUTES {"case":"box-4x6x5","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","max_difference":1.332e-15,"relative_difference":2.197e-15}
+test paired_real_box_route_matches_the_reference_and_the_complex_route ... ok
+
+KS_N7_T1T2 {"transform":"paired-real","solves":360,"max_backward_error":1.680e-15,"max_mass_defect":4.545e-17,"bound":1e-13}
+
+KS_N7_AGREEMENT {"cases":360,"differing_cases":276,"max_relative_difference":5.215e-14,"max_normalized_difference":6.964e-16,"bound_normalized":1e-13,"worst_case":"box-4097x3 z=0.5 c=0 seed17"}
+test paired_real_box_transform_agrees_with_the_complex_transform ... ok
+
+KS_N7_T1T2 {"transform":"complex","solves":360,"max_backward_error":1.187e-15,"max_mass_defect":4.545e-17,"bound":1e-13}
+test paired_real_box_solves_meet_the_t1_t2_bounds ... ok
+SL_N5_T3 {"case":"sphere-8x16","mode":"shipped","error":8.600e-11,"attempts":61,"mass_drift":1.427e-16}
+SL_N5_T3 {"case":"sphere-7x10","mode":"Trusted","error":1.169e-10,"attempts":42,"solves":336,"mass_drift":4.308e-16}
+SL_N5_T3 {"case":"sphere-7x10","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","error":1.169e-10,"attempts":42,"solves":336,"mass_drift":4.308e-16}
+SL_N5_T3 {"case":"sphere-7x10","mode":"shipped","error":1.169e-10,"attempts":42,"mass_drift":4.308e-16}
+SL_N5_T3 {"case":"box-12x10","mode":"Trusted","error":6.635e-11,"attempts":34,"solves":272,"mass_drift":3.935e-1}
+SL_N5_T3 {"case":"box-12x10","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","error":6.635e-11,"attempts":34,"solves":272,"mass_drift":3.935e-1}
+SL_N5_T3 {"case":"box-12x10","mode":"shipped","error":6.635e-11,"attempts":34,"mass_drift":3.935e-1}
+test separable_route_conserves_mass_and_matches_the_reference ... ok
+SL_N5_T5 {"mode":"far-mismatch","success":false,"refused_solves":50003,"attempts":100000}
+test verified_mode_corrects_a_mismatched_reaction_and_refuses_beyond_its_reach ... ok
+
+test result: ok. 11 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 1.41s
+
+     Running tests/spatial_upwind.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/spatial_upwind-1da7813cfde5f5e5)
+
+running 5 tests
+test measure_upwind_work_precision ... ignored, diagnostic paired endpoint timing, run pinned, one test thread
+test upwind_guard_and_spectral_semantics ... ok
+test upwind_stage_solves_original_stencil ... ok
+IVP tol=0.0001 error=0.000012224636382114538 drift=0.0000000000000004440892098500626 report=SeparableReport { preparations: 8, refused_preparations: 0, crossings_at_last_refusal: 0, solves: 64, residual_checks: 64, corrections: 0, refused_solves: 0, max_backward_error: 2.4898460386165553e-14, max_mass_defect: 5.368672451111548e-16, box_transform: Some(PairedReal), periodic_upwind_rate: Some(256.0) }
+BROKEN_SYMMETRY error=0.000000004347121801593233 report=SeparableReport { preparations: 9, refused_preparations: 0, crossings_at_last_refusal: 0, solves: 72, residual_checks: 208, corrections: 136, refused_solves: 0, max_backward_error: 3.45664909859352e-11, max_mass_defect: 3.75975485393187e-16, box_transform: Some(PairedReal), periodic_upwind_rate: Some(17.0) }
+test upwind_preconditioner_corrects_symmetry_breaking ... ok
+IVP tol=0.000001 error=0.00000009552726491373347 drift=0.00000000000000011102230246251565 report=SeparableReport { preparations: 13, refused_preparations: 0, crossings_at_last_refusal: 0, solves: 104, residual_checks: 104, corrections: 0, refused_solves: 0, max_backward_error: 1.1015694050128527e-14, max_mass_defect: 6.030860780836929e-16, box_transform: Some(PairedReal), periodic_upwind_rate: Some(256.0) }
+IVP tol=0.00000001 error=0.0000000005444780638276168 drift=0.0000000000000002220446049250313 report=SeparableReport { preparations: 26, refused_preparations: 0, crossings_at_last_refusal: 0, solves: 208, residual_checks: 208, corrections: 0, refused_solves: 0, max_backward_error: 6.650436908932918e-15, max_mass_defect: 1.053689050579227e-15, box_transform: Some(PairedReal), periodic_upwind_rate: Some(256.0) }
+test original_periodic_advdiff_ivp_converges ... ok
+
+test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

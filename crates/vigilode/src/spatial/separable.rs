@@ -1,4 +1,4 @@
-//! Structure-exact stage solves for [`DiffusionGrid`] problems (stage-lattice task SL-N5).
+//! Structure-exact stage solves for declared diffusion and periodic upwind problems.
 //!
 //! The longitude rotations of a sphere grid and the translations of a periodic box commute
 //! with the heat operator `L`. So the discrete Fourier transform block-diagonalizes every
@@ -123,13 +123,15 @@ impl std::str::FromStr for BoxTransform {
 /// Spectral facts of the declared Jacobian `J = L + c I` (THEORY.md §5).
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 pub struct SpectralBounds {
-    /// `c`: the largest eigenvalue of `J`, since the kernel of `L` is the constants.
+    /// c: the spectral abscissa, attained by the constant mode.
     pub abscissa: f64,
-    /// A Gershgorin bound `rho_bar` on the spectral radius of `L`:
-    /// `spec J ⊂ [c - rho_bar, c]`.
+    /// A bound `rho_bar` on the spectral radius of `L`:
+    /// The diffusion-only spectrum lies in [c - rho_bar, c]; for an upwind
+    /// line the disk centered at c also encloses the complex spectrum.
     pub radius_bound: f64,
     /// The DOPRI5 step bound `DOPRI5_REAL_STABILITY_BOUND / (rho_bar - c)` on the negative
-    /// real axis for `c <= 0` (infinite for a zero operator, NaN for `c > 0`).
+    /// real axis for c <= 0 (infinite for a zero operator). NaN for c > 0
+    /// or nonzero upwind advection, for which the real-axis bound is invalid.
     pub explicit_step_bound: f64,
 }
 
@@ -138,9 +140,9 @@ pub struct SpectralBounds {
 pub struct SeparableReport {
     /// Preparations of `W(z)` (one per attempt).
     pub preparations: usize,
-    /// Preparations refused by the inertia certificate: some eigenvalue of `J` at or above `z`.
+    /// Refused preparations (including failed Hermitian-part coercivity or nonfinite shifts).
     pub refused_preparations: usize,
-    /// Eigenvalues of the declared `J` at or above `z` (with multiplicity) at the last refusal.
+    /// Eigenvalues of the declared Hermitian part at or above z (with multiplicity).
     pub crossings_at_last_refusal: usize,
     /// Stage solves requested by the driver.
     pub solves: usize,
@@ -158,15 +160,20 @@ pub struct SeparableReport {
     /// `None` on a sphere grid, whose kernel always pairs rings (task KS-N7b, finding F5 of the
     /// KS-N7 review).
     pub box_transform: Option<BoxTransform>,
+    /// Signed advection rate velocity/dx for a declared periodic upwind line.
+    /// Absent for the original diffusion-only routes.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub periodic_upwind_rate: Option<f64>,
 }
 
-/// The separable stage solver of one grid for a declared Jacobian `L + c I`.
+/// The separable stage solver for a declared constant diffusion or periodic upwind Jacobian.
 #[derive(Clone, Debug)]
 pub struct SeparableStages {
     grid: DiffusionGrid,
     linear_rate: f64,
     mode: SeparableMode,
     box_transform: BoxTransform,
+    periodic_upwind_rate: Option<f64>,
 }
 
 impl DiffusionGrid {
@@ -185,11 +192,63 @@ impl DiffusionGrid {
             linear_rate,
             mode: SeparableMode::default(),
             box_transform: BoxTransform::default(),
+            periodic_upwind_rate: None,
         })
     }
 }
 
 impl SeparableStages {
+    /// Declare the stage Jacobian of a uniform periodic line with central diffusion,
+    /// first-order upwind advection and a constant reaction rate.
+    ///
+    /// The caller's original problem is not modified. The default Verified mode
+    /// checks every solve against that problem's JVP; this declaration can also
+    /// act as a defect-correction preconditioner for a different Jacobian.
+    /// Length, diffusivity and velocity have units L, L^2/T and L/T.
+    pub fn periodic_upwind_line(
+        n: usize,
+        length: f64,
+        diffusivity: f64,
+        velocity: f64,
+        linear_rate: f64,
+    ) -> Result<Self, SolveError> {
+        let dimension = super::dimension(&[n])?;
+        let dx = length / n as f64;
+        if !(dx.is_finite()
+            && dx > 0.0
+            && diffusivity.is_finite()
+            && diffusivity >= 0.0
+            && velocity.is_finite()
+            && linear_rate.is_finite())
+        {
+            return Err(invalid("invalid periodic upwind line coefficients"));
+        }
+        let d = diffusivity / dx / dx;
+        let v = velocity / dx;
+        let rate = d + 0.5 * v.abs();
+        if !(rate.is_finite() && v.is_finite() && (4.0 * rate + v.abs()).is_finite())
+            || (diffusivity > 0.0 && d == 0.0)
+            || (velocity != 0.0 && v == 0.0)
+        {
+            return Err(invalid(
+                "periodic upwind line rate is outside binary64 range",
+            ));
+        }
+        let grid = DiffusionGrid {
+            dimension,
+            width: n,
+            geometry: Arc::new(Geometry::Cartesian {
+                ny: 1,
+                nz: 1,
+                cell_volume: dx,
+                rates: [rate, 0.0, 0.0],
+            }),
+        };
+        let mut stages = grid.separable_stages(linear_rate)?;
+        stages.periodic_upwind_rate = Some(v);
+        Ok(stages)
+    }
+
     /// The same solver in `mode`. `Verified` needs a positive finite tolerance.
     pub fn with_mode(mut self, mode: SeparableMode) -> Result<Self, SolveError> {
         if let SeparableMode::Verified { tolerance, .. } = mode
@@ -240,7 +299,9 @@ impl SeparableStages {
                 .fold(0.0, f64::max),
             Geometry::Cartesian { rates, .. } => 4.0 * rates.iter().sum::<f64>(),
         };
-        let explicit_step_bound = if self.linear_rate > 0.0 {
+        let drift = self.periodic_upwind_rate.unwrap_or(0.0).abs();
+        let radius_bound = radius_bound + drift;
+        let explicit_step_bound = if self.linear_rate > 0.0 || drift != 0.0 {
             f64::NAN
         } else {
             crate::DOPRI5_REAL_STABILITY_BOUND / (radius_bound - self.linear_rate)
@@ -252,7 +313,7 @@ impl SeparableStages {
         }
     }
 
-    /// Solve `(z I - L - c I) x = b` in place once (no integration, no JVP). The inertia
+    /// Solve the declared shifted system in place once (no integration, no JVP). The inertia
     /// certificate refuses a `z` with an eigenvalue of `J` at or above it; the error message
     /// gives their number.
     pub fn solve_stage(&self, z: f64, b: &mut [f64]) -> Result<(), SolveError> {
@@ -261,44 +322,45 @@ impl SeparableStages {
                 "separable stage solve: right-hand side length mismatch",
             ));
         }
-        let mut kernel = Kernel::new(&self.grid, self.box_transform);
+        let mut kernel = Kernel::new(&self.grid, self.box_transform, self.periodic_upwind_rate);
         kernel
             .prepare(z, self.linear_rate)
             .map_err(|e| SolveError::InvalidInput(e.to_string()))?;
-        kernel.solve(b);
-        Ok(())
+        solve_checked(&mut kernel, b, self.periodic_upwind_rate.is_some())
     }
 
     /// A stage solver prepared once for `z`: the FFT plans, the buffers and (on the sphere)
     /// the Thomas factors are built here and reused by every call, as the protected driver
     /// reuses one preparation for the eight stage solves of an attempt. Each call solves
-    /// `(z I - L - c I) x = b` in place with the same arithmetic as [`Self::solve_stage`].
+    /// the declared shifted system in place with the same arithmetic as [`Self::solve_stage`].
     /// The preparation is refused like that of [`Self::solve_stage`].
     pub fn stage_solver(
         &self,
         z: f64,
     ) -> Result<impl FnMut(&mut [f64]) -> Result<(), SolveError> + Send + use<>, SolveError> {
-        let mut kernel = Kernel::new(&self.grid, self.box_transform);
+        let mut kernel = Kernel::new(&self.grid, self.box_transform, self.periodic_upwind_rate);
         kernel
             .prepare(z, self.linear_rate)
             .map_err(|e| SolveError::InvalidInput(e.to_string()))?;
         let n = self.dimension();
+        let checked = self.periodic_upwind_rate.is_some();
         Ok(move |b: &mut [f64]| {
             if b.len() != n {
                 return Err(invalid(
                     "separable stage solve: right-hand side length mismatch",
                 ));
             }
-            kernel.solve(b);
-            Ok(())
+            solve_checked(&mut kernel, b, checked)
         })
     }
 
-    /// The number of eigenvalues of the declared `J = L + c I` at or above `z`, with
-    /// multiplicity, read from the signs of the Thomas pivots of the mode systems
-    /// (Sylvester's law of inertia, THEORY.md §4.2).
+    /// Number of eigenvalues of the declared Hermitian part at or above z,
+    /// with multiplicity (area-weighted on a sphere). On a normal periodic
+    /// upwind line these equal the number of eigenvalues with real part >= z.
+    /// This is a sufficient coercivity screen, not a general singularity test.
     pub fn inertia(&self, z: f64) -> usize {
-        Kernel::new(&self.grid, self.box_transform).crossings(z, self.linear_rate)
+        Kernel::new(&self.grid, self.box_transform, self.periodic_upwind_rate)
+            .crossings(z, self.linear_rate)
     }
 
     /// The stage client for the protected client driver; `report` collects its work and
@@ -312,12 +374,13 @@ impl SeparableStages {
                 .collect(),
             Geometry::Cartesian { .. } => vec![1.0; n],
         };
-        let kernel = Kernel::new(&self.grid, self.box_transform);
+        let kernel = Kernel::new(&self.grid, self.box_transform, self.periodic_upwind_rate);
         // Read from the kernel that runs, so the record cannot drift from the arithmetic.
-        report
-            .lock()
-            .unwrap_or_else(PoisonError::into_inner)
-            .box_transform = kernel.box_transform();
+        {
+            let mut r = report.lock().unwrap_or_else(PoisonError::into_inner);
+            r.box_transform = kernel.box_transform();
+            r.periodic_upwind_rate = self.periodic_upwind_rate;
+        }
         Box::new(SeparableClient {
             kernel,
             linear_rate: self.linear_rate,
@@ -342,6 +405,18 @@ fn symbol(k: usize, n: usize) -> f64 {
     4.0 * s * s
 }
 
+// Standalone declared line solves must not report successful nonfinite output.
+fn solve_checked(kernel: &mut Kernel, b: &mut [f64], checked: bool) -> Result<(), SolveError> {
+    if checked && b.iter().any(|v| !v.is_finite()) {
+        return Err(invalid("nonfinite periodic upwind stage input"));
+    }
+    kernel.solve(b);
+    if checked && b.iter().any(|v| !v.is_finite()) {
+        return Err(invalid("nonfinite periodic upwind stage output"));
+    }
+    Ok(())
+}
+
 /// Forward and inverse plans of one transform length.
 type FftPair = (Arc<dyn Fft<f64>>, Arc<dyn Fft<f64>>);
 
@@ -356,12 +431,19 @@ enum Kernel {
 }
 
 impl Kernel {
-    fn new(grid: &DiffusionGrid, transform: BoxTransform) -> Self {
+    fn new(
+        grid: &DiffusionGrid,
+        transform: BoxTransform,
+        periodic_upwind_rate: Option<f64>,
+    ) -> Self {
         match &*grid.geometry {
             Geometry::Sphere(rings) => Self::Sphere(SphereKernel::new(rings, grid.width)),
-            Geometry::Cartesian { ny, nz, rates, .. } => {
-                Self::Box(BoxKernel::new([grid.width, *ny, *nz], *rates, transform))
-            }
+            Geometry::Cartesian { ny, nz, rates, .. } => Self::Box(BoxKernel::new(
+                [grid.width, *ny, *nz],
+                *rates,
+                transform,
+                periodic_upwind_rate,
+            )),
         }
     }
 
@@ -396,7 +478,17 @@ impl Kernel {
             )));
         }
         if let Self::Box(k) = self {
-            k.shift = z - c;
+            let shift = z - c;
+            if k.cells[1..] == [1, 1]
+                && !(shift.is_finite()
+                    && shift > 0.0
+                    && (shift + k.symbols[0].iter().copied().fold(0.0, f64::max)).is_finite())
+            {
+                return Err(CoreError::LinearSolve(
+                    "periodic upwind shift outside binary64 range".into(),
+                ));
+            }
+            k.shift = shift;
         }
         Ok(())
     }
@@ -583,6 +675,21 @@ impl SphereKernel {
     }
 }
 
+// Keep diffusion-only arithmetic unchanged. Scaling before complex division
+// avoids squaring a large or subnormal stage shift.
+#[inline]
+fn divide_mode(value: &mut Complex64, re: f64, im: f64) {
+    if im == 0.0 {
+        *value /= re;
+    } else {
+        let scale = re.abs().max(im.abs());
+        let (a, b) = (re / scale, im / scale);
+        let w = *value / scale;
+        let denom = a * a + b * b;
+        *value = Complex64::new((w.re * a + w.im * b) / denom, (w.im * a - w.re * b) / denom);
+    }
+}
+
 /// Complex values per batch of packed x-lines of [`BoxTransform::PairedReal`] (64 KiB).
 const PAIRED_LINE_BATCH: usize = 4096;
 
@@ -591,6 +698,8 @@ const PAIRED_LINE_BATCH: usize = 4096;
 struct BoxKernel {
     cells: [usize; 3],
     symbols: [Vec<f64>; 3],
+    // Imaginary part of the original W symbol, v*sin(theta), for the declared line.
+    imag_x: Option<Vec<f64>>,
     shift: f64,
     plans: Vec<FftPair>,
     transform: BoxTransform,
@@ -606,10 +715,30 @@ struct BoxKernel {
 }
 
 impl BoxKernel {
-    fn new(cells: [usize; 3], rates: [f64; 3], transform: BoxTransform) -> Self {
+    fn new(
+        cells: [usize; 3],
+        rates: [f64; 3],
+        transform: BoxTransform,
+        periodic_upwind_rate: Option<f64>,
+    ) -> Self {
         let symbols = std::array::from_fn(|axis| {
             (0..cells[axis])
                 .map(|k| rates[axis] * symbol(k, cells[axis]))
+                .collect()
+        });
+        let imag_x = periodic_upwind_rate.filter(|v| *v != 0.0).map(|v| {
+            let n = cells[0];
+            (0..n)
+                .map(|k| {
+                    // Exact real DC/Nyquist and exact conjugate symmetry of partners.
+                    if k == 0 || 2 * k == n {
+                        0.0
+                    } else if k <= n / 2 {
+                        v * (2.0 * PI * k as f64 / n as f64).sin()
+                    } else {
+                        -v * (2.0 * PI * (n - k) as f64 / n as f64).sin()
+                    }
+                })
                 .collect()
         });
         let plans: Vec<_> = cells.iter().map(|&n| plans(n)).collect();
@@ -631,6 +760,7 @@ impl BoxKernel {
         Self {
             cells,
             symbols,
+            imag_x,
             shift: f64::NAN,
             plans,
             transform,
@@ -755,11 +885,19 @@ impl BoxKernel {
         // Same association as the complex transform: ((z - c + e_x) + e_y) + e_z.
         let shift = self.shift;
         let [sx, sy, sz] = &self.symbols;
-        for (block, &ex) in self.buffer.chunks_exact_mut(rows).zip(sx) {
-            let base = shift + ex;
-            for (plane, &ez) in block.chunks_exact_mut(ny).zip(sz) {
-                for (value, &ey) in plane.iter_mut().zip(sy) {
-                    *value /= base + ey + ez;
+        if let Some(imag) = &self.imag_x {
+            // The upwind declaration is one-dimensional; y,z each have length one.
+            debug_assert_eq!(rows, 1);
+            for ((value, &ex), &im) in self.buffer.iter_mut().zip(sx).zip(imag) {
+                divide_mode(value, shift + ex, im);
+            }
+        } else {
+            for (block, &ex) in self.buffer.chunks_exact_mut(rows).zip(sx) {
+                let base = shift + ex;
+                for (plane, &ez) in block.chunks_exact_mut(ny).zip(sz) {
+                    for (value, &ey) in plane.iter_mut().zip(sy) {
+                        *value /= base + ey + ez;
+                    }
                 }
             }
         }
@@ -836,11 +974,18 @@ impl BoxKernel {
         self.transform_strided(1, false);
         self.transform_strided(2, false);
         let [sx, sy, sz] = &self.symbols;
-        for (index, value) in self.buffer.iter_mut().enumerate() {
-            let x = index % nx;
-            let y = index / nx % ny;
-            let z = index / (nx * ny);
-            *value /= self.shift + sx[x] + sy[y] + sz[z];
+        if let Some(imag) = &self.imag_x {
+            debug_assert_eq!(self.cells[1..], [1, 1]);
+            for ((value, &ex), &im) in self.buffer.iter_mut().zip(sx).zip(imag) {
+                divide_mode(value, self.shift + ex, im);
+            }
+        } else {
+            for (index, value) in self.buffer.iter_mut().enumerate() {
+                let x = index % nx;
+                let y = index / nx % ny;
+                let z = index / (nx * ny);
+                *value /= self.shift + sx[x] + sy[y] + sz[z];
+            }
         }
         self.transform_strided(2, true);
         self.transform_strided(1, true);
@@ -871,10 +1016,6 @@ struct SeparableClient {
     report: Arc<Mutex<SeparableReport>>,
 }
 
-fn max_abs(v: &[f64]) -> f64 {
-    v.iter().fold(0.0, |m, x| m.max(x.abs()))
-}
-
 impl SeparableClient {
     fn record(&self, update: impl FnOnce(&mut SeparableReport)) {
         update(&mut self.report.lock().unwrap_or_else(PoisonError::into_inner));
@@ -889,11 +1030,25 @@ impl SeparableClient {
         jvp(self.t, &self.y, x, &mut self.jx)?;
         counters.jvp_calls = counters.jvp_calls.saturating_add(1);
         counters.jvp_vectors = counters.jvp_vectors.saturating_add(1);
+        let (mut x_max, mut j_max, mut b_max, mut residual) = (0.0_f64, 0.0_f64, 0.0_f64, 0.0_f64);
         for (((r, &b), &xi), &jx) in self.work.iter_mut().zip(&self.rhs).zip(x).zip(&self.jx) {
             *r = b - (self.z * xi - jx);
+            if !r.is_finite() || !b.is_finite() || !xi.is_finite() || !jx.is_finite() {
+                return Err(CoreError::LinearSolve(
+                    "nonfinite separable residual".into(),
+                ));
+            }
+            x_max = x_max.max(xi.abs());
+            j_max = j_max.max(jx.abs());
+            b_max = b_max.max(b.abs());
+            residual = residual.max(r.abs());
         }
-        let scale = self.z * max_abs(x) + max_abs(&self.jx) + max_abs(&self.rhs);
-        let residual = max_abs(&self.work);
+        let scale = self.z * x_max + j_max + b_max;
+        if !scale.is_finite() {
+            return Err(CoreError::LinearSolve(
+                "nonfinite separable residual scale".into(),
+            ));
+        }
         Ok(if scale > 0.0 {
             residual / scale
         } else {

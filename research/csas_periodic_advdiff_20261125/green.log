@@ -1,0 +1,24 @@
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/vigilode)
+warning: unused import: `std::f64::consts::PI`
+ --> crates/vigilode/tests/spatial_upwind.rs:1:5
+  |
+1 | use std::f64::consts::PI;
+  |     ^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused imports: `Atol`, `Jacobian`, `Options`, `Problem`, `Rodas5p`, and `VigilODE`
+ --> crates/vigilode/tests/spatial_upwind.rs:3:16
+  |
+3 | use vigilode::{Atol, Jacobian, Options, Problem, Rodas5p, VigilODE};
+  |                ^^^^  ^^^^^^^^  ^^^^^^^  ^^^^^^^  ^^^^^^^  ^^^^^^^^
+
+warning: `vigilode` (test "spatial_upwind") generated 2 warnings (run `cargo fix --test "spatial_upwind" -p vigilode` to apply 2 suggestions)
+    Finished `release` profile [optimized] target(s) in 25.40s
+     Running tests/spatial_upwind.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/spatial_upwind-1da7813cfde5f5e5)
+
+running 1 test
+test upwind_stage_solves_original_stencil ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
