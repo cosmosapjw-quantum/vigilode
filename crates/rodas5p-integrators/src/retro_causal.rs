@@ -34,7 +34,7 @@ fn width(start: f64, end: f64) -> CoreResult<Iv> {
 fn nonnegative(x: Iv) -> CoreResult<Iv> {
     Iv::new(x.lo.max(0.), x.hi)
 }
-fn gain(table: &RetroTable, rate: f64, h: Iv) -> CoreResult<f64> {
+pub(crate) fn gain(table: &RetroTable, rate: f64, h: Iv) -> CoreResult<f64> {
     if rate == 0. {
         return Ok(1.);
     }
@@ -227,7 +227,7 @@ pub fn plan(
     })
 }
 
-fn flow(table: &RetroTable, s: SlabSpec, start: f64, t: f64, y: f64) -> CoreResult<Iv> {
+pub(crate) fn flow(table: &RetroTable, s: SlabSpec, start: f64, t: f64, y: f64) -> CoreResult<Iv> {
     if t == start {
         return pt(y);
     }

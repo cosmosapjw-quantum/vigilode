@@ -705,3 +705,7 @@ pub mod retro_foundation;
 /// Exact represented dense-polynomial event research, opt-in.
 #[cfg(feature = "polynomial-events")]
 pub mod retro_event_poly;
+
+/// Source-owned physical root enclosure research, opt-in.
+#[cfg(feature = "polynomial-events")]
+pub mod retro_physical_event;

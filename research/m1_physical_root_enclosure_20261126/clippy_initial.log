@@ -1,0 +1,57 @@
+    Checking rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-integrators)
+error: the loop variable `i` is used to index `v`
+   --> crates/rodas5p-integrators/src/retro_physical_event.rs:298:14
+    |
+298 |     for i in 1..5 {
+    |              ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+    = note: `-D clippy::needless-range-loop` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and enumerate()
+    |
+298 -     for i in 1..5 {
+298 +     for (i, <item>) in v.iter_mut().enumerate().skip(1) {
+    |
+
+error: this function has too many arguments (8/7)
+   --> crates/rodas5p-integrators/src/retro_physical_event.rs:306:1
+    |
+306 | / fn envelope(
+307 | |     table: &RetroTable,
+308 | |     rate: f64,
+309 | |     h: Iv,
+...   |
+314 | |     w: &mut PhysicalWork,
+315 | | ) -> CoreResult<f64> {
+    | |____________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#too_many_arguments
+    = note: `-D clippy::too-many-arguments` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::too_many_arguments)]`
+
+error: this `if` statement can be collapsed
+   --> crates/rodas5p-integrators/src/retro_physical_event.rs:721:13
+    |
+721 | / ...   if route == PhysicalRoute::WeightedHint {
+722 | | ...       if let Ok(p) = RepresentedPolynomial::from_segment(&self.se...
+723 | | ...           && let Ok(v) = p.isolate(RootRoute::DictionaryCompanion...
+724 | | ...           && let Some(v) = v.roots.first()
+...   |
+732 | | ...   }
+    | |_______^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#collapsible_if
+    = note: `-D clippy::collapsible-if` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::collapsible_if)]`
+help: collapse nested if block
+    |
+721 ~             if route == PhysicalRoute::WeightedHint
+722 ~                 && let Ok(p) = RepresentedPolynomial::from_segment(&self.segments, k, &eff.poly)
+723 |                     && let Ok(v) = p.isolate(RootRoute::DictionaryCompanion, 2f64.powi(-40))
+...
+730 |                     }
+731 ~                 }
+    |
+
+error: could not compile `rodas5p-integrators` (lib) due to 3 previous errors

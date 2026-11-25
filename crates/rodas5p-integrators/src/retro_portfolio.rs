@@ -84,6 +84,18 @@ pub enum Route {
     EventCompanion,
     #[cfg(feature = "polynomial-events")]
     EventDictionaryCompanion,
+    #[cfg(feature = "polynomial-events")]
+    PhysicalUnity,
+    #[cfg(feature = "polynomial-events")]
+    PhysicalAffine,
+    #[cfg(feature = "polynomial-events")]
+    PhysicalGreen,
+    #[cfg(feature = "polynomial-events")]
+    PhysicalWeighted,
+    #[cfg(feature = "polynomial-events")]
+    PhysicalHint,
+    #[cfg(feature = "polynomial-events")]
+    PhysicalSource,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
 pub enum AttemptStatus {

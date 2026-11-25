@@ -225,3 +225,6 @@ impl<'a> PolyTransaction<'a> {
         sol.stats.schema = "vigilode.stats.polynomial-event.v1";
     }
 }
+
+/// Source-owned physical root proof, not a termination API.
+pub use rodas5p_integrators::retro_physical_event;

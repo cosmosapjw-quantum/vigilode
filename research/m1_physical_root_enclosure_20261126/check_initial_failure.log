@@ -1,0 +1,50 @@
+    Checking rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-integrators)
+error[E0631]: type mismatch in function arguments
+   --> crates/rodas5p-integrators/src/retro_physical_event.rs:689:43
+    |
+689 |                 state_range: y.iter().map(Iv::as_pair).collect(),
+    |                                       --- ^^^^^^^^^^^
+    |                                       |   |
+    |                                       |   expected due to this
+    |                                       |   found signature defined here
+    |                                       required by a bound introduced by this call
+    |
+    = note: expected function signature `fn(&Interval) -> _`
+               found function signature `fn(Interval) -> _`
+note: required by a bound in `std::iter::Iterator::map`
+   --> /home/cosmosapjw/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/traits/iterator.rs:780:12
+    |
+777 |     fn map<B, F>(self, f: F) -> Map<Self, F>
+    |        --- required by a bound in this associated function
+...
+780 |         F: FnMut(Self::Item) -> B,
+    |            ^^^^^^^^^^^^^^^^^^^^^^ required by this bound in `Iterator::map`
+help: consider wrapping the function in a closure
+    |
+689 |                 state_range: y.iter().map(|arg0: &Interval| Iv::as_pair(*arg0)).collect(),
+    |                                           +++++++++++++++++            +++++++
+
+error[E0599]: the method `collect` exists for struct `Map<Iter<'_, Interval>, ...>`, but its trait bounds were not satisfied
+   --> crates/rodas5p-integrators/src/retro_physical_event.rs:689:56
+    |
+689 |                 state_range: y.iter().map(Iv::as_pair).collect(),
+    |                                                        ^^^^^^^ method cannot be called on `Map<Iter<'_, Interval>, ...>` due to unsatisfied trait bounds
+    |
+   ::: /home/cosmosapjw/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/adapters/map.rs:61:1
+    |
+ 61 | pub struct Map<I, F> {
+    | -------------------- doesn't satisfy `_: Iterator`
+    |
+    = note: the following trait bounds were not satisfied:
+            `<fn(Interval) -> [f64; 2] {Interval::as_pair} as FnOnce<(&Interval,)>>::Output = _`
+            which is required by `std::iter::Map<std::slice::Iter<'_, Interval>, fn(Interval) -> [f64; 2] {Interval::as_pair}>: Iterator`
+            `fn(Interval) -> [f64; 2] {Interval::as_pair}: FnMut<(&Interval,)>`
+            which is required by `std::iter::Map<std::slice::Iter<'_, Interval>, fn(Interval) -> [f64; 2] {Interval::as_pair}>: Iterator`
+            `std::iter::Map<std::slice::Iter<'_, Interval>, fn(Interval) -> [f64; 2] {Interval::as_pair}>: Iterator`
+            which is required by `&mut std::iter::Map<std::slice::Iter<'_, Interval>, fn(Interval) -> [f64; 2] {Interval::as_pair}>: Iterator`
+    = note: the full name for the type has been written to '/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/rodas5p_integrators-cee2c73b38bb4f48.long-type-16293470556809377144.txt'
+    = note: consider using `--verbose` to print the full type name to the console
+
+Some errors have detailed explanations: E0599, E0631.
+For more information about an error, try `rustc --explain E0599`.
+error: could not compile `rodas5p-integrators` (lib) due to 2 previous errors
