@@ -1,0 +1,83 @@
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-integrators)
+    Finished `release` profile [optimized] target(s) in 7.77s
+     Running tests/retro_green_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/retro_green_contracts-336ff24876d3fee4)
+
+running 6 tests
+test adaptive_scalar_dense_contract ... SCALAR {"beta":0.2,"endpoint_bound":3.993497143679452e-7,"endpoint_error":4.827236388393885e-10,"k":0.0,"observed_error":1.3267597798183317e-8,"steps":4,"tol":1e-6,"work":{"attempts":4,"certificate_cells":16,"fallback_evals":0,"picard_sweeps":20,"rejections":0,"source_evals":44,"table_evals":0}}
+SCALAR {"beta":0.2,"endpoint_bound":4.007081619601819e-7,"endpoint_error":1.5189954849503806e-10,"k":1.0,"observed_error":5.962164206785303e-9,"steps":21,"tol":1e-6,"work":{"attempts":24,"certificate_cells":96,"fallback_evals":0,"picard_sweeps":98,"rejections":3,"source_evals":220,"table_evals":576}}
+SCALAR {"beta":0.2,"endpoint_bound":1.9953378948133716e-7,"endpoint_error":9.199145655294783e-11,"k":12.0,"observed_error":2.4382381183518653e-9,"steps":50,"tol":1e-6,"work":{"attempts":56,"certificate_cells":232,"fallback_evals":32,"picard_sweeps":164,"rejections":6,"source_evals":384,"table_evals":1344}}
+SCALAR {"beta":0.2,"endpoint_bound":1.995719991979072e-8,"endpoint_error":3.471473936746946e-226,"k":1000.0,"observed_error":3.1323436899821644e-10,"steps":32,"tol":0.00001,"work":{"attempts":43,"certificate_cells":3164,"fallback_evals":12088,"picard_sweeps":88,"rejections":11,"source_evals":219,"table_evals":912}}
+SCALAR {"beta":0.2,"endpoint_bound":4.252612484082201e-9,"endpoint_error":3.9229730575129906e-13,"k":1.0,"observed_error":1.6725953955187833e-11,"steps":96,"tol":1e-8,"work":{"attempts":101,"certificate_cells":404,"fallback_evals":0,"picard_sweeps":409,"rejections":5,"source_evals":919,"table_evals":2424}}
+ok
+test future_forecast_is_only_an_initial_candidate ... 
+thread 'future_forecast_is_only_an_initial_candidate' (643914) panicked at crates/rodas5p-integrators/tests/retro_green_contracts.rs:124:5:
+assertion failed: a.local_error_upper() < 1e-5 && b.local_error_upper() < 1e-5
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+test immutable_table_and_uncertain_argument_enclose_phi ... ok
+test multidimensional_coupling_and_invariant_exact_solution ... COUPLED {"endpoint_bound":3.884941989564292e-7,"observed_error":5.9166975763247365e-9,"steps":19,"work":{"attempts":22,"certificate_cells":88,"fallback_evals":0,"picard_sweeps":112,"rejections":3,"source_evals":246,"table_evals":1584}}
+ok
+test original_defect_rejects_inaccurate_path_with_small_node_residual ... BAD_NODE {"continuous_bound":0.0033933255755381653,"node_defect":7.668518597903073e-14,"sampled_error":0.0002980306269401156,"work":{"attempts":0,"certificate_cells":4,"fallback_evals":0,"picard_sweeps":8,"rejections":0,"source_evals":17,"table_evals":24},"wrong_forcing_bound":0.04626748475053904}
+ok
+test table_identity_domain_and_fallback ... PHI_CASE {"hi":"3ff0000000000000","j":0,"lo":"3ff0000000000000","x":"0000000000000000"}
+PHI_CASE {"hi":"3ff0000000000000","j":1,"lo":"3ff0000000000000","x":"0000000000000000"}
+PHI_CASE {"hi":"3fe0000000000000","j":2,"lo":"3fe0000000000000","x":"0000000000000000"}
+PHI_CASE {"hi":"3fc5555555555556","j":3,"lo":"3fc5555555555555","x":"0000000000000000"}
+PHI_CASE {"hi":"3feffffffaa19c4a","j":0,"lo":"3feffffffaa19c46","x":"3e45798ee2308c3a"}
+PHI_CASE {"hi":"3feffffffd50ce26","j":1,"lo":"3feffffffd50ce22","x":"3e45798ee2308c3a"}
+PHI_CASE {"hi":"3fdffffffe35dec4","j":2,"lo":"3fdffffffe35dec1","x":"3e45798ee2308c3a"}
+PHI_CASE {"hi":"3fc55555547044b8","j":3,"lo":"3fc55555547044b5","x":"3e45798ee2308c3a"}
+PHI_CASE {"hi":"3fec3d6a24ed8223","j":0,"lo":"3fec3d6a24ed8220","x":"3fc0000000000000"}
+PHI_CASE {"hi":"3fee14aed893eef5","j":1,"lo":"3fee14aed893eef2","x":"3fc0000000000000"}
+PHI_CASE {"hi":"3fdeb51276c110c5","j":2,"lo":"3fdeb51276c110c2","x":"3fc0000000000000"}
+PHI_CASE {"hi":"3fc4aed893eef3c5","j":3,"lo":"3fc4aed893eef3c2","x":"3fc0000000000000"}
+PHI_CASE {"hi":"3fe368b2fc6f960b","j":0,"lo":"3fe368b2fc6f9609","x":"3fe0000000000000"}
+PHI_CASE {"hi":"3fe92e9a0720d3ed","j":1,"lo":"3fe92e9a0720d3eb","x":"3fe0000000000000"}
+PHI_CASE {"hi":"3fdb4597e37cb051","j":2,"lo":"3fdb4597e37cb04f","x":"3fe0000000000000"}
+PHI_CASE {"hi":"3fc2e9a0720d3ec1","j":3,"lo":"3fc2e9a0720d3ebf","x":"3fe0000000000000"}
+PHI_CASE {"hi":"3fd78b56362d091d","j":0,"lo":"3fd78b56362d0919","x":"3fefffffffffdcd1"}
+PHI_CASE {"hi":"3fe43a54e4e991b2","j":1,"lo":"3fe43a54e4e991ae","x":"3fefffffffffdcd1"}
+PHI_CASE {"hi":"3fd78b56362cf684","j":2,"lo":"3fd78b56362cf681","x":"3fefffffffffdcd1"}
+PHI_CASE {"hi":"3fc0e95393a62594","j":3,"lo":"3fc0e95393a62591","x":"3fefffffffffdcd1"}
+PHI_CASE {"hi":"3fd78b56362cef39","j":0,"lo":"3fd78b56362cef36","x":"3ff0000000000000"}
+PHI_CASE {"hi":"3fe43a54e4e98866","j":1,"lo":"3fe43a54e4e98863","x":"3ff0000000000000"}
+PHI_CASE {"hi":"3fd78b56362cef39","j":2,"lo":"3fd78b56362cef36","x":"3ff0000000000000"}
+PHI_CASE {"hi":"3fc0e95393a62192","j":3,"lo":"3fc0e95393a6218f","x":"3ff0000000000000"}
+PHI_CASE {"hi":"3fd78b56362cd560","j":0,"lo":"3fd78b56362cd54a","x":"3ff0000000001198"}
+PHI_CASE {"hi":"3fe43a54e4e97f23","j":1,"lo":"3fe43a54e4e97f0e","x":"3ff0000000001198"}
+PHI_CASE {"hi":"3fd78b56362ce80b","j":2,"lo":"3fd78b56362ce7d0","x":"3ff0000000001198"}
+PHI_CASE {"hi":"3fc0e95393a61dba","j":3,"lo":"3fc0e95393a61d64","x":"3ff0000000001198"}
+PHI_CASE {"hi":"3fd25618372a5860","j":0,"lo":"3fd25618372a584a","x":"3ff4000000000000"}
+PHI_CASE {"hi":"3fe243f650557658","j":1,"lo":"3fe243f650557641","x":"3ff4000000000000"}
+PHI_CASE {"hi":"3fd5f9a91910dc83","j":2,"lo":"3fd5f9a91910dc42","x":"3ff4000000000000"}
+PHI_CASE {"hi":"3fc00a24a4b1d2d4","j":3,"lo":"3fc00a24a4b1d277","x":"3ff4000000000000"}
+PHI_CASE {"hi":"3f92c155b8213d03","j":0,"lo":"3f92c155b8213ced","x":"4010000000000000"}
+PHI_CASE {"hi":"3fcf69f5523ef634","j":1,"lo":"3fcf69f5523ef609","x":"4010000000000000"}
+PHI_CASE {"hi":"3fc82582ab704299","j":2,"lo":"3fc82582ab704264","x":"4010000000000000"}
+PHI_CASE {"hi":"3fb3ed3eaa47dee9","j":3,"lo":"3fb3ed3eaa47dea5","x":"4010000000000000"}
+PHI_CASE {"hi":"3e7e355bbaee85d6","j":0,"lo":"3e7e355bbaee85c0","x":"4030000000000000"}
+PHI_CASE {"hi":"3fb0124061e6112b","j":1,"lo":"3fafffffc32d56f8","x":"4030000000000000"}
+PHI_CASE {"hi":"3fae0c6d4aaadf55","j":2,"lo":"3fadff392f358549","x":"4030000000000000"}
+PHI_CASE {"hi":"3f9c442cb558a717","j":3,"lo":"3f9c3f7b71dcc006","x":"4030000000000000"}
+PHI_CASE {"hi":"3a2969d47321e4d7","j":0,"lo":"3a2969d47321e4c1","x":"4050000000000000"}
+PHI_CASE {"hi":"3ff0000000000000","j":1,"lo":"3f1ff7d566baba0a","x":"4050000000000000"}
+PHI_CASE {"hi":"3fe0000000000000","j":2,"lo":"0000000000000000","x":"4050000000000000"}
+PHI_CASE {"hi":"3fc5555555555556","j":3,"lo":"0000000000000000","x":"4050000000000000"}
+PHI_CASE {"hi":"0040000000000000","j":0,"lo":"0000000000000000","x":"408f400000000000"}
+PHI_CASE {"hi":"3ff0000000000000","j":1,"lo":"0000000000000000","x":"408f400000000000"}
+PHI_CASE {"hi":"3fe0000000000000","j":2,"lo":"0000000000000000","x":"408f400000000000"}
+PHI_CASE {"hi":"3fc5555555555556","j":3,"lo":"0000000000000000","x":"408f400000000000"}
+PHI_CASE {"hi":"0040000000000000","j":0,"lo":"0000000000000000","x":"40d0000000000000"}
+PHI_CASE {"hi":"3ff0000000000000","j":1,"lo":"0000000000000000","x":"40d0000000000000"}
+PHI_CASE {"hi":"3fe0000000000000","j":2,"lo":"0000000000000000","x":"40d0000000000000"}
+PHI_CASE {"hi":"3fc5555555555556","j":3,"lo":"0000000000000000","x":"40d0000000000000"}
+ok
+
+failures:
+
+failures:
+    future_forecast_is_only_an_initial_candidate
+
+test result: FAILED. 5 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test retro_green_contracts`

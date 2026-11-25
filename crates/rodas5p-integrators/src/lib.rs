@@ -682,3 +682,6 @@ pub use actual_k_homotopy::{
     certify_collective_actual_k_homotopy,
 };
 pub mod quadratic_branch;
+
+/// Opt-in research: certified diagonal Green slabs.
+pub mod retro_green;

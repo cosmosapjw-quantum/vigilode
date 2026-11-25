@@ -1,0 +1,74 @@
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-integrators)
+    Finished `release` profile [optimized] target(s) in 1m 33s
+     Running tests/retro_green_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/retro_green_contracts-336ff24876d3fee4)
+
+running 6 tests
+test adaptive_scalar_dense_contract ... SCALAR {"beta":0.2,"endpoint_bound":3.993497143679452e-7,"endpoint_error":4.827236388393885e-10,"k":0.0,"observed_error":1.3267597798183317e-8,"steps":4,"tol":1e-6,"work":{"attempts":4,"certificate_cells":16,"fallback_evals":0,"picard_sweeps":20,"rejections":0,"scaled_evals":0,"source_evals":44,"table_evals":0}}
+SCALAR {"beta":0.2,"endpoint_bound":3.1749230909231466e-7,"endpoint_error":1.5189954849503806e-10,"k":1.0,"observed_error":5.962164206785303e-9,"steps":21,"tol":1e-6,"work":{"attempts":24,"certificate_cells":96,"fallback_evals":0,"picard_sweeps":98,"rejections":3,"scaled_evals":0,"source_evals":220,"table_evals":672}}
+SCALAR {"beta":0.2,"endpoint_bound":6.850842024528993e-9,"endpoint_error":5.5355362221093385e-11,"k":12.0,"observed_error":2.4382381183518653e-9,"steps":50,"tol":1e-6,"work":{"attempts":56,"certificate_cells":232,"fallback_evals":28,"picard_sweeps":163,"rejections":6,"scaled_evals":0,"source_evals":382,"table_evals":1572}}
+SCALAR {"beta":0.2,"endpoint_bound":1.3443499610332774e-224,"endpoint_error":3.471473936746946e-226,"k":1000.0,"observed_error":3.1323436899821644e-10,"steps":32,"tol":0.00001,"work":{"attempts":43,"certificate_cells":3164,"fallback_evals":744,"picard_sweeps":88,"rejections":11,"scaled_evals":11376,"source_evals":219,"table_evals":1052}}
+SCALAR {"beta":0.2,"endpoint_bound":3.478829813791961e-9,"endpoint_error":3.9229730575129906e-13,"k":1.0,"observed_error":1.6725953955187833e-11,"steps":96,"tol":1e-8,"work":{"attempts":101,"certificate_cells":404,"fallback_evals":0,"picard_sweeps":409,"rejections":5,"scaled_evals":0,"source_evals":919,"table_evals":2828}}
+ok
+test future_forecast_is_only_an_initial_candidate ... FORECAST {"bad_bound":1.0531862560745857e-7,"bad_work":{"attempts":0,"certificate_cells":4,"fallback_evals":0,"picard_sweeps":5,"rejections":0,"scaled_evals":0,"source_evals":11,"table_evals":28},"endpoint_delta":1.9566237519086371e-10,"normal_bound":1.0509664608810672e-7,"normal_work":{"attempts":0,"certificate_cells":4,"fallback_evals":0,"picard_sweeps":3,"rejections":0,"scaled_evals":0,"source_evals":7,"table_evals":28}}
+ok
+test immutable_table_and_uncertain_argument_enclose_phi ... ok
+test multidimensional_coupling_and_invariant_exact_solution ... COUPLED {"endpoint_bound":2.972438774436469e-7,"observed_error":5.9166975763247365e-9,"steps":19,"work":{"attempts":22,"certificate_cells":88,"fallback_evals":0,"picard_sweeps":112,"rejections":3,"scaled_evals":0,"source_evals":246,"table_evals":1672}}
+ok
+test original_defect_rejects_inaccurate_path_with_small_node_residual ... BAD_NODE {"continuous_bound":0.0024861264094823607,"node_defect":7.668518597903073e-14,"sampled_error":0.0002980306269401156,"work":{"attempts":0,"certificate_cells":4,"fallback_evals":0,"picard_sweeps":8,"rejections":0,"scaled_evals":0,"source_evals":17,"table_evals":28},"wrong_forcing_bound":0.03438472867334722}
+ok
+test table_identity_domain_and_fallback ... PHI_CASE {"hi":"3ff0000000000000","j":0,"lo":"3ff0000000000000","x":"0000000000000000"}
+PHI_CASE {"hi":"3ff0000000000000","j":1,"lo":"3ff0000000000000","x":"0000000000000000"}
+PHI_CASE {"hi":"3fe0000000000000","j":2,"lo":"3fe0000000000000","x":"0000000000000000"}
+PHI_CASE {"hi":"3fc5555555555556","j":3,"lo":"3fc5555555555555","x":"0000000000000000"}
+PHI_CASE {"hi":"3feffffffaa19c4a","j":0,"lo":"3feffffffaa19c46","x":"3e45798ee2308c3a"}
+PHI_CASE {"hi":"3feffffffd50ce26","j":1,"lo":"3feffffffd50ce22","x":"3e45798ee2308c3a"}
+PHI_CASE {"hi":"3fdffffffe35dec4","j":2,"lo":"3fdffffffe35dec1","x":"3e45798ee2308c3a"}
+PHI_CASE {"hi":"3fc55555547044b8","j":3,"lo":"3fc55555547044b5","x":"3e45798ee2308c3a"}
+PHI_CASE {"hi":"3fec3d6a24ed8223","j":0,"lo":"3fec3d6a24ed8220","x":"3fc0000000000000"}
+PHI_CASE {"hi":"3fee14aed893eef5","j":1,"lo":"3fee14aed893eef2","x":"3fc0000000000000"}
+PHI_CASE {"hi":"3fdeb51276c110c5","j":2,"lo":"3fdeb51276c110c2","x":"3fc0000000000000"}
+PHI_CASE {"hi":"3fc4aed893eef3c5","j":3,"lo":"3fc4aed893eef3c2","x":"3fc0000000000000"}
+PHI_CASE {"hi":"3fe368b2fc6f960b","j":0,"lo":"3fe368b2fc6f9609","x":"3fe0000000000000"}
+PHI_CASE {"hi":"3fe92e9a0720d3ed","j":1,"lo":"3fe92e9a0720d3eb","x":"3fe0000000000000"}
+PHI_CASE {"hi":"3fdb4597e37cb051","j":2,"lo":"3fdb4597e37cb04f","x":"3fe0000000000000"}
+PHI_CASE {"hi":"3fc2e9a0720d3ec1","j":3,"lo":"3fc2e9a0720d3ebf","x":"3fe0000000000000"}
+PHI_CASE {"hi":"3fd78b56362d091d","j":0,"lo":"3fd78b56362d0919","x":"3fefffffffffdcd1"}
+PHI_CASE {"hi":"3fe43a54e4e991b2","j":1,"lo":"3fe43a54e4e991ae","x":"3fefffffffffdcd1"}
+PHI_CASE {"hi":"3fd78b56362cf684","j":2,"lo":"3fd78b56362cf681","x":"3fefffffffffdcd1"}
+PHI_CASE {"hi":"3fc0e95393a62594","j":3,"lo":"3fc0e95393a62591","x":"3fefffffffffdcd1"}
+PHI_CASE {"hi":"3fd78b56362cef39","j":0,"lo":"3fd78b56362cef36","x":"3ff0000000000000"}
+PHI_CASE {"hi":"3fe43a54e4e98866","j":1,"lo":"3fe43a54e4e98863","x":"3ff0000000000000"}
+PHI_CASE {"hi":"3fd78b56362cef39","j":2,"lo":"3fd78b56362cef36","x":"3ff0000000000000"}
+PHI_CASE {"hi":"3fc0e95393a62192","j":3,"lo":"3fc0e95393a6218f","x":"3ff0000000000000"}
+PHI_CASE {"hi":"3fd78b56362cd560","j":0,"lo":"3fd78b56362cd54a","x":"3ff0000000001198"}
+PHI_CASE {"hi":"3fe43a54e4e97f23","j":1,"lo":"3fe43a54e4e97f0e","x":"3ff0000000001198"}
+PHI_CASE {"hi":"3fd78b56362ce80b","j":2,"lo":"3fd78b56362ce7d0","x":"3ff0000000001198"}
+PHI_CASE {"hi":"3fc0e95393a61dba","j":3,"lo":"3fc0e95393a61d64","x":"3ff0000000001198"}
+PHI_CASE {"hi":"3fd25618372a5860","j":0,"lo":"3fd25618372a584a","x":"3ff4000000000000"}
+PHI_CASE {"hi":"3fe243f650557658","j":1,"lo":"3fe243f650557641","x":"3ff4000000000000"}
+PHI_CASE {"hi":"3fd5f9a91910dc83","j":2,"lo":"3fd5f9a91910dc42","x":"3ff4000000000000"}
+PHI_CASE {"hi":"3fc00a24a4b1d2d4","j":3,"lo":"3fc00a24a4b1d277","x":"3ff4000000000000"}
+PHI_CASE {"hi":"3f92c155b8213d03","j":0,"lo":"3f92c155b8213ced","x":"4010000000000000"}
+PHI_CASE {"hi":"3fcf69f5523ef619","j":1,"lo":"3fcf69f5523ef617","x":"4010000000000000"}
+PHI_CASE {"hi":"3fc82582ab70427b","j":2,"lo":"3fc82582ab704279","x":"4010000000000000"}
+PHI_CASE {"hi":"3fb3ed3eaa47dec4","j":3,"lo":"3fb3ed3eaa47dec2","x":"4010000000000000"}
+PHI_CASE {"hi":"3e7e355bbaee85d6","j":0,"lo":"3e7e355bbaee85c0","x":"4030000000000000"}
+PHI_CASE {"hi":"3fafffffc395488b","j":1,"lo":"3fafffffc395488a","x":"4030000000000000"}
+PHI_CASE {"hi":"3fae000003c6ab78","j":2,"lo":"3fae000003c6ab77","x":"4030000000000000"}
+PHI_CASE {"hi":"3f9c3fffff872a92","j":3,"lo":"3f9c3fffff872a91","x":"4030000000000000"}
+PHI_CASE {"hi":"3a2969d47321e4d7","j":0,"lo":"3a2969d47321e4c1","x":"4050000000000000"}
+PHI_CASE {"hi":"3f90000000000000","j":1,"lo":"3f8fffffffffffff","x":"4050000000000000"}
+PHI_CASE {"hi":"3f8f800000000001","j":2,"lo":"3f8f800000000000","x":"4050000000000000"}
+PHI_CASE {"hi":"3f7f040000000000","j":3,"lo":"3f7f03ffffffffff","x":"4050000000000000"}
+PHI_CASE {"hi":"0040000000000000","j":0,"lo":"0000000000000000","x":"408f400000000000"}
+PHI_CASE {"hi":"3f50624dd2f1a9fc","j":1,"lo":"3f50624dd2f1a9fb","x":"408f400000000000"}
+PHI_CASE {"hi":"3f505e1c15097c82","j":2,"lo":"3f505e1c15097c80","x":"408f400000000000"}
+PHI_CASE {"hi":"3f4059ec7ce2cc0b","j":3,"lo":"3f4059ec7ce2cc09","x":"408f400000000000"}
+PHI_CASE {"hi":"0040000000000000","j":0,"lo":"0000000000000000","x":"40d0000000000000"}
+PHI_CASE {"hi":"3f10000000000000","j":1,"lo":"3f0fffffffffffff","x":"40d0000000000000"}
+PHI_CASE {"hi":"3f0fff8000000001","j":2,"lo":"3f0fff8000000000","x":"40d0000000000000"}
+PHI_CASE {"hi":"3effff0004000000","j":3,"lo":"3effff0003ffffff","x":"40d0000000000000"}
+ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.31s
+
