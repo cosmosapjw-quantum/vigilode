@@ -1,0 +1,415 @@
+{
+ "schema": "vigilode.ks-n3-review.v1",
+ "task": "KS-N3",
+ "run_id": "wf_b14f5942-3ad",
+ "reviewed_commit": "03d26c45",
+ "reviewers": "two independent read-and-run agents (statistics and protocol lens; probe-fidelity lens); no repository edits",
+ "reviews": [
+  {
+   "lens": "statistics and protocol adherence",
+   "verdict": "confirm_with_corrections",
+   "summary": "I rebuilt the whole KS-N3 analysis from the 1082 raw files with my own script (recompute.py; parse_ks_n3.py was not used) and got the producer's frozen verdict, FAIL. All 216 expected processes are present. Every one exited 0, wrote nothing to stderr, and has perf counters at 100% with no multiplexing. My values match every per-round value, every median over rounds, every ratio, every decidability flag, the kill flags and the verdict in KS_N3_OWNER_HOST.json, to within 1e-12. Separable-verified/shipped per solve: instructions 0.01648/0.006065/0.0008295, cycles 0.00853/0.00339/0.000486, wall 0.008741/0.003423/0.0004809. Stage separable/gmres-longitude wall is 0.00686-0.01500, so there is no kill on any grid. Mass drift is at most 4.38e-15. Exactly one decidable item fails: at 128x256 the separable error is 2.073e-8 against the shipped route's 5.617e-13, a ratio of 3.69e4. Protocol adherence holds. Every hash in the protocol matches the files at dc231b66 and at 03d26c45. Between those two commits only logs/ks_n3 and the two results files changed. The protocol commit was made at 09:38:15 and the push recorded at 09:38:21 (local reflog of origin's branch). env.json was written at 09:38:26.431 and the first process started at 09:38:26.434, so every one of the 216 processes started after the push. Sorted by nanosecond file times, the processes follow the frozen order exactly, with no overlap and 1-3 ms between them. The load was recorded before every process. The whole-cell consistency check finds no mismatch, and the stage cells show none either. No process started at load <= 3 (lowest 3.38), so every wall comparison was decided by the 3x margin alone; all clear it by at least 22x. The 653-attempt shipped run at 128x256 is deterministic. All six logged processes report the same attempts, counters, error, drift and final-state hash. Per-solve instructions agree across rounds to 6.5e-9. My own seventh run on core 10, two hours later, reproduces it: instructions within 4.7e-9 and identical output fields. So the FAIL is not noise and more rounds cannot change it. It comes from the frozen criterion meeting a shipped benchmark that took far smaller steps than needed (error 1.8e6x below rtol). It is not a sign that the separable route is inaccurate: its error is 48x below rtol and of the same order as on the coarser grids. The producer's reading is therefore supported, but it cannot be used to waive the item. FAIL stands, and the plan's question at matched achieved error is still unanswered at 128x256. Corrections are minor: the protocol's written_kst (09:40) is later than the commit, the push and the series start; it should carry the qualifier above. The other entries are notes.",
+   "findings": [
+    {
+     "id": "F1",
+     "severity": "note",
+     "claim": "Recomputing from the raw files reproduces every value in the producer's results and the verdict FAIL.",
+     "evidence": "recompute.py found 1082 files, 216 of 216 expected processes, 0 missing, 0 extra, 0 issues (exit 0, empty .err, perf pct 100.00, out fields match the tag). compare.py compared 420 per-round and median values, all acceptance and stage ratios, decidability, kill and verdict with KS_N3_OWNER_HOST.json: no mismatch. The 216 JSONL rows equal the raw meta/out files. Whole sv/shipped: instructions 0.01648/0.006065/0.0008295, wall 0.008741/0.003423/0.0004809. Stage sep/gl wall 0.006859-0.014998, instructions 0.00853-0.00866. Error sv 7.266e-9/5.232e-9/2.073e-8 against shipped 7.266e-9/1.235e-9/5.617e-13 (ratios 1.00/4.24/3.69e4). Drift sv = st: 2.83e-16/3.11e-15/4.38e-15. The only decidable failure is the error at 128x256; there is no kill, so the frozen FAIL definition applies."
+    },
+    {
+     "id": "F2",
+     "severity": "note",
+     "claim": "The protocol was frozen and pushed before any measured process, and the code under test is the code the protocol names.",
+     "evidence": "sha256 at dc231b66 and at 03d26c45: PLAN fb33a418..., separable.rs e618ee20..., spatial_separable.rs abb5488a..., main.rs dd911057..., Cargo.toml f918caf6..., Cargo.lock 54361bf2... (PLAN, separable.rs and the test file are also identical at 05b5e3e3). KS_N3_PROTOCOL.json, run_ks_n3.sh and parse_ks_n3.py are identical at both commits. dc231b66 differs from 05b5e3e3 only by the six owner_host files. Timing: commit 09:38:15; reflog of origin/research/stage-lattice-referee-20261124 shows 'update by push' at 09:38:21; env.json mtime 09:38:26.431; first meta 09:38:26.434; no process start before the push. Probe binary sha256 99ef7647... equals env.json. It was built 09:33:59-09:34:52 from this worktree's crates (dep-info), and .comment embeds rustc 1.94.1 (e408947bf). No crate file in the worktree changed between 07:30 and 11:26. The protocol's plan block (question, acceptance, kill, fallback) is identical to the PLAN.json KS-N3 text."
+    },
+    {
+     "id": "F3",
+     "severity": "note",
+     "claim": "Process order, the no-waiting rule and load recording follow the frozen protocol.",
+     "evidence": "The 216 processes sorted by the nanosecond mtime of their meta files equal the order rebuilt from the protocol text: rounds 1-3; whole by grid with arms sv, st, shipped (round 2 reversed); stage by grid and h with arms gl, sep, gi (round 2 reversed); solves 1 then 1+N. No exit-to-next overlap; gaps 1.0-3.0 ms. Every meta has load1_before; meta mtime minus meta start is 0.001-0.999 s. The last exit is 11:25:15.217; end.json says 11:25:15."
+    },
+    {
+     "id": "F4",
+     "severity": "minor",
+     "claim": "The frozen protocol's self-reported time 'written_kst': '2026-11-25 09:40' is later than the commit, the push and the start of the series.",
+     "evidence": "Protocol file mtime 09:38:12; commit 09:38:15; push 09:38:21; first process 09:38:26. Freeze-before-series is established by git, not by this field.",
+     "correction": "Cite the commit time (09:38:15) and the push time (09:38:21) as the freeze evidence; treat written_kst as inaccurate."
+    },
+    {
+     "id": "F5",
+     "severity": "note",
+     "claim": "No process started quiet, so every wall decision rests on the 3x margin. Every comparison clears it widely, and both ambiguous readings in the parser are without effect.",
+     "evidence": "load1 before the processes: min 3.38, median 4.03, max 14.06 (r1 7.03-14.06, r2 3.38-7.03, r3 3.50-7.12); 0 processes at <= 3.0. The largest ratio is 0.0150 (stage 128x256 h=0.01), 22x inside 1/3. The parser takes the load over the s1 processes too, which is stricter than 'every process it uses', and counts undecidable stage comparisons as not slower; recomputed both ways, the results are identical."
+    },
+    {
+     "id": "F6",
+     "severity": "minor",
+     "claim": "Wall contamination on one round of the 128x256 shipped cell reached about 4x on one solve, more than the 3x margin. It is harmless here, but the load rule would not protect a comparison near the margin.",
+     "evidence": "r1 shipped 128x256 s2: times [1902.18, 514.91] s, task-clock 964.9 s (wall/CPU 2.5), CPU per solve from the task-clock difference 476.6 s. r1 s1: 931.8 s wall against 488.3 s task-clock. r2 and r3 have wall/CPU 0.999. The median over rounds (472.0 s) drops r1. CPU-time ratios 0.00849/0.00342/0.000494 and cycles ratios 0.00853/0.00339/0.000486 agree with the wall ratios.",
+     "correction": "No change to KS-N3. For future protocols, use a larger margin or a task-clock or cycles cross-check alongside start-time load."
+    },
+    {
+     "id": "F7",
+     "severity": "note",
+     "claim": "The difference method (C(1+N)-C(1))/N is unbiased here: there is no first-solve premium, and the logged counts reproduce on another core.",
+     "evidence": "C(1)-P is equal across the three whole arms of each grid in every round: 6.6749e8, 3.71014e9, 1.81543e10. My zero-solve reruns give C(0) = 6.6725e8, 3.7092e9, 1.81505e10. Shipped and sv C(0) at 128x256 differ by 13 instructions. The gap to C(1)-P is the O(n) output work (2.4e5, 9.4e5, 3.75e6). Reruns on core 10 reproduce per-solve instructions within 5e-6 relative: sv 32x64, shipped 32x64, sv 128x256, stage separable and gmres-longitude at 128x256 h=0.1. Output fields are identical, and gmres-identity at 128x256 h=0.1 fails identically. Per-solve instruction spread over rounds: <= 6.2e-7 for whole cells, <= 4.0e-4 for stage cells."
+    },
+    {
+     "id": "F8",
+     "severity": "note",
+     "claim": "The 653-attempt shipped run at 128x256 is deterministic, so the FAIL is not sampling noise and further rounds cannot change it.",
+     "evidence": "All six logged processes (r1-r3, s1 and s2) report attempts 653, rhs 3200, jvp 357855, linear_iterations 346000, relative_error 5.617414645561688e-13, mass_drift 2.6292617339489156e-14, fnv1a 13050f5dd1af283a. Per-solve instructions are equal across rounds to 6.5e-9. Equal intercepts show the unreported first solve of each s2 process cost the same as the second. A seventh run of mine (core 10, 11:37-11:46) has instructions 4701233389994 against the logged 4701233402028/4701233367786/4701233397983 (|rel| <= 4.7e-9), identical output fields, and 498.8 s wall. The error item is therefore a deterministic function of the configuration (n_eff = 1)."
+    },
+    {
+     "id": "F9",
+     "severity": "minor",
+     "claim": "The producer's reading, that the FAIL is the error criterion meeting an over-resolved shipped route, is supported. It is a qualifier, though, not a waiver: FAIL stands, and the plan's 'matched achieved error' question is not answered at 128x256.",
+     "evidence": "Both routes ran at rtol 1e-6, atol 1e-9; achieved errors were never matched. At 32x64 the step sequences are identical (29 attempts and 231 rhs each; errors 7.26630e-9 vs 7.26621e-9). At 64x128: 56 vs 42 attempts, error ratio 4.24. At 128x256: 653 vs 53 attempts, ratio 3.69e4. The separable error (2.07e-8) is 48x below rtol and of the same order as on the coarser grids (7.3e-9, 5.2e-9). The shipped error is 1.8e6x below rtol. Shipped rhs calls per attempt fall to 4.90 at 128x256, against 7.6-7.97 in every other whole run. At most 400 of the 653 attempts can have evaluated all 8 stages, so at least 253 ended early. This fits rejections that the error estimate did not cause; the cause itself is not logged. Indication only, not preregistered: C(0) (startup + setup + the Trusted reference at rtol 1e-11, atol 1e-13, which the shipped result matches to 5.6e-13) is 0.0823/0.0293/0.00388 of one shipped solve, so a matched-accuracy cell would very likely keep the cost result.",
+     "correction": "Report KS-N3 as FAIL (frozen) on the 128x256 error item. Add the qualifier that it reflects an over-resolved, uncontrolled benchmark and not a separable accuracy defect. Resolving the plan's matched-error question needs a new preregistered cell, for example separable at a tightened tolerance."
+    },
+    {
+     "id": "F10",
+     "severity": "note",
+     "claim": "The protocol measures per whole solve, not 'per accepted step' as the plan asks. The cost items hold under any per-step normalization.",
+     "evidence": "Accepted steps are not logged. Per attempt, the instruction ratios are 0.0165/0.0081/0.0102. Worst-case bound (separable 1 accepted step, every shipped attempt accepted): instructions <= 0.48/0.34/0.54 and wall <= 0.25/0.19/0.31, all below 1."
+    },
+    {
+     "id": "F11",
+     "severity": "note",
+     "claim": "The no-kill conclusion is robust to the strength of the comparator.",
+     "evidence": "gmres-longitude takes 31 matvecs in every stage cell, with residuals 6.7e-16 to 2.6e-13, far below rtol 1e-10. The separable per-solve count includes planning and factoring plus an O(n) rhs copy, while the GMRES preconditioner setup is outside the count, so the comparison is conservative for separable. Even a GMRES with 6x fewer matvecs leaves separable/gl at <= 0.09 wall and <= 0.052 instructions."
+    },
+    {
+     "id": "F12",
+     "severity": "note",
+     "claim": "Replacing the plan's ignored diagnostics with the probe was declared in the frozen protocol, and the copy is faithful.",
+     "evidence": "The nine helpers (sphere, noise, max_abs, max_diff, mass, abs_mass, problem, smooth_field, options) are byte-identical to crates/vigilode/tests/spatial_separable.rs at dc231b66. Grids, kappa 1e-2, span [0, 1], rtol/atol, the reference at 1e-11/1e-13, GMRES (restart 30, max 3000, rtol 1e-10), gamma and noise seed 5 all match both diagnostics. N per arm matches the protocol."
+    },
+    {
+     "id": "F13",
+     "severity": "note",
+     "claim": "Two bookkeeping points with no effect on the verdict.",
+     "evidence": "(a) parse_ks_n3.py writes the plan fallback for every non-PASS verdict, while the frozen protocol attaches it only to KILL. 'The route stays opt-in' is the status quo anyway (RUN.json SL-N5: promotion waits for KS-N3). (b) The local origin tracking ref was last updated by the dc231b66 push; 03d26c45 has not been pushed from this repository."
+    }
+   ],
+   "ran": [
+    {
+     "command": "git log/diff --stat/--name-only 05b5e3e3 dc231b66 03d26c45; git branch -r --contains dc231b66; git reflog show --date=iso-strict refs/remotes/origin/research/stage-lattice-referee-20261124",
+     "exit_code": 0,
+     "result": "dc231b66 commit 09:38:15, push 09:38:21; only logs/ks_n3 (1082 files) and the 2 results files changed dc231b66..03d26c45; nothing touching KS-N3 after 03d26c45; origin contains dc231b66"
+    },
+    {
+     "command": "git show <commit>:<file> | sha256sum for PLAN.json, separable.rs, spatial_separable.rs, probe main.rs/Cargo.toml/Cargo.lock, protocol, run script, parser at 05b5e3e3, dc231b66, 03d26c45, HEAD; sha256sum of working-tree copies",
+     "exit_code": 0,
+     "result": "all protocol hashes match at dc231b66 and 03d26c45; working tree equals committed blobs; worktree logs equal the 03d26c45 logs"
+    },
+    {
+     "command": "sha256sum/stat/readelf -p .comment on the ks-n3-probe binary; dep-info and mtimes in the probe target dir; find crates -newermt 07:30",
+     "exit_code": 0,
+     "result": "sha 99ef7647... = env.json; built 09:34:52 from this worktree's crates with rustc 1.94.1; crate edits only at 11:26+ (after the series)"
+    },
+    {
+     "command": "python3 -I /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/ks_n3_review_stats_protocol/recompute.py <worktree> .../recomputed.json",
+     "exit_code": 0,
+     "result": "216/216 processes, 0 issues; order == protocol; gaps 1-3 ms; load min 3.38; no consistency mismatch; acceptance and stage ratios as reported; kill False; verdict FAIL"
+    },
+    {
+     "command": "python3 -I /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/ks_n3_review_stats_protocol/compare.py <worktree> recomputed.json",
+     "exit_code": 0,
+     "result": "producer results and JSONL equal my recomputation (no mismatches); counters per arm; the 6 shipped 128x256 outputs are identical"
+    },
+    {
+     "command": "python3 -I helper-diff of probe main.rs against spatial_separable.rs at dc231b66; protocol plan block against PLAN.json",
+     "exit_code": 0,
+     "result": "9/9 helpers byte-identical; question/acceptance/kill/fallback identical"
+    },
+    {
+     "command": "perf stat -x, -e instructions:u -- taskset -c 10 ks-n3-probe {whole sv 32 64 1|21; whole shipped 32 64 1|5; whole sv 128 256 1|6; stage separable 128 256 0.1 1|21; stage gmres-longitude 128 256 0.1 1|6; stage gmres-identity 128 256 0.1 1}",
+     "exit_code": 0,
+     "result": "per-solve instructions within 5e-6 of the logged values; output hashes and counters identical; gmres-identity fails identically"
+    },
+    {
+     "command": "perf stat -x, -e instructions:u -- taskset -c 10 ks-n3-probe whole {sv 32 64|sv 64 128|sv 128 256|shipped 128 256} 0; stage separable 128 256 0.1 0",
+     "exit_code": 0,
+     "result": "C(0) = 6.6725e8/3.7092e9/1.81505e10 (shipped = sv to 13 instructions); matches the logged intercepts minus O(n) output work; stage setup 1.45e6"
+    },
+    {
+     "command": "perf stat -x, -e instructions:u -- taskset -c 10 ks-n3-probe whole shipped 128 256 1 (background, 11:37:53-11:46:14)",
+     "exit_code": 0,
+     "result": "instructions 4701233389994 (|rel| <= 4.7e-9 against the 3 logged C(1)); attempts 653, rhs 3200, jvp 357855, linear_iterations 346000, err 5.617414645561688e-13, fnv 13050f5dd1af283a; wall 498.8 s"
+    }
+   ],
+   "recomputed": {
+    "whole_instr_ratio_sv_over_shipped": {
+     "32x64": 0.016479,
+     "64x128": 0.0060655,
+     "128x256": 0.00082949
+    },
+    "whole_wall_ratio_sv_over_shipped": {
+     "32x64": 0.0087409,
+     "64x128": 0.0034227,
+     "128x256": 0.00048091
+    },
+    "whole_cycles_ratio": {
+     "32x64": 0.008532,
+     "64x128": 0.003386,
+     "128x256": 0.0004863
+    },
+    "relative_error": {
+     "separable_verified": {
+      "32x64": 7.2663e-09,
+      "64x128": 5.232e-09,
+      "128x256": 2.0734e-08
+     },
+     "shipped": {
+      "32x64": 7.2662e-09,
+      "64x128": 1.235e-09,
+      "128x256": 5.6174e-13
+     },
+     "ratio_sv_over_shipped": {
+      "32x64": 1,
+      "64x128": 4.237,
+      "128x256": 36910
+     }
+    },
+    "mass_drift_sv_eq_st": {
+     "32x64": 2.83e-16,
+     "64x128": 3.11e-15,
+     "128x256": 4.38e-15
+    },
+    "attempts_sv_vs_shipped": {
+     "32x64": [
+      29,
+      29
+     ],
+     "64x128": [
+      42,
+      56
+     ],
+     "128x256": [
+      53,
+      653
+     ]
+    },
+    "stage_wall_ratio_sep_over_gl_range": [
+     0.006859,
+     0.014998
+    ],
+    "stage_instr_ratio_range": [
+     0.008525,
+     0.008659
+    ],
+    "min_margin_to_1_over_3": 22.2,
+    "load1": {
+     "min": 3.38,
+     "median": 4.03,
+     "max": 14.06,
+     "n_le_3": 0
+    },
+    "consistency_mismatches": 0,
+    "kill": false,
+    "verdict": "FAIL",
+    "decidable_failures": [
+     "128x256 error 2.073e-08 > 10 x 5.617e-13"
+    ],
+    "shipped_128x256_deterministic_processes": 7,
+    "zero_solve_cost_over_one_shipped_solve": {
+     "32x64": 0.0823,
+     "64x128": 0.0293,
+     "128x256": 0.00388
+    }
+   }
+  },
+  {
+   "lens": "probe_fidelity: does the ks_n3_probe measure the KS-N3 question (line-by-line comparison with the spatial_separable.rs helpers and two ignored diagnostics at dc231b66; re-runs at 32x64; shipped-route attempts at 128x256)",
+   "verdict": "confirm_with_corrections",
+   "summary": "I confirm the frozen verdict, FAIL. The probe copies the test faithfully. All nine helpers (sphere, noise, max_abs, max_diff, mass, abs_mass, problem, smooth_field, options) are byte-identical to crates/vigilode/tests/spatial_separable.rs at dc231b66. The two diagnostics also match: grids, kappa 1e-2, radius 1, field, problem, span, tolerances, the Trusted self-reference at rtol 1e-11 and atol 1e-13, the GMRES configuration, the stage systems, gamma, and a separable stage solve that plans and factors on every call. None of the differences changes a result. My eight re-runs at 32x64 on core 10 gave probe lines whose deterministic fields are identical to all three logged rounds. Instruction counts agree to within 1.2e-6 relative on the whole-solve processes and within 1154 instructions on the small stage processes. The per-solve ratios come out the same: 0.016479 whole, 0.008526 stage. The binary's hash matches env.json, and it was built from the committed source before the series started.\n\nThree things need correcting in how the result is read, though the verdict itself stands.\n1. The probe compares the routes at the same tolerance, not at matched achieved error. At 128x256 the shipped route is far more accurate than its tolerance asks. The FAIL is therefore the frozen 10x error proxy failing; it is not evidence that the separable route loses at matched error. A setup-plus-reference process (the separable route at rtol 1e-11, whose result agrees with the shipped route's to 5.6e-13) costs at most 0.0039 of one shipped solve.\n2. The logs never record why the shipped route rejected steps. From its counters and the driver code, at least 253 of its 653 attempts at 128x256 ended in a failed stage solve: the unpreconditioned GMRES ran out of its 200-column budget (restart 40). Only 5 attempts were rejected for local error, the same number as the separable route. The shipped route accepted at most 395 steps against 48, so its tiny error comes from short steps forced by stage-solve failures.\n3. The stage ratios of 0.007-0.015 compare the separable solve with one fixed 30-column GMRES cycle, not with GMRES stopped at rtol 1e-10. A lower bound still rules out the kill under any GMRES variant. The question also asks \"per accepted step\", which the probe does not record; bounds from the counters leave the cost conclusion unchanged.",
+   "findings": [
+    {
+     "id": "F1-fidelity",
+     "severity": "note",
+     "claim": "The probe reproduces the helpers and both ignored diagnostics of spatial_separable.rs at dc231b66. Every difference is in harness, repetition or output, and none changes a result.",
+     "evidence": "- The test file at dc231b66 hashes to abb5488a…, separable.rs to e618ee20…, and the probe source, manifest and lockfile to dd911057…, f918caf6… and 54361bf2…, all matching KS_N3_PROTOCOL.json.\n- /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/ks_n3_review_probe_fidelity/fn_diff.py finds all 9 helpers byte-identical.\n- Same in probe and test (main.rs:125-185 vs test:530-590; main.rs:191-288 vs test:598-688):\n  - whole: sphere(nt,np,1e-2), y0 = smooth_field(grid,np), problem(grid,0,zeros), span (0,1); trusted = separable_stages(0).with_mode(Trusted), verified = separable_stages(0) (the default mode is Verified {4, 1e-10}); reference = solve_separable(trusted, options(1e-11,1e-13)); scale = max_abs(reference); opts = options(1e-6,1e-9); shipped = Rodas5p::solve; the error, mass-drift and counter expressions.\n  - stage: gamma 0.211_937_563_194_290_14; sigma = h*gamma; op = v - sigma L v; relative_residual; GmresConfig{30,3000,1e-10,0}; IdentityPreconditioner; longitude_preconditioner(sigma, Serial) built outside the timed region; rhs = noise(n,5); separable x = rhs/sigma outside the timed region, then solve_stage(1/sigma) in Trusted mode.\n  - h arguments \"0.001\", \"0.01\" and \"0.1\" parse to the same f64 values as the test's literals.\n- Planning per call is true. solve_stage builds Kernel::new on every call, which creates a fresh FftPlanner, the forward and inverse plans and all buffers, then runs the Thomas factorization (separable.rs:178-190, 236-239, 315-371). SeparableStages holds no cache.\n- Differences, none of which matters:\n  - one arm per process instead of all arms in one process, so the reference is recomputed in each process (it is deterministic, and the error fields are identical across processes);\n  - solve counts are 1 and 1+N instead of 5/1 (whole) and 3/5 (stage);\n  - the probe drops spectral_bounds and the rho_bar/explicit_step_bound fields (a pure function);\n  - it adds success, state_fnv1a, per-solve times and full-precision {:e} output;\n  - it wraps results in black_box;\n  - it panics on an unknown arm, where the test falls through to verified;\n  - the gmres-identity process also builds the unused longitude preconditioner (outside the timed region, and it cancels in C(1+N)-C(1));\n  - the release profile is the same, but `cargo test --release` would build with panic=unwind while the probe uses abort;\n  - all 93 dependency versions and checksums in the probe lockfile match the workspace Cargo.lock.\n- One difference helps: the PLAN's command `cargo test -- --ignored` would run the two ignored diagnostics concurrently under libtest's default thread pool, and perf would count every arm together. The probe avoids both."
+    },
+    {
+     "id": "F2-reproduction",
+     "severity": "note",
+     "claim": "Re-running eight probe processes at 32x64 reproduces the logged JSON lines and instruction counts.",
+     "evidence": "- Re-ran, with `perf stat -x, -e instructions:u -- taskset -c 10`: whole separable-verified with 1 and 21 solves, whole shipped with 1 and 5, stage separable at h=0.01 with 1 and 21, stage gmres-longitude at h=0.01 with 1 and 6. All exited 0.\n- Every field except times_s is identical to r1, r2 and r3. For example: separable-verified error 7.266303153350546e-09, attempts 29, rhs 231, jvp 232, fnv fe204ed2fe29ba37; shipped 7.2662090314304834e-09, 29, 231, jvp 9826, lin 9360, fnv 1fffbd43e78ff622; gmres-longitude matvecs 31, residual 8.882379000099846e-16; separable residual 7.772081625087366e-16.\n- Instruction counts against the logged rounds:\n  - whole: 801093860 vs 801094108/801093824/801094823; 3473112272 vs 3473110952-3473112111; 8774821431 vs 8774821060-8774821843; 41204134450 vs about 41204129300 (+1.3e-7). Largest relative difference 1.2e-6.\n  - stage: s1 differences are at most 1154 instructions (at most 7.4e-4 relative, on 1.1e6-instruction processes).\n- Per solve: separable-verified 133600920.6 and shipped 8107328254.75 (ratio 0.016479, equal to the results file); stage separable 197598.5 and gmres-longitude 23176111.4 (ratio 0.008526; the results file gives 0.008525)."
+    },
+    {
+     "id": "F3-matched-error",
+     "severity": "major",
+     "claim": "The probe compares the routes at matched tolerance, not at matched achieved error. At 128x256 the error criterion fails because the shipped route is far more accurate than its tolerance asks, not because the separable route is inaccurate. No arm in the series matches the shipped route's error.",
+     "evidence": "- Achieved errors at the shared rtol 1e-6 and atol 1e-9:\n  - 32x64: 7.2663e-9 vs 7.2662e-9, with identical step sequences (29 attempts and 231 rhs calls on both routes);\n  - 64x128: 5.23e-9 vs 1.23e-9;\n  - 128x256: 2.07e-8 vs 5.62e-13, a factor of 3.7e4.\n- Extra measurement outside the frozen protocol: `whole separable-trusted 128 256 0` (setup plus the rtol-1e-11 reference, no timed solve) takes 18,150,515,813 instructions.\n  - Check of the decomposition: the logged trusted s1 count minus this is 2.519e9, against 2.515e9 per solve (0.15%); at 32x64 it is 86.45e6 against 86.21e6.\n  - The shipped route takes 4,683,079,107,455 instructions per solve (r1 s2 minus s1).\n  - So a separable solve whose final state agrees with the shipped route's to 5.6e-13 costs at most 0.0039 of a shipped solve. If Verified mode costs what it does at rtol 1e-6 (1.54x Trusted), the figure is about 0.006.\n- The FAIL does not depend on how accurate the reference is: even a shipped error of 1e-11 would allow only 1e-10, well below 2.07e-8.",
+     "correction": "Keep FAIL as the outcome of the frozen proxy, but record it as \"the 10x error proxy failed because the shipped route over-resolved (see F4)\", not as an answer to \"cheaper at matched achieved error\". For that answer, add an arm whose error matches the shipped route's (the separable route at a tighter tolerance, or the shipped route at a looser one) and use an error reference independent of either route."
+    },
+    {
+     "id": "F4-shipped-attempts",
+     "severity": "minor",
+     "claim": "The logs do not show directly why the shipped route made 653 attempts at 128x256. The probe prints attempts, rhs, jvp, linear_iterations and direct_solve_calls, but not stats.accepted_steps, stats.rejected_steps, counters.linear_solve_failures or counters.local_error_failures. Combining the counters with the code at dc231b66 shows the shipped error reflects short steps forced by stage-solve failures, not error-controlled steps.",
+     "evidence": "- Shipped stage solver (routing.rs:242-260, solver_types.rs:55-61): GMRES with restart 40, 200 Arnoldi columns at most, rtol 1e-10, no preconditioner, zero start. An exhausted budget returns Err(LinearSolve) (gmres_into.rs:307-311), the attempt aborts, the driver rejects it and shrinks the step (rodas5p_matrix_free_fast.rs:2540-2557).\n- Counting rules: each complete attempt makes 7 stage rhs calls, plus one f(t,y) per new state, which is reused after a rejection (lines 2985-3089). Each GMRES cycle adds one true-residual JVP, and each successful solve one final JVP. This decomposition is exact at 32x64: (9826-9360) - 9360/40 = 232 = 8×29 successful solves.\n- 128x256: linear_iterations 346000 = 8650 cycles of 40. Successful stage solves S = 357855 - 346000 - 8650 = 3205.\n  - Rejections after all eight stages: S - rhs = 5. The separable route also has 5 (424 - 419), and every one of its 53 attempts completed all stages (direct solves = 8×53, no corrections).\n  - Complete attempts number at most floor(3205/8) = 400, so at least 253 attempts aborted on a failed stage solve. Using rhs alone, without the JVP decomposition, at least 196 aborted.\n  - Accepted steps are at most 395, against 48 for the separable route.\n  - At 64x128: 3 local rejections on both routes; 3 to 18 aborted shipped attempts; 35 to 50 accepted shipped steps against 39.\n- Consistency check: (48/395)^5 = 2.65e-5, and the observed error ratio is 2.71e-5.",
+     "correction": "Say in the result that the 653 attempts are, by deduction, mostly failed stage solves (the 200-column Krylov budget) plus about 5 local-error rejections. In future probe lines, print accepted_steps, rejected_steps, linear_solve_failures and local_error_failures."
+    },
+    {
+     "id": "F5-per-accepted-step",
+     "severity": "minor",
+     "claim": "The question asks for cost \"per accepted step\". The protocol and probe measure cost per whole solve over [0,1] and do not record accepted steps. Bounds from the counters show the per-step reading would not change the conclusion.",
+     "evidence": "Accepted steps, separable vs shipped: 28 vs 28 at 32x64; 39 vs 35-50 at 64x128; 48 vs at most 395 at 128x256 (F4). Per-accepted-step instruction ratios are therefore 0.0165, at most 0.0078 and at most 0.0068; wall ratios are 0.0087, at most 0.0044 and at most 0.0040.",
+     "correction": "State that the metric is per IVP solve over the same span, or log accepted_steps so the per-step ratio is measured directly."
+    },
+    {
+     "id": "F6-gmres-comparator",
+     "severity": "minor",
+     "claim": "The stage-level GMRES comparator, copied faithfully from the test, checks convergence only between restart cycles. Every gmres-longitude solve therefore ran exactly one 30-column cycle. The ratios of 0.007-0.015 compare against that fixed cycle, not against GMRES stopped at rtol 1e-10, so they overstate the margin at small h. The no-kill conclusion holds under any GMRES variant.",
+     "evidence": "- solve_gmres runs full cycles of `restart` columns and tests the residual only at the top of each cycle (gmres.rs:385-455).\n- In all 9 cells gmres-longitude used matvecs = 31 and reached residuals of 1e-13 to 1e-16, far below the 1e-10 target.\n- The separable/gmres-longitude instruction ratio is the same at every h (0.00853, 0.00859, 0.00866 per grid).\n- Lower bound from the logs:\n  - one operator application costs about 0.20e6 instructions at 32x64 (Verified minus Trusted per solve, 47.39e6, over 232 JVP checks) and about 3.2e6 at 128x256;\n  - one longitude-preconditioner application costs about 0.047e6 at 32x64 ((gmres-longitude minus gmres-identity) / 31, both at 31 matvecs) and about 0.73e6 at 128x256;\n  - even a GMRES-longitude solve that stopped after one column with no final residual check would cost about 0.27e6 and 4.5e6, against the separable solve with planning at 0.198e6 and 2.84e6.\n- Two asymmetries pull the other way: the GMRES timing excludes building the longitude preconditioner, while the separable timing includes planning and factoring; and the stage arm runs separable in Trusted mode, while the whole-solve separable route is Verified.",
+     "correction": "Quote 0.007-0.015 as \"separable vs one 30-column restart cycle of GMRES with the longitude preconditioner\". The kill is false under any GMRES variant, by the lower bound above."
+    },
+    {
+     "id": "F7-scope",
+     "severity": "note",
+     "claim": "The probe compares against GMRES with the longitude preconditioner only at the stage level: white-noise right-hand side, fixed h in {1e-3, 1e-2, 1e-1}, separable in Trusted mode. This matches the PLAN's kill wording, but the question's per-accepted-step comparison against that solver is not measured; there is no whole-solve arm for it.",
+     "evidence": "main.rs:191-288. run_ks_n3.sh stage cells cover only gmres-longitude, separable and gmres-identity. The protocol defines only the shipped, separable-verified and separable-trusted whole-solve arms."
+    },
+    {
+     "id": "F8-provenance",
+     "severity": "note",
+     "claim": "The binary that produced the logs is the one I re-ran, built from the committed probe source and the dc231b66-era separable.rs.",
+     "evidence": "- The binary's sha256 is 99ef7647…, equal to env.json probe_sha256.\n- It was built at 09:34:52. main.rs was last modified at 09:33:01, and the series started at 09:38:26.\n- The dep-info lists only files that exist in the dc231b66 tree.\n- strings finds 'separable stage preparation: shift', 'inertia certificate' and 'GMRES exhausted', and finds no KS-N7 strings ('paired-real', 'unknown box transform').\n- The uncommitted changes to spatial.rs and separable.rs date from 11:26-11:27, after the series."
+    }
+   ],
+   "ran": [
+    {
+     "command": "git show dc231b66:<test file, separable.rs, probe main.rs/Cargo.toml/Cargo.lock> | sha256sum (and of the worktree files)",
+     "exit_code": 0,
+     "result": "abb5488a…, e618ee20…, dd911057…, f918caf6…, 54361bf2…, all equal to KS_N3_PROTOCOL.json; worktree probe files unchanged"
+    },
+    {
+     "command": "sha256sum + ls --full-time /home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/ks-n3-probe/release/ks-n3-probe; stat main.rs; strings checks",
+     "exit_code": 0,
+     "result": "sha 99ef76473ea1f012148f0b80026e26950e086958d2e5b15daa629881e7bb18db = env.json; built 09:34:52 after main.rs 09:33:01; dc231b66-era strings present, KS-N7 strings absent"
+    },
+    {
+     "command": "python3 -I /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/ks_n3_review_probe_fidelity/fn_diff.py <probe main.rs> <test at dc231b66>",
+     "exit_code": 0,
+     "result": "sphere, noise, max_abs, max_diff, mass, abs_mass, problem, smooth_field, options: all identical"
+    },
+    {
+     "command": "python3 -I /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/ks_n3_review_probe_fidelity/lockcmp.py <probe Cargo.lock> <workspace Cargo.lock at dc231b66>",
+     "exit_code": 0,
+     "result": "93 of 93 dependency versions and checksums identical"
+    },
+    {
+     "command": "perf stat -x, -e instructions:u -- taskset -c 10 ks-n3-probe whole separable-verified 32 64 {1,21}",
+     "exit_code": 0,
+     "result": "801093860 / 3473112272 instructions; per solve 133600920.6"
+    },
+    {
+     "command": "perf stat -x, -e instructions:u -- taskset -c 10 ks-n3-probe whole shipped 32 64 {1,5}",
+     "exit_code": 0,
+     "result": "8774821431 / 41204134450 instructions; per solve 8107328254.75; ratio 0.016479"
+    },
+    {
+     "command": "perf stat -x, -e instructions:u -- taskset -c 10 ks-n3-probe stage separable 32 64 0.01 {1,21}",
+     "exit_code": 0,
+     "result": "1124563 / 5076533 instructions; per solve 197598.5"
+    },
+    {
+     "command": "perf stat -x, -e instructions:u -- taskset -c 10 ks-n3-probe stage gmres-longitude 32 64 0.01 {1,6}",
+     "exit_code": 0,
+     "result": "24104804 / 139985361 instructions; per solve 23176111.4; ratio 0.008526; matvecs 31"
+    },
+    {
+     "command": "python3 -I /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/ks_n3_review_probe_fidelity/compare.py <scratch> <logs/ks_n3>",
+     "exit_code": 0,
+     "result": "all 8 lines identical to r1/r2/r3 except times_s; instruction deltas at most 1.2e-6 relative (whole) and at most 1154 absolute (stage)"
+    },
+    {
+     "command": "perf stat -x, -e instructions:u -- taskset -c 10 ks-n3-probe whole separable-trusted {32 64, 128 256} 0",
+     "exit_code": 0,
+     "result": "setup plus rtol-1e-11 reference: 667253961 (32x64) and 18150515813 (128x256); against 4.683079e12 per shipped solve at 128x256, ratio at most 0.0039"
+    },
+    {
+     "command": "python3 -I /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/ks_n3_review_probe_fidelity/attempts.py <logs/ks_n3>",
+     "exit_code": 0,
+     "result": "shipped 128x256: S=3205, 5 local rejections (separable 5), at least 253 aborted attempts (at least 196 from rhs alone), at most 395 accepted (separable 48); 64x128: 3 aborted (bound 3-18), 35-50 accepted vs 39; 32x64: identical to separable"
+    },
+    {
+     "command": "python3 -I /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/ks_n3_review_probe_fidelity/stage_cost.py <logs/ks_n3>",
+     "exit_code": 0,
+     "result": "gmres-longitude 31 matvecs in all 9 cells; per-solve separable 1.976e5 / 7.237e5 / 2.84e6 vs gmres-longitude 2.317e7 / 8.421e7 / 3.28e8"
+    }
+   ],
+   "recomputed": {
+    "whole_32x64_per_solve_instructions": {
+     "separable_verified": 133600920.6,
+     "shipped": 8107328254.75,
+     "ratio": 0.016479
+    },
+    "stage_32x64_h0.01_per_solve_instructions": {
+     "separable": 197598.5,
+     "gmres_longitude": 23176111.4,
+     "ratio": 0.008526
+    },
+    "matched_error_supplement_128x256": {
+     "setup_plus_reference_rtol1e-11_instructions": 18150515813,
+     "shipped_per_solve_instructions": 4683079107455,
+     "ratio_upper_bound": 0.00388,
+     "reference_vs_shipped_relative_difference": 5.617e-13
+    },
+    "shipped_attempt_decomposition": {
+     "32x64": {
+      "attempts": 29,
+      "successful_stage_solves": 232,
+      "local_error_rejections": 1,
+      "aborted_attempts": 0,
+      "accepted": 28,
+      "separable_accepted": 28
+     },
+     "64x128": {
+      "attempts": 56,
+      "successful_stage_solves": 430,
+      "local_error_rejections": 3,
+      "aborted_attempts_range": [
+       3,
+       18
+      ],
+      "accepted_range": [
+       35,
+       50
+      ],
+      "separable_accepted": 39
+     },
+     "128x256": {
+      "attempts": 653,
+      "successful_stage_solves": 3205,
+      "gmres_cycles_of_40": 8650,
+      "local_error_rejections": 5,
+      "aborted_attempts_min": 253,
+      "aborted_attempts_min_rhs_only": 196,
+      "accepted_max": 395,
+      "separable_accepted": 48
+     }
+    },
+    "per_accepted_step_instruction_ratio_bounds": {
+     "32x64": 0.0165,
+     "64x128_max": 0.0078,
+     "128x256_max": 0.0068
+    },
+    "stage_lower_bound_costs_instructions": {
+     "operator_application_32x64": 204000,
+     "longitude_preconditioner_application_32x64": 47500,
+     "operator_application_128x256": 3230000,
+     "longitude_preconditioner_application_128x256": 726000,
+     "separable_stage_32x64": 197600,
+     "separable_stage_128x256": 2840000
+    }
+   }
+  }
+ ],
+ "orchestrator_actions": [
+  "Both verdicts confirm_with_corrections; the frozen verdict FAIL stands (only the 10x error proxy fails, at 128x256).",
+  "Major qualifier (probe lens F3): the series compares the routes at the same tolerance, not at matched achieved error; the shipped route over-resolved at 128x256 because at least 253 of its 653 attempts ended in failed matrix-free stage solves (the 200-column Krylov budget), which forced short steps. Recorded in RUN.json claim K22 and decision KS-N3; the matched-error question needs a new preregistered cell (KS-N3b, proposed to the owner).",
+  "Minor: written_kst 09:40 of the protocol is a typed time (commit 09:38:15, push 09:38:21, first process 09:38:26), RUN.json failure F8; one round of the shipped 128x256 cell had about 4x wall contamination (decision unaffected; future protocols cross-check with task-clock or cycles); the stage ratios compare with one 30-column GMRES cycle; the cost is per IVP solve, not per accepted step; future probe lines should print accepted and rejected steps and the failure counters."
+ ]
+}
