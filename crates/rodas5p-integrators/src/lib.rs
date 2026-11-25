@@ -688,3 +688,6 @@ pub mod retro_green;
 
 /// Opt-in research: future-informed causal budget with native RODAS5P.
 pub mod retro_causal;
+
+/// Opt-in research: temporal CRT and ordered affine scan.
+pub mod retro_temporal;

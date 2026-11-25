@@ -1,0 +1,22 @@
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-integrators)
+    Finished `release` profile [optimized] target(s) in 47.48s
+     Running tests/retro_temporal_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/retro_temporal_contracts-74dc4bd245c1ae1d)
+
+running 1 test
+test singular_closure_still_recovers_original_initial_value_problem ... FAILED
+
+failures:
+
+---- singular_closure_still_recovers_original_initial_value_problem stdout ----
+
+thread 'singular_closure_still_recovers_original_initial_value_problem' (774020) panicked at crates/rodas5p-integrators/tests/retro_temporal_contracts.rs:17:10:
+called `Result::unwrap()` on an `Err` value: InvalidInput("temporal CRT not implemented")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    singular_closure_still_recovers_original_initial_value_problem
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test retro_temporal_contracts`

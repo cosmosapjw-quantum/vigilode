@@ -109,13 +109,13 @@ fn shape(path: &[FourierPath; 2], phase: &FourierPath) -> CoreResult<Shape> {
 
 /// Same radix-2 butterfly arithmetic as PP06, with one table of roots per
 /// axis rather than trigonometric evaluation inside every butterfly.
-struct Plan {
+pub(crate) struct Plan {
     n: usize,
     swaps: Vec<(usize, usize)>,
     roots: Vec<Cplx>,
 }
 impl Plan {
-    fn new(n: usize) -> Self {
+    pub(crate) fn new(n: usize) -> Self {
         debug_assert!(n.is_power_of_two());
         let mut swaps = Vec::new();
         if n > 1 {
@@ -134,7 +134,7 @@ impl Plan {
             .collect();
         Self { n, swaps, roots }
     }
-    fn apply(&self, v: &mut [Cplx], inverse: bool) {
+    pub(crate) fn apply(&self, v: &mut [Cplx], inverse: bool) {
         debug_assert_eq!(v.len(), self.n);
         for &(i, j) in &self.swaps {
             v.swap(i, j);
