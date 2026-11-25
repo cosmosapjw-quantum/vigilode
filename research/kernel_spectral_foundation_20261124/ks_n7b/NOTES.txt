@@ -1,0 +1,133 @@
+KS-N7b  PairedReal as the default box transform, after recording the transform (review F5)
+==========================================================================================
+Branch research/stage-lattice-referee-20261124-kschain, worktree start 13d26475.
+Owner instruction (2026-11-25 09:21 KST): continue the remaining nodes; all edits approved.
+Decision KS-N7-T (RUN.json): the owner-host timing cell passed (prepared PairedReal box stage
+solve 0.203 of Complex at 256x256, results/KS_N7_OWNER_HOST.json). PairedReal becomes the box
+default only in this follow-up, which first records the transform (finding F5 of
+ks_n7/REVIEW.json). owner_host/KS_N7_PROTOCOL.json (verdict.after_PASS): "the default may change
+to PairedReal only after review finding F5 is closed (the transform recorded in SeparableReport
+or the client id); that change is a separate commit with its own tests".
+Theory: THEORY.md 2.3 (ii) and 2.4. Nothing new: both transforms are the same linear map in
+exact arithmetic (ks_n7/NOTES.txt section 2); K17 bounds their difference in floating point.
+
+0. Question
+-----------
+F5: a PairedReal run reports the client id vigilode-separable-fourier-stages-v1, like Complex,
+and SeparableReport has no transform field. So a Solution cannot tell the two arms apart. Close
+F5 first, then make BoxTransform::PairedReal the default. Complex stays selectable.
+
+1. Where the run record of a separable solve comes from (code at 13d26475)
+--------------------------------------------------------------------------
+- crates/vigilode/src/solve.rs:499-532 builds the record. It creates
+  report = SeparableReport::default() inside an Arc<Mutex<..>> and hands it to
+  SeparableStages::client(report). After the driver returns, it copies the report into
+  DriverWork::SeparableClient { jacobian_reuses, client, report } with
+  client = SEPARABLE_STAGE_CLIENT_ID (solve.rs:530), a constant.
+- StageLinearSystem (rodas5p-integrators src/client_stage.rs) has no identifier method, and the
+  client that the driver returns is dropped (solve.rs:506, `_client`).
+- So the SeparableReport is the only per-run value that separable.rs hands to a Solution. The
+  client id is chosen in solve.rs, outside this task's paths (separable.rs, spatial.rs exports,
+  tests/spatial_separable.rs, ks_n7b/**, results/KS_N7B_*.json).
+
+2. Design choice (F5)
+---------------------
+(a) A second client id for the paired box solve. It does not break the API (one new pub const
+    and a getter). But solve.rs:530 would have to write `stages.client_id()` instead of the
+    constant, and solve.rs is outside the allowed paths. A constant cannot depend on the run.
+    Not done.
+(b) A field in SeparableReport. It is inside the allowed paths, but it breaks struct literals
+    and exhaustive patterns of SeparableReport (all fields public, not non_exhaustive).
+(c) Another record reachable from separable.rs alone: none. Stats, RouteRecord, Options and
+    driver_message are written in solve.rs. WorkCounters hold counts, not labels.
+Chosen: (b). SeparableReport gets `pub box_transform: Option<BoxTransform>`: Some(transform) on
+the box, None on a sphere grid (its kernel always pairs rings and ignores the setting).
+SeparableStages::client writes the field from the kernel it builds, before it hands that kernel
+to the client, so the record cannot drift from the arithmetic that runs. BoxTransform derives
+Serialize in kebab case ("complex", "paired-real", the names of Display and FromStr), so the
+serialized run record carries the transform too.
+Why (b) over (a):
+- (a) cannot be done inside the allowed paths; (b) can.
+- Decision KS-N7-T in RUN.json says "first records the transform in SeparableReport", and the
+  protocol names the report first.
+- The report is typed: an enum, not a string to parse.
+- The client id keeps naming the client. Both transforms run in the same client with the same
+  certificates.
+Cost of (b): it is a semver-major change of SeparableReport (cargo-semver-checks lint
+constructible_struct_adds_field). Downstream code breaks if it writes a struct literal that
+lists all nine fields, or destructures the report exhaustively.
+Scope of that cost:
+- SeparableReport was added at a0ec98ba (SL-N5, 2026-11-25) on this research branch. It is not
+  on main and was never released.
+- The workspace has no struct literal and no exhaustive pattern of it (grep).
+- Literals with `..Default::default()` still compile; the new field defaults to None.
+Left to the orchestrator: if the non-breaking (a) is preferred, it needs a one-line change of
+solve.rs:530, plus a const and a getter in separable.rs. It can be added to (b) or replace it.
+
+3. Default change (a separate commit, after the record)
+-------------------------------------------------------
+- `#[default]` moves from BoxTransform::Complex to BoxTransform::PairedReal.
+  DiffusionGrid::separable_stages uses BoxTransform::default(), so every box built without
+  with_box_transform runs PairedReal. with_box_transform(BoxTransform::Complex), or
+  "complex".parse(), selects Complex. Sphere grids are unaffected (they ignore the setting).
+- Docs: module doc, BoxTransform and its variants, with_box_transform, separable_stages,
+  SEPARABLE_STAGE_CLIENT_ID (both transforms run under it; the report tells them apart).
+  F6 of the KS-N7 review: at 256x256 PairedReal holds 33,024 + 4,096 complex values against
+  65,536 (0.57), not "half"; the variant doc states this.
+- Consequences: default box runs change their bits within round-off. The KS-N7 agreement bound
+  is ||x_p - x_c||_inf <= 1e-13 S/(z - c) per stage solve (K17). Step counts may differ in
+  principle. inertia() and solve_stage() of a default box use the PairedReal kernel. Inertia
+  counts do not depend on the transform: BoxKernel::crossings reads only the symbols.
+
+4. Tests (crates/vigilode/tests/spatial_separable.rs)
+-----------------------------------------------------
+Failing first (committed before any code change):
+  the_run_record_names_the_box_transform_that_ran. It runs whole IVPs on the 12x10 box of T3
+  (c = -0.5, rtol 1e-8, atol 1e-10) with "complex" and "paired-real" selected by name, and on
+  the 7x10 sphere of T3. The serialized stats.driver_work must carry report.box_transform =
+  "complex", "paired-real" and null. The test compiles on the base: serde_json is a
+  dev-dependency and the test names no new API. On the base it fails by assertion, because the
+  key is absent (null != "complex").
+After the record: the same test passes unchanged.
+Default change. Edits of existing lines that pin the default, each with its reason:
+  L691-692  comment "(`BoxTransform::Complex`, the default)" states the old default.
+  L825      `let complex = grid.separable_stages(c).unwrap();` took the Complex arm from the
+            default. It becomes ks_n7_with(grid.separable_stages(c).unwrap(), "complex"), so
+            the agreement test still compares PairedReal with Complex. Its assertions, bound and
+            cases are unchanged, and its tagged line must be bit-identical to the base run.
+  L978      doc "`Complex` is the default" states the old default.
+  L985      `assert_eq!(stages.box_transform().to_string(), "complex");` pins the default; it
+            becomes "paired-real".
+Not edited:
+- The T1/T2 test separable_stage_solves_are_exact_and_mass_consistent. Its box grids now run
+  PairedReal by default, under the same assertions.
+- The KS-N7 T1/T2 test and the KS-N7 route test (both select their arms explicitly).
+- T3 (box-12x10 now runs PairedReal by default, under the same assertions).
+- report(): the client id is unchanged.
+- The measurement test. KS_N7_ARM unset still means complex; that is a default of the
+  measurement, not of the library, and the frozen protocol sets the arm explicitly.
+New with the default change: the_box_defaults_to_the_paired_real_transform.
+- BoxTransform::default() and separable_stages().box_transform() on the box and the sphere.
+- A default whole IVP on the T3 box records Some(PairedReal) in the typed report and
+  "paired-real" in the serialized one. It returns the bits of the explicit PairedReal run.
+- Explicit Complex is recorded as Complex; its final state differs only within the T3 envelope.
+- The sphere records None.
+Expected numbers:
+- KS_N7_AGREEMENT and KS_N7_T1T2 lines identical to the base run (same arithmetic).
+- SL_N5_T3 box-12x10 lines equal to the KS_N7_T3 paired-real lines of the same case.
+- SL_N5_T1T2 may change: the box grids of that test now run PairedReal.
+- Every bound holds.
+
+5. Checks and results
+---------------------
+Logs go under ks_n7b/logs/, each with # command, # head and # exit headers:
+- the base run with the failing-first test;
+- spatial_separable after the record and after the default change;
+- the facade suite (--no-fail-fast);
+- cargo doc with -D warnings (the CI docs job);
+- clippy (vigilode, all targets; rodas5p-integrators, lib);
+- fmt and verify_run;
+- semver: cargo-semver-checks is not installed, so the public-API diff is reviewed by hand and
+  recorded.
+ks_n7b/make_results.py parses the logs into results/KS_N7B_RESULTS.json (strict JSON).
+No timing here: the performance verdict is the owner-host cell KS-N7-T (PASS), not repeated.
