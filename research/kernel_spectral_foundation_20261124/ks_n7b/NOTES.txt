@@ -131,3 +131,29 @@ Logs go under ks_n7b/logs/, each with # command, # head and # exit headers:
   recorded.
 ks_n7b/make_results.py parses the logs into results/KS_N7B_RESULTS.json (strict JSON).
 No timing here: the performance verdict is the owner-host cell KS-N7-T (PASS), not repeated.
+
+6. Outcome (added after the runs; numbers from results/KS_N7B_RESULTS.json)
+---------------------------------------------------------------------------
+Code commits: failing-first test d72d943b, record 3f971eeb, default f5bdf295. Toolchain 1.94.1.
+- Failing first: at d72d943b (crates/ changed only in the test file) the new test FAILED by an
+  assertion ("box-12x10: the run record must name the transform that ran", left Null, right
+  "complex"). The 9 other tests passed; exit 101.
+- Record: after 3f971eeb and after f5bdf295 the run record reads ["complex", "paired-real"] on
+  the 12x10 box and null on the 7x10 sphere. The record commit changed none of the 28 tagged
+  lines of the base run.
+- Default: BoxTransform::default() is PairedReal. A default run on the T3 box records
+  paired-real and returns the bits, the attempts (34) and the report of the explicit PairedReal
+  run: max mass defect 1.231e-15 and max backward error 4.572e-16, against 1.258e-15 and
+  4.926e-16 for Complex. Default against Complex: 1.110e-15 apart; both have error 6.635e-11.
+  A sphere records null.
+- Unchanged after the default commit: all 28 tagged lines of the base run, among them
+  KS_N7_AGREEMENT (360 cases, max normalized 6.964e-16), KS_N7_T1T2 (PairedReal backward
+  1.680e-15, mass 4.545e-17) and SL_N5_T1T2 (3.373e-16, 5.110e-17; it could have changed and
+  did not).
+- SL_N5_T3 on the box prints the same error, attempts and solves for both transforms, so it does
+  not tell them apart. The report values and the bitwise check of the new test do.
+- Checks: facade suite 584 passed, 0 failed, 4 ignored (69 sections). rustdoc -D warnings,
+  clippy (vigilode all targets; integrators lib), fmt and verify_run exit 0.
+- Semver: cargo-semver-checks is not installed. The results file holds the hand review: major,
+  the new public field of SeparableReport; minor, Serialize for BoxTransform; behavior, the
+  default.
