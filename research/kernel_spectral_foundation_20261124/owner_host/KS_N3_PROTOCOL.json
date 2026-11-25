@@ -1,0 +1,68 @@
+{
+  "schema": "vigilode.ks-n3-protocol.v1",
+  "task": "KS-N3",
+  "written_kst": "2026-11-25 09:40",
+  "status": "frozen before any measured cell; committed and pushed before the series starts",
+  "authority": "owner 2026-11-25 09:21 KST: 남은 노드들을 이어서 마저 진행해. 수정은 전부 승인할게.",
+  "plan": {
+    "path": "research/kernel_spectral_foundation_20261124/PLAN.json",
+    "sha256": "fb33a4184fcdcbc049c29d105d4632829f664e79169c089e49e6081c19295abd",
+    "question": "Is the separable route cheaper per accepted step than the shipped route and than GMRES with the longitude preconditioner at matched achieved error on 32x64, 64x128 and 128x256?",
+    "acceptance": ["separable wall time and instructions below the shipped route on every grid", "relative error within a factor 10 of the shipped route", "mass drift <= 1e-13 on the separable route"],
+    "kill": "slower than GMRES with the longitude preconditioner on every grid at the stage level",
+    "fallback": "keep the route opt-in; record the negative cells"
+  },
+  "code_under_test": {
+    "head": "05b5e3e38974566e61e72948b8b160f40d3c9167",
+    "separable_rs_sha256": "e618ee20f27e55a3eea406b34f5c8c01b189cfa9f7a10ae8be0c81af4410c0c0",
+    "diagnostics_source": "crates/vigilode/tests/spatial_separable.rs (sha256 abb5488acc942e74e7840c0b913a951cb6933848540e7b3f43c5477955148076): measure_separable_against_the_shipped_matrix_free_route and measure_separable_against_preconditioned_gmres_stage_solves"
+  },
+  "why_a_probe": "Both diagnostics run every arm inside one process, so perf stat over them counts all arms together. The probe owner_host/ks_n3_probe runs one arm per process with the helpers and settings of the test file copied verbatim (sphere grid with radius 1 and kappa 1e-2, smooth_field, the problem with an exact JVP, span [0, 1], rtol 1e-6, atol 1e-9, the separable Trusted self-reference at rtol 1e-11 and atol 1e-13; stage systems (I - sigma L) x = r with sigma = h gamma, r = noise(n, 5), GMRES restart 30, at most 3000 Arnoldi vectors, rtol 1e-10, the identity or the longitude line preconditioner; the separable solve of (z I - L) x = z r with z = 1/sigma in Trusted mode, every call planning and factoring).",
+  "probe": {
+    "source_sha256": "dd911057134c8ada7cccc27a945fc99ceabf5c7d444bcf9e9a648f760cf30762",
+    "manifest_sha256": "f918caf673db27461d7249655596f6b5d90cacefdd64112d6b57647c645bd40b",
+    "lock_sha256": "54361bf2a6a8e68c4252ee661d53975ff22388e336c4d761d21ac4c864d3716e",
+    "build": "CARGO_TARGET_DIR=/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/ks-n3-probe cargo +1.94.1 build --release --locked --offline --manifest-path research/kernel_spectral_foundation_20261124/owner_host/ks_n3_probe/Cargo.toml (opt-level 3, fat LTO, codegen-units 1, panic abort)",
+    "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25)"
+  },
+  "cells": {
+    "whole": {
+      "grids": [[32, 64], [64, 128], [128, 256]],
+      "arms": ["shipped", "separable-verified", "separable-trusted"],
+      "N": {"shipped": {"32x64": 4, "64x128": 1, "128x256": 1}, "separable-verified": {"32x64": 20, "64x128": 10, "128x256": 5}, "separable-trusted": {"32x64": 20, "64x128": 10, "128x256": 5}},
+      "the_separable_route": "separable-verified (SeparableMode::default(), the route VigilODE::solve_separable takes without a mode); separable-trusted is reported"
+    },
+    "stage": {
+      "grids": [[32, 64], [64, 128], [128, 256]],
+      "h": [0.001, 0.01, 0.1],
+      "arms": ["gmres-longitude", "separable", "gmres-identity"],
+      "N": {"gmres-longitude": 5, "gmres-identity": 5, "separable": 20},
+      "note": "gmres-identity is reported only; a process whose GMRES fails stops at the first failure and records it (known: 128x256 at h = 0.1 exhausts 3000 Arnoldi vectors)"
+    }
+  },
+  "process": "perf stat -x, -e instructions:u,cycles:u,task-clock -o <csv> -- taskset -c 8 <probe> <mode> <arm> <nt> <np> [<h>] <solves> (core 8 and its SMT sibling 20 lie outside the cores 0-5 and 12-17 to which the orchestrator's agents pin their builds)",
+  "per_solve": {
+    "instructions_and_cycles": "(C(1 + N) - C(1)) / N per round, cell and arm",
+    "wall": "median of the per-solve times the probe prints in the process with 1 + N solves (the process's setup and reference are outside the timed region)"
+  },
+  "rounds": 3,
+  "order": "rounds 1..3; in each round: whole cells by grid (32x64, 64x128, 128x256) with arms in the order separable-verified, separable-trusted, shipped in rounds 1 and 3 and shipped, separable-trusted, separable-verified in round 2; then stage cells by grid and h with arms gmres-longitude, separable, gmres-identity in rounds 1 and 3 and the reverse in round 2; within an arm: solves 1 then 1 + N",
+  "load_rule": "the 1-minute load average is recorded before every process and no process waits for it (other projects' batch jobs held the load at 9-14 when this was written). Instruction counts decide regardless of load. A wall-time comparison is decidable if every process it uses started at load <= 3.0, or if the ratio of the medians is outside [1/3, 3] (a 3x margin); otherwise it is NOT_DECIDABLE.",
+  "statistic": "per cell and metric: the median over the three rounds of the per-solve value; ratios are separable-verified / shipped (whole) and separable / gmres-longitude (stage)",
+  "consistency": "within a whole cell and arm, state_fnv1a, relative_error, attempts and the counters are equal in every process with the same number of solves and in both solve counts (the solves are deterministic); a mismatch is reported and makes the cell INVALID",
+  "verdict": {
+    "acceptance_per_grid": "separable-verified per-solve instructions < shipped; separable-verified per-solve wall < shipped (decidable); relative_error(separable-verified) <= 10 * relative_error(shipped); mass_drift <= 1e-13 for separable-verified and separable-trusted",
+    "kill": "for every grid, separable per-solve wall > gmres-longitude per-solve wall at every h (decidable comparisons only)",
+    "PASS": "acceptance on every grid, no undecidable wall comparison among them, consistency holds, not KILL",
+    "KILL": "kill holds (fallback: the route stays opt-in; record the negative cells)",
+    "FAIL": "a decidable acceptance item fails on some grid, not KILL",
+    "NOT_DECIDABLE": "no decidable failure, but some wall comparison of the acceptance is undecidable",
+    "INVALID": "a consistency mismatch or a missing process"
+  },
+  "pilot_before_this_protocol": "plumbing at 32x64 only: one solve each of separable-trusted (0.0053 s, relative error 7.27e-9, mass drift 2.8e-16) and shipped (0.892 s, relative error 7.27e-9, mass drift 2.0e-15), one stage solve each of separable (6.6e-5 s) and gmres-longitude (3.3e-3 s, 31 matvecs) at h = 1e-3; used to choose N; the container values of SL_N5_TIMING.jsonl were known before",
+  "outputs": {
+    "raw": "research/kernel_spectral_foundation_20261124/owner_host/logs/ks_n3/ (env.json, <tag>.meta.json, <tag>.perf.csv, <tag>.out.json, end.json)",
+    "parser": "python3 -I research/kernel_spectral_foundation_20261124/owner_host/parse_ks_n3.py",
+    "results": ["research/kernel_spectral_foundation_20261124/results/KS_N3_OWNER_HOST.jsonl", "research/kernel_spectral_foundation_20261124/results/KS_N3_OWNER_HOST.json"]
+  }
+}

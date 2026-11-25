@@ -1,0 +1,21 @@
+[package]
+name = "ks-n3-probe"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+# KS-N3 owner-host probe (research/kernel_spectral_foundation_20261124/PLAN.json): one arm per
+# process, so that `perf stat` counts one arm. Not a member of the repository workspace; the empty
+# [workspace] table keeps it out. The release profile repeats the workspace's.
+[workspace]
+
+[dependencies]
+rodas5p-core = { path = "../../../../crates/rodas5p-core" }
+rodas5p-krylov = { path = "../../../../crates/rodas5p-krylov" }
+vigilode = { path = "../../../../crates/vigilode" }
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
