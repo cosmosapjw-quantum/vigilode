@@ -1,0 +1,120 @@
+{
+ "schema": "vigilode.loop.build-return.v1",
+ "node": "V29_ASSEMBLY_DEFAULT_MC",
+ "run_id": "wf_57f3f273-576",
+ "build": {
+  "status": "done",
+  "summary": "V29 is done and all four discriminators pass. The default first-use check is now chosen by route through the new AssemblyOptions::default_first_use_check. The coloured route uses MultiColouring with any back end (dense LU or band) and any execution. The dense route keeps Sample(8). FA, FA_P and MC_P stay selectable. A multi-colouring first-use check builds its colourings in new(), so the first linearization allocates nothing for them (0 allocations, against 12 when MC is requested later). The rustdoc states what MC detects on the V26 corpus and what it misses (cancelling couplings and entry collapse, L-0338), and that FA or FA_P is exact up to rounding. The Jacobian arithmetic is unchanged. Commit A came before any client edit. A and B are the same recording program run before and after the change: 36 identity runs are bit-identical between them, and only the first-use check counters change. On the 4846-case corpus, 9693 of 9693 decisions match V26, and the only miss is the known rounding-limited case. One test comment was edited, with its reason listed. The loop checker exits 1 on the expected pins only.",
+  "branch": "research/production-loop-20261116-w3-v29",
+  "head_commit": "b7dff3e4473ccc756f2ce3c66ea442204d9ecfce",
+  "checks": [
+   {
+    "name": "stage client tests",
+    "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test 'stage_clients_*'",
+    "exit_code": 0,
+    "result": "29 binaries, 91 passed, 0 failed, 14 ignored (logs/checks.log at caf3f7ac, clean tree)"
+   },
+   {
+    "name": "sentinels",
+    "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test ppsw1_6b_contracts --test ptsw2b_contracts",
+    "exit_code": 0,
+    "result": "61 passed, 0 failed"
+   },
+   {
+    "name": "clippy",
+    "command": "taskset -c 0-5,12-17 cargo +1.94.1 clippy --locked -j 4 --release -p rodas5p-integrators --lib --test <all 11 stage_clients_assembly_* targets> --no-deps -- -D warnings",
+    "exit_code": 0,
+    "result": "no warnings"
+   },
+   {
+    "name": "fmt",
+    "command": "cargo +1.94.1 fmt -p rodas5p-integrators -- --check",
+    "exit_code": 0,
+    "result": "clean"
+   },
+   {
+    "name": "loop checker",
+    "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
+    "exit_code": 1,
+    "result": "ValueError: implementation changed; rerun affected tests/update checkpoint: crates/rodas5p-integrators/src/stage_clients/assembly.rs (non-stopping copy checker_all.py: exactly 3 complaints, assembly.rs, assembly/engine.rs, tests/stage_clients_assembly_identity.rs, all pinned files this node may change; protected blobs, evidence hashes, strict JSON, allowlist pass)"
+   },
+   {
+    "name": "node unit tests",
+    "command": "run.sh unit (stage_clients_assembly_default, stage_clients_assembly_default_alloc -- --nocapture)",
+    "exit_code": 0,
+    "result": "6 passed, 0 failed"
+   },
+   {
+    "name": "RESULTS.json strict",
+    "command": "python3 -I research/production_loop_20261116/assembly_default/parse_results.py",
+    "exit_code": 0,
+    "result": "strict JSON; REPORT_KO.md rendered by the script"
+   }
+  ],
+  "discriminators": [
+   {
+    "name": "bits unchanged",
+    "measured": "36 identity runs (5 V08 cells, both band back ends of nlkpp-band-n4096-r24, prot+seq,t1,t2,t4,t6) equal A vs B in Jacobian, linearization-point, output and final-state fingerprints, steps and all non-check counters; coloured cells change only verification RHS 8->18/59/150 (+1 threaded), verified columns 8->n, rhs_calls by the same amount; dense cells unchanged; commit A = V08 identity logs in 36/36",
+    "frozen_threshold": "contract acceptance: bits equal to commit A, only first-use-check counters change by the documented amount",
+    "verdict": "PASS"
+   },
+   {
+    "name": "default per route",
+    "measured": "A: Sample(8) on every route; B: MultiColouring on all 4 coloured cell/back-end pairs and coloured corpus cases (seq,t3,t6), Sample(8) on both dense cells and dense corpus cases; unit tests the_default_first_use_check_follows_the_route and the_default_check_runs_once_at_the_first_linearization_on_every_route ok",
+    "frozen_threshold": "OD-L1-24: MC where it applies (coloured, banded), Sample(8) on the dense route",
+    "verdict": "PASS"
+   },
+   {
+    "name": "corpus detection of the default",
+    "measured": "4846 transcribed cases equal to V26 in ids and fields; B decisions equal V26 reference arm (MC@seq/MC@t6 coloured, S8@seq/S8@t3 dense) in 9693/9693; B misses only omit1024/e3072-r768-c769 (seq, t6), the V26 MC miss, rounding-limited; A (Sample(8)) misses 576 per execution, B detects 1150 of 1152; detected-by-A-not-B 0; correct rejected 0",
+    "frozen_threshold": "contract acceptance: the default detects the corpus cases MC detects",
+    "verdict": "PASS"
+   },
+   {
+    "name": "suites",
+    "measured": "stage_clients_* 91/0/14 in 29 binaries; sentinels 61/0; clippy 0; fmt 0; edited test lines without reason 0; paths outside allowlist 0",
+    "frozen_threshold": "existing tests pass, edits only with listed reason, clippy -D warnings, fmt",
+    "verdict": "PASS"
+   }
+  ],
+  "verdict": "PASS: the default first-use check is MultiColouring on the coloured and banded routes and Sample(8) on the dense route; bits are unchanged and the corpus detection equals MC. Completion still requires the independent review named in the contract.",
+  "files_written": [
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v29/crates/rodas5p-integrators/src/stage_clients/assembly.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v29/crates/rodas5p-integrators/src/stage_clients/assembly/engine.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v29/crates/rodas5p-integrators/tests/stage_clients_assembly_default.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v29/crates/rodas5p-integrators/tests/stage_clients_assembly_default_alloc.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v29/crates/rodas5p-integrators/tests/stage_clients_assembly_default_record.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v29/crates/rodas5p-integrators/tests/stage_clients_assembly_identity.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v29/research/production_loop_20261116/assembly_default/NOTES.txt",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v29/research/production_loop_20261116/assembly_default/run.sh",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v29/research/production_loop_20261116/assembly_default/parse_results.py",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v29/research/production_loop_20261116/assembly_default/checker_all.py",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v29/research/production_loop_20261116/assembly_default/RESULTS.json",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v29/research/production_loop_20261116/assembly_default/REPORT_KO.md",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v29/research/production_loop_20261116/assembly_default/logs/"
+  ],
+  "key_numbers": [
+   "identity: 36/36 runs bit-identical A vs B; commit A = V08 identity logs 36/36",
+   "first-use check RHS per coloured cell, seq (threaded +1): bruss1d-n128 8->18, bruss1d-n131072 8->59, nlkpp-band-n4096-r24 8->150; verified columns 8->n; dense cells unchanged (seq 0, threaded 9)",
+   "corpus: 4846 cases, B = V26 reference arm in 9693/9693 decisions; B misses 1 case (omit1024/e3072-r768-c769, rounding-limited) in seq and t6",
+   "old default Sample(8) misses 576 wrong declarations per execution; new default detects 575 of them; 0 cases detected by Sample(8) and missed by the default on the corpus",
+   "first linearization allocations of a sequential coloured client: default MC 0, no check 0, MC requested later 12",
+   "stage_clients_* 91 passed / 0 failed / 14 ignored in 29 binaries; sentinels 61 passed",
+   "commits: NOTES ec284167, program f1eb5118, commit A fcb9b130, change fc185e2a, B logs 02203c8b, results b7dff3e4"
+  ],
+  "open_issues": [
+   "Independent review is required by the contract (completion_requires) and has not been done yet.",
+   "Loop checker exit 1, reported verbatim: 'ValueError: implementation changed; rerun affected tests/update checkpoint: crates/rodas5p-integrators/src/stage_clients/assembly.rs'. The non-stopping copy names three pinned files this node changed: assembly.rs, assembly/engine.rs and tests/stage_clients_assembly_identity.rs. The orchestrator updates CHECKPOINT.json at merge.",
+   "No file named PROTOCOL.json was written. The protocol choices were committed before the first run in NOTES.txt entry 1 (ec284167) and in the recording program (f1eb5118). This deviation of form is recorded in RESULTS.json.",
+   "Outside the corpus, MC is not a superset of Sample(8). In the three constructed entry-collapse cases of L-0338, Sample(8) detects (column 41 is one of its samples) and MC passes. This is stated in the rustdoc and REPORT_KO.md, and pinned by the test the_limits_stated_for_the_default_are_real.",
+   "Design choice made in the change: a client whose first-use check is MC or MC_P builds its further colourings in AssemblyStageClient::new (Engine::prepare_multi is now pub(super)). This keeps the documented rule that sequential clients allocate nothing after new(). It changes neither counters nor bits.",
+   "The V08 facade runner (jacobian_assembly/runner, outside this node's write paths) uses the default options. Its banded case now runs MC at first use, so its verification_rhs_calls change; it was not re-run.",
+   "The logs total 18 MB, mostly the corpus records of omit1024."
+  ],
+  "rulings": [
+   "The identity-test comment at line 608 (stage_clients_assembly_identity.rs) was the only line of an existing test that called Sample(8) the default, so only that comment was reworded. Its assertions are unchanged.",
+   "The V08 and V26 measurement programs (stage_clients_assembly_measure.rs, check_corpus.rs, check_measure.rs) name Sample(8) explicitly and are frozen evidence of those nodes, so they were left unedited.",
+   "Commit A and B are the same recording program run before and after the change, with source sha256 43f68080… in both. Every client is built with the default options and with_first_use_check is never called."
+  ]
+ }
+}

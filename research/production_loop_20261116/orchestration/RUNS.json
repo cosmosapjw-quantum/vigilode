@@ -107,8 +107,13 @@
       "script": "wave3_group6.js",
       "script_sha256": "376e78cd302c709b02de8887335bcf6678bcccd97d8302fc00fe6a18cf2eb956",
       "what": "wave 3 group 6: builders and reviewers of V25 (P1 on unseen families, economic default decision) and V26 (full pattern check: parallel, batched, multi-colouring); launched 2026-11-24 17:41 KST",
-      "status": "running or record not yet written",
-      "args_base": "80ba83881503c4b3253268df61c53b269740d6d3"
+      "status": "completed",
+      "args_base": "80ba83881503c4b3253268df61c53b269740d6d3",
+      "agent_count": 4,
+      "total_tokens": 1995961,
+      "duration_ms": 11447123,
+      "errors": [],
+      "outputs": "V25 KEEP (B fails; review accept_with_corrections); V26 descriptive (review accept_with_corrections, general MC claim refuted); merges 1e53d5f9 and 68b6688c"
     },
     {
       "run_id": "wf_c957bd0e-1ed",
@@ -135,6 +140,45 @@
       "duration_ms": 6607586,
       "errors": [],
       "outputs": "research/production_loop_20261116/ci/SELECTION_REVIEW.json (soundness: unsound, 10 major and 4 minor findings; mechanics: sound_with_fixes, 1 critical, 4 major, 7 minor)"
+    },
+    {
+      "run_id": "wf_99d5d9d2-ffe",
+      "script": "wave3_group7.js",
+      "script_sha256": "5f656e3df280236bc3a806ab2f047e45c9c4152b16c18ed0607163169d014f26",
+      "what": "wave 3 group 7: CI test selection v3 builder (OD-L1-19..21) with two adversarial reviewers, one fix round and a recheck; V27 implementation phase 1 builder (OD-L1-22, no evaluation run); launched 2026-11-24 20:10 KST",
+      "status": "completed",
+      "args_base": "1ffbda20f0d8b7afab6d31134a1bea683f04ffda",
+      "agent_count": 6,
+      "total_tokens": 2835052,
+      "duration_ms": 11839960,
+      "errors": [],
+      "outputs": "CI v3 merged as 8ce2a318 (ci/V3_REVIEW.json); V27 phase 1 on branch w3-v27 at c998963d, not merged (router_hyperparameter_free/PHASE1_BUILD.json)"
+    },
+    {
+      "run_id": "wf_8a59cef2-f94",
+      "script": "wave3_group8.js",
+      "script_sha256": "182f3b53e0213289ff1b6d65a93726e5b1a8110d61161a24a2d1647df461c42a",
+      "what": "wave 3 group 8: V27 phase 2 (pre-registered evaluation of the FBP Auto route, arms T, N, D, R, E1-E10) and its independent review; launched 2026-11-24 23:31 KST",
+      "status": "completed",
+      "args_base": "1ffbda20f0d8b7afab6d31134a1bea683f04ffda",
+      "agent_count": 2,
+      "total_tokens": 796343,
+      "duration_ms": 3175844,
+      "errors": [],
+      "outputs": "V27 phase 2: frozen decision keep (E1, E3, E7 fail); review accept_with_corrections; evidence copied to router_hyperparameter_free/, code not merged"
+    },
+    {
+      "run_id": "wf_57f3f273-576",
+      "script": "wave3_group9.js",
+      "script_sha256": "a4f5ed412e336dde027b684d8f95d5fe601ed95582df63e49659202f32d04a7b",
+      "what": "wave 3 group 9: V28 (rule B of P1 tested alone, OD-L1-23) and V29 (multi-colouring default first-use check, OD-L1-24), builders and reviewers; launched 2026-11-24 23:49 KST",
+      "status": "completed",
+      "args_base": "e36fc6f4",
+      "agent_count": 4,
+      "total_tokens": 1530392,
+      "duration_ms": 3477532,
+      "errors": [],
+      "outputs": "V28: frozen verdict KEEP (K, V pass; T fails), review accept_with_corrections, merged 2f214eb1; V29: PASS (default MC on the coloured route, Sample(8) on the dense route), review accept_with_corrections, merged 2eb2aeed"
     }
   ],
   "staged": [

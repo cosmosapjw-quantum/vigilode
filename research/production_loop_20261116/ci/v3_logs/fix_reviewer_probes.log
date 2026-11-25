@@ -1,0 +1,9 @@
+# the soundness reviewer's probe scripts run against the fix-round selector (2026-11-24T13:37:03Z)
+## review-soundness/scripts/merge_tree_listing.py (S-N3)
+PR adds research/new/x.json; lister lists research/new in the merge tree -> {'int': {'all': False, 'lib': False, 'doc': False, 'targets': ['lister'], 'examples': [], 'why': {'lister': ['observed research/new, which the change adds to']}}} []
+## review-soundness/scripts/tok_probe.py (S-N1)
+body        '=>' split into '= >' (syntax error)
+body        '&&' to '& &' (no short-circuit: check runs twice)
+body        '0..5' to '0. .5' (syntax error)
+structural  '->' split into '- >' (syntax error)
+body        '+=' split into '+ =' (syntax error)

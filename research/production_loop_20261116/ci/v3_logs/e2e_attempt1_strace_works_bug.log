@@ -1,0 +1,174 @@
+# e2e measured run, started 2026-11-24T11:51:25Z, head 4c2e41d468493c8c28b3ec34bb32a4591dfd14a3
+# env: CARGO_TARGET_DIR=/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-ci3 RUSTFLAGS=-C instrument-coverage CARGO_BUILD_JOBS=4 taskset -c 0-5,12-17 VIGILODE_LLVM_BIN=/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-llvm/rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin
+# cargo: cargo 1.94.1 (29ea6fb6a 2026-03-24), rustc: rustc 1.94.1 (e408947bf 2026-03-25), strace: strace -- version 6.8, llvm-cov:   LLVM version 21.1.8-rust-1.94.1-stable
++ cargo test --locked --no-run --message-format=json-diagnostic-rendered-ansi -p rodas5p-core --test residual_gain_contract
+   Compiling version_check v0.9.5
+   Compiling proc-macro2 v1.0.107
+   Compiling autocfg v1.5.1
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.47
+   Compiling bytemuck v1.25.2
+   Compiling num-traits v0.2.19
+   Compiling nano-gemm-codegen v0.2.1
+   Compiling bitflags v2.13.1
+   Compiling paste v1.0.15
+   Compiling libm v0.2.16
+   Compiling num-complex v0.4.6
+   Compiling raw-cpuid v11.6.0
+   Compiling pulp v0.22.3
+   Compiling cfg-if v1.0.4
+   Compiling reborrow v0.5.5
+   Compiling pulp-wasm-simd-flag v0.1.1
+   Compiling dyn-stack-macros v0.1.3
+   Compiling seq-macro v0.3.6
+   Compiling dyn-stack v0.13.2
+   Compiling once_cell v1.21.4
+   Compiling syn v1.0.109
+   Compiling generic-array v0.14.7
+   Compiling nano-gemm-core v0.2.1
+   Compiling libc v0.2.189
+   Compiling typenum v1.20.1
+   Compiling nano-gemm-c32 v0.2.1
+   Compiling nano-gemm-f32 v0.2.1
+   Compiling nano-gemm-c64 v0.2.1
+   Compiling nano-gemm-f64 v0.2.1
+   Compiling syn v2.0.119
+   Compiling syn v3.0.3
+   Compiling gemm-common v0.19.0
+   Compiling interpol v0.2.1
+   Compiling defer v0.2.1
+   Compiling serde_core v1.0.229
+   Compiling private-gemm-x86 v0.1.20
+   Compiling zmij v1.0.23
+   Compiling num_cpus v1.17.0
+   Compiling equator-macro v0.2.1
+   Compiling equator v0.2.2
+   Compiling gemm-c64 v0.19.0
+   Compiling gemm-c32 v0.19.0
+   Compiling gemm-f64 v0.19.0
+   Compiling gemm-f32 v0.19.0
+   Compiling qd v0.8.0
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling serde_json v1.0.151
+   Compiling generativity v1.2.1
+   Compiling thiserror v2.0.19
+   Compiling equator-macro v0.6.0
+   Compiling serde v1.0.229
+   Compiling faer-traits v0.24.0
+   Compiling equator v0.6.0
+   Compiling digest v0.10.7
+   Compiling gemm v0.19.0
+   Compiling nano-gemm v0.2.2
+   Compiling serde_derive v1.0.229
+   Compiling thiserror-impl v2.0.19
+   Compiling itoa v1.0.18
+   Compiling memchr v2.8.3
+   Compiling cpufeatures v0.2.17
+   Compiling sha2 v0.10.9
+   Compiling faer v0.24.4
+   Compiling hex v0.4.3
+   Compiling rodas5p-core v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5m 22s
++ cargo test --locked --no-run --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --lib --test constants_provenance_contracts --test generic_scope_contracts --test ppsw1_6b_contracts --test ptsw2b_contracts --example sp01_dupfix_profile
+   Compiling crossbeam-utils v0.8.22
+   Compiling crossbeam-epoch v0.9.20
+   Compiling crossbeam-deque v0.8.7
+   Compiling rayon-core v1.13.0
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-integrators)
+   Compiling either v1.17.0
+   Compiling rodas5p-krylov v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-krylov)
+   Compiling rayon v1.12.0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3m 35s
++ cargo test --locked --no-run --message-format=json-diagnostic-rendered-ansi -p rodas5p-cli --test alg02_predictive_controller
+   Compiling num-traits v0.2.19
+   Compiling syn v3.0.3
+   Compiling serde_core v1.0.229
+   Compiling getrandom v0.3.4
+   Compiling zerocopy v0.8.56
+   Compiling rand_core v0.9.5
+   Compiling num-complex v0.4.6
+   Compiling pulp v0.22.3
+   Compiling nano-gemm-c32 v0.2.1
+   Compiling nano-gemm-c64 v0.2.1
+   Compiling gemm-common v0.19.0
+   Compiling gemm-f32 v0.19.0
+   Compiling gemm-c64 v0.19.0
+   Compiling gemm-c32 v0.19.0
+   Compiling gemm-f64 v0.19.0
+   Compiling qd v0.8.0
+   Compiling faer-traits v0.24.0
+   Compiling gemm v0.19.0
+   Compiling nano-gemm v0.2.2
+   Compiling thiserror-impl v2.0.19
+   Compiling serde_derive v1.0.229
+   Compiling serde_json v1.0.151
+   Compiling faer v0.24.4
+   Compiling thiserror v2.0.19
+   Compiling ppv-lite86 v0.2.21
+   Compiling utf8parse v0.2.2
+   Compiling anstyle-parse v1.0.0
+   Compiling rand_chacha v0.9.0
+   Compiling anstyle-query v1.1.5
+   Compiling is_terminal_polyfill v1.70.2
+   Compiling colorchoice v1.0.5
+   Compiling anstyle v1.0.14
+   Compiling anstream v1.0.0
+   Compiling rand v0.9.5
+   Compiling csv-core v0.1.13
+   Compiling anyhow v1.0.104
+   Compiling heck v0.5.0
+   Compiling clap_lex v1.1.0
+   Compiling rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-fair-ab)
+   Compiling strsim v0.11.1
+   Compiling ryu v1.0.23
+   Compiling csv v1.4.0
+   Compiling clap_builder v4.6.6
+   Compiling serde v1.0.229
+   Compiling clap_derive v4.6.4
+   Compiling rand_distr v0.5.1
+   Compiling rand_pcg v0.9.0
+   Compiling clap v4.6.6
+   Compiling rodas5p-core v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-krylov)
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-integrators)
+   Compiling rodas5p-cli v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/crates/rodas5p-cli)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8m 31s
+Traceback (most recent call last):
+  File "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/tools/ci/select_tests.py", line 1901, in <module>
+    "--artifact", "a", "--branch", "x;$(false)", "--run-id", "105", "--head", heads[2],
+
+  File "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/tools/ci/select_tests.py", line 1897, in main
+    
+  File "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/tools/ci/select_tests.py", line 1258, in run
+    for name, target in units(selection, packages):
+                              ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/tools/ci/select_tests.py", line 712, in strace_runner
+    return {k: sorted(v) for k, v in sets.items()}
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: cargo splits the runner at whitespace: strace -- version 6.8 /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/e2e/measure/rodas5p-core__residual_gain_contract/trace
+Command exited with non-zero status 1
+	Command being timed: "taskset -c 0-5,12-17 python3 -u tools/ci/select_tests.py run --selection /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/e2e/selection.json --mode normal --measure --work-dir /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/e2e/measure --map-out /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/e2e/map.json --outcome /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/e2e/outcome.json --jobs 2"
+	User time (seconds): 324.76
+	System time (seconds): 34.55
+	Percent of CPU this job got: 34%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 17:32.50
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 1544996
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 7346
+	Minor (reclaiming a frame) page faults: 11192434
+	Voluntary context switches: 58087
+	Involuntary context switches: 168937
+	Swaps: 0
+	File system inputs: 1720936
+	File system outputs: 10890912
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 1
+# exit 1 at 2026-11-24T12:08:58Z

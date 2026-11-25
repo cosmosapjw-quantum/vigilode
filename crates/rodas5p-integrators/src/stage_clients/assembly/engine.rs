@@ -10,10 +10,13 @@
 //! computed does not change its bits as long as the right-hand side returns
 //! the same bits for the same input.
 
+use std::sync::atomic::{AtomicUsize, Ordering};
+
 use rayon::prelude::*;
 use rayon::{ThreadPool, ThreadPoolBuilder};
 use rodas5p_core::{CoreError, CoreResult, WorkCounters};
 
+use super::multi::CheckColourings;
 use super::pattern::{SparsityPattern, colour_columns};
 use super::{AssemblyError, CheckColumns};
 use crate::OdeProblem;
@@ -283,6 +286,51 @@ pub(super) struct Engine {
     shifted_values: Vec<f64>,
     threaded: Option<Threaded>,
     workers: Option<usize>,
+    /// The further colourings of the multi-colouring check
+    /// ([`Engine::prepare_multi`]): built with the client when the check is
+    /// its first-use check, otherwise at the first use of the check.
+    multi: Option<CheckColourings>,
+    /// Row marks of the multi-colouring check on the calling thread.
+    mark: Vec<usize>,
+    /// One scratch per pool thread for the pooled checks, allocated at
+    /// their first use.
+    scratch: Vec<CheckScratch>,
+}
+
+/// What a check evaluates.
+#[derive(Clone, Copy, Debug)]
+enum CheckKind {
+    /// `count` single columns (every column, or evenly spread ones).
+    Columns { count: usize, pooled: bool },
+    /// Every group of every further colouring.
+    Multi { pooled: bool },
+}
+
+/// What one pool thread of a pooled check owns.
+struct CheckScratch {
+    /// `y`, with the columns of the current item shifted.
+    state: Vec<f64>,
+    out: Vec<f64>,
+    /// Multi-colouring check: the item that last covered each row.
+    mark: Vec<usize>,
+    counters: WorkCounters,
+    /// Right-hand sides entered.
+    evaluations: u64,
+    /// The first failing item this thread met, with its failure.
+    failure: Option<(usize, BuildFailure)>,
+}
+
+impl CheckScratch {
+    fn new(n: usize) -> Self {
+        Self {
+            state: vec![0.0; n],
+            out: vec![0.0; n],
+            mark: vec![0; n],
+            counters: WorkCounters::default(),
+            evaluations: 0,
+            failure: None,
+        }
+    }
 }
 
 impl Engine {
@@ -357,6 +405,9 @@ impl Engine {
             route,
             threaded,
             workers,
+            multi: None,
+            mark: Vec::new(),
+            scratch: Vec::new(),
         })
     }
 
@@ -605,18 +656,33 @@ impl Engine {
     }
 
     /// Compare `target`, the Jacobian this engine has just built at
-    /// `(t, y)`, with single-column forward differences evaluated one at a
-    /// time on the calling thread. `columns` selects every column or evenly
-    /// spread ones. Returns the number of columns checked.
+    /// `(t, y)`, with further evaluations of the right-hand side. Returns
+    /// the number of columns the check covers.
     ///
+    /// Single columns ([`CheckColumns::Sample`], [`CheckColumns::All`],
+    /// [`CheckColumns::AllPooled`]): each checked column is shifted alone.
     /// Dense route: every entry of a checked column must have the bits of
     /// the assembled entry. Coloured route: every declared entry of the
     /// column must have the bits of the assembled entry (an entry assembled
     /// from a group can differ only if another column of the group reaches
     /// the row, or if the right-hand side is not a function of its input),
     /// and every other row must be bitwise unchanged by the shift of the
-    /// column. Threaded execution: the base evaluation is repeated on the
-    /// calling thread first and must have the bits the pool produced.
+    /// column. The first failure in (column, row) order is returned.
+    ///
+    /// Multi-colouring ([`CheckColumns::MultiColouring`],
+    /// [`CheckColumns::MultiColouringPooled`], coloured route only): the
+    /// columns of every group of every further colouring
+    /// ([`CheckColourings`]) are shifted at once; every declared entry of
+    /// those columns must have the bits of the assembled entry, and every row
+    /// that no column of the group declares must be bitwise unchanged. The
+    /// first failure in (colouring, group, column, row) order is returned.
+    ///
+    /// The pooled options hand the columns or the groups to the threads of
+    /// the client's pool (a sequential engine has no pool and runs them on
+    /// the calling thread) and return the failure the order above meets
+    /// first: they decide as the checks on the calling thread. Threaded
+    /// execution: the base evaluation is repeated on the calling thread
+    /// first and must have the bits the pool produced.
     #[allow(clippy::too_many_arguments)]
     pub(super) fn verify(
         &mut self,
@@ -629,22 +695,44 @@ impl Engine {
         tally: &mut Tally,
     ) -> Result<usize, BuildFailure> {
         let n = self.n;
-        let count = match columns {
-            CheckColumns::None => 0,
-            CheckColumns::Sample(columns) => columns.min(n),
-            CheckColumns::All => n,
+        let kind = match columns {
+            CheckColumns::None => return Ok(0),
+            CheckColumns::Sample(count) => match count.min(n) {
+                0 => return Ok(0),
+                count => CheckKind::Columns {
+                    count,
+                    pooled: false,
+                },
+            },
+            CheckColumns::All => CheckKind::Columns {
+                count: n,
+                pooled: false,
+            },
+            CheckColumns::AllPooled => CheckKind::Columns {
+                count: n,
+                pooled: true,
+            },
+            CheckColumns::MultiColouring => CheckKind::Multi { pooled: false },
+            CheckColumns::MultiColouringPooled => CheckKind::Multi { pooled: true },
         };
-        if count == 0 {
-            return Ok(0);
+        if matches!(kind, CheckKind::Multi { .. }) {
+            self.prepare_multi().map_err(BuildFailure::Assembly)?;
         }
         let Self {
             route,
             f0,
             f1,
             shifted,
+            deltas,
+            shifted_values,
             threaded,
+            multi,
+            mark,
+            scratch,
             ..
         } = self;
+        let route = &*route;
+        let threaded = threaded.as_ref();
         let base: &[f64] = match threaded {
             Some(threaded) => {
                 f1.fill(0.0);
@@ -661,57 +749,389 @@ impl Engine {
             }
             None => &f0[..],
         };
-        shifted.copy_from_slice(y);
-        for sample in 0..count {
-            let j = if count == n {
-                sample
-            } else {
-                (2 * sample + 1) * n / (2 * count)
-            };
-            let (yj_shifted, delta) = increment(y[j]);
-            shifted[j] = yj_shifted;
-            f1.fill(0.0);
-            tally.verification += 1;
-            let outcome = problem.eval_rhs_into(t, shifted, f1, counters);
-            shifted[j] = y[j];
-            outcome?;
-            match route {
-                Route::Dense => {
-                    for i in 0..n {
-                        let single = (f1[i] - base[i]) / delta;
-                        if single.to_bits() != target[i * n + j].to_bits() {
-                            return Err(BuildFailure::Assembly(AssemblyError::NotReproducible {
-                                row: i,
-                                column: Some(j),
-                            }));
-                        }
+        match kind {
+            CheckKind::Columns { count, pooled } => {
+                let check = ColumnCheck {
+                    route,
+                    n,
+                    count,
+                    base,
+                    target,
+                    y,
+                    problem,
+                    t,
+                };
+                match threaded.filter(|_| pooled) {
+                    Some(threaded) => check.pooled(&threaded.pool, scratch, counters, tally)?,
+                    None => check.sequential(shifted, f1, counters, tally)?,
+                }
+                Ok(count)
+            }
+            CheckKind::Multi { pooled } => {
+                let Route::Coloured(table) = route else {
+                    unreachable!("prepare_multi refuses the dense route");
+                };
+                let plan = multi.as_ref().expect("prepared above");
+                for (j, &yj) in y.iter().enumerate() {
+                    let (yj_shifted, delta) = increment(yj);
+                    shifted_values[j] = yj_shifted;
+                    deltas[j] = delta;
+                }
+                let check = GroupCheck {
+                    table,
+                    plan,
+                    base,
+                    target,
+                    y,
+                    shifted_values,
+                    deltas,
+                    problem,
+                    t,
+                };
+                match threaded.filter(|_| pooled) {
+                    Some(threaded) => check.pooled(&threaded.pool, scratch, counters, tally)?,
+                    None => check.sequential(shifted, f1, mark, counters, tally)?,
+                }
+                Ok(n)
+            }
+        }
+    }
+
+    /// The further colourings of the multi-colouring check, built once from
+    /// the client's colouring and the band of the declared entries: by
+    /// [`super::AssemblyStageClient::new`] when the check is the first-use
+    /// check, otherwise at the first use of the check. The dense route
+    /// declares no pattern and is refused. No right-hand side is evaluated.
+    pub(super) fn prepare_multi(&mut self) -> Result<(), AssemblyError> {
+        if self.multi.is_some() {
+            return Ok(());
+        }
+        let Route::Coloured(table) = &self.route else {
+            return Err(AssemblyError::Configuration(
+                "the multi-colouring check needs the coloured route: the dense route declares \
+                 no pattern"
+                    .into(),
+            ));
+        };
+        let (mut lower, mut upper) = (0, 0);
+        for entry in table.groups.iter().flat_map(|group| &group.entries) {
+            let (i, j) = (entry.row as usize, entry.col as usize);
+            lower = lower.max(i.saturating_sub(j));
+            upper = upper.max(j.saturating_sub(i));
+        }
+        self.multi = Some(CheckColourings::from_parts(
+            self.n,
+            &table.col_group,
+            lower,
+            upper,
+        )?);
+        self.mark = vec![0; self.n];
+        Ok(())
+    }
+}
+
+/// What every column of a single-column check reads.
+struct ColumnCheck<'a> {
+    route: &'a Route,
+    n: usize,
+    count: usize,
+    base: &'a [f64],
+    target: &'a [f64],
+    y: &'a [f64],
+    problem: &'a OdeProblem,
+    t: f64,
+}
+
+impl ColumnCheck<'_> {
+    /// The column of sample `sample`: every column in order, or column
+    /// `floor((2 sample + 1) n / (2 count))`.
+    fn column(&self, sample: usize) -> usize {
+        if self.count == self.n {
+            sample
+        } else {
+            (2 * sample + 1) * self.n / (2 * self.count)
+        }
+    }
+
+    /// Column `j` alone: shifted in `state` (a copy of `y`, restored before
+    /// the outcome is looked at), one right-hand side into `out`, then the
+    /// comparisons in row order.
+    fn check(
+        &self,
+        j: usize,
+        state: &mut [f64],
+        out: &mut [f64],
+        counters: &mut WorkCounters,
+    ) -> Result<(), BuildFailure> {
+        let (n, base, target, y) = (self.n, self.base, self.target, self.y);
+        let (yj_shifted, delta) = increment(y[j]);
+        state[j] = yj_shifted;
+        out.fill(0.0);
+        let outcome = self.problem.eval_rhs_into(self.t, state, out, counters);
+        state[j] = y[j];
+        outcome?;
+        match self.route {
+            Route::Dense => {
+                for i in 0..n {
+                    let single = (out[i] - base[i]) / delta;
+                    if single.to_bits() != target[i * n + j].to_bits() {
+                        return Err(BuildFailure::Assembly(AssemblyError::NotReproducible {
+                            row: i,
+                            column: Some(j),
+                        }));
                     }
                 }
-                Route::Coloured(table) => {
-                    let mut declared = table.column_entries(j).iter().peekable();
-                    for i in 0..n {
-                        if let Some(entry) = declared.next_if(|entry| entry.row as usize == i) {
-                            let single = (f1[i] - base[i]) / delta;
-                            let assembled = target[entry.dest as usize];
-                            if single.to_bits() != assembled.to_bits() {
-                                return Err(BuildFailure::Assembly(AssemblyError::AliasedEntry {
-                                    row: i,
-                                    column: j,
-                                    assembled,
-                                    single_column: single,
-                                }));
-                            }
-                        } else if f1[i].to_bits() != base[i].to_bits() {
-                            return Err(BuildFailure::Assembly(AssemblyError::UndeclaredEntry {
+            }
+            Route::Coloured(table) => {
+                let mut declared = table.column_entries(j).iter().peekable();
+                for i in 0..n {
+                    if let Some(entry) = declared.next_if(|entry| entry.row as usize == i) {
+                        let single = (out[i] - base[i]) / delta;
+                        let assembled = target[entry.dest as usize];
+                        if single.to_bits() != assembled.to_bits() {
+                            return Err(BuildFailure::Assembly(AssemblyError::AliasedEntry {
                                 row: i,
                                 column: j,
+                                assembled,
+                                single_column: single,
                             }));
                         }
+                    } else if out[i].to_bits() != base[i].to_bits() {
+                        return Err(BuildFailure::Assembly(AssemblyError::UndeclaredEntry {
+                            row: i,
+                            column: j,
+                        }));
                     }
                 }
             }
         }
-        Ok(count)
+        Ok(())
+    }
+
+    /// Every sample in order on the calling thread; the first failure ends
+    /// the check.
+    fn sequential(
+        &self,
+        state: &mut [f64],
+        out: &mut [f64],
+        counters: &mut WorkCounters,
+        tally: &mut Tally,
+    ) -> Result<(), BuildFailure> {
+        state.copy_from_slice(self.y);
+        for sample in 0..self.count {
+            tally.verification += 1;
+            self.check(self.column(sample), state, out, counters)?;
+        }
+        Ok(())
+    }
+
+    /// The samples on the pool ([`run_pooled`]).
+    fn pooled(
+        &self,
+        pool: &ThreadPool,
+        scratch: &mut Vec<CheckScratch>,
+        counters: &mut WorkCounters,
+        tally: &mut Tally,
+    ) -> Result<(), BuildFailure> {
+        let items = Items {
+            n: self.n,
+            y: self.y,
+            count: self.count,
+        };
+        run_pooled(pool, scratch, items, counters, tally, |sample, worker| {
+            self.check(
+                self.column(sample),
+                &mut worker.state,
+                &mut worker.out,
+                &mut worker.counters,
+            )
+        })
+    }
+}
+
+/// What every group of the multi-colouring check reads.
+struct GroupCheck<'a> {
+    table: &'a Coloured,
+    plan: &'a CheckColourings,
+    base: &'a [f64],
+    target: &'a [f64],
+    y: &'a [f64],
+    shifted_values: &'a [f64],
+    deltas: &'a [f64],
+    problem: &'a OdeProblem,
+    t: f64,
+}
+
+impl GroupCheck<'_> {
+    /// Item `item` of the check order (group `g` of further colouring `r`):
+    /// the group's columns shifted at once in `state` (a copy of `y`,
+    /// restored before the outcome is looked at), one right-hand side into
+    /// `out`, every declared entry of the group's columns (columns, then
+    /// rows, increasing) against the assembled entry, then every row the
+    /// group does not cover against the base evaluation. `mark` keeps, per
+    /// row, the last item that covered it.
+    fn check(
+        &self,
+        item: usize,
+        state: &mut [f64],
+        out: &mut [f64],
+        mark: &mut [usize],
+        counters: &mut WorkCounters,
+    ) -> Result<(), BuildFailure> {
+        let (r, g) = self.plan.locate(item);
+        let stamp = item + 1;
+        for j in self.plan.group_columns(r, g) {
+            state[j] = self.shifted_values[j];
+        }
+        out.fill(0.0);
+        let outcome = self.problem.eval_rhs_into(self.t, state, out, counters);
+        for j in self.plan.group_columns(r, g) {
+            state[j] = self.y[j];
+        }
+        outcome?;
+        for j in self.plan.group_columns(r, g) {
+            for entry in self.table.column_entries(j) {
+                let i = entry.row as usize;
+                mark[i] = stamp;
+                let recomputed = (out[i] - self.base[i]) / self.deltas[j];
+                let assembled = self.target[entry.dest as usize];
+                if recomputed.to_bits() != assembled.to_bits() {
+                    return Err(BuildFailure::Assembly(
+                        AssemblyError::MultiColouringEntryDiffers {
+                            row: i,
+                            column: j,
+                            colouring: r + 1,
+                            group: g,
+                            assembled,
+                            recomputed,
+                        },
+                    ));
+                }
+            }
+        }
+        for (i, (value, base)) in out.iter().zip(self.base).enumerate() {
+            if mark[i] != stamp && value.to_bits() != base.to_bits() {
+                return Err(BuildFailure::Assembly(
+                    AssemblyError::MultiColouringUncoveredRow {
+                        row: i,
+                        colouring: r + 1,
+                        group: g,
+                    },
+                ));
+            }
+        }
+        Ok(())
+    }
+
+    /// Every group in order on the calling thread; the first failure ends
+    /// the check.
+    fn sequential(
+        &self,
+        state: &mut [f64],
+        out: &mut [f64],
+        mark: &mut [usize],
+        counters: &mut WorkCounters,
+        tally: &mut Tally,
+    ) -> Result<(), BuildFailure> {
+        state.copy_from_slice(self.y);
+        mark.fill(0);
+        for item in 0..self.plan.total_groups() {
+            tally.verification += 1;
+            self.check(item, state, out, mark, counters)?;
+        }
+        Ok(())
+    }
+
+    /// The groups on the pool ([`run_pooled`]).
+    fn pooled(
+        &self,
+        pool: &ThreadPool,
+        scratch: &mut Vec<CheckScratch>,
+        counters: &mut WorkCounters,
+        tally: &mut Tally,
+    ) -> Result<(), BuildFailure> {
+        let items = Items {
+            n: self.y.len(),
+            y: self.y,
+            count: self.plan.total_groups(),
+        };
+        run_pooled(pool, scratch, items, counters, tally, |item, worker| {
+            self.check(
+                item,
+                &mut worker.state,
+                &mut worker.out,
+                &mut worker.mark,
+                &mut worker.counters,
+            )
+        })
+    }
+}
+
+/// The items of a pooled check: `count` of them, on states of order `n`
+/// that start from `y`.
+struct Items<'a> {
+    n: usize,
+    y: &'a [f64],
+    count: usize,
+}
+
+/// Items `0 .. count` of a check on the pool. Every thread takes the next
+/// item in increasing order and checks it on its own scratch (`state` a copy
+/// of `y`), so no item is taken before every smaller one; the failure of the
+/// smallest failing item is returned, which is the failure the sequential
+/// order meets first. Items above a failure found are skipped: a failing
+/// check may enter a different number of right-hand sides than the
+/// sequential one, a passing check enters the same.
+fn run_pooled<F>(
+    pool: &ThreadPool,
+    scratch: &mut Vec<CheckScratch>,
+    items: Items<'_>,
+    counters: &mut WorkCounters,
+    tally: &mut Tally,
+    check: F,
+) -> Result<(), BuildFailure>
+where
+    F: Fn(usize, &mut CheckScratch) -> Result<(), BuildFailure> + Sync,
+{
+    let threads = pool.current_num_threads();
+    if scratch.len() != threads || scratch.iter().any(|worker| worker.state.len() != items.n) {
+        *scratch = (0..threads).map(|_| CheckScratch::new(items.n)).collect();
+    }
+    let next = AtomicUsize::new(0);
+    let first_failure = AtomicUsize::new(usize::MAX);
+    pool.install(|| {
+        scratch.par_iter_mut().with_max_len(1).for_each(|worker| {
+            worker.state.copy_from_slice(items.y);
+            worker.mark.fill(0);
+            loop {
+                let item = next.fetch_add(1, Ordering::Relaxed);
+                if item >= items.count || item > first_failure.load(Ordering::Relaxed) {
+                    break;
+                }
+                worker.evaluations += 1;
+                if let Err(failure) = check(item, worker) {
+                    first_failure.fetch_min(item, Ordering::Relaxed);
+                    worker.failure = Some((item, failure));
+                    break;
+                }
+            }
+        });
+    });
+    let mut first: Option<(usize, BuildFailure)> = None;
+    for worker in scratch.iter_mut() {
+        counters.accumulate(worker.counters);
+        worker.counters = WorkCounters::default();
+        tally.verification += worker.evaluations;
+        worker.evaluations = 0;
+        if let Some((item, failure)) = worker.failure.take()
+            && first.as_ref().is_none_or(|(best, _)| item < *best)
+        {
+            first = Some((item, failure));
+        }
+    }
+    match first {
+        Some((_, failure)) => Err(failure),
+        None => Ok(()),
     }
 }
 

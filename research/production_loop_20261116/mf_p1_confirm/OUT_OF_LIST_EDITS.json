@@ -1,0 +1,85 @@
+{
+ "schema": "vigilode.loop-l1.v25.out-of-list-edits.v1",
+ "generated": "2026-11-24T18:28:36+0900 by out_of_list_pins.py at 8efb5d232a1a1229ccc771b26ab8f1429ce72057",
+ "what": "lines that pin the shipped default of the matrix-free route or P1's candidate identifier; a switch of the default to P1 changes every one of them. Lines with inside_the_write_list_of_V25 false cannot be edited by this node, so R cannot hold after a switch made inside the write list (PROTOCOL.json known_obstacles).",
+ "lines": [
+  {
+   "file": "crates/rodas5p-integrators/tests/mf_adaptive_shipped_bits.rs",
+   "line": 182,
+   "text": "assert_eq!(MfStageSolvePolicy::default(), MfStageSolvePolicy::Shipped);",
+   "reason": "pins the enum default to the shipped policy",
+   "inside_the_write_list_of_V25": false
+  },
+  {
+   "file": "crates/rodas5p-integrators/tests/mf_adaptive_shipped_bits.rs",
+   "line": 250,
+   "text": "assert_eq!(options.matrix_free_policy, MfStageSolvePolicy::Shipped);",
+   "reason": "pins RoutingOptions::default().matrix_free_policy to the shipped policy",
+   "inside_the_write_list_of_V25": false
+  },
+  {
+   "file": "crates/rodas5p-integrators/tests/mf_adaptive_shipped_bits.rs",
+   "line": 260,
+   "text": "assert_eq!(routed.routing.driver_id, RODAS5P_MF_FAST_DRIVER_ID);",
+   "reason": "pins the routed default's driver identifier to v1 and (next lines) its bits to the shipped entry",
+   "inside_the_write_list_of_V25": false
+  },
+  {
+   "file": "crates/rodas5p-integrators/tests/mf_adaptive_contracts.rs",
+   "line": 411,
+   "text": "\"rodas5p-mf-fast-transformed-v2-candidate-p1\"",
+   "reason": "pins the candidate identifier of P1, which a switch replaces by rodas5p-mf-fast-transformed-v3",
+   "inside_the_write_list_of_V25": false
+  },
+  {
+   "file": "crates/vigilode/tests/capabilities_contracts.rs",
+   "line": 116,
+   "text": "\"rodas5p-mf-fast-transformed-v1\"",
+   "reason": "pins the identifier of the default matrix-free route",
+   "inside_the_write_list_of_V25": true
+  },
+  {
+   "file": "crates/vigilode/tests/facade_contracts.rs",
+   "line": 14,
+   "text": "RODAS5P_FAST_DRIVER_ID, RODAS5P_MF_FAST_DRIVER_ID, RoutedDriver, RoutingOptions,",
+   "reason": "pins the facade's matrix-free driver identifier (and, near these lines, its bits to the shipped entry)",
+   "inside_the_write_list_of_V25": true
+  },
+  {
+   "file": "crates/vigilode/tests/facade_contracts.rs",
+   "line": 281,
+   "text": "assert_eq!(sol.stats.route.driver_id, RODAS5P_MF_FAST_DRIVER_ID);",
+   "reason": "pins the facade's matrix-free driver identifier (and, near these lines, its bits to the shipped entry)",
+   "inside_the_write_list_of_V25": true
+  },
+  {
+   "file": "crates/vigilode/tests/facade_contracts.rs",
+   "line": 1038,
+   "text": "(\"jvp\", jvp, RODAS5P_MF_FAST_DRIVER_ID),",
+   "reason": "pins the facade's matrix-free driver identifier (and, near these lines, its bits to the shipped entry)",
+   "inside_the_write_list_of_V25": true
+  },
+  {
+   "file": "crates/rodas5p-integrators/src/routing.rs",
+   "line": 258,
+   "text": "matrix_free_policy: MfStageSolvePolicy::Shipped,",
+   "reason": "the default of the route itself",
+   "inside_the_write_list_of_V25": true
+  },
+  {
+   "file": "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+   "line": 104,
+   "text": "#[default] Shipped,",
+   "reason": "the enum default of MfStageSolvePolicy",
+   "inside_the_write_list_of_V25": true
+  },
+  {
+   "file": "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+   "line": 148,
+   "text": "Self::ColumnTested => \"rodas5p-mf-fast-transformed-v2-candidate-p1\",",
+   "reason": "the identifier of P1",
+   "inside_the_write_list_of_V25": true
+  }
+ ],
+ "outside_the_write_list": 4
+}

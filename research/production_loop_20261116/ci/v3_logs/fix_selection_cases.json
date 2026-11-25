@@ -1,0 +1,1346 @@
+{
+ "base": "1288945bc9d527ef3c57c8119921d9fb98f73626",
+ "cases": [
+  {
+   "changes": [
+    [
+     "M",
+     "research/reaudit_accuracy_speed_20261010/gain_witness.rs"
+    ]
+   ],
+   "classified": {},
+   "cli": {
+    "changed": [
+     {
+      "path": "research/reaudit_accuracy_speed_20261010/gain_witness.rs",
+      "status": "M"
+     }
+    ],
+    "classified": {},
+    "exit": 0,
+    "expected_selected": true,
+    "mode": "selected",
+    "units": 415,
+    "units_by_rule5": 409,
+    "whole_packages_without_recorded_inputs": [
+     "vigilode",
+     "vigilode-coupled"
+    ]
+   },
+   "desc": "numeric change in the identity fixture of gain_witness.rs (replays 95d589e86)",
+   "expect": [
+    "rodas5p-core:residual_gain_contract"
+   ],
+   "head": "b216a577e9a34cab90d063b0562336275054f715",
+   "id": "F1",
+   "note": null,
+   "notes": [],
+   "ok": true,
+   "only": null,
+   "problems": [],
+   "selected": [
+    "rodas5p-core:doc",
+    "rodas5p-core:residual_gain_contract"
+   ],
+   "why": {
+    "rodas5p-core:doc": [
+     "its package has a selected target (doc tests are not measured)"
+    ],
+    "rodas5p-core:residual_gain_contract": [
+     "compiles research/reaudit_accuracy_speed_20261010/gain_witness.rs; executed research/reaudit_accuracy_speed_20261010/gain_witness.rs"
+    ]
+   }
+  },
+  {
+   "changes": [
+    [
+     "M",
+     "crates/rodas5p-cli/src/main.rs"
+    ]
+   ],
+   "classified": {
+    "crates/rodas5p-cli/src/main.rs": "noop"
+   },
+   "cli": {
+    "changed": [
+     {
+      "path": "crates/rodas5p-cli/src/main.rs",
+      "status": "M"
+     }
+    ],
+    "classified": {
+     "crates/rodas5p-cli/src/main.rs": "noop"
+    },
+    "exit": 0,
+    "expected_selected": true,
+    "mode": "selected",
+    "units": 416,
+    "units_by_rule5": 409,
+    "whole_packages_without_recorded_inputs": [
+     "vigilode",
+     "vigilode-coupled"
+    ]
+   },
+   "desc": "comment-only change of the cli binary source that an integrators test include_str!s",
+   "expect": [
+    "rodas5p-integrators:constants_provenance_contracts"
+   ],
+   "head": "567a4375bcf93d2cb01cd4334eadd9b42792aa04",
+   "id": "F2",
+   "note": null,
+   "notes": [],
+   "ok": true,
+   "only": null,
+   "problems": [],
+   "selected": [
+    "rodas5p-integrators:constants_provenance_contracts",
+    "rodas5p-integrators:doc",
+    "rodas5p-integrators:generic_scope_contracts"
+   ],
+   "why": {
+    "rodas5p-integrators:constants_provenance_contracts": [
+     "compiles crates/rodas5p-cli/src/main.rs"
+    ],
+    "rodas5p-integrators:doc": [
+     "its package has a selected target (doc tests are not measured)"
+    ],
+    "rodas5p-integrators:generic_scope_contracts": [
+     "reads crates/rodas5p-cli/src/main.rs"
+    ]
+   }
+  },
+  {
+   "changes": [
+    [
+     "M",
+     "crates/rodas5p-integrators/tests/rnext_common/mod.rs"
+    ]
+   ],
+   "classified": {},
+   "cli": {
+    "changed": [
+     {
+      "path": "crates/rodas5p-integrators/tests/rnext_common/mod.rs",
+      "status": "M"
+     }
+    ],
+    "classified": {},
+    "exit": 0,
+    "expected_selected": true,
+    "mode": "selected",
+    "units": 416,
+    "units_by_rule5": 409,
+    "whole_packages_without_recorded_inputs": [
+     "vigilode",
+     "vigilode-coupled"
+    ]
+   },
+   "desc": "new helper in an integrators test module that a cli test #[path]-includes",
+   "expect": [
+    "rodas5p-cli:alg02_predictive_controller"
+   ],
+   "head": "fac5cbe464fec992da9c1fe582e9a96835c211c4",
+   "id": "F3",
+   "note": null,
+   "notes": [],
+   "ok": true,
+   "only": null,
+   "problems": [],
+   "selected": [
+    "rodas5p-cli:alg02_predictive_controller",
+    "rodas5p-integrators:example:sp01_dupfix_profile"
+   ],
+   "why": {
+    "rodas5p-cli:alg02_predictive_controller": [
+     "compiles crates/rodas5p-integrators/tests/rnext_common/mod.rs"
+    ],
+    "rodas5p-integrators:example:sp01_dupfix_profile": [
+     "compiles crates/rodas5p-integrators/tests/rnext_common/mod.rs"
+    ]
+   }
+  },
+  {
+   "changes": [
+    [
+     "M",
+     "crates/rodas5p-integrators/tests/unified_candidate_contracts.rs"
+    ]
+   ],
+   "classified": {},
+   "cli": {
+    "changed": [
+     {
+      "path": "crates/rodas5p-integrators/tests/unified_candidate_contracts.rs",
+      "status": "M"
+     }
+    ],
+    "classified": {},
+    "exit": 0,
+    "expected_selected": true,
+    "mode": "selected",
+    "units": 416,
+    "units_by_rule5": 409,
+    "whole_packages_without_recorded_inputs": [
+     "vigilode",
+     "vigilode-coupled"
+    ]
+   },
+   "desc": "new test in a test source whose sha256 two other targets pin at run time",
+   "expect": [
+    "rodas5p-integrators:ptsw2b_contracts",
+    "rodas5p-integrators:ppsw1_6b_contracts"
+   ],
+   "head": "d4e42dea0240bf97ddd7b67ace20b2efdcd44d54",
+   "id": "F4",
+   "note": null,
+   "notes": [],
+   "ok": true,
+   "only": null,
+   "problems": [],
+   "selected": [
+    "rodas5p-integrators:doc",
+    "rodas5p-integrators:ppsw1_6b_contracts",
+    "rodas5p-integrators:ptsw2b_contracts"
+   ],
+   "why": {
+    "rodas5p-integrators:doc": [
+     "its package has a selected target (doc tests are not measured)"
+    ],
+    "rodas5p-integrators:ppsw1_6b_contracts": [
+     "reads crates/rodas5p-integrators/tests/unified_candidate_contracts.rs"
+    ],
+    "rodas5p-integrators:ptsw2b_contracts": [
+     "reads crates/rodas5p-integrators/tests/unified_candidate_contracts.rs"
+    ]
+   }
+  },
+  {
+   "changes": [
+    [
+     "M",
+     "crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs"
+    ]
+   ],
+   "classified": {},
+   "cli": {
+    "changed": [
+     {
+      "path": "crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs",
+      "status": "M"
+     }
+    ],
+    "classified": {},
+    "exit": 0,
+    "expected_selected": true,
+    "mode": "selected",
+    "units": 415,
+    "units_by_rule5": 409,
+    "whole_packages_without_recorded_inputs": [
+     "vigilode",
+     "vigilode-coupled"
+    ]
+   },
+   "desc": "change of a tests/support file that the lib unit tests include!",
+   "expect": [
+    "rodas5p-integrators:lib"
+   ],
+   "head": "f36babb8b8b4413a384da876f4653cee338f732e",
+   "id": "F5",
+   "note": null,
+   "notes": [],
+   "ok": true,
+   "only": null,
+   "problems": [],
+   "selected": [
+    "rodas5p-integrators:doc",
+    "rodas5p-integrators:lib"
+   ],
+   "why": {
+    "rodas5p-integrators:doc": [
+     "its package has a selected target (doc tests are not measured)"
+    ],
+    "rodas5p-integrators:lib": [
+     "compiles crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs; executed crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs"
+    ]
+   }
+  },
+  {
+   "changes": [
+    [
+     "M",
+     "research/generic_policy_redesign_v33/results/calibration_analysis/FROZEN_ZETA34_POLICY.json"
+    ]
+   ],
+   "classified": {},
+   "cli": {
+    "changed": [
+     {
+      "path": "research/generic_policy_redesign_v33/results/calibration_analysis/FROZEN_ZETA34_POLICY.json",
+      "status": "M"
+     }
+    ],
+    "classified": {},
+    "exit": 0,
+    "expected_selected": true,
+    "mode": "selected",
+    "units": 415,
+    "units_by_rule5": 409,
+    "whole_packages_without_recorded_inputs": [
+     "vigilode",
+     "vigilode-coupled"
+    ]
+   },
+   "desc": "change of a research artifact named only in docs/CONSTANTS_PROVENANCE.toml",
+   "expect": [
+    "rodas5p-integrators:constants_provenance_contracts"
+   ],
+   "head": "1e48db1578961ffbf60a491c5901b1f25b218366",
+   "id": "F6",
+   "note": null,
+   "notes": [],
+   "ok": true,
+   "only": null,
+   "problems": [],
+   "selected": [
+    "rodas5p-integrators:constants_provenance_contracts",
+    "rodas5p-integrators:doc"
+   ],
+   "why": {
+    "rodas5p-integrators:constants_provenance_contracts": [
+     "reads research/generic_policy_redesign_v33/results/calibration_analysis/FROZEN_ZETA34_POLICY.json"
+    ],
+    "rodas5p-integrators:doc": [
+     "its package has a selected target (doc tests are not measured)"
+    ]
+   }
+  },
+  {
+   "changes": [
+    [
+     "A",
+     "crates/rodas5p-krylov/src/ci_v3_probe.rs"
+    ]
+   ],
+   "classified": {
+    "crates/rodas5p-krylov/src/ci_v3_probe.rs": "structural"
+   },
+   "cli": {
+    "changed": [
+     {
+      "path": "crates/rodas5p-krylov/src/ci_v3_probe.rs",
+      "status": "A"
+     }
+    ],
+    "classified": {
+     "crates/rodas5p-krylov/src/ci_v3_probe.rs": "structural"
+    },
+    "exit": 0,
+    "expected_selected": true,
+    "mode": "selected",
+    "units": 73,
+    "units_by_rule5": 66,
+    "whole_packages_without_recorded_inputs": [
+     "vigilode",
+     "vigilode-coupled"
+    ]
+   },
+   "desc": "new source file under crates/rodas5p-krylov/src",
+   "expect": [
+    "rodas5p-integrators:generic_scope_contracts"
+   ],
+   "head": "6a2a69744a00aa438e64dfb47241aa858184bec2",
+   "id": "F7",
+   "note": null,
+   "notes": [],
+   "ok": true,
+   "only": null,
+   "problems": [],
+   "selected": [
+    "rodas5p-cli:*",
+    "rodas5p-fair-ab:*",
+    "rodas5p-integrators:*",
+    "rodas5p-krylov:*"
+   ],
+   "why": {
+    "rodas5p-cli:*": [
+     "depends on rodas5p-krylov"
+    ],
+    "rodas5p-fair-ab:*": [
+     "depends on rodas5p-krylov"
+    ],
+    "rodas5p-integrators:*": [
+     "depends on rodas5p-krylov"
+    ],
+    "rodas5p-krylov:*": [
+     "structural change: crates/rodas5p-krylov/src/ci_v3_probe.rs"
+    ]
+   }
+  },
+  {
+   "changes": [
+    [
+     "A",
+     "crates/vigilode-hybrid/src/ci_v3_probe.rs"
+    ]
+   ],
+   "classified": {},
+   "cli": {
+    "changed": [
+     {
+      "path": "crates/vigilode-hybrid/src/ci_v3_probe.rs",
+      "status": "A"
+     }
+    ],
+    "classified": {},
+    "exit": 0,
+    "expected_selected": true,
+    "mode": "selected",
+    "units": 415,
+    "units_by_rule5": 409,
+    "whole_packages_without_recorded_inputs": [
+     "vigilode",
+     "vigilode-coupled"
+    ]
+   },
+   "desc": "new source file in the non-member crate vigilode-hybrid (no package rule)",
+   "expect": [
+    "rodas5p-integrators:generic_scope_contracts"
+   ],
+   "head": "ab0bfb4d896857f42815ff93a11287a5dd4165e0",
+   "id": "F7-hybrid",
+   "note": null,
+   "notes": [],
+   "ok": true,
+   "only": null,
+   "problems": [],
+   "selected": [
+    "rodas5p-integrators:doc",
+    "rodas5p-integrators:generic_scope_contracts"
+   ],
+   "why": {
+    "rodas5p-integrators:doc": [
+     "its package has a selected target (doc tests are not measured)"
+    ],
+    "rodas5p-integrators:generic_scope_contracts": [
+     "lists crates/vigilode-hybrid/src"
+    ]
+   }
+  },
+  {
+   "changes": [
+    [
+     "M",
+     "crates/vigilode/src/lib.rs"
+    ]
+   ],
+   "classified": {
+    "crates/vigilode/src/lib.rs": "noop"
+   },
+   "cli": {
+    "changed": [
+     {
+      "path": "crates/vigilode/src/lib.rs",
+      "status": "M"
+     }
+    ],
+    "classified": {
+     "crates/vigilode/src/lib.rs": "noop"
+    },
+    "exit": 0,
+    "expected_selected": true,
+    "mode": "selected",
+    "units": 415,
+    "units_by_rule5": 409,
+    "whole_packages_without_recorded_inputs": [
+     "vigilode",
+     "vigilode-coupled"
+    ]
+   },
+   "desc": "comment-only change of vigilode's lib.rs (vigilode is not an integrators dependency)",
+   "expect": [
+    "rodas5p-integrators:generic_scope_contracts"
+   ],
+   "head": "e3595b5ab696f15ec2f02ddade00a0f58bfc4bc8",
+   "id": "F7-vigilode",
+   "note": null,
+   "notes": [],
+   "ok": true,
+   "only": null,
+   "problems": [],
+   "selected": [
+    "rodas5p-integrators:doc",
+    "rodas5p-integrators:generic_scope_contracts"
+   ],
+   "why": {
+    "rodas5p-integrators:doc": [
+     "its package has a selected target (doc tests are not measured)"
+    ],
+    "rodas5p-integrators:generic_scope_contracts": [
+     "reads crates/vigilode/src/lib.rs"
+    ]
+   }
+  },
+  {
+   "changes": [
+    [
+     "M",
+     "crates/rodas5p-integrators/tests/alg01_common/mod.rs"
+    ]
+   ],
+   "classified": {},
+   "cli": {
+    "changed": [
+     {
+      "path": "crates/rodas5p-integrators/tests/alg01_common/mod.rs",
+      "status": "M"
+     }
+    ],
+    "classified": {},
+    "exit": 0,
+    "expected_selected": true,
+    "mode": "selected",
+    "units": 415,
+    "units_by_rule5": 409,
+    "whole_packages_without_recorded_inputs": [
+     "vigilode",
+     "vigilode-coupled"
+    ]
+   },
+   "desc": "new helper in tests/alg01_common/mod.rs, which the example sp01_dupfix_profile #[path]-includes",
+   "expect": [
+    "rodas5p-integrators:example:sp01_dupfix_profile"
+   ],
+   "head": "f8cc042b7d466890b4c1768ad1817cf41dbf4c65",
+   "id": "F11",
+   "note": null,
+   "notes": [],
+   "ok": true,
+   "only": null,
+   "problems": [],
+   "selected": [
+    "rodas5p-integrators:example:sp01_dupfix_profile"
+   ],
+   "why": {
+    "rodas5p-integrators:example:sp01_dupfix_profile": [
+     "compiles crates/rodas5p-integrators/tests/alg01_common/mod.rs"
+    ]
+   }
+  },
+  {
+   "changes": [
+    [
+     "M",
+     "crates/rodas5p-krylov/src/lib.rs"
+    ]
+   ],
+   "classified": {
+    "crates/rodas5p-krylov/src/lib.rs": "noop"
+   },
+   "cli": {
+    "changed": [
+     {
+      "path": "crates/rodas5p-krylov/src/lib.rs",
+      "status": "M"
+     }
+    ],
+    "classified": {
+     "crates/rodas5p-krylov/src/lib.rs": "noop"
+    },
+    "exit": 0,
+    "expected_selected": true,
+    "mode": "selected",
+    "units": 415,
+    "units_by_rule5": 409,
+    "whole_packages_without_recorded_inputs": [
+     "vigilode",
+     "vigilode-coupled"
+    ]
+   },
+   "desc": "comment-only change of crates/rodas5p-krylov/src/lib.rs",
+   "expect": [
+    "rodas5p-integrators:generic_scope_contracts"
+   ],
+   "head": "165b6d550e6e760086495b53110872575fa9b238",
+   "id": "N1",
+   "note": "every crates/*/src file is read as text by generic_scope_contracts, so it is the one text consumer; no target that compiled or executed the file runs",
+   "notes": [],
+   "ok": true,
+   "only": "rodas5p-integrators:generic_scope_contracts, rodas5p-integrators:doc",
+   "problems": [],
+   "selected": [
+    "rodas5p-integrators:doc",
+    "rodas5p-integrators:generic_scope_contracts"
+   ],
+   "why": {
+    "rodas5p-integrators:doc": [
+     "its package has a selected target (doc tests are not measured)"
+    ],
+    "rodas5p-integrators:generic_scope_contracts": [
+     "reads crates/rodas5p-krylov/src/lib.rs"
+    ]
+   }
+  },
+  {
+   "changes": [
+    [
+     "M",
+     "crates/rodas5p-krylov/src/lib.rs"
+    ]
+   ],
+   "classified": {
+    "crates/rodas5p-krylov/src/lib.rs": "noop"
+   },
+   "cli": {
+    "changed": [
+     {
+      "path": "crates/rodas5p-krylov/src/lib.rs",
+      "status": "M"
+     }
+    ],
+    "classified": {
+     "crates/rodas5p-krylov/src/lib.rs": "noop"
+    },
+    "exit": 0,
+    "expected_selected": true,
+    "mode": "selected",
+    "units": 415,
+    "units_by_rule5": 410,
+    "whole_packages_without_recorded_inputs": [
+     "vigilode",
+     "vigilode-coupled"
+    ]
+   },
+   "desc": "N1 evaluated without generic_scope_contracts, the only reader of the file",
+   "expect": [],
+   "head": "3f47763f0f6d2332423ac9146149e0381b2f0111",
+   "id": "N1-no-reader",
+   "note": null,
+   "notes": [],
+   "ok": true,
+   "only": "nothing",
+   "problems": [],
+   "selected": [],
+   "why": {}
+  },
+  {
+   "changes": [
+    [
+     "M",
+     "crates/rodas5p-integrators/src/a1_two_arm_receipt.rs"
+    ]
+   ],
+   "classified": {
+    "crates/rodas5p-integrators/src/a1_two_arm_receipt.rs": "body"
+   },
+   "cli": {
+    "changed": [
+     {
+      "path": "crates/rodas5p-integrators/src/a1_two_arm_receipt.rs",
+      "status": "M"
+     }
+    ],
+    "classified": {
+     "crates/rodas5p-integrators/src/a1_two_arm_receipt.rs": "body"
+    },
+    "exit": 0,
+    "expected_selected": true,
+    "mode": "selected",
+    "units": 418,
+    "units_by_rule5": 409,
+    "whole_packages_without_recorded_inputs": [
+     "vigilode",
+     "vigilode-coupled"
+    ]
+   },
+   "desc": "body change (a new first statement) in crates/rodas5p-integrators/src/a1_two_arm_receipt.rs",
+   "expect": [
+    "rodas5p-cli:a1_tolerance_receipt_cli_contracts"
+   ],
+   "head": "5dfda79afe5f74fb1b437eebe47c0bab6b6e7409",
+   "id": "N2",
+   "note": null,
+   "notes": [],
+   "ok": true,
+   "only": "targets that executed the file, read it, or compile it as their own crate (lib unit tests), plus doc tests",
+   "problems": [],
+   "selected": [
+    "rodas5p-cli:a1_tolerance_receipt_cli_contracts",
+    "rodas5p-fair-ab:doc",
+    "rodas5p-integrators:doc",
+    "rodas5p-integrators:generic_scope_contracts",
+    "rodas5p-integrators:lib"
+   ],
+   "why": {
+    "rodas5p-cli:a1_tolerance_receipt_cli_contracts": [
+     "executed crates/rodas5p-integrators/src/a1_two_arm_receipt.rs"
+    ],
+    "rodas5p-fair-ab:doc": [
+     "body change: crates/rodas5p-integrators/src/a1_two_arm_receipt.rs"
+    ],
+    "rodas5p-integrators:doc": [
+     "body change: crates/rodas5p-integrators/src/a1_two_arm_receipt.rs"
+    ],
+    "rodas5p-integrators:generic_scope_contracts": [
+     "reads crates/rodas5p-integrators/src/a1_two_arm_receipt.rs"
+    ],
+    "rodas5p-integrators:lib": [
+     "compiles crates/rodas5p-integrators/src/a1_two_arm_receipt.rs"
+    ]
+   }
+  },
+  {
+   "changes": [
+    [
+     "M",
+     "crates/rodas5p-integrators/src/dense_output_v2.rs"
+    ]
+   ],
+   "classified": {
+    "crates/rodas5p-integrators/src/dense_output_v2.rs": "body"
+   },
+   "cli": {
+    "changed": [
+     {
+      "path": "crates/rodas5p-integrators/src/dense_output_v2.rs",
+      "status": "M"
+     }
+    ],
+    "classified": {
+     "crates/rodas5p-integrators/src/dense_output_v2.rs": "body"
+    },
+    "exit": 0,
+    "expected_selected": true,
+    "mode": "selected",
+    "units": 424,
+    "units_by_rule5": 409,
+    "whole_packages_without_recorded_inputs": [
+     "vigilode",
+     "vigilode-coupled"
+    ]
+   },
+   "desc": "body change in crates/rodas5p-integrators/src/dense_output_v2.rs, executed by the negative control prothero_robinson_wfiltered_enforce_kill_gate and by ['rodas5p-cli::cli_contracts', 'rodas5p-cli::triage_cli', 'rodas5p-fair-ab::adaptive_global_error_contracts', 'rodas5p-fair-ab::global_error_contracts', 'rodas5p-fair-ab::lib', 'rodas5p-fair-ab::two_arm_v3_campaign_contracts', 'rodas5p-integrators::lib']; the control's own target entry executed 0 files",
+   "expect": [
+    "rodas5p-integrators:dense_wfiltered_contracts"
+   ],
+   "head": "b6b81d8d724d0d3df6f94455f8f7ff67efb83f87",
+   "id": "C1",
+   "note": null,
+   "notes": [],
+   "ok": true,
+   "only": null,
+   "problems": [],
+   "selected": [
+    "rodas5p-cli:cli_contracts",
+    "rodas5p-cli:triage_cli",
+    "rodas5p-fair-ab:adaptive_global_error_contracts",
+    "rodas5p-fair-ab:doc",
+    "rodas5p-fair-ab:global_error_contracts",
+    "rodas5p-fair-ab:lib",
+    "rodas5p-fair-ab:two_arm_v3_campaign_contracts",
+    "rodas5p-integrators:dense_wfiltered_contracts",
+    "rodas5p-integrators:doc",
+    "rodas5p-integrators:generic_scope_contracts",
+    "rodas5p-integrators:lib"
+   ],
+   "why": {
+    "rodas5p-cli:cli_contracts": [
+     "executed crates/rodas5p-integrators/src/dense_output_v2.rs"
+    ],
+    "rodas5p-cli:triage_cli": [
+     "executed crates/rodas5p-integrators/src/dense_output_v2.rs"
+    ],
+    "rodas5p-fair-ab:adaptive_global_error_contracts": [
+     "executed crates/rodas5p-integrators/src/dense_output_v2.rs"
+    ],
+    "rodas5p-fair-ab:doc": [
+     "body change: crates/rodas5p-integrators/src/dense_output_v2.rs"
+    ],
+    "rodas5p-fair-ab:global_error_contracts": [
+     "executed crates/rodas5p-integrators/src/dense_output_v2.rs"
+    ],
+    "rodas5p-fair-ab:lib": [
+     "executed crates/rodas5p-integrators/src/dense_output_v2.rs"
+    ],
+    "rodas5p-fair-ab:two_arm_v3_campaign_contracts": [
+     "executed crates/rodas5p-integrators/src/dense_output_v2.rs"
+    ],
+    "rodas5p-integrators:dense_wfiltered_contracts": [
+     "negative control prothero_robinson_wfiltered_enforce_kill_gate: executed crates/rodas5p-integrators/src/dense_output_v2.rs"
+    ],
+    "rodas5p-integrators:doc": [
+     "body change: crates/rodas5p-integrators/src/dense_output_v2.rs"
+    ],
+    "rodas5p-integrators:generic_scope_contracts": [
+     "reads crates/rodas5p-integrators/src/dense_output_v2.rs"
+    ],
+    "rodas5p-integrators:lib": [
+     "compiles crates/rodas5p-integrators/src/dense_output_v2.rs; executed crates/rodas5p-integrators/src/dense_output_v2.rs"
+    ]
+   }
+  },
+  {
+   "changes": [
+    [
+     "M",
+     "crates/rodas5p-core/src/lib.rs"
+    ]
+   ],
+   "classified": {
+    "crates/rodas5p-core/src/lib.rs": "structural"
+   },
+   "cli": {
+    "changed": [
+     {
+      "path": "crates/rodas5p-core/src/lib.rs",
+      "status": "M"
+     }
+    ],
+    "classified": {
+     "crates/rodas5p-core/src/lib.rs": "structural"
+    },
+    "exit": 0,
+    "expected_selected": true,
+    "mode": "selected",
+    "units": 7,
+    "units_by_rule5": 0,
+    "whole_packages_without_recorded_inputs": [
+     "vigilode",
+     "vigilode-coupled"
+    ]
+   },
+   "desc": "structural change: a new const in crates/rodas5p-core/src/lib.rs",
+   "expect": [
+    "rodas5p-core:*",
+    "rodas5p-krylov:*",
+    "rodas5p-integrators:*",
+    "rodas5p-cli:*"
+   ],
+   "head": "3131be1970231469475ce8af2aa0f73ff5405d1a",
+   "id": "S1",
+   "note": null,
+   "notes": [],
+   "ok": true,
+   "only": null,
+   "problems": [],
+   "selected": [
+    "rodas5p-cli:*",
+    "rodas5p-core:*",
+    "rodas5p-fair-ab:*",
+    "rodas5p-integrators:*",
+    "rodas5p-krylov:*"
+   ],
+   "why": {
+    "rodas5p-cli:*": [
+     "depends on rodas5p-core"
+    ],
+    "rodas5p-core:*": [
+     "structural change: crates/rodas5p-core/src/lib.rs"
+    ],
+    "rodas5p-fair-ab:*": [
+     "depends on rodas5p-core"
+    ],
+    "rodas5p-integrators:*": [
+     "depends on rodas5p-core"
+    ],
+    "rodas5p-krylov:*": [
+     "depends on rodas5p-core"
+    ]
+   }
+  },
+  {
+   "changes": [
+    [
+     "M",
+     "crates/rodas5p-integrators/src/integrate.rs"
+    ]
+   ],
+   "classified": {
+    "crates/rodas5p-integrators/src/integrate.rs": "body"
+   },
+   "cli": {
+    "changed": [
+     {
+      "path": "crates/rodas5p-integrators/src/integrate.rs",
+      "status": "M"
+     }
+    ],
+    "classified": {
+     "crates/rodas5p-integrators/src/integrate.rs": "body"
+    },
+    "exit": 0,
+    "expected_selected": true,
+    "mode": "selected",
+    "units": 435,
+    "units_by_rule5": 409,
+    "whole_packages_without_recorded_inputs": [
+     "vigilode",
+     "vigilode-coupled"
+    ]
+   },
+   "desc": "whitespace that splits the operator && in integrate.rs, which cli alg02_predictive_controller and the integrators lib unit tests execute",
+   "expect": [
+    "rodas5p-cli:alg02_predictive_controller",
+    "rodas5p-integrators:lib"
+   ],
+   "head": "9b38d7bcf38dbf4461a29223d0dfeba187681404",
+   "id": "S-N1",
+   "note": null,
+   "notes": [],
+   "ok": true,
+   "only": null,
+   "problems": [],
+   "selected": [
+    "rodas5p-cli:a1_tolerance_receipt_cli_contracts",
+    "rodas5p-cli:alg02_predictive_controller",
+    "rodas5p-cli:alg05_predictive_controller_v2",
+    "rodas5p-cli:bin:rodas5p",
+    "rodas5p-cli:bin:rodas5p-allocation-audit",
+    "rodas5p-cli:cli_contracts",
+    "rodas5p-cli:controller_grid_holdout",
+    "rodas5p-cli:ct01_controller_telemetry_parity",
+    "rodas5p-cli:frozen_full_e_shadow_cli_contracts",
+    "rodas5p-cli:me01_cli_contracts",
+    "rodas5p-cli:triage_cli",
+    "rodas5p-cli:v37_continuation_transaction_cli_contracts",
+    "rodas5p-fair-ab:adaptive_global_error_contracts",
+    "rodas5p-fair-ab:doc",
+    "rodas5p-fair-ab:global_error_contracts",
+    "rodas5p-fair-ab:lib",
+    "rodas5p-fair-ab:two_arm_v3_campaign_contracts",
+    "rodas5p-integrators:doc",
+    "rodas5p-integrators:generic_scope_contracts",
+    "rodas5p-integrators:lib",
+    "rodas5p-integrators:ppsw1_6b_contracts",
+    "rodas5p-integrators:ptsw2b_contracts"
+   ],
+   "why": {
+    "rodas5p-cli:a1_tolerance_receipt_cli_contracts": [
+     "executed crates/rodas5p-integrators/src/integrate.rs"
+    ],
+    "rodas5p-cli:alg02_predictive_controller": [
+     "executed crates/rodas5p-integrators/src/integrate.rs"
+    ],
+    "rodas5p-cli:alg05_predictive_controller_v2": [
+     "executed crates/rodas5p-integrators/src/integrate.rs"
+    ],
+    "rodas5p-cli:bin:rodas5p": [
+     "executed crates/rodas5p-integrators/src/integrate.rs"
+    ],
+    "rodas5p-cli:bin:rodas5p-allocation-audit": [
+     "executed crates/rodas5p-integrators/src/integrate.rs"
+    ],
+    "rodas5p-cli:cli_contracts": [
+     "executed crates/rodas5p-integrators/src/integrate.rs"
+    ],
+    "rodas5p-cli:controller_grid_holdout": [
+     "executed crates/rodas5p-integrators/src/integrate.rs"
+    ],
+    "rodas5p-cli:ct01_controller_telemetry_parity": [
+     "executed crates/rodas5p-integrators/src/integrate.rs"
+    ],
+    "rodas5p-cli:frozen_full_e_shadow_cli_contracts": [
+     "executed crates/rodas5p-integrators/src/integrate.rs"
+    ],
+    "rodas5p-cli:me01_cli_contracts": [
+     "executed crates/rodas5p-integrators/src/integrate.rs"
+    ],
+    "rodas5p-cli:triage_cli": [
+     "executed crates/rodas5p-integrators/src/integrate.rs"
+    ],
+    "rodas5p-cli:v37_continuation_transaction_cli_contracts": [
+     "executed crates/rodas5p-integrators/src/integrate.rs"
+    ],
+    "rodas5p-fair-ab:adaptive_global_error_contracts": [
+     "executed crates/rodas5p-integrators/src/integrate.rs"
+    ],
+    "rodas5p-fair-ab:doc": [
+     "body change: crates/rodas5p-integrators/src/integrate.rs"
+    ],
+    "rodas5p-fair-ab:global_error_contracts": [
+     "executed crates/rodas5p-integrators/src/integrate.rs"
+    ],
+    "rodas5p-fair-ab:lib": [
+     "executed crates/rodas5p-integrators/src/integrate.rs"
+    ],
+    "rodas5p-fair-ab:two_arm_v3_campaign_contracts": [
+     "executed crates/rodas5p-integrators/src/integrate.rs"
+    ],
+    "rodas5p-integrators:doc": [
+     "body change: crates/rodas5p-integrators/src/integrate.rs"
+    ],
+    "rodas5p-integrators:generic_scope_contracts": [
+     "reads crates/rodas5p-integrators/src/integrate.rs"
+    ],
+    "rodas5p-integrators:lib": [
+     "compiles crates/rodas5p-integrators/src/integrate.rs; executed crates/rodas5p-integrators/src/integrate.rs"
+    ],
+    "rodas5p-integrators:ppsw1_6b_contracts": [
+     "reads crates/rodas5p-integrators/src/integrate.rs"
+    ],
+    "rodas5p-integrators:ptsw2b_contracts": [
+     "reads crates/rodas5p-integrators/src/integrate.rs"
+    ]
+   }
+  },
+  {
+   "changes": [
+    [
+     "A",
+     "research/ci_v3_merge_only/x.json"
+    ]
+   ],
+   "classified": {},
+   "cli": {
+    "changed": [
+     {
+      "path": "research/ci_v3_merge_only/x.json",
+      "status": "A"
+     }
+    ],
+    "classified": {},
+    "exit": 0,
+    "expected_selected": true,
+    "mode": "selected",
+    "units": 415,
+    "units_by_rule5": 409,
+    "whole_packages_without_recorded_inputs": [
+     "vigilode",
+     "vigilode-coupled"
+    ]
+   },
+   "desc": "new file in a directory that a test listed and the head trees lack (the tested merge tree had it through the pull-request base; simulated by a map entry)",
+   "expect": [
+    "rodas5p-integrators:generic_scope_contracts"
+   ],
+   "head": "a3b08d2e2f3b3a95840ba7d7bbb18ad39ebeb16a",
+   "id": "S-N3",
+   "note": null,
+   "notes": [],
+   "ok": true,
+   "only": "rodas5p-integrators:generic_scope_contracts, rodas5p-integrators:doc",
+   "problems": [],
+   "selected": [
+    "rodas5p-integrators:doc",
+    "rodas5p-integrators:generic_scope_contracts"
+   ],
+   "why": {
+    "rodas5p-integrators:doc": [
+     "its package has a selected target (doc tests are not measured)"
+    ],
+    "rodas5p-integrators:generic_scope_contracts": [
+     "observed research/ci_v3_merge_only, which the change adds to"
+    ]
+   }
+  },
+  {
+   "changes": [
+    [
+     "A",
+     "research/ci_v3_merge_only/x.json"
+    ]
+   ],
+   "classified": {},
+   "cli": {
+    "changed": [
+     {
+      "path": "research/ci_v3_merge_only/x.json",
+      "status": "A"
+     }
+    ],
+    "classified": {},
+    "exit": 0,
+    "expected_selected": true,
+    "mode": "selected",
+    "units": 414,
+    "units_by_rule5": 409,
+    "whole_packages_without_recorded_inputs": [
+     "vigilode",
+     "vigilode-coupled"
+    ]
+   },
+   "desc": "the same new file when no test listed that directory",
+   "expect": [],
+   "head": "6a7cd1289e3a55b66ba0819661726feff5317acd",
+   "id": "S-N3-unlisted",
+   "note": null,
+   "notes": [
+    "no mapped target compiles, executes or reads research/ci_v3_merge_only/x.json"
+   ],
+   "ok": true,
+   "only": "nothing",
+   "problems": [],
+   "selected": [],
+   "why": {}
+  },
+  {
+   "changes": [
+    [
+     "A",
+     ".gitattributes"
+    ]
+   ],
+   "classified": {},
+   "cli": {
+    "changed": [
+     {
+      "path": ".gitattributes",
+      "status": "A"
+     }
+    ],
+    "classified": {},
+    "exit": 0,
+    "expected_selected": true,
+    "mode": "full",
+    "units": 7,
+    "units_by_rule5": 0,
+    "whole_packages_without_recorded_inputs": []
+   },
+   "desc": "a new .gitattributes rule, which changes the checked-out bytes of unchanged files",
+   "expect": [],
+   "head": "f865ffa79ee6777e7a7e881d66af2d7023100b90",
+   "id": "S-N4",
+   "note": null,
+   "notes": [
+    "no mapped target compiles, executes or reads .gitattributes"
+   ],
+   "ok": true,
+   "only": null,
+   "problems": [],
+   "selected": [],
+   "why": {}
+  },
+  {
+   "changes": [
+    [
+     "M",
+     "crates/rodas5p-fair-ab/src/external_comparators.rs"
+    ]
+   ],
+   "classified": {
+    "crates/rodas5p-fair-ab/src/external_comparators.rs": "body"
+   },
+   "cli": {
+    "changed": [
+     {
+      "path": "crates/rodas5p-fair-ab/src/external_comparators.rs",
+      "status": "M"
+     }
+    ],
+    "classified": {
+     "crates/rodas5p-fair-ab/src/external_comparators.rs": "body"
+    },
+    "exit": 0,
+    "expected_selected": true,
+    "mode": "selected",
+    "units": 418,
+    "units_by_rule5": 409,
+    "whole_packages_without_recorded_inputs": [
+     "vigilode",
+     "vigilode-coupled"
+    ]
+   },
+   "desc": "body change in the fair-ab source crates/rodas5p-fair-ab/src/external_comparators.rs (fair-ab and cli have the job test-cli-fair-ab now); executed by rodas5p-fair-ab::external_comparator_contracts",
+   "expect": [
+    "rodas5p-fair-ab:external_comparator_contracts"
+   ],
+   "head": "a561042c4ca63787250e3e1884ae0db158930505",
+   "id": "M-N2",
+   "note": null,
+   "notes": [],
+   "ok": true,
+   "only": "targets that executed the file, read it, or compile it as their own crate (lib unit tests), plus doc tests",
+   "problems": [],
+   "selected": [
+    "rodas5p-fair-ab:doc",
+    "rodas5p-fair-ab:external_comparator_contracts",
+    "rodas5p-fair-ab:lib",
+    "rodas5p-integrators:doc",
+    "rodas5p-integrators:generic_scope_contracts"
+   ],
+   "why": {
+    "rodas5p-fair-ab:doc": [
+     "body change: crates/rodas5p-fair-ab/src/external_comparators.rs"
+    ],
+    "rodas5p-fair-ab:external_comparator_contracts": [
+     "executed crates/rodas5p-fair-ab/src/external_comparators.rs"
+    ],
+    "rodas5p-fair-ab:lib": [
+     "compiles crates/rodas5p-fair-ab/src/external_comparators.rs"
+    ],
+    "rodas5p-integrators:doc": [
+     "its package has a selected target (doc tests are not measured)"
+    ],
+    "rodas5p-integrators:generic_scope_contracts": [
+     "reads crates/rodas5p-fair-ab/src/external_comparators.rs"
+    ]
+   }
+  },
+  {
+   "changes": [
+    [
+     "M",
+     "crates/rodas5p-cli/src/main.rs"
+    ]
+   ],
+   "classified": {
+    "crates/rodas5p-cli/src/main.rs": "body"
+   },
+   "cli": {
+    "changed": [
+     {
+      "path": "crates/rodas5p-cli/src/main.rs",
+      "status": "M"
+     }
+    ],
+    "classified": {
+     "crates/rodas5p-cli/src/main.rs": "body"
+    },
+    "exit": 0,
+    "expected_selected": true,
+    "mode": "selected",
+    "units": 427,
+    "units_by_rule5": 409,
+    "whole_packages_without_recorded_inputs": [
+     "vigilode",
+     "vigilode-coupled"
+    ]
+   },
+   "desc": "body change in crates/rodas5p-cli/src/main.rs (the cli tests run the binary); executed by rodas5p-cli::a1_tolerance_receipt_cli_contracts, rodas5p-cli::allocation_cli_contracts, rodas5p-cli::bin:rodas5p, rodas5p-cli::cli_contracts, rodas5p-cli::frozen_full_e_shadow_cli_contracts, rodas5p-cli::holdout_hygiene_cli_contracts, rodas5p-cli::me01_cli_contracts, rodas5p-cli::paired_timing_campaign_cli_contracts, rodas5p-cli::scientific_validity_v2_cli_contracts, rodas5p-cli::triage_cli, rodas5p-cli::v37_continuation_transaction_cli_contracts",
+   "expect": [
+    "rodas5p-cli:a1_tolerance_receipt_cli_contracts",
+    "rodas5p-cli:allocation_cli_contracts",
+    "rodas5p-cli:bin:rodas5p",
+    "rodas5p-cli:cli_contracts",
+    "rodas5p-cli:frozen_full_e_shadow_cli_contracts",
+    "rodas5p-cli:holdout_hygiene_cli_contracts",
+    "rodas5p-cli:me01_cli_contracts",
+    "rodas5p-cli:paired_timing_campaign_cli_contracts",
+    "rodas5p-cli:scientific_validity_v2_cli_contracts",
+    "rodas5p-cli:triage_cli",
+    "rodas5p-cli:v37_continuation_transaction_cli_contracts",
+    "rodas5p-integrators:constants_provenance_contracts"
+   ],
+   "head": "56d5b0ccc781e1720080169e5831714dcb9d350e",
+   "id": "M-N2-cli",
+   "note": null,
+   "notes": [],
+   "ok": true,
+   "only": null,
+   "problems": [],
+   "selected": [
+    "rodas5p-cli:a1_tolerance_receipt_cli_contracts",
+    "rodas5p-cli:allocation_cli_contracts",
+    "rodas5p-cli:bin:rodas5p",
+    "rodas5p-cli:cli_contracts",
+    "rodas5p-cli:frozen_full_e_shadow_cli_contracts",
+    "rodas5p-cli:holdout_hygiene_cli_contracts",
+    "rodas5p-cli:me01_cli_contracts",
+    "rodas5p-cli:paired_timing_campaign_cli_contracts",
+    "rodas5p-cli:scientific_validity_v2_cli_contracts",
+    "rodas5p-cli:triage_cli",
+    "rodas5p-cli:v37_continuation_transaction_cli_contracts",
+    "rodas5p-integrators:constants_provenance_contracts",
+    "rodas5p-integrators:doc",
+    "rodas5p-integrators:generic_scope_contracts"
+   ],
+   "why": {
+    "rodas5p-cli:a1_tolerance_receipt_cli_contracts": [
+     "executed crates/rodas5p-cli/src/main.rs"
+    ],
+    "rodas5p-cli:allocation_cli_contracts": [
+     "executed crates/rodas5p-cli/src/main.rs"
+    ],
+    "rodas5p-cli:bin:rodas5p": [
+     "compiles crates/rodas5p-cli/src/main.rs; executed crates/rodas5p-cli/src/main.rs"
+    ],
+    "rodas5p-cli:cli_contracts": [
+     "executed crates/rodas5p-cli/src/main.rs"
+    ],
+    "rodas5p-cli:frozen_full_e_shadow_cli_contracts": [
+     "executed crates/rodas5p-cli/src/main.rs"
+    ],
+    "rodas5p-cli:holdout_hygiene_cli_contracts": [
+     "executed crates/rodas5p-cli/src/main.rs"
+    ],
+    "rodas5p-cli:me01_cli_contracts": [
+     "executed crates/rodas5p-cli/src/main.rs"
+    ],
+    "rodas5p-cli:paired_timing_campaign_cli_contracts": [
+     "executed crates/rodas5p-cli/src/main.rs"
+    ],
+    "rodas5p-cli:scientific_validity_v2_cli_contracts": [
+     "executed crates/rodas5p-cli/src/main.rs"
+    ],
+    "rodas5p-cli:triage_cli": [
+     "executed crates/rodas5p-cli/src/main.rs"
+    ],
+    "rodas5p-cli:v37_continuation_transaction_cli_contracts": [
+     "executed crates/rodas5p-cli/src/main.rs"
+    ],
+    "rodas5p-integrators:constants_provenance_contracts": [
+     "compiles crates/rodas5p-cli/src/main.rs"
+    ],
+    "rodas5p-integrators:doc": [
+     "its package has a selected target (doc tests are not measured)"
+    ],
+    "rodas5p-integrators:generic_scope_contracts": [
+     "reads crates/rodas5p-cli/src/main.rs"
+    ]
+   }
+  }
+ ],
+ "failures": 0,
+ "map": "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-ci3/research/production_loop_20261116/ci/v3_logs/fix_map_merged.json",
+ "map_targets": [
+  "rodas5p-cli::a1_tolerance_receipt_cli_contracts",
+  "rodas5p-cli::alg02_predictive_controller",
+  "rodas5p-cli::alg05_predictive_controller_v2",
+  "rodas5p-cli::allocation_cli_contracts",
+  "rodas5p-cli::bin:rodas5p",
+  "rodas5p-cli::bin:rodas5p-allocation-audit",
+  "rodas5p-cli::cli_contracts",
+  "rodas5p-cli::controller_grid_holdout",
+  "rodas5p-cli::ct01_controller_telemetry_parity",
+  "rodas5p-cli::frozen_full_e_shadow_cli_contracts",
+  "rodas5p-cli::holdout_hygiene_cli_contracts",
+  "rodas5p-cli::me01_cli_contracts",
+  "rodas5p-cli::paired_timing_campaign_cli_contracts",
+  "rodas5p-cli::scientific_validity_v2_cli_contracts",
+  "rodas5p-cli::triage_cli",
+  "rodas5p-cli::v37_continuation_transaction_cli_contracts",
+  "rodas5p-core::residual_gain_contract",
+  "rodas5p-fair-ab::adaptive_global_error_contracts",
+  "rodas5p-fair-ab::example:semilinear_f033_ablation",
+  "rodas5p-fair-ab::example:semilinear_fixed_h_order",
+  "rodas5p-fair-ab::example:two_arm_v3_calibration96",
+  "rodas5p-fair-ab::external_comparator_contracts",
+  "rodas5p-fair-ab::fair_ab_contracts",
+  "rodas5p-fair-ab::global_error_contracts",
+  "rodas5p-fair-ab::lib",
+  "rodas5p-fair-ab::numerical_reference_contracts",
+  "rodas5p-fair-ab::numerical_reference_v2_contracts",
+  "rodas5p-fair-ab::output_accuracy_assessment_contracts",
+  "rodas5p-fair-ab::packet_benchmark_contracts",
+  "rodas5p-fair-ab::paired_timing_contracts",
+  "rodas5p-fair-ab::r2_timing_authority_contracts",
+  "rodas5p-fair-ab::r2_work_coverage_consumer_contracts",
+  "rodas5p-fair-ab::r3_aa_batch_contracts",
+  "rodas5p-fair-ab::r3_monte_carlo_gate_contracts",
+  "rodas5p-fair-ab::r3_raw_protocol_admission_contracts",
+  "rodas5p-fair-ab::r3_timing_design_contracts",
+  "rodas5p-fair-ab::r4_statistics_contracts",
+  "rodas5p-fair-ab::scientific_validity_v2_campaign_contracts",
+  "rodas5p-fair-ab::stable_operator_id_contracts",
+  "rodas5p-fair-ab::two_arm_admissibility_contracts",
+  "rodas5p-fair-ab::two_arm_v3_campaign_contracts",
+  "rodas5p-integrators::constants_provenance_contracts",
+  "rodas5p-integrators::dense_wfiltered_contracts",
+  "rodas5p-integrators::dense_wfiltered_contracts#prothero_robinson_wfiltered_enforce_kill_gate",
+  "rodas5p-integrators::example:sp01_dupfix_profile",
+  "rodas5p-integrators::generic_scope_contracts",
+  "rodas5p-integrators::lib",
+  "rodas5p-integrators::ppsw1_6b_contracts",
+  "rodas5p-integrators::ptsw2b_contracts"
+ ],
+ "schema": "vigilode.loop.ci-v3-selection-cases.v1"
+}

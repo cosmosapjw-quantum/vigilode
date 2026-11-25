@@ -1,0 +1,149 @@
+{
+  "schema": "vigilode.loop.v27-phase1.v1",
+  "run_id": "wf_99d5d9d2-ffe",
+  "branch": "research/production-loop-20261116-w3-v27",
+  "head": "c998963d6163d840ff6548af56d5c76a4c2b9459",
+  "note": "Builder return of phase 1, verbatim. Not merged: by the frozen decision of PREDECLARED.json the Auto route changes only if E1-E10 pass in phase 2.",
+  "build": {
+    "status": "done",
+    "summary": "V27 phase 1 is done on research/production-loop-20261116-w3-v27, head c998963d (10 commits, not pushed). The forward break-even pilot (FBP) Auto route follows OD-L1-22 D1-D6. New unified/breakeven.rs: break_even_length, a quota-1 DOPRI5 session loop with attempt telemetry, a located window, pilots at b*2^k, a horizon, and one RODAS5P attempt per pilot (h0=H, max_steps=1) under one budget. session.rs gains crate-private pass-throughs. The stiffness screen, the trial budget and the dimension limit are removed together with their public names, including UnifiedStop::Preflight. VigilodeSolution gains pilot records and a handover history entry. The 5 failing-first tests failed on the base by assertion and pass now. The numbers match the design model exactly (Robertson 385 vs 6233, L96 3233 vs 33467, osc_1000 35582, Arenstorf 1369, P_heat_fd 945<=5890). U1-U5, D1, session and b(n) tests were added. Router contracts: 2 D4 edits and 8 D5 edits, each listed in IMPLEMENTATION_NOTES.md. Suite (549 passed), clippy, rustdoc -D warnings, fmt and the unchanged golden test all pass. The loop checker reports only the 9 expected pins. The runner is built for N and T and passes the toy check; no problem of the deciding set was run.",
+    "checks": [
+      {
+        "name": "failing-first run on base sources (commit A)",
+        "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test unified_breakeven_contracts -- --nocapture --test-threads=1",
+        "exit_code": 101,
+        "result": "5/5 fail by assertion, no compile error (logs/failing_first_base.log): f2_fatal_above_one_completes_under_auto: 'F2 must complete under Auto as it does under Dopri5::solve, got Failed(CallbackFailed { callback: Rhs, t: 0.0, .. })'; lorenz96_40_has_no_rodas5p_leg_and_costs_at_most_twice_dopri5: 'Lorenz-96 n = 40 is not stiff, yet a RODAS5P leg ran' (33467 calls, 11.0x D, 54.3x ops); robertson_40_charges_at_most_two_direct_rodas5p_plus_window_and_pilots: '6233 charged callbacks above 2 x 415 (direct RODAS5P) + 2 b c_D + 8 pilots = 974'; oscillator_1000_has_no_rodas5p_leg: 'the harmonic oscillator is not stiff, yet a RODAS5P leg ran' (trial exhausted at t=168.7); arenstorf_has_no_rodas5p_leg: 'the Arenstorf orbit is not stiff, yet a RODAS5P leg ran' (screen -> RODAS5P, 4343 calls)"
+      },
+      {
+        "name": "facade suite",
+        "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --no-fail-fast",
+        "exit_code": 0,
+        "result": "at 1715dd64: 60 binaries, 549 passed, 0 failed, 0 ignored; default_path_golden 11 passed unchanged (logs/suite_vigilode.log)"
+      },
+      {
+        "name": "router targets + golden after clippy/doc fixes",
+        "command": "cargo +1.94.1 test --locked -j 4 --release -p vigilode --no-fail-fast --test unified_breakeven_contracts --test unified_router_contracts --test unified_production_solver_contracts --test unified_frontend_contracts --test default_path_golden",
+        "exit_code": 0,
+        "result": "13/36/6/31/11 passed at c00cfe2f (logs/router_targets_after_fixes.log)"
+      },
+      {
+        "name": "clippy",
+        "command": "taskset -c 0-5,12-17 cargo +1.94.1 clippy --locked -j 4 --release -p vigilode --all-targets --no-deps -- -D warnings",
+        "exit_code": 0,
+        "result": "clean at c00cfe2f (logs/clippy.log)"
+      },
+      {
+        "name": "rustdoc",
+        "command": "RUSTDOCFLAGS=-D warnings cargo +1.94.1 doc -j 4 -p vigilode --no-deps --locked",
+        "exit_code": 0,
+        "result": "no warnings (logs/doc.log)"
+      },
+      {
+        "name": "fmt",
+        "command": "cargo +1.94.1 fmt -p vigilode -- --check",
+        "exit_code": 0,
+        "result": "clean (logs/fmt.log)"
+      },
+      {
+        "name": "runner build N and T",
+        "command": "research/production_loop_20261116/router_hyperparameter_free/runner/build.sh lock; build.sh",
+        "exit_code": 0,
+        "result": "both locks byte-identical (copied repo lock, --offline once, then --locked); logs/runner_build.log"
+      },
+      {
+        "name": "runner plumbing on toy y'=-y [0,1]",
+        "command": "python3 -I runner/check_toy.py",
+        "exit_code": 0,
+        "result": "12 lines, repeats identical, D and R equal across builds; N 49 entries all stages; T shows the screen column at t0 (logs/runner_toy.jsonl)"
+      },
+      {
+        "name": "loop checker",
+        "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
+        "exit_code": 1,
+        "result": "verbatim: 'ValueError: implementation changed; rerun affected tests/update checkpoint: crates/vigilode/src/unified/analyzer.rs'. Collect-all variant: 9 failures, all 'implementation changed; rerun affected tests/update checkpoint:' for unified/{analyzer,fallback,legs,mod,options,router,solution,workspace}.rs and tests/unified_router_contracts.rs (expected); no protected/evidence/allowlist/JSON failure (logs/check_checkpoint.log)"
+      }
+    ],
+    "open_issues": [
+      "Exploratory arms N_prod and N_cont (PREDECLARED arms) are not built: each needs a router variant. A public option is excluded by D6, and a runner re-implementation would be inexact because trial_h, requested_h and clipped are crate-private. Decide before phase 2.",
+      "Runner fixture choices where PREDECLARED says 'their V03b spans' for the n=8 start-rule fixtures: P_heat_dense (0,10) y0=sin; P_scalar_dense (0,1); P_heat_jvp and P_heat_banded (0,0.01) y0=1; P_mass (0,1); P_blowup (0,2). Confirm before phase 2.",
+      "examples/unified_production_solver.rs (lines 8-13, 139-142) and the comment of contract_4 still describe the screened DOPRI5 trial. They use no removed name, so the task rules did not allow an edit; both run unchanged.",
+      "Four p1_preflight_* tests keep their names although there is no preflight call any more; they pass unchanged, as the task required.",
+      "CHECKPOINT.json pins of the 8 unified sources and unified_router_contracts.rs are stale by design; the orchestrator updates them at merge.",
+      "The telemetry pass-throughs are crate-private, so their test runs through the route (U1: bits and the whole DOPRI5 record equal Dopri5::solve, with lost pilots). The public quota-1 session test covers the advances. session.rs got no unit test because the task limited it to pass-throughs.",
+      "PREDECLARED.json must be on origin before phase 2. No problem of the deciding set was run."
+    ],
+    "head_commit": "c998963d6163d840ff6548af56d5c76a4c2b9459",
+    "branch": "research/production-loop-20261116-w3-v27",
+    "files_written": [
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/crates/vigilode/src/unified/breakeven.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/crates/vigilode/src/unified/analyzer.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/crates/vigilode/src/unified/fallback.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/crates/vigilode/src/unified/legs.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/crates/vigilode/src/unified/mod.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/crates/vigilode/src/unified/options.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/crates/vigilode/src/unified/router.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/crates/vigilode/src/unified/solution.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/crates/vigilode/src/unified/workspace.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/crates/vigilode/src/session.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/crates/vigilode/tests/unified_breakeven_contracts.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/crates/vigilode/tests/unified_router_contracts.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/research/production_loop_20261116/router_hyperparameter_free/IMPLEMENTATION_NOTES.md",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/research/production_loop_20261116/router_hyperparameter_free/runner/Cargo.toml",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/research/production_loop_20261116/router_hyperparameter_free/runner/Cargo.lock",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/research/production_loop_20261116/router_hyperparameter_free/runner/src/main.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/research/production_loop_20261116/router_hyperparameter_free/runner/build.sh",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/research/production_loop_20261116/router_hyperparameter_free/runner/check_toy.py",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/research/production_loop_20261116/router_hyperparameter_free/logs/",
+      "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27/runner_t/"
+    ],
+    "key_numbers": [
+      "Robertson FD span 40: 385 callbacks / 36 attempts (8 DOPRI5, 1 lost pilot, 27 RODAS5P incl. accepted pilot) vs base 6233 and direct RODAS5P 415",
+      "Lorenz-96 n=40: 3233 callbacks (1.065x Dopri5::solve), 1.29x ops, no RODAS5P leg; base 33467 (11.0x, 54.3x ops)",
+      "oscillator [0,1000]: 35582 vs D 35461 (11 lost pilots), base 41406; Arenstorf 1369 vs base 4343; F2 success with 49 calls (base: CallbackFailed at t0)",
+      "P_heat_fd: 945 callbacks <= W 5890 with handover at DOPRI5 attempt 112; P_scalar_fd bounded by 181818 with handover",
+      "N2 (D1): CallbackFailed at first pilot, t_D=9.79e-4, 33 calls, 1 fatal entry",
+      "U1: 8 non-stiff runs bit-identical to Dopri5::solve plus exactly 48 lost pilots' work, all <= 2x cost",
+      "suite 60 binaries / 549 passed / 0 failed; router contracts 36/36 with 10 edited tests (2 D4, 8 D5)"
+    ],
+    "finding_status": [
+      {
+        "id": "D1",
+        "status": "fixed",
+        "how": "A fatal callback in a pilot ends the solve: stop is Rodas5p{CallbackFailed} and the DOPRI5 prefix up to t_D is kept (test d1_...)."
+      },
+      {
+        "id": "D2",
+        "status": "fixed",
+        "how": "A supplied Jacobian, JVP or band still gives RouteBasis::SuppliedDerivative, so RODAS5P starts."
+      },
+      {
+        "id": "D3",
+        "status": "fixed",
+        "how": "The handover is one way. There is no return to DOPRI5."
+      },
+      {
+        "id": "D4",
+        "status": "fixed",
+        "how": "The P_heat_fd and P_scalar_fd tests now check the work bound W plus a recorded handover; both tests were renamed *_is_bounded_and_hands_over."
+      },
+      {
+        "id": "D5",
+        "status": "fixed",
+        "how": "EXPLICIT_TRIAL_MAX_DIMENSION, DOPRI5_REAL_STABILITY_BOUND, EXPLICIT_TRIAL_ATTEMPT_LIMIT, StiffnessScreen, the 5 RouteBasis values, UnifiedStop::Preflight and the PreflightAnalysis screen fields are removed."
+      },
+      {
+        "id": "D6",
+        "status": "not_applicable",
+        "how": "Nothing was added: no price option. Operations are counted by formula outside the protected kernel."
+      }
+    ],
+    "rulings": [
+      "The pilot runs through registry_leg, which calls Rodas5p::solve, which is solve_observed_bounded(.., &[], None). It is the same call and gives the route id from the run record.",
+      "The accepted pilot is merged into the RODAS5P leg (legs: DOPRI5, then RODAS5P), and that leg's history entry is the handover. This keeps contract_4 (route_history.len()==2) passing unchanged.",
+      "The PreflightAnalysis fields screen, rhs_calls and callback_failure are removed because they described the screen only.",
+      "The label case 'heat n=16 FD without structure' now declares regime Stiff. It depended on the removed dimension limit (D5).",
+      "Budget: the DOPRI5 session enforces max_steps alone until the first pilot attempt, so a pilot-free record equals Dopri5::solve. After that the route stops when DOPRI5 plus pilot attempts reach max_steps, and the status is MaxStepsReached{max_steps}.",
+      "The pilot window is kept only when b <= max_steps, so it holds at most min(b, max_steps) entries."
+    ]
+  }
+}

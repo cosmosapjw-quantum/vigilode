@@ -694,6 +694,16 @@ def report(results):
     w(f"- 첫 결정 실행(UTC): {results['first_deciding_run_utc']}; 실행 {results['runs']['processes']}개 프로세스, 케이스 {results['runs']['cases']}개 x 팔(arm) 4개 x 3회")
     w(f"- 이 보고서와 RESULTS.json은 `parse_results.py`가 원시 runner 출력과 기준해(references)만 읽어 생성합니다. 벽시계 시간은 측정하지 않았습니다(카운터만).")
     w("")
+    w("**정정 고지 (2026-11-25, 독립 리뷰 `REVIEW.json`, 판정: 정정 조건부 수용).** 리뷰가 원시 출력에서 모든 판별 기준을 다시 계산해 "
+      "같은 판정(E1, E3, E7 FAIL, 나머지 PASS, 오늘 경로 유지)을 얻었습니다. 병합 때 orchestrator가 덧붙이는 정정:")
+    w("1. 실행 수: 결정 실행은 912회(케이스 76 x 팔 4 x 3회)이고 프로세스 608개에서 돌았습니다. 여기에 D·R 교차 확인 프로세스 152개를 더해 모두 760개입니다(리뷰 R1).")
+    w("2. 단위 'callbacks'는 청구된 counter의 합입니다. 시간 미분 callback이 없는 FD 문제(P_scalar_fd, kt_vanishing, P_mass)에서는 ft_calls가 유한차분 시간 미분 계산을 셉니다. 판정은 바뀌지 않습니다(R2).")
+    w("3. E5의 PASS는 실행 뒤에 바꾼 계산 규칙(E5-i)에 기대고 있습니다. 실행 전 규칙으로는 N 실행 5개에서 FAIL이고, 같은 차이가 R과 T에도 있습니다. 결정에는 영향이 없습니다(R3).")
+    w("4. E10의 개수 상한은 선언된 사실로 RODAS5P부터 시작한 N 실행 8개(A_D = 0)에서 정의되지 않아 평가할 수 없습니다. 결정에는 영향이 없습니다(R4).")
+    w("5. phase 1의 test(실행 순서의 일부)는 결정 집합의 문제(F2, robertson_40, lorenz96_40 등)를 돌렸습니다. runner(arm) 실행은 phase 2 전에 없었습니다(R5).")
+    w("6. label 케이스 'heat n=16, finite differences, Auto'는 이제 regime Stiff를 선언합니다. 차원 한계를 없앤(D5) 결과입니다(R6).")
+    w("7. E1과 E3의 FAIL은 사전등록 문장 자체의 충돌에서 왔습니다. E1은 선언된 사실로 두 팔이 같은 경로를 도는 케이스까지 최댓값에 넣어 엄격한 '<'가 성립할 수 없었습니다. E3(a)는 소유자 결정 D1과 E8이 요구하는 N2의 종료와 양립하지 않습니다. 문장을 고쳐 다시 평가하려면 새로 사전등록해야 합니다. E7(P_scalar_fd의 오차 비율 50.6과 3.53, 둘 다 허용오차 안)은 원인을 분석하지 않았습니다.")
+    w("")
     w("## 1. 결정")
     w("")
     verdicts = {k: v["verdict"] for k, v in d.items()}

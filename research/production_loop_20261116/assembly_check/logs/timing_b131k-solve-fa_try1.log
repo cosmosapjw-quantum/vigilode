@@ -1,0 +1,29 @@
+# node V26 log
+# date: 2026-11-24T19:29:51+09:00
+# git head: fed4a25caf4e6bfb80b876b06dd69022f1d44c35
+# git status (tracked changes): 1
+# binary: /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_assembly_check_measure-bae05b015b51428f
+# binary sha256: 547232213bffe97e06bbed7935304de4e14f8d63ad31b8ceba39e6c9f885694b
+# rustc: rustc 1.94.1 (e408947bf 2026-03-25)
+# host: 7.0.0-43-generic, 24 logical cpus
+# loadavg at start: 2.26 3.72 4.56 5/6022 116208
+# command: V26_MODE=timing V26_CELL=bruss1d-n131072 V26_WHAT=solve V26_ARMS=S8@seq,FA@seq V26_ROUNDS=0+2 flock /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/timing.lock taskset -c 6-11 /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v26/release/deps/stage_clients_assembly_check_measure-bae05b015b51428f --ignored --nocapture --exact v26_measure
+# running compilers at start: 0
+
+running 1 test
+V26_META_JSON {"action_env":null,"arm_env":null,"arms_env":"S8@seq,FA@seq","atol":1e-8,"cell":"bruss1d-n131072","cpus_allowed_list":"6-11","max_attempts":48,"mode":"timing","rounds_env":"0+2","rtol":1e-6,"what_env":"solve"}
+V26_LOAD_JSON {"cell":"bruss1d-n131072","loadavg":{"load_15m":4.56,"load_1m":2.26,"load_5m":3.72,"raw":"2.26 3.72 4.56 4/6024 116227"},"what":"solve","when":"before"}
+V26_TIMING_JSON {"accepted_steps":48,"arm":"S8@seq","assembly_rhs_calls":288,"attempts":48,"backend":"banded_tight","builds":48,"cell":"bruss1d-n131072","construct_ns":35635736,"factor_ns":72267793,"final_fingerprint":"57ec697f9e76eac6","jacobian_builds":48,"jacobian_fingerprint":"cbf29ce484222325","linearize_ns":179485744,"position_in_round":0,"rejected_steps":0,"rhs_calls":680,"round":0,"solve_ns":431749951,"state_fingerprint":"cbf29ce484222325","stop_reason":"AttemptBudget","success":false,"t_end":5.160450198148365,"verification_rhs_calls":8,"verifications":1,"verified_columns":8,"wall_ns":962648474,"warm_up":false,"what":"solve"}
+V26_TIMING_JSON {"accepted_steps":48,"arm":"FA@seq","assembly_rhs_calls":288,"attempts":48,"backend":"banded_tight","builds":48,"cell":"bruss1d-n131072","construct_ns":25269845,"factor_ns":73086556,"final_fingerprint":"57ec697f9e76eac6","jacobian_builds":48,"jacobian_fingerprint":"cbf29ce484222325","linearize_ns":42653098491,"position_in_round":1,"rejected_steps":0,"rhs_calls":131744,"round":0,"solve_ns":431058211,"state_fingerprint":"cbf29ce484222325","stop_reason":"AttemptBudget","success":false,"t_end":5.160450198148365,"verification_rhs_calls":131072,"verifications":1,"verified_columns":131072,"wall_ns":43428476056,"warm_up":false,"what":"solve"}
+test v26_measure has been running for over 60 seconds
+V26_TIMING_JSON {"accepted_steps":48,"arm":"FA@seq","assembly_rhs_calls":288,"attempts":48,"backend":"banded_tight","builds":48,"cell":"bruss1d-n131072","construct_ns":34089122,"factor_ns":65609255,"final_fingerprint":"57ec697f9e76eac6","jacobian_builds":48,"jacobian_fingerprint":"cbf29ce484222325","linearize_ns":42764839688,"position_in_round":0,"rejected_steps":0,"rhs_calls":131744,"round":1,"solve_ns":427980360,"state_fingerprint":"cbf29ce484222325","stop_reason":"AttemptBudget","success":false,"t_end":5.160450198148365,"verification_rhs_calls":131072,"verifications":1,"verified_columns":131072,"wall_ns":43526253455,"warm_up":false,"what":"solve"}
+V26_TIMING_JSON {"accepted_steps":48,"arm":"S8@seq","assembly_rhs_calls":288,"attempts":48,"backend":"banded_tight","builds":48,"cell":"bruss1d-n131072","construct_ns":34940206,"factor_ns":65098770,"final_fingerprint":"57ec697f9e76eac6","jacobian_builds":48,"jacobian_fingerprint":"cbf29ce484222325","linearize_ns":163918779,"position_in_round":1,"rejected_steps":0,"rhs_calls":680,"round":1,"solve_ns":427561300,"state_fingerprint":"cbf29ce484222325","stop_reason":"AttemptBudget","success":false,"t_end":5.160450198148365,"verification_rhs_calls":8,"verifications":1,"verified_columns":8,"wall_ns":925038790,"warm_up":false,"what":"solve"}
+V26_LOAD_JSON {"cell":"bruss1d-n131072","loadavg":{"load_15m":4.25,"load_1m":1.44,"load_5m":3.07,"raw":"1.44 3.07 4.25 1/6015 119072"},"what":"solve","when":"after"}
+test v26_measure ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 88.87s
+
+# exit code: 0
+# loadavg at end: 1.44 3.07 4.25 1/6013 119073
+# running compilers at end: 0
+# date at end: 2026-11-24T19:31:20+09:00

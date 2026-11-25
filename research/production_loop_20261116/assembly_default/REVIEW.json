@@ -1,0 +1,171 @@
+{
+ "schema": "vigilode.loop.review.v1",
+ "node": "V29_ASSEMBLY_DEFAULT_MC",
+ "run_id": "wf_57f3f273-576",
+ "builder_head": "b7dff3e4473ccc756f2ce3c66ea442204d9ecfce",
+ "merged_into": "research/production-loop-20261116 (merge commits 2f214eb1 for V28, 2eb2aeed for V29)",
+ "review": {
+  "node": "V29_ASSEMBLY_DEFAULT_MC",
+  "verdict": "accept_with_corrections",
+  "summary": "V29 at b7dff3e4: accept with corrections. Scope/protection hold: allowlisted paths only in every commit, no protected/Cargo/ledger file, clean tree, no push; commit order NOTES>program>A logs>change>B logs>results; log-header source hashes match commits. My re-runs (own target; HEAD binary byte-identical to builder's B): stage_clients_* 91/0/14 in 29 binaries, sentinels 61/0, clippy+fmt clean, loop checker exit 1 on the 3 allowed pins only; 5 identity cells + 6 corpus groups reproduce B in 4705/4705 records. Own recompute: 36/36 identity runs differ only in check counters by the documented amount (18/59/150, +1 threaded); A=V08 36/36; B=V26 reference 9693/9693 (MC@seq, MC@t6 alike); only miss e3072-r768-c769, rounding-limited; A misses 576/execution, B catches 1150/1152. Own probe: cancel B/G and collapse 10/11/18 pass the default (seq,t6), FA detects; rustdoc matches L-0338. Corrections: 10 not 11 assembly targets; arm mapping first fixed in post-run parser (immaterial), no PROTOCOL.json; 'every existing test names its check' false (identity.rs:1034-1060); rustdoc omits that MC can exceed n RHS on wide bands.",
+  "scope_ok": true,
+  "protected_ok": true,
+  "predeclared_before_results": true,
+  "discriminator_checks": [
+   {
+    "name": "bits unchanged",
+    "builder_value": "36/36 identity runs equal A vs B except first-use check counters; commit A = V08 36/36",
+    "reviewer_value": "Own deep diff of every recorded field: 36/36 runs differ only in check counters (verification_rhs_calls, verified_columns, first_use_check, rhs_calls/rhs_evaluations/callback by the same delta) in the 20 coloured client runs. Prot runs and dense cells identical. Documented amounts hold in 36/36 (B = total_groups 18/59/150, +1 threaded; verified columns = n). A = V08 in 36/36; B = V08 on all non-check fields in 36/36. HEAD rebuild reproduces every B identity record exactly.",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "default per route",
+    "builder_value": "A Sample(8) everywhere; B MultiColouring on all coloured cells/cases (seq,t3,t6), Sample(8) on dense",
+    "reviewer_value": "Code: default_first_use_check maps Dense to Sample(8) and Coloured to MultiColouring; dense() and coloured() use it; threaded() and with_fingerprints() keep it. Logs: A Sample(8) on every route@execution; B MultiColouring on coloured seq/t3/t6 and Sample(8) on dense seq/t3/t6. Both per-route unit tests pass in my run.",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "corpus detection of the default",
+    "builder_value": "B = V26 reference arm 9693/9693; only miss omit1024/e3072-r768-c769 (seq,t6), rounding-limited; A misses 576 per execution, B detects 1150 of 1152",
+    "reviewer_value": "4846 cases with the same ids as V26, 0 field mismatches. B verify = V26 reference 9693/9693; B first-use = reference 9690/9690 (seq dense excluded); B coloured = MC@seq and = MC@t6 in 9689/9689 each. B misses only e3072-r768-c769 (seq,t6), all 5 evidence states bits-equal. A misses 576 per execution, B catches 1150/1152. Detected by A but not B: 0. Correct patterns rejected: 0. A verify = V26 S8 4850/4850.",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "suites",
+    "builder_value": "stage_clients_* 91/0/14 in 29 binaries; sentinels 61/0; clippy 0; fmt 0; edits without reason 0; paths outside allowlist 0",
+    "reviewer_value": "My runs: stage_clients_* (no-fail-fast) 91/0/14 in 29 binaries; sentinels 61/0; clippy -D warnings exit 0 on lib + all 10 assembly targets; fmt clean; rustdoc warnings in assembly files: none. One existing-test line edited (a comment, reason listed). No path outside the allowlist in any commit.",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   }
+  ],
+  "reran": [
+   {
+    "command": "CARGO_TARGET_DIR=.../w3-v29/review-target taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --no-fail-fast --test 'stage_clients_*'",
+    "exit_code": 0,
+    "result": "29 binaries, 91 passed, 0 failed, 14 ignored; the 5+1 new node tests ok"
+   },
+   {
+    "command": "same with --test ppsw1_6b_contracts --test ptsw2b_contracts",
+    "exit_code": 0,
+    "result": "61 passed, 0 failed"
+   },
+   {
+    "command": "cargo +1.94.1 clippy --locked -j 4 --release -p rodas5p-integrators --lib --test <10 stage_clients_assembly_* targets> --no-deps -- -D warnings",
+    "exit_code": 0,
+    "result": "0 warnings"
+   },
+   {
+    "command": "cargo +1.94.1 fmt -p rodas5p-integrators -- --check",
+    "exit_code": 0,
+    "result": "clean"
+   },
+   {
+    "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
+    "exit_code": 1,
+    "result": "ValueError: implementation changed; rerun affected tests/update checkpoint: crates/rodas5p-integrators/src/stage_clients/assembly.rs. My own collecting variant found exactly 3 complaints (assembly.rs, assembly/engine.rs, tests/stage_clients_assembly_identity.rs); protected blobs, evidence hashes, strict JSON and allowlist all pass"
+   },
+   {
+    "command": "V29_MODE=identity V29_CELL=<all 5 cells> and V29_MODE=corpus V29_GROUP=controls(seq,t3,t6)/ring/omit128/narrow/correct/omit1024(seq,t6): taskset ... review-target/.../stage_clients_assembly_default_record-721c36b28b784e44 --ignored --nocapture --exact v29_record",
+    "exit_code": 0,
+    "result": "Binary sha256 da525bab.. is identical to the builder's B binary. 4705/4705 tagged records identical to logs/*_B_*.log (wall time excluded)"
+   },
+   {
+    "command": "stage_clients_assembly_default_alloc --nocapture",
+    "exit_code": 0,
+    "result": "0 (default MC) / 0 (no check) / 12 (MC requested later) allocations on all 4 cases"
+   },
+   {
+    "command": "review-scratch/default_probe: the L-0338 constructions run through the first linearize of AssemblyOptions::coloured(p), no check named",
+    "exit_code": 0,
+    "result": "cancel-B and cancel-G pass the default undetected at seq and t6 (MC, 12/13 and 30/31 RHS); the unpaired control is detected (MultiColouringEntryDiffers); collapse trials 10, 11 and 18 pass the default while FA detects"
+   },
+   {
+    "command": "python3 -I review-scratch/recompute.py and recompute2.py <worktree>",
+    "exit_code": 0,
+    "result": "All four discriminators recomputed from the raw logs as listed; A = V08 36/36, A = V26 S8 4850/4850, B = V26 9693/9693"
+   },
+   {
+    "command": "copy of parse_results.py writing only to review-scratch/parse",
+    "exit_code": 0,
+    "result": "RESULTS.json identical except head_at_parse and 3 paths committed after the parse; REPORT_KO.md identical except the HEAD hash and the path list: no typed-in numbers"
+   },
+   {
+    "command": "python3 -I tools/check_ignored_tests_in_ci.py",
+    "exit_code": 0,
+    "result": "103 ignored tests, all reachable from CI (v29_record included)"
+   },
+   {
+    "command": "cargo +1.94.1 doc --locked -p rodas5p-integrators --no-deps --document-private-items",
+    "exit_code": 0,
+    "result": "26 pre-existing warnings, none in the assembly files"
+   },
+   {
+    "command": "review-scratch/default_probe cost (CheckColourings::of on random banded patterns)",
+    "exit_code": 0,
+    "result": "total_groups > n in 59 of 75 patterns with half-width 0.2-0.45 n; worst 111 RHS for n=60 (1.85 n)"
+   }
+  ],
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "minor",
+    "claim": "The builder report and NOTES.txt:154 say clippy ran on 'all 11' / 'all eleven' stage_clients_assembly_* targets.",
+    "evidence": "crates/rodas5p-integrators/tests has 10 stage_clients_assembly_*.rs files. The clippy command in logs/checks.log names 10 --test targets. My clippy run over the same 10 targets: exit 0, 0 warnings.",
+    "correction": "Say 'all 10 stage_clients_assembly_* targets'."
+   },
+   {
+    "id": "F2",
+    "severity": "minor",
+    "claim": "RESULTS.json protocol.note says the V26 reference arms were committed before the first run in NOTES.txt entry 1.",
+    "evidence": "NOTES entry 1 (ec284167) names only 'the V26 MC and S8 decisions'. The exact mapping first appears in parse_results.py, committed at fbcd44de (00:24:35), after all runs (00:03-00:17): seq to MC@seq; t6 and t3 to MC@t6; dense to S8@seq/S8@t3; dense t6 compared A vs B. No PROTOCOL.json was written (disclosed). The choice is immaterial: B coloured verify decisions equal V26 MC@seq and MC@t6 alike (9689/9689 each).",
+    "correction": "State that the arm mapping was fixed in the parser after the runs and is immaterial (both MC arms give identical results); keep the PROTOCOL.json deviation note."
+   },
+   {
+    "id": "F3",
+    "severity": "minor",
+    "claim": "NOTES entry 2 says 'No assertion changed: every existing test names its check'; REPORT_KO.md section 6 says all existing tests set the check explicitly.",
+    "evidence": "tests/stage_clients_assembly_identity.rs:1034-1060 (configurations_that_cannot_work_are_refused) builds clients with AssemblyOptions::dense()/coloured(..) and no with_first_use_check; NOTES entry 1 itself lists this test. Line 1060 now builds the MC colourings in new(). The test asserts no check or count and passes in my run, so no edit was needed.",
+    "correction": "Say: every existing test that asserts on the check or its counts names its check."
+   },
+   {
+    "id": "F4",
+    "severity": "minor",
+    "claim": "The rustdoc presents MC as the cheaper alternative to the full check ('150 instead of 4096', '59 instead of 131072'; All costs n right-hand sides) but never says MC can cost more than n.",
+    "evidence": "My scratch survey ran CheckColourings::of on 75 random banded patterns (n 60-500, half-width 0.2-0.45 n): total_groups > n in 59, worst 111 RHS for n=60 (1.85 n). On such patterns the default first-use check spends more right-hand sides than All, which is also exact. Not a contract acceptance item.",
+    "correction": "Add one sentence to default_first_use_check/CheckColumns: total_groups can exceed n when the declared band is wider than about n/2, and then All is cheaper and exact. Flag this for the owner."
+   },
+   {
+    "id": "F5",
+    "severity": "minor",
+    "claim": "Acceptance 3 ('New tests: ... the default detects the corpus cases that MC detects') is met by a test.",
+    "evidence": "The CI-run test the_default_decides_as_the_multi_colouring_check_on_part_of_the_v26_corpus covers 527 of the 4846 cases. The full corpus is checked only by the ignored program v29_record plus parse_results.py. In the CI ignored-tests job, v29_record runs without V29_MODE and only prints usage. The builder labels the unit test 'part of the corpus'.",
+    "correction": "Report the full-corpus check as a one-time recording (reproducible with run.sh) and the CI test as a 527-case subset."
+   },
+   {
+    "id": "F6",
+    "severity": "minor",
+    "claim": "Summary: 'the only miss is the known rounding-limited case'.",
+    "evidence": "This holds for the verify path. On the first-use path (what a default client actually runs), controls/impure16-dense also passes at seq, because the sequential dense route makes no first-use check. That behavior is unchanged and is recorded in RESULTS.json first_use_path_misses_B (count 3).",
+    "correction": "Qualify the claim as the verify path, and note the unchanged sequential dense impure control on the first-use path."
+   },
+   {
+    "id": "F7",
+    "severity": "minor",
+    "claim": "RESULTS.json identity rows of arm prot report bits_equal true.",
+    "evidence": "parse_results.py:138-142 sets 'bits_equal': True for prot rows unconditionally. Mismatches still feed bits_ok, and my deep diff finds no prot difference, so no reported result is wrong; it is a latent labeling defect.",
+    "correction": "Compute bits_equal for prot rows from that row's mismatch count."
+   }
+  ]
+ },
+ "orchestrator_actions": [
+  "Builder branch research/production-loop-20261116-w3-v29 (head b7dff3e4) merged into the loop branch (merge commit 2eb2aeed).",
+  "F4: the cost survey of the review (CheckColourings::of on 75 random banded patterns) re-run by the orchestrator with the reviewer's probe binary (sha256 6977fccc..., built from the reviewed sources): 'total_groups > n in 59; worst ratio 1.850 (n 60, half-width 27, density 0.1, total_groups 111)'. A rustdoc sentence stating this limit and that CheckColumns::All is then cheaper and exact was added to CheckColumns::MultiColouring and AssemblyOptions::default_first_use_check in a documentation commit after the merge; no code changed. Whether the default should take All when total_groups exceeds n is left to the owner.",
+  "F7: parse_results.py computes bits_equal of the prot rows from the row's mismatch count; the labels of the committed logs are unchanged (no prot mismatch).",
+  "Correction notice (review F1-F7) rendered into REPORT_KO.md from the committed RESULTS.json by the new option parse_results.py --report-only; RESULTS.json is not regenerated (a full re-run rewrites head_at_parse and the live loop-checker fields).",
+  "CHECKPOINT implemented_source_sha256 updated for assembly.rs, assembly/engine.rs and tests/stage_clients_assembly_identity.rs (the three pinned files the node may change) after the merge verification.",
+  "Ledger row: PASS of the implementation claim on the 36 identity runs and the V26 corpus."
+ ]
+}

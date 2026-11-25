@@ -1,0 +1,21 @@
+# local runs of: rodas5p stage-batch-feasibility --profile smoke (dev build of head 1b0aac36, binary sha256 b27b53a84ff3b2fc), 2026-11-25 01:03:26 KST
+# free = no pinning; one = taskset -c 0; strace = taskset -c 0-3 + the CI runner: strace -ff --seccomp-bpf -qq -y -e trace=<TRACED of tools/ci/select_tests.py>
+free_1 4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950 observed_max_parallel_tasks 4 stage_parallelism_observed True
+free_2 4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950 observed_max_parallel_tasks 4 stage_parallelism_observed True
+free_3 4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950 observed_max_parallel_tasks 4 stage_parallelism_observed True
+one_1 4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950 observed_max_parallel_tasks 4 stage_parallelism_observed True
+one_2 4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950 observed_max_parallel_tasks 4 stage_parallelism_observed True
+one_3 4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950 observed_max_parallel_tasks 4 stage_parallelism_observed True
+strace_1 4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950 observed_max_parallel_tasks 4 stage_parallelism_observed True
+strace_2 4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950 observed_max_parallel_tasks 4 stage_parallelism_observed True
+strace_3 4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950 observed_max_parallel_tasks 4 stage_parallelism_observed True
+strace_4 4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950 observed_max_parallel_tasks 4 stage_parallelism_observed True
+strace_5 4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950 observed_max_parallel_tasks 4 stage_parallelism_observed True
+strace_6 4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950 observed_max_parallel_tasks 4 stage_parallelism_observed True
+# checksum_flip.py on local_report_free_1.json against the two hosted values (left = first run, right = second run of the hosted test):
+report checksum      4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
+rebuilt              4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950 (equal: True)
+parallel-observed=false 577161ebffb8eaf60ff44b02624e192d18853d72bff697bb34c27aa8ba52d6ea
+hosted 4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950: equals rebuilt True, equals flipped False, single actual_stage_parallel flips []
+hosted 577161ebffb8eaf60ff44b02624e192d18853d72bff697bb34c27aa8ba52d6ea: equals rebuilt False, equals flipped True, single actual_stage_parallel flips []
+rows with non-zero max_abs_difference: 0 of 26

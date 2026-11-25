@@ -1,0 +1,18 @@
+[package]
+name = "v26-review-probe"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+# Reviewer probe of loop L1 node V26, copied into the repository by the orchestrator at the merge;
+# path dependencies on the repository crates (originally the builder's worktree crates).
+[workspace]
+
+[dependencies]
+rodas5p-core = { path = "../../../../crates/rodas5p-core" }
+rodas5p-integrators = { path = "../../../../crates/rodas5p-integrators" }
+serde_json = { version = "1.0.151", features = ["float_roundtrip"] }
+
+[profile.release]
+opt-level = 3
+codegen-units = 16

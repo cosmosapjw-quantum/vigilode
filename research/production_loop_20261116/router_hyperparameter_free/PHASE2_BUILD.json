@@ -1,0 +1,179 @@
+{
+  "schema": "vigilode.loop.v27-phase2.v1",
+  "run_id": "wf_8a59cef2-f94",
+  "build": {
+    "status": "done",
+    "summary": "I ran the pre-registered V27 phase 2 on research/production-loop-20261116-w3-v27; head is 60d67729, not pushed. PHASE2_NOTES was committed at 23:38 KST, before any run; the runner change (--repeat and an E5 replay check) was committed before the runs too. 76 cases x arms T, N, D, R x 3 runs = 760 processes, all exit 0. First run 2026-11-24T14:49:52Z. D and R agree bit for bit between the two builds (152/152).\n\nFrozen decision: keep today's Auto route (T). FBP stays on its branch.\n- E1 fails. Geometric means N/T pass (0.526 callbacks, 0.443 operations). But the worst ratio to the better of D and R is 522.8 for both N and T, on the declared robertson_40 Nonstiff case where both arms run the same route. The rule needs strict '<', so it fails.\n- E3 fails on N2 only. Owner decision D1 and E8 require N2 to end at its first pilot, which literal E3(a) forbids; the two criteria cannot both hold.\n- E7 fails on P_scalar_fd: error ratio 50.6 at tolerance A and 3.53 at L, both far inside tolerance.\n- E2, E4, E5, E6, E8, E9, E10 pass. E5 passes only with a correction made after the runs; the decision is the same without it.\n\nThe four declared expected losses match the model exactly. The router contracts (36/36) and break-even contracts (13/13) pass, and the example runs.",
+    "checks": [
+      {
+        "name": "runner rebuild N and T (step 0b, --locked)",
+        "command": "research/production_loop_20261116/router_hyperparameter_free/runner/build.sh",
+        "exit_code": 0,
+        "result": "both binaries built, no warnings; logs/phase2/runner_build.log"
+      },
+      {
+        "name": "runner plumbing check outside the deciding set",
+        "command": "v27-runner --repeat 2 on toy, toy_stiff, toy_osc, toy_ft, toy_fatal for N, D, R (N build) and T, D, R (T build)",
+        "exit_code": 0,
+        "result": "60 lines: repeats equal, D/R equal across builds, E5 split exact for lost, accepted, fatal pilots and FD time derivatives; logs/phase2/runner_toy_phase2.jsonl"
+      },
+      {
+        "name": "references (step 1)",
+        "command": "python3 -I references.py",
+        "exit_code": 0,
+        "result": "36 references: 19 closed form (mpmath 50 digits), 17 Rodas5p::solve 1e-12/1e-14 (robertson_1e5 needed --max-steps 10000000), P_fatal/P_blowup none; logs/phase2/references.json"
+      },
+      {
+        "name": "deciding runs (step 2)",
+        "command": "python3 -I run_phase2.py",
+        "exit_code": 0,
+        "result": "760 processes, all exit 0, empty stderr, expected line counts, no sanity stop; logs/phase2/RUNS_INDEX.jsonl and raw/"
+      },
+      {
+        "name": "parser (step 3)",
+        "command": "python3 -I parse_results.py",
+        "exit_code": 0,
+        "result": "RESULTS.json and REPORT_KO.md; decision keep"
+      },
+      {
+        "name": "router and break-even contracts (step 4)",
+        "command": "CARGO_TARGET_DIR=/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27 taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --test unified_router_contracts --test unified_breakeven_contracts",
+        "exit_code": 0,
+        "result": "unified_breakeven_contracts 13 passed, unified_router_contracts 36 passed; logs/phase2/step4_contract_tests.log"
+      },
+      {
+        "name": "example test build and run (step 4)",
+        "command": "taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p vigilode --example unified_production_solver; then cargo +1.94.1 run --locked -j 4 --release -p vigilode --example unified_production_solver",
+        "exit_code": 0,
+        "result": "0 tests, builds; example runs, problem 4 hands over at t = 1.79e-3 (b = 4); logs/phase2/step4_example.log"
+      },
+      {
+        "name": "strict JSON and byte-identical regeneration (step 5)",
+        "command": "strict json load of references.json, RESULTS.json and 1884 JSONL lines; python3 -I parse_results.py; cmp",
+        "exit_code": 0,
+        "result": "no NaN/Infinity; RESULTS.json and REPORT_KO.md byte-identical on regeneration; logs/phase2/step5_checks.log"
+      }
+    ],
+    "discriminators": [
+      {
+        "name": "E1_economy",
+        "measured": "71 cases. Geometric mean N/T: callbacks 0.5258, operations 0.4434. Worst ratio to the better of D and R: callbacks 522.8 for N and 522.8 for T, operations 286.0 for both, all on robertson_40|A|regime=nonstiff (declared fact: both arms run DOPRI5 alone). Descriptive only: over the 62 undeclared cases the worst ratio is N 1.98 vs T 54.2 in callbacks and N 1.88 vs T 54.3 in operations.",
+        "frozen_threshold": "geometric mean < 1 in each unit, and max(N) < max(T) in each unit",
+        "verdict": "FAIL"
+      },
+      {
+        "name": "E2_no_new_failure",
+        "measured": "T succeeds in 72 cases, N in 73. No case where T succeeds and N fails. Only N succeeds: F2. Both fail: N2, P_fatal, P_blowup.",
+        "frozen_threshold": "no case where T succeeds and N does not",
+        "verdict": "PASS"
+      },
+      {
+        "name": "E3_neutrality",
+        "measured": "(a) 40 N runs without a handover: 39 hold. N2 fails: it ended at a fatal pilot (D1) at t = 9.79e-4 with 33 callbacks, while D completes with 2161. (b) All 10 runs decided by a declared fact equal T bit for bit.",
+        "frozen_threshold": "(a) bits and DOPRI5 counters equal D's plus exactly the pilots' counters, and cost <= 2 cost(D); (b) equal to T bit for bit",
+        "verdict": "FAIL"
+      },
+      {
+        "name": "E4_budget",
+        "measured": "In all 76 N runs, attempts over legs and pilots are <= max_steps and equal the record. Tightest: robertson_40|A|max_steps=50 with 36/50. No N run exhausted its budget.",
+        "frozen_threshold": "attempts <= max_steps; exhaustion is MaxStepsReached{max_steps}",
+        "verdict": "PASS"
+      },
+      {
+        "name": "E5_callbacks",
+        "measured": "76 N runs, 68 of which start with DOPRI5. In those 68, the callback entries split exactly into a prefix of Dopri5::solve, the replayed pilots (starting at Dopri5::solve's accepted points, t > t0) and the replayed RODAS5P run after the handover. The DOPRI5 part has no finite-difference entry, the other parts have none at t0, and the first entry is DOPRI5's. No uncharged entry in any run of any arm. Under the formula first written in the notes, 5 N runs fail because ft_calls exceeds the time-derivative entries; the same gap is in R and T (correction E5-i, made after the runs).",
+        "frozen_threshold": "no entry before DOPRI5's first stage; none at t0 except DOPRI5 stages; non-stage entries belong to RODAS5P attempts from accepted states; uncharged entries = 0",
+        "verdict": "PASS"
+      },
+      {
+        "name": "E6_determinism",
+        "measured": "All 304 (case, arm) triples (two runs in one process, one in a fresh process) have equal digests, counters, attempts, status, bits and closure entries.",
+        "frozen_threshold": "three runs equal",
+        "verdict": "PASS"
+      },
+      {
+        "name": "E7_accuracy",
+        "measured": "72 cases. P_scalar_fd|A: err(N) = 4.12e-3 > 3 x err(R) = 2.44e-4 (ratio 50.6; absolute errors 2.2e-9 vs 4.4e-11). P_scalar_fd|L: 2.87e-7 > 2.44e-7 (ratio 3.53). D fails on both. All other cases hold.",
+        "frozen_threshold": "err(N) <= 3 max(err(D), err(R)) over those that succeed, excluding kt_vanishing",
+        "verdict": "FAIL"
+      },
+      {
+        "name": "E8_callback_cases",
+        "measured": "F2 succeeds under N (49 callbacks). P_fatal stops with callback-failed, callback rhs, message 'sensor offline'. N2 stops with CallbackFailed at pilot index 0 (one fatal pilot).",
+        "frozen_threshold": "F2 succeeds; P_fatal CallbackFailed{Rhs,'sensor offline'}; N2 CallbackFailed at its first pilot",
+        "verdict": "PASS"
+      },
+      {
+        "name": "E9_v03b_bounded_work",
+        "measured": "P_heat_fd|A: 945 charged right-hand sides, handover at t = 1.146 after 112 DOPRI5 attempts. P_scalar_fd|A: 145, handover at t = 1.82e-5. Tolerances L and S also within the bounds (reported without a rule).",
+        "frozen_threshold": "P_heat_fd <= 5890 and P_scalar_fd <= 181818 charged right-hand sides, with a recorded handover",
+        "verdict": "PASS"
+      },
+      {
+        "name": "E10_pilot_accounting",
+        "measured": "62 N runs with pilots: every count is within its bound. Highest pilot spend relative to DOPRI5 spend: 0.534 in callbacks, 0.964 in operations. The 14 runs without a pilot are reported as such (reading R6).",
+        "frozen_threshold": "pilots <= 1 + floor(log2(A_D/b)) and pilot spend <= DOPRI5 spend in each unit",
+        "verdict": "PASS"
+      },
+      {
+        "name": "sanity_D_R_across_builds",
+        "measured": "152 comparisons of D and R between the two builds, 0 disagreements.",
+        "frozen_threshold": "bit-for-bit agreement, else stop",
+        "verdict": "PASS"
+      }
+    ],
+    "frozen_decision": "Keep today's Auto route (T). E1, E3 and E7 fail, so not all of E1-E10 pass. The FBP implementation stays on branch research/production-loop-20261116-w3-v27 and is not merged. By the frozen rule text, the E3 failure refutes the unconditional properties and the E1 failure refutes the economic claim. Both failures come from wording conflicts in the pre-registration: E3 vs D1/E8 on N2, and E1's strict '<' tie on a declared case. These are open issues for the owner.",
+    "open_issues": [
+      "E3 vs E8 (reading R1): owner decision D1 and E8 require N2 to end at its first pilot, while Dopri5::solve completes N2, so literal E3(a) and E8 cannot both pass. E3 was applied as written; this needs an owner ruling.",
+      "E1's max condition uses strict '<' over all cases, including declared-fact cases where N and T are identical by design. robertson_40 declared Nonstiff (522.8 for both) sets both maxima, so the condition cannot hold. Needs an owner ruling.",
+      "E7 has no absolute floor. On P_scalar_fd, N's weighted error is far below tolerance but 50.6x (A) and 3.53x (L) R's. The cause was not analysed; the hypothesis is the step sequence of the RODAS5P run that starts with h0 = H after the handover.",
+      "Correction E5-i, made after the runs: the formula first written in the notes mapped time-derivative entries to ft_calls, but ft_calls also counts finite-difference and callback-free time-derivative computations (P_scalar_fd, kt_vanishing, P_mass, identical in arms R and T). The parser now counts uncharged entries as max(0, entries - charged): 0 everywhere. Under the first formula E5 fails on 5 runs. The decision does not depend on this.",
+      "contract_4_fail_closed_protected_fallback is in crates/vigilode/tests/unified_production_solver_contracts.rs (lines 247-250), not in unified_router_contracts.rs as the task named it. That file is outside my allowed paths, so its comment (screened-trial wording) was not edited. The comment at unified_router_contracts.rs:1864-1865 also still describes the removed screen and trial; also not edited.",
+      "Readings fixed before the runs and reported: R2, E5 (ii)/(iii) apply only to runs that start with DOPRI5; R3, E1's maxima use only cases where D or R succeeds; R4, E7 needs an error for N and a reference; R5, the extra tolerance pairs apply only to the default options; R6, E10 applies to runs with at least one pilot.",
+      "The runner's entry classifier labels the first RODAS5P stage next to finite-difference time-derivative calls as a time derivative. The by-kind counts are reported as measures only and no decision uses them.",
+      "The phase-2 order of work also lists an independent review, which this task did not include. PROGRESS.md, CHECKPOINT.json and LEDGER.jsonl were not touched (orchestrator). Nothing was pushed.",
+      "The times first typed in two PHASE2_NOTES headers were wrong; they were corrected to the commit times in 2f3a0133."
+    ],
+    "branch": "research/production-loop-20261116-w3-v27",
+    "head_commit": "60d6772927f3cf5552809f0935f04b8b0e1cf3cb",
+    "first_deciding_run_utc": "2026-11-24T14:49:52Z",
+    "files_written": [
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/research/production_loop_20261116/router_hyperparameter_free/PHASE2_NOTES.txt",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/research/production_loop_20261116/router_hyperparameter_free/runner/src/main.rs",
+      "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v27/runner_t/src/main.rs",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/research/production_loop_20261116/router_hyperparameter_free/references.py",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/research/production_loop_20261116/router_hyperparameter_free/run_phase2.py",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/research/production_loop_20261116/router_hyperparameter_free/parse_results.py",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/research/production_loop_20261116/router_hyperparameter_free/RESULTS.json",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/research/production_loop_20261116/router_hyperparameter_free/REPORT_KO.md",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/research/production_loop_20261116/router_hyperparameter_free/logs/phase2/references.json",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/research/production_loop_20261116/router_hyperparameter_free/logs/phase2/RUNS_INDEX.jsonl",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/research/production_loop_20261116/router_hyperparameter_free/logs/phase2/raw/",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/research/production_loop_20261116/router_hyperparameter_free/logs/phase2/runner_build.log",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/research/production_loop_20261116/router_hyperparameter_free/logs/phase2/runner_toy_phase2.jsonl",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/research/production_loop_20261116/router_hyperparameter_free/logs/phase2/run_phase2.stdout.log",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/research/production_loop_20261116/router_hyperparameter_free/logs/phase2/step4_contract_tests.log",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/research/production_loop_20261116/router_hyperparameter_free/logs/phase2/step4_example.log",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/research/production_loop_20261116/router_hyperparameter_free/logs/phase2/step5_checks.log",
+      "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w3-v27/crates/vigilode/examples/unified_production_solver.rs"
+    ],
+    "key_numbers": [
+      "robertson_40|A charged callbacks: N 385, T 6233, R 415, D 216973",
+      "lorenz96_40|A charged callbacks: N 3233, T 33467, D 3037 (no RODAS5P leg in N)",
+      "Declared losses, measured charged right-hand sides N vs T: P_scalar_fd 145 vs 74, P_heat_fd 945 vs 723, lin_3400 687 vs 436, heat_64_fd 3328 vs 2993 (equal to the model)",
+      "Non-stiff callback increase of N over T: A +3.8 to +10.7% (4 of 12 cases, operations up to +20.4%); L up to +20.2% (operations +42.7%); S up to +19.0% (operations +40.1%)",
+      "E1 geometric means N/T: 0.5258 callbacks, 0.4434 operations over 71 cases",
+      "E7 worst case: P_scalar_fd|A err(N) 4.12e-3 vs err(R) 8.13e-5 (weighted RMS)",
+      "760 processes, 1064 runner lines, 76 cases; first deciding run 2026-11-24T14:49:52Z"
+    ],
+    "rulings": [
+      "R1: E3(a) was applied as written to every N run without a handover, including N2, which ended at a fatal pilot (D1); those runs are listed separately, not used as a substitute criterion.",
+      "R2: E5 (ii)/(iii) apply to N runs that start with DOPRI5; runs that start RODAS5P by a declared rule are covered by E3(b).",
+      "R3: E1's maxima are taken over cases where D or R succeeds. R4: E7 is computed where N and at least one of D, R succeed with a reference. R5: the extra tolerance pairs apply only to the default options.",
+      "R6: E10 is evaluated on N runs with at least one pilot.",
+      "E5 (iii) is decided by the runner's replay split, because without dense output a solution records only t0 and t1 (addendum 0b, committed before the runs).",
+      "Correction E5-i (after the runs): uncharged entries are counted as max(0, entries - charged); the first formula's result is reported alongside.",
+      "AMENDMENT_A8_2 was applied: fixture spans taken from the phase-1 runner; N_prod and N_cont were not run."
+    ]
+  }
+}

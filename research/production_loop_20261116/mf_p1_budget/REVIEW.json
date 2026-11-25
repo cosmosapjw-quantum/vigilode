@@ -1,0 +1,187 @@
+{
+ "schema": "vigilode.loop.review.v1",
+ "node": "V28_MF_P1_BUDGET_FOLLOWUP",
+ "run_id": "wf_57f3f273-576",
+ "builder_head": "3ecb11749f30ca60ffd68f3be40635c966d8793c",
+ "merged_into": "research/production-loop-20261116 (merge commits 2f214eb1 for V28, 2eb2aeed for V29)",
+ "review": {
+  "node": "V28_MF_P1_BUDGET_FOLLOWUP",
+  "verdict": "accept_with_corrections",
+  "summary": "accept_with_corrections: the frozen verdict KEEP (K PASS, V PASS, T FAIL) is supported. Scope ok: e36fc6f4..HEAD changes only tests/mf_budget_measure.rs and mf_p1_budget/** (PREDECLARED sha unchanged, no protected file, clean tree); order NOTES, code, PROTOCOL (1db2ca36, 00:10:40), logs, results; first cell run 00:10:46. All 801 logs use d80edd53, and my rebuild of HEAD has the same sha256. The 40 cells equal the V25/V24 protocols. My own scripts give K 0/94126 (0 reverse, 377 both, replay = driver everywhere), V 0/93749 (max P1 ratio 0.999991) and T W=25, n=30, P=174437/1073741824 (robertson_rd1d only). Perturbation reproduced by hand; 45 re-runs bit-identical; reproduction 80/80; tests, clippy, fmt, checker and parser --check pass. Minor corrections: 69 cusp1d stages with non-finite RHS (not replayable) are not disclosed; the strict-JSON log omits CHECKS.json; '41 MB' counts an untracked .mypy_cache; ignored mypy caches were left in mf_p1_confirm/ and mf_stage_solve/; the failed first plumbing run was not kept.",
+  "scope_ok": true,
+  "protected_ok": true,
+  "predeclared_before_results": true,
+  "discriminator_checks": [
+   {
+    "name": "K identical-system replay (subset)",
+    "builder_value": "PASS: 0/94126 systems where only P1 exhausts; 0 reverse; 377 both; 0 coverage issues",
+    "reviewer_value": "PASS: own recount of the 80 per-system logs (gz and raw sha256 equal the footers): 94126 systems, 0 P1-only, 0 S-only, 377 both (robertson_rd1d 38+41, cusp1d 149+149), 0 class disagreements, the driver's own kernel reproduces the driver on every system, attempt lines = attempts, B lines = driver budget_exhausted_solves; 69 cusp1d attempt-ending stages with non-finite RHS had no system to replay",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "V threshold violations of completed P1 solves",
+    "builder_value": "PASS: 0/93749, max ratio 0.999991",
+    "reviewer_value": "PASS: 0/93749 (independent and kernel-reported residuals); max P1 ratio 0.999991377164412 (c07 S trajectory, line 'Y 22 2 C 80 ...'), shipped 0.9997126; threshold = max(gamma*1e-14 rounded down = 2.119375631942901e-15, 1e-10*||rhs||) on all 94126 lines; P1 kernel threshold bits equal the target's on every solve",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "T perturbed ensemble, one-sided exact binomial",
+    "builder_value": "FAIL: 320 pairs, W=25, n=30, P=174437/1073741824=1.62e-4",
+    "reviewer_value": "FAIL: 320 pairs, all 640 runs exit 0 and completed, S and P1 of every pair share start_sha256, none equals y0; W=25, n=30, d<0 in 5, d=0 in 290; P=174437/1073741824=1.6246e-4 < 1/20; d!=0 only in robertson_rd1d (S 290 / P1 336), cusp1d 1192/1192",
+    "reviewer_verdict": "FAIL",
+    "agrees": true
+   },
+   {
+    "name": "frozen verdict computation",
+    "builder_value": "KEEP (V PASS, T FAIL)",
+    "reviewer_value": "KEEP: V PASS and T FAIL under PREDECLARED verdicts and PROTOCOL verdict_computation; no default or protected file changed",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "D0 after switch",
+    "builder_value": "NOT_RUN (verdict not SWITCH)",
+    "reviewer_value": "NOT_RUN correctly: no SWITCH; no edit of the driver, routing.rs, lib.rs, sentinels or facade",
+    "reviewer_verdict": "NOT_RUN",
+    "agrees": true
+   },
+   {
+    "name": "G golden records",
+    "builder_value": "NOT_RUN",
+    "reviewer_value": "NOT_RUN correctly (no SWITCH)",
+    "reviewer_verdict": "NOT_RUN",
+    "agrees": true
+   },
+   {
+    "name": "R suites after switch",
+    "builder_value": "NOT_RUN",
+    "reviewer_value": "NOT_RUN correctly (no SWITCH)",
+    "reviewer_verdict": "NOT_RUN",
+    "agrees": true
+   },
+   {
+    "name": "reproduction check (reported only)",
+    "builder_value": "80/80 rows equal to V25/V24 recordings",
+    "reviewer_value": "80/80 rows equal in state_sha256, attempts, accepted and rejected, plus 160 budget comparisons (j=0 run and SHADOW driver); j=0 statistics equal SHADOW statistics; 2 j=0 re-runs identical",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "cell table",
+    "builder_value": "40 cells, 0 mismatches",
+    "reviewer_value": "40 cells = V25 families x rtol 1e-3..1e-7 and V24 deciding_grid x rtol (n, span, rtol, atol); CELLS re-run identical; generator source sha256 equal to PROTOCOL",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "perturbation generator",
+    "builder_value": "seed (cell<<48)|(j<<32)|i, first SplitMix64 output, top 53 bits to [-1,1), y0_i*(1+1e-8*xi)",
+    "reviewer_value": "reproduced by hand in Python: y0 sha256 of robertson_rd1d and start_sha256 of cells 5, 7, 9 at j = 1, 3, 8 (both arms) match, 800 components moved; xi(5,1,0) = -0.3598017918345253, xi(39,8,4095) = 0.18837428814955337",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   }
+  ],
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "minor",
+    "claim": "K/V: '0 coverage issues' over the replay, so every stage system of the 80 unperturbed runs was replayed",
+    "evidence": "The per-system logs hold 69 'R <attempt> <i> E' lines, all in cusp1d (c25 S 18 / P1 24, c26 12/9, c27-c29 1/1 each; S 33, P1 36). They equal elsewhere_not_rebuilt in the SHADOW records and the driver's counters.nonfinite_step_failures. No Y line carries driver code E, and problem.rs:660 (eval_rhs_into) rejects a non-finite RHS, so the driver attempted no linear solve at those stages and K and V are unaffected. PROTOCOL.json does not name this class in its text; only the hash-pinned target code does. RESULTS.json shows the count only inside replay_runs[].recount, and REPORT_KO.md and the summary do not mention it.",
+    "correction": "K and V stand. Next to K and V, state that 69 attempt-ending stages in cusp1d had a non-finite RHS, so there was nothing to replay. They are counted apart under the pinned target code, not as rebuild failures."
+   },
+   {
+    "id": "F2",
+    "severity": "minor",
+    "claim": "Check 'strict JSON' covered PREDECLARED.json, PROTOCOL.json, RESULTS.json and CHECKS.json",
+    "evidence": "run_checks.py (strict_json) and logs/checks/strict_json.log cover only PREDECLARED, PROTOCOL and RESULTS. CHECKS.json is written after the checks run. I checked CHECKS.json myself and it is strict JSON (exit 0).",
+    "correction": "State that the recorded check covered three files; CHECKS.json was checked separately (by this review)."
+   },
+   {
+    "id": "F3",
+    "severity": "minor",
+    "claim": "Open issue: the node directory is 41 MB, mostly end-state hex",
+    "evidence": "du gives 41M for mf_p1_budget/, but that includes the untracked, git-ignored mf_p1_budget/.mypy_cache (9.0M). The tracked files total 31,577,723 bytes (ensemble 23M, replay 5.6M, reproduction 2.9M).",
+    "correction": "The committed size is about 31.6 MB; the mypy cache can be deleted."
+   },
+   {
+    "id": "F4",
+    "severity": "minor",
+    "claim": "Only allowed paths were written",
+    "evidence": "The committed diff and git status are clean, but 'git status --ignored' lists research/production_loop_20261116/mf_p1_confirm/.mypy_cache (born 2026-11-24 23:52:16) and mf_stage_solve/.mypy_cache (born 2026-11-25 00:11:13). Both were created during the builder's session (base commit 23:47:51) in read-only paths, most likely by a mypy tool hook on .py files. Neither was committed. One file in mf_p1_budget/.mypy_cache (@plugins_snapshot.json) was also rewritten at 00:36:52 during this review, probably by the same hook on a Read; no tracked file changed.",
+    "correction": "The owner may delete the three ignored caches; results are unaffected."
+   },
+   {
+    "id": "F5",
+    "severity": "minor",
+    "claim": "Failed and negative runs are kept",
+    "evidence": "logs/plumbing holds only the passing contract-test run (00:07:38, 3 passed). The failing first plumbing run (dev_cusp1d, non-finite stage RHS) is described only in NOTES step 1, appended in 9b991aa9 after the runs; its output was not kept. It used development instances only, before the protocol commit, so no deciding cell was involved.",
+    "correction": "Note in the report that the failing development run's output was not kept."
+   }
+  ],
+  "reran": [
+   {
+    "command": "cd <worktree> && CARGO_TARGET_DIR=/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v28/review-target taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test mf_budget_measure",
+    "exit_code": 0,
+    "result": "3 passed, 1 ignored (v28_run). The independently built test binary has sha256 d80edd53628a6edf..., identical to the builder's v28-bins/mf_budget_measure.41ab625b"
+   },
+   {
+    "command": "CARGO_TARGET_DIR=.../review-target taskset -c 0-5,12-17 cargo +1.94.1 clippy --locked -j 4 --release --no-deps -p rodas5p-integrators --lib --test mf_budget_measure -- -D warnings",
+    "exit_code": 0,
+    "result": "clean (check artifacts for the integrators lib and mf_budget_measure produced)"
+   },
+   {
+    "command": "cargo +1.94.1 fmt -p rodas5p-integrators -p vigilode -- --check",
+    "exit_code": 0,
+    "result": "clean"
+   },
+   {
+    "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
+    "exit_code": 0,
+    "result": "PASS: strict JSON, task/DAG structure, ancestry, protected and evidence identities (no complaint)"
+   },
+   {
+    "command": "python3 -I research/production_loop_20261116/mf_p1_budget/parse_results.py --check",
+    "exit_code": 0,
+    "result": "RESULTS.json identical: True; REPORT_KO.md identical: True"
+   },
+   {
+    "command": "python3 -I -c '<json.load with parse_constant=reject>' PREDECLARED.json PROTOCOL.json RESULTS.json CHECKS.json",
+    "exit_code": 0,
+    "result": "all four strict"
+   },
+   {
+    "command": "python3 -I /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v28/review-scratch/rerun.py <review binary> <node dir> <review-scratch/reruns>",
+    "exit_code": 0,
+    "result": "45/45 records identical except wall time and label: 38 ensemble RUN (all 16 of cell 7, plus pairs of cells 4, 5, 6, 9, 12, 17, 24, 25, 32, 39), 4 SHADOW (c05 S/P1, c09 P1, c25 P1 with E lines), each per-system raw sha256 equal to the committed footer, 2 reproduction j=0, CELLS table"
+   },
+   {
+    "command": "python3 -I /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v28/review-scratch/recount.py <node dir>",
+    "exit_code": 0,
+    "result": "K 0/94126 (0 reverse, 377 both, 0 disagreements, 0 own-kernel differences); V 0/93749, thresholds verified; T 320 pairs, W=25, n=30, P=174437/1073741824 FAIL"
+   },
+   {
+    "command": "python3 -I /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v28/review-scratch/perturb_check.py <node dir>",
+    "exit_code": 0,
+    "result": "y0 and start sha256 reproduced by hand for cells 5, 7, 9 (j = 1, 3, 8), both arms"
+   },
+   {
+    "command": "python3 -I /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v28/review-scratch/repro.py <node dir>",
+    "exit_code": 0,
+    "result": "80/80 rows equal to V25/V24 recordings (160 budget comparisons); the elsewhere class equals nonfinite_step_failures in all 80 runs"
+   },
+   {
+    "command": "python3 -I /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-v28/review-scratch/headers.py <node dir>",
+    "exit_code": 0,
+    "result": "801 logs: binary d80edd53, git heads 1db2ca36/0d1c947f/0795f277/7e2c07e8, dirty 0, exit 0, no timeouts; first cell run 00:10:46, after the protocol commit at 00:10:40"
+   }
+  ]
+ },
+ "orchestrator_actions": [
+  "Builder branch research/production-loop-20261116-w3-v28 (head 3ecb1174) merged into the loop branch (merge commit 2f214eb1): the measurement target crates/rodas5p-integrators/tests/mf_budget_measure.rs (3 contract tests on development instances, 1 ignored measurement program v28_run) and the evidence under mf_p1_budget/; no default, protected or library file changed.",
+  "Correction notice (review F1-F5) rendered into REPORT_KO.md by parse_results.py; RESULTS.json unchanged (parse_results.py --check after the change: RESULTS.json identical True, REPORT_KO.md identical True).",
+  "F4: the ignored .mypy_cache directories are in the builder worktree only (git-ignored, not committed); left in place.",
+  "Ledger row of the frozen verdict: FAIL of the switch claim (T fails; K and V hold)."
+ ]
+}
