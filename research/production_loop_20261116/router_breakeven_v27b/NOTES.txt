@@ -1,0 +1,31 @@
+NOTES of node V30_ROUTER_BREAKEVEN_V27B (loop L1, wave 4 group B), PHASE 1 ONLY (owner decision OD-L1-26)
+worktree /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v30
+branch research/production-loop-20261116-w4-v30, base 91e9e582 (= V27 FBP branch w3-v27 at 60d67729 merged with loop head d4e2772f)
+CARGO_TARGET_DIR /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v30
+All times KST. Newest entry last.
+
+== 2026-11-25 11:01, entry 1 (start; nothing edited outside this directory, nothing run) ==
+
+SCOPE OF PHASE 1 (OD-L1-26, TASK_CONTRACTS V30)
+- Diagnose E7 of V27: P_scalar_fd (y' = -1e6 (y - cos t)), error of the FBP route (arm N) 50.6 x (tol A)
+  and 3.53 x (tol L) the error of Rodas5p::solve (arm R). P_scalar_fd is not part of the new deciding set,
+  so runs on it are allowed in phase 1.
+- Draft router_breakeven_v27b/PREDECLARED.json (strict JSON): corrected E1 (maximum ratio over undeclared
+  cases only; geometric means as before), corrected E3 (without the runs that owner decision D1 ends; exact
+  set stated), E2 and E4-E10 unchanged unless the diagnosis requires a change, E7 rule unchanged
+  (err(N) <= 3 max(err(D), err(R))), a FRESH problem set (>= 30 problems) disjoint from the 35 problems of
+  V27, tolerances and options as V27, run settings, the frozen decision, expectations without rule.
+- NOT in phase 1: any run of the deciding set; any push; ledger rows; edits outside the allowlist.
+
+PLAN
+1. Read V27: DESIGN_RECOMMENDED.md, PREDECLARED.json (E1-E10), AMENDMENT_A8_2.json, RESULTS.json,
+   REVIEW.json (R1-R6), REPORT_KO.md (correction notice), PHASE2_NOTES.txt, run_phase2.py, references.py,
+   runner/, addendum A8 result paragraph of PREREGISTRATION.md; the FBP diff d4e2772f..HEAD -- crates.
+2. Reproduce 50.6 and 3.53 with the V27 runner (same binary recipe, this worktree).
+3. Hypotheses to isolate (one variable per variant): the handover starts RODAS5P with h0 = H (pilot
+   horizon); pilot state handed over (t, y after the pilots vs restart from t0); error norm / tolerance
+   handed over; dense output; controller history (first-step rule, rejected-step memory). Raw logs kept in
+   router_breakeven_v27b/logs/.
+4. If the cause is a defect of the route: minimal correction, failing-first test, re-run
+   unified_breakeven_contracts, unified_router_contracts, default_path_golden.
+5. Draft PREDECLARED.json with a fresh problem set; record its sha256 here.
