@@ -1,0 +1,15 @@
+{
+  "schema": "vigilode.loop_l1.v11_geometry_mol.protocol.v1",
+  "node": "V11_GEOMETRY_MOL",
+  "written": "2026-11-25 KST, committed before any timed run of this node",
+  "host_note": "the host is shared with unpinned batch jobs of other projects (1-minute load 4 to 14 observed by the loop); wall time here is diagnostic unless the quality rule below makes a comparison decidable",
+  "timing_lock": "flock -w 14400 /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/locks/timing.lock taskset -c 9-11",
+  "threaded_arm_cores": "taskset -c 6-11 (only for an arm that needs six cores; none in this part)",
+  "build_lock": "flock -w 14400 /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/locks/cargo_a.lock taskset -c 0-5,12-17",
+  "load_record": "the 1-minute load average (/proc/loadavg, first field) is read and stored immediately before every timed process",
+  "counters": "perf stat -x , -e instructions:u,cycles:u around one arm per process (perf_event_paranoid = 1); instructions:u and cycles:u are reported beside wall",
+  "quality_rule_verbatim": "a wall comparison is decidable only if every process it uses started at load <= 3.0, or if the measured ratio clears the frozen threshold by a factor of 2 on the deciding side; otherwise it is NOT_DECIDABLE",
+  "quality_rule_application_in_this_part": "V11 part a has no frozen wall threshold: every wall number of the smoke run is labelled smoke and diagnostic_only, and no wall comparison is judged. The rule is recorded here so that the later battery node inherits it unchanged.",
+  "smoke_labelling": "every result row of the smoke run carries \"label\": \"smoke\"; no smoke row enters a battery table or a decision",
+  "threshold_policy": "no frozen threshold is moved; thresholds of this node are those of PREDECLARED.json"
+}

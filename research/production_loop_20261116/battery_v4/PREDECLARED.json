@@ -1,0 +1,129 @@
+{
+  "schema": "vigilode.loop_l1.v11_geometry_mol.part_a.predeclared.v1",
+  "node": "V11_GEOMETRY_MOL",
+  "part": "a (operators, sparse-LU stage client, line preconditioner, contract tests, battery v4 design and smoke run, benchmark crates under 1.94.1)",
+  "written": "2026-11-25 KST, before the first measured run of this node (no test of this node had run when this file was committed)",
+  "owner_instruction": "owner 2026-11-25 09:21 KST (OD-L1-30): continue the remaining nodes; all edits approved",
+  "base_commit": "45d0da19",
+  "branch": "research/production-loop-20261116-w4-v11",
+  "toolchain": "1.94.1",
+  "cargo_target_dir": "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v11",
+  "frozen_source": "research/production_loop_20261116/PREREGISTRATION.md, frozen table of 2026-11-17, row V11; contract V11_GEOMETRY_MOL in docs/agent/production_solver_program_20261112/TASK_CONTRACTS.json",
+  "frozen_thresholds_repeated_verbatim": {
+    "pass": "second-order spatial convergence; conservation <= 1e-12; battery v4 tables at matched achieved error with reference uncertainty",
+    "kill_or_fallback": "no promotion",
+    "contract_failure_action": "No promotion; pole-ring first-order behaviour is stated, not hidden."
+  },
+  "scope_of_this_part": "The battery v4 tables at matched achieved error belong to a later node. This part judges the two operator discriminators (second-order spatial convergence, conservation <= 1e-12) and records the battery design and a smoke run labelled smoke. Nothing is promoted, routed or selected by default.",
+  "this_file_fixes": "every protocol choice the frozen row leaves open. Nothing below moves or re-reads a frozen threshold.",
+
+  "discretisation_conventions": {
+    "cartesian": "uniform cell-centred finite volumes on [0, L_a] per axis, h_a = L_a / N_a, cell centres x = (i + 1/2) h, x-fastest layout index = s + S (i + Nx (j + Ny k)) with S species interleaved; boundary per axis: Periodic (wrap), NeumannZero (zero face flux, ghost = cell value), DirichletZero (face value 0 by linear interpolation, ghost = -cell value)",
+    "sphere": "latitude-longitude finite volumes with the conventions of the facade module crates/vigilode/src/spatial.rs on branch research/stage-lattice-referee-20261124 (read, not edited): Nt colatitude rings of width pi/Nt, Np longitudes of width 2 pi/Np, longitude-fastest layout index = ring Np + j, exact ring areas R^2 dphi 2 sin(dtheta/2) sin(theta_mid), zero flux through the zero-length polar faces, periodic longitude; the two pole rings are first order (stated in the rustdoc and tested)",
+    "upwind_advection": "constant velocity per axis, first-order upwind flux F = a+ u_left + a- u_right in conservative form; Periodic or DirichletZero (zero inflow) per axis; declared first order",
+    "burgers": "scalar viscous Burgers u_t + sum_a d_a(u^2/2) = nu Laplacian u with the Engquist-Osher flux (max(uL,0)^2 + min(uR,0)^2)/2, conservative, Periodic or DirichletZero per axis; declared first order (upwind flux)",
+    "reaction_diffusion": "Gray-Scott, 2D Brusselator, Allen-Cahn, sine-Gordon on the Cartesian Laplacian with pointwise reaction terms, species interleaved; declared second order"
+  },
+
+  "C1_cartesian_second_order": {
+    "role": "frozen discriminator 'second-order spatial convergence' for the Cartesian Laplacians",
+    "test_file": "crates/rodas5p-integrators/tests/mol_cartesian_contracts.rs",
+    "metric": "max-norm error of the discrete Helmholtz solution: solve (I - L_h) u_h = f_h by conjugate gradients on the operator's apply_into (relative residual <= 1e-13), f = u - sum_a D_a d_aa u sampled at cell centres, error e = max_i |u_h,i - u(x_i)| / max_i |u(x_i)|",
+    "manufactured_solution": "u = product over active axes of g_a(x_a) with g = exp(sin(2 pi x / L)) for Periodic, g = exp(cos(pi x / L)) for NeumannZero, g = sin(pi x / L) exp(x / L) for DirichletZero",
+    "cases": [
+      {"id": "1D", "cells": "N", "N": [32, 64, 128, 256], "lengths": [1.0], "diffusivity": [1.0], "boundaries": [["Periodic"], ["NeumannZero"], ["DirichletZero"]]},
+      {"id": "2D", "cells": "N x N", "N": [16, 32, 64, 128], "lengths": [1.0, 1.0], "diffusivity": [1.0, 1.0], "boundaries": [["Periodic", "Periodic"], ["NeumannZero", "NeumannZero"], ["DirichletZero", "DirichletZero"], ["Periodic", "DirichletZero"]]},
+      {"id": "3D", "cells": "N x N x N", "N": [8, 16, 32], "lengths": [1.0, 1.0, 1.0], "diffusivity": [1.0, 1.0, 1.0], "boundaries": [["Periodic", "Periodic", "Periodic"], ["NeumannZero", "NeumannZero", "NeumannZero"], ["DirichletZero", "DirichletZero", "DirichletZero"]]},
+      {"id": "3D-anisotropic-box", "cells": "m x m x m/2", "m": [8, 16, 32], "lengths": [1.0, 2.0, 0.5], "diffusivity": [1.0, 0.5, 0.1], "boundaries": [["Periodic", "NeumannZero", "DirichletZero"]]}
+    ],
+    "observed_order": "p_k = log2(e_k / e_(k+1)) for each consecutive pair of the ladder",
+    "pass_rule": "every p_k >= 1.9 in every case",
+    "secondary_reported_not_judged": "max-norm truncation error of L_h on the smooth periodic field (orders reported); exactness of discrete eigenvectors (Fourier for Periodic, cos(k pi (i+1/2)/N) for NeumannZero, sin(k pi (i+1/2)/N) for DirichletZero): max |L_h v - lambda_h v| <= 1e-10 |lambda_h| max |v| asserted as a contract test"
+  },
+
+  "C2_sphere_second_order_away_from_poles": {
+    "role": "frozen discriminator 'second-order spatial convergence' for the sphere, away from the poles; poles reported separately",
+    "test_file": "crates/rodas5p-integrators/tests/mol_sphere_contracts.rs",
+    "grid": "radius R = 2, diffusivity D = 0.5, Nt in [16, 32, 64, 128], Np = 2 Nt",
+    "modes": {"Y10": "cos(theta), l = 1", "Y20": "(3 cos(theta)^2 - 1)/2, l = 2", "Y11": "sin(theta) cos(phi), l = 1", "Y21": "sin(theta) cos(theta) cos(phi), l = 2", "Y22": "sin(theta)^2 cos(2 phi), l = 2"},
+    "metric_band": "max over cells whose centre colatitude lies in [pi/6, 5 pi/6] of |L_h Y - lambda Y| / (|lambda| max_all |Y|), lambda = -D l (l + 1) / R^2",
+    "pass_rule": "every consecutive observed order in the band >= 1.9 for every mode",
+    "pole_rings_reported_separately": "max over the first and the last ring of the same relative error, with orders; contract test of the stated first-order pole behaviour: for Y11 every consecutive pole-ring order lies in [0.8, 1.2] (prior evidence: U09 measured 0.98 and 0.99)",
+    "also_reported": "full-sphere weighted L2 relative error per mode (no rule)"
+  },
+
+  "C3_conservation": {
+    "role": "frozen discriminator 'conservation <= 1e-12'",
+    "test_files": ["crates/rodas5p-integrators/tests/mol_cartesian_contracts.rs", "crates/rodas5p-integrators/tests/mol_sphere_contracts.rs", "crates/rodas5p-integrators/tests/mol_transport_contracts.rs"],
+    "metric": "defect = |sum_i w_i f_i(u)| / sum_i w_i sum_j |J_ij(u)| |u_j|, both sums Neumaier-compensated, with w the declared quadrature weights and J the operator's assembled Jacobian at u (the scale is the weighted sum of the absolute contributions entering every cell)",
+    "pass_rule": "defect <= 1e-12 for every conservative operator, every grid of the ladders of C1 and C2 and both fields",
+    "fields": ["pseudo-random uniform in [0.5, 1.5] (fixed seeds)", "the smooth manufactured field of C1 or a degree-2 harmonic combination on the sphere"],
+    "conservative_operators": ["Cartesian Laplacian with Periodic or NeumannZero on every axis (1D, 2D, 3D, anisotropic box)", "sphere Laplacian", "upwind advection with Periodic on every axis", "Burgers with Periodic on every axis"],
+    "declared_not_conservative": ["any DirichletZero axis", "reaction terms of Gray-Scott, Brusselator, Allen-Cahn, sine-Gordon"],
+    "also_reported": "absolute |sum_i w_i f_i(u)| for the O(1) fields"
+  },
+
+  "C4_jvp": {
+    "test_files": ["crates/rodas5p-integrators/tests/mol_cartesian_contracts.rs", "crates/rodas5p-integrators/tests/mol_sphere_contracts.rs", "crates/rodas5p-integrators/tests/mol_transport_contracts.rs", "crates/rodas5p-integrators/tests/mol_reaction_contracts.rs"],
+    "checks": [
+      "linear operators: jvp_into(v) equals apply_into(v) bit for bit",
+      "assembled Jacobian (pattern values) times v against jvp_into: max |J v - jvp| <= 1e-12 max_i sum_j |J_ij| |v_j|",
+      "central finite difference with delta = 1e-6 max(1, max|u|) / max|v|: max |FD - jvp| <= 1e-6 max_i sum_j |J_ij| |v_j|"
+    ],
+    "sizes": "1D 20 cells, 2D 12 x 10, 3D 6 x 5 x 4, sphere 8 x 16; every boundary type"
+  },
+
+  "C5_structure": {
+    "weights": "every weight finite and > 0; per species the weights sum to the domain measure (box volume, 4 pi R^2) within 1e-12 relative",
+    "stencil_radius": "declared 1 for every operator of this part",
+    "bandwidth_and_pattern": "every pattern entry lies inside the declared (lower, upper) bandwidth, the diagonal is in the pattern, and on the small sizes of C4 the dense Jacobian built column by column from jvp_into is zero outside the pattern",
+    "allocation": "apply_into, jvp_into and jacobian_values_into make no allocation request (counting global allocator, test binary mol_alloc.rs with one test)"
+  },
+
+  "C6_certificate": {
+    "procedure": "certify_weighted_self_adjoint: refused for a nonlinear operator; otherwise assemble J and, with H = diag(w): for every pattern pair, |w_i J_ij - w_j J_ji| <= 64 eps max(|w_i J_ij|, |w_j J_ji|) (else refused as asymmetric); for every row of S = (HJ + (HJ)^T)/2: S_ii + sum_(j != i) |S_ij| <= 64 eps (|S_ii| + sum_(j != i) |S_ij|) (else refused as not dissipative); eps = f64::EPSILON",
+    "expected": "issued for every Cartesian Laplacian (all boundaries, 1D, 2D, 3D, anisotropic box) and the sphere; refused for upwind advection (weighted asymmetry) and for every nonlinear operator",
+    "independent_check": "random vectors as in U09: for an issued certificate |u'HLv - v'HLu| / scale <= 1e-12 and max u'HLu / u'Hu <= 1e-12 |lambda_max scale|; for upwind advection the symmetry defect is reported (> 1e-3 expected)"
+  },
+
+  "S_sparse_lu_client": {
+    "client": "crates/rodas5p-integrators/src/stage_clients/sparse_lu.rs, type SparseLuStageClient over rodas5p_core::SparseDirectSolver: pattern and symbolic analysis once at construction, Jacobian values through a fill callback in linearize, W = I/(h gamma) - J on the pattern and one numeric factorisation per factor call, SparseDirectSolver solves",
+    "S1_bit_reproducibility": "two runs of integrate_rodas5p_fast_client_observed_with_atol with fresh clients on the same problem: every output state bit for bit, attempts, accepted and rejected steps and the whole WorkCounters value equal",
+    "S2_dense_comparison": {
+      "test_file": "crates/rodas5p-integrators/tests/stage_clients_sparse_lu_contracts.rs",
+      "reference_client": "DenseLuStageClient with the protected choice of LU mode, JVP-built dense Jacobian",
+      "cases": ["1D heat DirichletZero, 40 cells, D = 1, t in [0, 0.1]", "2D Brusselator Periodic 8 x 8 (n = 128), t in [0, 1]", "2D Gray-Scott NeumannZero 8 x 8 (n = 128), t in [0, 5]", "sphere diffusion 6 x 12 (n = 72), t in [0, 0.5]"],
+      "tolerance": "rtol = atol = 1e-6, outputs at 5 equally spaced times",
+      "bound": "accepted and rejected step counts equal, and max over outputs and components of |y_sparse - y_dense| / (atol + rtol |y_dense|) <= 1e-6; the observed maximum is reported"
+    },
+    "S3_allocation": {
+      "test_file": "crates/rodas5p-integrators/tests/stage_clients_sparse_lu_alloc.rs (one test per binary)",
+      "asserted": "zero allocation requests between consecutive accepted steps after one warm-up step (the last step excluded), 2D Brusselator Periodic 16 x 16",
+      "measured_and_reported": "the same count for 2D Brusselator Periodic 96 x 96; faer chooses its simplicial or supernodal numeric LU inside SparseDirectSolver (rodas5p-core, outside this node's write scope); a nonzero count there is reported as a FAIL of the allocation contract in that regime, not hidden"
+    },
+    "S4_errors": "a pattern without a diagonal entry is refused at construction (InvalidInput); a non-finite Jacobian value is a NonFinite error of linearize or factor (the driver rejects the attempt)"
+  },
+
+  "P_line_preconditioner": {
+    "object": "LineTridiagonalPreconditioner in crates/rodas5p-integrators/src/mol/line.rs: M = s I - (diagonal of J + couplings of J along one grid axis), cyclic lines by Sherman-Morrison, side Right, no allocation in apply",
+    "test_file": "crates/rodas5p-integrators/tests/mol_line_preconditioner_contracts.rs",
+    "checks": [
+      "1D Laplacian (each boundary type), s = 100: right-preconditioned GMRES (rodas5p_krylov::solve_gmres_into, rtol 1e-10) needs at most 2 Krylov iterations and the true residual |b - W x| <= 1e-9 |b|",
+      "2D anisotropic heat 64 x 64, D = (1, 0.01), Periodic in x, NeumannZero in y, s = 100, lines along x: iterations with the preconditioner <= 0.5 x iterations without it",
+      "sphere 32 x 64, D = 1, R = 1, s = 100, longitude lines: iterations with the preconditioner <= 0.5 x iterations without it",
+      "every converged solve: true residual <= 1e-9 |b|"
+    ]
+  },
+
+  "B_benchmark_crates": {
+    "change": "rust-version line of crates/vigilode-bench/Cargo.toml and crates/vigilode-hybrid/Cargo.toml from 1.99.0 to 1.94.1; own Cargo.lock refreshed only if cargo requires it; minimal source fix-ups for standard-library items missing in 1.94.1, each listed",
+    "commands": ["cargo +1.94.1 test --manifest-path crates/vigilode-bench/Cargo.toml --locked", "cargo +1.94.1 test --manifest-path crates/vigilode-hybrid/Cargo.toml --locked"],
+    "target_dirs": ["/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v11/bench", "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v11/hybrid"],
+    "success": "both commands build and exit 0; every failing test is listed verbatim otherwise",
+    "known_limit": "the active mutation allowlist (docs/agent/production_solver_program_20261112/MUTATION_GATES.json) lists the two Cargo.lock files but not the two Cargo.toml files; the loop checker complaint is reported verbatim"
+  },
+
+  "battery_and_smoke": "design in battery_v4/PREREGISTRATION.json and timing rule in battery_v4/PROTOCOL.json, both committed before the smoke run; smoke results are labelled smoke and judge nothing",
+
+  "evidence_rules": "numbers in result files are parsed by a script from raw test output (lines prefixed V11_QUAL); failed and negative runs are kept; strict JSON; an unrun check is reported as NOT_RUN"
+}
