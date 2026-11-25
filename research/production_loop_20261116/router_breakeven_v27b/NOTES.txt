@@ -151,3 +151,19 @@ FOR THE ORCHESTRATOR BEFORE PUSHING
 5. T moves with the loop head only if the V30 branch merges it again (N - T must stay the patch).
 6. e7_diag/ holds a new standalone Cargo.toml and Cargo.lock (own [workspace]; precedent V27
    runner); no existing manifest or lock was edited.
+
+== 2026-11-25 12:05, entry 4 (orchestrator review of the draft; nothing of the deciding set run) ==
+
+The orchestrator session reviewed the draft (sha256 93d0d84e..., entry 3) and changed only the
+generator draft_predeclared.py: field status (frozen by the commit that adds the file on origin) and a
+new field orchestrator_rulings; every other field is byte-identical to the draft (checked by loading
+both files). New sha256 of PREDECLARED.json: ade69b2dba68968b96fe121a83bef8586932e7024bffabe12ec69eea85b7239b.
+Rulings (full text in the file):
+- R1 E7 unchanged (no route defect; a change of the rule itself is an owner decision).
+- R2 fresh set as drawn (kaps_1e6 and pre_equilibrium keep their parameters; no choice of the set by
+  its expected E7 outcome).
+- R3 T stays d4e2772f; the loop head is not merged into this branch before phase 2.
+- R4 E3 (a) reading for an N run without a handover that stops on the shared budget after lost
+  pilots (open issue 2 of entry 3): compared with arm D at max_steps = that run's DOPRI5 attempts;
+  the counting is checked on the toy problems in step 0 and written in PHASE2_NOTES.txt.
+Open issues 3 to 6 of entry 3 stand as written (no change needed).

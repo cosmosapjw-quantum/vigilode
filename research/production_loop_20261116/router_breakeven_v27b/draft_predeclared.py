@@ -120,8 +120,8 @@ def main():
         "node": "V30_ROUTER_BREAKEVEN_V27B, evaluation (phase 2) of the forward break-even pilots "
                 "(FBP) Auto route on a fresh problem set",
         "date_kst": "2026-11-25",
-        "status": "DRAFT written in phase 1 by the builder; the orchestrator reviews it, commits and "
-                  "pushes it; it is frozen by the commit that adds it on origin; no run of the "
+        "status": "FROZEN by the commit that adds this file on origin: written in phase 1 by the "
+                  "builder, reviewed by the orchestrator (orchestrator_rulings below); no run of the "
                   "deciding set (any arm on any case below) before that commit is on origin",
         "owner_decision": "OD-L1-26 (2026-11-25 09:21 KST, verbatim '남은 노드들을 이어서 마저 진행해. "
                           "수정은 전부 승인할게.'): run V27b: fix the two conflicting sentences of the "
@@ -375,6 +375,34 @@ def main():
             "fresh problem set (37 problems, 79 cases) replaces the 36 problems of V27",
             "exploratory arm R_H and the last-step measures (no rule), from the E7 diagnosis",
             "no route code change: the E7 diagnosis found no defect of the route",
+        ],
+        "orchestrator_rulings": [
+            "R1 E7 unchanged: the E7 diagnosis found no defect of the route, so 'correct the design if "
+            "needed' (OD-L1-26) asks for no change. Changing the E7 rule itself (a floor in tolerance "
+            "units, or R_H inside the reference) would change an acceptance criterion after V27 failed "
+            "it; that is an owner decision and is not taken here. Cost if wrong: E7 may fail again on "
+            "kaps_1e6 or pre_equilibrium for the diagnosed reason and block adoption; R_H and the "
+            "last-step measures then show whether each failure is of that kind, and the report puts "
+            "the E7 question to the owner",
+            "R2 fresh set as drawn: kaps_1e6 and pre_equilibrium keep their parameters although "
+            "expectations_without_rule rates their E7 risk high; changing a problem of the deciding "
+            "set after reading its expected E7 outcome would choose the set by its outcome. Cost if "
+            "wrong: as R1",
+            "R3 T stays d4e2772f: the loop head (45d0da19 and later: V28, V29, V31, V32 and wave-4 "
+            "work, none of it part of the FBP change) is not merged into the N branch before phase 2, "
+            "so T is the read-only checkout of d4e2772f and N the head of "
+            "research/production-loop-20261116-w4-v30 on base 91e9e582. An adoption would be merged "
+            "and verified on the newer loop head separately (default-path golden files, contract "
+            "tests, the full facade suite). Cost if wrong: an adoption needs that re-check",
+            "R4 E3 (a) reading for a run that stops on the shared budget: an N run without a "
+            "handover that stops on max_steps after lost pilots cannot have the bits of D, which "
+            "has the whole budget for DOPRI5 (the second latent conflict of the V27 R1 kind, NOTES "
+            "entry 3 item 2; not expected on this set). Such a run is listed and E3 (a) compares it "
+            "with one extra process of arm D at max_steps equal to the DOPRI5 attempts of that run "
+            "(bits, DOPRI5 counters, cost bound unchanged); whether Dopri5::solve counts max_steps "
+            "as the runner counts DOPRI5 attempts is checked on the toy problems in step 0 and "
+            "written in PHASE2_NOTES.txt before any deciding run. Cost if wrong: one more E3 "
+            "reading to review",
         ],
     }
     with open(OUT, "w") as f:
