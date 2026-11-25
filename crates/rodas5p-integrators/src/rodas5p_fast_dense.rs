@@ -212,6 +212,30 @@ impl FastDenseSegments {
         )
     }
 
+    /// One component of the original accepted dense packet, retaining exact
+    /// represented input bits and native provenance. Not a physical IVP bound.
+    #[cfg(feature = "polynomial-events")]
+    pub fn represented_component(
+        &self,
+        k: usize,
+        c: usize,
+    ) -> CoreResult<crate::affine_event_certificate::RepresentedAffineSegment> {
+        if k >= self.len() || c >= self.n {
+            return Err(CoreError::InvalidInput("dense component index".into()));
+        }
+        let mut stages = [0.; STAGES];
+        for (j, u) in stages.iter_mut().enumerate() {
+            *u = self.stage_rows(k)[j * self.n + c];
+        }
+        crate::affine_event_certificate::RepresentedAffineSegment::from_native(
+            [self.t_old(k), self.t_new(k)],
+            [self.state(k)[c], self.state(k + 1)[c]],
+            self.dense_h,
+            stages,
+            k,
+        )
+    }
+
     /// Opt-in whole-slab scalar-affine event certificate from the stored
     /// accepted native segment. The caller supplies the source/equation
     /// binding and a justified incoming exact-IVP error; the adaptive local

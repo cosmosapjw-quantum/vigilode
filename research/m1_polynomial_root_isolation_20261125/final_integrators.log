@@ -1,0 +1,83 @@
+   Compiling num-complex v0.4.6
+   Compiling num-integer v0.1.47
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-integrators)
+   Compiling num-bigint v0.4.8
+   Compiling pulp v0.22.3
+   Compiling nano-gemm-c64 v0.2.1
+   Compiling nano-gemm-c32 v0.2.1
+   Compiling num-rational v0.4.2
+   Compiling gemm-common v0.19.0
+   Compiling qd v0.8.0
+   Compiling faer-traits v0.24.0
+   Compiling gemm-f64 v0.19.0
+   Compiling gemm-c64 v0.19.0
+   Compiling gemm-c32 v0.19.0
+   Compiling gemm-f32 v0.19.0
+   Compiling gemm v0.19.0
+   Compiling nano-gemm v0.2.2
+   Compiling faer v0.24.4
+   Compiling rodas5p-core v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-krylov)
+    Finished `release` profile [optimized] target(s) in 1m 45s
+     Running tests/accept_control_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/accept_control_contracts-6f48c1b2f0efd954)
+
+running 9 tests
+test a_continuing_control_leaves_the_run_bit_identical ... ok
+test a_restart_from_the_stop_reaches_tf ... ok
+test a_restart_under_a_binding_max_step_is_admitted_and_bit_identical ... ok
+test a_stop_at_tf_is_a_success ... ok
+test a_stop_at_the_kth_accepted_step_returns_that_step ... ok
+test a_stop_on_the_last_budgeted_attempt_is_a_client_stop ... ok
+test the_client_stop_record_serializes ... ok
+test the_control_allocates_nothing ... ok
+test the_control_sees_every_accepted_step_once_in_order ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests/affine_event_certificate_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/affine_event_certificate_contracts-833c285a19d151d7)
+
+running 13 tests
+test actual_native_accepted_segment_adapter_and_error_carry ... ok
+test arithmetic_probe_rejects_all_other_rounding_modes_and_ftz_daz ... ok
+test changed_source_epoch_event_and_model_invalidate_queries ... ok
+test endpoint_copy_and_supplied_center_rounding_are_separate ... ok
+test equality_grazing_and_endpoint_only_evidence_remain_unresolved ... ok
+test error_carry_requires_exact_adjacency_state_and_binding ... ok
+test exact_clock_difference_encloses_rounded_subtraction_residue ... ok
+test interior_normalization_underflow_does_not_change_time_membership ... ok
+test invalid_parameters_and_public_interval_literals_are_refused ... ok
+test parameter_boxes_and_nonzero_incoming_error_are_included ... ok
+test pr100_exact_example_gets_outward_native_formula_enclosure ... ok
+test quartic_last_row_is_retained_in_residual_and_query ... ok
+test subnormal_inputs_stay_enclosed_and_overflow_refuses ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/fast_dense_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/fast_dense_contracts-ab821fe4d3a7bb4e)
+
+running 8 tests
+test empty_span_keeps_the_initial_state ... ok
+test fatal_rhs_partial_prefix ... ok
+test interior_rejection_counter_sum ... ok
+test midpoint_rhs_error_rejects_then_retries ... ok
+test off_matches_fast_driver_bitwise ... ok
+test segment_endpoints_are_stored_states ... ok
+test uniform_atol_vector_is_the_scalar_dense_run ... ok
+test wfiltered_pr_interior_within_two_units ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/retro_portfolio_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/retro_portfolio_contracts-0e1cba62dfa09755)
+
+running 8 tests
+test affine_forecast_and_green_all_modes ... ok
+test bounded_adaptive_portfolio_constructs ... ok
+test cubic_all_routes_confluent_and_deformed ... ok
+test exploration_recovery_no_cached_answer_and_contract_isolation ... ok
+test fourier_all_paths_retain_original_certificate ... ok
+test measure_policy ... ignored, owner-host adaptive selection cost, including exploration and retries
+test nonlinear_discrete_and_physical_contracts_not_interchangeable ... ok
+test temporal_all_routes_original_node_output ... ok
+
+test result: ok. 7 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.40s
+

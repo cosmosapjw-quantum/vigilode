@@ -104,6 +104,13 @@ pub enum FailureReason {
         /// Time at which the state was unavailable.
         t: f64,
     },
+    /// A declared polynomial event could not produce a complete root set.
+    PolynomialEventUnresolved {
+        /// Start of the uncommitted numerical proposal.
+        t: f64,
+        /// Refusal reason (resource limit, nonisolated roots, clock, or arithmetic).
+        message: String,
+    },
     /// The charged callback work of a bounded trial exceeded its ceiling
     /// (the switching adapter's entry pilots). The solution holds the last
     /// accepted state; every call that was made is counted.
@@ -152,6 +159,9 @@ impl fmt::Display for FailureReason {
             }
             Self::EventInterpolationFailed { t } => {
                 write!(f, "event state unavailable at t = {t:e}")
+            }
+            Self::PolynomialEventUnresolved { t, message } => {
+                write!(f, "polynomial event unresolved at {t:e}: {message}")
             }
             Self::WorkCeilingReached { ceiling, charged } => write!(
                 f,

@@ -416,6 +416,8 @@ impl Rodas5p {
             banded_policy,
             separable,
             None,
+            #[cfg(feature = "polynomial-events")]
+            None,
         )
     }
 
@@ -431,6 +433,9 @@ impl Rodas5p {
         banded_policy: BandedStagePolicy,
         separable: Option<&SeparableStages>,
         event_policy: Option<crate::EventTransactionPolicy>,
+        #[cfg(feature = "polynomial-events")] mut poly: Option<
+            &mut crate::polynomial_events::PolyTransaction<'_>,
+        >,
     ) -> Result<Solution, SolveError> {
         let atol = validate(problem, t_span, y0, opts)?;
         let mut adaptive = AdaptiveStepConfig {
@@ -450,6 +455,21 @@ impl Rodas5p {
                 return Err(SolveError::InvalidInput("event transaction requires declared events, finite span and identity-mass fast dense output".into()));
             }
             if let Some(h) = p.max_step {
+                adaptive.max_step = h;
+                adaptive.initial_step = adaptive.initial_step.min(h);
+                adaptive.max_step_policy = rodas5p_integrators::MaxStepPolicy::StrictRepresentedCap;
+            }
+        }
+        #[cfg(feature = "polynomial-events")]
+        if let Some(tx) = poly.as_ref() {
+            if !problem.events.is_empty()
+                || !opts.dense_output
+                || sequential_route(problem, opts)
+                || !(t_span.1 - t_span.0).is_finite()
+            {
+                return Err(SolveError::InvalidInput("declared polynomial event requires identity-mass fast dense route, finite span and no opaque events".into()));
+            }
+            if let Some(h) = tx.policy.max_step {
                 adaptive.max_step = h;
                 adaptive.initial_step = adaptive.initial_step.min(h);
                 adaptive.max_step_policy = rodas5p_integrators::MaxStepPolicy::StrictRepresentedCap;
@@ -535,6 +555,12 @@ impl Rodas5p {
             guard.arm_ceiling(ceiling.saturating_add(verification));
         }
 
+        #[cfg(feature = "polynomial-events")]
+        if poly.is_some() && !matches!(plan, Plan::FastDense { .. }) {
+            return Err(SolveError::InvalidInput(
+                "polynomial event transaction requires fast dense route".into(),
+            ));
+        }
         if event_policy.is_some() && !matches!(plan, Plan::FastDense { .. }) {
             return Err(SolveError::InvalidInput(
                 "event transaction requires fast dense route".into(),
@@ -731,9 +757,21 @@ impl Rodas5p {
                         unreachable!("Enforce routes to the sequential driver")
                     }
                 };
-                let (entry_point, result) = if let Some(tx) = transaction.as_mut() {
-                    let mut accept =
-                        |segments: &rodas5p_integrators::FastDenseSegments| tx.inspect(segments);
+                #[cfg(feature = "polynomial-events")]
+                let has_poly = poly.is_some();
+                #[cfg(not(feature = "polynomial-events"))]
+                let has_poly = false;
+                let (entry_point, result) = if transaction.is_some() || has_poly {
+                    let mut accept = |segments: &rodas5p_integrators::FastDenseSegments| {
+                        #[cfg(feature = "polynomial-events")]
+                        if let Some(tx) = poly.as_deref_mut() {
+                            return tx.inspect(segments);
+                        }
+                        transaction
+                            .as_mut()
+                            .expect("sampled transaction")
+                            .inspect(segments)
+                    };
                     let av = match &atol {
                         AtolSpec::Scalar(_) => &[][..],
                         AtolSpec::Vector(v) => v.as_slice(),
@@ -1154,6 +1192,11 @@ impl Rodas5p {
             splices: Vec::new(),
             extension: run.segments,
         };
+        #[cfg(feature = "polynomial-events")]
+        if let Some(tx) = poly {
+            tx.finish(&mut solution);
+            return Ok(solution);
+        }
         // The transaction has already called event functions at each
         // accepted proposal. Do not replay the legacy postprocessor.
         if let Some(tx) = transaction {
@@ -1222,6 +1265,15 @@ fn validate(
 ) -> Result<AtolSpec, SolveError> {
     let invalid = |m: String| Err(SolveError::InvalidInput(m));
     let unsupported = |u: Unsupported| Err(SolveError::Unsupported(u));
+    if problem
+        .events
+        .iter()
+        .any(|e| e.direction == crate::Direction::Touch)
+    {
+        return invalid(
+            "Touch requires a declared polynomial event, not an opaque callback".into(),
+        );
+    }
     let n = problem.dimension;
     if n == 0 {
         return invalid("the problem dimension must be positive".into());
@@ -1662,6 +1714,40 @@ impl Rodas5p {
             BandedStagePolicy::Shipped,
             None,
             Some(policy),
+            #[cfg(feature = "polynomial-events")]
+            None,
         )
+    }
+    /// Integrate a single declared polynomial event with exact root isolation
+    /// of each represented dense polynomial. No physical IVP enclosure is
+    /// implied. Failure to isolate or represent times rolls back the slab.
+    #[cfg(feature = "polynomial-events")]
+    pub fn solve_polynomial_event(
+        problem: &Problem,
+        t_span: (f64, f64),
+        y0: &[f64],
+        opts: &Options,
+        spec: &crate::polynomial_events::PolynomialEventSpec,
+        policy: crate::polynomial_events::PolynomialEventPolicy,
+    ) -> Result<crate::polynomial_events::PolynomialEventRun, SolveError> {
+        let mut tx =
+            crate::polynomial_events::PolyTransaction::new(spec, policy, problem.dimension)?;
+        let solution = Self::solve_with_clients_and_events(
+            problem,
+            t_span,
+            y0,
+            opts,
+            &[],
+            None,
+            crate::MfStageSolvePolicy::Shipped,
+            BandedStagePolicy::Shipped,
+            None,
+            None,
+            Some(&mut tx),
+        )?;
+        Ok(crate::polynomial_events::PolynomialEventRun {
+            solution,
+            trace: tx.trace,
+        })
     }
 }

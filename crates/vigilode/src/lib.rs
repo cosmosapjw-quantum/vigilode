@@ -280,3 +280,7 @@ pub mod retro_research {
         retro_portfolio, retro_temporal,
     };
 }
+
+/// Exact represented-polynomial event transaction, distinct from opaque events.
+#[cfg(feature = "polynomial-events")]
+pub mod polynomial_events;

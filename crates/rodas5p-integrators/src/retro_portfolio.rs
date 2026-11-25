@@ -74,6 +74,16 @@ pub enum Route {
     QuotientDirect,
     #[cfg(feature = "retro-dictionary")]
     QuotientFolded,
+    #[cfg(feature = "polynomial-events")]
+    EventSturm,
+    #[cfg(feature = "polynomial-events")]
+    EventBernstein,
+    #[cfg(feature = "polynomial-events")]
+    EventDictionary,
+    #[cfg(feature = "polynomial-events")]
+    EventCompanion,
+    #[cfg(feature = "polynomial-events")]
+    EventDictionaryCompanion,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
 pub enum AttemptStatus {

@@ -231,6 +231,11 @@ impl RepresentedAffineSegment {
     pub fn states(&self) -> [f64; 2] {
         self.states
     }
+    /// Original represented dense H and stage rows; not rounded dot products.
+    #[cfg(feature = "polynomial-events")]
+    pub(crate) fn exact_inputs(&self) -> (&[[f64; 8]; 3], &[f64; 8]) {
+        (&self.dense_h, &self.stages)
+    }
     pub fn index(&self) -> usize {
         self.index
     }
@@ -307,7 +312,7 @@ fn binomial(n: usize, k: usize) -> f64 {
     C[n][k]
 }
 
-fn bernstein(power: &[Interval; 5]) -> CoreResult<[Interval; 5]> {
+pub(crate) fn bernstein(power: &[Interval; 5]) -> CoreResult<[Interval; 5]> {
     let mut result = [Interval::point(0.0)?; 5];
     for (k, value) in result.iter_mut().enumerate() {
         for (j, coefficient) in power.iter().enumerate().take(k + 1) {

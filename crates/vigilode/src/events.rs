@@ -27,6 +27,8 @@ pub enum Direction {
     /// Either of the two. As the `direction` of an [`EventRecord`] it never
     /// occurs: the record holds the observed `Up` or `Down`.
     Either,
+    /// Even-multiplicity touch, available only for declared polynomial events.
+    Touch,
 }
 
 /// One located event.

@@ -701,3 +701,7 @@ pub mod retro_portfolio;
 /// Opt-in table-backed and prepared numerical research primitives.
 #[cfg(feature = "retro-dictionary")]
 pub mod retro_foundation;
+
+/// Exact represented dense-polynomial event research, opt-in.
+#[cfg(feature = "polynomial-events")]
+pub mod retro_event_poly;

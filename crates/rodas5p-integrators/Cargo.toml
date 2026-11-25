@@ -7,6 +7,7 @@ license.workspace = true
 
 [features]
 retro-dictionary = ["rodas5p-core/retro-dictionary"]
+polynomial-events = ["retro-dictionary", "dep:num-rational", "dep:num-traits"]
 default = []
 audit2-research = []
 audit2-bateman-authority = ["audit2-research", "dep:serde_json"]
@@ -16,6 +17,8 @@ audit2-stage-certificate = ["audit2-research", "dep:serde_json", "dep:sha2"]
 research-gates = ["rodas5p-core/research-gates"]
 
 [dependencies]
+num-rational = { version = "=0.4.2", optional = true }
+num-traits = { version = "=0.2.19", optional = true }
 faer.workspace = true
 rodas5p-core = { path = "../rodas5p-core" }
 rodas5p-krylov = { path = "../rodas5p-krylov" }
