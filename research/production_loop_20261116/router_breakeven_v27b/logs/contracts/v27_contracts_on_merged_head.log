@@ -1,0 +1,141 @@
+2026-11-25T02:48:02Z
+bf8fed5b4a2834c70d3721e5b12178f9aa2fa794
+   Compiling bytemuck v1.25.2
+   Compiling num-traits v0.2.19
+   Compiling bitflags v2.13.1
+   Compiling cfg-if v1.0.4
+   Compiling libm v0.2.16
+   Compiling raw-cpuid v11.6.0
+   Compiling reborrow v0.5.5
+   Compiling pulp-wasm-simd-flag v0.1.1
+   Compiling dyn-stack v0.13.2
+   Compiling num-complex v0.4.6
+   Compiling once_cell v1.21.4
+   Compiling nano-gemm-core v0.2.1
+   Compiling typenum v1.20.1
+   Compiling libc v0.2.189
+   Compiling equator v0.2.2
+   Compiling pulp v0.22.3
+   Compiling generic-array v0.14.7
+   Compiling num_cpus v1.17.0
+   Compiling nano-gemm-c64 v0.2.1
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling nano-gemm-c32 v0.2.1
+   Compiling nano-gemm-f64 v0.2.1
+   Compiling gemm-common v0.19.0
+   Compiling gemm-c64 v0.19.0
+   Compiling gemm-c32 v0.19.0
+   Compiling gemm-f32 v0.19.0
+   Compiling gemm-f64 v0.19.0
+   Compiling qd v0.8.0
+   Compiling nano-gemm-f32 v0.2.1
+   Compiling serde_core v1.0.229
+   Compiling crossbeam-utils v0.8.22
+   Compiling generativity v1.2.1
+   Compiling faer-traits v0.24.0
+   Compiling equator v0.6.0
+   Compiling private-gemm-x86 v0.1.20
+   Compiling crossbeam-epoch v0.9.20
+   Compiling gemm v0.19.0
+   Compiling digest v0.10.7
+   Compiling zmij v1.0.23
+   Compiling itoa v1.0.18
+   Compiling cpufeatures v0.2.17
+   Compiling memchr v2.8.3
+   Compiling sha2 v0.10.9
+   Compiling serde_json v1.0.151
+   Compiling thiserror v2.0.19
+   Compiling serde v1.0.229
+   Compiling crossbeam-deque v0.8.7
+   Compiling hex v0.4.3
+   Compiling rayon-core v1.13.0
+   Compiling either v1.17.0
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v30/crates/rodas5p-integrators)
+   Compiling rayon v1.12.0
+   Compiling nano-gemm v0.2.2
+   Compiling faer v0.24.4
+   Compiling rodas5p-core v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v30/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v30/crates/rodas5p-krylov)
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v30/crates/vigilode)
+    Finished `release` profile [optimized] target(s) in 2m 15s
+     Running tests/default_path_golden.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v30/release/deps/default_path_golden-3cfa60341d062694)
+
+running 11 tests
+test format_helpers_are_bit_faithful ... ok
+test golden_directory_is_exactly_the_listed_files ... ok
+test rodas5p_contracts ... ok
+test dopri5 ... ok
+test production_automatic ... ok
+test rodas5p_robertson ... ok
+test rodas5p_vanderpol ... ok
+test rodas5p_hires ... ok
+test decision_grid ... ok
+test general_ode ... ok
+test rodas5p_brusselator ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.75s
+
+     Running tests/unified_breakeven_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v30/release/deps/unified_breakeven_contracts-bd74af83d3aa1bb7)
+
+running 13 tests
+test break_even_length_is_the_table_of_the_design ... ok
+test f2_fatal_above_one_completes_under_auto ... ok
+test d1_a_fatal_callback_inside_a_pilot_ends_the_solve_with_the_accepted_prefix ... ok
+test arenstorf_has_no_rodas5p_leg ... ok
+test robertson_40_charges_at_most_two_direct_rodas5p_plus_window_and_pilots ... ok
+test session_quota_one_advances_keep_the_bits_and_counters_of_dopri5_solve ... ok
+test lorenz96_40_has_no_rodas5p_leg_and_costs_at_most_twice_dopri5 ... ok
+test oscillator_1000_has_no_rodas5p_leg ... ok
+test u4_a_handover_follows_an_accepted_pilot_and_is_recorded ... ok
+test u2_dopri5_pilots_and_rodas5p_share_one_attempt_budget ... ok
+test u5_same_inputs_give_the_same_route_counters_and_bits ... ok
+test u1_a_run_without_handover_is_dopri5_solve_plus_its_pilots_within_twice_its_cost ... ok
+test u3_no_callback_before_dopri5s_first_stage_and_every_other_entry_is_a_pilots ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/unified_router_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v30/release/deps/unified_router_contracts-f30ac669f59de995)
+
+running 36 tests
+test p1_failing_switching_solve_reports_the_fatal_rhs_callback ... ok
+test p1_fatal_callback_on_the_explicit_leg_is_not_retried_by_another_method ... ok
+test p1_failing_switching_solve_reports_the_fatal_jacobian_callback ... ok
+test p1_fallback_shares_one_attempt_budget_and_keeps_the_work_of_the_failed_leg ... ok
+test p1_label_equals_executed_driver_on_the_explicit_route ... ok
+test p1_preflight_callback_failure_is_a_typed_stop_not_invalid_input ... ok
+test p1_preflight_callbacks_are_charged_with_a_dense_jacobian ... ok
+test p1_label_equals_executed_driver_on_the_switching_adapter ... ok
+test p1_stiff_contractive_scalar_with_dense_jacobian_is_not_explicit ... ok
+test p1_failing_switching_solve_with_attempts_left_is_not_reported_as_max_steps ... ok
+test p1_stiff_contractive_heat_equation_without_jacobian_is_bounded_and_hands_over ... ok
+test p1_preflight_callbacks_are_charged_without_a_jacobian ... ok
+test p1_workspace_storage_is_linear_in_the_dimension ... ok
+test p1_stiff_contractive_scalar_without_jacobian_is_bounded_and_hands_over ... ok
+test p1_rodas5p_leg_is_the_direct_call_bit_for_bit ... ok
+test part2::p2_declared_nonstiff_runs_dopri5_with_the_whole_budget_and_no_second_method ... ok
+test p1_switching_leg_keeps_the_full_work_of_its_segments ... ok
+test p1_stiff_contractive_heat_equation_with_dense_jacobian_is_not_explicit ... ok
+test part2::p2_a_refusal_of_the_switching_adapter_is_reported_and_rodas5p_runs ... ok
+test part2::p2_fallback_rule_and_one_attempt_budget ... ok
+test part2::p2_exhausted_shared_budget_reports_the_total_and_keeps_the_leg_stop ... ok
+test part2::p2_the_analysis_makes_no_callback_and_an_undeclared_request_runs_the_break_even_route ... ok
+test part2::p2_typed_stop_of_a_rodas5p_leg_and_its_prefix ... ok
+test part2::p2_legs_are_direct_calls_and_their_work_adds_up ... ok
+test part2::p2_unsupported_request_is_refused_before_any_callback ... ok
+test part2::p2_records_are_strict_json_and_options_keep_their_file_format ... ok
+test part2::p2_typed_stop_of_the_switching_adapter ... ok
+test part3::p3_switching_adapter_reads_a_driver_refusal_as_the_same_text ... ok
+test part3::p3_window_driver_errors_are_typed_and_keep_their_text ... ok
+test part3::p3_batch_outcome_keeps_the_stop_of_its_driver ... ok
+test part2::p2_declared_regime_routes_as_the_general_policy_does ... ok
+test p1_label_equals_executed_driver_on_every_rodas5p_driver_family ... ok
+test p1_preflight_callbacks_are_charged_with_a_jvp ... ok
+test part2::p2_every_tier_has_a_driver_and_every_report_replays_as_direct_calls ... ok
+test neutrality::switching_adapter_record_digests ... ok
+test p1_matrix_free_solve_allocates_no_dense_matrix ... ok
+
+test result: ok. 36 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+
+exit 0
+2026-11-25T02:50:46Z

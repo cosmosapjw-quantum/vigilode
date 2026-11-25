@@ -148,9 +148,10 @@ def main():
                      "and 4): the E7 diagnosis found no defect of the route, so no route code changes. "
                      "Code: branch research/production-loop-20261116-w4-v30 = the V27 implementation "
                      "(60d67729; crates/vigilode/src, the session pass-through and both contract test "
-                     "files byte-identical to it) merged with the loop head d4e2772f; the diff of the "
-                     "crates against d4e2772f is exactly the 13 files of the FBP change "
-                     "(router_hyperparameter_free/fbp_implementation.patch)",
+                     "files byte-identical to it) merged with the loop head d4e2772f (merge 91e9e582); "
+                     "the output of git diff d4e2772f 91e9e582 -- crates is byte-identical to "
+                     "router_hyperparameter_free/fbp_implementation.patch (sha256 %s, 13 files)"
+                     % sha256(os.path.join(V27, "fbp_implementation.patch")),
         "arms": {
             "T": "today's Auto route, built from a read-only checkout of the loop-branch commit that "
                  "N's branch merged last (now d4e2772f; its crates/vigilode/src equals that of V27's "
@@ -251,9 +252,12 @@ def main():
                                 "the three N runs of cb_column|A|default (its right-hand side fails "
                                 "only at a finite-difference column, which every pilot builds); the "
                                 "three N runs of cb_time|A|default only if one of its pilots reaches "
-                                "t > 0.4 before DOPRI5 does. No other problem has a fatal callback. "
-                                "The parser lists the members found; each is reported with its pilot "
-                                "record",
+                                "t > 0.4 before DOPRI5 does. The only other problem with a fatal "
+                                "callback, cb_probe, fails above y0 = 1 while its solution decreases, "
+                                "so its pilots (from accepted states below 1, finite-difference shift "
+                                "1.5e-8) are not expected to reach it; a run of it that D1 ends would "
+                                "be excluded by the same rule. The parser lists the members found; "
+                                "each is reported with its pilot record",
             "E4_budget": "attempts over all legs and pilots <= max_steps; exhaustion reports "
                          "MaxStepsReached{max_steps} (unchanged)",
             "E5_callbacks": "no closure entry before DOPRI5's first stage; no entry with t = t0 except "

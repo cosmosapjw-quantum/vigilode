@@ -90,3 +90,64 @@ CAUSE (stated in E7_DIAGNOSIS.json "cause", numbers from the runs)
   on a problem whose error is far below tolerance (N: 0.0041 and 2.9e-7 of the tolerance unit),
   with a rule without floor; NOT a defect of the route. No code change (steps 2's correction
   clause does not apply); the V27 contract tests are therefore not re-run for a change.
+
+== 2026-11-25 11:52, entry 3 (draft PREDECLARED.json; sanity checks; nothing of the deciding set run) ==
+
+FRESH SET (fresh_set.py is the one source; draft_predeclared.py writes PREDECLARED.json)
+- 37 problems, 79 cases: stiff_or_late_stiff 15 (A; pr_sin2t, a3_linear4, chem_d4, late_linear4,
+  fhn_relax also at L and S), non_stiff 13 (A, L, S), callback_budget_declared 9 (A): cb_probe (F2
+  analogue), cb_column (N2 analogue), cb_time (P_fatal analogue, 'logger offline'), cb_blowup,
+  cb_mass (singular mass, index 1), start rule sr_chem_dense, sr_pr_dense_ft, sr_ac_jvp, sr_ac_band;
+  variants chem_d4 regime stiff/nonstiff, kepler_e05 regime stiff/nonstiff, chem_d4 max_steps 500/50.
+  10 declared cases, 69 undeclared. n from 1 to 100; FD, dense, band, JVP and time-derivative callbacks.
+- Disjoint from the 36 V27 ids and their families, and from every fixture the FBP route has run on
+  (grep of tests/unified_breakeven_contracts.rs, tests/unified_router_contracts.rs,
+  tests/unified_production_solver_contracts.rs, examples/unified_production_solver.rs, the V27
+  runner toys; this node ran FBP only on P_scalar_fd variants). No VigilODE driver ran on them.
+- Definition checks (check_fresh_set.py, scipy 1.11.4 / mpmath 1.2.1 only; logs/fresh_set_checks.json):
+  every closed form matches y0 and has residual <= 6e-11 (relative), scipy agrees with it at t1 to
+  <= 4e-9; every stated derivative callback matches forward differences (<= 5e-9 relative); the
+  singular-mass closed form satisfies the DAE to 3e-51. Spans chosen from scipy runs before freezing:
+  ac_100 ends at t = 40 (transition near t = 38, relaxation still running), fhn_relax at t = 19.5
+  (middle of a slow phase; jumps near 18.91 and 20.18). Stiffness estimate S (DOPRI5 attempts at its
+  stability limit): DOPRI5 infeasible only on kaps_1e6 (6.1e5), pendulum_tracker (3.0e6),
+  pre_equilibrium (9.1e5); a3_linear4 and decay_chain6 6.1e4, chem_d4 5.8e4.
+- Corrections: E1 maxima over undeclared cases only; E3 (a) excludes exactly the runs D1 ends
+  (pilot verdict fatal; a priori cb_column|A|default, cb_time|A|default only if a pilot crosses
+  t = 0.4). E2, E4, E5, E6, E7, E10 rules unchanged; E8 and E9 rules unchanged, instantiated on
+  fresh analogues (E9: pr_sin2t <= 9090, a3_linear4 <= 36363, W formula of the V03b contract);
+  V27's computation readings (addendum 0b, erratum E5-i, review R2-R4) fixed before any run;
+  exploratory R_H (Rodas5p::solve from t0 with h0 = H, no rule).
+- Arms: T at d4e2772f, N at this branch; git diff d4e2772f 91e9e582 -- crates is byte-identical
+  to fbp_implementation.patch (sha256 9e903fdc...).
+
+SANITY (not required: no code change)
+- V27 contract targets on the merged head 91e9e582 + node files (logs/contracts/
+  v27_contracts_on_merged_head.log, 02:48-02:50 UTC): default_path_golden 11 passed,
+  unified_breakeven_contracts 13 passed, unified_router_contracts 36 passed, exit 0.
+- Loop checker (logs/check_checkpoint.log): exit 1, first complaint verbatim "ValueError:
+  implementation changed; rerun affected tests/update checkpoint:
+  crates/vigilode/src/unified/analyzer.rs"; collecting all: 10 such pins, all files of the V27 FBP
+  change carried by the merge (unified/*.rs, unified_router_contracts.rs, the example); strict JSON,
+  protected blobs, evidence and allowlist checks raise nothing.
+
+DRAFT
+- PREDECLARED.json sha256 93d0d84e02c1fd75651f24f9c4f0d3821a94fd67d9942fb93850958e97ca1d12
+  (fresh_set.py 657f14c4..., check_fresh_set.py 582ddbba..., draft_predeclared.py ce7b937f...,
+  logs/fresh_set_checks.json edce0629..., E7_DIAGNOSIS.json caa4da6d...).
+
+FOR THE ORCHESTRATOR BEFORE PUSHING
+1. E7 risk: with E7 unchanged, kaps_1e6 and pre_equilibrium (DOPRI5 infeasible, smooth slow
+   manifold at t1) can fail E7 for the diagnosed non-defect reason (V27: 2 of 7 handover cases
+   decided by R alone failed; h0 scan 31/41). Options: keep (as drafted; R_H shows the mechanism),
+   make them DOPRI5-feasible (kaps epsilon 1e-4; pre-equilibrium rates 1e3/2e3), or an owner
+   decision on an E7 floor.
+2. E3 (a) has a second latent conflict of the same kind as D1 (V27 R1): a run that stops on the
+   shared budget after lost pilots (U2) cannot have D's bits. Not expected here (chem_d4 budget
+   variants should hand over), not changed in the draft; a possible text: compare such a run with
+   Dopri5::solve at max_steps = its DOPRI5 attempts.
+3. E8/E9 named V27 problems; the draft keeps the rules on fresh analogues (disjointness).
+4. E2 risk: chem_d4|A|max_steps=50.
+5. T moves with the loop head only if the V30 branch merges it again (N - T must stay the patch).
+6. e7_diag/ holds a new standalone Cargo.toml and Cargo.lock (own [workspace]; precedent V27
+   runner); no existing manifest or lock was edited.
