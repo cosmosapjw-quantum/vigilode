@@ -74,7 +74,7 @@
 //!     keep its bits. [`CheckColourings::total_groups`] right-hand sides: 18,
 //!     59 and 150 for the bands of the cells bruss1d-n128, bruss1d-n131072
 //!     and nlkpp-band-n4096-r24 of node V08. Where the further colourings
-//!     have `n` groups or more (wide declared bands), the full check
+//!     have `n` groups or more (wide declared bands, irregular patterns), the full check
 //!     [`CheckColumns::All`] instead: every column alone, on the calling
 //!     thread, `n` right-hand sides, exact up to rounding;
 //!   - dense route: 8 evenly spread check columns ([`CheckColumns::Sample`]),
@@ -429,9 +429,17 @@ impl AssemblyOptions {
     ///   - `n` or more: [`CheckColumns::All`], on the calling thread. The
     ///     full check shifts every column alone, is the exact choice up to
     ///     rounding, and costs `n` right-hand sides, so it is not more
-    ///     expensive there; at equality it costs as much and is exact. The
-    ///     further colourings outnumber the columns for wide declared
-    ///     bands: the review of loop node V29 counted more than `n` groups
+    ///     expensive there; at equality it costs as much. "Exact up to
+    ///     rounding" does not make it a superset of the multi-colouring
+    ///     check: an undeclared coupling whose effect is lost to rounding
+    ///     when its column is shifted alone, but not when a group shifts it
+    ///     together with a declared column of the row, is detected by
+    ///     `MultiColouring` and missed by `All` (constructed by the review of
+    ///     loop node V31: a coupling of about 5.6e-9 next to an entry of
+    ///     1e6). The further colourings reach `n` for wide declared bands, for
+    ///     irregular patterns whose further colourings are single columns
+    ///     (both checks then shift the same states) and for small diagonal or
+    ///     empty patterns: the review of loop node V29 counted more than `n` groups
     ///     for 59 of 75 random banded patterns with half-width between
     ///     `0.2 n` and `0.45 n` (at most `1.85 n`), and the survey of loop
     ///     node V31 (`research/production_loop_20261116/assembly_wide_band/`)
