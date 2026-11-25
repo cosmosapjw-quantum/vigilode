@@ -1,0 +1,68 @@
+KS-N8 symbolic check of DERIVATION L4 (closed forms of the A-Hermitian and skew parts, mass at m = 0)
+Wolfram Language 15.0 kernel via the wolfram MCP server, 2026-11-25 about 10:00 KST, session w4dbe62516e88f53e.
+Generic nt = 4 block: positive areas a1..a4, positive interior conductances k1..k3 (polar faces 0),
+real azimuth rates z1..z4, symbol sig = 2 - 2 cos th, sn = sin th, cs = cos th, real c, zonal b1..b4,
+interior meridional fluxes f1..f3. Upwind is checked for two opposite sign patterns of every face and ring.
+The output below is copied verbatim from the kernel.
+
+---- call 1 (code) ----
+ClearAll["Global`*"];
+nt = 4;
+av = {a1, a2, a3, a4}; kv = {0, k1, k2, k3, 0}; fv = {0, f1, f2, f3, 0}; az = {z1, z2, z3, z4}; bv = {b1, b2, b3, b4};
+nr[r_] := kv[[r]]/av[[r]]; sr[r_] := kv[[r + 1]]/av[[r]];
+blockC = Table[Which[
+    i == j, c - nr[i] - sr[i] - az[[i]] sig - I bv[[i]] sn + (fv[[i]] - fv[[i + 1]])/(2 av[[i]]),
+    j == i - 1, nr[i] + fv[[i]]/(2 av[[i]]),
+    j == i + 1, sr[i] - fv[[i + 1]]/(2 av[[i]]),
+    True, 0], {i, nt}, {j, nt}];
+(* upwind with the sign pattern f1>0, f2<0, f3>0, b1>0, b2<0, b3>0, b4<0 *)
+pos[x_] := Max[x, 0]; neg[x_] := Min[x, 0];
+blockU = Table[Which[
+    i == j, c - nr[i] - sr[i] - az[[i]] sig - Abs[bv[[i]]] (1 - cs) - I bv[[i]] sn + (neg[fv[[i]]] - pos[fv[[i + 1]]])/av[[i]],
+    j == i - 1, nr[i] + pos[fv[[i]]]/av[[i]],
+    j == i + 1, sr[i] - neg[fv[[i + 1]]]/av[[i]],
+    True, 0], {i, nt}, {j, nt}];
+assum = And @@ Thread[av > 0] && k1 > 0 && k2 > 0 && k3 > 0 && Element[{c, sig, sn, cs, z1, z2, z3, z4}, Reals] &&
+   f1 > 0 && f2 < 0 && f3 > 0 && b1 > 0 && b2 < 0 && b3 > 0 && b4 < 0;
+ahat = DiagonalMatrix[Sqrt[av]]; ahatInv = DiagonalMatrix[1/Sqrt[av]];
+conjT[m_] := Transpose[ComplexExpand[Conjugate[m]]];
+herm[m_] := Module[{bt = ahat.m.ahatInv}, (bt + conjT[bt])/2];
+skew[m_] := Module[{bt = ahat.m.ahatInv}, (bt - conjT[bt])/(2 I)];
+divv = Table[(fv[[r + 1]] - fv[[r]])/av[[r]], {r, nt}];
+hClosed[up_] := Table[Which[
+    i == j, c - nr[i] - sr[i] - az[[i]] sig - divv[[i]]/2 - If[up, Abs[bv[[i]]] (1 - cs) + (Abs[fv[[i]]] + Abs[fv[[i + 1]]])/(2 av[[i]]), 0],
+    Abs[i - j] == 1, With[{r = Min[i, j]}, kv[[r + 1]]/Sqrt[av[[r]] av[[r + 1]]] + If[up, Abs[fv[[r + 1]]]/(2 Sqrt[av[[r]] av[[r + 1]]]), 0]],
+    True, 0], {i, nt}, {j, nt}];
+kClosed = Table[Which[
+    i == j, -bv[[i]] sn,
+    j == i + 1, I fv[[i + 1]]/(2 Sqrt[av[[i]] av[[i + 1]]]),
+    j == i - 1, -I fv[[i]]/(2 Sqrt[av[[i]] av[[i - 1]]]),
+    True, 0], {i, nt}, {j, nt}];
+res = <|
+  "centred_H_closed_form" -> Simplify[herm[blockC] - hClosed[False], assum] === ConstantArray[0, {nt, nt}],
+  "centred_K_closed_form" -> Simplify[skew[blockC] - kClosed, assum] === ConstantArray[0, {nt, nt}],
+  "upwind_H_closed_form" -> Simplify[herm[blockU] - hClosed[True], assum] === ConstantArray[0, {nt, nt}],
+  "upwind_K_closed_form" -> Simplify[skew[blockU] - kClosed, assum] === ConstantArray[0, {nt, nt}],
+  "centred_mass_m0" -> Simplify[av.(blockC /. {sn -> 0, sig -> 0, cs -> 1}) - c av, assum] === ConstantArray[0, nt],
+  "upwind_mass_m0" -> Simplify[av.(blockU /. {sn -> 0, sig -> 0, cs -> 1}) - c av, assum] === ConstantArray[0, nt],
+  "centred_zonal_only_skew_is_diag" -> Simplify[skew[blockC /. {f1 -> 0, f2 -> 0, f3 -> 0}] - DiagonalMatrix[-bv sn], assum] === ConstantArray[0, {nt, nt}]
+  |>;
+res
+---- call 1 (output) ----
+Out[1]= <|"centred_H_closed_form" -> True, "centred_K_closed_form" -> True, "upwind_H_closed_form" -> True, "upwind_K_closed_form" -> True, "centred_mass_m0" -> True, "upwind_mass_m0" -> True, "centred_zonal_only_skew_is_diag" -> True|>
+
+---- call 2 (code, same session) ----
+assum2 = And @@ Thread[av > 0] && k1 > 0 && k2 > 0 && k3 > 0 && Element[{c, sig, sn, cs, z1, z2, z3, z4}, Reals] &&
+   f1 < 0 && f2 > 0 && f3 < 0 && b1 < 0 && b2 > 0 && b3 < 0 && b4 > 0;
+<|"upwind_H_closed_form_opposite_signs" -> (Simplify[herm[blockU] - hClosed[True], assum2] === ConstantArray[0, {nt, nt}]),
+  "upwind_K_closed_form_opposite_signs" -> (Simplify[skew[blockU] - kClosed, assum2] === ConstantArray[0, {nt, nt}]),
+  "upwind_mass_m0_opposite_signs" -> (Simplify[av.(blockU /. {sn -> 0, sig -> 0, cs -> 1}) - c av, assum2] === ConstantArray[0, nt]),
+  "weyl_centred_H_minus_cI_plus_halfdiv_is_NSD_diffusion" -> (Simplify[hClosed[False] - c IdentityMatrix[nt] + DiagonalMatrix[divv/2] - ahat.Table[Which[i == j, -nr[i] - sr[i] - az[[i]] sig, j == i - 1, nr[i], j == i + 1, sr[i], True, 0], {i, nt}, {j, nt}].ahatInv, assum2] === ConstantArray[0, {nt, nt}]),
+  "WolframVersion" -> $VersionNumber|>
+---- call 2 (output) ----
+Out[2]= <|"upwind_H_closed_form_opposite_signs" -> True, "upwind_K_closed_form_opposite_signs" -> True, "upwind_mass_m0_opposite_signs" -> True, "weyl_centred_H_minus_cI_plus_halfdiv_is_NSD_diffusion" -> True, "WolframVersion" -> 15.|>
+
+Scope: one block size (nt = 4) with generic symbolic entries; the general-nt statement rests on the
+row-by-row algebra of DERIVATION L4 (each entry involves at most two neighbouring rings, so nt = 4
+already contains every interior row type and both polar rows) and on the numerical check A1 of
+verify_fov.py (225 cases, worst 2.9e-16).
