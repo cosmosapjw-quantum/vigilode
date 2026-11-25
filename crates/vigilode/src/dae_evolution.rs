@@ -104,8 +104,38 @@ struct Engine {
     route: EvolutionRoute,
     warp: Option<WarpSeed>,
     work: Arc<Mutex<ProjectionWork>>,
+    conservation: Option<(de::RobertsonModel, de::ConservationRoute)>,
 }
 impl Engine {
+    fn certify(
+        &self,
+        times: [f64; 2],
+        power: &[Vec<Iv>],
+        incoming: Option<f64>,
+    ) -> CoreResult<SlabCertificate> {
+        if let Some((model, route)) = &self.conservation {
+            model.certify(
+                times,
+                power,
+                &self.branch,
+                self.policy.tube_radius,
+                incoming,
+                self.policy.init.condition_cap,
+                *route,
+            )
+        } else {
+            de::certify_slab(
+                &self.src,
+                times,
+                power,
+                &self.branch,
+                self.policy.tube_radius,
+                incoming,
+                self.policy.green,
+                self.policy.init.condition_cap,
+            )
+        }
+    }
     fn project(&self, t: f64, x: &[f64], seed: &[f64]) -> CoreResult<InitReport> {
         let r = de::project(
             &self.src,
@@ -222,9 +252,15 @@ fn projected(
                     .collect::<CoreResult<Vec<_>>>()
             })
             .collect::<CoreResult<Vec<_>>>()?;
-        let ex = de::query_x_error(&p, a.times, t, x, c.whole_x_error.expect("qualified"))?;
-        physical_error_upper =
-            Some(ex.max(add_up(r.state_error_upper, mul_up(c.zx_norm_upper, ex)?)?));
+        let ideal = c.whole_x_error.expect("qualified");
+        if c.conservation.is_some() {
+            physical_error_upper =
+                Some(de::conservation_query_full(&p, a.times, t, &state, ideal)?);
+        } else {
+            let ex = de::query_x_error(&p, a.times, t, x, ideal)?;
+            physical_error_upper =
+                Some(ex.max(add_up(r.state_error_upper, mul_up(c.zx_norm_upper, ex)?)?));
+        }
     }
     // Do not permit extrapolation even on a direct accepted-state query.
     if t < s.t[0] || t > *s.t.last().expect("initial") {
@@ -360,7 +396,25 @@ fn evolve_epoch_impl(
     policy: EvolutionPolicy,
     route: EvolutionRoute,
     grid: &[f64],
+    scan: Option<&mut dyn EpochObserver>,
+) -> CoreResult<EvolutionRun> {
+    evolve_epoch_authority(
+        src, x, z, branch, epoch, opts, policy, route, grid, scan, None,
+    )
+}
+#[allow(clippy::too_many_arguments)]
+fn evolve_epoch_authority(
+    src: &DaeSource,
+    x: &[f64],
+    z: &[f64],
+    branch: &[[f64; 2]],
+    epoch: EvolutionEpoch,
+    opts: &Options,
+    policy: EvolutionPolicy,
+    route: EvolutionRoute,
+    grid: &[f64],
     mut scan: Option<&mut dyn EpochObserver>,
+    conservation: Option<(de::RobertsonModel, de::ConservationRoute)>,
 ) -> CoreResult<EvolutionRun> {
     let EvolutionEpoch {
         start,
@@ -408,6 +462,7 @@ fn evolve_epoch_impl(
         route,
         warp: warp.clone(),
         work: Arc::new(Mutex::new(ProjectionWork::default())),
+        conservation,
     };
     let (p, y) = if route == EvolutionRoute::Mass {
         let a = initialize_mass_problem(src, start, x, z, branch, policy.init, route.init())
@@ -535,16 +590,7 @@ fn evolve_epoch_impl(
             .iter()
             .map(|a| a.iter().map(|v| v.as_pair()).collect())
             .collect();
-        let r = de::certify_slab(
-            src,
-            times,
-            &p,
-            branch,
-            policy.tube_radius,
-            incoming,
-            policy.green,
-            policy.init.condition_cap,
-        );
+        let r = e.certify(times, &p, incoming);
         let (certificate, reason) = match r {
             Ok(c) => {
                 incoming = if c.global_qualified { c.outgoing } else { None };
@@ -992,16 +1038,7 @@ fn certify_native_packet(
         }
         p.extend(z);
     }
-    let c = de::certify_slab(
-        &e.src,
-        times,
-        &p,
-        &e.branch,
-        e.policy.tube_radius,
-        incoming,
-        e.policy.green,
-        e.policy.init.condition_cap,
-    )?;
+    let c = e.certify(times, &p, incoming)?;
     if !c.global_qualified
         || c.whole_z_error.is_none_or(|v| v > e.policy.global_tol)
         || c.whole_x_error.is_none_or(|v| v > e.policy.global_tol)
@@ -2856,6 +2893,27 @@ pub fn evolve_to_first_guard(
     guards: &[DeclaredPolynomial],
     mp: MultiGuardPolicy,
 ) -> CoreResult<MultiGuardRun> {
+    evolve_to_first_guard_authority(
+        src, x, z, branch, epoch, opts, policy, route, guards, mp, None,
+    )
+}
+#[allow(clippy::too_many_arguments)]
+fn evolve_to_first_guard_authority(
+    src: &DaeSource,
+    x: &[f64],
+    z: &[f64],
+    branch: &[[f64; 2]],
+    epoch: EvolutionEpoch,
+    opts: &Options,
+    policy: EvolutionPolicy,
+    route: EvolutionRoute,
+    guards: &[DeclaredPolynomial],
+    mp: MultiGuardPolicy,
+    conservation: Option<(de::RobertsonModel, de::ConservationRoute)>,
+) -> CoreResult<MultiGuardRun> {
+    if conservation.is_some() && mp.method == MultiGuardRoute::Independent {
+        return Err(bad("conservation shared observer required"));
+    }
     if !(2..=8).contains(&guards.len())
         || !(1..=128).contains(&mp.max_slabs)
         || !(1..=64).contains(&mp.pending.max_slabs)
@@ -2957,7 +3015,7 @@ pub fn evolve_to_first_guard(
         comparisons: vec![],
         work: MultiGuardWork::default(),
     };
-    let trial = evolve_epoch_impl(
+    let trial = evolve_epoch_authority(
         src,
         x,
         z,
@@ -2968,6 +3026,7 @@ pub fn evolve_to_first_guard(
         route,
         &[],
         Some(&mut multi),
+        conservation,
     )?;
     let qualified = trial.global_qualified && trial.pointwise_qualified && trial.branch_qualified;
     let initial = qualified && multi.scans.iter().all(initial_proved);
@@ -3589,4 +3648,295 @@ pub fn evolve_hybrid_chain(
         out.work.transitions_committed += 1;
         out.final_mode = mode;
     }
+}
+
+pub use de::{ConservationReceipt, ConservationRoute, RobertsonModel};
+/// Initial physical family is the intersection of the exact conserved
+/// simplex and the explicitly L1-bounded differential ball. The public
+/// constructor checks a physical witness (its center). No generic epoch
+/// infinity radius is accepted as an invariant-set assertion.
+#[derive(Clone, Copy, Debug, Serialize)]
+pub struct RobertsonInitial {
+    center: [f64; 2],
+    l1_radius: f64,
+}
+impl RobertsonInitial {
+    pub fn exact(center: [f64; 2]) -> CoreResult<Self> {
+        Self::simplex_ball(center, 0.)
+    }
+    pub fn simplex_ball(center: [f64; 2], l1_radius: f64) -> CoreResult<Self> {
+        if !l1_radius.is_finite()
+            || l1_radius < 0.
+            || center.iter().any(|x| !x.is_finite() || *x < 0.)
+            || add_up(center[0], center[1])? > 1.
+        {
+            return Err(bad("Robertson initial simplex authority"));
+        }
+        Ok(Self { center, l1_radius })
+    }
+    pub fn center(&self) -> [f64; 2] {
+        self.center
+    }
+    pub fn l1_radius(&self) -> f64 {
+        self.l1_radius
+    }
+}
+const ROBERTSON_BRANCH: [[f64; 2]; 1] = [[-0.25, 1.25]];
+fn robertson_policy(policy: EvolutionPolicy) -> CoreResult<()> {
+    if policy.init.mode != rodas5p_integrators::retro_dae_init::InitMode::ProjectAlgebraic {
+        return Err(bad("Robertson requires original algebraic projection"));
+    }
+    Ok(())
+}
+#[allow(clippy::too_many_arguments)]
+fn robertson_epoch(
+    model: &RobertsonModel,
+    initial: RobertsonInitial,
+    times: [f64; 2],
+    opts: &Options,
+    policy: EvolutionPolicy,
+    route: EvolutionRoute,
+    certificate: ConservationRoute,
+    grid: &[f64],
+) -> CoreResult<EvolutionRun> {
+    robertson_policy(policy)?;
+    let epoch = EvolutionEpoch {
+        start: times[0],
+        end: times[1],
+        incoming_x_error: Some(initial.l1_radius),
+    };
+    let r = evolve_epoch_authority(
+        model.source(),
+        &initial.center,
+        &[0.125],
+        &ROBERTSON_BRANCH,
+        epoch,
+        opts,
+        policy,
+        route,
+        grid,
+        None,
+        Some((model.clone(), certificate)),
+    )?;
+    if r.initial.x != initial.center || r.driver.y.first().is_none_or(|v| v[..2] != initial.center)
+    {
+        return Err(bad("Robertson differential center changed"));
+    }
+    Ok(r)
+}
+#[allow(clippy::too_many_arguments)]
+pub fn evolve_robertson(
+    rate: f64,
+    initial: RobertsonInitial,
+    times: [f64; 2],
+    opts: &Options,
+    policy: EvolutionPolicy,
+    route: EvolutionRoute,
+    certificate: ConservationRoute,
+    grid: &[f64],
+) -> CoreResult<EvolutionRun> {
+    robertson_epoch(
+        &RobertsonModel::new(rate)?,
+        initial,
+        times,
+        opts,
+        policy,
+        route,
+        certificate,
+        grid,
+    )
+}
+#[allow(clippy::too_many_arguments)]
+pub fn evolve_robertson_to_first_guard(
+    rate: f64,
+    initial: RobertsonInitial,
+    times: [f64; 2],
+    opts: &Options,
+    policy: EvolutionPolicy,
+    route: EvolutionRoute,
+    certificate: ConservationRoute,
+    guards: &[DeclaredPolynomial],
+    mp: MultiGuardPolicy,
+) -> CoreResult<MultiGuardRun> {
+    robertson_policy(policy)?;
+    let model = RobertsonModel::new(rate)?;
+    evolve_to_first_guard_authority(
+        model.source(),
+        &initial.center,
+        &[0.125],
+        &ROBERTSON_BRANCH,
+        EvolutionEpoch {
+            start: times[0],
+            end: times[1],
+            incoming_x_error: Some(initial.l1_radius),
+        },
+        opts,
+        policy,
+        route,
+        guards,
+        mp,
+        Some((model.clone(), certificate)),
+    )
+}
+/// Exact clock declarations and canonical positive mass-preserving reset.
+/// General asynchronous state-dependent reset is deliberately not admitted.
+pub struct RobertsonClockRun {
+    pre: MultiGuardRun,
+    pub event_time: Option<f64>,
+    pub incoming_l1: Option<f64>,
+    pub reset_center: Option<[f64; 2]>,
+    pub reason: Option<String>,
+    pub native_attempts: usize,
+    post: Option<EvolutionRun>,
+}
+impl RobertsonClockRun {
+    pub fn pre(&self) -> &MultiGuardRun {
+        &self.pre
+    }
+    pub fn post(&self) -> Option<&EvolutionRun> {
+        if self.reason.is_none() {
+            self.post
+                .as_ref()
+                .filter(|r| r.global_qualified && r.branch_qualified && r.pointwise_qualified)
+        } else {
+            None
+        }
+    }
+    pub fn post_diagnostic(&self) -> Option<&EvolutionRun> {
+        self.post.as_ref()
+    }
+}
+#[allow(clippy::too_many_arguments)]
+pub fn evolve_robertson_clock_reset(
+    rates: [f64; 2],
+    initial: RobertsonInitial,
+    times: [f64; 2],
+    clocks: [f64; 2],
+    opts: &Options,
+    policy: EvolutionPolicy,
+    route: EvolutionRoute,
+    certificate: ConservationRoute,
+    mp: MultiGuardPolicy,
+    grid: &[f64],
+) -> CoreResult<RobertsonClockRun> {
+    use rodas5p_integrators::retro_event_poly::{AffineFactor, EventTerm};
+    let target = RobertsonModel::new(rates[1])?;
+    if clocks
+        .iter()
+        .any(|t| !t.is_finite() || *t <= times[0] || *t >= times[1])
+    {
+        return Err(bad("Robertson declared clock domain"));
+    }
+    let guards = clocks
+        .iter()
+        .map(|&t| {
+            DeclaredPolynomial::new(vec![EventTerm {
+                coefficient: 1.,
+                factors: vec![AffineFactor::clock(t)],
+            }])
+        })
+        .collect::<CoreResult<Vec<_>>>()?;
+    let pre = evolve_robertson_to_first_guard(
+        rates[0],
+        initial,
+        times,
+        opts,
+        policy,
+        route,
+        certificate,
+        &guards,
+        mp,
+    )?;
+    let mut out = RobertsonClockRun {
+        native_attempts: pre.work.attempts,
+        pre,
+        event_time: None,
+        incoming_l1: None,
+        reset_center: None,
+        reason: None,
+        post: None,
+    };
+    let Some(j) = out.pre.winner() else {
+        out.reason = Some("Robertson first clock unresolved".into());
+        return Ok(out);
+    };
+    let a = out.pre.event_authority().expect("winner authority");
+    let tau = clocks[j];
+    let root = a.root().expect("winner root");
+    if !(root[0] <= tau && tau <= root[1] && tau < clocks[1 - j]) {
+        return Err(bad("Robertson clock identity/order"));
+    }
+    // The declared guard is exactly t-tau, not an approximate root hint.
+    // Thus evaluation at tau uses private original-mode extension, not
+    // an extrapolation or uncertain-time synchronization.
+    let q = a.trial.query(tau)?;
+    let slab = a
+        .trial
+        .slabs
+        .get(a.trial.slabs.partition_point(|s| s.times[1] < tau))
+        .ok_or_else(|| bad("Robertson clock slab missing"))?;
+    let c = slab
+        .certificate
+        .as_ref()
+        .filter(|c| c.global_qualified && c.conservation.is_some())
+        .ok_or_else(|| bad("Robertson clock L1 authority missing"))?;
+    let p = slab.power[..2]
+        .iter()
+        .map(|v| {
+            v.iter()
+                .map(|x| Iv::new(x[0], x[1]))
+                .collect::<CoreResult<Vec<_>>>()
+        })
+        .collect::<CoreResult<Vec<_>>>()?;
+    let old = de::conservation_query_l1(
+        &p,
+        slab.times,
+        tau,
+        &q.state[..2],
+        c.whole_x_error.expect("qualified"),
+    )?;
+    let center = [q.state[0], q.state[1] * 0.5];
+    let correction = Iv::point(q.state[1])?
+        .scale(0.5)?
+        .sub(Iv::point(center[1])?)?
+        .mag();
+    let radius = add_up(old, correction)?;
+    // R(u,v,z)=(u,v/2,z+v/2) maps the invariant simplex into itself
+    // and has reduced induced L1 norm 1. Only this private constructor
+    // can carry that authority even if the numerical center is nonphysical.
+    let start = RobertsonInitial {
+        center,
+        l1_radius: radius,
+    };
+    out.event_time = Some(tau);
+    out.incoming_l1 = Some(radius);
+    out.reset_center = Some(center);
+    let mut o = opts.clone();
+    o.max_steps = o.max_steps.saturating_sub(out.native_attempts);
+    if o.max_steps == 0 {
+        out.reason = Some("Robertson native attempt budget exhausted".into());
+        return Ok(out);
+    }
+    match robertson_epoch(
+        &target,
+        start,
+        [tau, times[1]],
+        &o,
+        policy,
+        route,
+        certificate,
+        grid,
+    ) {
+        Ok(r) => {
+            out.native_attempts += r.driver.stats.attempts;
+            if !r.global_qualified || !r.branch_qualified || !r.pointwise_qualified {
+                out.reason = Some("Robertson post physical proof unresolved".into());
+            }
+            out.post = Some(r);
+        }
+        Err(e) => {
+            out.reason = Some(e.to_string());
+        }
+    }
+    Ok(out)
 }

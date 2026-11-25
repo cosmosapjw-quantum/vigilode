@@ -400,6 +400,8 @@ pub struct SlabCertificate {
     pub green_used: bool,
     pub global_qualified: bool,
     pub global_reason: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub conservation: Option<ConservationReceipt>,
 }
 /// Uniform existence/uniqueness on the represented slab and inflated
 /// differential tube. Strict physical bootstrap is a separate condition.
@@ -604,6 +606,7 @@ pub fn certify_slab(
         green_used: false,
         global_qualified: false,
         global_reason: None,
+        conservation: None,
     };
     let Some(ein) = incoming else {
         out.global_reason = Some("prior physical tube unresolved".into());
@@ -1721,4 +1724,257 @@ pub fn gap_guard_enclosure(
     out.reduced_clock = Some(reduced[0].as_pair());
     out.work = work;
     Ok(out)
+}
+
+/// Structural residual routes on the exact source-owned Robertson simplex.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum ConservationRoute {
+    Max,
+    Integral4,
+    Integral16,
+}
+#[derive(Clone, Debug, Serialize)]
+pub struct ConservationCell {
+    pub theta: [f64; 2],
+    pub v_minus: f64,
+    pub z_minus: f64,
+    pub mu_l1_upper: f64,
+    pub residual_integral: f64,
+    pub growth_upper: f64,
+    pub incoming_l1: f64,
+    pub outgoing_l1: f64,
+}
+#[derive(Clone, Debug, Serialize)]
+pub struct ConservationReceipt {
+    pub route: ConservationRoute,
+    pub rate: f64,
+    pub norm: &'static str,
+    pub cells: Vec<ConservationCell>,
+    pub incoming_l1: f64,
+    pub outgoing_l1: Option<f64>,
+}
+/// Constructs the original DAE itself. No user-provided arbitrary polynomial
+/// can be substituted while retaining the invariant-source authority.
+#[derive(Clone)]
+pub struct RobertsonModel {
+    src: DaeSource,
+    rate: f64,
+}
+impl RobertsonModel {
+    pub fn new(rate: f64) -> CoreResult<Self> {
+        use crate::retro_event_poly::{AffineFactor as A, EventTerm as T};
+        if !matches!(rate, 3e7 | 6e7) {
+            return Err(bad("Robertson rate outside scoped invariant model"));
+        }
+        let term = |c, factors| T {
+            coefficient: c,
+            factors,
+        };
+        let l = |i, c| term(c, vec![A::component(i, 0.)]);
+        let pair = |i, j, c| term(c, vec![A::component(i, 0.), A::component(j, 0.)]);
+        let src = DaeSource::new(
+            vec![
+                DeclaredPolynomial::new(vec![l(0, -0.04), pair(1, 2, 1e4)])?,
+                DeclaredPolynomial::new(vec![l(0, 0.04), pair(1, 2, -1e4), pair(1, 1, -rate)])?,
+            ],
+            vec![DeclaredPolynomial::new(vec![
+                l(0, 1.),
+                l(1, 1.),
+                l(2, 1.),
+                term(-1., vec![]),
+            ])?],
+        )?;
+        Ok(Self { src, rate })
+    }
+    pub fn source(&self) -> &DaeSource {
+        &self.src
+    }
+    /// Low-level certificate: incoming L1 radius must come from an actual
+    /// physical simplex family, not an arbitrary infinity-norm ball.
+    /// The facade owns this precondition. Reuses original branch proof.
+    #[allow(clippy::too_many_arguments)]
+    pub fn certify(
+        &self,
+        times: [f64; 2],
+        y: &[Poly],
+        branch: &[[f64; 2]],
+        tube: f64,
+        incoming_l1: Option<f64>,
+        condition_cap: f64,
+        route: ConservationRoute,
+    ) -> CoreResult<SlabCertificate> {
+        let mut out = certify_slab(
+            &self.src,
+            times,
+            y,
+            branch,
+            tube,
+            None,
+            false,
+            condition_cap,
+        )?;
+        out.incoming = incoming_l1.unwrap_or(0.);
+        let mut evidence = ConservationReceipt {
+            route,
+            rate: self.rate,
+            norm: "reduced-l1",
+            cells: vec![],
+            incoming_l1: out.incoming,
+            outgoing_l1: None,
+        };
+        if let Some(mut e) = incoming_l1 {
+            if !e.is_finite() || e < 0. {
+                return Err(bad("invalid incoming L1 radius"));
+            }
+            let h = p(times[1])?.sub(p(times[0])?)?;
+            let lift = add(&[p(1.)?], &scale(&add(&y[0], &y[1])?, p(-1.)?)?)?;
+            // Compose the original source with exact affine elimination.
+            let clock = [p(times[0])?, h];
+            let reduced = [y[0].clone(), y[1].clone(), lift.clone()];
+            let defect = self
+                .src
+                .f
+                .iter()
+                .take(2)
+                .enumerate()
+                .map(|(i, f)| {
+                    let mut d = y[i]
+                        .iter()
+                        .enumerate()
+                        .skip(1)
+                        .map(|(k, v)| v.scale(k as f64))
+                        .collect::<CoreResult<Vec<_>>>()?;
+                    if d.is_empty() {
+                        d.push(zero());
+                    }
+                    add(&d, &scale(&compose(f, &clock, &reduced)?, -h)?)
+                })
+                .collect::<CoreResult<Vec<_>>>()?;
+            let n = match route {
+                ConservationRoute::Max => 1,
+                ConservationRoute::Integral4 => 4,
+                ConservationRoute::Integral16 => 16,
+            };
+            evidence.cells.reserve(n);
+            let w = 1. / n as f64;
+            for k in 0..n {
+                let l = k as f64 * w;
+                let vminus = (-range(&conservation_restrict(&y[1], l, w)?)?.lo).max(0.);
+                let zminus = (-range(&conservation_restrict(&lift, l, w)?)?.lo).max(0.);
+                let a = mul_up(
+                    2.,
+                    rodas5p_core::directed::sub_up(mul_up(1e4, vminus)?, 0.04)?.max(0.),
+                )?;
+                let b = add_up(mul_up(2. * self.rate, vminus)?, mul_up(2e4, zminus)?)?;
+                let mu = a.max(b);
+                let growth_arg = mul_up(mul_up(h.hi, w)?, mu)?;
+                let den = sub_down(1., growth_arg)?;
+                if den <= 0. {
+                    out.global_reason = Some("conservation growth denominator not positive".into());
+                    out.conservation = Some(evidence);
+                    return Ok(out);
+                }
+                let gain = div_up(1., den)?;
+                let mut r = 0.;
+                for d in &defect {
+                    let coeff = bernstein(&conservation_restrict(d, l, w)?)?;
+                    let m = if route == ConservationRoute::Max {
+                        coeff.iter().map(|v| v.mag()).fold(0., f64::max)
+                    } else {
+                        div_up(
+                            coeff.iter().try_fold(0., |s, v| add_up(s, v.mag()))?,
+                            coeff.len() as f64,
+                        )?
+                    };
+                    r = add_up(r, m)?;
+                }
+                r = mul_up(r, w)?;
+                let next = mul_up(gain, add_up(e, r)?)?;
+                evidence.cells.push(ConservationCell {
+                    theta: [l, l + w],
+                    v_minus: vminus,
+                    z_minus: zminus,
+                    mu_l1_upper: mu,
+                    residual_integral: r,
+                    growth_upper: gain,
+                    incoming_l1: e,
+                    outgoing_l1: next,
+                });
+                e = next;
+            }
+            // All gains >=1; endpoint envelope also bounds the entire slab.
+            evidence.outgoing_l1 = Some(e);
+            out.outgoing = Some(e);
+            out.whole_x_error = Some(e);
+            out.whole_z_error = Some(add_up(out.algebraic_defect, e)?);
+            out.global_qualified = e < tube;
+            out.global_reason = (!out.global_qualified)
+                .then_some("conservation physical bootstrap tube exceeded".into());
+        } else {
+            out.global_reason = Some("prior conservation authority unresolved".into());
+        }
+        out.conservation = Some(evidence);
+        Ok(out)
+    }
+}
+/// Restrict power polynomial to exact dyadic subcell using directed Horner
+/// composition. Degrees remain bounded by the original polynomial degree.
+fn conservation_restrict(a: &[Iv], l: f64, w: f64) -> CoreResult<Poly> {
+    let mut out = vec![
+        *a.last()
+            .ok_or_else(|| bad("empty conservation polynomial"))?,
+    ];
+    let v = [p(l)?, p(w)?];
+    for &c in a[..a.len() - 1].iter().rev() {
+        out = add(&mul(&out, &v)?, &[c])?;
+    }
+    Ok(out)
+}
+/// Rounded differential state correction in the actual L1 norm.
+pub fn conservation_query_l1(
+    power: &[Poly],
+    times: [f64; 2],
+    t: f64,
+    x: &[f64],
+    ideal: f64,
+) -> CoreResult<f64> {
+    if power.len() < 2 || x.len() != 2 || t < times[0] || t > times[1] {
+        return Err(bad("conservation query domain"));
+    }
+    let u = p(t)?
+        .sub(p(times[0])?)?
+        .div(p(times[1])?.sub(p(times[0])?)?)?;
+    let u = Iv::new(u.lo.max(0.), u.hi.min(1.))?;
+    power[..2]
+        .iter()
+        .zip(x)
+        .try_fold(ideal, |s, (v, &x)| add_up(s, eval(v, u)?.sub(p(x)?)?.mag()))
+}
+/// The exact affine lift gives full physical infinity error <= reduced L1
+/// error; only the returned projected z's own discrepancy is extra.
+pub fn conservation_query_full(
+    power: &[Poly],
+    times: [f64; 2],
+    t: f64,
+    state: &[f64],
+    ideal: f64,
+) -> CoreResult<f64> {
+    if state.len() != 3 || power.len() < 2 || t < times[0] || t > times[1] {
+        return Err(bad("conservation full query shape"));
+    }
+    let u = p(t)?
+        .sub(p(times[0])?)?
+        .div(p(times[1])?.sub(p(times[0])?)?)?;
+    let u = Iv::new(u.lo.max(0.), u.hi.min(1.))?;
+    let a = eval(&power[0], u)?;
+    let b = eval(&power[1], u)?;
+    let lift = p(1.)?.sub(a)?.sub(b)?;
+    let correction = [a, b, lift]
+        .iter()
+        .zip(state)
+        .map(|(&a, &b)| a.sub(p(b)?).map(|x| x.mag()))
+        .collect::<CoreResult<Vec<_>>>()?
+        .into_iter()
+        .fold(0., f64::max);
+    add_up(ideal, correction)
 }
