@@ -687,6 +687,8 @@ pub enum GuardDerivativeRoute {
     Tangent,
     Schur,
     PreparedSchur,
+    /// Opt-in tighter physical derivative box from the actual L1 receipt.
+    ConservedSchur,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub enum GuardValueRoute {
@@ -713,6 +715,8 @@ pub struct GuardSlabEvidence {
     pub reduced_lip: f64,
     pub algebraic_guard_lip: f64,
     pub prepared_work: InitWork,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub conserved_derivative_box: Option<Vec<[f64; 2]>>,
 }
 
 /// Conditional on an authentic certificate for the same original source,
@@ -765,9 +769,28 @@ impl<'a> GuardProof<'a> {
             return Err(bad("guard source/slab shape"));
         }
         let time = Iv::new(cert.times[0], cert.times[1])?;
-        let xb = iv_pairs(&cert.x_range)?;
+        let mut xb = iv_pairs(&cert.x_range)?;
         let zb = iv_pairs(&cert.z_range)?;
-        let rb = iv_pairs(&cert.branch_root_box)?;
+        let mut rb = iv_pairs(&cert.branch_root_box)?;
+        let structural = cert.conservation.is_some() && nx == 2 && nz == 1;
+        let tight = derivative == GuardDerivativeRoute::ConservedSchur;
+        if tight {
+            if !structural {
+                return Err(bad(
+                    "conserved derivative requires source-owned L1 certificate",
+                ));
+            }
+            let r = cert
+                .whole_x_error
+                .ok_or_else(|| bad("conserved derivative radius"))?;
+            let err = Iv::new(-r, r)?;
+            for i in 0..2 {
+                xb[i] = intersect(xb[i], range(&y[i])?.add(err)?)?;
+            }
+            let lift = add(&[p(1.)?], &scale(&add(&y[0], &y[1])?, p(-1.)?)?)?;
+            // Exact affine lift: |delta z| <= ||delta x||_1, not 2r.
+            rb[0] = intersect(rb[0], range(&lift)?.add(err)?)?;
+        }
         let mut physical = xb.clone();
         physical.extend_from_slice(&rb);
         let f = di::evaluate(&src.f, time, &physical)?;
@@ -813,7 +836,6 @@ impl<'a> GuardProof<'a> {
         };
         // The structural receipt owns a reduced L1 radius. Its dual
         // norm is the maximum absolute reduced gradient component.
-        let structural = cert.conservation.is_some() && nx == 2 && nz == 1;
         let reduced_lip = if structural {
             reduced[1..].iter().map(|v| v.mag()).fold(0., f64::max)
         } else {
@@ -878,6 +900,8 @@ impl<'a> GuardProof<'a> {
                 reduced_lip,
                 algebraic_guard_lip,
                 prepared_work: work,
+                conserved_derivative_box: tight
+                    .then(|| physical.iter().map(|v| v.as_pair()).collect()),
             },
         })
     }
@@ -2157,4 +2181,99 @@ pub fn simplex_transport_cell(
         remainder_l1: remainder,
         joint_l1: joint,
     })
+}
+
+/// On a source-owned affine conservation manifold, use the original
+/// lifted guard, or its centered reduced gradient with an L1 dual bound.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum SimplexGapRoute {
+    Box,
+    AffineDual,
+}
+#[derive(Clone, Debug, Serialize)]
+pub struct SimplexGapEvidence {
+    pub route: SimplexGapRoute,
+    pub times: [f64; 2],
+    pub differential_box: [[f64; 2]; 2],
+    pub center: [f64; 2],
+    pub incoming_l1: Option<f64>,
+    pub direct: [f64; 2],
+    pub reduced_gradient: Option<[[f64; 2]; 2]>,
+    pub reduced_clock: Option<[f64; 2]>,
+    pub center_value: Option<[f64; 2]>,
+    pub centered: Option<[f64; 2]>,
+    pub enclosure: [f64; 2],
+}
+impl RobertsonModel {
+    /// Tube input is a genuine certified branch rectangle supplied by the
+    /// owning facade. Restart input is the full L1 ball intersected with
+    /// the physical simplex; build its rectangular superset here, rather
+    /// than silently reusing the smaller old synchronization box.
+    pub fn simplex_gap_enclosure(
+        &self,
+        guard: &DeclaredPolynomial,
+        times: [f64; 2],
+        xb: [[f64; 2]; 2],
+        center: [f64; 2],
+        radius: Option<f64>,
+        route: SimplexGapRoute,
+    ) -> CoreResult<SimplexGapEvidence> {
+        crate::affine_event_certificate::check_affine_event_arithmetic()?;
+        guard.validate(3)?;
+        let t = Iv::new(times[0], times[1])?;
+        let c = [p(center[0])?, p(center[1])?];
+        let x = if let Some(r) = radius {
+            if times[0] != times[1] || !r.is_finite() || r < 0. {
+                return Err(bad("simplex gap L1 restart domain"));
+            }
+            [c[0].add(Iv::new(-r, r)?)?, c[1].add(Iv::new(-r, r)?)?]
+        } else {
+            [Iv::new(xb[0][0], xb[0][1])?, Iv::new(xb[1][0], xb[1][1])?]
+        };
+        if !x.iter().zip(center).all(|(v, c)| v.contains(c)) {
+            return Err(bad("simplex gap center outside box"));
+        }
+        let lift = p(1.)?.sub(x[0])?.sub(x[1])?;
+        let e = di::evaluate(std::slice::from_ref(guard), t, &[x[0], x[1], lift])?;
+        let direct = e.v[0];
+        let mut out = SimplexGapEvidence {
+            route,
+            times,
+            differential_box: [x[0].as_pair(), x[1].as_pair()],
+            center,
+            incoming_l1: radius,
+            direct: direct.as_pair(),
+            reduced_gradient: None,
+            reduced_clock: None,
+            center_value: None,
+            centered: None,
+            enclosure: direct.as_pair(),
+        };
+        if route == SimplexGapRoute::Box {
+            return Ok(out);
+        }
+        let h = &e.j[0];
+        let reduced = [h[1].sub(h[3])?, h[2].sub(h[3])?];
+        let hc = di::evaluate(
+            std::slice::from_ref(guard),
+            p(times[1])?,
+            &[c[0], c[1], p(1.)?.sub(c[0])?.sub(c[1])?],
+        )?
+        .v[0];
+        let mut bound = hc.add(h[0].mul(t.sub(p(times[1])?)?)?)?;
+        if let Some(r) = radius {
+            let er = mul_up(r, reduced[0].mag().max(reduced[1].mag()))?;
+            bound = bound.add(Iv::new(-er, er)?)?;
+        } else {
+            for i in 0..2 {
+                bound = bound.add(reduced[i].mul(x[i].sub(c[i])?)?)?;
+            }
+        }
+        out.reduced_gradient = Some([reduced[0].as_pair(), reduced[1].as_pair()]);
+        out.reduced_clock = Some(h[0].as_pair());
+        out.center_value = Some(hc.as_pair());
+        out.centered = Some(bound.as_pair());
+        out.enclosure = intersect(direct, bound)?.as_pair();
+        Ok(out)
+    }
 }

@@ -4055,6 +4055,65 @@ pub fn evolve_robertson_async_reset(
         out.preparation = Some(prep);
         return Ok(out);
     }
+    let (evidence, refusal) = simplex_transport_receipt(a, reset, &prep, root, sync)?;
+    if let Some(e) = refusal {
+        out.reason = Some(e);
+        out.preparation = Some(prep);
+        out.transport = Some(evidence);
+        return Ok(out);
+    }
+    let center = evidence.center;
+    let radius = evidence.selected_l1;
+    out.incoming_l1 = Some(radius);
+    out.transport = Some(evidence);
+    out.preparation = Some(prep);
+    // Every physical reset state lies in the exact simplex. The target
+    // original source preserves it during synchronization and postflow.
+    // The rounded center need not itself be physical; this constructor
+    // is private and requires the preceding source-bound proof.
+    let start = RobertsonInitial {
+        center,
+        l1_radius: radius,
+    };
+    let mut o = opts.clone();
+    o.max_steps = o.max_steps.saturating_sub(out.charged_native_attempts);
+    if o.max_steps == 0 {
+        out.reason = Some("conserved asynchronous native attempt budget".into());
+        return Ok(out);
+    }
+    match robertson_epoch(
+        &target,
+        start,
+        [root[1], times[1]],
+        &o,
+        policy,
+        route,
+        certificate,
+        grid,
+    ) {
+        Ok(r) => {
+            out.native_attempts += r.driver.stats.attempts;
+            out.charged_native_attempts += r.driver.stats.attempts;
+            if !r.global_qualified || !r.branch_qualified || !r.pointwise_qualified {
+                out.reason = Some("conserved asynchronous post physical proof unresolved".into());
+            }
+            out.post = Some(r);
+        }
+        Err(e) => {
+            out.charged_native_attempts += o.max_steps;
+            out.reason = Some(e.to_string());
+        }
+    }
+    Ok(out)
+}
+
+fn simplex_transport_receipt(
+    a: &ThresholdRun,
+    reset: &SimplexReset,
+    prep: &VectorRestartRun,
+    root: [f64; 2],
+    sync: SimplexSyncRoute,
+) -> CoreResult<(SimplexTransportReceipt, Option<String>)> {
     let bp = prep.restart_branch.as_ref().expect("prepared branch");
     let center = [bp.initial.x[0], bp.initial.x[1]];
     let radius = prep.incoming_radius.expect("prepared radius");
@@ -4122,54 +4181,548 @@ pub fn evolve_robertson_async_reset(
                 evidence.joint_l1 = Some(v);
                 evidence.selected_l1 = box_l1.min(component_l1).min(v);
             }
+            Err(e) => return Ok((evidence, Some(e.to_string()))),
+        }
+    }
+    Ok((evidence, None))
+}
+
+pub use de::{SimplexGapEvidence, SimplexGapRoute};
+pub struct ConservedMode {
+    pub rate: f64,
+    pub route: EvolutionRoute,
+    pub certificate: ConservationRoute,
+    pub guards: Vec<DeclaredPolynomial>,
+    pub transitions: Vec<ConservedTransition>,
+}
+pub struct ConservedTransition {
+    pub target: usize,
+    pub reset: SimplexReset,
+    pub policy: VectorResetPolicy,
+    pub sync: SimplexSyncRoute,
+}
+#[derive(Clone, Copy, Debug, Serialize)]
+pub struct ConservedChainBudget {
+    pub limits: ChainBudget,
+    /// Conservative quota: up to eight Picard attempts per reset cell
+    /// and one uniform restart branch proof. Failed hidden work is charged.
+    pub picard_attempts: usize,
+}
+#[derive(Clone, Debug, Default, Serialize)]
+pub struct ConservedChainWork {
+    pub common: ChainWork,
+    pub charged_picard_attempts: usize,
+    pub joint_cells: usize,
+}
+#[derive(Clone, Debug, Serialize)]
+pub struct ConservedGapCheck {
+    pub guard: usize,
+    pub cell: Option<usize>,
+    pub enclosure: [f64; 2],
+    pub evidence: SimplexGapEvidence,
+}
+#[derive(Serialize)]
+pub struct ConservedEvent {
+    pub from: usize,
+    pub target: usize,
+    pub guard: usize,
+    pub event_time: [f64; 2],
+    pub dwell_lower: Option<f64>,
+    pub committed: bool,
+    pub reset: Option<VectorRestartRun>,
+    pub transport: Option<SimplexTransportReceipt>,
+    pub gap: Vec<ConservedGapCheck>,
+    pub reason: Option<String>,
+}
+pub struct ConservedEpoch {
+    inner: ChainEpoch,
+    initial: RobertsonInitial,
+}
+impl ConservedEpoch {
+    pub fn mode(&self) -> usize {
+        self.inner.mode
+    }
+    pub fn start(&self) -> f64 {
+        self.inner.start
+    }
+    pub fn safe(&self) -> f64 {
+        self.inner.safe
+    }
+    pub fn incoming_l1(&self) -> f64 {
+        self.initial.l1_radius
+    }
+    pub fn center(&self) -> [f64; 2] {
+        self.initial.center
+    }
+    pub fn ordered(&self) -> Option<&MultiGuardRun> {
+        self.inner.ordered()
+    }
+    pub fn terminal(&self) -> Option<&EvolutionRun> {
+        self.inner.terminal()
+    }
+    pub fn original_slab_diagnostics(&self) -> &[SlabRecord] {
+        if let Some(r) = &self.inner.ordered {
+            r.runs.first().map_or(&[], |r| r.trial.slabs())
+        } else {
+            self.inner.terminal.as_ref().map_or(&[], |r| r.slabs())
+        }
+    }
+}
+pub struct ConservedChainRun {
+    epochs: Vec<ConservedEpoch>,
+    transitions: Vec<ConservedEvent>,
+    final_mode: usize,
+    stop: ChainStop,
+    reason: Option<String>,
+    work: ConservedChainWork,
+}
+impl ConservedChainRun {
+    pub fn epochs(&self) -> &[ConservedEpoch] {
+        &self.epochs
+    }
+    pub fn transitions(&self) -> &[ConservedEvent] {
+        &self.transitions
+    }
+    pub fn final_mode(&self) -> usize {
+        self.final_mode
+    }
+    pub fn stop(&self) -> ChainStop {
+        self.stop
+    }
+    pub fn reason(&self) -> Option<&str> {
+        self.reason.as_deref()
+    }
+    pub fn work(&self) -> &ConservedChainWork {
+        &self.work
+    }
+    pub fn query(&self, epoch: usize, t: f64) -> CoreResult<Query> {
+        let e = self
+            .epochs
+            .get(epoch)
+            .ok_or_else(|| bad("unknown conserved epoch"))?;
+        if !t.is_finite() || t < e.start() || t > e.safe() {
+            return Err(bad("outside conserved physical prefix"));
+        }
+        if let Some(r) = e.ordered() {
+            return r.pre_query(t);
+        }
+        let r = e
+            .terminal()
+            .ok_or_else(|| bad("unqualified conserved terminal epoch"))?;
+        let q = r.query(t)?;
+        if q.physical_error_upper
+            .is_none_or(|v| v > r.engine.policy.global_tol)
+        {
+            return Err(bad("unqualified conserved query"));
+        }
+        Ok(q)
+    }
+}
+/// Actual native source-owned Robertson mode chain. The only way to
+/// manufacture the private post initial set is a certified stochastic
+/// reset followed by source-owned flow and whole-gap guard exclusion.
+#[allow(clippy::too_many_arguments)]
+pub fn evolve_conserved_chain(
+    modes: &[ConservedMode],
+    initial_mode: usize,
+    initial: RobertsonInitial,
+    times: [f64; 2],
+    opts: &Options,
+    policy: EvolutionPolicy,
+    mp: MultiGuardPolicy,
+    budget: ConservedChainBudget,
+    gap: SimplexGapRoute,
+) -> CoreResult<ConservedChainRun> {
+    let b = budget.limits;
+    robertson_policy(policy)?;
+    if modes.is_empty()
+        || modes.len() > 64
+        || initial_mode >= modes.len()
+        || mp.method == MultiGuardRoute::Independent
+        || b.native_attempts == 0
+        || b.scan_slabs == 0
+        || b.transition_attempts > 64
+        || !b.min_dwell.is_finite()
+        || b.min_dwell <= 0.
+        || !times[0].is_finite()
+        || !times[1].is_finite()
+        || times[1] <= times[0]
+    {
+        return Err(bad("conserved chain policy/input contract"));
+    }
+    let models = modes
+        .iter()
+        .map(|m| RobertsonModel::new(m.rate))
+        .collect::<CoreResult<Vec<_>>>()?;
+    for m in modes {
+        if m.guards.len() != m.transitions.len()
+            || (!m.guards.is_empty() && !(2..=8).contains(&m.guards.len()))
+        {
+            return Err(bad("conserved chain guard/edge shape"));
+        }
+        for (g, e) in m.guards.iter().zip(&m.transitions) {
+            g.validate(3)?;
+            if e.target >= modes.len() || !matches!(e.policy.subdivisions, 1 | 4) {
+                return Err(bad("conserved chain edge contract"));
+            }
+        }
+    }
+    let mut out = ConservedChainRun {
+        epochs: vec![],
+        transitions: vec![],
+        final_mode: initial_mode,
+        stop: ChainStop::Horizon,
+        reason: None,
+        work: ConservedChainWork::default(),
+    };
+    let mut mode = initial_mode;
+    let mut clock = times[0];
+    let mut start = initial;
+    let mut prior: Option<[f64; 2]> = None;
+    let total_native = b.native_attempts.min(opts.max_steps);
+    macro_rules! stop {
+        ($k:expr,$e:expr) => {{
+            out.stop = $k;
+            out.reason = Some($e.to_string());
+            return Ok(out);
+        }};
+    }
+    loop {
+        let w = &mut out.work.common;
+        let remaining = total_native.saturating_sub(w.charged_native_attempts);
+        if remaining == 0 {
+            stop!(ChainStop::NativeBudget, "conserved chain native budget");
+        }
+        let slabs = b.scan_slabs.saturating_sub(w.charged_scan_slabs);
+        if slabs == 0 {
+            stop!(ChainStop::SlabBudget, "conserved chain slab budget");
+        }
+        let m = &modes[mode];
+        let model = &models[mode];
+        let mut o = opts.clone();
+        o.max_steps = remaining;
+        if m.guards.is_empty() {
+            o.max_steps = o.max_steps.min(slabs);
+            let r = match robertson_epoch(
+                model,
+                start,
+                [clock, times[1]],
+                &o,
+                policy,
+                m.route,
+                m.certificate,
+                &[],
+            ) {
+                Ok(v) => v,
+                Err(e) => {
+                    w.charged_native_attempts += o.max_steps;
+                    w.charged_scan_slabs += o.max_steps;
+                    stop!(ChainStop::NativeRefused, e);
+                }
+            };
+            let n = r.driver.stats.attempts;
+            w.native_runs += 1;
+            w.native_attempts += n;
+            w.charged_native_attempts += n;
+            w.scan_slabs += r.slabs.len();
+            w.charged_scan_slabs += r.driver.stats.accepted_steps;
+            w.driver_rhs += r.driver.stats.counters.rhs_calls;
+            w.projection_rhs += r.work.rhs_count;
+            w.warp_predictions += r.work.warp_predictions;
+            let good = r.global_qualified
+                && r.branch_qualified
+                && r.pointwise_qualified
+                && r.driver.t.last() == Some(&times[1]);
+            out.epochs.push(ConservedEpoch {
+                initial: start,
+                inner: ChainEpoch {
+                    mode,
+                    start: clock,
+                    safe: if good { times[1] } else { clock },
+                    incoming_radius: start.l1_radius,
+                    ordered: None,
+                    terminal: Some(r),
+                },
+            });
+            if !good {
+                let k = if w.charged_native_attempts >= total_native {
+                    ChainStop::NativeBudget
+                } else if w.charged_scan_slabs >= b.scan_slabs || n >= slabs {
+                    ChainStop::SlabBudget
+                } else {
+                    ChainStop::NativeRefused
+                };
+                stop!(k, "conserved terminal physical proof unresolved");
+            }
+            return Ok(out);
+        }
+        let mut q = mp;
+        q.max_slabs = q.max_slabs.min(slabs);
+        let r = match evolve_robertson_to_first_guard(
+            m.rate,
+            start,
+            [clock, times[1]],
+            &o,
+            policy,
+            m.route,
+            m.certificate,
+            &m.guards,
+            q,
+        ) {
+            Ok(v) => v,
             Err(e) => {
-                out.reason = Some(e.to_string());
-                out.preparation = Some(prep);
-                out.transport = Some(evidence);
+                w.charged_native_attempts += remaining;
+                w.charged_scan_slabs += q.max_slabs;
+                stop!(ChainStop::NativeRefused, e);
+            }
+        };
+        let a = &r.work;
+        w.native_runs += a.native_runs;
+        w.native_attempts += a.attempts;
+        w.charged_native_attempts += a.attempts;
+        w.scan_slabs += a.physical_certificates;
+        w.charged_scan_slabs += r
+            .runs
+            .first()
+            .map_or(a.physical_certificates, |v| v.stats().accepted_steps);
+        w.driver_rhs += a.driver_rhs;
+        w.projection_rhs += a.shared_projection.rhs_count
+            + a.replay_projection_rhs
+            + a.guard_prepared_rhs
+            + a.difference_prepared_rhs;
+        w.guard_evals += a.guard_evals;
+        w.dictionary_uses += a.dictionary_uses;
+        w.comparison_attempts += a.comparison_attempts;
+        w.warp_predictions += a.shared_projection.warp_predictions
+            + r.runs.first().map_or(0, |v| v.trial.work.warp_predictions);
+        if r.runs.first().is_none_or(|v| {
+            v.trial.initial.x != start.center
+                || v.trial
+                    .driver
+                    .y
+                    .first()
+                    .is_none_or(|x| x[..2] != start.center)
+        }) {
+            stop!(
+                ChainStop::NativeRefused,
+                "conserved differential center changed"
+            );
+        }
+        let winner = r.winner();
+        let safe = r.committed_until();
+        let reason = r.reason().map(str::to_owned);
+        out.epochs.push(ConservedEpoch {
+            initial: start,
+            inner: ChainEpoch {
+                mode,
+                start: clock,
+                safe,
+                incoming_radius: start.l1_radius,
+                ordered: Some(r),
+                terminal: None,
+            },
+        });
+        let Some(j) = winner else {
+            if reason.is_none() && safe == times[1] {
                 return Ok(out);
             }
+            let k = if w.charged_native_attempts >= total_native {
+                ChainStop::NativeBudget
+            } else if w.charged_scan_slabs >= b.scan_slabs {
+                ChainStop::SlabBudget
+            } else {
+                ChainStop::OrderUnresolved
+            };
+            stop!(
+                k,
+                reason.unwrap_or_else(|| "conserved order unresolved".into())
+            );
+        };
+        let authority = out
+            .epochs
+            .last()
+            .unwrap()
+            .ordered()
+            .unwrap()
+            .event_authority()
+            .expect("ordered winner");
+        let root = authority.root().expect("physical root");
+        let edge = &m.transitions[j];
+        let target = &modes[edge.target];
+        let target_model = &models[edge.target];
+        let dwell = prior
+            .map(|p| rodas5p_core::directed::sub_down(root[0], p[1]))
+            .transpose()?;
+        let mut ev = ConservedEvent {
+            from: mode,
+            target: edge.target,
+            guard: j,
+            event_time: root,
+            dwell_lower: dwell,
+            committed: false,
+            reset: None,
+            transport: None,
+            gap: vec![],
+            reason: None,
+        };
+        let cap = (b.reset_cells.saturating_sub(w.charged_reset_cells))
+            .min(64)
+            .min(
+                budget
+                    .picard_attempts
+                    .saturating_sub(out.work.charged_picard_attempts)
+                    .saturating_sub(1)
+                    / 8,
+            );
+        let refuse = if dwell.is_some_and(|v| v < b.min_dwell) {
+            Some(ChainStop::DwellUnproved)
+        } else if w.transitions_attempted >= b.transition_attempts {
+            Some(ChainStop::TransitionBudget)
+        } else if cap == 0 {
+            Some(ChainStop::ResetBudget)
+        } else if root[1] >= times[1] {
+            Some(ChainStop::ResetRefused)
+        } else {
+            None
+        };
+        if let Some(k) = refuse {
+            ev.reason = Some(format!("{k:?}"));
+            out.transitions.push(ev);
+            stop!(k, format!("{k:?}"));
         }
-    }
-    let radius = evidence.selected_l1;
-    out.incoming_l1 = Some(radius);
-    out.transport = Some(evidence);
-    out.preparation = Some(prep);
-    // Every physical reset state lies in the exact simplex. The target
-    // original source preserves it during synchronization and postflow.
-    // The rounded center need not itself be physical; this constructor
-    // is private and requires the preceding source-bound proof.
-    let start = RobertsonInitial {
-        center,
-        l1_radius: radius,
-    };
-    let mut o = opts.clone();
-    o.max_steps = o.max_steps.saturating_sub(out.charged_native_attempts);
-    if o.max_steps == 0 {
-        out.reason = Some("conserved asynchronous native attempt budget".into());
-        return Ok(out);
-    }
-    match robertson_epoch(
-        &target,
-        start,
-        [root[1], times[1]],
-        &o,
-        policy,
-        route,
-        certificate,
-        grid,
-    ) {
-        Ok(r) => {
-            out.native_attempts += r.driver.stats.attempts;
-            out.charged_native_attempts += r.driver.stats.attempts;
-            if !r.global_qualified || !r.branch_qualified || !r.pointwise_qualified {
-                out.reason = Some("conserved asynchronous post physical proof unresolved".into());
+        w.transitions_attempted += 1;
+        let polynomials = edge.reset.polynomials()?;
+        let prep = match authority.prepare_vector_restart(
+            &polynomials,
+            target_model.source(),
+            &[0.125],
+            &ROBERTSON_BRANCH,
+            times[1],
+            policy,
+            edge.policy,
+            cap,
+        ) {
+            Ok(v) => v,
+            Err(e) => {
+                w.charged_reset_cells += cap;
+                out.work.charged_picard_attempts += 8 * cap + 1;
+                ev.reason = Some(e.to_string());
+                out.transitions.push(ev);
+                stop!(ChainStop::ResetRefused, e);
             }
-            out.post = Some(r);
+        };
+        add_reset_work(w, &prep);
+        out.work.charged_picard_attempts += 8 * prep.cells.len() + 1;
+        if let Some(e) = prep.reason.clone() {
+            let k = if e.contains("cell cap") {
+                ChainStop::ResetBudget
+            } else {
+                ChainStop::ResetRefused
+            };
+            ev.reason = Some(e.clone());
+            ev.reset = Some(prep);
+            out.transitions.push(ev);
+            stop!(k, e);
         }
-        Err(e) => {
-            out.charged_native_attempts += o.max_steps;
-            out.reason = Some(e.to_string());
+        let (transport, refusal) =
+            match simplex_transport_receipt(authority, &edge.reset, &prep, root, edge.sync) {
+                Ok(v) => v,
+                Err(e) => {
+                    ev.reason = Some(e.to_string());
+                    ev.reset = Some(prep);
+                    out.transitions.push(ev);
+                    stop!(ChainStop::ResetRefused, e);
+                }
+            };
+        out.work.joint_cells += transport.cells.len();
+        if let Some(e) = refusal {
+            ev.reason = Some(e.clone());
+            ev.reset = Some(prep);
+            ev.transport = Some(transport);
+            out.transitions.push(ev);
+            stop!(ChainStop::ResetRefused, e);
         }
+        let next = RobertsonInitial {
+            center: transport.center,
+            l1_radius: transport.selected_l1,
+        };
+        let checked = (|| -> Result<(), (ChainStop, String)> {
+            // Actual branch tube at each possible transition clock.
+            for (ci, cell) in prep.cells.iter().enumerate() {
+                let tube = cell.tube.as_ref().expect("prepared tube");
+                let bp = tube.attempts.last().expect("tube branch");
+                let xb = [bp.differential_box[0], bp.differential_box[1]];
+                let center = [bp.initial.x[0], bp.initial.x[1]];
+                for (k, g) in target.guards.iter().enumerate() {
+                    if w.gap_checks >= b.gap_checks {
+                        return Err((ChainStop::GapBudget, "conserved gap budget".into()));
+                    }
+                    w.gap_checks += 1;
+                    let e = target_model
+                        .simplex_gap_enclosure(g, bp.times, xb, center, None, gap)
+                        .map_err(|e| (ChainStop::GapUnproved, e.to_string()))?;
+                    let negative = e.enclosure[1] < 0.;
+                    ev.gap.push(ConservedGapCheck {
+                        guard: k,
+                        cell: Some(ci),
+                        enclosure: e.enclosure,
+                        evidence: e,
+                    });
+                    if !negative {
+                        return Err((
+                            ChainStop::GapUnproved,
+                            "outgoing guard not negative over conserved transition tube".into(),
+                        ));
+                    }
+                }
+            }
+            // Check the actual transported L1 set, not the smaller
+            // original infinity box or just its rounded center.
+            for (k, g) in target.guards.iter().enumerate() {
+                if w.gap_checks >= b.gap_checks {
+                    return Err((ChainStop::GapBudget, "conserved gap budget".into()));
+                }
+                w.gap_checks += 1;
+                let e = target_model
+                    .simplex_gap_enclosure(
+                        g,
+                        [root[1], root[1]],
+                        [[0.; 2]; 2],
+                        next.center,
+                        Some(next.l1_radius),
+                        gap,
+                    )
+                    .map_err(|e| (ChainStop::GapUnproved, e.to_string()))?;
+                let negative = e.enclosure[1] < 0.;
+                ev.gap.push(ConservedGapCheck {
+                    guard: k,
+                    cell: None,
+                    enclosure: e.enclosure,
+                    evidence: e,
+                });
+                if !negative {
+                    return Err((
+                        ChainStop::GapUnproved,
+                        "outgoing guard not negative on transported L1 restart set".into(),
+                    ));
+                }
+            }
+            Ok(())
+        })();
+        ev.reset = Some(prep);
+        ev.transport = Some(transport);
+        if let Err((k, e)) = checked {
+            ev.reason = Some(e.clone());
+            out.transitions.push(ev);
+            stop!(k, e);
+        }
+        start = next;
+        clock = root[1];
+        prior = Some(root);
+        mode = edge.target;
+        ev.committed = true;
+        out.transitions.push(ev);
+        w.transitions_committed += 1;
+        out.final_mode = mode;
     }
-    Ok(out)
 }
