@@ -117,3 +117,7 @@ pub use work::WorkCounters;
 pub mod polynomial_router;
 
 pub mod warp_cubic;
+
+/// Complete, opt-in RETRO-WARP offline dictionary.
+#[cfg(feature = "retro-dictionary")]
+pub mod retro_dictionary;

@@ -1,0 +1,22 @@
+   Compiling rodas5p-core v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-core)
+    Finished `release` profile [optimized] target(s) in 15.57s
+     Running tests/retro_dictionary_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/retro_dictionary_contracts-583c1264ca69b28f)
+
+running 1 test
+test authentic_dictionary_is_available_in_rust ... FAILED
+
+failures:
+
+---- authentic_dictionary_is_available_in_rust stdout ----
+
+thread 'authentic_dictionary_is_available_in_rust' (1026947) panicked at crates/rodas5p-core/tests/retro_dictionary_contracts.rs:5:31:
+called `Result::unwrap()` on an `Err` value: InvalidInput("full dictionary not implemented")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    authentic_dictionary_is_available_in_rust
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-core --test retro_dictionary_contracts`

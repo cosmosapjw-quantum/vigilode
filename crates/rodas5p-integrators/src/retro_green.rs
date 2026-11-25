@@ -53,6 +53,8 @@ fn mag_sum(x: &[Iv]) -> CoreResult<f64> {
 #[derive(Clone)]
 pub struct RetroTable {
     data: [f64; 92],
+    #[cfg(feature = "retro-dictionary")]
+    dictionary_mode: Option<rodas5p_core::retro_dictionary::RealMode>,
 }
 impl RetroTable {
     pub fn new() -> CoreResult<Self> {
@@ -79,9 +81,37 @@ impl RetroTable {
         if n != 92 || sha256_hex(&bytes) != PHI_PACK_SHA256 {
             return Err(bad("table projection identity"));
         }
-        Ok(Self { data })
+        Ok(Self {
+            data,
+            #[cfg(feature = "retro-dictionary")]
+            dictionary_mode: None,
+        })
+    }
+    /// Explicitly select the complete authenticated dictionary. The legacy
+    /// constructor and its narrower numerical contract are unchanged.
+    #[cfg(feature = "retro-dictionary")]
+    pub fn with_dictionary(mode: rodas5p_core::retro_dictionary::RealMode) -> CoreResult<Self> {
+        crate::affine_event_certificate::check_affine_event_arithmetic()?;
+        rodas5p_core::retro_dictionary::Dictionary::get()?;
+        let mut t = Self::new()?;
+        t.dictionary_mode = Some(mode);
+        Ok(t)
+    }
+    #[cfg(feature = "retro-dictionary")]
+    pub fn dictionary_mode(&self) -> Option<rodas5p_core::retro_dictionary::RealMode> {
+        self.dictionary_mode
     }
     fn point_phi(&self, x: f64, j: usize, w: &mut Work) -> CoreResult<Iv> {
+        #[cfg(feature = "retro-dictionary")]
+        if let Some(mode) = self.dictionary_mode {
+            use rodas5p_core::retro_dictionary::{Dictionary, RealMode};
+            if x >= 64. && matches!(mode, RealMode::Scaled | RealMode::Hybrid) {
+                w.scaled_evals += 1;
+            } else {
+                w.table_evals += 1;
+            }
+            return Dictionary::get()?.phi(pt(x)?, j, mode);
+        }
         if x == 0. {
             return pt(1.)?.div(pt([1., 1., 2., 6.][j])?);
         }

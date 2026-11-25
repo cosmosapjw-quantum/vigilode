@@ -54,6 +54,26 @@ pub enum Route {
     SpatialNative,
     SpatialIvPPaired,
     SpatialIvPComplex,
+    #[cfg(feature = "retro-dictionary")]
+    GreenFullFast,
+    #[cfg(feature = "retro-dictionary")]
+    GreenFullDirected,
+    #[cfg(feature = "retro-dictionary")]
+    GreenFullHybrid,
+    #[cfg(feature = "retro-dictionary")]
+    PreparedSerial,
+    #[cfg(feature = "retro-dictionary")]
+    PreparedFaerBatch,
+    #[cfg(feature = "retro-dictionary")]
+    PreparedRayon,
+    #[cfg(feature = "retro-dictionary")]
+    AperiodicSequential,
+    #[cfg(feature = "retro-dictionary")]
+    AperiodicScan,
+    #[cfg(feature = "retro-dictionary")]
+    QuotientDirect,
+    #[cfg(feature = "retro-dictionary")]
+    QuotientFolded,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
 pub enum AttemptStatus {
@@ -84,25 +104,26 @@ impl<T> Selection<T> {
 struct Cost {
     trials: u64,
     last_failed: bool,
-    samples: Vec<u64>,
+    samples: [u64; 5],
+    sample_count: usize,
+    next_sample: usize,
 }
 impl Cost {
     fn score(&self) -> Option<u64> {
-        if self.last_failed || self.samples.is_empty() {
+        if self.last_failed || self.sample_count == 0 {
             return None;
         }
-        let mut v = self.samples.clone();
-        v.sort_unstable();
-        Some(v[v.len() / 2])
+        let mut v = self.samples;
+        v[..self.sample_count].sort_unstable();
+        Some(v[self.sample_count / 2])
     }
     fn update(&mut self, ns: u64, success: bool) {
         self.trials = self.trials.saturating_add(1);
         self.last_failed = !success;
         if success {
-            if self.samples.len() == 5 {
-                self.samples.remove(0);
-            }
-            self.samples.push(ns);
+            self.samples[self.next_sample] = ns;
+            self.sample_count = (self.sample_count + 1).min(5);
+            self.next_sample = (self.next_sample + 1) % 5;
         }
     }
 }
@@ -565,6 +586,58 @@ impl Portfolio {
                 let run = green::integrate(table, model, y0, t_end, h, tol)?;
                 let e = run.error_upper();
                 Ok((run, e))
+            },
+        )
+    }
+    /// Compare legacy and complete table providers under the same original
+    /// Green endpoint certificate. A failed candidate cannot authorize output.
+    #[cfg(feature = "retro-dictionary")]
+    pub fn green_dictionary_endpoint(
+        &mut self,
+        model: &green::Model,
+        y0: &[f64],
+        t_end: f64,
+        max_h: f64,
+        tol: f64,
+    ) -> CoreResult<Selection<green::Trajectory>> {
+        use rodas5p_core::retro_dictionary::RealMode;
+        self.choose(
+            "green-dictionary",
+            &[
+                model.dimension() as u64,
+                model.log_norm_upper().to_bits(),
+                t_end.to_bits(),
+                max_h.to_bits(),
+            ],
+            &[
+                Route::Green,
+                Route::GreenFullFast,
+                Route::GreenFullDirected,
+                Route::GreenFullHybrid,
+                Route::GreenHalf,
+                Route::GreenQuarter,
+            ],
+            tol,
+            |r| {
+                let table = match r {
+                    Route::GreenFullFast => {
+                        green::RetroTable::with_dictionary(RealMode::TableFast)?
+                    }
+                    Route::GreenFullDirected => {
+                        green::RetroTable::with_dictionary(RealMode::TableDirected)?
+                    }
+                    Route::GreenFullHybrid => green::RetroTable::with_dictionary(RealMode::Hybrid)?,
+                    _ => green::RetroTable::new()?,
+                };
+                let h = max_h
+                    * match r {
+                        Route::GreenHalf => 0.5,
+                        Route::GreenQuarter => 0.25,
+                        _ => 1.,
+                    };
+                let v = green::integrate(&table, model, y0, t_end, h, tol)?;
+                let e = v.error_upper();
+                Ok((v, e))
             },
         )
     }

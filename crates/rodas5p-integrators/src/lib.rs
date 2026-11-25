@@ -697,3 +697,7 @@ pub mod retro_nonlinear;
 
 /// Opt-in research: contract-preserving adaptive portfolio.
 pub mod retro_portfolio;
+
+/// Opt-in table-backed and prepared numerical research primitives.
+#[cfg(feature = "retro-dictionary")]
+pub mod retro_foundation;

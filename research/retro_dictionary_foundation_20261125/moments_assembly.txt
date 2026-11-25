@@ -1,0 +1,685 @@
+00000000004a8d00 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast>:
+  4a8d00:	41 57                	push   %r15
+  4a8d02:	41 56                	push   %r14
+  4a8d04:	41 54                	push   %r12
+  4a8d06:	53                   	push   %rbx
+  4a8d07:	48 81 ec 08 04 00 00 	sub    $0x408,%rsp
+  4a8d0e:	48 89 fb             	mov    %rdi,%rbx
+  4a8d11:	66 48 0f 7e c0       	movq   %xmm0,%rax
+  4a8d16:	48 b9 ff ff ff ff ff 	movabs $0x7fffffffffffffff,%rcx
+  4a8d1d:	ff ff 7f 
+  4a8d20:	48 21 c1             	and    %rax,%rcx
+  4a8d23:	48 b8 ff ff ff ff ff 	movabs $0x7fefffffffffffff,%rax
+  4a8d2a:	ff ef 7f 
+  4a8d2d:	48 39 c1             	cmp    %rax,%rcx
+  4a8d30:	7e 68                	jle    4a8d9a <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0x9a>
+  4a8d32:	48 8d 05 ef 51 b8 ff 	lea    -0x47ae11(%rip),%rax        # 2df28 <nano_gemm_f64::x86::f64::avx::MASKS+0x7e8>
+  4a8d39:	48 89 44 24 60       	mov    %rax,0x60(%rsp)
+  4a8d3e:	48 c7 44 24 68 14 00 	movq   $0x14,0x68(%rsp)
+  4a8d45:	00 00 
+  4a8d47:	48 8d 44 24 60       	lea    0x60(%rsp),%rax
+  4a8d4c:	48 89 04 24          	mov    %rax,(%rsp)
+  4a8d50:	48 8d 05 e9 e1 f8 ff 	lea    -0x71e17(%rip),%rax        # 436f40 <<&T as core::fmt::Display>::fmt>
+  4a8d57:	48 89 44 24 08       	mov    %rax,0x8(%rsp)
+  4a8d5c:	48 8d bc 24 a8 00 00 	lea    0xa8(%rsp),%rdi
+  4a8d63:	00 
+  4a8d64:	48 8d 35 30 c2 b7 ff 	lea    -0x483dd0(%rip),%rsi        # 24f9b <serde_json::ser::Formatter::write_char_escape::HEX_DIGITS+0x5ffb>
+  4a8d6b:	48 89 e2             	mov    %rsp,%rdx
+  4a8d6e:	e8 bd 16 f8 ff       	call   42a430 <alloc::fmt::format::format_inner>
+  4a8d73:	48 8b 84 24 a8 00 00 	mov    0xa8(%rsp),%rax
+  4a8d7a:	00 
+  4a8d7b:	66 0f 10 84 24 b0 00 	movupd 0xb0(%rsp),%xmm0
+  4a8d82:	00 00 
+  4a8d84:	66 0f 11 43 18       	movupd %xmm0,0x18(%rbx)
+  4a8d89:	48 c7 43 08 01 00 00 	movq   $0x1,0x8(%rbx)
+  4a8d90:	00 
+  4a8d91:	48 89 43 10          	mov    %rax,0x10(%rbx)
+  4a8d95:	e9 5f 0a 00 00       	jmp    4a97f9 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xaf9>
+  4a8d9a:	66 0f 57 c9          	xorpd  %xmm1,%xmm1
+  4a8d9e:	66 0f 2e c1          	ucomisd %xmm1,%xmm0
+  4a8da2:	72 8e                	jb     4a8d32 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0x32>
+  4a8da4:	f2 0f 10 0d 74 56 b7 	movsd  -0x48a98c(%rip),%xmm1        # 1e420 <GCC_except_table0+0x27c>
+  4a8dab:	ff 
+  4a8dac:	66 0f 2e c8          	ucomisd %xmm0,%xmm1
+  4a8db0:	72 80                	jb     4a8d32 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0x32>
+  4a8db2:	48 83 fa 01          	cmp    $0x1,%rdx
+  4a8db6:	74 3e                	je     4a8df6 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xf6>
+  4a8db8:	48 89 d7             	mov    %rdx,%rdi
+  4a8dbb:	48 85 d2             	test   %rdx,%rdx
+  4a8dbe:	0f 84 4b 0a 00 00    	je     4a980f <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xb0f>
+  4a8dc4:	31 c0                	xor    %eax,%eax
+  4a8dc6:	48 89 d1             	mov    %rdx,%rcx
+  4a8dc9:	0f 1f 80 00 00 00 00 	nopl   0x0(%rax)
+  4a8dd0:	48 89 cf             	mov    %rcx,%rdi
+  4a8dd3:	48 d1 ef             	shr    $1,%rdi
+  4a8dd6:	4c 8d 04 07          	lea    (%rdi,%rax,1),%r8
+  4a8dda:	4d 69 c8 70 20 00 00 	imul   $0x2070,%r8,%r9
+  4a8de1:	66 42 0f 2e 04 0e    	ucomisd (%rsi,%r9,1),%xmm0
+  4a8de7:	49 0f 47 c0          	cmova  %r8,%rax
+  4a8deb:	48 29 f9             	sub    %rdi,%rcx
+  4a8dee:	48 83 f9 01          	cmp    $0x1,%rcx
+  4a8df2:	77 dc                	ja     4a8dd0 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xd0>
+  4a8df4:	eb 02                	jmp    4a8df8 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xf8>
+  4a8df6:	31 c0                	xor    %eax,%eax
+  4a8df8:	48 69 c8 70 20 00 00 	imul   $0x2070,%rax,%rcx
+  4a8dff:	31 ff                	xor    %edi,%edi
+  4a8e01:	66 0f 2e 04 0e       	ucomisd (%rsi,%rcx,1),%xmm0
+  4a8e06:	40 0f 97 c7          	seta   %dil
+  4a8e0a:	48 01 c7             	add    %rax,%rdi
+  4a8e0d:	48 39 d7             	cmp    %rdx,%rdi
+  4a8e10:	0f 83 f9 09 00 00    	jae    4a980f <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xb0f>
+  4a8e16:	48 69 cf 70 20 00 00 	imul   $0x2070,%rdi,%rcx
+  4a8e1d:	4c 8d 34 0e          	lea    (%rsi,%rcx,1),%r14
+  4a8e21:	66 0f 28 2d 07 61 b7 	movapd -0x489ef9(%rip),%xmm5        # 1ef30 <GCC_except_table0+0xd8c>
+  4a8e28:	ff 
+  4a8e29:	0f 29 44 24 70       	movaps %xmm0,0x70(%rsp)
+  4a8e2e:	66 0f 57 e8          	xorpd  %xmm0,%xmm5
+  4a8e32:	f2 0f 5c 6c 0e 08    	subsd  0x8(%rsi,%rcx,1),%xmm5
+  4a8e38:	f2 0f 5e 6c 0e 10    	divsd  0x10(%rsi,%rcx,1),%xmm5
+  4a8e3e:	66 0f 10 a4 0e 80 1c 	movupd 0x1c80(%rsi,%rcx,1),%xmm4
+  4a8e45:	00 00 
+  4a8e47:	0f 10 84 0e 90 1c 00 	movups 0x1c90(%rsi,%rcx,1),%xmm0
+  4a8e4e:	00 
+  4a8e4f:	0f 29 44 24 20       	movaps %xmm0,0x20(%rsp)
+  4a8e54:	66 0f 10 8c 0e a0 1c 	movupd 0x1ca0(%rsi,%rcx,1),%xmm1
+  4a8e5b:	00 00 
+  4a8e5d:	66 0f 10 94 0e b0 1c 	movupd 0x1cb0(%rsi,%rcx,1),%xmm2
+  4a8e64:	00 00 
+  4a8e66:	66 0f 10 b4 0e c0 1c 	movupd 0x1cc0(%rsi,%rcx,1),%xmm6
+  4a8e6d:	00 00 
+  4a8e6f:	66 0f 10 84 0e d0 1c 	movupd 0x1cd0(%rsi,%rcx,1),%xmm0
+  4a8e76:	00 00 
+  4a8e78:	0f 10 9c 0e e0 1c 00 	movups 0x1ce0(%rsi,%rcx,1),%xmm3
+  4a8e7f:	00 
+  4a8e80:	0f 29 5c 24 50       	movaps %xmm3,0x50(%rsp)
+  4a8e85:	66 44 0f 10 84 0e f0 	movupd 0x1cf0(%rsi,%rcx,1),%xmm8
+  4a8e8c:	1c 00 00 
+  4a8e8f:	66 44 0f 10 8c 0e 00 	movupd 0x1d00(%rsi,%rcx,1),%xmm9
+  4a8e96:	1d 00 00 
+  4a8e99:	66 44 0f 10 94 0e 10 	movupd 0x1d10(%rsi,%rcx,1),%xmm10
+  4a8ea0:	1d 00 00 
+  4a8ea3:	66 0f 10 bc 0e 20 1d 	movupd 0x1d20(%rsi,%rcx,1),%xmm7
+  4a8eaa:	00 00 
+  4a8eac:	0f 10 9c 0e 30 1d 00 	movups 0x1d30(%rsi,%rcx,1),%xmm3
+  4a8eb3:	00 
+  4a8eb4:	0f 29 5c 24 40       	movaps %xmm3,0x40(%rsp)
+  4a8eb9:	66 44 0f 10 a4 0e 40 	movupd 0x1d40(%rsi,%rcx,1),%xmm12
+  4a8ec0:	1d 00 00 
+  4a8ec3:	66 44 0f 10 ac 0e 50 	movupd 0x1d50(%rsi,%rcx,1),%xmm13
+  4a8eca:	1d 00 00 
+  4a8ecd:	66 0f 10 9c 0e 60 1d 	movupd 0x1d60(%rsi,%rcx,1),%xmm3
+  4a8ed4:	00 00 
+  4a8ed6:	66 0f 14 ed          	unpcklpd %xmm5,%xmm5
+  4a8eda:	b8 28 1c 00 00       	mov    $0x1c28,%eax
+  4a8edf:	66 44 0f 10 b4 0e 70 	movupd 0x1d70(%rsi,%rcx,1),%xmm14
+  4a8ee6:	1d 00 00 
+  4a8ee9:	66 44 0f 10 bc 0e 80 	movupd 0x1d80(%rsi,%rcx,1),%xmm15
+  4a8ef0:	1d 00 00 
+  4a8ef3:	66 44 0f 10 9c 0e 90 	movupd 0x1d90(%rsi,%rcx,1),%xmm11
+  4a8efa:	1d 00 00 
+  4a8efd:	0f 1f 00             	nopl   (%rax)
+  4a8f00:	66 44 0f 29 9c 24 80 	movapd %xmm11,0x80(%rsp)
+  4a8f07:	00 00 00 
+  4a8f0a:	66 44 0f 29 b4 24 90 	movapd %xmm14,0x90(%rsp)
+  4a8f11:	00 00 00 
+  4a8f14:	66 0f 59 e5          	mulpd  %xmm5,%xmm4
+  4a8f18:	66 45 0f 10 b4 06 f0 	movupd -0x110(%r14,%rax,1),%xmm14
+  4a8f1f:	fe ff ff 
+  4a8f22:	66 44 0f 58 f4       	addpd  %xmm4,%xmm14
+  4a8f27:	66 44 0f 29 74 24 30 	movapd %xmm14,0x30(%rsp)
+  4a8f2e:	66 41 0f 10 a4 06 00 	movupd -0x100(%r14,%rax,1),%xmm4
+  4a8f35:	ff ff ff 
+  4a8f38:	66 44 0f 28 d8       	movapd %xmm0,%xmm11
+  4a8f3d:	66 0f 28 44 24 20    	movapd 0x20(%rsp),%xmm0
+  4a8f43:	66 0f 59 c5          	mulpd  %xmm5,%xmm0
+  4a8f47:	66 0f 58 c4          	addpd  %xmm4,%xmm0
+  4a8f4b:	66 0f 29 44 24 20    	movapd %xmm0,0x20(%rsp)
+  4a8f51:	66 41 0f 10 a4 06 10 	movupd -0xf0(%r14,%rax,1),%xmm4
+  4a8f58:	ff ff ff 
+  4a8f5b:	66 0f 59 cd          	mulpd  %xmm5,%xmm1
+  4a8f5f:	66 0f 58 cc          	addpd  %xmm4,%xmm1
+  4a8f63:	66 41 0f 10 a4 06 20 	movupd -0xe0(%r14,%rax,1),%xmm4
+  4a8f6a:	ff ff ff 
+  4a8f6d:	66 0f 59 d5          	mulpd  %xmm5,%xmm2
+  4a8f71:	66 0f 58 d4          	addpd  %xmm4,%xmm2
+  4a8f75:	66 0f 28 e6          	movapd %xmm6,%xmm4
+  4a8f79:	66 0f 59 e5          	mulpd  %xmm5,%xmm4
+  4a8f7d:	66 41 0f 10 b4 06 30 	movupd -0xd0(%r14,%rax,1),%xmm6
+  4a8f84:	ff ff ff 
+  4a8f87:	66 0f 58 f4          	addpd  %xmm4,%xmm6
+  4a8f8b:	66 41 0f 28 e3       	movapd %xmm11,%xmm4
+  4a8f90:	66 0f 59 e5          	mulpd  %xmm5,%xmm4
+  4a8f94:	66 41 0f 10 84 06 40 	movupd -0xc0(%r14,%rax,1),%xmm0
+  4a8f9b:	ff ff ff 
+  4a8f9e:	66 0f 58 c4          	addpd  %xmm4,%xmm0
+  4a8fa2:	66 0f 28 64 24 50    	movapd 0x50(%rsp),%xmm4
+  4a8fa8:	66 0f 59 e5          	mulpd  %xmm5,%xmm4
+  4a8fac:	66 44 0f 28 df       	movapd %xmm7,%xmm11
+  4a8fb1:	66 41 0f 10 bc 06 50 	movupd -0xb0(%r14,%rax,1),%xmm7
+  4a8fb8:	ff ff ff 
+  4a8fbb:	66 0f 58 fc          	addpd  %xmm4,%xmm7
+  4a8fbf:	66 0f 29 7c 24 50    	movapd %xmm7,0x50(%rsp)
+  4a8fc5:	66 41 0f 28 e0       	movapd %xmm8,%xmm4
+  4a8fca:	66 0f 59 e5          	mulpd  %xmm5,%xmm4
+  4a8fce:	66 45 0f 10 84 06 60 	movupd -0xa0(%r14,%rax,1),%xmm8
+  4a8fd5:	ff ff ff 
+  4a8fd8:	66 44 0f 58 c4       	addpd  %xmm4,%xmm8
+  4a8fdd:	66 41 0f 28 e1       	movapd %xmm9,%xmm4
+  4a8fe2:	66 0f 59 e5          	mulpd  %xmm5,%xmm4
+  4a8fe6:	66 45 0f 10 8c 06 70 	movupd -0x90(%r14,%rax,1),%xmm9
+  4a8fed:	ff ff ff 
+  4a8ff0:	66 44 0f 58 cc       	addpd  %xmm4,%xmm9
+  4a8ff5:	66 41 0f 28 e2       	movapd %xmm10,%xmm4
+  4a8ffa:	66 0f 59 e5          	mulpd  %xmm5,%xmm4
+  4a8ffe:	66 45 0f 10 54 06 80 	movupd -0x80(%r14,%rax,1),%xmm10
+  4a9005:	66 44 0f 58 d4       	addpd  %xmm4,%xmm10
+  4a900a:	66 41 0f 28 e3       	movapd %xmm11,%xmm4
+  4a900f:	66 0f 59 e5          	mulpd  %xmm5,%xmm4
+  4a9013:	66 41 0f 10 7c 06 90 	movupd -0x70(%r14,%rax,1),%xmm7
+  4a901a:	66 0f 58 fc          	addpd  %xmm4,%xmm7
+  4a901e:	66 0f 28 64 24 40    	movapd 0x40(%rsp),%xmm4
+  4a9024:	66 0f 59 e5          	mulpd  %xmm5,%xmm4
+  4a9028:	66 45 0f 10 5c 06 a0 	movupd -0x60(%r14,%rax,1),%xmm11
+  4a902f:	66 44 0f 58 dc       	addpd  %xmm4,%xmm11
+  4a9034:	66 44 0f 29 5c 24 40 	movapd %xmm11,0x40(%rsp)
+  4a903b:	66 41 0f 28 e4       	movapd %xmm12,%xmm4
+  4a9040:	66 0f 59 e5          	mulpd  %xmm5,%xmm4
+  4a9044:	66 45 0f 10 64 06 b0 	movupd -0x50(%r14,%rax,1),%xmm12
+  4a904b:	66 44 0f 58 e4       	addpd  %xmm4,%xmm12
+  4a9050:	66 41 0f 28 e5       	movapd %xmm13,%xmm4
+  4a9055:	66 0f 59 e5          	mulpd  %xmm5,%xmm4
+  4a9059:	66 45 0f 10 6c 06 c0 	movupd -0x40(%r14,%rax,1),%xmm13
+  4a9060:	66 44 0f 58 ec       	addpd  %xmm4,%xmm13
+  4a9065:	66 0f 28 e3          	movapd %xmm3,%xmm4
+  4a9069:	66 0f 59 e5          	mulpd  %xmm5,%xmm4
+  4a906d:	66 41 0f 10 5c 06 d0 	movupd -0x30(%r14,%rax,1),%xmm3
+  4a9074:	66 0f 58 dc          	addpd  %xmm4,%xmm3
+  4a9078:	66 0f 28 a4 24 90 00 	movapd 0x90(%rsp),%xmm4
+  4a907f:	00 00 
+  4a9081:	66 0f 59 e5          	mulpd  %xmm5,%xmm4
+  4a9085:	66 45 0f 10 74 06 e0 	movupd -0x20(%r14,%rax,1),%xmm14
+  4a908c:	66 44 0f 58 f4       	addpd  %xmm4,%xmm14
+  4a9091:	66 41 0f 28 e7       	movapd %xmm15,%xmm4
+  4a9096:	66 0f 59 e5          	mulpd  %xmm5,%xmm4
+  4a909a:	66 45 0f 10 7c 06 f0 	movupd -0x10(%r14,%rax,1),%xmm15
+  4a90a1:	66 44 0f 58 fc       	addpd  %xmm4,%xmm15
+  4a90a6:	66 0f 28 a4 24 80 00 	movapd 0x80(%rsp),%xmm4
+  4a90ad:	00 00 
+  4a90af:	66 0f 59 e5          	mulpd  %xmm5,%xmm4
+  4a90b3:	66 45 0f 10 1c 06    	movupd (%r14,%rax,1),%xmm11
+  4a90b9:	66 44 0f 58 dc       	addpd  %xmm4,%xmm11
+  4a90be:	66 0f 28 64 24 30    	movapd 0x30(%rsp),%xmm4
+  4a90c4:	48 05 98 fe ff ff    	add    $0xfffffffffffffe98,%rax
+  4a90ca:	48 83 f8 08          	cmp    $0x8,%rax
+  4a90ce:	0f 85 2c fe ff ff    	jne    4a8f00 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0x200>
+  4a90d4:	66 0f 29 a4 24 a0 00 	movapd %xmm4,0xa0(%rsp)
+  4a90db:	00 00 
+  4a90dd:	0f 28 64 24 20       	movaps 0x20(%rsp),%xmm4
+  4a90e2:	0f 29 a4 24 b0 00 00 	movaps %xmm4,0xb0(%rsp)
+  4a90e9:	00 
+  4a90ea:	66 0f 29 8c 24 c0 00 	movapd %xmm1,0xc0(%rsp)
+  4a90f1:	00 00 
+  4a90f3:	66 0f 29 94 24 d0 00 	movapd %xmm2,0xd0(%rsp)
+  4a90fa:	00 00 
+  4a90fc:	66 0f 29 b4 24 e0 00 	movapd %xmm6,0xe0(%rsp)
+  4a9103:	00 00 
+  4a9105:	66 0f 29 84 24 f0 00 	movapd %xmm0,0xf0(%rsp)
+  4a910c:	00 00 
+  4a910e:	0f 28 44 24 50       	movaps 0x50(%rsp),%xmm0
+  4a9113:	0f 29 84 24 00 01 00 	movaps %xmm0,0x100(%rsp)
+  4a911a:	00 
+  4a911b:	66 44 0f 29 84 24 10 	movapd %xmm8,0x110(%rsp)
+  4a9122:	01 00 00 
+  4a9125:	66 44 0f 29 8c 24 20 	movapd %xmm9,0x120(%rsp)
+  4a912c:	01 00 00 
+  4a912f:	66 44 0f 29 94 24 30 	movapd %xmm10,0x130(%rsp)
+  4a9136:	01 00 00 
+  4a9139:	66 0f 29 bc 24 40 01 	movapd %xmm7,0x140(%rsp)
+  4a9140:	00 00 
+  4a9142:	66 0f 28 44 24 40    	movapd 0x40(%rsp),%xmm0
+  4a9148:	66 0f 29 84 24 50 01 	movapd %xmm0,0x150(%rsp)
+  4a914f:	00 00 
+  4a9151:	66 44 0f 29 a4 24 60 	movapd %xmm12,0x160(%rsp)
+  4a9158:	01 00 00 
+  4a915b:	66 44 0f 29 ac 24 70 	movapd %xmm13,0x170(%rsp)
+  4a9162:	01 00 00 
+  4a9165:	66 0f 29 9c 24 80 01 	movapd %xmm3,0x180(%rsp)
+  4a916c:	00 00 
+  4a916e:	66 44 0f 29 b4 24 90 	movapd %xmm14,0x190(%rsp)
+  4a9175:	01 00 00 
+  4a9178:	66 44 0f 29 bc 24 a0 	movapd %xmm15,0x1a0(%rsp)
+  4a917f:	01 00 00 
+  4a9182:	66 44 0f 29 9c 24 b0 	movapd %xmm11,0x1b0(%rsp)
+  4a9189:	01 00 00 
+  4a918c:	48 8d bc 24 c0 01 00 	lea    0x1c0(%rsp),%rdi
+  4a9193:	00 
+  4a9194:	ba 40 02 00 00       	mov    $0x240,%edx
+  4a9199:	31 f6                	xor    %esi,%esi
+  4a919b:	ff 15 0f 70 0d 00    	call   *0xd700f(%rip)        # 5801b0 <memset@GLIBC_2.2.5>
+  4a91a1:	66 0f 57 c0          	xorpd  %xmm0,%xmm0
+  4a91a5:	66 0f 28 4c 24 70    	movapd 0x70(%rsp),%xmm1
+  4a91ab:	48 89 e7             	mov    %rsp,%rdi
+  4a91ae:	66 0f 2e c8          	ucomisd %xmm0,%xmm1
+  4a91b2:	0f 85 39 03 00 00    	jne    4a94f1 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0x7f1>
+  4a91b8:	0f 8a 33 03 00 00    	jp     4a94f1 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0x7f1>
+  4a91be:	f2 0f 10 05 9a 51 b7 	movsd  -0x48ae66(%rip),%xmm0        # 1e360 <GCC_except_table0+0x1bc>
+  4a91c5:	ff 
+  4a91c6:	66 0f 28 c8          	movapd %xmm0,%xmm1
+  4a91ca:	66 0f 28 d0          	movapd %xmm0,%xmm2
+  4a91ce:	66 0f 28 d8          	movapd %xmm0,%xmm3
+  4a91d2:	e8 c9 d1 ff ff       	call   4a63a0 <rodas5p_core::directed::Interval::div>
+  4a91d7:	48 8b 04 24          	mov    (%rsp),%rax
+  4a91db:	48 83 f8 07          	cmp    $0x7,%rax
+  4a91df:	0f 85 fe 05 00 00    	jne    4a97e3 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xae3>
+  4a91e5:	0f 10 44 24 08       	movups 0x8(%rsp),%xmm0
+  4a91ea:	0f 29 84 24 c0 01 00 	movaps %xmm0,0x1c0(%rsp)
+  4a91f1:	00 
+  4a91f2:	48 89 e7             	mov    %rsp,%rdi
+  4a91f5:	f2 0f 10 05 63 51 b7 	movsd  -0x48ae9d(%rip),%xmm0        # 1e360 <GCC_except_table0+0x1bc>
+  4a91fc:	ff 
+  4a91fd:	f2 0f 10 15 7b 50 b7 	movsd  -0x48af85(%rip),%xmm2        # 1e280 <GCC_except_table0+0xdc>
+  4a9204:	ff 
+  4a9205:	66 0f 28 c8          	movapd %xmm0,%xmm1
+  4a9209:	66 0f 28 da          	movapd %xmm2,%xmm3
+  4a920d:	e8 8e d1 ff ff       	call   4a63a0 <rodas5p_core::directed::Interval::div>
+  4a9212:	48 8b 04 24          	mov    (%rsp),%rax
+  4a9216:	48 83 f8 07          	cmp    $0x7,%rax
+  4a921a:	0f 85 c3 05 00 00    	jne    4a97e3 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xae3>
+  4a9220:	0f 10 44 24 08       	movups 0x8(%rsp),%xmm0
+  4a9225:	0f 29 84 24 d0 01 00 	movaps %xmm0,0x1d0(%rsp)
+  4a922c:	00 
+  4a922d:	48 89 e7             	mov    %rsp,%rdi
+  4a9230:	f2 0f 10 05 28 51 b7 	movsd  -0x48aed8(%rip),%xmm0        # 1e360 <GCC_except_table0+0x1bc>
+  4a9237:	ff 
+  4a9238:	f2 0f 10 15 40 50 b7 	movsd  -0x48afc0(%rip),%xmm2        # 1e280 <GCC_except_table0+0xdc>
+  4a923f:	ff 
+  4a9240:	66 0f 28 c8          	movapd %xmm0,%xmm1
+  4a9244:	66 0f 28 da          	movapd %xmm2,%xmm3
+  4a9248:	e8 53 d1 ff ff       	call   4a63a0 <rodas5p_core::directed::Interval::div>
+  4a924d:	48 8b 04 24          	mov    (%rsp),%rax
+  4a9251:	48 83 f8 07          	cmp    $0x7,%rax
+  4a9255:	0f 85 88 05 00 00    	jne    4a97e3 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xae3>
+  4a925b:	66 0f 10 44 24 08    	movupd 0x8(%rsp),%xmm0
+  4a9261:	66 0f 29 84 24 e0 01 	movapd %xmm0,0x1e0(%rsp)
+  4a9268:	00 00 
+  4a926a:	4c 8d bc 24 f0 01 00 	lea    0x1f0(%rsp),%r15
+  4a9271:	00 
+  4a9272:	45 31 e4             	xor    %r12d,%r12d
+  4a9275:	49 89 e6             	mov    %rsp,%r14
+  4a9278:	0f 1f 84 00 00 00 00 	nopl   0x0(%rax,%rax,1)
+  4a927f:	00 
+  4a9280:	4c 89 f7             	mov    %r14,%rdi
+  4a9283:	f2 0f 10 05 d5 50 b7 	movsd  -0x48af2b(%rip),%xmm0        # 1e360 <GCC_except_table0+0x1bc>
+  4a928a:	ff 
+  4a928b:	66 0f 28 c8          	movapd %xmm0,%xmm1
+  4a928f:	f2 0f 10 15 b9 51 b7 	movsd  -0x48ae47(%rip),%xmm2        # 1e450 <GCC_except_table0+0x2ac>
+  4a9296:	ff 
+  4a9297:	66 0f 28 da          	movapd %xmm2,%xmm3
+  4a929b:	e8 00 d1 ff ff       	call   4a63a0 <rodas5p_core::directed::Interval::div>
+  4a92a0:	48 8b 04 24          	mov    (%rsp),%rax
+  4a92a4:	48 83 f8 07          	cmp    $0x7,%rax
+  4a92a8:	0f 85 35 05 00 00    	jne    4a97e3 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xae3>
+  4a92ae:	49 83 fc 02          	cmp    $0x2,%r12
+  4a92b2:	4c 89 e0             	mov    %r12,%rax
+  4a92b5:	48 83 d0 00          	adc    $0x0,%rax
+  4a92b9:	4c 89 e1             	mov    %r12,%rcx
+  4a92bc:	48 c1 e1 04          	shl    $0x4,%rcx
+  4a92c0:	66 0f 10 44 24 08    	movupd 0x8(%rsp),%xmm0
+  4a92c6:	66 41 0f 29 04 0f    	movapd %xmm0,(%r15,%rcx,1)
+  4a92cc:	49 83 fc 01          	cmp    $0x1,%r12
+  4a92d0:	77 09                	ja     4a92db <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0x5db>
+  4a92d2:	49 89 c4             	mov    %rax,%r12
+  4a92d5:	48 83 f8 03          	cmp    $0x3,%rax
+  4a92d9:	72 a5                	jb     4a9280 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0x580>
+  4a92db:	4c 8d bc 24 20 02 00 	lea    0x220(%rsp),%r15
+  4a92e2:	00 
+  4a92e3:	45 31 e4             	xor    %r12d,%r12d
+  4a92e6:	49 89 e6             	mov    %rsp,%r14
+  4a92e9:	4c 89 f7             	mov    %r14,%rdi
+  4a92ec:	f2 0f 10 05 6c 50 b7 	movsd  -0x48af94(%rip),%xmm0        # 1e360 <GCC_except_table0+0x1bc>
+  4a92f3:	ff 
+  4a92f4:	66 0f 28 c8          	movapd %xmm0,%xmm1
+  4a92f8:	f2 0f 10 15 60 4f b7 	movsd  -0x48b0a0(%rip),%xmm2        # 1e260 <GCC_except_table0+0xbc>
+  4a92ff:	ff 
+  4a9300:	66 0f 28 da          	movapd %xmm2,%xmm3
+  4a9304:	e8 97 d0 ff ff       	call   4a63a0 <rodas5p_core::directed::Interval::div>
+  4a9309:	48 8b 04 24          	mov    (%rsp),%rax
+  4a930d:	48 83 f8 07          	cmp    $0x7,%rax
+  4a9311:	0f 85 cc 04 00 00    	jne    4a97e3 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xae3>
+  4a9317:	49 83 fc 03          	cmp    $0x3,%r12
+  4a931b:	4c 89 e0             	mov    %r12,%rax
+  4a931e:	48 83 d0 00          	adc    $0x0,%rax
+  4a9322:	4c 89 e1             	mov    %r12,%rcx
+  4a9325:	48 c1 e1 04          	shl    $0x4,%rcx
+  4a9329:	66 0f 10 44 24 08    	movupd 0x8(%rsp),%xmm0
+  4a932f:	66 41 0f 29 04 0f    	movapd %xmm0,(%r15,%rcx,1)
+  4a9335:	49 83 fc 02          	cmp    $0x2,%r12
+  4a9339:	77 09                	ja     4a9344 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0x644>
+  4a933b:	49 89 c4             	mov    %rax,%r12
+  4a933e:	48 83 f8 04          	cmp    $0x4,%rax
+  4a9342:	72 a5                	jb     4a92e9 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0x5e9>
+  4a9344:	4c 8d bc 24 60 02 00 	lea    0x260(%rsp),%r15
+  4a934b:	00 
+  4a934c:	45 31 e4             	xor    %r12d,%r12d
+  4a934f:	49 89 e6             	mov    %rsp,%r14
+  4a9352:	4c 89 f7             	mov    %r14,%rdi
+  4a9355:	f2 0f 10 05 03 50 b7 	movsd  -0x48affd(%rip),%xmm0        # 1e360 <GCC_except_table0+0x1bc>
+  4a935c:	ff 
+  4a935d:	66 0f 28 c8          	movapd %xmm0,%xmm1
+  4a9361:	f2 0f 10 15 5f 50 b7 	movsd  -0x48afa1(%rip),%xmm2        # 1e3c8 <GCC_except_table0+0x224>
+  4a9368:	ff 
+  4a9369:	66 0f 28 da          	movapd %xmm2,%xmm3
+  4a936d:	e8 2e d0 ff ff       	call   4a63a0 <rodas5p_core::directed::Interval::div>
+  4a9372:	48 8b 04 24          	mov    (%rsp),%rax
+  4a9376:	48 83 f8 07          	cmp    $0x7,%rax
+  4a937a:	0f 85 63 04 00 00    	jne    4a97e3 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xae3>
+  4a9380:	49 83 fc 04          	cmp    $0x4,%r12
+  4a9384:	4c 89 e0             	mov    %r12,%rax
+  4a9387:	48 83 d0 00          	adc    $0x0,%rax
+  4a938b:	4c 89 e1             	mov    %r12,%rcx
+  4a938e:	48 c1 e1 04          	shl    $0x4,%rcx
+  4a9392:	66 0f 10 44 24 08    	movupd 0x8(%rsp),%xmm0
+  4a9398:	66 41 0f 29 04 0f    	movapd %xmm0,(%r15,%rcx,1)
+  4a939e:	49 83 fc 03          	cmp    $0x3,%r12
+  4a93a2:	77 09                	ja     4a93ad <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0x6ad>
+  4a93a4:	49 89 c4             	mov    %rax,%r12
+  4a93a7:	48 83 f8 05          	cmp    $0x5,%rax
+  4a93ab:	72 a5                	jb     4a9352 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0x652>
+  4a93ad:	4c 8d bc 24 b0 02 00 	lea    0x2b0(%rsp),%r15
+  4a93b4:	00 
+  4a93b5:	45 31 e4             	xor    %r12d,%r12d
+  4a93b8:	49 89 e6             	mov    %rsp,%r14
+  4a93bb:	4c 89 f7             	mov    %r14,%rdi
+  4a93be:	f2 0f 10 05 9a 4f b7 	movsd  -0x48b066(%rip),%xmm0        # 1e360 <GCC_except_table0+0x1bc>
+  4a93c5:	ff 
+  4a93c6:	66 0f 28 c8          	movapd %xmm0,%xmm1
+  4a93ca:	f2 0f 10 15 6e 4e b7 	movsd  -0x48b192(%rip),%xmm2        # 1e240 <GCC_except_table0+0x9c>
+  4a93d1:	ff 
+  4a93d2:	66 0f 28 da          	movapd %xmm2,%xmm3
+  4a93d6:	e8 c5 cf ff ff       	call   4a63a0 <rodas5p_core::directed::Interval::div>
+  4a93db:	48 8b 04 24          	mov    (%rsp),%rax
+  4a93df:	48 83 f8 07          	cmp    $0x7,%rax
+  4a93e3:	0f 85 fa 03 00 00    	jne    4a97e3 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xae3>
+  4a93e9:	49 83 fc 05          	cmp    $0x5,%r12
+  4a93ed:	4c 89 e0             	mov    %r12,%rax
+  4a93f0:	48 83 d0 00          	adc    $0x0,%rax
+  4a93f4:	4c 89 e1             	mov    %r12,%rcx
+  4a93f7:	48 c1 e1 04          	shl    $0x4,%rcx
+  4a93fb:	66 0f 10 44 24 08    	movupd 0x8(%rsp),%xmm0
+  4a9401:	66 41 0f 29 04 0f    	movapd %xmm0,(%r15,%rcx,1)
+  4a9407:	49 83 fc 04          	cmp    $0x4,%r12
+  4a940b:	77 09                	ja     4a9416 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0x716>
+  4a940d:	49 89 c4             	mov    %rax,%r12
+  4a9410:	48 83 f8 06          	cmp    $0x6,%rax
+  4a9414:	72 a5                	jb     4a93bb <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0x6bb>
+  4a9416:	4c 8d bc 24 10 03 00 	lea    0x310(%rsp),%r15
+  4a941d:	00 
+  4a941e:	45 31 e4             	xor    %r12d,%r12d
+  4a9421:	49 89 e6             	mov    %rsp,%r14
+  4a9424:	4c 89 f7             	mov    %r14,%rdi
+  4a9427:	f2 0f 10 05 31 4f b7 	movsd  -0x48b0cf(%rip),%xmm0        # 1e360 <GCC_except_table0+0x1bc>
+  4a942e:	ff 
+  4a942f:	66 0f 28 c8          	movapd %xmm0,%xmm1
+  4a9433:	f2 0f 10 15 f5 4f b7 	movsd  -0x48b00b(%rip),%xmm2        # 1e430 <GCC_except_table0+0x28c>
+  4a943a:	ff 
+  4a943b:	66 0f 28 da          	movapd %xmm2,%xmm3
+  4a943f:	e8 5c cf ff ff       	call   4a63a0 <rodas5p_core::directed::Interval::div>
+  4a9444:	48 8b 04 24          	mov    (%rsp),%rax
+  4a9448:	48 83 f8 07          	cmp    $0x7,%rax
+  4a944c:	0f 85 91 03 00 00    	jne    4a97e3 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xae3>
+  4a9452:	49 83 fc 06          	cmp    $0x6,%r12
+  4a9456:	4c 89 e0             	mov    %r12,%rax
+  4a9459:	48 83 d0 00          	adc    $0x0,%rax
+  4a945d:	4c 89 e1             	mov    %r12,%rcx
+  4a9460:	48 c1 e1 04          	shl    $0x4,%rcx
+  4a9464:	66 0f 10 44 24 08    	movupd 0x8(%rsp),%xmm0
+  4a946a:	66 41 0f 29 04 0f    	movapd %xmm0,(%r15,%rcx,1)
+  4a9470:	49 83 fc 05          	cmp    $0x5,%r12
+  4a9474:	77 09                	ja     4a947f <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0x77f>
+  4a9476:	49 89 c4             	mov    %rax,%r12
+  4a9479:	48 83 f8 07          	cmp    $0x7,%rax
+  4a947d:	72 a5                	jb     4a9424 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0x724>
+  4a947f:	4c 8d bc 24 80 03 00 	lea    0x380(%rsp),%r15
+  4a9486:	00 
+  4a9487:	45 31 e4             	xor    %r12d,%r12d
+  4a948a:	49 89 e6             	mov    %rsp,%r14
+  4a948d:	4c 89 f7             	mov    %r14,%rdi
+  4a9490:	f2 0f 10 05 c8 4e b7 	movsd  -0x48b138(%rip),%xmm0        # 1e360 <GCC_except_table0+0x1bc>
+  4a9497:	ff 
+  4a9498:	66 0f 28 c8          	movapd %xmm0,%xmm1
+  4a949c:	f2 0f 10 15 94 4e b7 	movsd  -0x48b16c(%rip),%xmm2        # 1e338 <GCC_except_table0+0x194>
+  4a94a3:	ff 
+  4a94a4:	66 0f 28 da          	movapd %xmm2,%xmm3
+  4a94a8:	e8 f3 ce ff ff       	call   4a63a0 <rodas5p_core::directed::Interval::div>
+  4a94ad:	48 8b 04 24          	mov    (%rsp),%rax
+  4a94b1:	48 83 f8 07          	cmp    $0x7,%rax
+  4a94b5:	0f 85 28 03 00 00    	jne    4a97e3 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xae3>
+  4a94bb:	49 83 fc 07          	cmp    $0x7,%r12
+  4a94bf:	4c 89 e0             	mov    %r12,%rax
+  4a94c2:	48 83 d0 00          	adc    $0x0,%rax
+  4a94c6:	4c 89 e1             	mov    %r12,%rcx
+  4a94c9:	48 c1 e1 04          	shl    $0x4,%rcx
+  4a94cd:	66 0f 10 44 24 08    	movupd 0x8(%rsp),%xmm0
+  4a94d3:	66 41 0f 29 04 0f    	movapd %xmm0,(%r15,%rcx,1)
+  4a94d9:	49 83 fc 06          	cmp    $0x6,%r12
+  4a94dd:	0f 87 e0 02 00 00    	ja     4a97c3 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xac3>
+  4a94e3:	49 89 c4             	mov    %rax,%r12
+  4a94e6:	48 83 f8 07          	cmp    $0x7,%rax
+  4a94ea:	76 a1                	jbe    4a948d <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0x78d>
+  4a94ec:	e9 d2 02 00 00       	jmp    4a97c3 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xac3>
+  4a94f1:	ba 09 00 00 00       	mov    $0x9,%edx
+  4a94f6:	4c 89 f6             	mov    %r14,%rsi
+  4a94f9:	66 0f 28 44 24 30    	movapd 0x30(%rsp),%xmm0
+  4a94ff:	e8 bc f5 ff ff       	call   4a8ac0 <rodas5p_core::retro_dictionary::Cell::fast_enclose>
+  4a9504:	48 8b 04 24          	mov    (%rsp),%rax
+  4a9508:	48 83 f8 07          	cmp    $0x7,%rax
+  4a950c:	0f 85 d1 02 00 00    	jne    4a97e3 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xae3>
+  4a9512:	0f 10 44 24 08       	movups 0x8(%rsp),%xmm0
+  4a9517:	0f 29 84 24 c0 01 00 	movaps %xmm0,0x1c0(%rsp)
+  4a951e:	00 
+  4a951f:	66 0f 28 44 24 30    	movapd 0x30(%rsp),%xmm0
+  4a9525:	66 0f 15 c0          	unpckhpd %xmm0,%xmm0
+  4a9529:	48 89 e7             	mov    %rsp,%rdi
+  4a952c:	ba 0a 00 00 00       	mov    $0xa,%edx
+  4a9531:	4c 89 f6             	mov    %r14,%rsi
+  4a9534:	e8 87 f5 ff ff       	call   4a8ac0 <rodas5p_core::retro_dictionary::Cell::fast_enclose>
+  4a9539:	48 8b 04 24          	mov    (%rsp),%rax
+  4a953d:	48 83 f8 07          	cmp    $0x7,%rax
+  4a9541:	0f 85 9c 02 00 00    	jne    4a97e3 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xae3>
+  4a9547:	0f 10 44 24 08       	movups 0x8(%rsp),%xmm0
+  4a954c:	0f 29 84 24 d0 01 00 	movaps %xmm0,0x1d0(%rsp)
+  4a9553:	00 
+  4a9554:	48 89 e7             	mov    %rsp,%rdi
+  4a9557:	ba 0b 00 00 00       	mov    $0xb,%edx
+  4a955c:	4c 89 f6             	mov    %r14,%rsi
+  4a955f:	66 0f 28 44 24 20    	movapd 0x20(%rsp),%xmm0
+  4a9565:	e8 56 f5 ff ff       	call   4a8ac0 <rodas5p_core::retro_dictionary::Cell::fast_enclose>
+  4a956a:	48 8b 04 24          	mov    (%rsp),%rax
+  4a956e:	48 83 f8 07          	cmp    $0x7,%rax
+  4a9572:	0f 85 6b 02 00 00    	jne    4a97e3 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xae3>
+  4a9578:	66 0f 10 44 24 08    	movupd 0x8(%rsp),%xmm0
+  4a957e:	66 0f 29 84 24 e0 01 	movapd %xmm0,0x1e0(%rsp)
+  4a9585:	00 00 
+  4a9587:	45 31 e4             	xor    %r12d,%r12d
+  4a958a:	49 89 e7             	mov    %rsp,%r15
+  4a958d:	f2 42 0f 10 84 e4 b8 	movsd  0xb8(%rsp,%r12,8),%xmm0
+  4a9594:	00 00 00 
+  4a9597:	49 8d 54 24 0c       	lea    0xc(%r12),%rdx
+  4a959c:	4c 89 ff             	mov    %r15,%rdi
+  4a959f:	4c 89 f6             	mov    %r14,%rsi
+  4a95a2:	e8 19 f5 ff ff       	call   4a8ac0 <rodas5p_core::retro_dictionary::Cell::fast_enclose>
+  4a95a7:	48 8b 04 24          	mov    (%rsp),%rax
+  4a95ab:	48 83 f8 07          	cmp    $0x7,%rax
+  4a95af:	0f 85 2e 02 00 00    	jne    4a97e3 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xae3>
+  4a95b5:	49 8d 4c 24 03       	lea    0x3(%r12),%rcx
+  4a95ba:	49 83 fc 02          	cmp    $0x2,%r12
+  4a95be:	4c 89 e0             	mov    %r12,%rax
+  4a95c1:	48 83 d0 00          	adc    $0x0,%rax
+  4a95c5:	48 c1 e1 04          	shl    $0x4,%rcx
+  4a95c9:	66 0f 10 44 24 08    	movupd 0x8(%rsp),%xmm0
+  4a95cf:	66 0f 29 84 0c c0 01 	movapd %xmm0,0x1c0(%rsp,%rcx,1)
+  4a95d6:	00 00 
+  4a95d8:	49 83 fc 01          	cmp    $0x1,%r12
+  4a95dc:	77 09                	ja     4a95e7 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0x8e7>
+  4a95de:	49 89 c4             	mov    %rax,%r12
+  4a95e1:	48 83 f8 03          	cmp    $0x3,%rax
+  4a95e5:	72 a6                	jb     4a958d <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0x88d>
+  4a95e7:	45 31 e4             	xor    %r12d,%r12d
+  4a95ea:	49 89 e7             	mov    %rsp,%r15
+  4a95ed:	f2 42 0f 10 84 e4 d0 	movsd  0xd0(%rsp,%r12,8),%xmm0
+  4a95f4:	00 00 00 
+  4a95f7:	49 8d 54 24 0f       	lea    0xf(%r12),%rdx
+  4a95fc:	4c 89 ff             	mov    %r15,%rdi
+  4a95ff:	4c 89 f6             	mov    %r14,%rsi
+  4a9602:	e8 b9 f4 ff ff       	call   4a8ac0 <rodas5p_core::retro_dictionary::Cell::fast_enclose>
+  4a9607:	48 8b 04 24          	mov    (%rsp),%rax
+  4a960b:	48 83 f8 07          	cmp    $0x7,%rax
+  4a960f:	0f 85 ce 01 00 00    	jne    4a97e3 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xae3>
+  4a9615:	49 8d 4c 24 06       	lea    0x6(%r12),%rcx
+  4a961a:	49 83 fc 03          	cmp    $0x3,%r12
+  4a961e:	4c 89 e0             	mov    %r12,%rax
+  4a9621:	48 83 d0 00          	adc    $0x0,%rax
+  4a9625:	48 c1 e1 04          	shl    $0x4,%rcx
+  4a9629:	66 0f 10 44 24 08    	movupd 0x8(%rsp),%xmm0
+  4a962f:	66 0f 29 84 0c c0 01 	movapd %xmm0,0x1c0(%rsp,%rcx,1)
+  4a9636:	00 00 
+  4a9638:	49 83 fc 02          	cmp    $0x2,%r12
+  4a963c:	77 09                	ja     4a9647 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0x947>
+  4a963e:	49 89 c4             	mov    %rax,%r12
+  4a9641:	48 83 f8 04          	cmp    $0x4,%rax
+  4a9645:	72 a6                	jb     4a95ed <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0x8ed>
+  4a9647:	45 31 e4             	xor    %r12d,%r12d
+  4a964a:	49 89 e7             	mov    %rsp,%r15
+  4a964d:	f2 42 0f 10 84 e4 f0 	movsd  0xf0(%rsp,%r12,8),%xmm0
+  4a9654:	00 00 00 
+  4a9657:	49 8d 54 24 13       	lea    0x13(%r12),%rdx
+  4a965c:	4c 89 ff             	mov    %r15,%rdi
+  4a965f:	4c 89 f6             	mov    %r14,%rsi
+  4a9662:	e8 59 f4 ff ff       	call   4a8ac0 <rodas5p_core::retro_dictionary::Cell::fast_enclose>
+  4a9667:	48 8b 04 24          	mov    (%rsp),%rax
+  4a966b:	48 83 f8 07          	cmp    $0x7,%rax
+  4a966f:	0f 85 6e 01 00 00    	jne    4a97e3 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xae3>
+  4a9675:	49 8d 4c 24 0a       	lea    0xa(%r12),%rcx
+  4a967a:	49 83 fc 04          	cmp    $0x4,%r12
+  4a967e:	4c 89 e0             	mov    %r12,%rax
+  4a9681:	48 83 d0 00          	adc    $0x0,%rax
+  4a9685:	48 c1 e1 04          	shl    $0x4,%rcx
+  4a9689:	66 0f 10 44 24 08    	movupd 0x8(%rsp),%xmm0
+  4a968f:	66 0f 29 84 0c c0 01 	movapd %xmm0,0x1c0(%rsp,%rcx,1)
+  4a9696:	00 00 
+  4a9698:	49 83 fc 03          	cmp    $0x3,%r12
+  4a969c:	77 09                	ja     4a96a7 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0x9a7>
+  4a969e:	49 89 c4             	mov    %rax,%r12
+  4a96a1:	48 83 f8 05          	cmp    $0x5,%rax
+  4a96a5:	72 a6                	jb     4a964d <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0x94d>
+  4a96a7:	45 31 e4             	xor    %r12d,%r12d
+  4a96aa:	49 89 e7             	mov    %rsp,%r15
+  4a96ad:	f2 42 0f 10 84 e4 18 	movsd  0x118(%rsp,%r12,8),%xmm0
+  4a96b4:	01 00 00 
+  4a96b7:	49 8d 54 24 18       	lea    0x18(%r12),%rdx
+  4a96bc:	4c 89 ff             	mov    %r15,%rdi
+  4a96bf:	4c 89 f6             	mov    %r14,%rsi
+  4a96c2:	e8 f9 f3 ff ff       	call   4a8ac0 <rodas5p_core::retro_dictionary::Cell::fast_enclose>
+  4a96c7:	48 8b 04 24          	mov    (%rsp),%rax
+  4a96cb:	48 83 f8 07          	cmp    $0x7,%rax
+  4a96cf:	0f 85 0e 01 00 00    	jne    4a97e3 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xae3>
+  4a96d5:	49 8d 4c 24 0f       	lea    0xf(%r12),%rcx
+  4a96da:	49 83 fc 05          	cmp    $0x5,%r12
+  4a96de:	4c 89 e0             	mov    %r12,%rax
+  4a96e1:	48 83 d0 00          	adc    $0x0,%rax
+  4a96e5:	48 c1 e1 04          	shl    $0x4,%rcx
+  4a96e9:	66 0f 10 44 24 08    	movupd 0x8(%rsp),%xmm0
+  4a96ef:	66 0f 29 84 0c c0 01 	movapd %xmm0,0x1c0(%rsp,%rcx,1)
+  4a96f6:	00 00 
+  4a96f8:	49 83 fc 04          	cmp    $0x4,%r12
+  4a96fc:	77 09                	ja     4a9707 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xa07>
+  4a96fe:	49 89 c4             	mov    %rax,%r12
+  4a9701:	48 83 f8 06          	cmp    $0x6,%rax
+  4a9705:	72 a6                	jb     4a96ad <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0x9ad>
+  4a9707:	45 31 e4             	xor    %r12d,%r12d
+  4a970a:	49 89 e7             	mov    %rsp,%r15
+  4a970d:	f2 42 0f 10 84 e4 48 	movsd  0x148(%rsp,%r12,8),%xmm0
+  4a9714:	01 00 00 
+  4a9717:	49 8d 54 24 1e       	lea    0x1e(%r12),%rdx
+  4a971c:	4c 89 ff             	mov    %r15,%rdi
+  4a971f:	4c 89 f6             	mov    %r14,%rsi
+  4a9722:	e8 99 f3 ff ff       	call   4a8ac0 <rodas5p_core::retro_dictionary::Cell::fast_enclose>
+  4a9727:	48 8b 04 24          	mov    (%rsp),%rax
+  4a972b:	48 83 f8 07          	cmp    $0x7,%rax
+  4a972f:	0f 85 ae 00 00 00    	jne    4a97e3 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xae3>
+  4a9735:	49 8d 4c 24 15       	lea    0x15(%r12),%rcx
+  4a973a:	49 83 fc 06          	cmp    $0x6,%r12
+  4a973e:	4c 89 e0             	mov    %r12,%rax
+  4a9741:	48 83 d0 00          	adc    $0x0,%rax
+  4a9745:	48 c1 e1 04          	shl    $0x4,%rcx
+  4a9749:	66 0f 10 44 24 08    	movupd 0x8(%rsp),%xmm0
+  4a974f:	66 0f 29 84 0c c0 01 	movapd %xmm0,0x1c0(%rsp,%rcx,1)
+  4a9756:	00 00 
+  4a9758:	49 83 fc 05          	cmp    $0x5,%r12
+  4a975c:	77 09                	ja     4a9767 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xa67>
+  4a975e:	49 89 c4             	mov    %rax,%r12
+  4a9761:	48 83 f8 07          	cmp    $0x7,%rax
+  4a9765:	72 a6                	jb     4a970d <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xa0d>
+  4a9767:	45 31 e4             	xor    %r12d,%r12d
+  4a976a:	49 89 e7             	mov    %rsp,%r15
+  4a976d:	f2 42 0f 10 84 e4 80 	movsd  0x180(%rsp,%r12,8),%xmm0
+  4a9774:	01 00 00 
+  4a9777:	49 8d 54 24 25       	lea    0x25(%r12),%rdx
+  4a977c:	4c 89 ff             	mov    %r15,%rdi
+  4a977f:	4c 89 f6             	mov    %r14,%rsi
+  4a9782:	e8 39 f3 ff ff       	call   4a8ac0 <rodas5p_core::retro_dictionary::Cell::fast_enclose>
+  4a9787:	48 8b 04 24          	mov    (%rsp),%rax
+  4a978b:	48 83 f8 07          	cmp    $0x7,%rax
+  4a978f:	75 52                	jne    4a97e3 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xae3>
+  4a9791:	49 8d 4c 24 1c       	lea    0x1c(%r12),%rcx
+  4a9796:	49 83 fc 07          	cmp    $0x7,%r12
+  4a979a:	4c 89 e0             	mov    %r12,%rax
+  4a979d:	48 83 d0 00          	adc    $0x0,%rax
+  4a97a1:	48 c1 e1 04          	shl    $0x4,%rcx
+  4a97a5:	66 0f 10 44 24 08    	movupd 0x8(%rsp),%xmm0
+  4a97ab:	66 0f 29 84 0c c0 01 	movapd %xmm0,0x1c0(%rsp,%rcx,1)
+  4a97b2:	00 00 
+  4a97b4:	49 83 fc 06          	cmp    $0x6,%r12
+  4a97b8:	77 09                	ja     4a97c3 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xac3>
+  4a97ba:	49 89 c4             	mov    %rax,%r12
+  4a97bd:	48 83 f8 08          	cmp    $0x8,%rax
+  4a97c1:	72 aa                	jb     4a976d <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xa6d>
+  4a97c3:	48 8d 7b 08          	lea    0x8(%rbx),%rdi
+  4a97c7:	48 8d b4 24 c0 01 00 	lea    0x1c0(%rsp),%rsi
+  4a97ce:	00 
+  4a97cf:	ba 40 02 00 00       	mov    $0x240,%edx
+  4a97d4:	ff 15 c6 69 0d 00    	call   *0xd69c6(%rip)        # 5801a0 <memcpy@GLIBC_2.14>
+  4a97da:	48 c7 03 00 00 00 00 	movq   $0x0,(%rbx)
+  4a97e1:	eb 1d                	jmp    4a9800 <rodas5p_core::retro_dictionary::Dictionary::moments_all_fast+0xb00>
+  4a97e3:	0f 10 44 24 08       	movups 0x8(%rsp),%xmm0
+  4a97e8:	48 8b 4c 24 18       	mov    0x18(%rsp),%rcx
+  4a97ed:	48 89 43 08          	mov    %rax,0x8(%rbx)
+  4a97f1:	0f 11 43 10          	movups %xmm0,0x10(%rbx)
+  4a97f5:	48 89 4b 20          	mov    %rcx,0x20(%rbx)
+  4a97f9:	48 c7 03 01 00 00 00 	movq   $0x1,(%rbx)
+  4a9800:	48 81 c4 08 04 00 00 	add    $0x408,%rsp
+  4a9807:	5b                   	pop    %rbx
+  4a9808:	41 5c                	pop    %r12
+  4a980a:	41 5e                	pop    %r14
+  4a980c:	41 5f                	pop    %r15
+  4a980e:	c3                   	ret
+  4a980f:	48 8d 05 82 d3 0c 00 	lea    0xcd382(%rip),%rax        # 576b98 <private_gemm_x86::F64_SIMDpack_512+0x410>
+  4a9816:	48 89 d6             	mov    %rdx,%rsi
+  4a9819:	48 89 c2             	mov    %rax,%rdx
+  4a981c:	e8 aa 22 f8 ff       	call   42bacb <core::panicking::panic_bounds_check>
+  4a9821:	cc                   	int3
+  4a9822:	cc                   	int3
+  4a9823:	cc                   	int3
+  4a9824:	cc                   	int3
+  4a9825:	cc                   	int3
+  4a9826:	cc                   	int3
+  4a9827:	cc                   	int3
+  4a9828:	cc                   	int3
+  4a9829:	cc                   	int3
+  4a982a:	cc                   	int3
+  4a982b:	cc                   	int3
+  4a982c:	cc                   	int3
+  4a982d:	cc                   	int3
+  4a982e:	cc                   	int3
+  4a982f:	cc                   	int3
+

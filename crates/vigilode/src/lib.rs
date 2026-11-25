@@ -265,3 +265,16 @@ pub use explicit::ExplicitErrorControl;
 pub use rodas5p_integrators::AffineErrorNorm;
 pub mod adaptive_modal;
 pub mod modal_rodas5p;
+
+/// Explicit research entry points, not an automatic production route.
+#[cfg(feature = "retro-dictionary")]
+pub mod retro_research {
+    pub use rodas5p_core::shared_shift_policy;
+    pub use rodas5p_core::warp_cubic;
+    pub use rodas5p_core::{complex_shift_jet, retro_dictionary, shared_shift_jet};
+    pub use rodas5p_integrators::{
+        ParallelExecution, affine_event_certificate, fourier_path_candidate,
+        fourier_path_certificate, retro_causal, retro_foundation, retro_green, retro_nonlinear,
+        retro_portfolio, retro_temporal,
+    };
+}

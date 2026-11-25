@@ -1,0 +1,39 @@
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-integrators)
+    Checking rodas5p-core v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-core)
+error: this `if` statement can be collapsed
+   --> crates/rodas5p-core/src/retro_dictionary.rs:97:5
+    |
+ 97 | /     if let Ok(i) = s.parse::<i64>() {
+ 98 | |         if i.unsigned_abs() <= 1u64 << 53 {
+ 99 | |             return pt(v);
+100 | |         }
+101 | |     }
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#collapsible_if
+    = note: `-D clippy::collapsible-if` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::collapsible_if)]`
+help: collapse nested if block
+    |
+ 97 ~     if let Ok(i) = s.parse::<i64>()
+ 98 ~         && i.unsigned_abs() <= 1u64 << 53 {
+ 99 |             return pt(v);
+100 ~         }
+    |
+
+error: the loop variable `j` is used to index `out`
+   --> crates/rodas5p-core/src/retro_dictionary.rs:809:22
+    |
+809 |             for j in 1..9 {
+    |                      ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+    = note: `-D clippy::needless-range-loop` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and enumerate()
+    |
+809 -             for j in 1..9 {
+809 +             for (j, <item>) in out.iter_mut().enumerate().skip(1) {
+    |
+
+error: could not compile `rodas5p-core` (lib) due to 2 previous errors
