@@ -42,10 +42,19 @@ permissions:
 
 # Concurrency is set per job. The short jobs cancel superseded runs on
 # pull-request refs (every commit on main keeps its own result). The test job
-# queues instead (OD-L1-21): a cancelled test job leaves no outcome, so the
-# next run would repeat its selection; GitHub keeps the newest pending run of
-# the group, so pushes coalesce and the queued run's baseline is the run that
-# just finished.
+# queues instead (OD-L1-21): a cancelled test job keeps only the targets it
+# finished, so the next run would repeat the rest; GitHub keeps the newest
+# pending run of the group, so pushes coalesce and the queued run's baseline is
+# the run that just finished.
+#
+# A selection that does not fit into the job limit still seeds the next run
+# (owner decision OD-L1-29): the run step writes the outcome and the input map
+# after every target, stops at its time budget (10 minutes under the job
+# limit: on hosted runners the measurement of one target took at most 72.5 s
+# and the steps after the run step at most 2 s each, V4_NOTES R40), and the
+# save step runs also when the job is cancelled. A run that its budget stops
+# fails after saving; the next run maps the targets that were measured and runs
+# the others, the stopped one last.
 
 # The test job is the gate of the production crates. The job test-cli-fair-ab
 # runs the non-ignored tests of the other two workspace members, rodas5p-fair-ab
@@ -122,6 +131,10 @@ jobs:
       PR_BASE: ${{ github.event.pull_request.base.sha }}
       FULL: ${{ (github.event_name == 'workflow_dispatch' && inputs.full) || github.ref == 'refs/heads/main' }}
     steps:
+      # The time budget of the run step counts from the start of the job
+      # (OD-L1-29); this is the first step.
+      - name: Record the start of the job
+        run: echo "JOB_STARTED_AT=$(date +%s)" >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -162,12 +175,15 @@ jobs:
         run: python3 -u tools/ci/select_tests.py select --baseline baseline.json --head "$HEAD_SHA" --pr-base "$PR_BASE" --workflow-file .github/workflows/production.yml --full "$FULL" --out selection.json --scope rodas5p-core rodas5p-krylov rodas5p-integrators vigilode vigilode-coupled
       # One cargo test --no-fail-fast per target, measured: a failing test
       # binary does not hide the binaries after it, and every target runs.
+      # Time budget: 290 of the 300 minutes (see the note above the jobs; the
+      # full v3 run took 276 minutes on a hosted runner).
       - name: Run the selected tests
-        run: python3 -u tools/ci/select_tests.py run --selection selection.json --mode normal --measure --baseline baseline.json --work-dir "$RUNNER_TEMP/ci-measure" --map-out map.json --outcome outcome.json
-      # The outcome (failing targets; complete = every selected command ran its
-      # tests) and the input map are the baseline of the next run of this job.
+        run: python3 -u tools/ci/select_tests.py run --selection selection.json --mode normal --measure --baseline baseline.json --work-dir "$RUNNER_TEMP/ci-measure" --map-out map.json --outcome outcome.json --budget-minutes 290 --started-at "$JOB_STARTED_AT"
+      # The outcome (failing targets, the units not run; complete = every
+      # selected command ran its tests) and the input map are the baseline of
+      # the next run of this job, also when this job is cancelled (OD-L1-29).
       - name: Keep the outcome and the input map for the next run
-        if: ${{ !cancelled() }}
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ci-test-outcome-test
@@ -200,6 +216,9 @@ jobs:
       PR_BASE: ${{ github.event.pull_request.base.sha }}
       FULL: ${{ (github.event_name == 'workflow_dispatch' && inputs.full) || github.ref == 'refs/heads/main' }}
     steps:
+      # As in the test job: the time budget counts from here (OD-L1-29).
+      - name: Record the start of the job
+        run: echo "JOB_STARTED_AT=$(date +%s)" >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -224,10 +243,12 @@ jobs:
         run: python3 -u tools/ci/select_tests.py baseline --workflow production.yml --artifact ci-test-outcome-test-cli-fair-ab --branch "$BRANCH" --run-id "$GITHUB_RUN_ID" --head "$HEAD_SHA" --out baseline.json
       - name: Select the tests
         run: python3 -u tools/ci/select_tests.py select --baseline baseline.json --head "$HEAD_SHA" --pr-base "$PR_BASE" --workflow-file .github/workflows/production.yml --full "$FULL" --out selection.json --scope rodas5p-fair-ab rodas5p-cli
+      # Time budget: 110 of the 120 minutes (see the note above the jobs; the
+      # full v3 run took 41 minutes on a hosted runner).
       - name: Run the selected tests
-        run: python3 -u tools/ci/select_tests.py run --selection selection.json --mode normal --measure --baseline baseline.json --work-dir "$RUNNER_TEMP/ci-measure" --map-out map.json --outcome outcome.json
+        run: python3 -u tools/ci/select_tests.py run --selection selection.json --mode normal --measure --baseline baseline.json --work-dir "$RUNNER_TEMP/ci-measure" --map-out map.json --outcome outcome.json --budget-minutes 110 --started-at "$JOB_STARTED_AT"
       - name: Keep the outcome and the input map for the next run
-        if: ${{ !cancelled() }}
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ci-test-outcome-test-cli-fair-ab

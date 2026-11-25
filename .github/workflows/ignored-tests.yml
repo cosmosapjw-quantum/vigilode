@@ -19,6 +19,12 @@ name: Ignored long tests
 # tools/check_ignored_tests_in_ci.py fails if a new ignored test is not
 # reachable from a workflow.
 #
+# A selection that does not fit into the job limit still seeds the next run
+# (owner decision OD-L1-29): the run step writes the outcome and the input map
+# after every target, stops at its time budget, and the save step runs also
+# when the job is cancelled. The next run maps the targets that were measured
+# and runs the ones that were not, the stopped one last.
+#
 # No path filter on the triggers: a measured input can be any tracked file
 # (research/, docs/, fixtures/, tools/ and more), and a run whose changes
 # affect no test ends after the selection step.
@@ -45,10 +51,12 @@ jobs:
     runs-on: ubuntu-latest
     # The whole-workspace run took 67 and 95 minutes on hosted runners
     # (2026-11-23) without coverage instrumentation; a selection is shorter.
+    # With coverage and strace it did not end within 330 minutes (CI triage
+    # 12.2, 12.3): the run step stops at its time budget (below).
     timeout-minutes: 330
-    # Queued, never cancelled (OD-L1-21): a cancelled run leaves no outcome,
-    # so the next run would repeat its selection. GitHub keeps the newest
-    # pending run of the group, so pushes coalesce.
+    # Queued, never cancelled (OD-L1-21): a cancelled run keeps only the
+    # targets it finished, so the next run would repeat the rest. GitHub keeps
+    # the newest pending run of the group, so pushes coalesce.
     concurrency:
       group: ignored-tests-${{ github.ref }}
       cancel-in-progress: false
@@ -64,6 +72,10 @@ jobs:
       PR_BASE: ${{ github.event.pull_request.base.sha }}
       FULL: ${{ (github.event_name == 'workflow_dispatch' && inputs.full) || github.ref == 'refs/heads/main' }}
     steps:
+      # The time budget of the run step counts from the start of the job
+      # (OD-L1-29); this is the first step.
+      - name: Record the start of the job
+        run: echo "JOB_STARTED_AT=$(date +%s)" >> "$GITHUB_ENV"
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -126,14 +138,24 @@ jobs:
         run: |
           python3 -u tools/ci/select_tests.py control --selection selection.json --target rodas5p-integrators:stage_clients_krylov_contracts --test merged_hook_solution_meets_the_protected_threshold --signature 'the merged hook accepted a stage solution with residual' --profile measurement --work-dir "$RUNNER_TEMP/ci-control-stop-diff" --map-out control-stop-diff.json --failed-file failed-controls.txt
       # The two tests that fail by design are skipped here; the two steps above
-      # run them. One cargo test --no-fail-fast per target, measured.
+      # run them. One cargo test --no-fail-fast per target, measured; the
+      # outcome and the input map are written after every target.
+      # Time budget (OD-L1-29): no target starts after 320 minutes from the
+      # start of the job, and the target still running then is stopped. The
+      # 10 minutes to the limit cover the work after the budget: on hosted
+      # runners the measurement of one target took at most 72.5 s, the steps
+      # after this one at most 2 s each (V4_NOTES R40). A run that its budget
+      # stops saves its outcome and fails: the targets it did not run run in
+      # the next run.
       - name: Run the selected ignored tests in the measurement profile
         if: ${{ !cancelled() }}
         env:
           RAYON_NUM_THREADS: '1'
-        run: python3 -u tools/ci/select_tests.py run --selection selection.json --mode ignored --profile measurement --skip prothero_robinson_wfiltered_enforce_kill_gate --skip merged_hook_solution_meets_the_protected_threshold --measure --baseline baseline.json --work-dir "$RUNNER_TEMP/ci-measure" --control-maps control-kill-gate.json control-stop-diff.json --failed-controls failed-controls.txt --map-out map.json --outcome outcome.json
+        run: python3 -u tools/ci/select_tests.py run --selection selection.json --mode ignored --profile measurement --skip prothero_robinson_wfiltered_enforce_kill_gate --skip merged_hook_solution_meets_the_protected_threshold --measure --baseline baseline.json --work-dir "$RUNNER_TEMP/ci-measure" --control-maps control-kill-gate.json control-stop-diff.json --failed-controls failed-controls.txt --map-out map.json --outcome outcome.json --budget-minutes 320 --started-at "$JOB_STARTED_AT"
+      # Also when the job is cancelled or timed out: the outcome and the map
+      # then describe every target that finished (OD-L1-29).
       - name: Keep the outcome and the input map for the next run
-        if: ${{ !cancelled() }}
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ci-test-outcome-ignored-tests
