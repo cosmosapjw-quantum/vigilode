@@ -1,0 +1,50 @@
+{
+  "schema": "vigilode.ks-n7-protocol.v1",
+  "task": "KS-N7 (owner-host timing cell)",
+  "written_kst": "2026-11-25 11:46",
+  "status": "frozen before any measured cell; committed and pushed before the series starts",
+  "authority": "owner 2026-11-25 09:21 KST: 남은 노드들을 이어서 마저 진행해. 수정은 전부 승인할게.",
+  "plan": {
+    "path": "research/kernel_spectral_foundation_20261124/PLAN.json",
+    "sha256": "fb33a4184fcdcbc049c29d105d4632829f664e79169c089e49e6081c19295abd",
+    "question": "The box solve transforms a real field as complex data; does pairing rows (the involution of section 2.3) halve its FFT work without changing the backward error?",
+    "acceptance": ["T1/T2 bounds unchanged (decided by the tests merged in d8fbc073 and 403863dd: PASS)", "box stage solve time <= 0.6 of the current one at 256x256"],
+    "kill": "no gain at 256x256",
+    "fallback": "full complex transform"
+  },
+  "code_under_test": {
+    "head": "646d0614 (KS-N7 merged at d8fbc073, fixes 403863dd)",
+    "separable_rs_sha256": "6c8415c5d9b973270baaaea91d7c5796973e7dbf5110f9184c60d2056282563b",
+    "test_file_sha256": "33280db5a4e3f02203a4811031a4fca378276377efd4d2cf39d99cfb9f340657",
+    "binary": "/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/ws/release/deps/spatial_separable-3d3a502cd0e35586 (sha256 8b43c000141b481a06cf2f2dfb50aac352d65034be99c42018c6080db02e74e2; built 11:35:27 KST by cargo +1.94.1 test --locked -p vigilode --release from the sources of 403863dd)"
+  },
+  "scope": "the prepared stage solver (SeparableStages::stage_solver(z): plans and buffers built once and reused, as in the driver), Trusted mode, z = 1/(1e-2 gamma) with gamma = 0.21193756319429014, right-hand side noise(n, 5); review finding F4 of KS-N7",
+  "arms": {"complex": "BoxTransform::Complex (the current default)", "paired": "BoxTransform::PairedReal"},
+  "cells": [
+    {"id": "256x256", "grid": "256x256", "N": 1000, "deciding": true},
+    {"id": "128x128x64", "grid": "128x128x64", "N": 50, "deciding": false}
+  ],
+  "process": "KS_N7_ARM=<arm> KS_N7_GRID=<grid> KS_N7_SCOPE=prepared KS_N7_SOLVES=<s> perf stat -x, -e instructions:u,cycles:u,task-clock -o <csv> -- taskset -c 8 <binary> measure_box_transform_one_arm --exact --ignored --nocapture",
+  "per_solve": {
+    "wall": "median_s of the KS_N7_MEASURE line of the process with 1 + N solves (the per-solve median timed inside the process; preparation outside)",
+    "instructions_and_cycles": "(C(1 + N) - C(1)) / N"
+  },
+  "rounds": 3,
+  "order": "cells 256x256 then 128x128x64; rounds 1 and 3: complex then paired; round 2: paired then complex; within an arm: solves 1 then 1 + N",
+  "load_rule": "no waiting; the 1-minute load average is recorded before every process. The wall ratio of a cell is decidable if every process it uses started at load <= 3.0, or if the ratio is <= 0.3 or >= 1.2 (a factor-2 margin around the thresholds 0.6 and 1.0); otherwise it is NOT_DECIDABLE.",
+  "statistic": "ratio = median over rounds of paired median_s / median over rounds of complex median_s; per-round ratios reported; the instruction ratio and the analytic FFT-line ratio (0.502 at 256x256, from the builder's notes) are reported, not decided on",
+  "verdict": {
+    "PASS": "decidable and ratio <= 0.6 at 256x256, and every KS_N7_MEASURE line has max_backward_error <= 1e-13",
+    "KILL": "decidable and ratio >= 1.0 at 256x256",
+    "FAIL": "decidable and 0.6 < ratio < 1.0",
+    "NOT_DECIDABLE": "the wall ratio at 256x256 is not decidable",
+    "INVALID": "a process failed or a backward error exceeds 1e-13",
+    "after_PASS": "the default may change to PairedReal only after review finding F5 is closed (the transform recorded in SeparableReport or the client id); that change is a separate commit with its own tests"
+  },
+  "pilot_before_this_protocol": "the builder's diagnostic smoke (256x256 prepared median 0.295 ms paired vs 1.472 ms complex; perf 3.73e6 vs 9.67e6 instructions per solve) and the independent review's rerun (instructions 0.385, cycles 0.21) were known; the orchestrator ran one plumbing process at 64x64 (paired, 5 solves) to check the binary",
+  "outputs": {
+    "raw": "research/kernel_spectral_foundation_20261124/owner_host/logs/ks_n7/",
+    "parser": "python3 -I research/kernel_spectral_foundation_20261124/owner_host/parse_ks_n7.py",
+    "results": ["research/kernel_spectral_foundation_20261124/results/KS_N7_OWNER_HOST.jsonl", "research/kernel_spectral_foundation_20261124/results/KS_N7_OWNER_HOST.json"]
+  }
+}
