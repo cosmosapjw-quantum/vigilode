@@ -141,3 +141,84 @@ THE LIST WITH TODAY'S CODE (the A recording, CheckColourings::of of every declar
   (> n in 133, == n in 51), worst 111 for n = 60 (1.85 n, bandwidth (27, 27): the band construction 55 + 56).
 - V29 program meta (default_coloured of banded(4, 1, 1)) and the V31 meta probes: total_groups of banded(4, 1, 1)
   is 4 = n and of banded(60, 27, 27) is 60 = n (expected to become All in B); banded(16, 2, 2): 11 < 16.
+
+== 2026-11-25 10:10, entry 4 (the change, recording B, tests, checks, results; final state of this session) ==
+
+COMMITS
+- 4ca979f7 (09:56) the change and the two pins of existing tests; 63170db9 (09:56) the new tests; cc875d68 (09:59)
+  logs/*_B_*.log (binaries rebuilt at 63170db9, 0 tracked changes, same program sources as A); 7f1a1249 run.sh doc.
+- this commit: logs/unit.log, checks.log, doc.log, checker_all.log, parse_results.py; then RESULTS.json and
+  REPORT_KO.md from the parser.
+
+THE CHANGE (assembly.rs, assembly/multi.rs)
+- AssemblyOptions::default_first_use_check(Coloured(pattern)) = All if CheckColourings::total_groups_of(pattern) >=
+  pattern.n(), else MultiColouring; Dense -> Sample(8) unchanged. coloured() takes it; threaded() and
+  with_fingerprints() keep it; with_first_use_check() replaces it; MC on a wide pattern stays selectable
+  (first-use check, request_check, verify), AllPooled and MC_P too.
+- CheckColourings::total_groups_of (new public function): min(total of the band construction, total of the
+  refinement construction) from colour_columns(pattern), pattern.bandwidth() and n, without building the tuple map.
+  The two totals are computed by band_plan and refinement_plan, now shared with from_parts (the same expressions
+  moved into helpers; the colourings built are unchanged: B equals A in every check_colourings record of the
+  survey, the supplement and the corpus cases that keep MC).
+- Decision taken in the change: the rule lives in default_first_use_check (options construction), not in
+  AssemblyStageClient::new, because an explicit with_first_use_check(MultiColouring) must stay MC; the pattern is
+  owned by the options, so no client and no right-hand side is needed. A client whose default became All builds
+  no further colourings in new() (prepare_multi runs only for an MC first-use check); the full check uses the
+  engine's scratch (shifted, f1), so the sequential routes still allocate nothing after new().
+- With threads the default is All on the calling thread, as V29 made MC (not MC_P) the threaded default.
+- Rustdoc: module doc (Checks; Counters and allocation), CheckColumns, CheckColumns::All, ::MultiColouring,
+  default_first_use_check (the rule, the reason: All is exact up to rounding and costs n <= total_groups; at
+  equality the same; the V29 review count and the V31 survey count), coloured(), new(), total_groups_of.
+
+EXISTING TESTS (lines that pin the default of the coloured route; reasons in RESULTS.json tests.*)
+- stage_clients_assembly_default.rs:153 ring_pattern(16) -> ring_pattern(34) (16 = n picks All; 33 < 34 keeps MC,
+  the boundary n - 1).
+- stage_clients_assembly_default_alloc.rs:114 (now 114-122, one statement): All expected for ring_pattern(30)
+  (30 = n), MultiColouring for the three bands; the allocation assertions are unchanged.
+- Examined and unchanged: default.rs:309-317 (counts total_groups + base; ring 30 has total_groups 30 = n, so All
+  spends the same), default.rs:573-576 (reference MC; ring 30 true passes with 30 columns under both),
+  identity.rs:1034-1060 (refusals do not depend on the check).
+
+NEW TESTS
+- stage_clients_assembly_wide_band.rs (4 tests): the rule (wide random band of order 60, total_groups 111 > 60;
+  equality ring 16, ring 30, band (1, 1) of order 4, band (15, 15) of order 60; MC kept for ring 34 (33), bands
+  (2, 2)/16, (1, 1)/12, (24, 24)/4096, (2, 2)/131072 and a declared dense pattern (0 groups); dense route
+  Sample(8); total_groups_of = CheckColourings::of(..).total_groups() on 168 random patterns, 97 with All, 71 with
+  MC); a client whose default became All runs it once (n right-hand sides, +1 threaded; Jacobian bits equal to an
+  unchecked client; dense LU and both band kernels); every one of the 252 single-entry omissions of the wide
+  pattern is detected by the default (All for all 252; 102 found by the check, the rest by the build) and by the
+  explicit All and MC; every check stays selectable (counts of each).
+- stage_clients_assembly_wide_band_alloc.rs (1 test, own binary): 0 allocations at the first and two later
+  linearizations for the All default (wide random band, ring 30, band (15, 15) on both band kernels) and the MC
+  control ring 34, equal to a client without a check; a requested MC check allocates (12 or 14) on the All
+  clients: the counter-example.
+
+RESULTS (parse_results.py; all four discriminators PASS)
+- identity unchanged: 36 runs, 0 field mismatches between A and B (bits and every counter, the check counters
+  included); commit A equals the V29 B recording in 36/36 runs and 4846/4846 corpus cases.
+- rule per route: 0 mismatches over identity runs, corpus decisions, 378 survey patterns, 799 supplement cases.
+- corpus: the rule picks All on the 6 correct ring patterns (total_groups = n); their decisions and check costs are
+  equal in A and B (n, n + 1 threaded); the other 4840 cases are identical; detected by A and not by B: 0; misses A
+  = misses B = 5 (the sequential dense impure control on the first-use path, unchanged, and the rounding-limited
+  omit1024/e3072-r768-c769 on both paths and executions); correct patterns rejected: 0.
+- supplement: 799 cases, the rule picks All on 612 (574 wrong); detected by A and not by B: 0; misses 0; correct
+  rejected 0; the explicit checks equal in A and B. Passing check cost on the random patterns with total_groups >
+  n: A 2354, B 1608 right-hand sides (seq). On wrong declarations the full check can spend more right-hand sides
+  before it fails than MC (random omissions with total_groups > n: rhs_calls 6823 A, 7782 B, seq); the decision is
+  the same.
+- survey: 378 patterns, total_groups >= n in 184 (> n 133, = n 51), worst 111 = 1.85 n; default check right-hand
+  sides summed A 70871, B 62792 (n summed 80892); every full band in the survey has total_groups <= n.
+- checks (checks.log at cc875d68, 0 tracked changes): stage_clients_* + sentinels --no-fail-fast exit 0, 34
+  binaries, 157 passed, 0 failed, 15 ignored (V29: 31 binaries 152 passed 14 ignored; +3 binaries, +5 tests,
+  +1 ignored recording program); clippy -D warnings on the library and all 13 stage_clients_assembly_* targets
+  exit 0; fmt exit 0; rustdoc 23 warnings, none in the assembly files; loop checker exit 1, "ValueError:
+  implementation changed; rerun affected tests/update checkpoint:
+  crates/rodas5p-integrators/src/stage_clients/assembly.rs", the only complaint (checker_all.py), a pinned file
+  this node is allowed to change.
+
+OPEN / FOR THE OWNER AND THE REVIEW
+- All is exact up to rounding, but in general a rounding-limited omission whose single-column effect is lost while
+  a multi-column shift changes a bit could be caught by MC and missed by All; no such case occurred in the corpus or
+  the supplement (detected by A and not by B: 0).
+- The CHECKPOINT pin of assembly.rs must be updated after the merge (orchestrator); multi.rs is not pinned.
+- Independent review is required by the contract (completion_requires).
