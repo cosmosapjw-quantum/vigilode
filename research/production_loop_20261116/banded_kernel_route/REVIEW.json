@@ -1,0 +1,185 @@
+{
+ "schema": "vigilode.loop-l1.review.v1",
+ "node": "V22_FACADE_BANDED_KERNEL",
+ "reviewer": "independent read-and-run review agent of wave 4 group B (run wf_fdd7f935-265), resumed under owner decision OD-L1-30",
+ "date_kst": "2026-11-25",
+ "review": {
+  "node": "V22_FACADE_BANDED_KERNEL",
+  "verdict": "accept_with_corrections",
+  "summary": "Accept with corrections: the frozen verdict PASS is reproduced. PREDECLARED (213ce6e1 21:46:51, sha c7697b8b, unchanged) precedes every strip count (first x1 log 21:47:06) and the facade edit; golden commit A (21:52) precedes the edit; A5.1 (22:20) precedes the confirmation (01:20). My own parser over the 64 raw logs: 39 scan logs, 75 pairs, 0 differences, 0 conflicts across 44 family/size/budget keys of runners a and c; W=6 (w4 brstrip C 1.042, w5 C 1.032; w6 0.672/0.925 and 0.668/0.912); no trend rise; re-measurements only of non-authoritative cells, max 3; confirmation 0.638/0.884 authoritative; D4 0.225/0.394 (f2 authoritative), identity holds; 0 mismatches vs RESULTS.json; RESULTS/REPORT regenerate byte-identically. Re-ran D1 5 ok, route contracts 3 ok, default_path_golden 11 ok, sentinels + 6 banded targets 111 ok, fmt/clippy exit 0; the commit-A tree rebuilt reproduces its golden. Rulings move no threshold. Corrections are record-level: BINARIES.json omits runners a/b and the 3 ms basis of A5.1 is unlogged; sentinel edit outside the allowlist (OD-L1-9); index-2 command unrecorded; W scope (one host, symmetric strips) unstated.",
+  "scope_ok": true,
+  "protected_ok": true,
+  "discriminator_checks": [
+   {
+    "name": "pre-registration precedes deciding measurements",
+    "builder_value": "PREDECLARED frozen 21:46 before any strip count and any driver/facade edit; A5.1 22:20 before any tag-c log",
+    "reviewer_value": "213ce6e1 committed 21:46:51 (author=committer date); PREDECLARED sha c7697b8b equals A5 and is unchanged to HEAD; first strip count drive_x1_acstrip1 time_start 21:47:06 (runner-a mtime 21:47:06); deciding s logs from 22:44:50; golden commit A 66c558a0 21:52:23 before first facade edit (runner-b 22:02 already W=8; a2e8e430 22:25:25); A5.1 c329133c 22:20:52 before drive_c1 01:20:48; thresholds in build_results.py set 22:25 and unchanged; shared helpers unchanged since the freeze",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "validity (equal counts, operations, state hash in every run)",
+    "builder_value": "39 logs, 75 pairs, 0 differences; 2 interrupted logs listed",
+    "reviewer_value": "own parser: 39 scan logs, 75 budget pairs, 0 differences, 0 defective complete logs; interrupted s1_acstrip1 (2 warm-up runs, no pair) and s1_acstrip2 (1 pair at budget 1); cross-log check over x1 (runner-a) and s1-s3 (runner-c): 44 (family,size,budget) keys, 0 signature conflicts",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "width scan and W",
+    "builder_value": "W = 6; widths 1-5 fail; 6-64 qualify; no trend rise",
+    "reviewer_value": "W = 6. Deciding cells (first authoritative of at most 3): w1 1.165/1.014, w2 0.982/1.137 and 0.981/1.146, w3 0.933/1.109, w4 0.795/0.942 and 0.791/1.042, w5 0.774/1.032 (s3), w6 0.672/0.925 and 0.668/0.912, w64 0.219/0.381 and 0.219/0.386; per-family and max-over-family R_I/R_C decrease monotonically from 6 (largest step -0.049); no cell re-measured after an authoritative one, none beyond index 3, every non-authoritative cell got its re-measurement; all 26 cell values equal RESULTS.json within 1e-12",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "small-n confirmation (A5.1, ac2dr 8)",
+    "builder_value": "R_I 0.638, R_C 0.884, first measurement authoritative, holds",
+    "reviewer_value": "R_I 0.6381065, R_C 0.8843035; spreads 0.021/0.022, load 0.98/0.98; 7 rounds; attempts 8000 vs 200 per run (200 integrations x 40); kernels give one signature at both budgets (hash of the last repetition, counts summed)",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "D1 identity of the twins",
+    "builder_value": "5 tests pass",
+    "reviewer_value": "re-run at d4e2772f: 5 passed, printed counters identical to logs/d1_identity.log; test compares bits of outputs, partial state, counters, band work, LU record, segments, stage rows, interior work, driver ids",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "D2 facade bits and labels",
+    "builder_value": "64 records vs commit 66c558a0: 28 changed in entry_point+driver_id only (bands >= 6), 36 unchanged",
+    "reviewer_value": "re-run: 3 passed (V22_D2_LABELS width=6 slices=28 indexed=36). Own comparison of golden at 66c558a0 vs 1cd674a6/HEAD: 28 records differ only in the two labels, exactly bands with min(lower,upper) >= 6; 36 identical incl. (1,8),(8,1),(1,16),(16,1); commit A records all carry Indexed labels; commit-A tree (git archive) built in a separate target dir reproduces its golden sha d708c410 (1 passed)",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "D3 no change elsewhere",
+    "builder_value": "fmt/clippy clean; 342 integrators + 536 facade tests pass; default-path golden unchanged",
+    "reviewer_value": "raw-log recount 38 binaries 342/0/14 and 59 lines 536/0/0; golden dir unchanged 213ce6e1..HEAD except the new banded_kernel_route file; re-run default_path_golden 11 passed (9 files identical); ppsw1_6b (37) and ptsw2b (24) plus 6 banded targets omitted by verify.sh: 111 passed; fmt exit 0, clippy facade all-targets 0, clippy integrators lib+identity 0; check_checkpoint PASS",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "D4 facade speed",
+    "builder_value": "0.225 instructions, 0.394 cycles (f2 authoritative), equal counts and hash",
+    "reviewer_value": "f1 diagnostic (direct cycle spread 0.98), f2 authoritative: R_I 0.2252089, R_C 0.3937586 (thresholds 0.60/0.75); attempts/accepted/rejected/hash equal at budgets 1 and 16; facade driver -slices, direct indexed; runner-d functionally holds W=6 (acstrip 6 facade -> slices), runner-c W=8",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "rulings after data (parser validity correction, timing of third measurements)",
+    "builder_value": "no threshold touched; host-only wait",
+    "reviewer_value": "cb9f36d0 parser change only stops counting a footer-less log as a difference (frozen text: a difference between kernels); no threshold, load or spread constant changed after the freeze; third measurements chosen by the quality rule only and decided W=6 rather than 5 (conservative)",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   }
+  ],
+  "reran": [
+   {
+    "command": "flock ... taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test banded_kernel_entry_identity -- --nocapture (CARGO_TARGET_DIR=.../w4-v22-review, HEAD d4e2772f)",
+    "exit_code": 0,
+    "result": "5 passed, 0 failed; V22_D1 lines identical to logs/d1_identity.log"
+   },
+   {
+    "command": "flock ... cargo +1.94.1 test --locked -j 4 --release -p vigilode --test banded_kernel_route_contracts --test default_path_golden -- --nocapture",
+    "exit_code": 0,
+    "result": "3 passed (width=6 slices=28 indexed=36) + 11 passed (9 golden files identical)"
+   },
+   {
+    "command": "git archive 66c558a0 (Cargo.toml Cargo.lock crates fixtures .cargo rust-toolchain.toml) into scratch; cargo +1.94.1 test --locked -j 4 --release -p vigilode --test banded_kernel_route_contracts (CARGO_TARGET_DIR=.../w4-v22-review/commitA_66c558a0)",
+    "exit_code": 0,
+    "result": "1 passed: pre-edit code reproduces commit-A golden sha256 d708c410"
+   },
+   {
+    "command": "flock ... cargo +1.94.1 test --locked -j 4 --release --no-fail-fast -p rodas5p-integrators --test a1_zero_tolerance_scale --test lrs_block_solver_contracts --test lrs_photon_fv_contracts --test lrs_photon_remap_contracts --test spd01_overhead --test sphere_photon_fv_contracts --test ppsw1_6b_contracts --test ptsw2b_contracts",
+    "exit_code": 0,
+    "result": "8 binaries, 111 passed, 0 failed"
+   },
+   {
+    "command": "cargo +1.94.1 fmt -p vigilode -p rodas5p-integrators -- --check; cargo +1.94.1 clippy --locked -j 4 -p vigilode --all-targets --release --no-deps -- -D warnings; cargo +1.94.1 clippy --locked -j 4 -p rodas5p-integrators --lib --test banded_kernel_entry_identity --release --no-deps -- -D warnings",
+    "exit_code": 0,
+    "result": "fmt 0, clippy facade 0, clippy integrators 0"
+   },
+   {
+    "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
+    "exit_code": 0,
+    "result": "PASS: strict JSON, task/DAG structure, ancestry, protected and evidence identities"
+   },
+   {
+    "command": "python3 -I scratchpad/review_V22/recompute.py <banded_kernel_route> recompute_out.json (reviewer's own parser, no import of build_results)",
+    "exit_code": 0,
+    "result": "W=6, validity 75 pairs 0 differences, confirmation holds, D4 PASS_I/PASS_C, 0 mismatches against RESULTS.json"
+   },
+   {
+    "command": "copy of banded_kernel_route + banded_solve/*.py in scratch: python3 -I build_results.py; python3 -I build_report.py; cmp with committed files",
+    "exit_code": 0,
+    "result": "RESULTS.json and REPORT_KO.md byte-identical"
+   },
+   {
+    "command": "v22-runner-{b,c,d} drive acstrip {5,6,8} facade 1; v22-runner-{a,b,c} drive ac2dr 8 indexed 1 (functional label check, 1 attempt, not a timing measurement)",
+    "exit_code": 0,
+    "result": "runner-b/c: W=8; runner-d: W=6; runners a/b lack ac2dr (panic: unknown family), runner-c output equals the c1 log signature at budget 1"
+   }
+  ],
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "minor",
+    "claim": "BINARIES.json is incomplete and the basis of amendment A5.1 is not logged.",
+    "evidence": "Target dir v22/ holds four runners: a (sha 5aa0fa91..., mtime 21:47:06, named in all 22 x1 log headers), b (sha acdbdf9c..., 22:02:03, facade constant 8, no ac2dr family; not in any log or record), c (aee3eaf3..., 22:19:58, i.e. built 5.5 min before commit a2e8e430 that BINARIES.json names), d (739e398c...). A5.1 states one ac2d 8 run lasts about 3 ms; no log holds that figure (no ac2d 8 log in banded_solve/logs or the orchestrator scratch). No tag-c log predates A5.1, the c1 data are consistent with the rationale (about 0.84 ms CPU per integration), and A5.1 changes no threshold.",
+    "correction": "List runner-a and runner-b in BINARIES.json with hash and use (state what runner-b ran, if anything), say runner-c was built from the working tree that became a2e8e430, and record where the 3 ms figure came from."
+   },
+   {
+    "id": "F2",
+    "severity": "minor",
+    "claim": "A protected sentinel was edited outside the node's write allowlist and outside the protected-file list of A5.",
+    "evidence": "a2e8e430 edits crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs (allowed-block list of g3); TASK_CONTRACTS write_allowlist and PREDECLARED protected_files_edited_under_OD-L1-9 do not name it (nor the integrators lib.rs in A5). The OD-L1-9 text authorizes re-pinning sentinels; SENTINEL_REPIN.json hashes verified (before 7adf878c, after 849fc0c7; lib.rs a5637a0c -> 2ff6aa4f; stripped lib.rs = pin 1ad6c849); g3 passes at HEAD.",
+    "correction": "Add the sentinel path to the V22 allowlist or record the exception under OD-L1-9 in the task contract."
+   },
+   {
+    "id": "F3",
+    "severity": "minor",
+    "claim": "The index-2 series has no command record, and the ledger command of L-0334 does not reproduce the runs.",
+    "evidence": "No driver output exists for the 12 s2 cells (23:27-23:37); L-0334 lists run_scan_quiet.sh index 1 and finish_scan.py 'scan confirm d4', while finish_scan.out and finish_d4.out show 'scan confirm d4-if-final' and then 'd4'. My own check shows the 12 re-measured cells are exactly the 10 non-authoritative plus 2 interrupted index-1 cells, and the 5 index-3 cells exactly the remaining non-authoritative ones.",
+    "correction": "Record the index-2 command (quiet_measure.sh per cell, cell list) and correct the ledger command text."
+   },
+   {
+    "id": "F4",
+    "severity": "minor",
+    "claim": "Two rulings were made after data were seen. Neither moves a threshold, and both follow the frozen text.",
+    "evidence": "The validity correction (cb9f36d0, after index 2) stops counting the two footer-less logs (warm-up runs only, stopped on host load and lock contention) as differences; the earlier code would have returned validity false, which means KILL. The frozen rule names differences between kernels, and my implementation of it finds none. The quiet-host timing of the third measurements made the cells of widths 12, 32 and 64 decidable; the wait read only load and lock, and the third acstrip5 measurement (1.032) set W = 6 rather than 5. Thresholds 0.95/0.03/1.00/0.60/0.75, load 8 and spread 0.10 are unchanged since the freeze.",
+    "correction": "None to the verdict; keep both rulings visible in the results section, as now."
+   },
+   {
+    "id": "F5",
+    "severity": "minor",
+    "claim": "The scope of W is narrower than the documentation states.",
+    "evidence": "W rests on symmetric strips at n about 8192, measured on one host and one pinned core. At w = 6 the cycle margins below 0.95 are 0.025 (acstrip, authoritative only at measurement 2; measurement 1 gave 0.805) and 0.038 (brstrip). The frozen confirmation tests band 8 at n = 64 only, so bands 6-7 at small n, asymmetric bands with both sides >= 6, and other CPUs were not measured. With the instruction criterion alone W would be 3, so cycles decide widths 3-5. The doc comment of BANDED_SLICES_MIN_HALF_WIDTH says 'every scanned problem' without naming the host.",
+    "correction": "State the host, core and family scope of W in REPORT_KO.md, the ledger claim and the constant's documentation."
+   },
+   {
+    "id": "F6",
+    "severity": "minor",
+    "claim": "D3 and D2 leave some coverage gaps. None of them changes a result.",
+    "evidence": "verify.sh did not run six integrator targets that call the banded driver (a1_zero_tolerance_scale, lrs_block_solver_contracts, lrs_photon_fv_contracts, lrs_photon_remap_contracts, spd01_overhead, sphere_photon_fv_contracts); I ran them at HEAD with both sentinels: 111 passed. The D2 golden has no banded SparseJvp provider and no (5,5)/(7,7) band; the boundary W-1/W is covered only by the_kernel_changes_at_the_declared_width (scalar endpoint). The provisional run w8a (sentinel g3 and clippy failures) is kept in the logs but is not mentioned in the report.",
+    "correction": "Optional: add the six targets to verify.sh; mention w8a in the report."
+   },
+   {
+    "id": "F7",
+    "severity": "minor",
+    "claim": "Reviewer note: a tool hook left gitignored caches in the read-only review worktree.",
+    "evidence": "research/production_loop_20261116/{banded_kernel_route,banded_solve}/.mypy_cache appeared at 11:02-11:03 while I read the .py files. They are gitignored and no tracked file changed (git status clean at d4e2772f). I did not delete them, to avoid further writes.",
+    "correction": "The orchestrator may delete the two .mypy_cache directories or the detached worktree."
+   }
+  ]
+ },
+ "orchestrator_disposition": {
+  "F1": "corrected: BINARIES.json key corrections_after_review lists runner-a and runner-b with sha256 and use, the build of runner-c from the working tree of a2e8e430, and the unlogged basis of A5.1",
+  "F2": "recorded: the edit of the protected sentinel crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs in a2e8e430 (allowed-block list of g3) is entered as an exception under OD-L1-9 in TASK_CONTRACTS.json (node V22, field post_review_exceptions); SENTINEL_REPIN.json holds the hashes",
+  "F3": "recorded here and in ledger row L-0344: index 2 ran quiet_measure.sh once per cell with runner-c, budget 60, index 2, tag s, for the 12 cells acstrip 1, acstrip 2, acstrip 5, acstrip 6, acstrip 8, acstrip 24, acstrip 32, acstrip 64, brstrip 1, brstrip 6, brstrip 16, brstrip 32 (the 10 non-authoritative cells of index 1 and the 2 interrupted ones; log headers drive_s2_*.jsonl, time_start 23:27 to 23:37 KST); the command field of L-0334 names 'finish_scan.py <runner> scan confirm d4', while the runs used 'scan confirm d4-if-final' and then 'd4' (finish_scan.out, finish_d4.out)",
+  "F4": "no action (no threshold moved; both rulings stay visible)",
+  "F5": "corrected: the scope of W (one host, core 9, symmetric strips near n = 8192, small-n confirmation at band 8 and n = 64 only, cycles decide widths 3 to 5) is stated in the notice of REPORT_KO.md and in ledger row L-0344; the doc comment of BANDED_SLICES_MIN_HALF_WIDTH (crates/vigilode/src/solve.rs) is corrected at the wave-4 group B merge, after V23 (which edits solve.rs) is merged",
+  "F6": "not done (optional): the reviewer ran the six banded targets missing from verify.sh (111 passed)",
+  "F7": "the read-only review worktree vigilode-prod-loop-20261116-w4-v22review (detached at d4e2772f; only gitignored caches added) is removed at the closeout of the loop"
+ }
+}

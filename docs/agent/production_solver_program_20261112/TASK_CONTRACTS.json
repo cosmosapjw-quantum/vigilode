@@ -1521,7 +1521,10 @@
       "evidence": [
         "research/production_loop_20261116/banded_kernel_route/RESULTS.json"
       ],
-      "state_note": "Frozen verdict PASS (ledger L-0334): W = 6, the small-n confirmation holds, D1 to D4 hold. Run by the orchestrator session. The independent review of this node has NOT run: the owner asked for a pause on 2026-11-23 23:29 KST before it was launched; it is the first step when the loop resumes (orchestration/wave2_group5.js with review_v22 = true)."
+      "state_note": "Frozen verdict PASS (ledger L-0334): W = 6, the small-n confirmation holds, D1 to D4 hold. Run by the orchestrator session. The independent review of this node has NOT run: the owner asked for a pause on 2026-11-23 23:29 KST before it was launched; it is the first step when the loop resumes (orchestration/wave2_group5.js with review_v22 = true). Independent review (wave 4 group B, 2026-11-25): accept_with_corrections, verdict PASS reproduced; record-level corrections F1-F7 in banded_kernel_route/REVIEW.json.",
+      "post_review_exceptions": [
+        "OD-L1-9 exception recorded after the independent review (2026-11-25, REVIEW.json F2): commit a2e8e430 edited the protected sentinel crates/rodas5p-integrators/tests/ppsw1_6b_contracts.rs (allowed-block list of g3), which this write_allowlist and the protected-file list of the pre-registration do not name; OD-L1-9 authorizes re-pinning sentinels, the hashes are in research/production_loop_20261116/banded_kernel_route/SENTINEL_REPIN.json, and g3 passes at the head"
+      ]
     },
     {
       "id": "V23_CAPABILITIES_TRUTH",

@@ -1,20 +1,39 @@
 {
-  "schema": "vigilode.loop-l1.v22-binaries.v1",
-  "node": "V22_FACADE_BANDED_KERNEL",
-  "runner_source": "research/production_loop_20261116/banded_solve/runner",
-  "binaries": [
-    {
-      "name": "v22-runner-c",
-      "sha256": "aee3eaf32622d810377e0c8e20eca6f2e69e5575c815eb7584e8296c147a2d09",
-      "built_from": "commit a2e8e430 (facade constant 8, provisional)",
-      "used_for": "the deciding series of the width scan (tag s, indices 1 to 3) and the confirmation cell (tag c): the arms indexed and slices call the driver directly, so the facade constant is not on their path"
-    },
-    {
-      "name": "v22-runner-d",
-      "sha256": "739e398cbda1967a5bd9faacf7d5c25b40dc535f3b121522887140961b7dc867",
-      "built_from": "the tree of commit 1cd674a6bcf18eb15b0e2d4b24f0ee1137f83ac7 (facade constant 6, final); a rebuild at that commit is a no-op and gives the same hash",
-      "used_for": "D4 (tag f): the facade against the direct Indexed call"
-    }
+ "schema": "vigilode.loop-l1.v22-binaries.v1",
+ "node": "V22_FACADE_BANDED_KERNEL",
+ "runner_source": "research/production_loop_20261116/banded_solve/runner",
+ "binaries": [
+  {
+   "name": "v22-runner-c",
+   "sha256": "aee3eaf32622d810377e0c8e20eca6f2e69e5575c815eb7584e8296c147a2d09",
+   "built_from": "commit a2e8e430 (facade constant 8, provisional)",
+   "used_for": "the deciding series of the width scan (tag s, indices 1 to 3) and the confirmation cell (tag c): the arms indexed and slices call the driver directly, so the facade constant is not on their path"
+  },
+  {
+   "name": "v22-runner-d",
+   "sha256": "739e398cbda1967a5bd9faacf7d5c25b40dc535f3b121522887140961b7dc867",
+   "built_from": "the tree of commit 1cd674a6bcf18eb15b0e2d4b24f0ee1137f83ac7 (facade constant 6, final); a rebuild at that commit is a no-op and gives the same hash",
+   "used_for": "D4 (tag f): the facade against the direct Indexed call"
+  }
+ ],
+ "directory": "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v22 (not in the repository)",
+ "corrections_after_review": {
+  "source": "independent review of V22 (REVIEW.json, finding F1), 2026-11-25; the entries above are unchanged",
+  "missing_binaries": [
+   {
+    "name": "v22-runner-a",
+    "sha256": "5aa0fa91c9f12a9aefceb70bbb155fad3f413e28ba31651e04e5d43098f77e20",
+    "file_mtime_kst": "2026-11-23 21:47:06",
+    "used_for": "the exploratory series x1 (the 22 drive_x1_*.jsonl logs name it in their headers); not used for any deciding cell"
+   },
+   {
+    "name": "v22-runner-b",
+    "sha256": "acdbdf9cb5261aaa81441a62d69d23b1d9bc6937314ae12ec5d38bf2be4467ac",
+    "file_mtime_kst": "2026-11-23 22:02:03",
+    "used_for": "nothing recorded: no log or record names it (facade constant 8, no ac2dr family); it was superseded by runner-c"
+   }
   ],
-  "directory": "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/v22 (not in the repository)"
+  "runner_c_build": "v22-runner-c (file time 2026-11-23 22:19:58 KST) was built from the working tree that became commit a2e8e430 (committed 22:25:25), not from the commit itself",
+  "amendment_a5_1_basis": "the figure 'one run of ac2d 8 with 60 attempts lasts about 3 ms' in AMENDMENT_1.json is not backed by a log; the confirmation data (drive_c1_ac2dr8.jsonl) give about 0.84 ms of CPU per integration, consistent with the rationale that one run is too short for a cycle count; the amendment changes no threshold"
+ }
 }

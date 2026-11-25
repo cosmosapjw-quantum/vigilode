@@ -3,6 +3,8 @@
 - 사전등록: `PREDECLARED.json`, 수정 조항 `AMENDMENT_1.json` (확인 셀 반복 실행). 수치는 전부 `RESULTS.json`에서 읽었다.
 - 두 커널(Indexed, Slices)은 같은 부동소수점 연산을 같은 순서로 한다. 바뀌는 것은 속도와 경로 라벨뿐이다.
 
+> 정정 공지 (2026-11-25, 독립 리뷰 `REVIEW.json` 이후, 판정은 그대로): W = 6은 이 host(Ryzen 9 5900X, 측정 core 9)에서 대칭 strip 두 계열(n 약 8192)로 정한 값이다. 폭 6에서 cycles 기준 0.95까지 남은 여유는 0.025(acstrip, 두 번째 측정에서 권위)와 0.038(brstrip)이다. instructions 기준만 쓰면 W는 3이고, 폭 3에서 5까지는 cycles가 정한다. small-n 확인은 n = 64에서 띠 8만 쟀다. n이 작을 때의 띠 6과 7, 양쪽이 모두 6 이상인 비대칭 띠, 다른 CPU는 재지 않았다. 쓰인 binary 목록은 `BINARIES.json`의 `corrections_after_review`에 runner-a와 runner-b를 더해 바로잡았다. index 2 측정 명령은 `REVIEW.json`의 처리 기록에 있다.
+
 ## 1. 결론
 
 - 폭 W = 6. 아래 띠와 위 띠가 모두 6 이상이면 Slices, 아니면 지금처럼 Indexed.
