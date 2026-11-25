@@ -1,0 +1,615 @@
+--- a/crates/vigilode/src/dae_evolution.rs
++++ b/crates/vigilode/src/dae_evolution.rs
+@@ -701,7 +701,171 @@
+     derivative: GuardDerivativeRoute,
+     value: GuardValueRoute,
+ }
++/// Bounded opt-in handling of an ambiguous accepted-step endpoint.
++#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
++pub enum PendingMethod {
++    Hull,
++    Piecewise,
++    PiecewiseProbe,
++}
++#[derive(Clone, Copy, Debug, Serialize)]
++pub struct PendingPolicy {
++    pub method: PendingMethod,
++    pub max_slabs: usize,
++}
++#[derive(Clone, Copy, Debug, Serialize)]
++pub struct PendingSlab {
++    pub times: [f64; 2],
++    pub left: [f64; 2],
++    pub right: [f64; 2],
++    pub velocity: [f64; 2],
++    pub probe: Option<(f64, [f64; 2])>,
++    pub incoming_radius: f64,
++    pub outgoing_radius: f64,
++    pub safe_before: f64,
++}
++#[derive(Clone, Debug, Serialize)]
++pub struct PendingReport {
++    pub policy: PendingPolicy,
++    pub records: Vec<PendingSlab>,
++    pub candidate: Option<[f64; 2]>,
++    pub episodes: usize,
++    pub refinements: usize,
++    pub resolution: Option<&'static str>,
++    pub blocked_initial: bool,
++}
++struct PendingState {
++    report: PendingReport,
++    active_start: Option<usize>,
++}
++impl PendingState {
++    fn new(policy: PendingPolicy) -> CoreResult<Self> {
++        if !(1..=64).contains(&policy.max_slabs) {
++            return Err(bad("pending slab cap"));
++        }
++        Ok(Self {
++            report: PendingReport {
++                policy,
++                records: Vec::with_capacity(policy.max_slabs),
++                candidate: None,
++                episodes: 0,
++                refinements: 0,
++                resolution: None,
++                blocked_initial: true,
++            },
++            active_start: None,
++        })
++    }
++    fn active(&self) -> bool {
++        self.active_start.is_some()
++    }
++    fn room(&self) -> bool {
++        self.report.records.len() < self.report.policy.max_slabs
++    }
++    fn add(&mut self, r: PendingSlab) -> CoreResult<()> {
++        if !self.room() {
++            self.report.resolution = Some("slab-cap");
++            return Err(bad("pending slab cap exhausted"));
++        }
++        if let Some(i) = self.active_start {
++            let prev = self.report.records.last().expect("active pending record");
++            if i >= self.report.records.len()
++                || prev.times[1] != r.times[0]
++                || prev.right[0] > r.left[1]
++                || r.left[0] > prev.right[1]
++                || prev.outgoing_radius != r.incoming_radius
++            {
++                self.report.resolution = Some("inconsistent-boundary");
++                return Err(bad("inconsistent pending boundary or physical radius"));
++            }
++        } else {
++            if r.left[1] >= 0. {
++                return Err(bad("pending requires negative anchor"));
++            }
++            self.active_start = Some(self.report.records.len());
++            self.report.episodes += 1;
++            self.report.candidate = None;
++        }
++        self.report.records.push(r);
++        Ok(())
++    }
++    fn enclose(&mut self) -> CoreResult<[f64; 2]> {
++        let rs =
++            &self.report.records[self.active_start.ok_or_else(|| bad("pending not active"))?..];
++        let first = rs.first().ok_or_else(|| bad("empty pending"))?;
++        let last = rs.last().expect("pending records");
++        if first.left[1] >= 0. || last.right[0] <= 0. {
++            return Err(bad("missing strict physical signs"));
++        }
++        fn newton(t: f64, g: [f64; 2], v: Iv) -> CoreResult<Iv> {
++            Iv::point(t)?.sub(Iv::new(g[0], g[1])?.div(v)?)
++        }
++        fn meet(a: Iv, b: Iv) -> Option<Iv> {
++            let lo = a.lo.max(b.lo);
++            let hi = a.hi.min(b.hi);
++            (lo <= hi).then_some(Iv { lo, hi })
++        }
++        let mut n = 0;
++        let answer = match self.report.policy.method {
++            PendingMethod::Hull => {
++                let d = Iv::new(
++                    rs.iter()
++                        .map(|r| r.velocity[0])
++                        .fold(f64::INFINITY, f64::min),
++                    rs.iter()
++                        .map(|r| r.velocity[1])
++                        .fold(f64::NEG_INFINITY, f64::max),
++                )?;
++                if d.lo <= 0. {
++                    return Err(bad("pending nontransverse"));
++                }
++                let mut i = Iv::new(first.times[0], last.times[1])?;
++                for r in rs {
++                    for (t, g) in [(r.times[0], r.left), (r.times[1], r.right)] {
++                        n += 1;
++                        i = meet(i, newton(t, g, d)?)
++                            .ok_or_else(|| bad("inconsistent pending hull"))?;
++                    }
++                }
++                i
++            }
++            PendingMethod::Piecewise | PendingMethod::PiecewiseProbe => {
++                let mut hull: Option<Iv> = None;
++                for r in rs {
++                    let d = Iv::new(r.velocity[0], r.velocity[1])?;
++                    if d.lo <= 0. {
++                        return Err(bad("pending nontransverse"));
++                    }
++                    let i = Iv::new(r.times[0], r.times[1])?;
++                    n += 2;
++                    let a = newton(r.times[0], r.left, d)?;
++                    let b = newton(r.times[1], r.right, d)?;
++                    let mut local = meet(i, a).and_then(|i| meet(i, b));
++                    if let Some((t, g)) = r.probe {
++                        n += 1;
++                        let w = newton(t, g, d)?;
++                        local = local.and_then(|i| meet(i, w));
++                    }
++                    if let Some(i) = local {
++                        hull = Some(match hull {
++                            None => i,
++                            Some(j) => Iv {
++                                lo: i.lo.min(j.lo),
++                                hi: i.hi.max(j.hi),
++                            },
++                        });
++                    }
++                }
++                hull.ok_or_else(|| bad("inconsistent pending piecewise enclosure"))?
++            }
++        };
++        self.report.refinements += n;
++        self.report.candidate = Some(answer.as_pair());
++        Ok(answer.as_pair())
++    }
++}
+ struct ThresholdScan {
++    pending: Option<PendingState>,
+     threshold: f64,
+     guard: Option<DeclaredGuard>,
+     guard_slabs: Vec<GuardSlabEvidence>,
+@@ -869,6 +1033,89 @@
+         };
+         let ga = g(a, incoming)?;
+         let gb = g(b, outgoing)?;
++        if let Some(pending) = self.pending.as_mut() {
++            if self.work.inspected == 1 && ga.hi < 0. {
++                pending.report.blocked_initial = false;
++            }
++            if !pending.active() && ga.hi >= 0. {
++                if self.work.inspected == 1 {
++                    pending.report.blocked_initial = true;
++                }
++                pending.report.resolution = Some("uncertain-left");
++                return Err(bad("uncertain left guard"));
++            }
++            if pending.active() || (gb.lo <= 0. && gb.hi >= 0.) {
++                if !pending.room() {
++                    pending.report.resolution = Some("slab-cap");
++                    return Err(bad("pending slab cap exhausted"));
++                }
++                let probe = if pending.report.policy.method == PendingMethod::PiecewiseProbe {
++                    let mut t = a * 0.5 + b * 0.5;
++                    if self.route == ThresholdRoute::DictionaryHint {
++                        use rodas5p_integrators::retro_event_poly::{
++                            RepresentedPolynomial, RootRoute,
++                        };
++                        self.work.hint_calls += 1;
++                        let cp = proof
++                            .as_ref()
++                            .expect("declared pending guard")
++                            .hint_coefficients();
++                        if let Ok(r) = RepresentedPolynomial::from_power(&cp)
++                            .and_then(|r| r.isolate(RootRoute::DictionaryCompanion, 2f64.powi(-35)))
++                        {
++                            self.work.hint_dictionary_uses += r.work.dictionary_uses;
++                            if r.roots.len() == 1 {
++                                let u = r.roots[0].theta;
++                                let tt = a + (b - a) * (u[0] * 0.5 + u[1] * 0.5);
++                                if a < tt && tt < b {
++                                    t = tt;
++                                }
++                            }
++                        }
++                    }
++                    if a < t && t < b {
++                        Some((t, g(t, whole)?.as_pair()))
++                    } else {
++                        None
++                    }
++                } else {
++                    None
++                };
++                pending.add(PendingSlab {
++                    times,
++                    left: ga.as_pair(),
++                    right: gb.as_pair(),
++                    velocity: velocity.as_pair(),
++                    probe,
++                    incoming_radius: incoming,
++                    outgoing_radius: outgoing,
++                    safe_before: self.safe,
++                })?;
++                self.incoming = Some(outgoing);
++                if gb.hi < 0. {
++                    // Monotonicity through the pending episode proves the
++                    // entire numerical continuation was still pre-event.
++                    self.safe = b;
++                    pending.active_start = None;
++                    pending.report.resolution = Some("negative-recovered");
++                    return Ok(false);
++                }
++                if gb.lo > 0. {
++                    let i = pending.enclose()?;
++                    if diameter(i[0], i[1])? > self.tolerance {
++                        pending.report.resolution = Some("width-unresolved");
++                        return Err(bad("pending physical root width exceeds tolerance"));
++                    }
++                    self.root = Some(i);
++                    self.safe = i[0];
++                    pending.active_start = None;
++                    pending.report.resolution = Some("certified");
++                    return Ok(true);
++                }
++                pending.report.resolution = Some("awaiting-positive");
++                return Ok(false);
++            }
++        }
+         if ga.hi >= 0. {
+             return Err(bad("uncertain left guard"));
+         }
+@@ -966,8 +1213,12 @@
+     reason: Option<String>,
+     pub work: ThresholdWork,
+     guard_slabs: Vec<GuardSlabEvidence>,
++    pending_report: Option<PendingReport>,
+ }
+ impl ThresholdRun {
++    pub fn pending_report(&self) -> Option<&PendingReport> {
++        self.pending_report.as_ref()
++    }
+     pub fn guard_slabs(&self) -> &[GuardSlabEvidence] {
+         &self.guard_slabs
+     }
+@@ -986,8 +1237,19 @@
+     pub fn stats(&self) -> &crate::Stats {
+         &self.trial.driver.stats
+     }
++    /// Recorded projection work of the numerical driver and certificate replay.
++    /// Guard-scanning projection work is recorded separately in work.
++    pub fn projection_work(&self) -> &ProjectionWork {
++        &self.trial.work
++    }
+     pub fn pre_query(&self, t: f64) -> CoreResult<Query> {
+-        if !t.is_finite() || t > self.committed_until {
++        if self
++            .pending_report
++            .as_ref()
++            .is_some_and(|r| r.blocked_initial)
++            || !t.is_finite()
++            || t > self.committed_until
++        {
+             return Err(bad("outside certified pre-event prefix"));
+         }
+         let q = self.trial.query(t)?;
+@@ -1030,6 +1292,7 @@
+         return Err(bad("initial guard not strictly below threshold"));
+     }
+     let mut scan = ThresholdScan {
++        pending: None,
+         threshold,
+         guard: None,
+         guard_slabs: vec![],
+@@ -1071,6 +1334,7 @@
+         reason: scan.reason,
+         work: scan.work,
+         guard_slabs: scan.guard_slabs,
++        pending_report: scan.pending.map(|p| p.report),
+     })
+ }
+ 
+@@ -1093,6 +1357,64 @@
+     derivative: GuardDerivativeRoute,
+     value: GuardValueRoute,
+ ) -> CoreResult<ThresholdRun> {
++    evolve_to_guard_impl(
++        src, x, z, branch, epoch, opts, policy, route, guard, tolerance, root_route, derivative,
++        value, None,
++    )
++}
++/// Bounded speculative continuation in the ORIGINAL mode. A source
++/// extension across the event is required; only the safe prefix is exposed.
++#[allow(clippy::too_many_arguments)]
++pub fn evolve_to_guard_pending(
++    src: &DaeSource,
++    x: &[f64],
++    z: &[f64],
++    branch: &[[f64; 2]],
++    epoch: EvolutionEpoch,
++    opts: &Options,
++    policy: EvolutionPolicy,
++    route: EvolutionRoute,
++    guard: &rodas5p_integrators::retro_event_poly::DeclaredPolynomial,
++    tolerance: f64,
++    root_route: ThresholdRoute,
++    derivative: GuardDerivativeRoute,
++    value: GuardValueRoute,
++    pending: PendingPolicy,
++) -> CoreResult<ThresholdRun> {
++    evolve_to_guard_impl(
++        src,
++        x,
++        z,
++        branch,
++        epoch,
++        opts,
++        policy,
++        route,
++        guard,
++        tolerance,
++        root_route,
++        derivative,
++        value,
++        Some(PendingState::new(pending)?),
++    )
++}
++#[allow(clippy::too_many_arguments)]
++fn evolve_to_guard_impl(
++    src: &DaeSource,
++    x: &[f64],
++    z: &[f64],
++    branch: &[[f64; 2]],
++    epoch: EvolutionEpoch,
++    opts: &Options,
++    policy: EvolutionPolicy,
++    route: EvolutionRoute,
++    guard: &rodas5p_integrators::retro_event_poly::DeclaredPolynomial,
++    tolerance: f64,
++    root_route: ThresholdRoute,
++    derivative: GuardDerivativeRoute,
++    value: GuardValueRoute,
++    pending: Option<PendingState>,
++) -> CoreResult<ThresholdRun> {
+     guard.validate(src.nx() + src.nz())?;
+     if x.len() != src.nx() || !tolerance.is_finite() || tolerance <= 0. {
+         return Err(bad("declared guard contract"));
+@@ -1104,6 +1426,7 @@
+         return Err(bad("invalid incoming radius"));
+     }
+     let mut scan = ThresholdScan {
++        pending,
+         threshold: 0.,
+         guard: Some(DeclaredGuard {
+             source: guard.clone(),
+@@ -1141,6 +1464,21 @@
+         scan.safe = epoch.start;
+         scan.reason = Some("replayed physical branch proof failed".into());
+     }
++    if let Some(p) = scan.pending.as_mut() {
++        if p.active() && scan.reason.is_none() && scan.root.is_none() {
++            p.report.resolution = Some("horizon-unresolved");
++            scan.reason = Some("pending guard unresolved at horizon".into());
++        }
++        if scan.root.is_some() && (!trial.global_qualified || !trial.pointwise_qualified) {
++            scan.root = None;
++            scan.safe = epoch.start;
++            scan.reason = Some("pending replay physical proof failed".into());
++            p.report.resolution = Some("replay-unqualified");
++        }
++        if scan.reason.is_some() && p.report.resolution == Some("awaiting-positive") {
++            p.report.resolution = Some("continuation-refused");
++        }
++    }
+     Ok(ThresholdRun {
+         trial,
+         root: scan.root,
+@@ -1149,6 +1487,7 @@
+         reason: scan.reason,
+         work: scan.work,
+         guard_slabs: scan.guard_slabs,
++        pending_report: scan.pending.map(|p| p.report),
+     })
+ }
+ 
+@@ -1305,3 +1644,197 @@
+         })
+     }
+ }
++
++/// Receipt for one source-bound checkpoint. Radius encloses the actual
++/// differential state at the represented checkpoint center.
++#[derive(Clone, Debug, Serialize)]
++pub struct GuardCheckpoint {
++    pub time: f64,
++    pub differential: Vec<f64>,
++    pub algebraic: Vec<f64>,
++    pub radius: f64,
++    pub projection: InitWork,
++    pub retry_h0: f64,
++    pub remaining_attempts: usize,
++}
++/// Private ownership of both numerical attempts and the original safe prefix.
++/// A retry failure cannot erase the first run or authorize a reset.
++pub struct GuardCheckpointRun {
++    first: ThresholdRun,
++    retry: Option<ThresholdRun>,
++    checkpoint: Option<GuardCheckpoint>,
++    retry_error: Option<String>,
++}
++impl GuardCheckpointRun {
++    pub fn first(&self) -> &ThresholdRun {
++        &self.first
++    }
++    pub fn retry(&self) -> Option<&ThresholdRun> {
++        self.retry.as_ref()
++    }
++    pub fn checkpoint(&self) -> Option<&GuardCheckpoint> {
++        self.checkpoint.as_ref()
++    }
++    pub fn retry_error(&self) -> Option<&str> {
++        self.retry_error.as_deref()
++    }
++    pub fn attempts_used(&self) -> usize {
++        self.first.stats().attempts + self.retry.as_ref().map_or(0, |r| r.stats().attempts)
++    }
++    pub fn root(&self) -> Option<[f64; 2]> {
++        self.first
++            .root()
++            .or_else(|| self.retry.as_ref().and_then(|r| r.root()))
++    }
++    pub fn committed_until(&self) -> f64 {
++        self.retry
++            .as_ref()
++            .map_or(self.first.committed_until(), |r| {
++                self.first.committed_until().max(r.committed_until())
++            })
++    }
++    pub fn pre_query(&self, t: f64) -> CoreResult<Query> {
++        if t <= self.first.committed_until() {
++            self.first.pre_query(t)
++        } else {
++            self.retry
++                .as_ref()
++                .ok_or_else(|| bad("no certified retry prefix"))?
++                .pre_query(t)
++        }
++    }
++    /// The selected certified event authority may be passed to the existing
++    /// affine restart transaction. Never exposes an uncertified candidate.
++    pub fn event_authority(&self) -> Option<&ThresholdRun> {
++        if self.first.root().is_some() {
++            Some(&self.first)
++        } else {
++            self.retry.as_ref().filter(|r| r.root().is_some())
++        }
++    }
++}
++/// One bounded re-integration from the last certified negative checkpoint.
++/// Same immutable source, branch, guard, tolerance, pending cap, and shared
++/// native attempt budget. This is not an in-place driver rollback.
++#[allow(clippy::too_many_arguments)]
++pub fn evolve_to_guard_checkpoint(
++    src: &DaeSource,
++    x: &[f64],
++    z: &[f64],
++    branch: &[[f64; 2]],
++    epoch: EvolutionEpoch,
++    opts: &Options,
++    policy: EvolutionPolicy,
++    route: EvolutionRoute,
++    guard: &rodas5p_integrators::retro_event_poly::DeclaredPolynomial,
++    tolerance: f64,
++    root_route: ThresholdRoute,
++    derivative: GuardDerivativeRoute,
++    value: GuardValueRoute,
++    pending: PendingPolicy,
++) -> CoreResult<GuardCheckpointRun> {
++    let first = evolve_to_guard_pending(
++        src, x, z, branch, epoch, opts, policy, route, guard, tolerance, root_route, derivative,
++        value, pending,
++    )?;
++    let mut out = GuardCheckpointRun {
++        first,
++        retry: None,
++        checkpoint: None,
++        retry_error: None,
++    };
++    let r = &out.first;
++    if r.root().is_some()
++        || !r.pending_report().is_some_and(|p| {
++            matches!(p.resolution, Some("slab-cap" | "width-unresolved")) && !p.blocked_initial
++        })
++    {
++        return Ok(out);
++    }
++    let make_checkpoint = || -> CoreResult<GuardCheckpoint> {
++        let time = r.committed_until();
++        let remaining = opts
++            .max_steps
++            .checked_sub(r.stats().attempts)
++            .filter(|v| *v > 0)
++            .ok_or_else(|| bad("shared attempt budget exhausted"))?;
++        let q = r.pre_query(time)?;
++        let slab = r
++            .trial
++            .slabs
++            .get(r.trial.slabs.partition_point(|s| s.times[1] < time))
++            .ok_or_else(|| bad("checkpoint slab missing"))?;
++        let cert = slab
++            .certificate
++            .as_ref()
++            .filter(|c| c.global_qualified)
++            .ok_or_else(|| bad("checkpoint physical certificate missing"))?;
++        let ein = if time == slab.times[0] {
++            cert.incoming
++        } else if time == slab.times[1] {
++            cert.outgoing
++                .ok_or_else(|| bad("checkpoint outgoing radius"))?
++        } else {
++            return Err(bad("checkpoint must be a native endpoint"));
++        };
++        let nx = src.nx();
++        let p = slab.power[..nx]
++            .iter()
++            .map(|row| {
++                row.iter()
++                    .map(|v| Iv::new(v[0], v[1]))
++                    .collect::<CoreResult<Vec<_>>>()
++            })
++            .collect::<CoreResult<Vec<_>>>()?;
++        let radius = de::query_x_error(&p, slab.times, time, &q.state[..nx], ein)?;
++        let h0 = opts.h0 * 0.5;
++        if !h0.is_finite() || h0 <= 0. || time + h0 <= time {
++            return Err(bad("unrepresentable checkpoint refinement"));
++        }
++        Ok(GuardCheckpoint {
++            time,
++            differential: q.state[..nx].to_vec(),
++            algebraic: q.state[nx..].to_vec(),
++            radius,
++            projection: q.projection.work,
++            retry_h0: h0,
++            remaining_attempts: remaining,
++        })
++    };
++    let cp = match make_checkpoint() {
++        Ok(cp) => cp,
++        Err(e) => {
++            out.retry_error = Some(e.to_string());
++            return Ok(out);
++        }
++    };
++    let mut retry_opts = opts.clone();
++    retry_opts.h0 = cp.retry_h0;
++    retry_opts.max_steps = cp.remaining_attempts;
++    let retry = evolve_to_guard_pending(
++        src,
++        &cp.differential,
++        &cp.algebraic,
++        branch,
++        EvolutionEpoch {
++            start: cp.time,
++            end: epoch.end,
++            incoming_x_error: Some(cp.radius),
++        },
++        &retry_opts,
++        policy,
++        route,
++        guard,
++        tolerance,
++        root_route,
++        derivative,
++        value,
++        pending,
++    );
++    out.checkpoint = Some(cp);
++    match retry {
++        Ok(v) => out.retry = Some(v),
++        Err(e) => out.retry_error = Some(e.to_string()),
++    }
++    Ok(out)
++}

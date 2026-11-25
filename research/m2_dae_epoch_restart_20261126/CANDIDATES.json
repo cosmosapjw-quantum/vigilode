@@ -1,0 +1,158 @@
+{
+  "candidates": [
+    {
+      "green": false,
+      "modules": [
+        "native mass Rosenbrock",
+        "DaeSource::initialize",
+        "native dense packet",
+        "directed exponential norm bound"
+      ],
+      "route": "Mass"
+    },
+    {
+      "green": true,
+      "modules": [
+        "native mass Rosenbrock",
+        "DaeSource::initialize",
+        "native dense packet",
+        "retro_causal",
+        "RetroTable Hybrid phi0/phi1"
+      ],
+      "route": "Mass"
+    },
+    {
+      "green": false,
+      "modules": [
+        "Schur ODE",
+        "dictionary basis3",
+        "Reuse",
+        "directed exponential norm bound"
+      ],
+      "route": "Reduced3"
+    },
+    {
+      "green": true,
+      "modules": [
+        "Schur ODE",
+        "dictionary basis3",
+        "Reuse",
+        "retro_causal",
+        "RetroTable Hybrid phi0/phi1"
+      ],
+      "route": "Reduced3"
+    },
+    {
+      "green": false,
+      "modules": [
+        "Schur ODE",
+        "dictionary basis5",
+        "Reuse",
+        "directed exponential norm bound"
+      ],
+      "route": "Reduced5"
+    },
+    {
+      "green": true,
+      "modules": [
+        "Schur ODE",
+        "dictionary basis5",
+        "Reuse",
+        "retro_causal",
+        "RetroTable Hybrid phi0/phi1"
+      ],
+      "route": "Reduced5"
+    },
+    {
+      "green": false,
+      "modules": [
+        "Schur ODE",
+        "dictionary basis5",
+        "PreparedBatch",
+        "directed exponential norm bound"
+      ],
+      "route": "Prepared5"
+    },
+    {
+      "green": true,
+      "modules": [
+        "Schur ODE",
+        "dictionary basis5",
+        "PreparedBatch",
+        "retro_causal",
+        "RetroTable Hybrid phi0/phi1"
+      ],
+      "route": "Prepared5"
+    },
+    {
+      "green": false,
+      "modules": [
+        "Schur ODE",
+        "dictionary basis5",
+        "DictionaryCompanion",
+        "directed exponential norm bound"
+      ],
+      "route": "Scalar5"
+    },
+    {
+      "green": true,
+      "modules": [
+        "Schur ODE",
+        "dictionary basis5",
+        "DictionaryCompanion",
+        "retro_causal",
+        "RetroTable Hybrid phi0/phi1"
+      ],
+      "route": "Scalar5"
+    },
+    {
+      "green": false,
+      "modules": [
+        "TensorPencil DirectBlock",
+        "conditioned Horner",
+        "Reuse",
+        "basis5",
+        "directed exponential norm bound"
+      ],
+      "route": "WarpDirect"
+    },
+    {
+      "green": true,
+      "modules": [
+        "TensorPencil DirectBlock",
+        "conditioned Horner",
+        "Reuse",
+        "basis5",
+        "retro_causal",
+        "RetroTable Hybrid phi0/phi1"
+      ],
+      "route": "WarpDirect"
+    },
+    {
+      "green": false,
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned Horner",
+        "Reuse",
+        "basis5",
+        "directed exponential norm bound"
+      ],
+      "route": "WarpFolded"
+    },
+    {
+      "green": true,
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned Horner",
+        "Reuse",
+        "basis5",
+        "retro_causal",
+        "RetroTable Hybrid phi0/phi1"
+      ],
+      "route": "WarpFolded"
+    }
+  ],
+  "catalog_count": 64,
+  "manifest_files": 154,
+  "selection_contract": "full physical global bound <= 0.005; pointwise and branch; minimize proxy RHS count, then bound; no timing claim"
+}

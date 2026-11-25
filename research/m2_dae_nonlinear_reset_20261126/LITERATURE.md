@@ -1,0 +1,5 @@
+Public literature context (no private project data):
+Exa: Computing reachable sets for uncertain nonlinear hybrid systems using interval constraint-propagation techniques, https://www.sciencedirect.com/science/article/abs/pii/S1751570X1000049X ; excerpts discuss continuum of event times and reliable reset enclosures.
+Parallel: Mitchell and Susuki, Level Set Methods for Computing Reachable Sets of Hybrid Systems with Differential Algebraic Equation Dynamics, https://www.cs.ubc.ca/~mitchell/Papers/myHSCC08.pdf ; abstract/introduction discuss DAE mode reset and reachable tubes.
+SciSpace: Maiga et al., A Comprehensive Method for Reachability Analysis of Uncertain Nonlinear Hybrid Systems, https://scispace.com/papers/a-comprehensive-method-for-reachability-analysis-of-58f4e8q2a0 ; abstract-level context on flowpipe, guard intersection and aggregation.
+Wolfram returned zero derivative identity residual, t^2-1/4 in cancellation fixture, zero exponential integral identity residual. MathHarness exact verifier three finite algebraic identities. No proof imported from literature, no full source theorem audit or novelty claim.

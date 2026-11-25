@@ -1,0 +1,92 @@
+--- a/crates/rodas5p-integrators/src/retro_dae_evolution.rs
++++ b/crates/rodas5p-integrators/src/retro_dae_evolution.rs
+@@ -1636,3 +1636,89 @@
+     }
+     Ok(out)
+ }
++
++/// Negative guard proof on an authenticated vector transition branch tube.
++/// The source/branch proof binding is established by the owning facade.
++#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
++pub enum GapGuardRoute {
++    Box,
++    Schur,
++}
++#[derive(Clone, Debug, Serialize)]
++pub struct GapGuardEvidence {
++    pub enclosure: [f64; 2],
++    pub direct: [f64; 2],
++    pub reduced_gradient: Option<Vec<[f64; 2]>>,
++    pub reduced_clock: Option<[f64; 2]>,
++    pub work: InitWork,
++}
++pub fn gap_guard_enclosure(
++    src: &DaeSource,
++    guard: &DeclaredPolynomial,
++    bp: &VectorBranchProof,
++    route: GapGuardRoute,
++    init_route: InitRoute,
++) -> CoreResult<GapGuardEvidence> {
++    let nx = src.nx();
++    let nz = src.nz();
++    guard.validate(nx + nz)?;
++    if bp.differential_box.len() != nx
++        || bp.root_box.len() != nz
++        || bp.initial.x.len() != nx
++        || bp.initial.z.len() != nz
++        || bp.defect >= 1.
++    {
++        return Err(bad("gap guard branch shape"));
++    }
++    let t = Iv::new(bp.times[0], bp.times[1])?;
++    let xb = iv_pairs(&bp.differential_box)?;
++    let mut full = xb.clone();
++    full.extend(iv_pairs(&bp.root_box)?);
++    let h = di::evaluate(std::slice::from_ref(guard), t, &full)?;
++    let direct = h.v[0];
++    let mut work = InitWork::default();
++    let mut out = GapGuardEvidence {
++        enclosure: direct.as_pair(),
++        direct: direct.as_pair(),
++        reduced_gradient: None,
++        reduced_clock: None,
++        work: work.clone(),
++    };
++    if route == GapGuardRoute::Box {
++        return Ok(out);
++    }
++    let g = di::evaluate(&src.g, t, &full)?;
++    let mut point = di::points(&bp.initial.x)?;
++    point.extend(di::points(&bp.initial.z)?);
++    let jc = jz(&di::evaluate(&src.g, p(bp.times[1])?, &point)?, nx);
++    let c = di::preconditioner(
++        &di::center_matrix(&jc)?,
++        init_route,
++        &ParallelExecution::sequential(),
++        &mut work,
++    )?;
++    let q = di::rows_norm(&di::defect(&c, &jz(&g, nx))?)?;
++    let gap = sub_down(1., q)?;
++    if gap <= 0. {
++        return Err(bad("gap guard inverse defect"));
++    }
++    let hr = &h.j[0];
++    let mut reduced = Vec::with_capacity(nx + 1);
++    for k in 0..=nx {
++        let rhs = g.j.iter().map(|r| -r[k]).collect::<Vec<_>>();
++        let v = product_bound(q, gap, &di::matvec(&c, &rhs)?)?;
++        reduced.push(hr[k].add(guard_dot(&hr[1 + nx..], &v)?)?);
++    }
++    let mut nominal = di::points(&bp.initial.x)?;
++    nominal.extend(iv_pairs(&bp.initial.root_box)?);
++    let hc = di::evaluate(std::slice::from_ref(guard), p(bp.times[1])?, &nominal)?.v[0];
++    let mut dx = vec![t.sub(p(bp.times[1])?)?];
++    for (&a, &b) in xb.iter().zip(&bp.initial.x) {
++        dx.push(a.sub(p(b)?)?);
++    }
++    out.enclosure = intersect(direct, hc.add(guard_dot(&reduced, &dx)?)?)?.as_pair();
++    out.reduced_gradient = Some(reduced[1..].iter().map(|v| v.as_pair()).collect());
++    out.reduced_clock = Some(reduced[0].as_pair());
++    out.work = work;
++    Ok(out)
++}

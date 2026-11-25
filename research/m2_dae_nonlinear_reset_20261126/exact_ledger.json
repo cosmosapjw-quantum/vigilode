@@ -1,0 +1,291 @@
+{
+  "schema_version": "3.1.0",
+  "events": [
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "CANCEL",
+      "payload": {
+        "claim_id": "CANCEL",
+        "statement": "8*t-4-4+6-4*t+(2*t-1)*(2*t-1) = 4*t*t-1",
+        "formal_statement": "POLY_IDENTITY: 4*t^2 - 1 = 4*t^2 - 1",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite polynomial identities only"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795626205.358534,
+      "seq": 0,
+      "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "e8f1222f5e7d12483e8091ffeec00e9c5d6a7f9bb21dcbfb92ebab169a6ae6b8"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "CANCEL",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "c2bc81e82e93294d4989764a0ae04593201f73a506cedcfe26408ebd40bc0ffb",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "8*t-4-4+6-4*t+(2*t-1)*(2*t-1)",
+            "rhs": "4*t*t-1"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: 4*t^2 - 1 = 4*t^2 - 1",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-25T17:03:25Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795626205.3612645,
+      "seq": 1,
+      "prev_hash": "e8f1222f5e7d12483e8091ffeec00e9c5d6a7f9bb21dcbfb92ebab169a6ae6b8",
+      "hash": "9bc08b66a701aaddc72185639d122f1c7504ab4873d52a76a29304eb82bdaa41"
+    },
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "BRANCH",
+      "payload": {
+        "claim_id": "BRANCH",
+        "statement": "z*z-x+q = (z-c)*(z+c)+c*c-x+q",
+        "formal_statement": "POLY_IDENTITY: z^2 + q - x = z^2 + q - x",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite polynomial identities only"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795626205.3617754,
+      "seq": 2,
+      "prev_hash": "9bc08b66a701aaddc72185639d122f1c7504ab4873d52a76a29304eb82bdaa41",
+      "hash": "0ed9a809e9772aac266afb867423e86dfc402adb7c7936c1948260892b36c855"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "BRANCH",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "136b58f89ccfd349e66866278b3707f5631e6e170a418c48710421a89eded8ab",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "z*z-x+q",
+            "rhs": "(z-c)*(z+c)+c*c-x+q"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: z^2 + q - x = z^2 + q - x",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-25T17:03:25Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795626205.3629265,
+      "seq": 3,
+      "prev_hash": "0ed9a809e9772aac266afb867423e86dfc402adb7c7936c1948260892b36c855",
+      "hash": "dea74d6bc62b86b9758dfc0344cb68ffbad5cf795967229a8907f5f77fa9773c"
+    },
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "WEIGHT",
+      "payload": {
+        "claim_id": "WEIGHT",
+        "statement": "(b-t)+(t-s) = b-s",
+        "formal_statement": "POLY_IDENTITY: b - s = b - s",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite polynomial identities only"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795626205.3634102,
+      "seq": 4,
+      "prev_hash": "dea74d6bc62b86b9758dfc0344cb68ffbad5cf795967229a8907f5f77fa9773c",
+      "hash": "995e4e705525f954ff3ea26a6f6a4a39327af157043256419778c00e1ad1f444"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "WEIGHT",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "e832efbfbbd1c87508da4ec3229f7943a754ab9dcb6c74813d72754079e89e87",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "(b-t)+(t-s)",
+            "rhs": "b-s"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: b - s = b - s",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-25T17:03:25Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795626205.3644323,
+      "seq": 5,
+      "prev_hash": "995e4e705525f954ff3ea26a6f6a4a39327af157043256419778c00e1ad1f444",
+      "hash": "5a8f32b9e3bd9df6468ddc8419d9e87541f1f3696a683205b4269aae80e930ea"
+    }
+  ],
+  "claims": {
+    "CANCEL": {
+      "claim_id": "CANCEL",
+      "statement": "8*t-4-4+6-4*t+(2*t-1)*(2*t-1) = 4*t*t-1",
+      "formal_statement": "POLY_IDENTITY: 4*t^2 - 1 = 4*t^2 - 1",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite polynomial identities only"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "c2bc81e82e93294d4989764a0ae04593201f73a506cedcfe26408ebd40bc0ffb",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "8*t-4-4+6-4*t+(2*t-1)*(2*t-1)",
+              "rhs": "4*t*t-1"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: 4*t^2 - 1 = 4*t^2 - 1",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-25T17:03:25Z"
+        }
+      ]
+    },
+    "BRANCH": {
+      "claim_id": "BRANCH",
+      "statement": "z*z-x+q = (z-c)*(z+c)+c*c-x+q",
+      "formal_statement": "POLY_IDENTITY: z^2 + q - x = z^2 + q - x",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite polynomial identities only"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "136b58f89ccfd349e66866278b3707f5631e6e170a418c48710421a89eded8ab",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "z*z-x+q",
+              "rhs": "(z-c)*(z+c)+c*c-x+q"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: z^2 + q - x = z^2 + q - x",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-25T17:03:25Z"
+        }
+      ]
+    },
+    "WEIGHT": {
+      "claim_id": "WEIGHT",
+      "statement": "(b-t)+(t-s) = b-s",
+      "formal_statement": "POLY_IDENTITY: b - s = b - s",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite polynomial identities only"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "e832efbfbbd1c87508da4ec3229f7943a754ab9dcb6c74813d72754079e89e87",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "(b-t)+(t-s)",
+              "rhs": "b-s"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: b - s = b - s",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-25T17:03:25Z"
+        }
+      ]
+    }
+  },
+  "head": "5a8f32b9e3bd9df6468ddc8419d9e87541f1f3696a683205b4269aae80e930ea",
+  "trust": [
+    "PROVED_EXACT_CERTIFICATE",
+    "PROVED_FORMAL_KERNEL"
+  ]
+}

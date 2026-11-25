@@ -1,0 +1,1230 @@
+{
+  "harness_catalog_count": 64,
+  "manifest_files": 154,
+  "routes": [
+    {
+      "derivative": "Tangent",
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "directed interval physical Newton",
+        "original tangent residual and inverse defect",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "Mass",
+      "value": "Box"
+    },
+    {
+      "derivative": "Tangent",
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "directed interval physical Newton",
+        "original tangent residual and inverse defect",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "Mass",
+      "value": "Transport"
+    },
+    {
+      "derivative": "Schur",
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "directed interval physical Newton",
+        "slab C inverse defect",
+        "reduced covector",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "Mass",
+      "value": "Box"
+    },
+    {
+      "derivative": "Schur",
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "directed interval physical Newton",
+        "slab C inverse defect",
+        "reduced covector",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "Mass",
+      "value": "Transport"
+    },
+    {
+      "derivative": "PreparedSchur",
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "directed interval physical Newton",
+        "PreparedRhs PreparedBatch",
+        "recomputed interval inverse defect",
+        "reduced covector",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "Mass",
+      "value": "Box"
+    },
+    {
+      "derivative": "PreparedSchur",
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "directed interval physical Newton",
+        "PreparedRhs PreparedBatch",
+        "recomputed interval inverse defect",
+        "reduced covector",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "Mass",
+      "value": "Transport"
+    },
+    {
+      "derivative": "Tangent",
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "original tangent residual and inverse defect",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "Mass",
+      "value": "Box"
+    },
+    {
+      "derivative": "Tangent",
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "original tangent residual and inverse defect",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "Mass",
+      "value": "Transport"
+    },
+    {
+      "derivative": "Schur",
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "slab C inverse defect",
+        "reduced covector",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "Mass",
+      "value": "Box"
+    },
+    {
+      "derivative": "Schur",
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "slab C inverse defect",
+        "reduced covector",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "Mass",
+      "value": "Transport"
+    },
+    {
+      "derivative": "PreparedSchur",
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "PreparedRhs PreparedBatch",
+        "recomputed interval inverse defect",
+        "reduced covector",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "Mass",
+      "value": "Box"
+    },
+    {
+      "derivative": "PreparedSchur",
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "PreparedRhs PreparedBatch",
+        "recomputed interval inverse defect",
+        "reduced covector",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "Mass",
+      "value": "Transport"
+    },
+    {
+      "derivative": "Tangent",
+      "modules": [
+        "Schur reduction",
+        "RETRO dictionary Lagrange5",
+        "directed interval physical Newton",
+        "original tangent residual and inverse defect",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "Reduced5",
+      "value": "Box"
+    },
+    {
+      "derivative": "Tangent",
+      "modules": [
+        "Schur reduction",
+        "RETRO dictionary Lagrange5",
+        "directed interval physical Newton",
+        "original tangent residual and inverse defect",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "Reduced5",
+      "value": "Transport"
+    },
+    {
+      "derivative": "Schur",
+      "modules": [
+        "Schur reduction",
+        "RETRO dictionary Lagrange5",
+        "directed interval physical Newton",
+        "slab C inverse defect",
+        "reduced covector",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "Reduced5",
+      "value": "Box"
+    },
+    {
+      "derivative": "Schur",
+      "modules": [
+        "Schur reduction",
+        "RETRO dictionary Lagrange5",
+        "directed interval physical Newton",
+        "slab C inverse defect",
+        "reduced covector",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "Reduced5",
+      "value": "Transport"
+    },
+    {
+      "derivative": "PreparedSchur",
+      "modules": [
+        "Schur reduction",
+        "RETRO dictionary Lagrange5",
+        "directed interval physical Newton",
+        "PreparedRhs PreparedBatch",
+        "recomputed interval inverse defect",
+        "reduced covector",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "Reduced5",
+      "value": "Box"
+    },
+    {
+      "derivative": "PreparedSchur",
+      "modules": [
+        "Schur reduction",
+        "RETRO dictionary Lagrange5",
+        "directed interval physical Newton",
+        "PreparedRhs PreparedBatch",
+        "recomputed interval inverse defect",
+        "reduced covector",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "Reduced5",
+      "value": "Transport"
+    },
+    {
+      "derivative": "Tangent",
+      "modules": [
+        "Schur reduction",
+        "RETRO dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "original tangent residual and inverse defect",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "Reduced5",
+      "value": "Box"
+    },
+    {
+      "derivative": "Tangent",
+      "modules": [
+        "Schur reduction",
+        "RETRO dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "original tangent residual and inverse defect",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "Reduced5",
+      "value": "Transport"
+    },
+    {
+      "derivative": "Schur",
+      "modules": [
+        "Schur reduction",
+        "RETRO dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "slab C inverse defect",
+        "reduced covector",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "Reduced5",
+      "value": "Box"
+    },
+    {
+      "derivative": "Schur",
+      "modules": [
+        "Schur reduction",
+        "RETRO dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "slab C inverse defect",
+        "reduced covector",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "Reduced5",
+      "value": "Transport"
+    },
+    {
+      "derivative": "PreparedSchur",
+      "modules": [
+        "Schur reduction",
+        "RETRO dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "PreparedRhs PreparedBatch",
+        "recomputed interval inverse defect",
+        "reduced covector",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "Reduced5",
+      "value": "Box"
+    },
+    {
+      "derivative": "PreparedSchur",
+      "modules": [
+        "Schur reduction",
+        "RETRO dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "PreparedRhs PreparedBatch",
+        "recomputed interval inverse defect",
+        "reduced covector",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "Reduced5",
+      "value": "Transport"
+    },
+    {
+      "derivative": "Tangent",
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "directed interval physical Newton",
+        "original tangent residual and inverse defect",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "Prepared5",
+      "value": "Box"
+    },
+    {
+      "derivative": "Tangent",
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "directed interval physical Newton",
+        "original tangent residual and inverse defect",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "Prepared5",
+      "value": "Transport"
+    },
+    {
+      "derivative": "Schur",
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "directed interval physical Newton",
+        "slab C inverse defect",
+        "reduced covector",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "Prepared5",
+      "value": "Box"
+    },
+    {
+      "derivative": "Schur",
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "directed interval physical Newton",
+        "slab C inverse defect",
+        "reduced covector",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "Prepared5",
+      "value": "Transport"
+    },
+    {
+      "derivative": "PreparedSchur",
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "directed interval physical Newton",
+        "PreparedRhs PreparedBatch",
+        "recomputed interval inverse defect",
+        "reduced covector",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "Prepared5",
+      "value": "Box"
+    },
+    {
+      "derivative": "PreparedSchur",
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "directed interval physical Newton",
+        "PreparedRhs PreparedBatch",
+        "recomputed interval inverse defect",
+        "reduced covector",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "Prepared5",
+      "value": "Transport"
+    },
+    {
+      "derivative": "Tangent",
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "original tangent residual and inverse defect",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "Prepared5",
+      "value": "Box"
+    },
+    {
+      "derivative": "Tangent",
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "original tangent residual and inverse defect",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "Prepared5",
+      "value": "Transport"
+    },
+    {
+      "derivative": "Schur",
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "slab C inverse defect",
+        "reduced covector",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "Prepared5",
+      "value": "Box"
+    },
+    {
+      "derivative": "Schur",
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "slab C inverse defect",
+        "reduced covector",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "Prepared5",
+      "value": "Transport"
+    },
+    {
+      "derivative": "PreparedSchur",
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "PreparedRhs PreparedBatch",
+        "recomputed interval inverse defect",
+        "reduced covector",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "Prepared5",
+      "value": "Box"
+    },
+    {
+      "derivative": "PreparedSchur",
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "PreparedRhs PreparedBatch",
+        "recomputed interval inverse defect",
+        "reduced covector",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "Prepared5",
+      "value": "Transport"
+    },
+    {
+      "derivative": "Tangent",
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "directed interval physical Newton",
+        "original tangent residual and inverse defect",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "Scalar5",
+      "value": "Box"
+    },
+    {
+      "derivative": "Tangent",
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "directed interval physical Newton",
+        "original tangent residual and inverse defect",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "Scalar5",
+      "value": "Transport"
+    },
+    {
+      "derivative": "Schur",
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "directed interval physical Newton",
+        "slab C inverse defect",
+        "reduced covector",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "Scalar5",
+      "value": "Box"
+    },
+    {
+      "derivative": "Schur",
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "directed interval physical Newton",
+        "slab C inverse defect",
+        "reduced covector",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "Scalar5",
+      "value": "Transport"
+    },
+    {
+      "derivative": "PreparedSchur",
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "directed interval physical Newton",
+        "PreparedRhs PreparedBatch",
+        "recomputed interval inverse defect",
+        "reduced covector",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "Scalar5",
+      "value": "Box"
+    },
+    {
+      "derivative": "PreparedSchur",
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "directed interval physical Newton",
+        "PreparedRhs PreparedBatch",
+        "recomputed interval inverse defect",
+        "reduced covector",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "Scalar5",
+      "value": "Transport"
+    },
+    {
+      "derivative": "Tangent",
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "original tangent residual and inverse defect",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "Scalar5",
+      "value": "Box"
+    },
+    {
+      "derivative": "Tangent",
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "original tangent residual and inverse defect",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "Scalar5",
+      "value": "Transport"
+    },
+    {
+      "derivative": "Schur",
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "slab C inverse defect",
+        "reduced covector",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "Scalar5",
+      "value": "Box"
+    },
+    {
+      "derivative": "Schur",
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "slab C inverse defect",
+        "reduced covector",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "Scalar5",
+      "value": "Transport"
+    },
+    {
+      "derivative": "PreparedSchur",
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "PreparedRhs PreparedBatch",
+        "recomputed interval inverse defect",
+        "reduced covector",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "Scalar5",
+      "value": "Box"
+    },
+    {
+      "derivative": "PreparedSchur",
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "PreparedRhs PreparedBatch",
+        "recomputed interval inverse defect",
+        "reduced covector",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "Scalar5",
+      "value": "Transport"
+    },
+    {
+      "derivative": "Tangent",
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "directed interval physical Newton",
+        "original tangent residual and inverse defect",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "WarpFolded",
+      "value": "Box"
+    },
+    {
+      "derivative": "Tangent",
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "directed interval physical Newton",
+        "original tangent residual and inverse defect",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "WarpFolded",
+      "value": "Transport"
+    },
+    {
+      "derivative": "Schur",
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "directed interval physical Newton",
+        "slab C inverse defect",
+        "reduced covector",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "WarpFolded",
+      "value": "Box"
+    },
+    {
+      "derivative": "Schur",
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "directed interval physical Newton",
+        "slab C inverse defect",
+        "reduced covector",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "WarpFolded",
+      "value": "Transport"
+    },
+    {
+      "derivative": "PreparedSchur",
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "directed interval physical Newton",
+        "PreparedRhs PreparedBatch",
+        "recomputed interval inverse defect",
+        "reduced covector",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "WarpFolded",
+      "value": "Box"
+    },
+    {
+      "derivative": "PreparedSchur",
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "directed interval physical Newton",
+        "PreparedRhs PreparedBatch",
+        "recomputed interval inverse defect",
+        "reduced covector",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "IntervalNewton",
+      "solver": "WarpFolded",
+      "value": "Transport"
+    },
+    {
+      "derivative": "Tangent",
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "original tangent residual and inverse defect",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "WarpFolded",
+      "value": "Box"
+    },
+    {
+      "derivative": "Tangent",
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "original tangent residual and inverse defect",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "WarpFolded",
+      "value": "Transport"
+    },
+    {
+      "derivative": "Schur",
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "slab C inverse defect",
+        "reduced covector",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "WarpFolded",
+      "value": "Box"
+    },
+    {
+      "derivative": "Schur",
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "slab C inverse defect",
+        "reduced covector",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "WarpFolded",
+      "value": "Transport"
+    },
+    {
+      "derivative": "PreparedSchur",
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "PreparedRhs PreparedBatch",
+        "recomputed interval inverse defect",
+        "reduced covector",
+        "local preconditioned constraint residual",
+        "independent interval state box",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "WarpFolded",
+      "value": "Box"
+    },
+    {
+      "derivative": "PreparedSchur",
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "PreparedRhs PreparedBatch",
+        "recomputed interval inverse defect",
+        "reduced covector",
+        "composed guard polynomial",
+        "original constraint residual",
+        "reduced guard covector",
+        "retro_dae_evolution",
+        "retro_causal",
+        "retro_green",
+        "directed::Interval"
+      ],
+      "root_route": "DictionaryHint",
+      "solver": "WarpFolded",
+      "value": "Transport"
+    }
+  ]
+}

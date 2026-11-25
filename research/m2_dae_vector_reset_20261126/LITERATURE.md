@@ -1,0 +1,5 @@
+Public literature context (no private project data):
+Exa: Rauh, Brill, Günther, A Novel Interval Arithmetic Approach for Solving Differential-Algebraic Equations with ValEncIA-IVP, https://doi.org/10.2478/v10006-009-0032-4 (2009). Excerpts concern guaranteed enclosures and consistency of semi-explicit DAEs.
+SciSpace: Scott & Barton, Interval bounds on the solutions of semi-explicit index-one DAEs. Part 1: analysis, https://scispace.com/papers/interval-bounds-on-the-solutions-of-semi-explicit-index-one-3lgor346br (2013); abstract-level context.
+Parallel: Alexandre dit Sandretto & Chapoutot, Validated Simulation of Differential Algebraic Equations with Runge-Kutta Methods, https://www.reliable-computing.org/reliable-computing-22-pp-056-077.pdf (2016); excerpt-level context.
+Wolfram returned three zero residuals (manufactured nonlinear coupled exact solution and unit damping derivative identity) and 1-exp(tau-s) for the Green weight. MathHarness fresh verifier three exact polynomial identities. No theorem imported, full external theorem review or novelty claim.

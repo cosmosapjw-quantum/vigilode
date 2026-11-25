@@ -1,0 +1,40 @@
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/vigilode)
+error[E0422]: cannot find struct, variant or union type `VectorResetPolicy` in this scope
+  --> crates/vigilode/tests/dae_vector_reset_contracts.rs:27:114
+   |
+27 | ...onRoute::Mass,VectorResetPolicy{sync,derivative:GuardDerivativeRoute:...
+   |                  ^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0433]: failed to resolve: use of undeclared type `VectorSyncRoute`
+  --> crates/vigilode/tests/dae_vector_reset_contracts.rs:26:15
+   |
+26 | ...c in [VectorSyncRoute::BoxPicard,VectorSyncRoute::SchurPicard,VectorS...
+   |          ^^^^^^^^^^^^^^^ use of undeclared type `VectorSyncRoute`
+
+error[E0433]: failed to resolve: use of undeclared type `VectorSyncRoute`
+  --> crates/vigilode/tests/dae_vector_reset_contracts.rs:26:42
+   |
+26 | ...icard,VectorSyncRoute::SchurPicard,VectorSyncRoute::Centered,VectorSy...
+   |          ^^^^^^^^^^^^^^^ use of undeclared type `VectorSyncRoute`
+
+error[E0433]: failed to resolve: use of undeclared type `VectorSyncRoute`
+  --> crates/vigilode/tests/dae_vector_reset_contracts.rs:26:71
+   |
+26 | ...icard,VectorSyncRoute::Centered,VectorSyncRoute::GreenMoment]{
+   |          ^^^^^^^^^^^^^^^ use of undeclared type `VectorSyncRoute`
+
+error[E0433]: failed to resolve: use of undeclared type `VectorSyncRoute`
+  --> crates/vigilode/tests/dae_vector_reset_contracts.rs:26:97
+   |
+26 | ...tered,VectorSyncRoute::GreenMoment]{
+   |          ^^^^^^^^^^^^^^^ use of undeclared type `VectorSyncRoute`
+
+error[E0599]: no method named `restart_vector` found for struct `vigilode::dae_evolution::ThresholdRun` in the current scope
+  --> crates/vigilode/tests/dae_vector_reset_contracts.rs:27:15
+   |
+27 |   let run=pre.restart_vector(&resets(),&post(),&[0.875],&[[0.5,1.5]],0.3...
+   |               ^^^^^^^^^^^^^^ method not found in `vigilode::dae_evolution::ThresholdRun`
+
+Some errors have detailed explanations: E0422, E0433, E0599.
+For more information about an error, try `rustc --explain E0422`.
+error: could not compile `vigilode` (test "dae_vector_reset_contracts") due to 6 previous errors

@@ -1,0 +1,5 @@
+Verify FROZEN_SOURCE_SHA256SUMS and NEW_TEST_SHA256SUMS at worktree root. Prior base patch and eight test copies from m2_dae_mode_chain_20261126 reconstruct frozen implementation if needed; add new test copy. Rust locked offline, SciPy1.17.0, mpmath1.3.0.
+export CARGO_TARGET_DIR=/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_stiff_validation_contracts training -- --ignored --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_stiff_validation_contracts hybrid -- --ignored --exact --nocapture --test-threads=1
+Capture CELL/HYBRID rows in fresh evidence directory as training.log/hybrid.log. Copy structural.py,reference.py,audit.py,guide.py; run guide.py generate in fresh ledger, reference.py, audit.py, guide.py select. Compare parsed JSON records, not harness timing. See FINAL_OUTPUTS.sha256 for deterministic final outputs. No holdout.

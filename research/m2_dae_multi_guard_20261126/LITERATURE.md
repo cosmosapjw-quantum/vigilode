@@ -1,0 +1,5 @@
+Public literature context (no private project data):
+Exa: Computing reachable sets for uncertain nonlinear hybrid systems using interval constraint-propagation techniques, https://www.sciencedirect.com/science/article/abs/pii/S1751570X1000049X ; excerpts concern continuum of event times and reliable jump enclosures.
+SciSpace: Maiga et al., A Comprehensive Method for Reachability Analysis of Uncertain Nonlinear Hybrid Systems, https://scispace.com/papers/a-comprehensive-method-for-reachability-analysis-of-58f4e8q2a0 ; abstract-level context.
+Parallel: Esposito, Kumar, Pappas, Accurate Event Detection for Simulating Hybrid Systems (2001), https://www.usna.edu/Users/weaprcon/esposito/_files/pubs/B1.pdf ; excerpts describe first crossing and multiple crossings within a numerical step.
+Wolfram confirmed constant guard difference d, constant event separation d, and competing clock-state event difference -delta with sign depending on initial uncertainty. MathHarness fresh verifier four exact polynomial identities. No full external theorem audit or novelty claim.

@@ -1,0 +1,192 @@
+--- a/crates/vigilode/src/dae_evolution.rs
++++ b/crates/vigilode/src/dae_evolution.rs
+@@ -695,8 +695,16 @@
+     pub projection: ProjectionWork,
+     pub certified_slabs: usize,
+ }
++pub use de::{GuardDerivativeRoute, GuardSlabEvidence, GuardValueRoute};
++struct DeclaredGuard {
++    source: rodas5p_integrators::retro_event_poly::DeclaredPolynomial,
++    derivative: GuardDerivativeRoute,
++    value: GuardValueRoute,
++}
+ struct ThresholdScan {
+     threshold: f64,
++    guard: Option<DeclaredGuard>,
++    guard_slabs: Vec<GuardSlabEvidence>,
+     tolerance: f64,
+     route: ThresholdRoute,
+     incoming: Option<f64>,
+@@ -819,7 +827,18 @@
+             return Err(bad("unqualified physical slab"));
+         }
+         self.work.certified_slabs += 1;
+-        let velocity = de::threshold_velocity(&e.src, &c)?;
++        let proof = self
++            .guard
++            .as_ref()
++            .map(|g| de::GuardProof::new(&e.src, &g.source, &p, &c, g.derivative, g.value))
++            .transpose()?;
++        let velocity = if let Some(proof) = &proof {
++            let v = proof.evidence.velocity;
++            self.guard_slabs.push(proof.evidence.clone());
++            Iv::new(v[0], v[1])?
++        } else {
++            de::threshold_velocity(&e.src, &c)?
++        };
+         if velocity.lo <= 0. {
+             return Err(bad("strict transverse increasing guard not proved"));
+         }
+@@ -832,7 +851,21 @@
+         let b = times[1];
+         let mut g = |t: f64, error: f64| {
+             self.work.guard_evals += 1;
+-            guard_interval(&p[0], times, t, error, self.threshold)
++            if let Some(proof) = &proof {
++                let v = proof.value_at(t, error)?;
++                self.guard_slabs
++                    .last_mut()
++                    .expect("current guard evidence")
++                    .evaluations
++                    .push(de::GuardPointEvidence {
++                        time: t,
++                        differential_radius: error,
++                        value: v.as_pair(),
++                    });
++                Ok(v)
++            } else {
++                guard_interval(&p[0], times, t, error, self.threshold)
++            }
+         };
+         let ga = g(a, incoming)?;
+         let gb = g(b, outgoing)?;
+@@ -854,11 +887,16 @@
+         if self.route == ThresholdRoute::DictionaryHint {
+             use rodas5p_integrators::retro_event_poly::{RepresentedPolynomial, RootRoute};
+             self.work.hint_calls += 1;
+-            let mut cp = p[0]
+-                .iter()
+-                .map(|v| v.lo * 0.5 + v.hi * 0.5)
+-                .collect::<Vec<_>>();
+-            cp[0] -= self.threshold;
++            let cp = if let Some(proof) = &proof {
++                proof.hint_coefficients()
++            } else {
++                let mut cp = p[0]
++                    .iter()
++                    .map(|v| v.lo * 0.5 + v.hi * 0.5)
++                    .collect::<Vec<_>>();
++                cp[0] -= self.threshold;
++                cp
++            };
+             if let Ok(r) = RepresentedPolynomial::from_power(&cp)
+                 .and_then(|r| r.isolate(RootRoute::DictionaryCompanion, 2f64.powi(-35)))
+             {
+@@ -927,8 +965,12 @@
+     numerical_end: f64,
+     reason: Option<String>,
+     pub work: ThresholdWork,
++    guard_slabs: Vec<GuardSlabEvidence>,
+ }
+ impl ThresholdRun {
++    pub fn guard_slabs(&self) -> &[GuardSlabEvidence] {
++        &self.guard_slabs
++    }
+     pub fn root(&self) -> Option<[f64; 2]> {
+         self.root
+     }
+@@ -989,6 +1031,86 @@
+     }
+     let mut scan = ThresholdScan {
+         threshold,
++        guard: None,
++        guard_slabs: vec![],
++        tolerance,
++        route: root_route,
++        incoming: Some(rad),
++        safe: epoch.start,
++        numerical_end: epoch.start,
++        root: None,
++        stopped: false,
++        reason: None,
++        work: ThresholdWork::default(),
++    };
++    let trial = evolve_epoch_impl(
++        src,
++        x,
++        z,
++        branch,
++        epoch,
++        opts,
++        policy,
++        route,
++        &[],
++        Some(&mut scan),
++    )?;
++    if !scan.stopped && (!trial.driver.is_success() || trial.driver.t.last() != Some(&epoch.end)) {
++        scan.reason = Some("native driver ended before certified event or horizon".into());
++    }
++    if scan.root.is_some() && !trial.branch_qualified {
++        scan.root = None;
++        scan.safe = epoch.start;
++        scan.reason = Some("replayed physical branch proof failed".into());
++    }
++    Ok(ThresholdRun {
++        trial,
++        root: scan.root,
++        committed_until: scan.safe,
++        numerical_end: scan.numerical_end,
++        reason: scan.reason,
++        work: scan.work,
++        guard_slabs: scan.guard_slabs,
++    })
++}
++
++/// Source-owned single polynomial guard H(t,x,z)=0 on the certified branch.
++/// Initial physical sign must be negative and all inspected slabs strictly
++/// increasing in H. No root can be authorized by a polynomial hint alone.
++#[allow(clippy::too_many_arguments)]
++pub fn evolve_to_guard(
++    src: &DaeSource,
++    x: &[f64],
++    z: &[f64],
++    branch: &[[f64; 2]],
++    epoch: EvolutionEpoch,
++    opts: &Options,
++    policy: EvolutionPolicy,
++    route: EvolutionRoute,
++    guard: &rodas5p_integrators::retro_event_poly::DeclaredPolynomial,
++    tolerance: f64,
++    root_route: ThresholdRoute,
++    derivative: GuardDerivativeRoute,
++    value: GuardValueRoute,
++) -> CoreResult<ThresholdRun> {
++    guard.validate(src.nx() + src.nz())?;
++    if x.len() != src.nx() || !tolerance.is_finite() || tolerance <= 0. {
++        return Err(bad("declared guard contract"));
++    }
++    let rad = epoch
++        .incoming_x_error
++        .ok_or_else(|| bad("physical incoming radius required"))?;
++    if !rad.is_finite() || rad < 0. {
++        return Err(bad("invalid incoming radius"));
++    }
++    let mut scan = ThresholdScan {
++        threshold: 0.,
++        guard: Some(DeclaredGuard {
++            source: guard.clone(),
++            derivative,
++            value,
++        }),
++        guard_slabs: vec![],
+         tolerance,
+         route: root_route,
+         incoming: Some(rad),
+@@ -1026,6 +1148,7 @@
+         numerical_end: scan.numerical_end,
+         reason: scan.reason,
+         work: scan.work,
++        guard_slabs: scan.guard_slabs,
+     })
+ }
+ 

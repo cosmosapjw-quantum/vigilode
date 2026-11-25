@@ -1,0 +1,5 @@
+Public literature context (no private project data):
+Exa: A Semantic Account of Rigorous Simulation, http://adam.duracz.net/publications/eal17.pdf ; excerpts concern uncertainty, event-time representation and correctness of rigorous hybrid simulation.
+SciSpace: Enclosing the behavior of a hybrid system up to and beyond a Zeno point, https://scispace.com/papers/enclosing-the-behavior-of-a-hybrid-system-up-to-and-beyond-a-1wnkqzwheh (2013); abstract-level context.
+Parallel: Enclosing the behavior of a hybrid automaton up to and beyond a Zeno point, https://publications.aston.ac.uk/id/eprint/27364/1/Hybrid_automaton_up_to_and_beyond_a_Zeno_point.pdf (2015); excerpts describe beyond-Zeno enclosures under modeled post-Zeno dynamics. Here only a finite positive dwell contract is implemented, not this continuation theory.
+Wolfram checked analytic linear three-mode chain, directed dwell expression algebra, hidden guard sign interval. MathHarness fresh verifier four finite polynomial identities. No theorem imported or novelty claim.

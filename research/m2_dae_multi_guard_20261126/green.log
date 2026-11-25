@@ -1,0 +1,32 @@
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/vigilode)
+error[E0308]: mismatched types
+    --> crates/vigilode/src/dae_evolution.rs:2420:28
+     |
+2420 |         self.driver_rhs += r.driver.stats.counters.rhs_calls;
+     |                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `usize`, found `u64`
+
+error[E0277]: cannot add-assign `u64` to `usize`
+    --> crates/vigilode/src/dae_evolution.rs:2420:25
+     |
+2420 |         self.driver_rhs += r.driver.stats.counters.rhs_calls;
+     |                         ^^ no implementation for `usize += u64`
+     |
+     = help: the trait `AddAssign<u64>` is not implemented for `usize`
+help: the following other types implement trait `AddAssign<Rhs>`
+    --> /home/cosmosapjw/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ops/arith.rs:787:9
+     |
+ 787 |         impl const AddAssign for $t {
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^ `usize` implements `AddAssign`
+...
+ 800 | add_assign_impl! { usize u8 u16 u32 u64 u128 isize i8 i16 i32 i64 i128 f16 f32 f64 f128 }
+     | ----------------------------------------------------------------------------------------- in this macro invocation
+     |
+    ::: /home/cosmosapjw/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/internal_macros.rs:61:9
+     |
+  61 |         impl const $imp<&$u> for $t {
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^ `usize` implements `AddAssign<&usize>`
+     = note: this error originates in the macro `add_assign_impl` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+Some errors have detailed explanations: E0277, E0308.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `vigilode` (lib) due to 2 previous errors

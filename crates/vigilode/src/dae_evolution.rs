@@ -44,6 +44,14 @@ impl EvolutionRoute {
         if self == Self::Reduced3 { 3 } else { 5 }
     }
 }
+/// Absolute physical clock and certified differential-state radius.
+/// The caller owns the incoming certificate. None means unresolved, not zero.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+pub struct EvolutionEpoch {
+    pub start: f64,
+    pub end: f64,
+    pub incoming_x_error: Option<f64>,
+}
 #[derive(Clone, Copy, Debug, Serialize)]
 pub struct EvolutionPolicy {
     pub init: InitPolicy,
@@ -158,6 +166,9 @@ pub struct SlabRecord {
 pub struct EvolutionRun {
     pub route: EvolutionRoute,
     pub initial: InitReport,
+    /// Nonlegacy epoch authority, retained in the receipt.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub epoch: Option<EvolutionEpoch>,
     driver: Solution,
     pub accepted: Vec<Query>,
     pub queries: Vec<Query>,
@@ -305,8 +316,62 @@ pub fn evolve(
     route: EvolutionRoute,
     grid: &[f64],
 ) -> CoreResult<EvolutionRun> {
-    if !end.is_finite()
-        || end <= 0.
+    evolve_epoch(
+        src,
+        x,
+        z,
+        branch,
+        EvolutionEpoch {
+            start: 0.,
+            end,
+            incoming_x_error: Some(0.),
+        },
+        opts,
+        policy,
+        route,
+        grid,
+    )
+}
+/// Integrate at an absolute physical clock with caller-certified incoming
+/// differential error. No event is detected or committed by this API.
+/// Unknown incoming radius allows numerical evolution but no global proof.
+#[allow(clippy::too_many_arguments)]
+pub fn evolve_epoch(
+    src: &DaeSource,
+    x: &[f64],
+    z: &[f64],
+    branch: &[[f64; 2]],
+    epoch: EvolutionEpoch,
+    opts: &Options,
+    policy: EvolutionPolicy,
+    route: EvolutionRoute,
+    grid: &[f64],
+) -> CoreResult<EvolutionRun> {
+    evolve_epoch_impl(src, x, z, branch, epoch, opts, policy, route, grid, None)
+}
+#[allow(clippy::too_many_arguments)]
+fn evolve_epoch_impl(
+    src: &DaeSource,
+    x: &[f64],
+    z: &[f64],
+    branch: &[[f64; 2]],
+    epoch: EvolutionEpoch,
+    opts: &Options,
+    policy: EvolutionPolicy,
+    route: EvolutionRoute,
+    grid: &[f64],
+    mut scan: Option<&mut dyn EpochObserver>,
+) -> CoreResult<EvolutionRun> {
+    let EvolutionEpoch {
+        start,
+        end,
+        incoming_x_error,
+    } = epoch;
+    if !start.is_finite()
+        || !end.is_finite()
+        || end <= start
+        || !(end - start).is_finite()
+        || incoming_x_error.is_some_and(|v| !v.is_finite() || v < 0.)
         || !opts.dense_output
         || !matches!(opts.atol, Atol::Scalar(_))
         || !policy.tube_radius.is_finite()
@@ -314,16 +379,25 @@ pub fn evolve(
         || !policy.global_tol.is_finite()
         || policy.global_tol <= 0.
         || grid.len() > 4096
-        || grid.iter().any(|t| !t.is_finite() || *t < 0. || *t > end)
+        || grid
+            .iter()
+            .any(|t| !t.is_finite() || *t < start || *t > end)
         || grid.windows(2).any(|v| v[0] >= v[1])
     {
         return Err(bad("input/clock/dense scalar tolerance contract"));
     }
     let nx = src.nx();
-    let initial = src.initialize(0., x, z, branch, policy.init, route.init())?;
+    let initial = src.initialize(start, x, z, branch, policy.init, route.init())?;
     let warp = match route {
-        EvolutionRoute::WarpDirect => Some(WarpSeed::new(src, end, QuotientMode::DirectBlock)?),
-        EvolutionRoute::WarpFolded => Some(WarpSeed::new(src, end, QuotientMode::Folded)?),
+        EvolutionRoute::WarpDirect => Some(WarpSeed::new_window(
+            src,
+            start,
+            end,
+            QuotientMode::DirectBlock,
+        )?),
+        EvolutionRoute::WarpFolded => {
+            Some(WarpSeed::new_window(src, start, end, QuotientMode::Folded)?)
+        }
         _ => None,
     };
     let e = Engine {
@@ -336,7 +410,7 @@ pub fn evolve(
         work: Arc::new(Mutex::new(ProjectionWork::default())),
     };
     let (p, y) = if route == EvolutionRoute::Mass {
-        let a = initialize_mass_problem(src, 0., x, z, branch, policy.init, route.init())
+        let a = initialize_mass_problem(src, start, x, z, branch, policy.init, route.init())
             .map_err(bad)?;
         (a.problem, a.initial_state)
     } else {
@@ -377,10 +451,24 @@ pub fn evolve(
         });
         (p, x.to_vec())
     };
-    let driver = Rodas5p::solve(&p, (0., end), &y, opts).map_err(bad)?;
+    let driver = if let Some(scan) = scan.as_deref_mut() {
+        let mut inspect = |proposal: crate::solve::DenseProposal<'_>| scan.inspect(&e, proposal);
+        Rodas5p::solve_dense_controlled(&p, (start, end), &y, opts, &mut inspect).map_err(bad)?
+    } else {
+        Rodas5p::solve(&p, (start, end), &y, opts).map_err(bad)?
+    };
+    let expected_stop = scan
+        .as_ref()
+        .is_some_and(|v| v.stopped_at().is_some_and(|t| driver.t.last() == Some(&t)));
+    let actual_end = if expected_stop {
+        *driver.t.last().expect("accepted prefix")
+    } else {
+        end
+    };
     let mut out = EvolutionRun {
         route,
         initial,
+        epoch: (start != 0. || incoming_x_error != Some(0.)).then_some(epoch),
         driver,
         accepted: vec![],
         queries: vec![],
@@ -394,8 +482,8 @@ pub fn evolve(
         reason: None,
         engine: e.clone(),
     };
-    if !out.driver.is_success()
-        || out.driver.t.last() != Some(&end)
+    if (!out.driver.is_success() && !expected_stop)
+        || out.driver.t.last() != Some(&actual_end)
         || !out.driver.splices.is_empty()
     {
         out.reason = Some(format!(
@@ -405,7 +493,7 @@ pub fn evolve(
         out.work = e.work.lock().map_err(|_| bad("work lock"))?.clone();
         return Ok(out);
     }
-    let mut incoming = Some(0.);
+    let mut incoming = incoming_x_error;
     for k in 0..out.driver.t.len() - 1 {
         let times = [out.driver.t[k], out.driver.t[k + 1]];
         let native = packet(&out.driver, k)?;
@@ -587,4 +675,2918 @@ pub fn adaptive(
             Ok((v, b))
         },
     )
+}
+
+/// Root-search routes. All require the same source-owned physical tube;
+/// a represented-polynomial hint has no physical authority.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum ThresholdRoute {
+    Bisection,
+    IntervalNewton,
+    DictionaryHint,
+}
+
+#[derive(Clone, Debug, Default, Serialize)]
+pub struct ThresholdWork {
+    pub inspected: usize,
+    pub guard_evals: usize,
+    pub hint_calls: usize,
+    pub hint_dictionary_uses: usize,
+    pub projection: ProjectionWork,
+    pub certified_slabs: usize,
+}
+pub use de::{GuardDerivativeRoute, GuardSlabEvidence, GuardValueRoute};
+struct DeclaredGuard {
+    source: rodas5p_integrators::retro_event_poly::DeclaredPolynomial,
+    derivative: GuardDerivativeRoute,
+    value: GuardValueRoute,
+}
+/// Bounded opt-in handling of an ambiguous accepted-step endpoint.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum PendingMethod {
+    Hull,
+    Piecewise,
+    PiecewiseProbe,
+}
+#[derive(Clone, Copy, Debug, Serialize)]
+pub struct PendingPolicy {
+    pub method: PendingMethod,
+    pub max_slabs: usize,
+}
+#[derive(Clone, Copy, Debug, Serialize)]
+pub struct PendingSlab {
+    pub times: [f64; 2],
+    pub left: [f64; 2],
+    pub right: [f64; 2],
+    pub velocity: [f64; 2],
+    pub probe: Option<(f64, [f64; 2])>,
+    pub incoming_radius: f64,
+    pub outgoing_radius: f64,
+    pub safe_before: f64,
+}
+#[derive(Clone, Debug, Serialize)]
+pub struct PendingReport {
+    pub policy: PendingPolicy,
+    pub records: Vec<PendingSlab>,
+    pub candidate: Option<[f64; 2]>,
+    pub episodes: usize,
+    pub refinements: usize,
+    pub resolution: Option<&'static str>,
+    pub blocked_initial: bool,
+}
+struct PendingState {
+    report: PendingReport,
+    active_start: Option<usize>,
+}
+impl PendingState {
+    fn new(policy: PendingPolicy) -> CoreResult<Self> {
+        if !(1..=64).contains(&policy.max_slabs) {
+            return Err(bad("pending slab cap"));
+        }
+        Ok(Self {
+            report: PendingReport {
+                policy,
+                records: Vec::with_capacity(policy.max_slabs),
+                candidate: None,
+                episodes: 0,
+                refinements: 0,
+                resolution: None,
+                blocked_initial: true,
+            },
+            active_start: None,
+        })
+    }
+    fn active(&self) -> bool {
+        self.active_start.is_some()
+    }
+    fn room(&self) -> bool {
+        self.report.records.len() < self.report.policy.max_slabs
+    }
+    fn add(&mut self, r: PendingSlab) -> CoreResult<()> {
+        if !self.room() {
+            self.report.resolution = Some("slab-cap");
+            return Err(bad("pending slab cap exhausted"));
+        }
+        if let Some(i) = self.active_start {
+            let prev = self.report.records.last().expect("active pending record");
+            if i >= self.report.records.len()
+                || prev.times[1] != r.times[0]
+                || prev.right[0] > r.left[1]
+                || r.left[0] > prev.right[1]
+                || prev.outgoing_radius != r.incoming_radius
+            {
+                self.report.resolution = Some("inconsistent-boundary");
+                return Err(bad("inconsistent pending boundary or physical radius"));
+            }
+        } else {
+            if r.left[1] >= 0. {
+                return Err(bad("pending requires negative anchor"));
+            }
+            self.active_start = Some(self.report.records.len());
+            self.report.episodes += 1;
+            self.report.candidate = None;
+        }
+        self.report.records.push(r);
+        Ok(())
+    }
+    fn enclose(&mut self) -> CoreResult<[f64; 2]> {
+        let rs =
+            &self.report.records[self.active_start.ok_or_else(|| bad("pending not active"))?..];
+        let first = rs.first().ok_or_else(|| bad("empty pending"))?;
+        let last = rs.last().expect("pending records");
+        if first.left[1] >= 0. || last.right[0] <= 0. {
+            return Err(bad("missing strict physical signs"));
+        }
+        fn newton(t: f64, g: [f64; 2], v: Iv) -> CoreResult<Iv> {
+            Iv::point(t)?.sub(Iv::new(g[0], g[1])?.div(v)?)
+        }
+        fn meet(a: Iv, b: Iv) -> Option<Iv> {
+            let lo = a.lo.max(b.lo);
+            let hi = a.hi.min(b.hi);
+            (lo <= hi).then_some(Iv { lo, hi })
+        }
+        let mut n = 0;
+        let answer = match self.report.policy.method {
+            PendingMethod::Hull => {
+                let d = Iv::new(
+                    rs.iter()
+                        .map(|r| r.velocity[0])
+                        .fold(f64::INFINITY, f64::min),
+                    rs.iter()
+                        .map(|r| r.velocity[1])
+                        .fold(f64::NEG_INFINITY, f64::max),
+                )?;
+                if d.lo <= 0. {
+                    return Err(bad("pending nontransverse"));
+                }
+                let mut i = Iv::new(first.times[0], last.times[1])?;
+                for r in rs {
+                    for (t, g) in [(r.times[0], r.left), (r.times[1], r.right)] {
+                        n += 1;
+                        i = meet(i, newton(t, g, d)?)
+                            .ok_or_else(|| bad("inconsistent pending hull"))?;
+                    }
+                }
+                i
+            }
+            PendingMethod::Piecewise | PendingMethod::PiecewiseProbe => {
+                let mut hull: Option<Iv> = None;
+                for r in rs {
+                    let d = Iv::new(r.velocity[0], r.velocity[1])?;
+                    if d.lo <= 0. {
+                        return Err(bad("pending nontransverse"));
+                    }
+                    let i = Iv::new(r.times[0], r.times[1])?;
+                    n += 2;
+                    let a = newton(r.times[0], r.left, d)?;
+                    let b = newton(r.times[1], r.right, d)?;
+                    let mut local = meet(i, a).and_then(|i| meet(i, b));
+                    if let Some((t, g)) = r.probe {
+                        n += 1;
+                        let w = newton(t, g, d)?;
+                        local = local.and_then(|i| meet(i, w));
+                    }
+                    if let Some(i) = local {
+                        hull = Some(match hull {
+                            None => i,
+                            Some(j) => Iv {
+                                lo: i.lo.min(j.lo),
+                                hi: i.hi.max(j.hi),
+                            },
+                        });
+                    }
+                }
+                hull.ok_or_else(|| bad("inconsistent pending piecewise enclosure"))?
+            }
+        };
+        self.report.refinements += n;
+        self.report.candidate = Some(answer.as_pair());
+        Ok(answer.as_pair())
+    }
+}
+struct ThresholdScan {
+    pending: Option<PendingState>,
+    threshold: f64,
+    guard: Option<DeclaredGuard>,
+    guard_slabs: Vec<GuardSlabEvidence>,
+    tolerance: f64,
+    route: ThresholdRoute,
+    incoming: Option<f64>,
+    safe: f64,
+    numerical_end: f64,
+    root: Option<[f64; 2]>,
+    stopped: bool,
+    reason: Option<String>,
+    work: ThresholdWork,
+}
+fn proposal_packet(
+    proposal: crate::solve::DenseProposal<'_>,
+) -> CoreResult<([f64; 2], NativePacket)> {
+    use crate::solve::DenseProposal;
+    let (times, basis, y0, y1, stages) = match proposal {
+        DenseProposal::Sequential(s) => (
+            [s.t_old, s.t_new],
+            DenseBasis::SequentialD,
+            s.y_old.clone(),
+            s.y_new.clone(),
+            s.stages.clone(),
+        ),
+        DenseProposal::Fast(s) => {
+            let k = s.len() - 1;
+            (
+                [s.t_old(k), s.t_new(k)],
+                DenseBasis::FastH,
+                s.state(k).to_vec(),
+                s.state(k + 1).to_vec(),
+                s.stage_rows(k)
+                    .chunks(s.dimension())
+                    .map(<[f64]>::to_vec)
+                    .collect(),
+            )
+        }
+    };
+    Ok((
+        times,
+        NativePacket {
+            basis,
+            coefficients: basis.coefficients()?.as_slice().to_vec(),
+            y0,
+            y1,
+            stages,
+        },
+    ))
+}
+fn guard_interval(p: &[Iv], times: [f64; 2], t: f64, error: f64, threshold: f64) -> CoreResult<Iv> {
+    let u = Iv::point(t)?
+        .sub(Iv::point(times[0])?)?
+        .div(Iv::point(times[1])?.sub(Iv::point(times[0])?)?)?;
+    let u = Iv::new(u.lo.max(0.), u.hi.min(1.))?;
+    let x = p
+        .iter()
+        .rev()
+        .try_fold(Iv::point(0.)?, |a, &b| a.mul(u)?.add(b))?;
+    x.sub(Iv::point(threshold)?)?.add(Iv::new(-error, error)?)
+}
+fn diameter(a: f64, b: f64) -> CoreResult<f64> {
+    rodas5p_core::directed::sub_up(b, a)
+}
+trait EpochObserver {
+    fn inspect(
+        &mut self,
+        e: &Engine,
+        proposal: crate::solve::DenseProposal<'_>,
+    ) -> rodas5p_integrators::AcceptControl;
+    fn stopped_at(&self) -> Option<f64>;
+}
+impl EpochObserver for ThresholdScan {
+    fn stopped_at(&self) -> Option<f64> {
+        self.stopped.then_some(self.numerical_end)
+    }
+    fn inspect(
+        &mut self,
+        e: &Engine,
+        proposal: crate::solve::DenseProposal<'_>,
+    ) -> rodas5p_integrators::AcceptControl {
+        use rodas5p_integrators::AcceptControl;
+        self.work.inspected += 1;
+        let answer = proposal_packet(proposal).and_then(|(times, native)| {
+            self.numerical_end = times[1];
+            self.scan(e, times, &native)
+        });
+        match answer {
+            Ok(false) => AcceptControl::Continue,
+            Ok(true) => {
+                self.stopped = true;
+                AcceptControl::Stop
+            }
+            Err(err) => {
+                self.reason = Some(err.to_string());
+                self.stopped = true;
+                AcceptControl::Stop
+            }
+        }
+    }
+}
+fn certify_native_packet(
+    e: &Engine,
+    times: [f64; 2],
+    native: &NativePacket,
+    incoming: Option<f64>,
+    work: &mut ProjectionWork,
+) -> CoreResult<(Vec<Vec<Iv>>, SlabCertificate)> {
+    let mut p = native.power()?;
+    if e.route != EvolutionRoute::Mass {
+        let (z, w) = de::reconstruct(
+            &e.src,
+            times,
+            &p,
+            &e.seed,
+            &e.branch,
+            e.policy.init,
+            e.route.init(),
+            e.warp.as_ref(),
+            e.route.nodes(),
+        )?;
+        for q in &w {
+            work.add(q, e.warp.is_some());
+        }
+        p.extend(z);
+    }
+    let c = de::certify_slab(
+        &e.src,
+        times,
+        &p,
+        &e.branch,
+        e.policy.tube_radius,
+        incoming,
+        e.policy.green,
+        e.policy.init.condition_cap,
+    )?;
+    if !c.global_qualified
+        || c.whole_z_error.is_none_or(|v| v > e.policy.global_tol)
+        || c.whole_x_error.is_none_or(|v| v > e.policy.global_tol)
+    {
+        return Err(bad("unqualified physical slab"));
+    }
+    Ok((p, c))
+}
+impl ThresholdScan {
+    fn scan(&mut self, e: &Engine, times: [f64; 2], native: &NativePacket) -> CoreResult<bool> {
+        let (p, c) =
+            certify_native_packet(e, times, native, self.incoming, &mut self.work.projection)?;
+        self.scan_certified(e, times, &p, &c)
+    }
+    fn scan_certified(
+        &mut self,
+        e: &Engine,
+        times: [f64; 2],
+        p: &[Vec<Iv>],
+        c: &SlabCertificate,
+    ) -> CoreResult<bool> {
+        self.work.certified_slabs += 1;
+        let proof = self
+            .guard
+            .as_ref()
+            .map(|g| de::GuardProof::new(&e.src, &g.source, p, c, g.derivative, g.value))
+            .transpose()?;
+        let velocity = if let Some(proof) = &proof {
+            let v = proof.evidence.velocity;
+            self.guard_slabs.push(proof.evidence.clone());
+            Iv::new(v[0], v[1])?
+        } else {
+            de::threshold_velocity(&e.src, c)?
+        };
+        if velocity.lo <= 0. {
+            return Err(bad("strict transverse increasing guard not proved"));
+        }
+        let incoming = self
+            .incoming
+            .ok_or_else(|| bad("unknown incoming radius"))?;
+        let outgoing = c.outgoing.ok_or_else(|| bad("unknown outgoing radius"))?;
+        let whole = c.whole_x_error.ok_or_else(|| bad("unknown whole radius"))?;
+        let a = times[0];
+        let b = times[1];
+        let mut g = |t: f64, error: f64| {
+            self.work.guard_evals += 1;
+            if let Some(proof) = &proof {
+                let v = proof.value_at(t, error)?;
+                self.guard_slabs
+                    .last_mut()
+                    .expect("current guard evidence")
+                    .evaluations
+                    .push(de::GuardPointEvidence {
+                        time: t,
+                        differential_radius: error,
+                        value: v.as_pair(),
+                    });
+                Ok(v)
+            } else {
+                guard_interval(&p[0], times, t, error, self.threshold)
+            }
+        };
+        let ga = g(a, incoming)?;
+        let gb = g(b, outgoing)?;
+        if let Some(pending) = self.pending.as_mut() {
+            if self.work.inspected == 1 && ga.hi < 0. {
+                pending.report.blocked_initial = false;
+            }
+            if !pending.active() && ga.hi >= 0. {
+                if self.work.inspected == 1 {
+                    pending.report.blocked_initial = true;
+                }
+                pending.report.resolution = Some("uncertain-left");
+                return Err(bad("uncertain left guard"));
+            }
+            if pending.active() || (gb.lo <= 0. && gb.hi >= 0.) {
+                if !pending.room() {
+                    pending.report.resolution = Some("slab-cap");
+                    return Err(bad("pending slab cap exhausted"));
+                }
+                let probe = if pending.report.policy.method == PendingMethod::PiecewiseProbe {
+                    let mut t = a * 0.5 + b * 0.5;
+                    if self.route == ThresholdRoute::DictionaryHint {
+                        use rodas5p_integrators::retro_event_poly::{
+                            RepresentedPolynomial, RootRoute,
+                        };
+                        self.work.hint_calls += 1;
+                        let cp = proof
+                            .as_ref()
+                            .expect("declared pending guard")
+                            .hint_coefficients();
+                        if let Ok(r) = RepresentedPolynomial::from_power(&cp)
+                            .and_then(|r| r.isolate(RootRoute::DictionaryCompanion, 2f64.powi(-35)))
+                        {
+                            self.work.hint_dictionary_uses += r.work.dictionary_uses;
+                            if r.roots.len() == 1 {
+                                let u = r.roots[0].theta;
+                                let tt = a + (b - a) * (u[0] * 0.5 + u[1] * 0.5);
+                                if a < tt && tt < b {
+                                    t = tt;
+                                }
+                            }
+                        }
+                    }
+                    if a < t && t < b {
+                        Some((t, g(t, whole)?.as_pair()))
+                    } else {
+                        None
+                    }
+                } else {
+                    None
+                };
+                pending.add(PendingSlab {
+                    times,
+                    left: ga.as_pair(),
+                    right: gb.as_pair(),
+                    velocity: velocity.as_pair(),
+                    probe,
+                    incoming_radius: incoming,
+                    outgoing_radius: outgoing,
+                    safe_before: self.safe,
+                })?;
+                self.incoming = Some(outgoing);
+                if gb.hi < 0. {
+                    // Monotonicity through the pending episode proves the
+                    // entire numerical continuation was still pre-event.
+                    self.safe = b;
+                    pending.active_start = None;
+                    pending.report.resolution = Some("negative-recovered");
+                    return Ok(false);
+                }
+                if gb.lo > 0. {
+                    let i = pending.enclose()?;
+                    if diameter(i[0], i[1])? > self.tolerance {
+                        pending.report.resolution = Some("width-unresolved");
+                        return Err(bad("pending physical root width exceeds tolerance"));
+                    }
+                    self.root = Some(i);
+                    self.safe = i[0];
+                    pending.active_start = None;
+                    pending.report.resolution = Some("certified");
+                    return Ok(true);
+                }
+                pending.report.resolution = Some("awaiting-positive");
+                return Ok(false);
+            }
+        }
+        if ga.hi >= 0. {
+            return Err(bad("uncertain left guard"));
+        }
+        if gb.hi < 0. {
+            self.safe = b;
+            self.incoming = Some(outgoing);
+            return Ok(false);
+        }
+        if gb.lo <= 0. {
+            return Err(bad("uncertain right guard; refine before committing"));
+        }
+        // Unique physical root by strict signs and uniform positive derivative.
+        let mut lo = a;
+        let mut hi = b;
+        let mut hint = None;
+        if self.route == ThresholdRoute::DictionaryHint {
+            use rodas5p_integrators::retro_event_poly::{RepresentedPolynomial, RootRoute};
+            self.work.hint_calls += 1;
+            let cp = if let Some(proof) = &proof {
+                proof.hint_coefficients()
+            } else {
+                let mut cp = p[0]
+                    .iter()
+                    .map(|v| v.lo * 0.5 + v.hi * 0.5)
+                    .collect::<Vec<_>>();
+                cp[0] -= self.threshold;
+                cp
+            };
+            if let Ok(r) = RepresentedPolynomial::from_power(&cp)
+                .and_then(|r| r.isolate(RootRoute::DictionaryCompanion, 2f64.powi(-35)))
+            {
+                self.work.hint_dictionary_uses += r.work.dictionary_uses;
+                if r.roots.len() == 1 {
+                    let u = r.roots[0].theta;
+                    let t = a + (b - a) * (u[0] * 0.5 + u[1] * 0.5);
+                    if t > a && t < b {
+                        hint = Some(t);
+                    }
+                }
+            }
+        }
+        for _ in 0..64 {
+            if diameter(lo, hi)? <= self.tolerance {
+                self.root = Some([lo, hi]);
+                self.safe = lo;
+                self.incoming = Some(outgoing);
+                return Ok(true);
+            }
+            let mid = hint.take().unwrap_or(lo * 0.5 + hi * 0.5);
+            if !(lo < mid && mid < hi) {
+                break;
+            }
+            let v = g(mid, whole)?;
+            let old = (lo, hi);
+            if self.route != ThresholdRoute::Bisection {
+                let n = Iv::point(mid)?.sub(v.div(velocity)?)?;
+                lo = lo.max(n.lo);
+                hi = hi.min(n.hi);
+                if lo > hi {
+                    return Err(bad("inconsistent physical root enclosure"));
+                }
+            } else if v.hi < 0. {
+                lo = mid;
+            } else if v.lo > 0. {
+                hi = mid;
+            } else {
+                let left = lo * 0.5 + mid * 0.5;
+                let right = mid * 0.5 + hi * 0.5;
+                if g(left, whole)?.hi < 0. {
+                    lo = left;
+                }
+                if g(right, whole)?.lo > 0. {
+                    hi = right;
+                }
+            }
+            if old == (lo, hi) {
+                break;
+            }
+        }
+        if diameter(lo, hi)? <= self.tolerance {
+            self.root = Some([lo, hi]);
+            self.safe = lo;
+            return Ok(true);
+        }
+        Err(bad("physical root width exceeds tolerance"))
+    }
+}
+/// The numerical continuation is private: only the certified old-mode
+/// prefix can be queried. All trial solver work stays in stats.
+pub struct ThresholdRun {
+    trial: EvolutionRun,
+    root: Option<[f64; 2]>,
+    committed_until: f64,
+    numerical_end: f64,
+    reason: Option<String>,
+    pub work: ThresholdWork,
+    guard_slabs: Vec<GuardSlabEvidence>,
+    pending_report: Option<PendingReport>,
+}
+impl ThresholdRun {
+    pub fn pending_report(&self) -> Option<&PendingReport> {
+        self.pending_report.as_ref()
+    }
+    pub fn guard_slabs(&self) -> &[GuardSlabEvidence] {
+        &self.guard_slabs
+    }
+    pub fn root(&self) -> Option<[f64; 2]> {
+        self.root
+    }
+    pub fn committed_until(&self) -> f64 {
+        self.committed_until
+    }
+    pub fn numerical_end(&self) -> f64 {
+        self.numerical_end
+    }
+    pub fn reason(&self) -> Option<&str> {
+        self.reason.as_deref()
+    }
+    pub fn stats(&self) -> &crate::Stats {
+        &self.trial.driver.stats
+    }
+    /// Recorded projection work of the numerical driver and certificate replay.
+    /// Guard-scanning projection work is recorded separately in work.
+    pub fn projection_work(&self) -> &ProjectionWork {
+        &self.trial.work
+    }
+    pub fn pre_query(&self, t: f64) -> CoreResult<Query> {
+        if self
+            .pending_report
+            .as_ref()
+            .is_some_and(|r| r.blocked_initial)
+            || !t.is_finite()
+            || t > self.committed_until
+        {
+            return Err(bad("outside certified pre-event prefix"));
+        }
+        let q = self.trial.query(t)?;
+        if q.physical_error_upper
+            .is_none_or(|b| b > self.trial.engine.policy.global_tol)
+        {
+            return Err(bad("unqualified physical query"));
+        }
+        Ok(q)
+    }
+}
+/// Single strictly increasing scalar differential threshold. No claim for
+/// grazing, opaque or competing guards. The caller supplies initial authority.
+#[allow(clippy::too_many_arguments)]
+pub fn evolve_to_threshold(
+    src: &DaeSource,
+    x: &[f64],
+    z: &[f64],
+    branch: &[[f64; 2]],
+    epoch: EvolutionEpoch,
+    opts: &Options,
+    policy: EvolutionPolicy,
+    route: EvolutionRoute,
+    threshold: f64,
+    tolerance: f64,
+    root_route: ThresholdRoute,
+) -> CoreResult<ThresholdRun> {
+    if src.nx() != 1
+        || x.len() != 1
+        || !threshold.is_finite()
+        || !tolerance.is_finite()
+        || tolerance <= 0.
+    {
+        return Err(bad("scalar threshold contract"));
+    }
+    let rad = epoch
+        .incoming_x_error
+        .ok_or_else(|| bad("physical incoming radius required"))?;
+    if !rad.is_finite() || rad < 0. || Iv::point(x[0])?.add(Iv::new(-rad, rad)?)?.hi >= threshold {
+        return Err(bad("initial guard not strictly below threshold"));
+    }
+    let mut scan = ThresholdScan {
+        pending: None,
+        threshold,
+        guard: None,
+        guard_slabs: vec![],
+        tolerance,
+        route: root_route,
+        incoming: Some(rad),
+        safe: epoch.start,
+        numerical_end: epoch.start,
+        root: None,
+        stopped: false,
+        reason: None,
+        work: ThresholdWork::default(),
+    };
+    let trial = evolve_epoch_impl(
+        src,
+        x,
+        z,
+        branch,
+        epoch,
+        opts,
+        policy,
+        route,
+        &[],
+        Some(&mut scan),
+    )?;
+    if !scan.stopped && (!trial.driver.is_success() || trial.driver.t.last() != Some(&epoch.end)) {
+        scan.reason = Some("native driver ended before certified event or horizon".into());
+    }
+    if scan.root.is_some() && !trial.branch_qualified {
+        scan.root = None;
+        scan.safe = epoch.start;
+        scan.reason = Some("replayed physical branch proof failed".into());
+    }
+    Ok(ThresholdRun {
+        trial,
+        root: scan.root,
+        committed_until: scan.safe,
+        numerical_end: scan.numerical_end,
+        reason: scan.reason,
+        work: scan.work,
+        guard_slabs: scan.guard_slabs,
+        pending_report: scan.pending.map(|p| p.report),
+    })
+}
+
+/// Source-owned single polynomial guard H(t,x,z)=0 on the certified branch.
+/// Initial physical sign must be negative and all inspected slabs strictly
+/// increasing in H. No root can be authorized by a polynomial hint alone.
+#[allow(clippy::too_many_arguments)]
+pub fn evolve_to_guard(
+    src: &DaeSource,
+    x: &[f64],
+    z: &[f64],
+    branch: &[[f64; 2]],
+    epoch: EvolutionEpoch,
+    opts: &Options,
+    policy: EvolutionPolicy,
+    route: EvolutionRoute,
+    guard: &rodas5p_integrators::retro_event_poly::DeclaredPolynomial,
+    tolerance: f64,
+    root_route: ThresholdRoute,
+    derivative: GuardDerivativeRoute,
+    value: GuardValueRoute,
+) -> CoreResult<ThresholdRun> {
+    evolve_to_guard_impl(
+        src, x, z, branch, epoch, opts, policy, route, guard, tolerance, root_route, derivative,
+        value, None,
+    )
+}
+/// Bounded speculative continuation in the ORIGINAL mode. A source
+/// extension across the event is required; only the safe prefix is exposed.
+#[allow(clippy::too_many_arguments)]
+pub fn evolve_to_guard_pending(
+    src: &DaeSource,
+    x: &[f64],
+    z: &[f64],
+    branch: &[[f64; 2]],
+    epoch: EvolutionEpoch,
+    opts: &Options,
+    policy: EvolutionPolicy,
+    route: EvolutionRoute,
+    guard: &rodas5p_integrators::retro_event_poly::DeclaredPolynomial,
+    tolerance: f64,
+    root_route: ThresholdRoute,
+    derivative: GuardDerivativeRoute,
+    value: GuardValueRoute,
+    pending: PendingPolicy,
+) -> CoreResult<ThresholdRun> {
+    evolve_to_guard_impl(
+        src,
+        x,
+        z,
+        branch,
+        epoch,
+        opts,
+        policy,
+        route,
+        guard,
+        tolerance,
+        root_route,
+        derivative,
+        value,
+        Some(PendingState::new(pending)?),
+    )
+}
+#[allow(clippy::too_many_arguments)]
+fn evolve_to_guard_impl(
+    src: &DaeSource,
+    x: &[f64],
+    z: &[f64],
+    branch: &[[f64; 2]],
+    epoch: EvolutionEpoch,
+    opts: &Options,
+    policy: EvolutionPolicy,
+    route: EvolutionRoute,
+    guard: &rodas5p_integrators::retro_event_poly::DeclaredPolynomial,
+    tolerance: f64,
+    root_route: ThresholdRoute,
+    derivative: GuardDerivativeRoute,
+    value: GuardValueRoute,
+    pending: Option<PendingState>,
+) -> CoreResult<ThresholdRun> {
+    guard.validate(src.nx() + src.nz())?;
+    if x.len() != src.nx() || !tolerance.is_finite() || tolerance <= 0. {
+        return Err(bad("declared guard contract"));
+    }
+    let rad = epoch
+        .incoming_x_error
+        .ok_or_else(|| bad("physical incoming radius required"))?;
+    if !rad.is_finite() || rad < 0. {
+        return Err(bad("invalid incoming radius"));
+    }
+    let mut scan = ThresholdScan {
+        pending,
+        threshold: 0.,
+        guard: Some(DeclaredGuard {
+            source: guard.clone(),
+            derivative,
+            value,
+        }),
+        guard_slabs: vec![],
+        tolerance,
+        route: root_route,
+        incoming: Some(rad),
+        safe: epoch.start,
+        numerical_end: epoch.start,
+        root: None,
+        stopped: false,
+        reason: None,
+        work: ThresholdWork::default(),
+    };
+    let trial = evolve_epoch_impl(
+        src,
+        x,
+        z,
+        branch,
+        epoch,
+        opts,
+        policy,
+        route,
+        &[],
+        Some(&mut scan),
+    )?;
+    if !scan.stopped && (!trial.driver.is_success() || trial.driver.t.last() != Some(&epoch.end)) {
+        scan.reason = Some("native driver ended before certified event or horizon".into());
+    }
+    if scan.root.is_some() && !trial.branch_qualified {
+        scan.root = None;
+        scan.safe = epoch.start;
+        scan.reason = Some("replayed physical branch proof failed".into());
+    }
+    if let Some(p) = scan.pending.as_mut() {
+        if p.active() && scan.reason.is_none() && scan.root.is_none() {
+            p.report.resolution = Some("horizon-unresolved");
+            scan.reason = Some("pending guard unresolved at horizon".into());
+        }
+        if scan.root.is_some() && (!trial.global_qualified || !trial.pointwise_qualified) {
+            scan.root = None;
+            scan.safe = epoch.start;
+            scan.reason = Some("pending replay physical proof failed".into());
+            p.report.resolution = Some("replay-unqualified");
+        }
+        if scan.reason.is_some() && p.report.resolution == Some("awaiting-positive") {
+            p.report.resolution = Some("continuation-refused");
+        }
+    }
+    Ok(ThresholdRun {
+        trial,
+        root: scan.root,
+        committed_until: scan.safe,
+        numerical_end: scan.numerical_end,
+        reason: scan.reason,
+        work: scan.work,
+        guard_slabs: scan.guard_slabs,
+        pending_report: scan.pending.map(|p| p.report),
+    })
+}
+
+/// The differential reset restricted to the single threshold is
+/// x^+ = offset + time_scale * tau. The new differential source is
+/// constructed here, not accepted as an unrelated user callback.
+#[derive(Clone, Copy, Debug, Serialize)]
+pub struct AffineDaeReset {
+    pub rate: f64,
+    pub equilibrium: f64,
+    pub offset: f64,
+    pub time_scale: f64,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum AffineSyncRoute {
+    Rectangle,
+    GreenMoment,
+    CriticalPoint,
+}
+#[derive(Serialize)]
+pub struct AffineRestartRun {
+    pub sync_route: AffineSyncRoute,
+    pub event_time: [f64; 2],
+    pub synchronized_x: [f64; 2],
+    pub incoming_radius: f64,
+    pub post: EvolutionRun,
+}
+impl AffineDaeReset {
+    fn sync(self, times: [f64; 2], route: AffineSyncRoute) -> CoreResult<Iv> {
+        use rodas5p_core::retro_dictionary::RealMode;
+        use rodas5p_integrators::retro_green::RetroTable;
+        let table = RetroTable::with_dictionary(RealMode::Hybrid)?;
+        let s = Iv::point(times[1])?;
+        let t = Iv::new(times[0], times[1])?;
+        let a = Iv::point(self.rate)?;
+        let e = Iv::point(self.equilibrium)?;
+        let aa = Iv::point(self.offset)?;
+        let b = Iv::point(self.time_scale)?;
+        let at = |t: Iv| -> CoreResult<Iv> {
+            let dt = s.sub(t)?.mul(a)?;
+            let gain = table.phi(Iv::new(dt.lo.max(0.), dt.hi)?, 0)?;
+            e.add(gain.mul(aa.add(b.mul(t)?)?.sub(e)?)?)
+        };
+        match route {
+            AffineSyncRoute::Rectangle => at(t),
+            AffineSyncRoute::GreenMoment => {
+                let dt = s.sub(t)?;
+                let u = Iv::new(0., dt.hi)?;
+                let au = a.mul(u)?;
+                let au = Iv::new(au.lo.max(0.), au.hi)?;
+                let ph1 = table.phi(au, 1)?;
+                let ph2 = table.phi(au, 2)?;
+                let d = ph1.sub(ph2)?;
+                let d = Iv::new(d.lo.max(0.), d.hi)?;
+                let rs = aa.add(b.mul(s)?)?;
+                rs.sub(b.add(a.mul(rs.sub(e)?)?)?.mul(u)?.mul(ph1)?)?
+                    .add(a.mul(b)?.mul(u)?.mul(u)?.mul(d)?)
+            }
+            AffineSyncRoute::CriticalPoint => {
+                let l = at(Iv::point(times[0])?)?;
+                let r = at(s)?;
+                let mut out = Iv::new(l.lo.min(r.lo), l.hi.max(r.hi))?;
+                if self.time_scale != 0. {
+                    let turn = -(b.add(a.mul(aa.sub(e)?)?)?.div(a.mul(b)?)?);
+                    let lo = turn.lo.max(t.lo);
+                    let hi = turn.hi.min(t.hi);
+                    if lo <= hi {
+                        let v = at(Iv::new(lo, hi)?)?;
+                        out = Iv::new(out.lo.min(v.lo), out.hi.max(v.hi))?;
+                    }
+                }
+                Ok(out)
+            }
+        }
+    }
+}
+impl ThresholdRun {
+    /// A single mode transition. No second guard is declared in this API.
+    /// Do not restart without a physically certified root. Algebraic
+    /// projection authority is explicit; no reset of error radius to zero.
+    #[allow(clippy::too_many_arguments)]
+    pub fn restart_affine(
+        &self,
+        reset: AffineDaeReset,
+        constraints: Vec<rodas5p_integrators::retro_event_poly::DeclaredPolynomial>,
+        z_seed: &[f64],
+        branch: &[[f64; 2]],
+        end: f64,
+        opts: &Options,
+        policy: EvolutionPolicy,
+        route: EvolutionRoute,
+        sync_route: AffineSyncRoute,
+        grid: &[f64],
+    ) -> CoreResult<AffineRestartRun> {
+        use rodas5p_integrators::retro_dae_init::InitMode;
+        use rodas5p_integrators::retro_event_poly::{AffineFactor, DeclaredPolynomial, EventTerm};
+        let root = self
+            .root
+            .filter(|_| self.reason.is_none())
+            .ok_or_else(|| bad("no physical event authority"))?;
+        if policy.init.mode != InitMode::ProjectAlgebraic
+            || !reset.rate.is_finite()
+            || reset.rate <= 0.
+            || ![reset.equilibrium, reset.offset, reset.time_scale, end]
+                .iter()
+                .all(|v| v.is_finite())
+            || end <= root[1]
+        {
+            return Err(bad(
+                "affine reset requires explicit algebraic projection and positive rate",
+            ));
+        }
+        let forcing = Iv::point(reset.rate)?.mul(Iv::point(reset.equilibrium)?)?;
+        if forcing.lo != forcing.hi {
+            return Err(bad("affine source coefficient not exactly represented"));
+        }
+        let src = DaeSource::new(
+            vec![DeclaredPolynomial::new(vec![
+                EventTerm {
+                    coefficient: -reset.rate,
+                    factors: vec![AffineFactor::component(0, 0.)],
+                },
+                EventTerm {
+                    coefficient: forcing.lo,
+                    factors: vec![],
+                },
+            ])?],
+            constraints,
+        )?;
+        let sync = reset.sync(root, sync_route)?;
+        let center = sync.lo * 0.5 + sync.hi * 0.5;
+        let radius = diameter(sync.lo, center)?.max(diameter(center, sync.hi)?);
+        let post = evolve_epoch(
+            &src,
+            &[center],
+            z_seed,
+            branch,
+            EvolutionEpoch {
+                start: root[1],
+                end,
+                incoming_x_error: Some(radius),
+            },
+            opts,
+            policy,
+            route,
+            grid,
+        )?;
+        Ok(AffineRestartRun {
+            sync_route,
+            event_time: root,
+            synchronized_x: sync.as_pair(),
+            incoming_radius: radius,
+            post,
+        })
+    }
+}
+
+/// Receipt for one source-bound checkpoint. Radius encloses the actual
+/// differential state at the represented checkpoint center.
+#[derive(Clone, Debug, Serialize)]
+pub struct GuardCheckpoint {
+    pub time: f64,
+    pub differential: Vec<f64>,
+    pub algebraic: Vec<f64>,
+    pub radius: f64,
+    pub projection: InitWork,
+    pub retry_h0: f64,
+    pub remaining_attempts: usize,
+}
+/// Private ownership of both numerical attempts and the original safe prefix.
+/// A retry failure cannot erase the first run or authorize a reset.
+pub struct GuardCheckpointRun {
+    first: ThresholdRun,
+    retry: Option<ThresholdRun>,
+    checkpoint: Option<GuardCheckpoint>,
+    retry_error: Option<String>,
+}
+impl GuardCheckpointRun {
+    pub fn first(&self) -> &ThresholdRun {
+        &self.first
+    }
+    pub fn retry(&self) -> Option<&ThresholdRun> {
+        self.retry.as_ref()
+    }
+    pub fn checkpoint(&self) -> Option<&GuardCheckpoint> {
+        self.checkpoint.as_ref()
+    }
+    pub fn retry_error(&self) -> Option<&str> {
+        self.retry_error.as_deref()
+    }
+    pub fn attempts_used(&self) -> usize {
+        self.first.stats().attempts + self.retry.as_ref().map_or(0, |r| r.stats().attempts)
+    }
+    pub fn root(&self) -> Option<[f64; 2]> {
+        self.first
+            .root()
+            .or_else(|| self.retry.as_ref().and_then(|r| r.root()))
+    }
+    pub fn committed_until(&self) -> f64 {
+        self.retry
+            .as_ref()
+            .map_or(self.first.committed_until(), |r| {
+                self.first.committed_until().max(r.committed_until())
+            })
+    }
+    pub fn pre_query(&self, t: f64) -> CoreResult<Query> {
+        if t <= self.first.committed_until() {
+            self.first.pre_query(t)
+        } else {
+            self.retry
+                .as_ref()
+                .ok_or_else(|| bad("no certified retry prefix"))?
+                .pre_query(t)
+        }
+    }
+    /// The selected certified event authority may be passed to the existing
+    /// affine restart transaction. Never exposes an uncertified candidate.
+    pub fn event_authority(&self) -> Option<&ThresholdRun> {
+        if self.first.root().is_some() {
+            Some(&self.first)
+        } else {
+            self.retry.as_ref().filter(|r| r.root().is_some())
+        }
+    }
+}
+/// One bounded re-integration from the last certified negative checkpoint.
+/// Same immutable source, branch, guard, tolerance, pending cap, and shared
+/// native attempt budget. This is not an in-place driver rollback.
+#[allow(clippy::too_many_arguments)]
+pub fn evolve_to_guard_checkpoint(
+    src: &DaeSource,
+    x: &[f64],
+    z: &[f64],
+    branch: &[[f64; 2]],
+    epoch: EvolutionEpoch,
+    opts: &Options,
+    policy: EvolutionPolicy,
+    route: EvolutionRoute,
+    guard: &rodas5p_integrators::retro_event_poly::DeclaredPolynomial,
+    tolerance: f64,
+    root_route: ThresholdRoute,
+    derivative: GuardDerivativeRoute,
+    value: GuardValueRoute,
+    pending: PendingPolicy,
+) -> CoreResult<GuardCheckpointRun> {
+    let first = evolve_to_guard_pending(
+        src, x, z, branch, epoch, opts, policy, route, guard, tolerance, root_route, derivative,
+        value, pending,
+    )?;
+    let mut out = GuardCheckpointRun {
+        first,
+        retry: None,
+        checkpoint: None,
+        retry_error: None,
+    };
+    let r = &out.first;
+    if r.root().is_some()
+        || !r.pending_report().is_some_and(|p| {
+            matches!(p.resolution, Some("slab-cap" | "width-unresolved")) && !p.blocked_initial
+        })
+    {
+        return Ok(out);
+    }
+    let make_checkpoint = || -> CoreResult<GuardCheckpoint> {
+        let time = r.committed_until();
+        let remaining = opts
+            .max_steps
+            .checked_sub(r.stats().attempts)
+            .filter(|v| *v > 0)
+            .ok_or_else(|| bad("shared attempt budget exhausted"))?;
+        let q = r.pre_query(time)?;
+        let slab = r
+            .trial
+            .slabs
+            .get(r.trial.slabs.partition_point(|s| s.times[1] < time))
+            .ok_or_else(|| bad("checkpoint slab missing"))?;
+        let cert = slab
+            .certificate
+            .as_ref()
+            .filter(|c| c.global_qualified)
+            .ok_or_else(|| bad("checkpoint physical certificate missing"))?;
+        let ein = if time == slab.times[0] {
+            cert.incoming
+        } else if time == slab.times[1] {
+            cert.outgoing
+                .ok_or_else(|| bad("checkpoint outgoing radius"))?
+        } else {
+            return Err(bad("checkpoint must be a native endpoint"));
+        };
+        let nx = src.nx();
+        let p = slab.power[..nx]
+            .iter()
+            .map(|row| {
+                row.iter()
+                    .map(|v| Iv::new(v[0], v[1]))
+                    .collect::<CoreResult<Vec<_>>>()
+            })
+            .collect::<CoreResult<Vec<_>>>()?;
+        let radius = de::query_x_error(&p, slab.times, time, &q.state[..nx], ein)?;
+        let h0 = opts.h0 * 0.5;
+        if !h0.is_finite() || h0 <= 0. || time + h0 <= time {
+            return Err(bad("unrepresentable checkpoint refinement"));
+        }
+        Ok(GuardCheckpoint {
+            time,
+            differential: q.state[..nx].to_vec(),
+            algebraic: q.state[nx..].to_vec(),
+            radius,
+            projection: q.projection.work,
+            retry_h0: h0,
+            remaining_attempts: remaining,
+        })
+    };
+    let cp = match make_checkpoint() {
+        Ok(cp) => cp,
+        Err(e) => {
+            out.retry_error = Some(e.to_string());
+            return Ok(out);
+        }
+    };
+    let mut retry_opts = opts.clone();
+    retry_opts.h0 = cp.retry_h0;
+    retry_opts.max_steps = cp.remaining_attempts;
+    let retry = evolve_to_guard_pending(
+        src,
+        &cp.differential,
+        &cp.algebraic,
+        branch,
+        EvolutionEpoch {
+            start: cp.time,
+            end: epoch.end,
+            incoming_x_error: Some(cp.radius),
+        },
+        &retry_opts,
+        policy,
+        route,
+        guard,
+        tolerance,
+        root_route,
+        derivative,
+        value,
+        pending,
+    );
+    out.checkpoint = Some(cp);
+    match retry {
+        Ok(v) => out.retry = Some(v),
+        Err(e) => out.retry_error = Some(e.to_string()),
+    }
+    Ok(out)
+}
+
+pub use de::{ResetEnvelopeRoute, ResetSlabEvidence, TransitionBranchProof};
+/// Source-owned post differential flow, deliberately restricted to scalar
+/// autonomous damping. The post algebraic source is declared separately.
+#[derive(Clone, Copy, Debug, Serialize)]
+pub struct DampedResetFlow {
+    pub rate: f64,
+    pub equilibrium: f64,
+}
+/// A rejected reset retains its evidence but does not expose a committed
+/// post-event trajectory. Old event authority is immutable.
+#[derive(Serialize)]
+pub struct PolynomialRestartRun {
+    pub event_time: [f64; 2],
+    pub envelope_route: ResetEnvelopeRoute,
+    pub slab_evidence: Vec<ResetSlabEvidence>,
+    pub reset_x: [f64; 2],
+    pub synchronized_x: [f64; 2],
+    pub transition_x: [f64; 2],
+    pub incoming_radius: f64,
+    pub branch_proof: Option<TransitionBranchProof>,
+    pub reason: Option<String>,
+    post_trial: Option<EvolutionRun>,
+}
+impl PolynomialRestartRun {
+    pub fn post(&self) -> Option<&EvolutionRun> {
+        if self.reason.is_none() {
+            self.post_trial
+                .as_ref()
+                .filter(|r| r.global_qualified && r.pointwise_qualified && r.branch_qualified)
+        } else {
+            None
+        }
+    }
+    pub fn post_diagnostic(&self) -> Option<&EvolutionRun> {
+        self.post_trial.as_ref()
+    }
+}
+impl ThresholdRun {
+    /// Polynomial state-dependent reset with source-owned root authority.
+    /// The pre-event continuation is used privately only within the proven
+    /// root interval. No external event time or arbitrary postflow callback.
+    #[allow(clippy::too_many_arguments)]
+    pub fn restart_polynomial(
+        &self,
+        reset: &rodas5p_integrators::retro_event_poly::DeclaredPolynomial,
+        flow: DampedResetFlow,
+        constraints: Vec<rodas5p_integrators::retro_event_poly::DeclaredPolynomial>,
+        z_seed: &[f64],
+        branch: &[[f64; 2]],
+        end: f64,
+        opts: &Options,
+        policy: EvolutionPolicy,
+        route: EvolutionRoute,
+        envelope: ResetEnvelopeRoute,
+        derivative: GuardDerivativeRoute,
+        branch_route: InitRoute,
+        grid: &[f64],
+    ) -> CoreResult<PolynomialRestartRun> {
+        use rodas5p_core::retro_dictionary::RealMode;
+        use rodas5p_integrators::retro_dae_init::InitMode;
+        use rodas5p_integrators::retro_event_poly::{AffineFactor, DeclaredPolynomial, EventTerm};
+        use rodas5p_integrators::retro_green::RetroTable;
+        let root = self
+            .root
+            .filter(|_| self.reason.is_none())
+            .ok_or_else(|| bad("no physical event authority"))?;
+        if !self.trial.global_qualified
+            || !self.trial.pointwise_qualified
+            || !self.trial.branch_qualified
+            || policy.init.mode != InitMode::ProjectAlgebraic
+            || !flow.rate.is_finite()
+            || flow.rate <= 0.
+            || !flow.equilibrium.is_finite()
+            || !end.is_finite()
+            || end <= root[1]
+        {
+            return Err(bad("polynomial reset source/flow authority"));
+        }
+        reset.validate(self.trial.engine.src.nx() + self.trial.engine.src.nz())?;
+        let forcing = Iv::point(flow.rate)?.mul(Iv::point(flow.equilibrium)?)?;
+        if forcing.lo != forcing.hi {
+            return Err(bad("affine source coefficient not exactly represented"));
+        }
+        let post_src = DaeSource::new(
+            vec![DeclaredPolynomial::new(vec![
+                EventTerm {
+                    coefficient: -flow.rate,
+                    factors: vec![AffineFactor::component(0, 0.)],
+                },
+                EventTerm {
+                    coefficient: forcing.lo,
+                    factors: vec![],
+                },
+            ])?],
+            constraints,
+        )?;
+        let table = RetroTable::with_dictionary(RealMode::Hybrid)?;
+        let mut evidence = Vec::new();
+        let mut covered = root[0];
+        let mut reset_box: Option<Iv> = None;
+        let mut sync_box: Option<Iv> = None;
+        fn hull(old: Option<Iv>, pair: [f64; 2]) -> CoreResult<Iv> {
+            let v = Iv::new(pair[0], pair[1])?;
+            Ok(old.map_or(v, |u| Iv {
+                lo: u.lo.min(v.lo),
+                hi: u.hi.max(v.hi),
+            }))
+        }
+        for s in &self.trial.slabs {
+            let lo = root[0].max(s.times[0]);
+            let hi = root[1].min(s.times[1]);
+            if lo > hi {
+                continue;
+            }
+            if lo > covered {
+                return Err(bad("uncovered event clock"));
+            }
+            let c = s
+                .certificate
+                .as_ref()
+                .filter(|c| c.global_qualified)
+                .ok_or_else(|| bad("unqualified event slab"))?;
+            let power = s
+                .power
+                .iter()
+                .map(|row| {
+                    row.iter()
+                        .map(|v| Iv::new(v[0], v[1]))
+                        .collect::<CoreResult<Vec<_>>>()
+                })
+                .collect::<CoreResult<Vec<_>>>()?;
+            let e = de::reset_slab(
+                &self.trial.engine.src,
+                reset,
+                &power,
+                c,
+                [lo, hi],
+                root[1],
+                flow.rate,
+                flow.equilibrium,
+                envelope,
+                derivative,
+                &table,
+            )?;
+            reset_box = Some(hull(reset_box, e.reset_x)?);
+            sync_box = Some(hull(sync_box, e.synchronized_x)?);
+            covered = covered.max(hi);
+            evidence.push(e);
+        }
+        if covered != root[1] || evidence.is_empty() {
+            return Err(bad("event slab coverage incomplete"));
+        }
+        let reset_box = reset_box.expect("nonempty reset");
+        let sync = sync_box.expect("nonempty sync");
+        let center = (sync.lo * 0.5 + sync.hi * 0.5).clamp(sync.lo, sync.hi);
+        let radius = diameter(sync.lo, center)?.max(diameter(center, sync.hi)?);
+        let ball = Iv::point(center)?.add(Iv::new(-radius, radius)?)?;
+        // Each affine damped trajectory is monotone between its own reset
+        // and synchronization value. Include the full rounded restart ball.
+        let transition = Iv::new(reset_box.lo.min(ball.lo), reset_box.hi.max(ball.hi))?;
+        let mut out = PolynomialRestartRun {
+            event_time: root,
+            envelope_route: envelope,
+            slab_evidence: evidence,
+            reset_x: reset_box.as_pair(),
+            synchronized_x: sync.as_pair(),
+            transition_x: transition.as_pair(),
+            incoming_radius: radius,
+            branch_proof: None,
+            reason: None,
+            post_trial: None,
+        };
+        let proof = match de::certify_transition_branch(
+            &post_src,
+            root,
+            transition.as_pair(),
+            center,
+            z_seed,
+            branch,
+            policy.init,
+            branch_route,
+        ) {
+            Ok(v) => v,
+            Err(e) => {
+                out.reason = Some(e.to_string());
+                return Ok(out);
+            }
+        };
+        let z = proof.initial.z.clone();
+        out.branch_proof = Some(proof);
+        match evolve_epoch(
+            &post_src,
+            &[center],
+            &z,
+            branch,
+            EvolutionEpoch {
+                start: root[1],
+                end,
+                incoming_x_error: Some(radius),
+            },
+            opts,
+            policy,
+            route,
+            grid,
+        ) {
+            Ok(v) => {
+                if !v.global_qualified || !v.pointwise_qualified || !v.branch_qualified {
+                    out.reason = Some("post physical trajectory not qualified".into());
+                }
+                out.post_trial = Some(v);
+            }
+            Err(e) => out.reason = Some(e.to_string()),
+        }
+        Ok(out)
+    }
+}
+
+pub use de::{
+    VectorBranchProof, VectorResetComponent, VectorSyncEvidence, VectorSyncRoute, VectorTubeProof,
+};
+#[derive(Clone, Copy, Debug, Serialize)]
+pub struct VectorResetPolicy {
+    pub sync: VectorSyncRoute,
+    pub derivative: GuardDerivativeRoute,
+    pub branch_route: InitRoute,
+    pub subdivisions: usize,
+}
+#[derive(Serialize)]
+pub struct VectorResetCell {
+    pub times: [f64; 2],
+    pub reset: Vec<VectorResetComponent>,
+    pub tube: Option<VectorTubeProof>,
+    pub sync: Option<VectorSyncEvidence>,
+    pub reason: Option<String>,
+}
+#[derive(Serialize)]
+pub struct VectorRestartRun {
+    pub event_time: [f64; 2],
+    pub policy: VectorResetPolicy,
+    pub cells: Vec<VectorResetCell>,
+    pub synchronized_x: Option<Vec<[f64; 2]>>,
+    pub incoming_radius: Option<f64>,
+    pub restart_branch: Option<VectorBranchProof>,
+    pub reason: Option<String>,
+    post_trial: Option<EvolutionRun>,
+}
+impl VectorRestartRun {
+    pub fn post(&self) -> Option<&EvolutionRun> {
+        if self.reason.is_none() {
+            self.post_trial
+                .as_ref()
+                .filter(|r| r.global_qualified && r.branch_qualified && r.pointwise_qualified)
+        } else {
+            None
+        }
+    }
+    pub fn post_diagnostic(&self) -> Option<&EvolutionRun> {
+        self.post_trial.as_ref()
+    }
+}
+impl ThresholdRun {
+    /// Source-bound vector polynomial reset and short uncertain-clock
+    /// flowpipe for a genuinely coupled original index-one post source.
+    #[allow(clippy::too_many_arguments)]
+    pub fn restart_vector(
+        &self,
+        reset: &[rodas5p_integrators::retro_event_poly::DeclaredPolynomial],
+        post_src: &DaeSource,
+        z_seed: &[f64],
+        branch: &[[f64; 2]],
+        end: f64,
+        opts: &Options,
+        policy: EvolutionPolicy,
+        route: EvolutionRoute,
+        reset_policy: VectorResetPolicy,
+        grid: &[f64],
+    ) -> CoreResult<VectorRestartRun> {
+        let mut out = self.prepare_vector_restart(
+            reset,
+            post_src,
+            z_seed,
+            branch,
+            end,
+            policy,
+            reset_policy,
+            64,
+        )?;
+        if out.reason.is_some() {
+            return Ok(out);
+        }
+        let proof = out.restart_branch.as_ref().expect("prepared branch");
+        let center = proof.initial.x.clone();
+        let z = proof.initial.z.clone();
+        let root = out.event_time;
+        let radius = out.incoming_radius.expect("prepared radius");
+        match evolve_epoch(
+            post_src,
+            &center,
+            &z,
+            branch,
+            EvolutionEpoch {
+                start: root[1],
+                end,
+                incoming_x_error: Some(radius),
+            },
+            opts,
+            policy,
+            route,
+            grid,
+        ) {
+            Ok(v) => {
+                if !v.global_qualified || !v.branch_qualified || !v.pointwise_qualified {
+                    out.reason = Some("vector post physical trajectory not qualified".into());
+                }
+                out.post_trial = Some(v);
+            }
+            Err(e) => out.reason = Some(e.to_string()),
+        }
+        Ok(out)
+    }
+    #[allow(clippy::too_many_arguments)]
+    fn prepare_vector_restart(
+        &self,
+        reset: &[DeclaredPolynomial],
+        post_src: &DaeSource,
+        z_seed: &[f64],
+        branch: &[[f64; 2]],
+        end: f64,
+        policy: EvolutionPolicy,
+        reset_policy: VectorResetPolicy,
+        max_cells: usize,
+    ) -> CoreResult<VectorRestartRun> {
+        use rodas5p_core::retro_dictionary::RealMode;
+        use rodas5p_integrators::{retro_dae_init::InitMode, retro_green::RetroTable};
+        let root = self
+            .root
+            .filter(|_| self.reason.is_none())
+            .ok_or_else(|| bad("no physical event authority"))?;
+        if !self.trial.global_qualified
+            || !self.trial.pointwise_qualified
+            || !self.trial.branch_qualified
+            || policy.init.mode != InitMode::ProjectAlgebraic
+            || !end.is_finite()
+            || end <= root[1]
+            || reset.len() != post_src.nx()
+            || !matches!(reset_policy.subdivisions, 1 | 4)
+        {
+            return Err(bad("vector reset authority/domain"));
+        }
+        for r in reset {
+            r.validate(self.trial.engine.src.nx() + self.trial.engine.src.nz())?;
+        }
+        let table = RetroTable::with_dictionary(RealMode::Hybrid)?;
+        let mut out = VectorRestartRun {
+            event_time: root,
+            policy: reset_policy,
+            cells: vec![],
+            synchronized_x: None,
+            incoming_radius: None,
+            restart_branch: None,
+            reason: None,
+            post_trial: None,
+        };
+        let mut covered = root[0];
+        let mut total: Option<Vec<[f64; 2]>> = None;
+        for slab in &self.trial.slabs {
+            let lo = root[0].max(slab.times[0]);
+            let hi = root[1].min(slab.times[1]);
+            if lo > hi {
+                continue;
+            }
+            if lo > covered {
+                return Err(bad("vector reset coverage gap"));
+            }
+            let c = slab
+                .certificate
+                .as_ref()
+                .filter(|v| v.global_qualified)
+                .ok_or_else(|| bad("uncertified vector reset slab"))?;
+            let power = slab
+                .power
+                .iter()
+                .map(|row| {
+                    row.iter()
+                        .map(|v| Iv::new(v[0], v[1]))
+                        .collect::<CoreResult<Vec<_>>>()
+                })
+                .collect::<CoreResult<Vec<_>>>()?;
+            let n = if lo == hi {
+                1
+            } else {
+                reset_policy.subdivisions
+            };
+            let mut a = lo;
+            for j in 1..=n {
+                let b = if j == n {
+                    hi
+                } else {
+                    (lo + (hi - lo) * (j as f64 / n as f64)).clamp(a, hi)
+                };
+                if out.cells.len() >= max_cells {
+                    out.reason = Some("vector reset cell cap exhausted".into());
+                    return Ok(out);
+                }
+                let mut cell = VectorResetCell {
+                    times: [a, b],
+                    reset: vec![],
+                    tube: None,
+                    sync: None,
+                    reason: None,
+                };
+                let result = (|| -> CoreResult<()> {
+                    for r in reset {
+                        cell.reset.push(de::vector_reset_component(
+                            &self.trial.engine.src,
+                            r,
+                            &power,
+                            c,
+                            [a, b],
+                            reset_policy.sync,
+                            reset_policy.derivative,
+                        )?);
+                    }
+                    let r = cell.reset.iter().map(|v| v.enclosure).collect::<Vec<_>>();
+                    let tube = de::certify_vector_tube(
+                        post_src,
+                        [a, root[1]],
+                        &r,
+                        z_seed,
+                        branch,
+                        policy.init,
+                        reset_policy.branch_route,
+                    )?;
+                    let sync = de::synchronize_vector(
+                        &cell.reset,
+                        [a, b],
+                        root[1],
+                        &tube,
+                        reset_policy.sync,
+                        &table,
+                    );
+                    cell.tube = Some(tube);
+                    let sync = sync?;
+                    if let Some(h) = total.as_mut() {
+                        for (v, &w) in h.iter_mut().zip(&sync.synchronized) {
+                            v[0] = v[0].min(w[0]);
+                            v[1] = v[1].max(w[1]);
+                        }
+                    } else {
+                        total = Some(sync.synchronized.clone());
+                    }
+                    cell.sync = Some(sync);
+                    Ok(())
+                })();
+                if let Err(e) = result {
+                    let e = e.to_string();
+                    cell.reason = Some(e.clone());
+                    out.cells.push(cell);
+                    out.reason = Some(e);
+                    return Ok(out);
+                }
+                out.cells.push(cell);
+                a = b;
+            }
+            covered = covered.max(hi);
+        }
+        if covered != root[1] || total.is_none() {
+            return Err(bad("vector reset coverage incomplete"));
+        }
+        let sync = total.expect("nonempty synchronized box");
+        let center = sync
+            .iter()
+            .map(|v| (v[0] * 0.5 + v[1] * 0.5).clamp(v[0], v[1]))
+            .collect::<Vec<_>>();
+        let mut radius = 0_f64;
+        for (b, &c) in sync.iter().zip(&center) {
+            radius = radius.max(diameter(b[0], c)?.max(diameter(c, b[1])?));
+        }
+        let ball = center
+            .iter()
+            .map(|&v| {
+                Iv::point(v)?
+                    .add(Iv::new(-radius, radius)?)
+                    .map(|x| x.as_pair())
+            })
+            .collect::<CoreResult<Vec<_>>>()?;
+        out.synchronized_x = Some(sync);
+        out.incoming_radius = Some(radius);
+        let proof = match de::certify_vector_branch(
+            post_src,
+            [root[1], root[1]],
+            &ball,
+            &center,
+            z_seed,
+            branch,
+            policy.init,
+            reset_policy.branch_route,
+        ) {
+            Ok(v) => v,
+            Err(e) => {
+                out.reason = Some(e.to_string());
+                return Ok(out);
+            }
+        };
+        out.restart_branch = Some(proof);
+        Ok(out)
+    }
+}
+
+use rodas5p_integrators::retro_event_poly::DeclaredPolynomial;
+
+/// One physical initial family, 2..8 competing increasing guards. Independent
+/// repeats native integration; Shared and Correlated use one accepted-step run.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum MultiGuardRoute {
+    Independent,
+    Shared,
+    Correlated,
+}
+#[derive(Clone, Copy, Debug, Serialize)]
+pub struct MultiGuardPolicy {
+    pub method: MultiGuardRoute,
+    pub tolerance: f64,
+    pub root_route: ThresholdRoute,
+    pub derivative: GuardDerivativeRoute,
+    pub value: GuardValueRoute,
+    pub pending: PendingPolicy,
+    pub max_slabs: usize,
+}
+#[derive(Clone, Debug, Serialize)]
+pub struct GuardOrderEvidence {
+    pub index: usize,
+    pub root: Option<[f64; 2]>,
+    pub safe: f64,
+    pub initial_negative: bool,
+    pub reason: Option<String>,
+    pub work: ThresholdWork,
+    pub slabs: Vec<GuardSlabEvidence>,
+    pub pending: Option<PendingReport>,
+}
+#[derive(Clone, Debug, Serialize)]
+pub struct GuardDifferenceCell {
+    pub times: [f64; 2],
+    pub enclosure: [f64; 2],
+    pub prepared_work: InitWork,
+}
+#[derive(Clone, Debug, Serialize)]
+pub struct GuardOrderComparison {
+    pub earlier: usize,
+    pub later: usize,
+    pub compared_root: [f64; 2],
+    pub cells: Vec<GuardDifferenceCell>,
+    pub positive: bool,
+    pub reason: Option<String>,
+}
+#[derive(Clone, Debug, Default, Serialize)]
+pub struct MultiGuardWork {
+    pub native_runs: usize,
+    pub attempts: usize,
+    pub driver_rhs: u64,
+    pub physical_certificates: usize,
+    pub shared_projection: ProjectionWork,
+    pub replay_projection_rhs: usize,
+    pub independent_scan_projection_rhs: usize,
+    pub guard_evals: usize,
+    pub hint_calls: usize,
+    pub dictionary_uses: usize,
+    pub guard_prepared_rhs: usize,
+    pub comparison_attempts: usize,
+    pub difference_cells: usize,
+    pub difference_prepared_rhs: usize,
+}
+impl MultiGuardWork {
+    fn driver(&mut self, r: &EvolutionRun) {
+        self.native_runs += 1;
+        self.attempts += r.driver.stats.attempts;
+        self.driver_rhs += r.driver.stats.counters.rhs_calls;
+        self.replay_projection_rhs += r.work.rhs_count;
+    }
+    fn guard(&mut self, r: &GuardOrderEvidence, independent: bool) {
+        self.guard_evals += r.work.guard_evals;
+        self.hint_calls += r.work.hint_calls;
+        self.dictionary_uses += r.work.hint_dictionary_uses;
+        self.guard_prepared_rhs += r
+            .slabs
+            .iter()
+            .map(|s| s.prepared_work.rhs_count)
+            .sum::<usize>();
+        if independent {
+            self.physical_certificates += r.work.certified_slabs;
+            self.independent_scan_projection_rhs += r.work.projection.rhs_count;
+        }
+    }
+}
+/// Only this facade may authorize one of the private single-guard runs.
+pub struct MultiGuardRun {
+    method: MultiGuardRoute,
+    guards: Vec<GuardOrderEvidence>,
+    comparisons: Vec<GuardOrderComparison>,
+    winner: Option<usize>,
+    safe: f64,
+    initial_negative: bool,
+    reason: Option<String>,
+    runs: Vec<ThresholdRun>,
+    pub work: MultiGuardWork,
+}
+impl MultiGuardRun {
+    pub fn winner(&self) -> Option<usize> {
+        self.winner
+    }
+    pub fn guards(&self) -> &[GuardOrderEvidence] {
+        &self.guards
+    }
+    pub fn comparisons(&self) -> &[GuardOrderComparison] {
+        &self.comparisons
+    }
+    pub fn committed_until(&self) -> f64 {
+        self.safe
+    }
+    pub fn reason(&self) -> Option<&str> {
+        self.reason.as_deref()
+    }
+    pub fn event_authority(&self) -> Option<&ThresholdRun> {
+        let j = self.winner?;
+        self.runs
+            .get(if self.method == MultiGuardRoute::Independent {
+                j
+            } else {
+                0
+            })
+    }
+    pub fn pre_query(&self, t: f64) -> CoreResult<Query> {
+        if !self.initial_negative || !t.is_finite() || t > self.safe {
+            return Err(bad("outside ordered physical prefix"));
+        }
+        self.event_authority()
+            .or_else(|| self.runs.first())
+            .ok_or_else(|| bad("no physical ordered trajectory"))?
+            .pre_query(t)
+    }
+}
+struct SharedGuardSlab {
+    power: Vec<Vec<Iv>>,
+    cert: SlabCertificate,
+}
+struct MultiScan {
+    scans: Vec<ThresholdScan>,
+    incoming: Option<f64>,
+    numerical_end: f64,
+    stopped: bool,
+    selected: Option<usize>,
+    reason: Option<String>,
+    policy: MultiGuardPolicy,
+    history: Vec<SharedGuardSlab>,
+    comparisons: Vec<GuardOrderComparison>,
+    work: MultiGuardWork,
+}
+fn guard_scan(
+    guard: &DeclaredPolynomial,
+    epoch: EvolutionEpoch,
+    policy: MultiGuardPolicy,
+) -> CoreResult<ThresholdScan> {
+    Ok(ThresholdScan {
+        pending: Some(PendingState::new(policy.pending)?),
+        threshold: 0.,
+        guard: Some(DeclaredGuard {
+            source: guard.clone(),
+            derivative: policy.derivative,
+            value: policy.value,
+        }),
+        guard_slabs: vec![],
+        tolerance: policy.tolerance,
+        route: policy.root_route,
+        incoming: epoch.incoming_x_error,
+        safe: epoch.start,
+        numerical_end: epoch.start,
+        root: None,
+        stopped: false,
+        reason: None,
+        work: ThresholdWork::default(),
+    })
+}
+fn initial_proved(s: &ThresholdScan) -> bool {
+    s.pending
+        .as_ref()
+        .is_some_and(|p| !p.report.blocked_initial)
+}
+fn root_valid(s: &ThresholdScan) -> Option<[f64; 2]> {
+    s.root.filter(|_| s.reason.is_none())
+}
+fn scan_receipt(s: &ThresholdScan, index: usize) -> GuardOrderEvidence {
+    GuardOrderEvidence {
+        index,
+        root: root_valid(s),
+        safe: s.safe,
+        initial_negative: initial_proved(s),
+        reason: s.reason.clone(),
+        work: s.work.clone(),
+        slabs: s.guard_slabs.clone(),
+        pending: s.pending.as_ref().map(|p| p.report.clone()),
+    }
+}
+fn run_receipt(r: &ThresholdRun, index: usize, start: f64) -> GuardOrderEvidence {
+    let qualified =
+        r.trial.global_qualified && r.trial.pointwise_qualified && r.trial.branch_qualified;
+    GuardOrderEvidence {
+        index,
+        root: r.root.filter(|_| qualified && r.reason.is_none()),
+        safe: if qualified { r.committed_until } else { start },
+        initial_negative: qualified
+            && r.pending_report
+                .as_ref()
+                .is_some_and(|p| !p.blocked_initial),
+        reason: r
+            .reason
+            .clone()
+            .or_else(|| (!qualified).then_some("unqualified physical replay".into())),
+        work: r.work.clone(),
+        slabs: r.guard_slabs.clone(),
+        pending: r.pending_report.clone(),
+    }
+}
+fn disjoint_or_absent(candidate: [f64; 2], other: &GuardOrderEvidence) -> bool {
+    other.initial_negative
+        && match other.root {
+            Some(r) => candidate[1] < r[0],
+            None => candidate[1] <= other.safe,
+        }
+}
+fn independent_winner(gs: &[GuardOrderEvidence]) -> Option<usize> {
+    if !gs.iter().all(|g| g.initial_negative) {
+        return None;
+    }
+    let mut found = None;
+    for g in gs {
+        if let Some(root) = g.root {
+            if gs
+                .iter()
+                .all(|h| g.index == h.index || disjoint_or_absent(root, h))
+            {
+                if found.is_some() {
+                    return None;
+                }
+                found = Some(g.index);
+            }
+        }
+    }
+    found
+}
+/// Exact opposite coefficient cancellation for syntactically identical
+/// affine-factor lists. No rounded coefficient addition or factor expansion.
+fn guard_difference(
+    a: &DeclaredPolynomial,
+    b: &DeclaredPolynomial,
+) -> CoreResult<DeclaredPolynomial> {
+    use rodas5p_integrators::retro_event_poly::EventTerm;
+    fn same(a: &EventTerm, b: &EventTerm) -> bool {
+        a.factors.len() == b.factors.len()
+            && a.factors.iter().zip(&b.factors).all(|(x, y)| {
+                x.constant.to_bits() == y.constant.to_bits()
+                    && x.time.to_bits() == y.time.to_bits()
+                    && x.state.len() == y.state.len()
+                    && x.state
+                        .iter()
+                        .zip(&y.state)
+                        .all(|(&(i, a), &(j, b))| i == j && a.to_bits() == b.to_bits())
+            })
+    }
+    let mut terms = a.terms().to_vec();
+    for t in b.terms() {
+        if let Some(i) = terms
+            .iter()
+            .position(|x| x.coefficient.to_bits() == t.coefficient.to_bits() && same(x, t))
+        {
+            terms.remove(i);
+        } else {
+            let mut q = t.clone();
+            q.coefficient = -q.coefficient;
+            terms.push(q);
+        }
+    }
+    if terms.is_empty() {
+        terms.push(EventTerm {
+            coefficient: 0.,
+            factors: vec![],
+        });
+    }
+    DeclaredPolynomial::new(terms)
+}
+impl MultiScan {
+    fn compare(&mut self, e: &Engine, j: usize, k: usize, root: [f64; 2]) -> bool {
+        if let Some(v) = self
+            .comparisons
+            .iter()
+            .find(|v| v.earlier == j && v.later == k)
+        {
+            return v.positive;
+        }
+        self.work.comparison_attempts += 1;
+        let mut out = GuardOrderComparison {
+            earlier: j,
+            later: k,
+            compared_root: root,
+            cells: vec![],
+            positive: false,
+            reason: None,
+        };
+        let result = (|| -> CoreResult<bool> {
+            let a = &self.scans[j].guard.as_ref().expect("declared guard").source;
+            let b = &self.scans[k].guard.as_ref().expect("declared guard").source;
+            let d = guard_difference(a, b)?;
+            let mut covered = root[0];
+            for slab in &self.history {
+                let lo = slab.cert.times[0].max(root[0]);
+                let hi = slab.cert.times[1].min(root[1]);
+                if lo > hi {
+                    continue;
+                }
+                if lo > covered {
+                    return Err(bad("guard difference coverage gap"));
+                }
+                let v = de::vector_reset_component(
+                    &e.src,
+                    &d,
+                    &slab.power,
+                    &slab.cert,
+                    [lo, hi],
+                    de::VectorSyncRoute::SchurPicard,
+                    self.policy.derivative,
+                )?;
+                self.work.difference_cells += 1;
+                self.work.difference_prepared_rhs += v.prepared_work.rhs_count;
+                out.cells.push(GuardDifferenceCell {
+                    times: [lo, hi],
+                    enclosure: v.enclosure,
+                    prepared_work: v.prepared_work,
+                });
+                if v.enclosure[0] <= 0. {
+                    return Ok(false);
+                }
+                covered = covered.max(hi);
+            }
+            Ok(!out.cells.is_empty() && covered == root[1])
+        })();
+        match result {
+            Ok(v) => out.positive = v,
+            Err(e) => out.reason = Some(e.to_string()),
+        }
+        let yes = out.positive;
+        self.comparisons.push(out);
+        yes
+    }
+    fn choose(&mut self, e: &Engine) -> Option<usize> {
+        // A failure to certify one initial guard blocks the transaction.
+        if !self.scans.iter().all(initial_proved) {
+            return None;
+        }
+        let mut found = None;
+        for j in 0..self.scans.len() {
+            let Some(root) = root_valid(&self.scans[j]) else {
+                continue;
+            };
+            let mut ok = true;
+            for k in 0..self.scans.len() {
+                if k == j {
+                    continue;
+                }
+                let other = root_valid(&self.scans[k]);
+                let strict = match other {
+                    Some(r) => root[1] < r[0],
+                    None => root[1] <= self.scans[k].safe,
+                };
+                if strict {
+                    continue;
+                }
+                // At competitor's root, H_k=0. If H_j>0 there,
+                // assuming tau_k<=tau_j contradicts H_j<0 before
+                // its unique first root (or H_j=0 at equality).
+                if self.policy.method == MultiGuardRoute::Correlated
+                    && other.is_some_and(|b| b[1] >= root[0] && self.compare(e, j, k, b))
+                {
+                    continue;
+                }
+                ok = false;
+                break;
+            }
+            if ok {
+                if found.is_some() {
+                    return None;
+                }
+                found = Some(j);
+            }
+        }
+        found
+    }
+}
+impl EpochObserver for MultiScan {
+    fn stopped_at(&self) -> Option<f64> {
+        self.stopped.then_some(self.numerical_end)
+    }
+    fn inspect(
+        &mut self,
+        e: &Engine,
+        proposal: crate::solve::DenseProposal<'_>,
+    ) -> rodas5p_integrators::AcceptControl {
+        use rodas5p_integrators::AcceptControl;
+        let result = (|| -> CoreResult<bool> {
+            let (times, native) = proposal_packet(proposal)?;
+            self.numerical_end = times[1];
+            if self.work.physical_certificates >= self.policy.max_slabs {
+                return Err(bad("multi-guard slab budget exhausted"));
+            }
+            let (p, c) = certify_native_packet(
+                e,
+                times,
+                &native,
+                self.incoming,
+                &mut self.work.shared_projection,
+            )?;
+            self.work.physical_certificates += 1;
+            for scan in &mut self.scans {
+                if scan.stopped {
+                    continue;
+                }
+                scan.work.inspected += 1;
+                scan.numerical_end = times[1];
+                if scan.incoming != self.incoming {
+                    return Err(bad("guard shared radius mismatch"));
+                }
+                match scan.scan_certified(e, times, &p, &c) {
+                    Ok(stop) => scan.stopped = stop,
+                    Err(e) => {
+                        scan.reason = Some(e.to_string());
+                        scan.stopped = true;
+                    }
+                }
+            }
+            self.incoming = c.outgoing;
+            if self.policy.method == MultiGuardRoute::Correlated {
+                self.history.push(SharedGuardSlab { power: p, cert: c });
+            }
+            self.selected = self.choose(e);
+            if self.selected.is_some() {
+                return Ok(true);
+            }
+            if self.scans.iter().all(|s| s.stopped) {
+                return Err(bad("first-event order unresolved"));
+            }
+            // No need for an additional accepted proposal after exhausting
+            // the physical certificate budget.
+            if self.work.physical_certificates >= self.policy.max_slabs {
+                return Err(bad("multi-guard slab budget exhausted"));
+            }
+            Ok(false)
+        })();
+        match result {
+            Ok(false) => AcceptControl::Continue,
+            Ok(true) => {
+                self.stopped = true;
+                AcceptControl::Stop
+            }
+            Err(e) => {
+                self.reason = Some(e.to_string());
+                self.stopped = true;
+                AcceptControl::Stop
+            }
+        }
+    }
+}
+/// Competing guards all belong to the same original physical source,
+/// initial family and branch; no index-order tie-breaking.
+#[allow(clippy::too_many_arguments)]
+pub fn evolve_to_first_guard(
+    src: &DaeSource,
+    x: &[f64],
+    z: &[f64],
+    branch: &[[f64; 2]],
+    epoch: EvolutionEpoch,
+    opts: &Options,
+    policy: EvolutionPolicy,
+    route: EvolutionRoute,
+    guards: &[DeclaredPolynomial],
+    mp: MultiGuardPolicy,
+) -> CoreResult<MultiGuardRun> {
+    if !(2..=8).contains(&guards.len())
+        || !(1..=128).contains(&mp.max_slabs)
+        || !(1..=64).contains(&mp.pending.max_slabs)
+        || !mp.tolerance.is_finite()
+        || mp.tolerance <= 0.
+        || epoch
+            .incoming_x_error
+            .is_none_or(|v| !v.is_finite() || v < 0.)
+    {
+        return Err(bad("multi-guard policy/initial authority"));
+    }
+    for g in guards {
+        g.validate(src.nx() + src.nz())?;
+    }
+    if mp.method == MultiGuardRoute::Independent {
+        let mut out = MultiGuardRun {
+            method: mp.method,
+            guards: vec![],
+            comparisons: vec![],
+            winner: None,
+            safe: epoch.start,
+            initial_negative: false,
+            reason: None,
+            runs: vec![],
+            work: MultiGuardWork::default(),
+        };
+        for (i, g) in guards.iter().enumerate() {
+            let remaining = opts.max_steps.saturating_sub(out.work.attempts);
+            if remaining == 0 {
+                out.reason = Some("shared native attempt budget exhausted".into());
+                break;
+            }
+            let mut o = opts.clone();
+            o.max_steps = remaining.min(mp.max_slabs);
+            match evolve_to_guard_pending(
+                src,
+                x,
+                z,
+                branch,
+                epoch,
+                &o,
+                policy,
+                route,
+                g,
+                mp.tolerance,
+                mp.root_route,
+                mp.derivative,
+                mp.value,
+                mp.pending,
+            ) {
+                Ok(r) => {
+                    let receipt = run_receipt(&r, i, epoch.start);
+                    out.work.driver(&r.trial);
+                    out.work.guard(&receipt, true);
+                    out.guards.push(receipt);
+                    out.runs.push(r);
+                }
+                Err(e) => {
+                    out.reason = Some(e.to_string());
+                    break;
+                }
+            }
+        }
+        if out.guards.len() == guards.len() {
+            out.initial_negative = out.guards.iter().all(|r| r.initial_negative);
+            if out.initial_negative {
+                out.winner = independent_winner(&out.guards);
+                out.safe = if let Some(i) = out.winner {
+                    out.guards[i].root.expect("winner")[0]
+                } else {
+                    out.guards.iter().map(|g| g.safe).fold(epoch.end, f64::min)
+                };
+            }
+            if out.winner.is_none() && (!out.initial_negative || out.safe < epoch.end) {
+                out.reason = Some("first-event order unresolved".into());
+            }
+        } else if out.reason.is_none() {
+            out.reason = Some("incomplete guard receipts".into());
+        }
+        return Ok(out);
+    }
+    let scans = guards
+        .iter()
+        .map(|g| guard_scan(g, epoch, mp))
+        .collect::<CoreResult<Vec<_>>>()?;
+    let mut multi = MultiScan {
+        scans,
+        incoming: epoch.incoming_x_error,
+        numerical_end: epoch.start,
+        stopped: false,
+        selected: None,
+        reason: None,
+        policy: mp,
+        history: Vec::with_capacity(if mp.method == MultiGuardRoute::Correlated {
+            mp.max_slabs
+        } else {
+            0
+        }),
+        comparisons: vec![],
+        work: MultiGuardWork::default(),
+    };
+    let trial = evolve_epoch_impl(
+        src,
+        x,
+        z,
+        branch,
+        epoch,
+        opts,
+        policy,
+        route,
+        &[],
+        Some(&mut multi),
+    )?;
+    let qualified = trial.global_qualified && trial.pointwise_qualified && trial.branch_qualified;
+    let initial = qualified && multi.scans.iter().all(initial_proved);
+    if !qualified {
+        multi.selected = None;
+        multi.reason = Some("shared replay physical proof failed".into());
+    }
+    if !initial {
+        multi.selected = None;
+    }
+    let receipts = multi
+        .scans
+        .iter()
+        .enumerate()
+        .map(|(i, s)| scan_receipt(s, i))
+        .collect::<Vec<_>>();
+    let safe = if !initial {
+        epoch.start
+    } else if let Some(j) = multi.selected {
+        receipts[j].root.expect("winner")[0]
+    } else {
+        receipts.iter().map(|r| r.safe).fold(epoch.end, f64::min)
+    };
+    if multi.selected.is_none() && (!initial || safe < epoch.end) && multi.reason.is_none() {
+        multi.reason = Some("first-event order unresolved at horizon".into());
+    }
+    multi.work.driver(&trial);
+    for g in &receipts {
+        multi.work.guard(g, false);
+    }
+    let root = multi.selected.and_then(|j| receipts[j].root);
+    let chosen = multi.selected.map(|i| &receipts[i]);
+    let r = ThresholdRun {
+        trial,
+        root,
+        committed_until: safe,
+        numerical_end: multi.numerical_end,
+        reason: multi.reason.clone(),
+        work: chosen.map(|g| g.work.clone()).unwrap_or_default(),
+        guard_slabs: chosen.map(|g| g.slabs.clone()).unwrap_or_default(),
+        pending_report: chosen.and_then(|g| g.pending.clone()),
+    };
+    Ok(MultiGuardRun {
+        method: mp.method,
+        guards: receipts,
+        comparisons: multi.comparisons,
+        winner: multi.selected,
+        safe,
+        initial_negative: initial,
+        reason: multi.reason,
+        runs: vec![r],
+        work: multi.work,
+    })
+}
+/// One declared transition per input guard, in the original input order.
+/// Only the uniquely certified earliest guard's transition is evaluated.
+pub struct OrderedVectorTransition<'a> {
+    pub reset: &'a [DeclaredPolynomial],
+    pub source: &'a DaeSource,
+    pub z_seed: &'a [f64],
+    pub branch: &'a [[f64; 2]],
+    pub route: EvolutionRoute,
+    pub policy: VectorResetPolicy,
+}
+pub struct OrderedVectorRestart {
+    pub event_index: usize,
+    pub run: VectorRestartRun,
+}
+impl MultiGuardRun {
+    pub fn restart_ordered_vector(
+        &self,
+        transitions: &[OrderedVectorTransition<'_>],
+        end: f64,
+        opts: &Options,
+        policy: EvolutionPolicy,
+        grid: &[f64],
+    ) -> CoreResult<OrderedVectorRestart> {
+        if transitions.len() != self.guards.len() {
+            return Err(bad("ordered transition shape"));
+        }
+        let j = self
+            .winner
+            .ok_or_else(|| bad("no unique first-event authority"))?;
+        let a = self
+            .event_authority()
+            .ok_or_else(|| bad("missing first-event run"))?;
+        let tr = &transitions[j];
+        let run = a.restart_vector(
+            tr.reset, tr.source, tr.z_seed, tr.branch, end, opts, policy, tr.route, tr.policy, grid,
+        )?;
+        Ok(OrderedVectorRestart {
+            event_index: j,
+            run,
+        })
+    }
+}
+
+pub use de::{GapGuardEvidence, GapGuardRoute};
+/// Immutable declaration during the chain. Each edge matches the guard at
+/// the same index. Terminal modes have no outgoing guards or transitions.
+pub struct ChainMode {
+    pub source: DaeSource,
+    pub z_seed: Vec<f64>,
+    pub branch: Vec<[f64; 2]>,
+    pub route: EvolutionRoute,
+    pub guards: Vec<DeclaredPolynomial>,
+    pub transitions: Vec<ChainTransition>,
+}
+pub struct ChainTransition {
+    pub target: usize,
+    pub reset: Vec<DeclaredPolynomial>,
+    pub policy: VectorResetPolicy,
+}
+#[derive(Clone, Copy, Debug, Serialize)]
+pub struct ChainBudget {
+    pub native_attempts: usize,
+    pub scan_slabs: usize,
+    pub transition_attempts: usize,
+    pub reset_cells: usize,
+    pub gap_checks: usize,
+    pub min_dwell: f64,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum ChainStop {
+    Horizon,
+    OrderUnresolved,
+    NativeBudget,
+    SlabBudget,
+    TransitionBudget,
+    ResetBudget,
+    GapBudget,
+    DwellUnproved,
+    ResetRefused,
+    GapUnproved,
+    NativeRefused,
+}
+#[derive(Clone, Debug, Default, Serialize)]
+pub struct ChainWork {
+    pub native_attempts: usize,
+    pub charged_native_attempts: usize,
+    pub scan_slabs: usize,
+    pub charged_scan_slabs: usize,
+    pub native_runs: usize,
+    pub driver_rhs: u64,
+    pub projection_rhs: usize,
+    pub guard_evals: usize,
+    pub dictionary_uses: usize,
+    pub comparison_attempts: usize,
+    pub transitions_attempted: usize,
+    pub transitions_committed: usize,
+    pub reset_cells: usize,
+    pub charged_reset_cells: usize,
+    pub gap_checks: usize,
+    pub gap_rhs: usize,
+    pub picard_proofs: usize,
+    pub reset_rhs: usize,
+    pub green_calls: usize,
+    pub warp_predictions: usize,
+}
+#[derive(Clone, Debug, Serialize)]
+pub struct ChainGapCheck {
+    pub guard: usize,
+    pub cell: Option<usize>,
+    pub times: [f64; 2],
+    pub enclosure: [f64; 2],
+    pub evidence: GapGuardEvidence,
+}
+#[derive(Serialize)]
+pub struct ChainEvent {
+    pub from: usize,
+    pub target: usize,
+    pub guard: usize,
+    pub event_time: [f64; 2],
+    pub dwell_lower: Option<f64>,
+    pub committed: bool,
+    pub reset: Option<VectorRestartRun>,
+    pub gap: Vec<ChainGapCheck>,
+    pub reason: Option<String>,
+}
+pub struct ChainEpoch {
+    pub mode: usize,
+    pub start: f64,
+    pub safe: f64,
+    pub incoming_radius: f64,
+    ordered: Option<MultiGuardRun>,
+    terminal: Option<EvolutionRun>,
+}
+impl ChainEpoch {
+    pub fn ordered(&self) -> Option<&MultiGuardRun> {
+        self.ordered.as_ref()
+    }
+    pub fn terminal(&self) -> Option<&EvolutionRun> {
+        self.terminal.as_ref().filter(|r| {
+            r.global_qualified
+                && r.branch_qualified
+                && r.pointwise_qualified
+                && r.driver.t.last() == Some(&self.safe)
+        })
+    }
+    pub fn terminal_diagnostic(&self) -> Option<&EvolutionRun> {
+        self.terminal.as_ref()
+    }
+}
+pub struct HybridChainRun {
+    epochs: Vec<ChainEpoch>,
+    transitions: Vec<ChainEvent>,
+    final_mode: usize,
+    stop: ChainStop,
+    reason: Option<String>,
+    work: ChainWork,
+}
+impl HybridChainRun {
+    pub fn epochs(&self) -> &[ChainEpoch] {
+        &self.epochs
+    }
+    pub fn transitions(&self) -> &[ChainEvent] {
+        &self.transitions
+    }
+    pub fn final_mode(&self) -> usize {
+        self.final_mode
+    }
+    pub fn stop(&self) -> ChainStop {
+        self.stop
+    }
+    pub fn reason(&self) -> Option<&str> {
+        self.reason.as_deref()
+    }
+    pub fn work(&self) -> &ChainWork {
+        &self.work
+    }
+    /// Epoch-indexed one-sided query. No authority in asynchronous gaps.
+    pub fn query(&self, epoch: usize, t: f64) -> CoreResult<Query> {
+        let e = self
+            .epochs
+            .get(epoch)
+            .ok_or_else(|| bad("unknown chain epoch"))?;
+        if !t.is_finite() || t < e.start || t > e.safe {
+            return Err(bad("outside committed chain epoch"));
+        }
+        if let Some(r) = &e.ordered {
+            return r.pre_query(t);
+        }
+        let r = e
+            .terminal
+            .as_ref()
+            .ok_or_else(|| bad("no committed terminal trajectory"))?;
+        if !r.global_qualified || !r.branch_qualified || !r.pointwise_qualified {
+            return Err(bad("unqualified terminal epoch"));
+        }
+        let q = r.query(t)?;
+        if q.physical_error_upper
+            .is_none_or(|x| x > r.engine.policy.global_tol)
+        {
+            return Err(bad("unqualified chain query"));
+        }
+        Ok(q)
+    }
+}
+fn add_reset_work(w: &mut ChainWork, r: &VectorRestartRun) {
+    w.reset_cells += r.cells.len();
+    w.charged_reset_cells += r.cells.len();
+    for c in &r.cells {
+        w.reset_rhs += c
+            .reset
+            .iter()
+            .map(|r| r.prepared_work.rhs_count)
+            .sum::<usize>();
+        if let Some(t) = &c.tube {
+            w.picard_proofs += t.attempts.len();
+            w.reset_rhs += t
+                .attempts
+                .iter()
+                .map(|p| p.work.rhs_count + p.initial.work.rhs_count)
+                .sum::<usize>();
+        }
+        if let Some(s) = &c.sync {
+            w.green_calls += s.green_calls;
+        }
+    }
+    if let Some(p) = &r.restart_branch {
+        w.reset_rhs += p.work.rhs_count + p.initial.work.rhs_count;
+    }
+}
+/// One bounded chain of certified single transitions. Shared/correlated
+/// scan only; every mode transition is checked on the complete new-mode
+/// synchronization gap before it can be committed.
+#[allow(clippy::too_many_arguments)]
+pub fn evolve_hybrid_chain(
+    modes: &[ChainMode],
+    initial_mode: usize,
+    x: &[f64],
+    z: &[f64],
+    epoch: EvolutionEpoch,
+    opts: &Options,
+    policy: EvolutionPolicy,
+    mp: MultiGuardPolicy,
+    budget: ChainBudget,
+    gap_route: GapGuardRoute,
+) -> CoreResult<HybridChainRun> {
+    if modes.is_empty()
+        || modes.len() > 64
+        || initial_mode >= modes.len()
+        || mp.method == MultiGuardRoute::Independent
+        || budget.native_attempts == 0
+        || budget.scan_slabs == 0
+        || !budget.min_dwell.is_finite()
+        || budget.min_dwell <= 0.
+        || budget.transition_attempts > 64
+        || !epoch.start.is_finite()
+        || !epoch.end.is_finite()
+        || epoch.end <= epoch.start
+        || epoch
+            .incoming_x_error
+            .is_none_or(|x| !x.is_finite() || x < 0.)
+    {
+        return Err(bad("chain policy/input contract"));
+    }
+    for m in modes {
+        if m.guards.len() != m.transitions.len()
+            || (!m.guards.is_empty() && !(2..=8).contains(&m.guards.len()))
+        {
+            return Err(bad("chain mode guard/edge shape"));
+        }
+        for (g, tr) in m.guards.iter().zip(&m.transitions) {
+            g.validate(m.source.nx() + m.source.nz())?;
+            if tr.target >= modes.len() || tr.reset.len() != modes[tr.target].source.nx() {
+                return Err(bad("chain edge target/reset shape"));
+            }
+            for r in &tr.reset {
+                r.validate(m.source.nx() + m.source.nz())?;
+            }
+        }
+    }
+    let mut out = HybridChainRun {
+        epochs: vec![],
+        transitions: vec![],
+        final_mode: initial_mode,
+        stop: ChainStop::Horizon,
+        reason: None,
+        work: ChainWork::default(),
+    };
+    let mut mode = initial_mode;
+    let mut clock = epoch.start;
+    let mut xx = x.to_vec();
+    let mut zz = z.to_vec();
+    let mut radius = epoch.incoming_x_error.expect("validated");
+    let mut prior: Option<[f64; 2]> = None;
+    let total_native = budget.native_attempts.min(opts.max_steps);
+    macro_rules! stop {
+        ($kind:expr,$msg:expr) => {{
+            out.stop = $kind;
+            out.reason = Some($msg.to_string());
+            return Ok(out);
+        }};
+    }
+    loop {
+        let remaining = total_native.saturating_sub(out.work.charged_native_attempts);
+        if remaining == 0 {
+            stop!(ChainStop::NativeBudget, "chain native attempt budget");
+        }
+        let slabs = budget
+            .scan_slabs
+            .saturating_sub(out.work.charged_scan_slabs);
+        if slabs == 0 {
+            stop!(ChainStop::SlabBudget, "chain slab budget");
+        }
+        let m = &modes[mode];
+        let mut o = opts.clone();
+        o.max_steps = remaining;
+        let ep = EvolutionEpoch {
+            start: clock,
+            end: epoch.end,
+            incoming_x_error: Some(radius),
+        };
+        if m.guards.is_empty() {
+            o.max_steps = o.max_steps.min(slabs);
+            let r = match evolve_epoch(&m.source, &xx, &zz, &m.branch, ep, &o, policy, m.route, &[])
+            {
+                Ok(v) => v,
+                Err(e) => {
+                    out.work.charged_native_attempts += o.max_steps;
+                    out.work.charged_scan_slabs += o.max_steps;
+                    stop!(ChainStop::NativeRefused, e);
+                }
+            };
+            let n = r.driver.stats.attempts;
+            let c = r.slabs.len();
+            out.work.native_runs += 1;
+            out.work.native_attempts += n;
+            out.work.charged_native_attempts += n;
+            out.work.scan_slabs += c;
+            out.work.charged_scan_slabs += r.driver.stats.accepted_steps;
+            out.work.driver_rhs += r.driver.stats.counters.rhs_calls;
+            out.work.projection_rhs += r.work.rhs_count;
+            out.work.warp_predictions += r.work.warp_predictions;
+            let good = r.global_qualified
+                && r.branch_qualified
+                && r.pointwise_qualified
+                && r.driver.t.last() == Some(&epoch.end);
+            out.epochs.push(ChainEpoch {
+                mode,
+                start: clock,
+                safe: if good { epoch.end } else { clock },
+                incoming_radius: radius,
+                ordered: None,
+                terminal: Some(r),
+            });
+            if !good {
+                let k = if out.work.charged_native_attempts >= total_native {
+                    ChainStop::NativeBudget
+                } else if out.work.charged_scan_slabs >= budget.scan_slabs || n >= slabs {
+                    ChainStop::SlabBudget
+                } else {
+                    ChainStop::NativeRefused
+                };
+                stop!(k, "terminal physical evolution unqualified");
+            }
+            return Ok(out);
+        }
+        let mut q = mp;
+        q.max_slabs = q.max_slabs.min(slabs);
+        let r = match evolve_to_first_guard(
+            &m.source, &xx, &zz, &m.branch, ep, &o, policy, m.route, &m.guards, q,
+        ) {
+            Ok(v) => v,
+            Err(e) => {
+                out.work.charged_native_attempts += remaining;
+                out.work.charged_scan_slabs += q.max_slabs;
+                stop!(ChainStop::NativeRefused, e);
+            }
+        };
+        let w = &r.work;
+        out.work.native_runs += w.native_runs;
+        out.work.native_attempts += w.attempts;
+        out.work.charged_native_attempts += w.attempts;
+        out.work.scan_slabs += w.physical_certificates;
+        out.work.charged_scan_slabs += r
+            .runs
+            .first()
+            .map_or(w.physical_certificates, |v| v.stats().accepted_steps);
+        out.work.driver_rhs += w.driver_rhs;
+        out.work.projection_rhs += w.shared_projection.rhs_count
+            + w.replay_projection_rhs
+            + w.guard_prepared_rhs
+            + w.difference_prepared_rhs;
+        out.work.guard_evals += w.guard_evals;
+        out.work.dictionary_uses += w.dictionary_uses;
+        out.work.comparison_attempts += w.comparison_attempts;
+        out.work.warp_predictions += w.shared_projection.warp_predictions
+            + r.runs.first().map_or(0, |v| v.trial.work.warp_predictions);
+        let winner = r.winner();
+        let safe = r.committed_until();
+        let reason = r.reason().map(str::to_owned);
+        out.epochs.push(ChainEpoch {
+            mode,
+            start: clock,
+            safe,
+            incoming_radius: radius,
+            ordered: Some(r),
+            terminal: None,
+        });
+        let Some(j) = winner else {
+            if reason.is_none() && safe == epoch.end {
+                return Ok(out);
+            }
+            let kind = if out.work.charged_native_attempts >= total_native {
+                ChainStop::NativeBudget
+            } else if out.work.charged_scan_slabs >= budget.scan_slabs {
+                ChainStop::SlabBudget
+            } else {
+                ChainStop::OrderUnresolved
+            };
+            stop!(
+                kind,
+                reason.unwrap_or_else(|| "chain order unresolved".into())
+            );
+        };
+        let authority = out
+            .epochs
+            .last()
+            .unwrap()
+            .ordered
+            .as_ref()
+            .unwrap()
+            .event_authority()
+            .expect("ordered winner");
+        let root = authority.root().expect("ordered root");
+        let edge = &m.transitions[j];
+        let target = &modes[edge.target];
+        let dwell = prior
+            .map(|p| rodas5p_core::directed::sub_down(root[0], p[1]))
+            .transpose()?;
+        let mut ev = ChainEvent {
+            from: mode,
+            target: edge.target,
+            guard: j,
+            event_time: root,
+            dwell_lower: dwell,
+            committed: false,
+            reset: None,
+            gap: vec![],
+            reason: None,
+        };
+        let kind = if dwell.is_some_and(|v| v < budget.min_dwell) {
+            Some(ChainStop::DwellUnproved)
+        } else if out.work.transitions_attempted >= budget.transition_attempts {
+            Some(ChainStop::TransitionBudget)
+        } else if out.work.charged_reset_cells >= budget.reset_cells {
+            Some(ChainStop::ResetBudget)
+        } else if root[1] >= epoch.end {
+            Some(ChainStop::ResetRefused)
+        } else {
+            None
+        };
+        if let Some(k) = kind {
+            ev.reason = Some(format!("{k:?}"));
+            out.transitions.push(ev);
+            stop!(k, format!("{k:?}"));
+        }
+        out.work.transitions_attempted += 1;
+        let cap = (budget.reset_cells - out.work.charged_reset_cells).min(64);
+        let prep = match authority.prepare_vector_restart(
+            &edge.reset,
+            &target.source,
+            &target.z_seed,
+            &target.branch,
+            epoch.end,
+            policy,
+            edge.policy,
+            cap,
+        ) {
+            Ok(v) => v,
+            Err(e) => {
+                out.work.charged_reset_cells += cap;
+                ev.reason = Some(e.to_string());
+                out.transitions.push(ev);
+                stop!(ChainStop::ResetRefused, e);
+            }
+        };
+        add_reset_work(&mut out.work, &prep);
+        if let Some(e) = prep.reason.clone() {
+            let k = if e.contains("cell cap") {
+                ChainStop::ResetBudget
+            } else {
+                ChainStop::ResetRefused
+            };
+            ev.reason = Some(e.clone());
+            ev.reset = Some(prep);
+            out.transitions.push(ev);
+            stop!(k, e);
+        }
+        let check = (|| -> Result<(), (ChainStop, String)> {
+            for (ci, bp) in prep
+                .cells
+                .iter()
+                .map(|c| {
+                    c.tube
+                        .as_ref()
+                        .expect("prepared tube")
+                        .attempts
+                        .last()
+                        .expect("tube proof")
+                })
+                .enumerate()
+                .map(|(i, b)| (Some(i), b))
+                .chain(std::iter::once((
+                    None,
+                    prep.restart_branch.as_ref().expect("prepared restart"),
+                )))
+            {
+                for (k, g) in target.guards.iter().enumerate() {
+                    if out.work.gap_checks >= budget.gap_checks {
+                        return Err((ChainStop::GapBudget, "chain gap check budget".into()));
+                    }
+                    out.work.gap_checks += 1;
+                    let e = de::gap_guard_enclosure(
+                        &target.source,
+                        g,
+                        bp,
+                        gap_route,
+                        edge.policy.branch_route,
+                    )
+                    .map_err(|e| (ChainStop::GapUnproved, e.to_string()))?;
+                    out.work.gap_rhs += e.work.rhs_count;
+                    let negative = e.enclosure[1] < 0.;
+                    ev.gap.push(ChainGapCheck {
+                        guard: k,
+                        cell: ci,
+                        times: bp.times,
+                        enclosure: e.enclosure,
+                        evidence: e,
+                    });
+                    if !negative {
+                        return Err((
+                            ChainStop::GapUnproved,
+                            "new-mode guard not strictly negative over synchronization tube".into(),
+                        ));
+                    }
+                }
+            }
+            Ok(())
+        })();
+        if let Err((k, e)) = check {
+            ev.reason = Some(e.clone());
+            ev.reset = Some(prep);
+            out.transitions.push(ev);
+            stop!(k, e);
+        }
+        let bp = prep.restart_branch.as_ref().expect("prepared restart");
+        xx = bp.initial.x.clone();
+        zz = bp.initial.z.clone();
+        radius = prep.incoming_radius.expect("prepared radius");
+        clock = root[1];
+        prior = Some(root);
+        mode = edge.target;
+        ev.committed = true;
+        ev.reset = Some(prep);
+        out.transitions.push(ev);
+        out.work.transitions_committed += 1;
+        out.final_mode = mode;
+    }
 }

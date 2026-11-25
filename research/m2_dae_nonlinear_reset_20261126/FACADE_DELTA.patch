@@ -1,0 +1,223 @@
+--- a/crates/vigilode/src/dae_evolution.rs
++++ b/crates/vigilode/src/dae_evolution.rs
+@@ -1838,3 +1838,220 @@
+     }
+     Ok(out)
+ }
++
++pub use de::{ResetEnvelopeRoute, ResetSlabEvidence, TransitionBranchProof};
++/// Source-owned post differential flow, deliberately restricted to scalar
++/// autonomous damping. The post algebraic source is declared separately.
++#[derive(Clone, Copy, Debug, Serialize)]
++pub struct DampedResetFlow {
++    pub rate: f64,
++    pub equilibrium: f64,
++}
++/// A rejected reset retains its evidence but does not expose a committed
++/// post-event trajectory. Old event authority is immutable.
++#[derive(Serialize)]
++pub struct PolynomialRestartRun {
++    pub event_time: [f64; 2],
++    pub envelope_route: ResetEnvelopeRoute,
++    pub slab_evidence: Vec<ResetSlabEvidence>,
++    pub reset_x: [f64; 2],
++    pub synchronized_x: [f64; 2],
++    pub transition_x: [f64; 2],
++    pub incoming_radius: f64,
++    pub branch_proof: Option<TransitionBranchProof>,
++    pub reason: Option<String>,
++    post_trial: Option<EvolutionRun>,
++}
++impl PolynomialRestartRun {
++    pub fn post(&self) -> Option<&EvolutionRun> {
++        if self.reason.is_none() {
++            self.post_trial
++                .as_ref()
++                .filter(|r| r.global_qualified && r.pointwise_qualified && r.branch_qualified)
++        } else {
++            None
++        }
++    }
++    pub fn post_diagnostic(&self) -> Option<&EvolutionRun> {
++        self.post_trial.as_ref()
++    }
++}
++impl ThresholdRun {
++    /// Polynomial state-dependent reset with source-owned root authority.
++    /// The pre-event continuation is used privately only within the proven
++    /// root interval. No external event time or arbitrary postflow callback.
++    #[allow(clippy::too_many_arguments)]
++    pub fn restart_polynomial(
++        &self,
++        reset: &rodas5p_integrators::retro_event_poly::DeclaredPolynomial,
++        flow: DampedResetFlow,
++        constraints: Vec<rodas5p_integrators::retro_event_poly::DeclaredPolynomial>,
++        z_seed: &[f64],
++        branch: &[[f64; 2]],
++        end: f64,
++        opts: &Options,
++        policy: EvolutionPolicy,
++        route: EvolutionRoute,
++        envelope: ResetEnvelopeRoute,
++        derivative: GuardDerivativeRoute,
++        branch_route: InitRoute,
++        grid: &[f64],
++    ) -> CoreResult<PolynomialRestartRun> {
++        use rodas5p_core::retro_dictionary::RealMode;
++        use rodas5p_integrators::retro_dae_init::InitMode;
++        use rodas5p_integrators::retro_event_poly::{AffineFactor, DeclaredPolynomial, EventTerm};
++        use rodas5p_integrators::retro_green::RetroTable;
++        let root = self
++            .root
++            .filter(|_| self.reason.is_none())
++            .ok_or_else(|| bad("no physical event authority"))?;
++        if !self.trial.global_qualified
++            || !self.trial.pointwise_qualified
++            || !self.trial.branch_qualified
++            || policy.init.mode != InitMode::ProjectAlgebraic
++            || !flow.rate.is_finite()
++            || flow.rate <= 0.
++            || !flow.equilibrium.is_finite()
++            || !end.is_finite()
++            || end <= root[1]
++        {
++            return Err(bad("polynomial reset source/flow authority"));
++        }
++        reset.validate(self.trial.engine.src.nx() + self.trial.engine.src.nz())?;
++        let forcing = Iv::point(flow.rate)?.mul(Iv::point(flow.equilibrium)?)?;
++        if forcing.lo != forcing.hi {
++            return Err(bad("affine source coefficient not exactly represented"));
++        }
++        let post_src = DaeSource::new(
++            vec![DeclaredPolynomial::new(vec![
++                EventTerm {
++                    coefficient: -flow.rate,
++                    factors: vec![AffineFactor::component(0, 0.)],
++                },
++                EventTerm {
++                    coefficient: forcing.lo,
++                    factors: vec![],
++                },
++            ])?],
++            constraints,
++        )?;
++        let table = RetroTable::with_dictionary(RealMode::Hybrid)?;
++        let mut evidence = Vec::new();
++        let mut covered = root[0];
++        let mut reset_box: Option<Iv> = None;
++        let mut sync_box: Option<Iv> = None;
++        fn hull(old: Option<Iv>, pair: [f64; 2]) -> CoreResult<Iv> {
++            let v = Iv::new(pair[0], pair[1])?;
++            Ok(old.map_or(v, |u| Iv {
++                lo: u.lo.min(v.lo),
++                hi: u.hi.max(v.hi),
++            }))
++        }
++        for s in &self.trial.slabs {
++            let lo = root[0].max(s.times[0]);
++            let hi = root[1].min(s.times[1]);
++            if lo > hi {
++                continue;
++            }
++            if lo > covered {
++                return Err(bad("uncovered event clock"));
++            }
++            let c = s
++                .certificate
++                .as_ref()
++                .filter(|c| c.global_qualified)
++                .ok_or_else(|| bad("unqualified event slab"))?;
++            let power = s
++                .power
++                .iter()
++                .map(|row| {
++                    row.iter()
++                        .map(|v| Iv::new(v[0], v[1]))
++                        .collect::<CoreResult<Vec<_>>>()
++                })
++                .collect::<CoreResult<Vec<_>>>()?;
++            let e = de::reset_slab(
++                &self.trial.engine.src,
++                reset,
++                &power,
++                c,
++                [lo, hi],
++                root[1],
++                flow.rate,
++                flow.equilibrium,
++                envelope,
++                derivative,
++                &table,
++            )?;
++            reset_box = Some(hull(reset_box, e.reset_x)?);
++            sync_box = Some(hull(sync_box, e.synchronized_x)?);
++            covered = covered.max(hi);
++            evidence.push(e);
++        }
++        if covered != root[1] || evidence.is_empty() {
++            return Err(bad("event slab coverage incomplete"));
++        }
++        let reset_box = reset_box.expect("nonempty reset");
++        let sync = sync_box.expect("nonempty sync");
++        let center = (sync.lo * 0.5 + sync.hi * 0.5).clamp(sync.lo, sync.hi);
++        let radius = diameter(sync.lo, center)?.max(diameter(center, sync.hi)?);
++        let ball = Iv::point(center)?.add(Iv::new(-radius, radius)?)?;
++        // Each affine damped trajectory is monotone between its own reset
++        // and synchronization value. Include the full rounded restart ball.
++        let transition = Iv::new(reset_box.lo.min(ball.lo), reset_box.hi.max(ball.hi))?;
++        let mut out = PolynomialRestartRun {
++            event_time: root,
++            envelope_route: envelope,
++            slab_evidence: evidence,
++            reset_x: reset_box.as_pair(),
++            synchronized_x: sync.as_pair(),
++            transition_x: transition.as_pair(),
++            incoming_radius: radius,
++            branch_proof: None,
++            reason: None,
++            post_trial: None,
++        };
++        let proof = match de::certify_transition_branch(
++            &post_src,
++            root,
++            transition.as_pair(),
++            center,
++            z_seed,
++            branch,
++            policy.init,
++            branch_route,
++        ) {
++            Ok(v) => v,
++            Err(e) => {
++                out.reason = Some(e.to_string());
++                return Ok(out);
++            }
++        };
++        let z = proof.initial.z.clone();
++        out.branch_proof = Some(proof);
++        match evolve_epoch(
++            &post_src,
++            &[center],
++            &z,
++            branch,
++            EvolutionEpoch {
++                start: root[1],
++                end,
++                incoming_x_error: Some(radius),
++            },
++            opts,
++            policy,
++            route,
++            grid,
++        ) {
++            Ok(v) => {
++                if !v.global_qualified || !v.pointwise_qualified || !v.branch_qualified {
++                    out.reason = Some("post physical trajectory not qualified".into());
++                }
++                out.post_trial = Some(v);
++            }
++            Err(e) => out.reason = Some(e.to_string()),
++        }
++        Ok(out)
++    }
++}

@@ -1,0 +1,220 @@
+diff --git a/crates/rodas5p-integrators/src/retro_dae_evolution.rs b/crates/rodas5p-integrators/src/retro_dae_evolution.rs
+index 6654e5b9..f95c2eb9 100644
+--- a/crates/rodas5p-integrators/src/retro_dae_evolution.rs
++++ b/crates/rodas5p-integrators/src/retro_dae_evolution.rs
+@@ -159,11 +159,16 @@ pub fn dense_power(
+         })
+         .collect()
+ }
++fn is_zero(v: &f64) -> bool {
++    *v == 0.
++}
+ /// Immutable quotient predictor. The finite Taylor quotient is ONLY a
+ /// candidate seed for the original source projection; no infinite tail
+ /// or physical residual is certified by the quotient report.
+ #[derive(Clone, Debug, Serialize)]
+ pub struct WarpSeed {
++    #[serde(skip_serializing_if = "is_zero")]
++    pub start: f64,
+     pub end: f64,
+     pub coeff: Vec<Vec<f64>>,
+     pub quotient_error: f64,
+@@ -172,7 +177,21 @@ pub struct WarpSeed {
+ }
+ impl WarpSeed {
+     pub fn new(src: &DaeSource, end: f64, mode: QuotientMode) -> CoreResult<Self> {
+-        if !end.is_finite() || end <= 0. || src.nz() > 8 {
++        Self::new_window(src, 0., end, mode)
++    }
++    /// Reanchor a source-owned affine pencil at the actual physical start.
++    pub fn new_window(
++        src: &DaeSource,
++        start: f64,
++        end: f64,
++        mode: QuotientMode,
++    ) -> CoreResult<Self> {
++        if !start.is_finite()
++            || !end.is_finite()
++            || end <= start
++            || !(end - start).is_finite()
++            || src.nz() > 8
++        {
+             return Err(bad("WARP domain"));
+         }
+         let nx = src.nx();
+@@ -202,7 +221,7 @@ impl WarpSeed {
+             }
+         }
+         let y = vec![zero(); nx + n];
+-        let a = jz(&di::evaluate(&src.g, p(0.)?, &y)?, nx);
++        let a = jz(&di::evaluate(&src.g, p(start)?, &y)?, nx);
+         let b = jz(&di::evaluate(&src.g, p(end)?, &y)?, nx);
+         let mut delta = Vec::new();
+         for (r, s) in a.iter().zip(&b) {
+@@ -246,6 +265,7 @@ impl WarpSeed {
+             }
+         }
+         Ok(Self {
++            start,
+             end,
+             coeff,
+             quotient_error: err,
+@@ -254,7 +274,9 @@ impl WarpSeed {
+         })
+     }
+     fn seed(&self, src: &DaeSource, t: f64, x: &[f64]) -> CoreResult<Vec<f64>> {
+-        let u = p(t)?.div(p(self.end)?)?;
++        let u = p(t)?
++            .sub(p(self.start)?)?
++            .div(p(self.end)?.sub(p(self.start)?)?)?;
+         let mut y = di::points(x)?;
+         y.extend(vec![zero(); self.n]);
+         let g = di::evaluate(&src.g, p(t)?, &y)?.v;
+@@ -401,6 +423,7 @@ pub fn certify_slab(
+         || y.iter().any(|v| v.is_empty() || v.len() > 5)
+         || !tube.is_finite()
+         || tube <= 0.
++        || incoming.is_some_and(|v| !v.is_finite() || v < 0.)
+     {
+         return Err(bad("slab shape"));
+     }
+diff --git a/crates/vigilode/src/dae_evolution.rs b/crates/vigilode/src/dae_evolution.rs
+index 66263019..31b60b19 100644
+--- a/crates/vigilode/src/dae_evolution.rs
++++ b/crates/vigilode/src/dae_evolution.rs
+@@ -44,6 +44,14 @@ impl EvolutionRoute {
+         if self == Self::Reduced3 { 3 } else { 5 }
+     }
+ }
++/// Absolute physical clock and certified differential-state radius.
++/// The caller owns the incoming certificate. None means unresolved, not zero.
++#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
++pub struct EvolutionEpoch {
++    pub start: f64,
++    pub end: f64,
++    pub incoming_x_error: Option<f64>,
++}
+ #[derive(Clone, Copy, Debug, Serialize)]
+ pub struct EvolutionPolicy {
+     pub init: InitPolicy,
+@@ -158,6 +166,9 @@ pub struct SlabRecord {
+ pub struct EvolutionRun {
+     pub route: EvolutionRoute,
+     pub initial: InitReport,
++    /// Nonlegacy epoch authority, retained in the receipt.
++    #[serde(skip_serializing_if = "Option::is_none")]
++    pub epoch: Option<EvolutionEpoch>,
+     driver: Solution,
+     pub accepted: Vec<Query>,
+     pub queries: Vec<Query>,
+@@ -305,8 +316,47 @@ pub fn evolve(
+     route: EvolutionRoute,
+     grid: &[f64],
+ ) -> CoreResult<EvolutionRun> {
+-    if !end.is_finite()
+-        || end <= 0.
++    evolve_epoch(
++        src,
++        x,
++        z,
++        branch,
++        EvolutionEpoch {
++            start: 0.,
++            end,
++            incoming_x_error: Some(0.),
++        },
++        opts,
++        policy,
++        route,
++        grid,
++    )
++}
++/// Integrate at an absolute physical clock with caller-certified incoming
++/// differential error. No event is detected or committed by this API.
++/// Unknown incoming radius allows numerical evolution but no global proof.
++#[allow(clippy::too_many_arguments)]
++pub fn evolve_epoch(
++    src: &DaeSource,
++    x: &[f64],
++    z: &[f64],
++    branch: &[[f64; 2]],
++    epoch: EvolutionEpoch,
++    opts: &Options,
++    policy: EvolutionPolicy,
++    route: EvolutionRoute,
++    grid: &[f64],
++) -> CoreResult<EvolutionRun> {
++    let EvolutionEpoch {
++        start,
++        end,
++        incoming_x_error,
++    } = epoch;
++    if !start.is_finite()
++        || !end.is_finite()
++        || end <= start
++        || !(end - start).is_finite()
++        || incoming_x_error.is_some_and(|v| !v.is_finite() || v < 0.)
+         || !opts.dense_output
+         || !matches!(opts.atol, Atol::Scalar(_))
+         || !policy.tube_radius.is_finite()
+@@ -314,16 +364,25 @@ pub fn evolve(
+         || !policy.global_tol.is_finite()
+         || policy.global_tol <= 0.
+         || grid.len() > 4096
+-        || grid.iter().any(|t| !t.is_finite() || *t < 0. || *t > end)
++        || grid
++            .iter()
++            .any(|t| !t.is_finite() || *t < start || *t > end)
+         || grid.windows(2).any(|v| v[0] >= v[1])
+     {
+         return Err(bad("input/clock/dense scalar tolerance contract"));
+     }
+     let nx = src.nx();
+-    let initial = src.initialize(0., x, z, branch, policy.init, route.init())?;
++    let initial = src.initialize(start, x, z, branch, policy.init, route.init())?;
+     let warp = match route {
+-        EvolutionRoute::WarpDirect => Some(WarpSeed::new(src, end, QuotientMode::DirectBlock)?),
+-        EvolutionRoute::WarpFolded => Some(WarpSeed::new(src, end, QuotientMode::Folded)?),
++        EvolutionRoute::WarpDirect => Some(WarpSeed::new_window(
++            src,
++            start,
++            end,
++            QuotientMode::DirectBlock,
++        )?),
++        EvolutionRoute::WarpFolded => {
++            Some(WarpSeed::new_window(src, start, end, QuotientMode::Folded)?)
++        }
+         _ => None,
+     };
+     let e = Engine {
+@@ -336,7 +395,7 @@ pub fn evolve(
+         work: Arc::new(Mutex::new(ProjectionWork::default())),
+     };
+     let (p, y) = if route == EvolutionRoute::Mass {
+-        let a = initialize_mass_problem(src, 0., x, z, branch, policy.init, route.init())
++        let a = initialize_mass_problem(src, start, x, z, branch, policy.init, route.init())
+             .map_err(bad)?;
+         (a.problem, a.initial_state)
+     } else {
+@@ -377,10 +436,11 @@ pub fn evolve(
+         });
+         (p, x.to_vec())
+     };
+-    let driver = Rodas5p::solve(&p, (0., end), &y, opts).map_err(bad)?;
++    let driver = Rodas5p::solve(&p, (start, end), &y, opts).map_err(bad)?;
+     let mut out = EvolutionRun {
+         route,
+         initial,
++        epoch: (start != 0. || incoming_x_error != Some(0.)).then_some(epoch),
+         driver,
+         accepted: vec![],
+         queries: vec![],
+@@ -405,7 +465,7 @@ pub fn evolve(
+         out.work = e.work.lock().map_err(|_| bad("work lock"))?.clone();
+         return Ok(out);
+     }
+-    let mut incoming = Some(0.);
++    let mut incoming = incoming_x_error;
+     for k in 0..out.driver.t.len() - 1 {
+         let times = [out.driver.t[k], out.driver.t[k + 1]];
+         let native = packet(&out.driver, k)?;

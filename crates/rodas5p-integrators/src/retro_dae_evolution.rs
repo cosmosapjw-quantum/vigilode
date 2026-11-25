@@ -159,11 +159,16 @@ pub fn dense_power(
         })
         .collect()
 }
+fn is_zero(v: &f64) -> bool {
+    *v == 0.
+}
 /// Immutable quotient predictor. The finite Taylor quotient is ONLY a
 /// candidate seed for the original source projection; no infinite tail
 /// or physical residual is certified by the quotient report.
 #[derive(Clone, Debug, Serialize)]
 pub struct WarpSeed {
+    #[serde(skip_serializing_if = "is_zero")]
+    pub start: f64,
     pub end: f64,
     pub coeff: Vec<Vec<f64>>,
     pub quotient_error: f64,
@@ -172,7 +177,21 @@ pub struct WarpSeed {
 }
 impl WarpSeed {
     pub fn new(src: &DaeSource, end: f64, mode: QuotientMode) -> CoreResult<Self> {
-        if !end.is_finite() || end <= 0. || src.nz() > 8 {
+        Self::new_window(src, 0., end, mode)
+    }
+    /// Reanchor a source-owned affine pencil at the actual physical start.
+    pub fn new_window(
+        src: &DaeSource,
+        start: f64,
+        end: f64,
+        mode: QuotientMode,
+    ) -> CoreResult<Self> {
+        if !start.is_finite()
+            || !end.is_finite()
+            || end <= start
+            || !(end - start).is_finite()
+            || src.nz() > 8
+        {
             return Err(bad("WARP domain"));
         }
         let nx = src.nx();
@@ -202,7 +221,7 @@ impl WarpSeed {
             }
         }
         let y = vec![zero(); nx + n];
-        let a = jz(&di::evaluate(&src.g, p(0.)?, &y)?, nx);
+        let a = jz(&di::evaluate(&src.g, p(start)?, &y)?, nx);
         let b = jz(&di::evaluate(&src.g, p(end)?, &y)?, nx);
         let mut delta = Vec::new();
         for (r, s) in a.iter().zip(&b) {
@@ -246,6 +265,7 @@ impl WarpSeed {
             }
         }
         Ok(Self {
+            start,
             end,
             coeff,
             quotient_error: err,
@@ -254,7 +274,9 @@ impl WarpSeed {
         })
     }
     fn seed(&self, src: &DaeSource, t: f64, x: &[f64]) -> CoreResult<Vec<f64>> {
-        let u = p(t)?.div(p(self.end)?)?;
+        let u = p(t)?
+            .sub(p(self.start)?)?
+            .div(p(self.end)?.sub(p(self.start)?)?)?;
         let mut y = di::points(x)?;
         y.extend(vec![zero(); self.n]);
         let g = di::evaluate(&src.g, p(t)?, &y)?.v;
@@ -401,6 +423,7 @@ pub fn certify_slab(
         || y.iter().any(|v| v.is_empty() || v.len() > 5)
         || !tube.is_finite()
         || tube <= 0.
+        || incoming.is_some_and(|v| !v.is_finite() || v < 0.)
     {
         return Err(bad("slab shape"));
     }
@@ -636,4 +659,1066 @@ pub fn query_x_error(
         .map(|(v, &x)| eval(v, u)?.sub(p(x)?).map(|v| v.mag()))
         .try_fold(0.0_f64, |m, v| Ok::<f64, CoreError>(m.max(v?)))?;
     add_up(ideal, e)
+}
+
+/// Physical differential derivative enclosure on an already certified slab.
+/// Only valid when the certificate comes from this source and this slab.
+pub fn threshold_velocity(src: &DaeSource, c: &SlabCertificate) -> CoreResult<Iv> {
+    if src.nx() != 1 || !c.global_qualified {
+        return Err(bad("threshold requires scalar certified tube"));
+    }
+    let y = c
+        .x_range
+        .iter()
+        .chain(&c.branch_root_box)
+        .map(|v| Iv::new(v[0], v[1]))
+        .collect::<CoreResult<Vec<_>>>()?;
+    let f = di::evaluate(&src.f, Iv::new(c.times[0], c.times[1])?, &y)?;
+    Ok(f.v[0])
+}
+
+/// Alternative physical tangent enclosures. A prepared inverse is only a
+/// candidate; its defect against the original interval Jacobian is checked.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum GuardDerivativeRoute {
+    Tangent,
+    Schur,
+    PreparedSchur,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum GuardValueRoute {
+    Box,
+    Transport,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct GuardPointEvidence {
+    pub time: f64,
+    pub differential_radius: f64,
+    pub value: [f64; 2],
+}
+#[derive(Clone, Debug, Serialize)]
+pub struct GuardSlabEvidence {
+    pub evaluations: Vec<GuardPointEvidence>,
+    pub times: [f64; 2],
+    pub derivative_route: GuardDerivativeRoute,
+    pub value_route: GuardValueRoute,
+    pub velocity: [f64; 2],
+    pub reduced_gradient: Vec<[f64; 2]>,
+    pub reduced_clock: [f64; 2],
+    pub inverse_defect: f64,
+    pub reduced_lip: f64,
+    pub algebraic_guard_lip: f64,
+    pub prepared_work: InitWork,
+}
+
+/// Conditional on an authentic certificate for the same original source,
+/// polynomial and slab. Only the facade constructs event authority.
+pub struct GuardProof<'a> {
+    guard: &'a DeclaredPolynomial,
+    y: &'a [Poly],
+    nx: usize,
+    times: [f64; 2],
+    x_range: Vec<Iv>,
+    z_range: Vec<Iv>,
+    root_box: Vec<Iv>,
+    h_poly: Poly,
+    cg_poly: Vec<Poly>,
+    gap: f64,
+    zx_lip: f64,
+    whole_x: f64,
+    pub evidence: GuardSlabEvidence,
+}
+fn iv_pairs(v: &[[f64; 2]]) -> CoreResult<Vec<Iv>> {
+    v.iter().map(|a| Iv::new(a[0], a[1])).collect()
+}
+fn intersect(a: Iv, b: Iv) -> CoreResult<Iv> {
+    Iv::new(a.lo.max(b.lo), a.hi.min(b.hi))
+}
+fn guard_dot(a: &[Iv], b: &[Iv]) -> CoreResult<Iv> {
+    a.iter()
+        .zip(b)
+        .try_fold(zero(), |s, (&a, &b)| s.add(a.mul(b)?))
+}
+impl<'a> GuardProof<'a> {
+    pub fn new(
+        src: &DaeSource,
+        guard: &'a DeclaredPolynomial,
+        y: &'a [Poly],
+        cert: &SlabCertificate,
+        derivative: GuardDerivativeRoute,
+        value: GuardValueRoute,
+    ) -> CoreResult<Self> {
+        let nx = src.nx();
+        let nz = src.nz();
+        guard.validate(nx + nz)?;
+        if !cert.global_qualified
+            || y.len() != nx + nz
+            || cert.x_range.len() != nx
+            || cert.z_range.len() != nz
+            || cert.branch_root_box.len() != nz
+            || cert.preconditioner.len() != nz * nz
+        {
+            return Err(bad("guard source/slab shape"));
+        }
+        let time = Iv::new(cert.times[0], cert.times[1])?;
+        let xb = iv_pairs(&cert.x_range)?;
+        let zb = iv_pairs(&cert.z_range)?;
+        let rb = iv_pairs(&cert.branch_root_box)?;
+        let mut physical = xb.clone();
+        physical.extend_from_slice(&rb);
+        let f = di::evaluate(&src.f, time, &physical)?;
+        let g = di::evaluate(&src.g, time, &physical)?;
+        let hg = di::evaluate(std::slice::from_ref(guard), time, &physical)?;
+        let h = &hg.j[0];
+        let j = jz(&g, nx);
+        let original = DenseMatrix::new(nz, nz, cert.preconditioner.clone())?;
+        let mut work = InitWork::default();
+        let c = if derivative == GuardDerivativeRoute::PreparedSchur {
+            let center = di::center_matrix(&j)?;
+            di::preconditioner(
+                &center,
+                InitRoute::PreparedBatch,
+                &ParallelExecution::sequential(),
+                &mut work,
+            )?
+        } else {
+            original.clone()
+        };
+        let q = di::rows_norm(&di::defect(&c, &j)?)?;
+        let gap = sub_down(1., q)?;
+        if gap <= 0. {
+            return Err(bad("guard inverse defect"));
+        }
+        let solve =
+            |rhs: &[Iv]| -> CoreResult<Vec<Iv>> { product_bound(q, gap, &di::matvec(&c, rhs)?) };
+        let hz = &h[1 + nx..];
+        let mut reduced = Vec::with_capacity(nx + 1);
+        for (k, &hk) in h[..=nx].iter().enumerate() {
+            let rhs = g.j.iter().map(|r| -r[k]).collect::<Vec<_>>();
+            reduced.push(hk.add(guard_dot(hz, &solve(&rhs)?)?)?);
+        }
+        let velocity = if derivative == GuardDerivativeRoute::Tangent {
+            let rhs =
+                g.j.iter()
+                    .map(|r| r[0].add(guard_dot(&r[1..1 + nx], &f.v)?).map(|v| -v))
+                    .collect::<CoreResult<Vec<_>>>()?;
+            h[0].add(guard_dot(&h[1..1 + nx], &f.v)?)?
+                .add(guard_dot(hz, &solve(&rhs)?)?)?
+        } else {
+            reduced[0].add(guard_dot(&reduced[1..], &f.v)?)?
+        };
+        let reduced_lip = di::rows_norm(&[reduced[1..].to_vec()])?;
+        // The straight segment between represented V and true Z(t,U)
+        // lies in this hull; use it for the algebraic correction only.
+        let mut hull = xb.clone();
+        for (&v, &r) in zb.iter().zip(&rb) {
+            hull.push(Iv::new(v.lo.min(r.lo), v.hi.max(r.hi))?);
+        }
+        let hh = di::evaluate(std::slice::from_ref(guard), time, &hull)?;
+        let algebraic_guard_lip = di::rows_norm(&[hh.j[0][1 + nx..].to_vec()])?;
+        let clock = [p(cert.times[0])?, p(cert.times[1])?.sub(p(cert.times[0])?)?];
+        let h_poly = compose(guard, &clock, y)?;
+        let gp = src
+            .g
+            .iter()
+            .map(|g| compose(g, &clock, y))
+            .collect::<CoreResult<Vec<_>>>()?;
+        let cg_poly = c_polys(&original, &gp)?;
+        let original_gap = sub_down(1., cert.branch_defect)?;
+        if original_gap <= 0. {
+            return Err(bad("guard original branch defect"));
+        }
+        let whole_x = cert
+            .whole_x_error
+            .ok_or_else(|| bad("guard physical radius"))?;
+        Ok(Self {
+            guard,
+            y,
+            nx,
+            times: cert.times,
+            x_range: xb,
+            z_range: zb,
+            root_box: rb,
+            h_poly,
+            cg_poly,
+            gap: original_gap,
+            zx_lip: cert.zx_norm_upper,
+            whole_x,
+            evidence: GuardSlabEvidence {
+                evaluations: vec![],
+                times: cert.times,
+                derivative_route: derivative,
+                value_route: value,
+                velocity: velocity.as_pair(),
+                reduced_gradient: reduced[1..].iter().map(|v| v.as_pair()).collect(),
+                reduced_clock: reduced[0].as_pair(),
+                inverse_defect: q,
+                reduced_lip,
+                algebraic_guard_lip,
+                prepared_work: work,
+            },
+        })
+    }
+    /// Only an advisory polynomial, never an authority on physical roots.
+    pub fn hint_coefficients(&self) -> Vec<f64> {
+        self.h_poly.iter().map(|&v| di::mid(v)).collect()
+    }
+    /// At a physical time in the certified slab; error must be an externally
+    /// established differential radius (endpoint or whole-slab).
+    pub fn value_at(&self, t: f64, error: f64) -> CoreResult<Iv> {
+        if !(self.times[0] <= t && t <= self.times[1])
+            || !error.is_finite()
+            || error < 0.
+            || error > self.whole_x
+        {
+            return Err(bad("guard query outside physical radius"));
+        }
+        let u = p(t)?
+            .sub(p(self.times[0])?)?
+            .div(p(self.times[1])?.sub(p(self.times[0])?)?)?;
+        let u = Iv::new(u.lo.max(0.), u.hi.min(1.))?;
+        let cg = self
+            .cg_poly
+            .iter()
+            .map(|v| eval(v, u))
+            .collect::<CoreResult<Vec<_>>>()?;
+        let az = div_up(di::norm(&cg), self.gap)?;
+        match self.evidence.value_route {
+            GuardValueRoute::Transport => {
+                let r = add_up(
+                    mul_up(self.evidence.reduced_lip, error)?,
+                    mul_up(self.evidence.algebraic_guard_lip, az)?,
+                )?;
+                eval(&self.h_poly, u)?.add(Iv::new(-r, r)?)
+            }
+            GuardValueRoute::Box => {
+                let mut values = Vec::with_capacity(self.y.len());
+                let ez = add_up(az, mul_up(self.zx_lip, error)?)?;
+                for (i, v) in self.y.iter().enumerate() {
+                    let a = eval(v, u)?;
+                    if i < self.nx {
+                        values.push(intersect(a.add(Iv::new(-error, error)?)?, self.x_range[i])?);
+                    } else {
+                        let k = i - self.nx;
+                        let a = intersect(a, self.z_range[k])?;
+                        values.push(intersect(a.add(Iv::new(-ez, ez)?)?, self.root_box[k])?);
+                    }
+                }
+                Ok(di::evaluate(std::slice::from_ref(self.guard), p(t)?, &values)?.v[0])
+            }
+        }
+    }
+}
+
+/// Reset envelope routes. The polynomial is composed from the original
+/// source on a certified native slab, not from rounded trajectory samples.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum ResetEnvelopeRoute {
+    Box,
+    Transport,
+    GreenMoment,
+}
+
+#[derive(Clone, Debug, Serialize)]
+pub struct ResetSlabEvidence {
+    pub times: [f64; 2],
+    pub reset_x: [f64; 2],
+    pub synchronized_x: [f64; 2],
+    pub reset_error_upper: f64,
+    pub reduced_lip: f64,
+    pub algebraic_error_upper: f64,
+    pub moment_derivative: Option<[f64; 2]>,
+    pub green_calls: usize,
+    pub prepared_work: InitWork,
+}
+/// Only for a genuine source-bound certified slab; the facade owns event
+/// authority. Synchronize to s under scalar x'=-a(x-e).
+#[allow(clippy::too_many_arguments)]
+pub fn reset_slab(
+    src: &DaeSource,
+    reset: &DeclaredPolynomial,
+    y: &[Poly],
+    cert: &SlabCertificate,
+    times: [f64; 2],
+    s: f64,
+    a: f64,
+    e: f64,
+    route: ResetEnvelopeRoute,
+    derivative: GuardDerivativeRoute,
+    table: &RetroTable,
+) -> CoreResult<ResetSlabEvidence> {
+    if !(cert.times[0] <= times[0]
+        && times[0] <= times[1]
+        && times[1] <= cert.times[1]
+        && times[1] <= s)
+        || !a.is_finite()
+        || a <= 0.
+        || !e.is_finite()
+    {
+        return Err(bad("reset slab clock/domain"));
+    }
+    let value = if route == ResetEnvelopeRoute::Box {
+        GuardValueRoute::Box
+    } else {
+        GuardValueRoute::Transport
+    };
+    let proof = GuardProof::new(src, reset, y, cert, derivative, value)?;
+    let h = p(cert.times[1])?.sub(p(cert.times[0])?)?;
+    let clock = Iv::new(times[0], times[1])?;
+    let normalize = |t: Iv| -> CoreResult<Iv> {
+        let u = t.sub(p(cert.times[0])?)?.div(h)?;
+        Iv::new(u.lo.max(0.), u.hi.min(1.))
+    };
+    let u = normalize(clock)?;
+    let ex = proof.whole_x;
+    let cg = proof
+        .cg_poly
+        .iter()
+        .map(|v| eval(v, u))
+        .collect::<CoreResult<Vec<_>>>()?;
+    let az = div_up(di::norm(&cg), proof.gap)?;
+    let er = add_up(
+        mul_up(proof.evidence.reduced_lip, ex)?,
+        mul_up(proof.evidence.algebraic_guard_lip, az)?,
+    )?;
+    let r = if value == GuardValueRoute::Box {
+        let ez = add_up(az, mul_up(proof.zx_lip, ex)?)?;
+        let mut values = Vec::with_capacity(y.len());
+        for (i, v) in y.iter().enumerate() {
+            let b = eval(v, u)?;
+            if i < proof.nx {
+                values.push(intersect(b.add(Iv::new(-ex, ex)?)?, proof.x_range[i])?);
+            } else {
+                let j = i - proof.nx;
+                values.push(intersect(
+                    intersect(b, proof.z_range[j])?.add(Iv::new(-ez, ez)?)?,
+                    proof.root_box[j],
+                )?);
+            }
+        }
+        di::evaluate(std::slice::from_ref(reset), clock, &values)?.v[0]
+    } else {
+        eval(&proof.h_poly, u)?.add(Iv::new(-er, er)?)?
+    };
+    let eq = p(e)?;
+    let rate = p(a)?;
+    let gain = |time: Iv| -> CoreResult<Iv> {
+        let x = p(s)?.sub(time)?.mul(rate)?;
+        table.phi(Iv::new(x.lo.max(0.), x.hi)?, 0)
+    };
+    let mut calls = 1;
+    let rectangle = eq.add(gain(clock)?.mul(r.sub(eq)?)?)?;
+    let (sync, moment) = if route == ResetEnvelopeRoute::GreenMoment {
+        // P is the represented reset polynomial in normalized native time.
+        // d/dt[e+exp(-a(s-t))(P(t)-e)] = exp(-a(s-t))*(P'(t)+a(P-e)).
+        // Compose before evaluation to preserve cancellation.
+        let mut d = proof
+            .h_poly
+            .iter()
+            .enumerate()
+            .skip(1)
+            .map(|(k, v)| v.scale(k as f64)?.div(h))
+            .collect::<CoreResult<Vec<_>>>()?;
+        if d.is_empty() {
+            d.push(zero());
+        }
+        let mut shifted = proof.h_poly.clone();
+        shifted[0] = shifted[0].sub(eq)?;
+        let q = add(&d, &scale(&shifted, rate)?)?;
+        let derivative = eval(&q, u)?;
+        let right = p(times[1])?;
+        let gb = gain(right)?;
+        let base = eq.add(gb.mul(eval(&proof.h_poly, normalize(right)?)?.sub(eq)?)?)?;
+        let dt = right.sub(clock)?;
+        let dt = Iv::new(dt.lo.max(0.), dt.hi)?;
+        let adt = dt.mul(rate)?;
+        let weight = gb
+            .mul(dt)?
+            .mul(table.phi(Iv::new(adt.lo.max(0.), adt.hi)?, 1)?)?;
+        calls += 2;
+        let propagated = mul_up(gain(clock)?.hi, er)?;
+        calls += 1;
+        let corrected = base
+            .sub(weight.mul(derivative)?)?
+            .add(Iv::new(-propagated, propagated)?)?;
+        (intersect(rectangle, corrected)?, Some(derivative.as_pair()))
+    } else {
+        (rectangle, None)
+    };
+    Ok(ResetSlabEvidence {
+        times,
+        reset_x: r.as_pair(),
+        synchronized_x: sync.as_pair(),
+        reset_error_upper: er,
+        reduced_lip: proof.evidence.reduced_lip,
+        algebraic_error_upper: az,
+        moment_derivative: moment,
+        green_calls: calls,
+        prepared_work: proof.evidence.prepared_work,
+    })
+}
+
+/// Uniform branch authority for all (t,x) in the stated transition box,
+/// independent of an integrator step or a pointwise initial root.
+#[derive(Clone, Debug, Serialize)]
+pub struct TransitionBranchProof {
+    pub times: [f64; 2],
+    pub differential_box: [f64; 2],
+    pub branch: Vec<[f64; 2]>,
+    pub root_box: Vec<[f64; 2]>,
+    pub self_map_box: Vec<[f64; 2]>,
+    pub defect: f64,
+    pub condition_upper: f64,
+    pub initial: InitReport,
+    pub work: InitWork,
+}
+/// Reuse an initialized point only as a predictor. Strict contraction
+/// is checked on the entire declared B, and a self-map proves existence
+/// uniformly in the time/state box. No assumption of nominal uniqueness.
+#[allow(clippy::too_many_arguments)]
+pub fn certify_transition_branch(
+    src: &DaeSource,
+    times: [f64; 2],
+    xb: [f64; 2],
+    center: f64,
+    z_seed: &[f64],
+    branch: &[[f64; 2]],
+    policy: InitPolicy,
+    route: InitRoute,
+) -> CoreResult<TransitionBranchProof> {
+    crate::affine_event_certificate::check_affine_event_arithmetic()?;
+    let t = Iv::new(times[0], times[1])?;
+    let x = Iv::new(xb[0], xb[1])?;
+    if src.nx() != 1
+        || !x.contains(center)
+        || policy.mode != InitMode::ProjectAlgebraic
+        || branch.len() != src.nz()
+    {
+        return Err(bad("transition branch contract"));
+    }
+    let initial = src.initialize(times[1], &[center], z_seed, branch, policy, route)?;
+    let nz = src.nz();
+    let b = iv_pairs(branch)?;
+    let zc = di::points(&initial.z)?;
+    let mut point = vec![p(center)?];
+    point.extend_from_slice(&zc);
+    let jp = jz(&di::evaluate(&src.g, p(times[1])?, &point)?, 1);
+    let mut work = InitWork::default();
+    let c = di::preconditioner(
+        &di::center_matrix(&jp)?,
+        route,
+        &ParallelExecution::sequential(),
+        &mut work,
+    )?;
+    let mut full = vec![x];
+    full.extend_from_slice(&b);
+    let j = jz(&di::evaluate(&src.g, t, &full)?, 1);
+    let err = di::defect(&c, &j)?;
+    let q = di::rows_norm(&err)?;
+    let gap = sub_down(1., q)?;
+    if gap <= 0. {
+        return Err(bad("transition uniform branch contraction not proved"));
+    }
+    let mut base = vec![x];
+    base.extend_from_slice(&zc);
+    let cg = di::matvec(&c, &di::evaluate(&src.g, t, &base)?.v)?;
+    let image = |local: &[Iv], error: &[Vec<Iv>]| -> CoreResult<Vec<Iv>> {
+        let delta = local
+            .iter()
+            .zip(&zc)
+            .map(|(&v, &z)| v.sub(z))
+            .collect::<CoreResult<Vec<_>>>()?;
+        let ed = di::iv_matvec(error, &delta)?;
+        zc.iter()
+            .zip(&cg)
+            .zip(&ed)
+            .map(|((&z, &v), &w)| z.sub(v)?.add(w))
+            .collect()
+    };
+    let mut local = b.clone();
+    let mut root = image(&local, &err)?;
+    if !di::subset(&root, &local) {
+        let eta = di::norm(&cg);
+        let rad = div_up(eta, gap)?;
+        let mut admitted = false;
+        for factor in [1.25, 2., 4., 8., 16., 32.] {
+            let radius = mul_up(factor, rad)?;
+            let trial = zc
+                .iter()
+                .map(|&v| v.add(Iv::new(-radius, radius)?))
+                .collect::<CoreResult<Vec<_>>>()?;
+            if !di::subset(&trial, &b) {
+                continue;
+            }
+            let mut v = vec![x];
+            v.extend_from_slice(&trial);
+            let el = di::defect(&c, &jz(&di::evaluate(&src.g, t, &v)?, 1))?;
+            let candidate = image(&trial, &el)?;
+            if di::subset(&candidate, &trial) {
+                local = trial;
+                root = candidate;
+                admitted = true;
+                break;
+            }
+        }
+        if !admitted {
+            return Err(bad("transition uniform branch self-map not proved"));
+        }
+    }
+    let ci = (0..nz)
+        .map(|i| di::points(c.row(i)))
+        .collect::<CoreResult<Vec<_>>>()?;
+    let condition = mul_up(div_up(di::rows_norm(&ci)?, gap)?, di::rows_norm(&j)?)?;
+    if condition > policy.condition_cap {
+        return Err(bad("transition condition cap"));
+    }
+    Ok(TransitionBranchProof {
+        times,
+        differential_box: xb,
+        branch: branch.to_vec(),
+        root_box: root.iter().map(|v| v.as_pair()).collect(),
+        self_map_box: local.iter().map(|v| v.as_pair()).collect(),
+        defect: q,
+        condition_upper: condition,
+        initial,
+        work,
+    })
+}
+
+/// Synchronization of a vector reset under an original polynomial post DAE.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum VectorSyncRoute {
+    BoxPicard,
+    SchurPicard,
+    Centered,
+    GreenMoment,
+}
+#[derive(Clone, Debug, Serialize)]
+pub struct VectorResetComponent {
+    pub enclosure: [f64; 2],
+    pub transport_error: f64,
+    pub reduced_lip: f64,
+    pub prepared_work: InitWork,
+    #[serde(skip)]
+    power: Poly,
+    #[serde(skip)]
+    native_times: [f64; 2],
+}
+/// Old-mode physical reset image on a subinterval of its authentic slab.
+pub fn vector_reset_component(
+    src: &DaeSource,
+    reset: &DeclaredPolynomial,
+    y: &[Poly],
+    c: &SlabCertificate,
+    times: [f64; 2],
+    route: VectorSyncRoute,
+    derivative: GuardDerivativeRoute,
+) -> CoreResult<VectorResetComponent> {
+    if !(c.times[0] <= times[0] && times[0] <= times[1] && times[1] <= c.times[1]) {
+        return Err(bad("vector reset slab domain"));
+    }
+    let value = if route == VectorSyncRoute::BoxPicard {
+        GuardValueRoute::Box
+    } else {
+        GuardValueRoute::Transport
+    };
+    let proof = GuardProof::new(src, reset, y, c, derivative, value)?;
+    let clock = Iv::new(times[0], times[1])?;
+    let h = p(c.times[1])?.sub(p(c.times[0])?)?;
+    let u = clock.sub(p(c.times[0])?)?.div(h)?;
+    let u = Iv::new(u.lo.max(0.), u.hi.min(1.))?;
+    let cg = proof
+        .cg_poly
+        .iter()
+        .map(|v| eval(v, u))
+        .collect::<CoreResult<Vec<_>>>()?;
+    let az = div_up(di::norm(&cg), proof.gap)?;
+    let ex = proof.whole_x;
+    let er = add_up(
+        mul_up(proof.evidence.reduced_lip, ex)?,
+        mul_up(proof.evidence.algebraic_guard_lip, az)?,
+    )?;
+    let r = if value == GuardValueRoute::Box {
+        let ez = add_up(az, mul_up(proof.zx_lip, ex)?)?;
+        let mut values = Vec::with_capacity(y.len());
+        for (i, v) in y.iter().enumerate() {
+            let b = eval(v, u)?;
+            if i < proof.nx {
+                values.push(intersect(b.add(Iv::new(-ex, ex)?)?, proof.x_range[i])?);
+            } else {
+                let j = i - proof.nx;
+                values.push(intersect(
+                    intersect(b, proof.z_range[j])?.add(Iv::new(-ez, ez)?)?,
+                    proof.root_box[j],
+                )?);
+            }
+        }
+        di::evaluate(std::slice::from_ref(reset), clock, &values)?.v[0]
+    } else {
+        eval(&proof.h_poly, u)?.add(Iv::new(-er, er)?)?
+    };
+    Ok(VectorResetComponent {
+        enclosure: r.as_pair(),
+        transport_error: er,
+        reduced_lip: proof.evidence.reduced_lip,
+        prepared_work: proof.evidence.prepared_work,
+        power: proof.h_poly,
+        native_times: c.times,
+    })
+}
+#[derive(Clone, Debug, Serialize)]
+pub struct VectorBranchProof {
+    pub times: [f64; 2],
+    pub differential_box: Vec<[f64; 2]>,
+    pub root_box: Vec<[f64; 2]>,
+    pub self_map_box: Vec<[f64; 2]>,
+    pub defect: f64,
+    pub condition_upper: f64,
+    pub initial: InitReport,
+    pub work: InitWork,
+    pub field: Vec<[f64; 2]>,
+    pub reduced_jacobian: Vec<Vec<[f64; 2]>>,
+    pub reduced_clock: Vec<[f64; 2]>,
+    pub nominal_field: Vec<[f64; 2]>,
+}
+/// Existence/uniqueness of the declared branch for every time and x in a
+/// rectangular domain, followed by signed Schur bounds of original f.
+#[allow(clippy::too_many_arguments)]
+pub fn certify_vector_branch(
+    src: &DaeSource,
+    times: [f64; 2],
+    xb: &[[f64; 2]],
+    center: &[f64],
+    z_seed: &[f64],
+    branch: &[[f64; 2]],
+    policy: InitPolicy,
+    route: InitRoute,
+) -> CoreResult<VectorBranchProof> {
+    crate::affine_event_certificate::check_affine_event_arithmetic()?;
+    let nx = src.nx();
+    let nz = src.nz();
+    let t = Iv::new(times[0], times[1])?;
+    let x = iv_pairs(xb)?;
+    if x.len() != nx
+        || center.len() != nx
+        || !x.iter().zip(center).all(|(a, &b)| a.contains(b))
+        || policy.mode != InitMode::ProjectAlgebraic
+        || branch.len() != nz
+        || !matches!(
+            route,
+            InitRoute::Reuse | InitRoute::PreparedBatch | InitRoute::ScalarRoot
+        )
+    {
+        return Err(bad("vector uniform branch contract"));
+    }
+    let initial = src.initialize(times[1], center, z_seed, branch, policy, route)?;
+    let b = iv_pairs(branch)?;
+    let zc = di::points(&initial.z)?;
+    let mut point = di::points(center)?;
+    point.extend_from_slice(&zc);
+    let jp = jz(&di::evaluate(&src.g, p(times[1])?, &point)?, nx);
+    let mut work = InitWork::default();
+    let c = di::preconditioner(
+        &di::center_matrix(&jp)?,
+        route,
+        &ParallelExecution::sequential(),
+        &mut work,
+    )?;
+    let mut full = x.clone();
+    full.extend_from_slice(&b);
+    let j = jz(&di::evaluate(&src.g, t, &full)?, nx);
+    let err = di::defect(&c, &j)?;
+    let q = di::rows_norm(&err)?;
+    let gap = sub_down(1., q)?;
+    if gap <= 0. {
+        return Err(bad("vector uniform branch contraction not proved"));
+    }
+    let mut base = x.clone();
+    base.extend_from_slice(&zc);
+    let cg = di::matvec(&c, &di::evaluate(&src.g, t, &base)?.v)?;
+    let image = |local: &[Iv], error: &[Vec<Iv>]| -> CoreResult<Vec<Iv>> {
+        let delta = local
+            .iter()
+            .zip(&zc)
+            .map(|(&v, &z)| v.sub(z))
+            .collect::<CoreResult<Vec<_>>>()?;
+        let ed = di::iv_matvec(error, &delta)?;
+        zc.iter()
+            .zip(&cg)
+            .zip(&ed)
+            .map(|((&z, &v), &w)| z.sub(v)?.add(w))
+            .collect()
+    };
+    let mut local = b.clone();
+    let mut root = image(&local, &err)?;
+    if !di::subset(&root, &local) {
+        let rad = div_up(di::norm(&cg), gap)?;
+        let mut admitted = false;
+        for factor in [1.25, 2., 4., 8., 16., 32.] {
+            let radius = mul_up(factor, rad)?;
+            let trial = zc
+                .iter()
+                .map(|&v| v.add(Iv::new(-radius, radius)?))
+                .collect::<CoreResult<Vec<_>>>()?;
+            if !di::subset(&trial, &b) {
+                continue;
+            }
+            let mut v = x.clone();
+            v.extend_from_slice(&trial);
+            let el = di::defect(&c, &jz(&di::evaluate(&src.g, t, &v)?, nx))?;
+            let candidate = image(&trial, &el)?;
+            if di::subset(&candidate, &trial) {
+                local = trial;
+                root = candidate;
+                admitted = true;
+                break;
+            }
+        }
+        if !admitted {
+            return Err(bad("vector uniform branch self-map not proved"));
+        }
+    }
+    let ci = (0..nz)
+        .map(|i| di::points(c.row(i)))
+        .collect::<CoreResult<Vec<_>>>()?;
+    let condition = mul_up(div_up(di::rows_norm(&ci)?, gap)?, di::rows_norm(&j)?)?;
+    if condition > policy.condition_cap {
+        return Err(bad("vector condition cap"));
+    }
+    let mut y = x.clone();
+    y.extend_from_slice(&root);
+    let g = di::evaluate(&src.g, t, &y)?;
+    let f = di::evaluate(&src.f, t, &y)?;
+    let qr = di::rows_norm(&di::defect(&c, &jz(&g, nx))?)?;
+    let gr = sub_down(1., qr)?;
+    if gr <= 0. {
+        return Err(bad("vector reduced inverse defect"));
+    }
+    let mut columns = Vec::with_capacity(nx + 1);
+    for k in 0..=nx {
+        let rhs = g.j.iter().map(|r| -r[k]).collect::<Vec<_>>();
+        columns.push(product_bound(qr, gr, &di::matvec(&c, &rhs)?)?);
+    }
+    let mut reduced = Vec::with_capacity(nx);
+    for r in &f.j {
+        let v = (0..=nx)
+            .map(|k| r[k].add(guard_dot(&r[1 + nx..], &columns[k])?))
+            .collect::<CoreResult<Vec<_>>>()?;
+        reduced.push(v);
+    }
+    let mut nominal = di::points(center)?;
+    nominal.extend(iv_pairs(&initial.root_box)?);
+    let f0 = di::evaluate(&src.f, p(times[1])?, &nominal)?.v;
+    // Centered reduced mean-value bound intersects the direct source box.
+    let mut delta = vec![t.sub(p(times[1])?)?];
+    for (&v, &a) in x.iter().zip(center) {
+        delta.push(v.sub(p(a)?)?);
+    }
+    let field =
+        f.v.iter()
+            .zip(&f0)
+            .zip(&reduced)
+            .map(|((&f, &fc), r)| intersect(f, fc.add(guard_dot(r, &delta)?)?))
+            .collect::<CoreResult<Vec<_>>>()?;
+    Ok(VectorBranchProof {
+        times,
+        differential_box: xb.to_vec(),
+        root_box: root.iter().map(|v| v.as_pair()).collect(),
+        self_map_box: local.iter().map(|v| v.as_pair()).collect(),
+        defect: q,
+        condition_upper: condition,
+        initial,
+        work,
+        field: field.iter().map(|v| v.as_pair()).collect(),
+        reduced_jacobian: reduced
+            .iter()
+            .map(|r| r[1..].iter().map(|v| v.as_pair()).collect())
+            .collect(),
+        reduced_clock: reduced.iter().map(|r| r[0].as_pair()).collect(),
+        nominal_field: f0.iter().map(|v| v.as_pair()).collect(),
+    })
+}
+#[derive(Clone, Debug, Serialize)]
+pub struct VectorTubeProof {
+    pub attempts: Vec<VectorBranchProof>,
+    pub field: Vec<[f64; 2]>,
+    pub tube: Vec<[f64; 2]>,
+    pub picard_image: Vec<[f64; 2]>,
+}
+/// Strict self-map over original mode extension for every allowed reset
+/// clock and state. Uniform branch proof makes the reduced field C1.
+pub fn certify_vector_tube(
+    src: &DaeSource,
+    times: [f64; 2],
+    r: &[[f64; 2]],
+    z_seed: &[f64],
+    branch: &[[f64; 2]],
+    policy: InitPolicy,
+    route: InitRoute,
+) -> CoreResult<VectorTubeProof> {
+    let reset = iv_pairs(r)?;
+    if reset.len() != src.nx() {
+        return Err(bad("vector tube shape"));
+    }
+    let h = p(times[1])?.sub(p(times[0])?)?;
+    if h.lo < 0. {
+        return Err(bad("vector tube time"));
+    }
+    let elapsed = Iv::new(0., h.hi)?;
+    let pad = |v: Iv| -> CoreResult<Iv> {
+        let w = v.sub(p(v.lo)?)?.hi;
+        let margin = mul_up(0.125, w)?.max(1e-10_f64.max(mul_up(1e-14, v.mag())?));
+        v.add(Iv::new(-margin, margin)?)
+    };
+    let mut b = reset
+        .iter()
+        .map(|&v| pad(v))
+        .collect::<CoreResult<Vec<_>>>()?;
+    let mut attempts = Vec::with_capacity(8);
+    for _ in 0..8 {
+        let center = b.iter().map(|&v| di::mid(v)).collect::<Vec<_>>();
+        let xb = b.iter().map(|v| v.as_pair()).collect::<Vec<_>>();
+        let proof = certify_vector_branch(src, times, &xb, &center, z_seed, branch, policy, route)?;
+        let field = iv_pairs(&proof.field)?;
+        let image = reset
+            .iter()
+            .zip(&field)
+            .map(|(&r, &f)| r.add(elapsed.mul(f)?))
+            .collect::<CoreResult<Vec<_>>>()?;
+        let admitted = image
+            .iter()
+            .zip(&b)
+            .all(|(a, b)| b.lo < a.lo && a.hi < b.hi);
+        attempts.push(proof);
+        if admitted {
+            return Ok(VectorTubeProof {
+                field: field.iter().map(|v| v.as_pair()).collect(),
+                tube: xb,
+                picard_image: image.iter().map(|v| v.as_pair()).collect(),
+                attempts,
+            });
+        }
+        b = b
+            .iter()
+            .zip(&image)
+            .map(|(&a, &v)| pad(Iv::new(a.lo.min(v.lo), a.hi.max(v.hi))?))
+            .collect::<CoreResult<Vec<_>>>()?;
+    }
+    Err(bad("vector Picard tube budget exhausted"))
+}
+#[derive(Clone, Debug, Serialize)]
+pub struct VectorSyncEvidence {
+    pub synchronized: Vec<[f64; 2]>,
+    pub green_calls: usize,
+    pub forcing_remainder: Vec<[f64; 2]>,
+}
+// Local mean-value chart for an interval-coefficient represented polynomial.
+fn reset_centered_eval(poly: &[Iv], u: Iv) -> CoreResult<Iv> {
+    let center = p(di::mid(u))?;
+    let d = poly
+        .iter()
+        .enumerate()
+        .skip(1)
+        .map(|(k, v)| v.scale(k as f64))
+        .collect::<CoreResult<Vec<_>>>()?;
+    let tight = eval(poly, center)?.add(u.sub(center)?.mul(eval(&d, u)?)?)?;
+    intersect(eval(poly, u)?, tight)
+}
+/// Synchronize every reset clock in times to s. The tube must be an
+/// authentic proof on [times[0],s] for this exact post source and reset.
+pub fn synchronize_vector(
+    reset: &[VectorResetComponent],
+    times: [f64; 2],
+    s: f64,
+    tube: &VectorTubeProof,
+    route: VectorSyncRoute,
+    table: &RetroTable,
+) -> CoreResult<VectorSyncEvidence> {
+    let proof = tube
+        .attempts
+        .last()
+        .ok_or_else(|| bad("missing vector tube proof"))?;
+    let n = reset.len();
+    if n != tube.field.len() || proof.times != [times[0], s] || times[1] > s {
+        return Err(bad("vector sync domain"));
+    }
+    let clock = Iv::new(times[0], times[1])?;
+    let elapsed = p(s)?.sub(clock)?;
+    let elapsed = Iv::new(elapsed.lo.max(0.), elapsed.hi)?;
+    let field = iv_pairs(&tube.field)?;
+    let xb = iv_pairs(&tube.tube)?;
+    let mut out = VectorSyncEvidence {
+        synchronized: vec![],
+        green_calls: 0,
+        forcing_remainder: vec![],
+    };
+    for (i, r) in reset.iter().enumerate() {
+        let rect = Iv::new(r.enclosure[0], r.enclosure[1])?.add(elapsed.mul(field[i])?)?;
+        let h = p(r.native_times[1])?.sub(p(r.native_times[0])?)?;
+        let u = clock.sub(p(r.native_times[0])?)?.div(h)?;
+        let u = Iv::new(u.lo.max(0.), u.hi.min(1.))?;
+        let v = match route {
+            VectorSyncRoute::BoxPicard | VectorSyncRoute::SchurPicard => rect,
+            VectorSyncRoute::Centered => {
+                let k = di::mid(field[i]);
+                let shifted = add(
+                    &r.power,
+                    &[p(s)?.sub(p(r.native_times[0])?)?.scale(k)?, h.scale(-k)?],
+                )?;
+                let remainder = field[i].sub(p(k)?)?;
+                out.forcing_remainder.push(remainder.as_pair());
+                let corrected = reset_centered_eval(&shifted, u)?
+                    .add(Iv::new(-r.transport_error, r.transport_error)?)?
+                    .add(elapsed.mul(remainder)?)?;
+                intersect(rect, corrected)?
+            }
+            VectorSyncRoute::GreenMoment => {
+                // Diagonal unit damping is an exact split, not an
+                // approximation of the post Jacobian: F=-(X-e)+B.
+                let e = p(proof.initial.x[i]
+                    + di::mid(Iv::new(
+                        proof.nominal_field[i][0],
+                        proof.nominal_field[i][1],
+                    )?))?;
+                let mut residual = Iv::new(proof.nominal_field[i][0], proof.nominal_field[i][1])?
+                    .add(p(proof.initial.x[i])?)?
+                    .sub(e)?;
+                residual = residual.add(
+                    Iv::new(proof.reduced_clock[i][0], proof.reduced_clock[i][1])?
+                        .mul(Iv::new(-p(s)?.sub(p(times[0])?)?.hi, 0.)?)?,
+                )?;
+                for j in 0..n {
+                    let d = Iv::new(
+                        proof.reduced_jacobian[i][j][0],
+                        proof.reduced_jacobian[i][j][1],
+                    )?
+                    .add(p(if i == j { 1. } else { 0. })?)?;
+                    residual = residual.add(d.mul(xb[j].sub(p(proof.initial.x[j])?)?)?)?;
+                }
+                let remainder = intersect(residual, field[i].add(xb[i])?.sub(e)?)?;
+                out.forcing_remainder.push(remainder.as_pair());
+                let mut d = r
+                    .power
+                    .iter()
+                    .enumerate()
+                    .skip(1)
+                    .map(|(k, v)| v.scale(k as f64)?.div(h))
+                    .collect::<CoreResult<Vec<_>>>()?;
+                if d.is_empty() {
+                    d.push(zero());
+                }
+                let mut shifted = r.power.clone();
+                shifted[0] = shifted[0].sub(e)?;
+                let q = eval(&add(&d, &shifted)?, u)?;
+                let b = p(times[1])?;
+                let ub = b.sub(p(r.native_times[0])?)?.div(h)?;
+                let ub = Iv::new(ub.lo.max(0.), ub.hi.min(1.))?;
+                let db = p(s)?.sub(b)?;
+                let db = Iv::new(db.lo.max(0.), db.hi)?;
+                let gb = table.phi(db, 0)?;
+                let yb = e.add(gb.mul(eval(&shifted, ub)?)?)?;
+                let d = b.sub(clock)?;
+                let d = Iv::new(d.lo.max(0.), d.hi)?;
+                let weight = gb.mul(d)?.mul(table.phi(d, 1)?)?;
+                let ge = table.phi(elapsed, 0)?;
+                let err = mul_up(ge.hi, r.transport_error)?;
+                let forcing = elapsed.mul(table.phi(elapsed, 1)?)?.mul(remainder)?;
+                out.green_calls += 4;
+                let corrected = yb
+                    .sub(weight.mul(q)?)?
+                    .add(Iv::new(-err, err)?)?
+                    .add(forcing)?;
+                intersect(rect, corrected)?
+            }
+        };
+        out.synchronized.push(intersect(v, xb[i])?.as_pair());
+    }
+    Ok(out)
+}
+
+/// Negative guard proof on an authenticated vector transition branch tube.
+/// The source/branch proof binding is established by the owning facade.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum GapGuardRoute {
+    Box,
+    Schur,
+}
+#[derive(Clone, Debug, Serialize)]
+pub struct GapGuardEvidence {
+    pub enclosure: [f64; 2],
+    pub direct: [f64; 2],
+    pub reduced_gradient: Option<Vec<[f64; 2]>>,
+    pub reduced_clock: Option<[f64; 2]>,
+    pub work: InitWork,
+}
+pub fn gap_guard_enclosure(
+    src: &DaeSource,
+    guard: &DeclaredPolynomial,
+    bp: &VectorBranchProof,
+    route: GapGuardRoute,
+    init_route: InitRoute,
+) -> CoreResult<GapGuardEvidence> {
+    let nx = src.nx();
+    let nz = src.nz();
+    guard.validate(nx + nz)?;
+    if bp.differential_box.len() != nx
+        || bp.root_box.len() != nz
+        || bp.initial.x.len() != nx
+        || bp.initial.z.len() != nz
+        || bp.defect >= 1.
+    {
+        return Err(bad("gap guard branch shape"));
+    }
+    let t = Iv::new(bp.times[0], bp.times[1])?;
+    let xb = iv_pairs(&bp.differential_box)?;
+    let mut full = xb.clone();
+    full.extend(iv_pairs(&bp.root_box)?);
+    let h = di::evaluate(std::slice::from_ref(guard), t, &full)?;
+    let direct = h.v[0];
+    let mut work = InitWork::default();
+    let mut out = GapGuardEvidence {
+        enclosure: direct.as_pair(),
+        direct: direct.as_pair(),
+        reduced_gradient: None,
+        reduced_clock: None,
+        work: work.clone(),
+    };
+    if route == GapGuardRoute::Box {
+        return Ok(out);
+    }
+    let g = di::evaluate(&src.g, t, &full)?;
+    let mut point = di::points(&bp.initial.x)?;
+    point.extend(di::points(&bp.initial.z)?);
+    let jc = jz(&di::evaluate(&src.g, p(bp.times[1])?, &point)?, nx);
+    let c = di::preconditioner(
+        &di::center_matrix(&jc)?,
+        init_route,
+        &ParallelExecution::sequential(),
+        &mut work,
+    )?;
+    let q = di::rows_norm(&di::defect(&c, &jz(&g, nx))?)?;
+    let gap = sub_down(1., q)?;
+    if gap <= 0. {
+        return Err(bad("gap guard inverse defect"));
+    }
+    let hr = &h.j[0];
+    let mut reduced = Vec::with_capacity(nx + 1);
+    for k in 0..=nx {
+        let rhs = g.j.iter().map(|r| -r[k]).collect::<Vec<_>>();
+        let v = product_bound(q, gap, &di::matvec(&c, &rhs)?)?;
+        reduced.push(hr[k].add(guard_dot(&hr[1 + nx..], &v)?)?);
+    }
+    let mut nominal = di::points(&bp.initial.x)?;
+    nominal.extend(iv_pairs(&bp.initial.root_box)?);
+    let hc = di::evaluate(std::slice::from_ref(guard), p(bp.times[1])?, &nominal)?.v[0];
+    let mut dx = vec![t.sub(p(bp.times[1])?)?];
+    for (&a, &b) in xb.iter().zip(&bp.initial.x) {
+        dx.push(a.sub(p(b)?)?);
+    }
+    out.enclosure = intersect(direct, hc.add(guard_dot(&reduced, &dx)?)?)?.as_pair();
+    out.reduced_gradient = Some(reduced[1..].iter().map(|v| v.as_pair()).collect());
+    out.reduced_clock = Some(reduced[0].as_pair());
+    out.work = work;
+    Ok(out)
 }

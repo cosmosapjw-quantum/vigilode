@@ -1,0 +1,40 @@
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/vigilode)
+error[E0422]: cannot find struct, variant or union type `DampedResetFlow` in this scope
+  --> crates/vigilode/tests/dae_nonlinear_reset_contracts.rs:27:41
+   |
+27 | ...omial(&reset(),DampedResetFlow{rate:1.,equilibrium:0.},postg(),&[seed...
+   |                   ^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0433]: failed to resolve: use of undeclared type `ResetEnvelopeRoute`
+  --> crates/vigilode/tests/dae_nonlinear_reset_contracts.rs:26:31
+   |
+26 | ... [(ResetEnvelopeRoute::Box,1.,[0.75,1.25]),(ResetEnvelopeRoute::Trans...
+   |       ^^^^^^^^^^^^^^^^^^ use of undeclared type `ResetEnvelopeRoute`
+
+error[E0433]: failed to resolve: use of undeclared type `ResetEnvelopeRoute`
+  --> crates/vigilode/tests/dae_nonlinear_reset_contracts.rs:26:72
+   |
+26 | ...),(ResetEnvelopeRoute::Transport,1.,[0.75,1.25]),(ResetEnvelopeRoute:...
+   |       ^^^^^^^^^^^^^^^^^^ use of undeclared type `ResetEnvelopeRoute`
+
+error[E0433]: failed to resolve: use of undeclared type `ResetEnvelopeRoute`
+  --> crates/vigilode/tests/dae_nonlinear_reset_contracts.rs:26:119
+   |
+26 | ...),(ResetEnvelopeRoute::GreenMoment,-1.,[-1.25,-0.75])]{
+   |       ^^^^^^^^^^^^^^^^^^ use of undeclared type `ResetEnvelopeRoute`
+
+error[E0599]: no method named `restart_polynomial` found for struct `vigilode::dae_evolution::ThresholdRun` in the current scope
+  --> crates/vigilode/tests/dae_nonlinear_reset_contracts.rs:27:13
+   |
+27 |   let r=old.restart_polynomial(&reset(),DampedResetFlow{rate:1.,equilibr...
+   |             ^^^^^^^^^^^^^^^^^^ method not found in `vigilode::dae_evolution::ThresholdRun`
+
+error[E0282]: type annotations needed
+  --> crates/vigilode/tests/dae_nonlinear_reset_contracts.rs:39:39
+   |
+39 |     let x=x0*(-(q.t-tau)).exp();let z=seed.signum()*x.sqrt();
+   |                                       ^^^^ cannot infer type
+
+Some errors have detailed explanations: E0282, E0422, E0433, E0599.
+For more information about an error, try `rustc --explain E0282`.
+error: could not compile `vigilode` (test "dae_nonlinear_reset_contracts") due to 6 previous errors

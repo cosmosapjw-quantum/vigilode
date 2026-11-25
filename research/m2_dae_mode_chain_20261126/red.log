@@ -1,0 +1,104 @@
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/vigilode)
+error[E0425]: cannot find type `ChainBudget` in this scope
+  --> crates/vigilode/tests/dae_mode_chain_contracts.rs:18:14
+   |
+18 | fn budget()->ChainBudget{ChainBudget{native_attempts:256,scan_slabs:128,...
+   |              ^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `ChainBudget` in this scope
+  --> crates/vigilode/tests/dae_mode_chain_contracts.rs:18:26
+   |
+18 | fn budget()->ChainBudget{ChainBudget{native_attempts:256,scan_slabs:128,...
+   |                          ^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `ChainTransition` in this scope
+  --> crates/vigilode/tests/dae_mode_chain_contracts.rs:19:45
+   |
+19 | ...ransitions:Vec<ChainTransition>)->ChainMode{ChainMode{source:src(v),z...
+   |                   ^^^^^^^^^^^^^^^ not found in this scope
+   |
+help: you might be missing a type parameter
+   |
+19 | fn mode<ChainTransition>(v:f64,guards:Vec<P>,transitions:Vec<ChainTransition>)->ChainMode{ChainMode{source:src(v),z_seed:vec![0.],branch:vec![[-2.,5.]],route:EvolutionRoute::Mass,guards,transitions}}
+   |        +++++++++++++++++
+
+error[E0425]: cannot find type `ChainMode` in this scope
+  --> crates/vigilode/tests/dae_mode_chain_contracts.rs:19:64
+   |
+19 | ...hainTransition>)->ChainMode{ChainMode{source:src(v),z_seed:vec![0.],b...
+   |                      ^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `ChainMode` in this scope
+  --> crates/vigilode/tests/dae_mode_chain_contracts.rs:19:74
+   |
+19 | ...tion>)->ChainMode{ChainMode{source:src(v),z_seed:vec![0.],branch:vec!...
+   |                      ^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `ChainTransition` in this scope
+  --> crates/vigilode/tests/dae_mode_chain_contracts.rs:20:28
+   |
+20 | fn edge(target:usize,r:P)->ChainTransition{ChainTransition{target,reset:...
+   |                            ^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `ChainTransition` in this scope
+  --> crates/vigilode/tests/dae_mode_chain_contracts.rs:20:44
+   |
+20 | ...hainTransition{ChainTransition{target,reset:vec![r],policy:rp()}}
+   |                   ^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `ChainMode` in this scope
+  --> crates/vigilode/tests/dae_mode_chain_contracts.rs:21:17
+   |
+21 | fn modes()->Vec<ChainMode>{
+   |                 ^^^^^^^^^ not found in this scope
+   |
+help: you might be missing a type parameter
+   |
+21 | fn modes<ChainMode>()->Vec<ChainMode>{
+   |         +++++++++++
+
+error[E0425]: cannot find type `ChainMode` in this scope
+  --> crates/vigilode/tests/dae_mode_chain_contracts.rs:29:12
+   |
+29 | fn run(m:&[ChainMode],b:ChainBudget,gap:GapGuardRoute)->HybridChainRun{
+   |            ^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `ChainBudget` in this scope
+  --> crates/vigilode/tests/dae_mode_chain_contracts.rs:29:25
+   |
+29 | fn run(m:&[ChainMode],b:ChainBudget,gap:GapGuardRoute)->HybridChainRun{
+   |                         ^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `GapGuardRoute` in this scope
+  --> crates/vigilode/tests/dae_mode_chain_contracts.rs:29:41
+   |
+29 | fn run(m:&[ChainMode],b:ChainBudget,gap:GapGuardRoute)->HybridChainRun{
+   |                                         ^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `HybridChainRun` in this scope
+  --> crates/vigilode/tests/dae_mode_chain_contracts.rs:29:57
+   |
+29 | fn run(m:&[ChainMode],b:ChainBudget,gap:GapGuardRoute)->HybridChainRun{
+   |                                                         ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `evolve_hybrid_chain` in this scope
+  --> crates/vigilode/tests/dae_mode_chain_contracts.rs:30:2
+   |
+30 |  evolve_hybrid_chain(m,0,&[0.],&[0.],EvolutionEpoch{start:0.,end:0.625,i...
+   |  ^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0433]: failed to resolve: use of undeclared type `GapGuardRoute`
+  --> crates/vigilode/tests/dae_mode_chain_contracts.rs:34:38
+   |
+34 |  let m=modes();let r=run(&m,budget(),GapGuardRoute::Schur);
+   |                                      ^^^^^^^^^^^^^ use of undeclared type `GapGuardRoute`
+
+error[E0433]: failed to resolve: use of undeclared type `ChainStop`
+  --> crates/vigilode/tests/dae_mode_chain_contracts.rs:35:22
+   |
+35 |  assert_eq!(r.stop(),ChainStop::Horizon);
+   |                      ^^^^^^^^^ use of undeclared type `ChainStop`
+
+Some errors have detailed explanations: E0422, E0425, E0433.
+For more information about an error, try `rustc --explain E0422`.
+error: could not compile `vigilode` (test "dae_mode_chain_contracts") due to 15 previous errors

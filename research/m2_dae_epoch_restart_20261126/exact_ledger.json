@@ -1,0 +1,291 @@
+{
+  "schema_version": "3.1.0",
+  "events": [
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "CLOCK",
+      "payload": {
+        "claim_id": "CLOCK",
+        "statement": "a+b*(s+h*u) = (a+b*s)+b*h*u",
+        "formal_statement": "POLY_IDENTITY: b*h*u + b*s + a = b*h*u + b*s + a",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite clock translation identity"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795623333.1136389,
+      "seq": 0,
+      "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "358dc2b6d7b9d861446b143634e2105ca42568c13b631e0352debebea635c441"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "CLOCK",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "b04c2119a45a61b46ae21b83db23df121ac69a7ebfb33c16decfab4caa3e2e08",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "a+b*(s+h*u)",
+            "rhs": "(a+b*s)+b*h*u"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: b*h*u + b*s + a = b*h*u + b*s + a",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-25T16:15:33Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795623333.1164775,
+      "seq": 1,
+      "prev_hash": "358dc2b6d7b9d861446b143634e2105ca42568c13b631e0352debebea635c441",
+      "hash": "92b6d935553abd54a856573a544ee8d24e77c5a194d6e8c90ada8a8f387326fc"
+    },
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "CLOCK-INVERSE",
+      "payload": {
+        "claim_id": "CLOCK-INVERSE",
+        "statement": "s+(e-s)*u = s+e*u-s*u",
+        "formal_statement": "POLY_IDENTITY: e*u - s*u + s = e*u - s*u + s",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite clock translation identity"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795623333.1168172,
+      "seq": 2,
+      "prev_hash": "92b6d935553abd54a856573a544ee8d24e77c5a194d6e8c90ada8a8f387326fc",
+      "hash": "51ccf6adcf8ca818961a48c625fe35fbfcdd38b0f7a55b07c2db52cc19d6ccfb"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "CLOCK-INVERSE",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "d279f29f6d4cb00e8c97eedffac006b1c09f4bbfd079e4867c8dfc54a562b693",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "s+(e-s)*u",
+            "rhs": "s+e*u-s*u"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: e*u - s*u + s = e*u - s*u + s",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-25T16:15:33Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795623333.1175704,
+      "seq": 3,
+      "prev_hash": "51ccf6adcf8ca818961a48c625fe35fbfcdd38b0f7a55b07c2db52cc19d6ccfb",
+      "hash": "a903711e99845f1c4eeec2566706ff8b81fca2c543fdb2c6455851fc4efc328f"
+    },
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "FORCING",
+      "payload": {
+        "claim_id": "FORCING",
+        "statement": "2*x+t*t-s*s = 2*x+(t-s)*(t+s)",
+        "formal_statement": "POLY_IDENTITY: -s^2 + t^2 + 2*x = -s^2 + t^2 + 2*x",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite clock translation identity"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795623333.1179793,
+      "seq": 4,
+      "prev_hash": "a903711e99845f1c4eeec2566706ff8b81fca2c543fdb2c6455851fc4efc328f",
+      "hash": "093c72499f578cf681d2b2f99cd63a75b299ccfdc4cef5e65d2046df1222bcb4"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "FORCING",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "476298e7cbaaa53b50f4f4ba1f424603db89c6cfaa21cb69d8f1d21a0c802a3f",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "2*x+t*t-s*s",
+            "rhs": "2*x+(t-s)*(t+s)"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: -s^2 + t^2 + 2*x = -s^2 + t^2 + 2*x",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-25T16:15:33Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795623333.118815,
+      "seq": 5,
+      "prev_hash": "093c72499f578cf681d2b2f99cd63a75b299ccfdc4cef5e65d2046df1222bcb4",
+      "hash": "4053b5fba10a447b0757548ad1bccd39dc5ab8d87ea67a3ebd4546d1ddee76ca"
+    }
+  ],
+  "claims": {
+    "CLOCK": {
+      "claim_id": "CLOCK",
+      "statement": "a+b*(s+h*u) = (a+b*s)+b*h*u",
+      "formal_statement": "POLY_IDENTITY: b*h*u + b*s + a = b*h*u + b*s + a",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite clock translation identity"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "b04c2119a45a61b46ae21b83db23df121ac69a7ebfb33c16decfab4caa3e2e08",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "a+b*(s+h*u)",
+              "rhs": "(a+b*s)+b*h*u"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: b*h*u + b*s + a = b*h*u + b*s + a",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-25T16:15:33Z"
+        }
+      ]
+    },
+    "CLOCK-INVERSE": {
+      "claim_id": "CLOCK-INVERSE",
+      "statement": "s+(e-s)*u = s+e*u-s*u",
+      "formal_statement": "POLY_IDENTITY: e*u - s*u + s = e*u - s*u + s",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite clock translation identity"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "d279f29f6d4cb00e8c97eedffac006b1c09f4bbfd079e4867c8dfc54a562b693",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "s+(e-s)*u",
+              "rhs": "s+e*u-s*u"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: e*u - s*u + s = e*u - s*u + s",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-25T16:15:33Z"
+        }
+      ]
+    },
+    "FORCING": {
+      "claim_id": "FORCING",
+      "statement": "2*x+t*t-s*s = 2*x+(t-s)*(t+s)",
+      "formal_statement": "POLY_IDENTITY: -s^2 + t^2 + 2*x = -s^2 + t^2 + 2*x",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite clock translation identity"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "476298e7cbaaa53b50f4f4ba1f424603db89c6cfaa21cb69d8f1d21a0c802a3f",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "2*x+t*t-s*s",
+              "rhs": "2*x+(t-s)*(t+s)"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: -s^2 + t^2 + 2*x = -s^2 + t^2 + 2*x",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-25T16:15:33Z"
+        }
+      ]
+    }
+  },
+  "head": "4053b5fba10a447b0757548ad1bccd39dc5ab8d87ea67a3ebd4546d1ddee76ca",
+  "trust": [
+    "PROVED_EXACT_CERTIFICATE",
+    "PROVED_FORMAL_KERNEL"
+  ]
+}

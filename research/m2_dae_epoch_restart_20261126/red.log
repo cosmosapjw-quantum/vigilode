@@ -1,0 +1,101 @@
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/vigilode)
+error[E0425]: cannot find type `EvolutionEpoch` in this scope
+  --> crates/vigilode/tests/dae_epoch_restart_contracts.rs:27:24
+   |
+27 | fn run(kind:&str,epoch:EvolutionEpoch,route:EvolutionRoute,green:bool)->...
+   |                        ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `EvolutionEpoch` in this scope
+  --> crates/vigilode/tests/dae_epoch_restart_contracts.rs:45:9
+   |
+45 |  let ep=EvolutionEpoch{start:0.5,end:1.,incoming_x_error:Some(2f64.powi(...
+   |         ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `EvolutionEpoch` in this scope
+  --> crates/vigilode/tests/dae_epoch_restart_contracts.rs:53:10
+   |
+53 |   let ep=EvolutionEpoch{start:s,end:s+0.5,incoming_x_error:Some(2f64.pow...
+   |          ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `EvolutionEpoch` in this scope
+  --> crates/vigilode/tests/dae_epoch_restart_contracts.rs:63:10
+   |
+63 |   let ep=EvolutionEpoch{start:0.5,end:1.,incoming_x_error:rad};
+   |          ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `EvolutionEpoch` in this scope
+  --> crates/vigilode/tests/dae_epoch_restart_contracts.rs:68:26
+   |
+68 |   assert!(run("analytic",EvolutionEpoch{start:0.5,end:1.,incoming_x_erro...
+   |                          ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `EvolutionEpoch` in this scope
+  --> crates/vigilode/tests/dae_epoch_restart_contracts.rs:70:25
+   |
+70 |  assert!(run("analytic",EvolutionEpoch{start:0.5,end:0.5,incoming_x_erro...
+   |                         ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `EvolutionEpoch` in this scope
+  --> crates/vigilode/tests/dae_epoch_restart_contracts.rs:71:67
+   |
+71 | ...5],&[[-4.,5.]],EvolutionEpoch{start:0.5,end:1.,incoming_x_error:Some(...
+   |                   ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `EvolutionEpoch` in this scope
+  --> crates/vigilode/tests/dae_epoch_restart_contracts.rs:77:50
+   |
+77 | ....],&[[-4.,5.]],EvolutionEpoch{start:0.,end:0.5,incoming_x_error:Some(...
+   |                   ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `EvolutionEpoch` in this scope
+  --> crates/vigilode/tests/dae_epoch_restart_contracts.rs:84:10
+   |
+84 |   let ep=EvolutionEpoch{start:s,end:s+0.5,incoming_x_error:Some(2f64.pow...
+   |          ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `EvolutionEpoch` in this scope
+  --> crates/vigilode/tests/dae_epoch_restart_contracts.rs:98:13
+   |
+98 |      let ep=EvolutionEpoch{start,end:start+0.5,incoming_x_error:Some(2f6...
+   |             ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `evolve_epoch` in this scope
+  --> crates/vigilode/tests/dae_epoch_restart_contracts.rs:29:2
+   |
+29 |  evolve_epoch(&source(kind),&[1.],&[z],&[[-4.,5.]],epoch,&opts(),policy(...
+   |  ^^^^^^^^^^^^ not found in this scope
+
+error[E0609]: no field `start` on type `&rodas5p_integrators::retro_dae_evolution::WarpSeed`
+  --> crates/vigilode/tests/dae_epoch_restart_contracts.rs:56:48
+   |
+56 |    let w=r.warp.as_ref().unwrap();assert_eq!(w.start,s);assert_eq!(w.end...
+   |                                                ^^^^^ unknown field
+   |
+   = note: available fields are: `end`, `coeff`, `quotient_error`, `iterations`, `n`
+
+error[E0425]: cannot find function `evolve_epoch` in this scope
+  --> crates/vigilode/tests/dae_epoch_restart_contracts.rs:71:10
+   |
+71 |  assert!(evolve_epoch(&source("forcing"),&[1.],&[1.5],&[[-4.,5.]],Evolut...
+   |          ^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `evolve_epoch` in this scope
+  --> crates/vigilode/tests/dae_epoch_restart_contracts.rs:77:8
+   |
+77 |  let b=evolve_epoch(&src,&[1.],&[1.],&[[-4.,5.]],EvolutionEpoch{start:0....
+   |        ^^^^^^^^^^^^ not found in this scope
+
+error[E0609]: no field `counters` on type `&Solution`
+   --> crates/vigilode/tests/dae_epoch_restart_contracts.rs:103:254
+    |
+103 | ...driver_rhs":r.driver().counters.rhs_calls,"work":r.work,"queries":r....
+    |                           ^^^^^^^^ unknown field
+    |
+help: one of the expressions' fields has a field of the same name
+    |
+103 |        println!("CELL {}",json!({"kind":kind,"start":start,"green":green,"route":route,"global":r.global_qualified,"branch":r.branch_qualified,"pointwise":r.pointwise_qualified,"bound":r.max_physical_error,"sample_error":max_err,"driver_rhs":r.driver().stats.counters.rhs_calls,"work":r.work,"queries":r.queries,"reason":r.reason}));
+    |                                                                                                                                                                                                                                                              ++++++
+
+Some errors have detailed explanations: E0422, E0425, E0609.
+For more information about an error, try `rustc --explain E0422`.
+error: could not compile `vigilode` (test "dae_epoch_restart_contracts") due to 15 previous errors

@@ -1729,6 +1729,7 @@ pub fn integrate_adaptive_dense_observed_with_dense_error_control(
         control,
         InteriorSampling::OutputTimes,
         None,
+        None,
     )
     .map(|(result, report, _)| (result, report))
 }
@@ -1838,6 +1839,7 @@ pub fn integrate_adaptive_dense_observed_with_segments(
         control,
         interior,
         Some(&mut segments),
+        None,
     )?;
     Ok(AdaptiveDenseSegmentRun {
         result,
@@ -1881,7 +1883,44 @@ pub fn integrate_adaptive_dense_observed_with_partial(
         control,
         interior,
         None,
+        None,
     )
+}
+
+/// Sequential dense counterpart to the fast accepted-step control.
+/// The complete numerical proposal remains charged; callers may discard it.
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_adaptive_dense_observed_with_segments_and_control(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    sampling: &OutputSamplingPlan,
+    control: DenseErrorControl,
+    interior: InteriorSampling,
+    accept: &mut dyn FnMut(&Rodas5pDenseSegment) -> crate::AcceptControl,
+) -> DenseOutputResult<AdaptiveDenseSegmentRun> {
+    let mut segments = Vec::new();
+    let (result, report, partial) = integrate_adaptive_dense_impl(
+        problem,
+        t_span,
+        y0,
+        IntegrationMethod::Sequential,
+        None,
+        None,
+        adaptive,
+        sampling,
+        control,
+        interior,
+        Some(&mut segments),
+        Some(accept),
+    )?;
+    Ok(AdaptiveDenseSegmentRun {
+        result,
+        report,
+        segments,
+        partial,
+    })
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -1897,6 +1936,7 @@ fn integrate_adaptive_dense_impl(
     control: DenseErrorControl,
     interior: InteriorSampling,
     mut segments: Option<&mut Vec<Rodas5pDenseSegment>>,
+    mut accept: Option<&mut dyn FnMut(&Rodas5pDenseSegment) -> crate::AcceptControl>,
 ) -> DenseOutputResult<(
     AdaptiveObservedIntegrationResult,
     DenseErrorReport,
@@ -1964,6 +2004,7 @@ fn integrate_adaptive_dense_impl(
     // partial record only; never read by the step arithmetic).
     let mut last_failure = None;
     let mut fatal_callback = false;
+    let mut client_stop = false;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
         let Some(next_h) =
@@ -2228,6 +2269,12 @@ fn integrate_adaptive_dense_impl(
                     y_new: report.y_new,
                     stages: report.stages,
                 });
+                if accept.as_deref_mut().is_some_and(|f| {
+                    f(segments.last().expect("accepted segment")) == crate::AcceptControl::Stop
+                }) {
+                    client_stop = true;
+                    break;
+                }
             }
         } else {
             recycle = recycle_snapshot;
@@ -2257,6 +2304,11 @@ fn integrate_adaptive_dense_impl(
             .as_mut()
             .expect("fatal trial leaves an accepted prefix")
             .reason = crate::DriverStopReason::FatalCallback;
+    }
+    if client_stop {
+        if let Some(p) = partial.as_mut() {
+            p.reason = crate::DriverStopReason::ClientStop;
+        }
     }
     dense_adaptive_result(t, tf, collector, counters, internal_steps, diagnostics)
         .map(|result| (result, dense_report, partial))

@@ -1,0 +1,5 @@
+Public literature context only:
+Exa: Park and Barton, State Event Location in Differential-Algebraic Models, https://dl.acm.org/doi/10.1145/232807.232809 (retrieved text focuses on interval exclusion and Newton/bisection for interpolating polynomial).
+Parallel: Numerical event location techniques in discontinuous differential algebraic equations, Applied Numerical Mathematics (2022), https://www.sciencedirect.com/science/article/abs/pii/S0168927422000733 (abstract reports convergence of numerical event location with Rosenbrock and other methods; not a proof of this guard enclosure).
+SciSpace: Differentiable Parameter Optimization for DAEs with State-Dependent Events, https://scispace.com/papers/differentiable-parameter-optimization-for-daes-with-state-7cw1r0w25ol8 ; abstract-level context only, not used as authority for interval proof.
+Wolfram exact scalar Schur rearrangement residual 0, pencil reduced guard derivative 17/4-192/(8+t)^2. MathHarness fresh exact verifier 3 identities. No novelty claim; external primary source full-theorem review not performed.

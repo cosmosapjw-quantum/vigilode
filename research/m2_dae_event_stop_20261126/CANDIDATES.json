@@ -1,0 +1,1692 @@
+{
+  "harness_catalog_count": 64,
+  "manifest_files": 154,
+  "routes": [
+    {
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "directed tube signs",
+        "RetroTable phi0",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Mass",
+      "root_route": "Bisection",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "directed tube signs",
+        "RetroTable phi0",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Mass",
+      "root_route": "Bisection",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "directed tube signs",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Mass",
+      "root_route": "Bisection",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "directed tube signs",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Mass",
+      "root_route": "Bisection",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "directed tube signs",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Mass",
+      "root_route": "Bisection",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "directed tube signs",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Mass",
+      "root_route": "Bisection",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi0",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Mass",
+      "root_route": "IntervalNewton",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi0",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Mass",
+      "root_route": "IntervalNewton",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Mass",
+      "root_route": "IntervalNewton",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Mass",
+      "root_route": "IntervalNewton",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Mass",
+      "root_route": "IntervalNewton",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Mass",
+      "root_route": "IntervalNewton",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi0",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Mass",
+      "root_route": "DictionaryHint",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi0",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Mass",
+      "root_route": "DictionaryHint",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Mass",
+      "root_route": "DictionaryHint",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Mass",
+      "root_route": "DictionaryHint",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Mass",
+      "root_route": "DictionaryHint",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "native mass Rosenbrock",
+        "native dense D",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Mass",
+      "root_route": "DictionaryHint",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "Schur reduction",
+        "dictionary Lagrange5",
+        "directed tube signs",
+        "RetroTable phi0",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Reduced5",
+      "root_route": "Bisection",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "Schur reduction",
+        "dictionary Lagrange5",
+        "directed tube signs",
+        "RetroTable phi0",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Reduced5",
+      "root_route": "Bisection",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "Schur reduction",
+        "dictionary Lagrange5",
+        "directed tube signs",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Reduced5",
+      "root_route": "Bisection",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "Schur reduction",
+        "dictionary Lagrange5",
+        "directed tube signs",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Reduced5",
+      "root_route": "Bisection",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "Schur reduction",
+        "dictionary Lagrange5",
+        "directed tube signs",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Reduced5",
+      "root_route": "Bisection",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "Schur reduction",
+        "dictionary Lagrange5",
+        "directed tube signs",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Reduced5",
+      "root_route": "Bisection",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "Schur reduction",
+        "dictionary Lagrange5",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi0",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Reduced5",
+      "root_route": "IntervalNewton",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "Schur reduction",
+        "dictionary Lagrange5",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi0",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Reduced5",
+      "root_route": "IntervalNewton",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "Schur reduction",
+        "dictionary Lagrange5",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Reduced5",
+      "root_route": "IntervalNewton",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "Schur reduction",
+        "dictionary Lagrange5",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Reduced5",
+      "root_route": "IntervalNewton",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "Schur reduction",
+        "dictionary Lagrange5",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Reduced5",
+      "root_route": "IntervalNewton",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "Schur reduction",
+        "dictionary Lagrange5",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Reduced5",
+      "root_route": "IntervalNewton",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "Schur reduction",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi0",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Reduced5",
+      "root_route": "DictionaryHint",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "Schur reduction",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi0",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Reduced5",
+      "root_route": "DictionaryHint",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "Schur reduction",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Reduced5",
+      "root_route": "DictionaryHint",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "Schur reduction",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Reduced5",
+      "root_route": "DictionaryHint",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "Schur reduction",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Reduced5",
+      "root_route": "DictionaryHint",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "Schur reduction",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Reduced5",
+      "root_route": "DictionaryHint",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "directed tube signs",
+        "RetroTable phi0",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Prepared5",
+      "root_route": "Bisection",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "directed tube signs",
+        "RetroTable phi0",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Prepared5",
+      "root_route": "Bisection",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "directed tube signs",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Prepared5",
+      "root_route": "Bisection",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "directed tube signs",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Prepared5",
+      "root_route": "Bisection",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "directed tube signs",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Prepared5",
+      "root_route": "Bisection",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "directed tube signs",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Prepared5",
+      "root_route": "Bisection",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi0",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Prepared5",
+      "root_route": "IntervalNewton",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi0",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Prepared5",
+      "root_route": "IntervalNewton",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Prepared5",
+      "root_route": "IntervalNewton",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Prepared5",
+      "root_route": "IntervalNewton",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Prepared5",
+      "root_route": "IntervalNewton",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Prepared5",
+      "root_route": "IntervalNewton",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi0",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Prepared5",
+      "root_route": "DictionaryHint",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi0",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Prepared5",
+      "root_route": "DictionaryHint",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Prepared5",
+      "root_route": "DictionaryHint",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Prepared5",
+      "root_route": "DictionaryHint",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Prepared5",
+      "root_route": "DictionaryHint",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "PreparedRhs",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Prepared5",
+      "root_route": "DictionaryHint",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "directed tube signs",
+        "RetroTable phi0",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Scalar5",
+      "root_route": "Bisection",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "directed tube signs",
+        "RetroTable phi0",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Scalar5",
+      "root_route": "Bisection",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "directed tube signs",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Scalar5",
+      "root_route": "Bisection",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "directed tube signs",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Scalar5",
+      "root_route": "Bisection",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "directed tube signs",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Scalar5",
+      "root_route": "Bisection",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "directed tube signs",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Scalar5",
+      "root_route": "Bisection",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi0",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Scalar5",
+      "root_route": "IntervalNewton",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi0",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Scalar5",
+      "root_route": "IntervalNewton",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Scalar5",
+      "root_route": "IntervalNewton",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Scalar5",
+      "root_route": "IntervalNewton",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Scalar5",
+      "root_route": "IntervalNewton",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Scalar5",
+      "root_route": "IntervalNewton",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi0",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Scalar5",
+      "root_route": "DictionaryHint",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi0",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Scalar5",
+      "root_route": "DictionaryHint",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Scalar5",
+      "root_route": "DictionaryHint",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Scalar5",
+      "root_route": "DictionaryHint",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "Scalar5",
+      "root_route": "DictionaryHint",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "ScalarRoot",
+        "DictionaryCompanion",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "Scalar5",
+      "root_route": "DictionaryHint",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "directed tube signs",
+        "RetroTable phi0",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "WarpFolded",
+      "root_route": "Bisection",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "directed tube signs",
+        "RetroTable phi0",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "WarpFolded",
+      "root_route": "Bisection",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "directed tube signs",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "WarpFolded",
+      "root_route": "Bisection",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "directed tube signs",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "WarpFolded",
+      "root_route": "Bisection",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "directed tube signs",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "WarpFolded",
+      "root_route": "Bisection",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "directed tube signs",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "WarpFolded",
+      "root_route": "Bisection",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi0",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "WarpFolded",
+      "root_route": "IntervalNewton",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi0",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "WarpFolded",
+      "root_route": "IntervalNewton",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "WarpFolded",
+      "root_route": "IntervalNewton",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "WarpFolded",
+      "root_route": "IntervalNewton",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "WarpFolded",
+      "root_route": "IntervalNewton",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "directed physical velocity",
+        "interval Newton",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "WarpFolded",
+      "root_route": "IntervalNewton",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi0",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "WarpFolded",
+      "root_route": "DictionaryHint",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi0",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "WarpFolded",
+      "root_route": "DictionaryHint",
+      "sync_route": "Rectangle"
+    },
+    {
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "WarpFolded",
+      "root_route": "DictionaryHint",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi1/phi2",
+        "correlated clock",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "WarpFolded",
+      "root_route": "DictionaryHint",
+      "sync_route": "GreenMoment"
+    },
+    {
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "native mass restart",
+        "retro_dae_init Reuse",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Mass",
+      "pre_route": "WarpFolded",
+      "root_route": "DictionaryHint",
+      "sync_route": "CriticalPoint"
+    },
+    {
+      "modules": [
+        "TensorPencil Folded",
+        "conditioned polynomial",
+        "dictionary Lagrange5",
+        "retro_event_poly DictionaryCompanion",
+        "physical interval Newton",
+        "RetroTable phi0",
+        "derivative root extrema",
+        "Schur restart",
+        "dictionary Lagrange5",
+        "retro_dae_evolution",
+        "retro_causal",
+        "directed::Interval"
+      ],
+      "post_route": "Reduced5",
+      "pre_route": "WarpFolded",
+      "root_route": "DictionaryHint",
+      "sync_route": "CriticalPoint"
+    }
+  ]
+}

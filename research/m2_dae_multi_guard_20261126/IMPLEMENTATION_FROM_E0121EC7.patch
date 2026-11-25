@@ -1,0 +1,3866 @@
+diff --git a/crates/rodas5p-integrators/src/dense_output_v2.rs b/crates/rodas5p-integrators/src/dense_output_v2.rs
+index 78f213589..6d1e0baa9 100644
+--- a/crates/rodas5p-integrators/src/dense_output_v2.rs
++++ b/crates/rodas5p-integrators/src/dense_output_v2.rs
+@@ -1729,6 +1729,7 @@ pub fn integrate_adaptive_dense_observed_with_dense_error_control(
+         control,
+         InteriorSampling::OutputTimes,
+         None,
++        None,
+     )
+     .map(|(result, report, _)| (result, report))
+ }
+@@ -1838,6 +1839,7 @@ pub fn integrate_adaptive_dense_observed_with_segments(
+         control,
+         interior,
+         Some(&mut segments),
++        None,
+     )?;
+     Ok(AdaptiveDenseSegmentRun {
+         result,
+@@ -1881,9 +1883,46 @@ pub fn integrate_adaptive_dense_observed_with_partial(
+         control,
+         interior,
+         None,
++        None,
+     )
+ }
+ 
++/// Sequential dense counterpart to the fast accepted-step control.
++/// The complete numerical proposal remains charged; callers may discard it.
++#[allow(clippy::too_many_arguments)]
++pub fn integrate_adaptive_dense_observed_with_segments_and_control(
++    problem: &OdeProblem,
++    t_span: (f64, f64),
++    y0: &[f64],
++    adaptive: &AdaptiveStepConfig,
++    sampling: &OutputSamplingPlan,
++    control: DenseErrorControl,
++    interior: InteriorSampling,
++    accept: &mut dyn FnMut(&Rodas5pDenseSegment) -> crate::AcceptControl,
++) -> DenseOutputResult<AdaptiveDenseSegmentRun> {
++    let mut segments = Vec::new();
++    let (result, report, partial) = integrate_adaptive_dense_impl(
++        problem,
++        t_span,
++        y0,
++        IntegrationMethod::Sequential,
++        None,
++        None,
++        adaptive,
++        sampling,
++        control,
++        interior,
++        Some(&mut segments),
++        Some(accept),
++    )?;
++    Ok(AdaptiveDenseSegmentRun {
++        result,
++        report,
++        segments,
++        partial,
++    })
++}
++
+ #[allow(clippy::too_many_arguments)]
+ fn integrate_adaptive_dense_impl(
+     problem: &OdeProblem,
+@@ -1897,6 +1936,7 @@ fn integrate_adaptive_dense_impl(
+     control: DenseErrorControl,
+     interior: InteriorSampling,
+     mut segments: Option<&mut Vec<Rodas5pDenseSegment>>,
++    mut accept: Option<&mut dyn FnMut(&Rodas5pDenseSegment) -> crate::AcceptControl>,
+ ) -> DenseOutputResult<(
+     AdaptiveObservedIntegrationResult,
+     DenseErrorReport,
+@@ -1964,6 +2004,7 @@ fn integrate_adaptive_dense_impl(
+     // partial record only; never read by the step arithmetic).
+     let mut last_failure = None;
+     let mut fatal_callback = false;
++    let mut client_stop = false;
+ 
+     while t < tf && diagnostics.attempts < adaptive.max_attempts {
+         let Some(next_h) =
+@@ -2228,6 +2269,12 @@ fn integrate_adaptive_dense_impl(
+                     y_new: report.y_new,
+                     stages: report.stages,
+                 });
++                if accept.as_deref_mut().is_some_and(|f| {
++                    f(segments.last().expect("accepted segment")) == crate::AcceptControl::Stop
++                }) {
++                    client_stop = true;
++                    break;
++                }
+             }
+         } else {
+             recycle = recycle_snapshot;
+@@ -2258,6 +2305,11 @@ fn integrate_adaptive_dense_impl(
+             .expect("fatal trial leaves an accepted prefix")
+             .reason = crate::DriverStopReason::FatalCallback;
+     }
++    if client_stop {
++        if let Some(p) = partial.as_mut() {
++            p.reason = crate::DriverStopReason::ClientStop;
++        }
++    }
+     dense_adaptive_result(t, tf, collector, counters, internal_steps, diagnostics)
+         .map(|result| (result, dense_report, partial))
+ }
+diff --git a/crates/rodas5p-integrators/src/lib.rs b/crates/rodas5p-integrators/src/lib.rs
+index 1d388527b..646bfa323 100644
+--- a/crates/rodas5p-integrators/src/lib.rs
++++ b/crates/rodas5p-integrators/src/lib.rs
+@@ -291,10 +291,11 @@ pub use dense_output_v2::{
+     bdf_dense_output, integrate_adaptive_dense_observed_with_config,
+     integrate_adaptive_dense_observed_with_dense_error_control,
+     integrate_adaptive_dense_observed_with_partial,
+-    integrate_adaptive_dense_observed_with_segments, integrate_bdf_adaptive_dense_observed,
+-    integrate_bdf_fixed_dense_observed, integrate_fixed_dense_observed,
+-    integrate_homotopy_adaptive_dense_observed, integrate_radau_adaptive_dense_observed,
+-    integrate_radau_fixed_dense_observed,
++    integrate_adaptive_dense_observed_with_segments,
++    integrate_adaptive_dense_observed_with_segments_and_control,
++    integrate_bdf_adaptive_dense_observed, integrate_bdf_fixed_dense_observed,
++    integrate_fixed_dense_observed, integrate_homotopy_adaptive_dense_observed,
++    integrate_radau_adaptive_dense_observed, integrate_radau_fixed_dense_observed,
+     integrate_sequential_matrix_free_adaptive_dense_fixed_inner_observed,
+     integrate_sequential_matrix_free_adaptive_dense_observed,
+     integrate_sequential_matrix_free_adaptive_dense_with_interpolant_audit,
+diff --git a/crates/rodas5p-integrators/src/retro_dae_evolution.rs b/crates/rodas5p-integrators/src/retro_dae_evolution.rs
+index 6654e5b91..6e300f2db 100644
+--- a/crates/rodas5p-integrators/src/retro_dae_evolution.rs
++++ b/crates/rodas5p-integrators/src/retro_dae_evolution.rs
+@@ -159,11 +159,16 @@ pub fn dense_power(
+         })
+         .collect()
+ }
++fn is_zero(v: &f64) -> bool {
++    *v == 0.
++}
+ /// Immutable quotient predictor. The finite Taylor quotient is ONLY a
+ /// candidate seed for the original source projection; no infinite tail
+ /// or physical residual is certified by the quotient report.
+ #[derive(Clone, Debug, Serialize)]
+ pub struct WarpSeed {
++    #[serde(skip_serializing_if = "is_zero")]
++    pub start: f64,
+     pub end: f64,
+     pub coeff: Vec<Vec<f64>>,
+     pub quotient_error: f64,
+@@ -172,7 +177,21 @@ pub struct WarpSeed {
+ }
+ impl WarpSeed {
+     pub fn new(src: &DaeSource, end: f64, mode: QuotientMode) -> CoreResult<Self> {
+-        if !end.is_finite() || end <= 0. || src.nz() > 8 {
++        Self::new_window(src, 0., end, mode)
++    }
++    /// Reanchor a source-owned affine pencil at the actual physical start.
++    pub fn new_window(
++        src: &DaeSource,
++        start: f64,
++        end: f64,
++        mode: QuotientMode,
++    ) -> CoreResult<Self> {
++        if !start.is_finite()
++            || !end.is_finite()
++            || end <= start
++            || !(end - start).is_finite()
++            || src.nz() > 8
++        {
+             return Err(bad("WARP domain"));
+         }
+         let nx = src.nx();
+@@ -202,7 +221,7 @@ impl WarpSeed {
+             }
+         }
+         let y = vec![zero(); nx + n];
+-        let a = jz(&di::evaluate(&src.g, p(0.)?, &y)?, nx);
++        let a = jz(&di::evaluate(&src.g, p(start)?, &y)?, nx);
+         let b = jz(&di::evaluate(&src.g, p(end)?, &y)?, nx);
+         let mut delta = Vec::new();
+         for (r, s) in a.iter().zip(&b) {
+@@ -246,6 +265,7 @@ impl WarpSeed {
+             }
+         }
+         Ok(Self {
++            start,
+             end,
+             coeff,
+             quotient_error: err,
+@@ -254,7 +274,9 @@ impl WarpSeed {
+         })
+     }
+     fn seed(&self, src: &DaeSource, t: f64, x: &[f64]) -> CoreResult<Vec<f64>> {
+-        let u = p(t)?.div(p(self.end)?)?;
++        let u = p(t)?
++            .sub(p(self.start)?)?
++            .div(p(self.end)?.sub(p(self.start)?)?)?;
+         let mut y = di::points(x)?;
+         y.extend(vec![zero(); self.n]);
+         let g = di::evaluate(&src.g, p(t)?, &y)?.v;
+@@ -401,6 +423,7 @@ pub fn certify_slab(
+         || y.iter().any(|v| v.is_empty() || v.len() > 5)
+         || !tube.is_finite()
+         || tube <= 0.
++        || incoming.is_some_and(|v| !v.is_finite() || v < 0.)
+     {
+         return Err(bad("slab shape"));
+     }
+@@ -637,3 +660,979 @@ pub fn query_x_error(
+         .try_fold(0.0_f64, |m, v| Ok::<f64, CoreError>(m.max(v?)))?;
+     add_up(ideal, e)
+ }
++
++/// Physical differential derivative enclosure on an already certified slab.
++/// Only valid when the certificate comes from this source and this slab.
++pub fn threshold_velocity(src: &DaeSource, c: &SlabCertificate) -> CoreResult<Iv> {
++    if src.nx() != 1 || !c.global_qualified {
++        return Err(bad("threshold requires scalar certified tube"));
++    }
++    let y = c
++        .x_range
++        .iter()
++        .chain(&c.branch_root_box)
++        .map(|v| Iv::new(v[0], v[1]))
++        .collect::<CoreResult<Vec<_>>>()?;
++    let f = di::evaluate(&src.f, Iv::new(c.times[0], c.times[1])?, &y)?;
++    Ok(f.v[0])
++}
++
++/// Alternative physical tangent enclosures. A prepared inverse is only a
++/// candidate; its defect against the original interval Jacobian is checked.
++#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
++pub enum GuardDerivativeRoute {
++    Tangent,
++    Schur,
++    PreparedSchur,
++}
++#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
++pub enum GuardValueRoute {
++    Box,
++    Transport,
++}
++
++#[derive(Clone, Debug, Serialize)]
++pub struct GuardPointEvidence {
++    pub time: f64,
++    pub differential_radius: f64,
++    pub value: [f64; 2],
++}
++#[derive(Clone, Debug, Serialize)]
++pub struct GuardSlabEvidence {
++    pub evaluations: Vec<GuardPointEvidence>,
++    pub times: [f64; 2],
++    pub derivative_route: GuardDerivativeRoute,
++    pub value_route: GuardValueRoute,
++    pub velocity: [f64; 2],
++    pub reduced_gradient: Vec<[f64; 2]>,
++    pub reduced_clock: [f64; 2],
++    pub inverse_defect: f64,
++    pub reduced_lip: f64,
++    pub algebraic_guard_lip: f64,
++    pub prepared_work: InitWork,
++}
++
++/// Conditional on an authentic certificate for the same original source,
++/// polynomial and slab. Only the facade constructs event authority.
++pub struct GuardProof<'a> {
++    guard: &'a DeclaredPolynomial,
++    y: &'a [Poly],
++    nx: usize,
++    times: [f64; 2],
++    x_range: Vec<Iv>,
++    z_range: Vec<Iv>,
++    root_box: Vec<Iv>,
++    h_poly: Poly,
++    cg_poly: Vec<Poly>,
++    gap: f64,
++    zx_lip: f64,
++    whole_x: f64,
++    pub evidence: GuardSlabEvidence,
++}
++fn iv_pairs(v: &[[f64; 2]]) -> CoreResult<Vec<Iv>> {
++    v.iter().map(|a| Iv::new(a[0], a[1])).collect()
++}
++fn intersect(a: Iv, b: Iv) -> CoreResult<Iv> {
++    Iv::new(a.lo.max(b.lo), a.hi.min(b.hi))
++}
++fn guard_dot(a: &[Iv], b: &[Iv]) -> CoreResult<Iv> {
++    a.iter()
++        .zip(b)
++        .try_fold(zero(), |s, (&a, &b)| s.add(a.mul(b)?))
++}
++impl<'a> GuardProof<'a> {
++    pub fn new(
++        src: &DaeSource,
++        guard: &'a DeclaredPolynomial,
++        y: &'a [Poly],
++        cert: &SlabCertificate,
++        derivative: GuardDerivativeRoute,
++        value: GuardValueRoute,
++    ) -> CoreResult<Self> {
++        let nx = src.nx();
++        let nz = src.nz();
++        guard.validate(nx + nz)?;
++        if !cert.global_qualified
++            || y.len() != nx + nz
++            || cert.x_range.len() != nx
++            || cert.z_range.len() != nz
++            || cert.branch_root_box.len() != nz
++            || cert.preconditioner.len() != nz * nz
++        {
++            return Err(bad("guard source/slab shape"));
++        }
++        let time = Iv::new(cert.times[0], cert.times[1])?;
++        let xb = iv_pairs(&cert.x_range)?;
++        let zb = iv_pairs(&cert.z_range)?;
++        let rb = iv_pairs(&cert.branch_root_box)?;
++        let mut physical = xb.clone();
++        physical.extend_from_slice(&rb);
++        let f = di::evaluate(&src.f, time, &physical)?;
++        let g = di::evaluate(&src.g, time, &physical)?;
++        let hg = di::evaluate(std::slice::from_ref(guard), time, &physical)?;
++        let h = &hg.j[0];
++        let j = jz(&g, nx);
++        let original = DenseMatrix::new(nz, nz, cert.preconditioner.clone())?;
++        let mut work = InitWork::default();
++        let c = if derivative == GuardDerivativeRoute::PreparedSchur {
++            let center = di::center_matrix(&j)?;
++            di::preconditioner(
++                &center,
++                InitRoute::PreparedBatch,
++                &ParallelExecution::sequential(),
++                &mut work,
++            )?
++        } else {
++            original.clone()
++        };
++        let q = di::rows_norm(&di::defect(&c, &j)?)?;
++        let gap = sub_down(1., q)?;
++        if gap <= 0. {
++            return Err(bad("guard inverse defect"));
++        }
++        let solve =
++            |rhs: &[Iv]| -> CoreResult<Vec<Iv>> { product_bound(q, gap, &di::matvec(&c, rhs)?) };
++        let hz = &h[1 + nx..];
++        let mut reduced = Vec::with_capacity(nx + 1);
++        for (k, &hk) in h[..=nx].iter().enumerate() {
++            let rhs = g.j.iter().map(|r| -r[k]).collect::<Vec<_>>();
++            reduced.push(hk.add(guard_dot(hz, &solve(&rhs)?)?)?);
++        }
++        let velocity = if derivative == GuardDerivativeRoute::Tangent {
++            let rhs =
++                g.j.iter()
++                    .map(|r| r[0].add(guard_dot(&r[1..1 + nx], &f.v)?).map(|v| -v))
++                    .collect::<CoreResult<Vec<_>>>()?;
++            h[0].add(guard_dot(&h[1..1 + nx], &f.v)?)?
++                .add(guard_dot(hz, &solve(&rhs)?)?)?
++        } else {
++            reduced[0].add(guard_dot(&reduced[1..], &f.v)?)?
++        };
++        let reduced_lip = di::rows_norm(&[reduced[1..].to_vec()])?;
++        // The straight segment between represented V and true Z(t,U)
++        // lies in this hull; use it for the algebraic correction only.
++        let mut hull = xb.clone();
++        for (&v, &r) in zb.iter().zip(&rb) {
++            hull.push(Iv::new(v.lo.min(r.lo), v.hi.max(r.hi))?);
++        }
++        let hh = di::evaluate(std::slice::from_ref(guard), time, &hull)?;
++        let algebraic_guard_lip = di::rows_norm(&[hh.j[0][1 + nx..].to_vec()])?;
++        let clock = [p(cert.times[0])?, p(cert.times[1])?.sub(p(cert.times[0])?)?];
++        let h_poly = compose(guard, &clock, y)?;
++        let gp = src
++            .g
++            .iter()
++            .map(|g| compose(g, &clock, y))
++            .collect::<CoreResult<Vec<_>>>()?;
++        let cg_poly = c_polys(&original, &gp)?;
++        let original_gap = sub_down(1., cert.branch_defect)?;
++        if original_gap <= 0. {
++            return Err(bad("guard original branch defect"));
++        }
++        let whole_x = cert
++            .whole_x_error
++            .ok_or_else(|| bad("guard physical radius"))?;
++        Ok(Self {
++            guard,
++            y,
++            nx,
++            times: cert.times,
++            x_range: xb,
++            z_range: zb,
++            root_box: rb,
++            h_poly,
++            cg_poly,
++            gap: original_gap,
++            zx_lip: cert.zx_norm_upper,
++            whole_x,
++            evidence: GuardSlabEvidence {
++                evaluations: vec![],
++                times: cert.times,
++                derivative_route: derivative,
++                value_route: value,
++                velocity: velocity.as_pair(),
++                reduced_gradient: reduced[1..].iter().map(|v| v.as_pair()).collect(),
++                reduced_clock: reduced[0].as_pair(),
++                inverse_defect: q,
++                reduced_lip,
++                algebraic_guard_lip,
++                prepared_work: work,
++            },
++        })
++    }
++    /// Only an advisory polynomial, never an authority on physical roots.
++    pub fn hint_coefficients(&self) -> Vec<f64> {
++        self.h_poly.iter().map(|&v| di::mid(v)).collect()
++    }
++    /// At a physical time in the certified slab; error must be an externally
++    /// established differential radius (endpoint or whole-slab).
++    pub fn value_at(&self, t: f64, error: f64) -> CoreResult<Iv> {
++        if !(self.times[0] <= t && t <= self.times[1])
++            || !error.is_finite()
++            || error < 0.
++            || error > self.whole_x
++        {
++            return Err(bad("guard query outside physical radius"));
++        }
++        let u = p(t)?
++            .sub(p(self.times[0])?)?
++            .div(p(self.times[1])?.sub(p(self.times[0])?)?)?;
++        let u = Iv::new(u.lo.max(0.), u.hi.min(1.))?;
++        let cg = self
++            .cg_poly
++            .iter()
++            .map(|v| eval(v, u))
++            .collect::<CoreResult<Vec<_>>>()?;
++        let az = div_up(di::norm(&cg), self.gap)?;
++        match self.evidence.value_route {
++            GuardValueRoute::Transport => {
++                let r = add_up(
++                    mul_up(self.evidence.reduced_lip, error)?,
++                    mul_up(self.evidence.algebraic_guard_lip, az)?,
++                )?;
++                eval(&self.h_poly, u)?.add(Iv::new(-r, r)?)
++            }
++            GuardValueRoute::Box => {
++                let mut values = Vec::with_capacity(self.y.len());
++                let ez = add_up(az, mul_up(self.zx_lip, error)?)?;
++                for (i, v) in self.y.iter().enumerate() {
++                    let a = eval(v, u)?;
++                    if i < self.nx {
++                        values.push(intersect(a.add(Iv::new(-error, error)?)?, self.x_range[i])?);
++                    } else {
++                        let k = i - self.nx;
++                        let a = intersect(a, self.z_range[k])?;
++                        values.push(intersect(a.add(Iv::new(-ez, ez)?)?, self.root_box[k])?);
++                    }
++                }
++                Ok(di::evaluate(std::slice::from_ref(self.guard), p(t)?, &values)?.v[0])
++            }
++        }
++    }
++}
++
++/// Reset envelope routes. The polynomial is composed from the original
++/// source on a certified native slab, not from rounded trajectory samples.
++#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
++pub enum ResetEnvelopeRoute {
++    Box,
++    Transport,
++    GreenMoment,
++}
++
++#[derive(Clone, Debug, Serialize)]
++pub struct ResetSlabEvidence {
++    pub times: [f64; 2],
++    pub reset_x: [f64; 2],
++    pub synchronized_x: [f64; 2],
++    pub reset_error_upper: f64,
++    pub reduced_lip: f64,
++    pub algebraic_error_upper: f64,
++    pub moment_derivative: Option<[f64; 2]>,
++    pub green_calls: usize,
++    pub prepared_work: InitWork,
++}
++/// Only for a genuine source-bound certified slab; the facade owns event
++/// authority. Synchronize to s under scalar x'=-a(x-e).
++#[allow(clippy::too_many_arguments)]
++pub fn reset_slab(
++    src: &DaeSource,
++    reset: &DeclaredPolynomial,
++    y: &[Poly],
++    cert: &SlabCertificate,
++    times: [f64; 2],
++    s: f64,
++    a: f64,
++    e: f64,
++    route: ResetEnvelopeRoute,
++    derivative: GuardDerivativeRoute,
++    table: &RetroTable,
++) -> CoreResult<ResetSlabEvidence> {
++    if !(cert.times[0] <= times[0]
++        && times[0] <= times[1]
++        && times[1] <= cert.times[1]
++        && times[1] <= s)
++        || !a.is_finite()
++        || a <= 0.
++        || !e.is_finite()
++    {
++        return Err(bad("reset slab clock/domain"));
++    }
++    let value = if route == ResetEnvelopeRoute::Box {
++        GuardValueRoute::Box
++    } else {
++        GuardValueRoute::Transport
++    };
++    let proof = GuardProof::new(src, reset, y, cert, derivative, value)?;
++    let h = p(cert.times[1])?.sub(p(cert.times[0])?)?;
++    let clock = Iv::new(times[0], times[1])?;
++    let normalize = |t: Iv| -> CoreResult<Iv> {
++        let u = t.sub(p(cert.times[0])?)?.div(h)?;
++        Iv::new(u.lo.max(0.), u.hi.min(1.))
++    };
++    let u = normalize(clock)?;
++    let ex = proof.whole_x;
++    let cg = proof
++        .cg_poly
++        .iter()
++        .map(|v| eval(v, u))
++        .collect::<CoreResult<Vec<_>>>()?;
++    let az = div_up(di::norm(&cg), proof.gap)?;
++    let er = add_up(
++        mul_up(proof.evidence.reduced_lip, ex)?,
++        mul_up(proof.evidence.algebraic_guard_lip, az)?,
++    )?;
++    let r = if value == GuardValueRoute::Box {
++        let ez = add_up(az, mul_up(proof.zx_lip, ex)?)?;
++        let mut values = Vec::with_capacity(y.len());
++        for (i, v) in y.iter().enumerate() {
++            let b = eval(v, u)?;
++            if i < proof.nx {
++                values.push(intersect(b.add(Iv::new(-ex, ex)?)?, proof.x_range[i])?);
++            } else {
++                let j = i - proof.nx;
++                values.push(intersect(
++                    intersect(b, proof.z_range[j])?.add(Iv::new(-ez, ez)?)?,
++                    proof.root_box[j],
++                )?);
++            }
++        }
++        di::evaluate(std::slice::from_ref(reset), clock, &values)?.v[0]
++    } else {
++        eval(&proof.h_poly, u)?.add(Iv::new(-er, er)?)?
++    };
++    let eq = p(e)?;
++    let rate = p(a)?;
++    let gain = |time: Iv| -> CoreResult<Iv> {
++        let x = p(s)?.sub(time)?.mul(rate)?;
++        table.phi(Iv::new(x.lo.max(0.), x.hi)?, 0)
++    };
++    let mut calls = 1;
++    let rectangle = eq.add(gain(clock)?.mul(r.sub(eq)?)?)?;
++    let (sync, moment) = if route == ResetEnvelopeRoute::GreenMoment {
++        // P is the represented reset polynomial in normalized native time.
++        // d/dt[e+exp(-a(s-t))(P(t)-e)] = exp(-a(s-t))*(P'(t)+a(P-e)).
++        // Compose before evaluation to preserve cancellation.
++        let mut d = proof
++            .h_poly
++            .iter()
++            .enumerate()
++            .skip(1)
++            .map(|(k, v)| v.scale(k as f64)?.div(h))
++            .collect::<CoreResult<Vec<_>>>()?;
++        if d.is_empty() {
++            d.push(zero());
++        }
++        let mut shifted = proof.h_poly.clone();
++        shifted[0] = shifted[0].sub(eq)?;
++        let q = add(&d, &scale(&shifted, rate)?)?;
++        let derivative = eval(&q, u)?;
++        let right = p(times[1])?;
++        let gb = gain(right)?;
++        let base = eq.add(gb.mul(eval(&proof.h_poly, normalize(right)?)?.sub(eq)?)?)?;
++        let dt = right.sub(clock)?;
++        let dt = Iv::new(dt.lo.max(0.), dt.hi)?;
++        let adt = dt.mul(rate)?;
++        let weight = gb
++            .mul(dt)?
++            .mul(table.phi(Iv::new(adt.lo.max(0.), adt.hi)?, 1)?)?;
++        calls += 2;
++        let propagated = mul_up(gain(clock)?.hi, er)?;
++        calls += 1;
++        let corrected = base
++            .sub(weight.mul(derivative)?)?
++            .add(Iv::new(-propagated, propagated)?)?;
++        (intersect(rectangle, corrected)?, Some(derivative.as_pair()))
++    } else {
++        (rectangle, None)
++    };
++    Ok(ResetSlabEvidence {
++        times,
++        reset_x: r.as_pair(),
++        synchronized_x: sync.as_pair(),
++        reset_error_upper: er,
++        reduced_lip: proof.evidence.reduced_lip,
++        algebraic_error_upper: az,
++        moment_derivative: moment,
++        green_calls: calls,
++        prepared_work: proof.evidence.prepared_work,
++    })
++}
++
++/// Uniform branch authority for all (t,x) in the stated transition box,
++/// independent of an integrator step or a pointwise initial root.
++#[derive(Clone, Debug, Serialize)]
++pub struct TransitionBranchProof {
++    pub times: [f64; 2],
++    pub differential_box: [f64; 2],
++    pub branch: Vec<[f64; 2]>,
++    pub root_box: Vec<[f64; 2]>,
++    pub self_map_box: Vec<[f64; 2]>,
++    pub defect: f64,
++    pub condition_upper: f64,
++    pub initial: InitReport,
++    pub work: InitWork,
++}
++/// Reuse an initialized point only as a predictor. Strict contraction
++/// is checked on the entire declared B, and a self-map proves existence
++/// uniformly in the time/state box. No assumption of nominal uniqueness.
++#[allow(clippy::too_many_arguments)]
++pub fn certify_transition_branch(
++    src: &DaeSource,
++    times: [f64; 2],
++    xb: [f64; 2],
++    center: f64,
++    z_seed: &[f64],
++    branch: &[[f64; 2]],
++    policy: InitPolicy,
++    route: InitRoute,
++) -> CoreResult<TransitionBranchProof> {
++    crate::affine_event_certificate::check_affine_event_arithmetic()?;
++    let t = Iv::new(times[0], times[1])?;
++    let x = Iv::new(xb[0], xb[1])?;
++    if src.nx() != 1
++        || !x.contains(center)
++        || policy.mode != InitMode::ProjectAlgebraic
++        || branch.len() != src.nz()
++    {
++        return Err(bad("transition branch contract"));
++    }
++    let initial = src.initialize(times[1], &[center], z_seed, branch, policy, route)?;
++    let nz = src.nz();
++    let b = iv_pairs(branch)?;
++    let zc = di::points(&initial.z)?;
++    let mut point = vec![p(center)?];
++    point.extend_from_slice(&zc);
++    let jp = jz(&di::evaluate(&src.g, p(times[1])?, &point)?, 1);
++    let mut work = InitWork::default();
++    let c = di::preconditioner(
++        &di::center_matrix(&jp)?,
++        route,
++        &ParallelExecution::sequential(),
++        &mut work,
++    )?;
++    let mut full = vec![x];
++    full.extend_from_slice(&b);
++    let j = jz(&di::evaluate(&src.g, t, &full)?, 1);
++    let err = di::defect(&c, &j)?;
++    let q = di::rows_norm(&err)?;
++    let gap = sub_down(1., q)?;
++    if gap <= 0. {
++        return Err(bad("transition uniform branch contraction not proved"));
++    }
++    let mut base = vec![x];
++    base.extend_from_slice(&zc);
++    let cg = di::matvec(&c, &di::evaluate(&src.g, t, &base)?.v)?;
++    let image = |local: &[Iv], error: &[Vec<Iv>]| -> CoreResult<Vec<Iv>> {
++        let delta = local
++            .iter()
++            .zip(&zc)
++            .map(|(&v, &z)| v.sub(z))
++            .collect::<CoreResult<Vec<_>>>()?;
++        let ed = di::iv_matvec(error, &delta)?;
++        zc.iter()
++            .zip(&cg)
++            .zip(&ed)
++            .map(|((&z, &v), &w)| z.sub(v)?.add(w))
++            .collect()
++    };
++    let mut local = b.clone();
++    let mut root = image(&local, &err)?;
++    if !di::subset(&root, &local) {
++        let eta = di::norm(&cg);
++        let rad = div_up(eta, gap)?;
++        let mut admitted = false;
++        for factor in [1.25, 2., 4., 8., 16., 32.] {
++            let radius = mul_up(factor, rad)?;
++            let trial = zc
++                .iter()
++                .map(|&v| v.add(Iv::new(-radius, radius)?))
++                .collect::<CoreResult<Vec<_>>>()?;
++            if !di::subset(&trial, &b) {
++                continue;
++            }
++            let mut v = vec![x];
++            v.extend_from_slice(&trial);
++            let el = di::defect(&c, &jz(&di::evaluate(&src.g, t, &v)?, 1))?;
++            let candidate = image(&trial, &el)?;
++            if di::subset(&candidate, &trial) {
++                local = trial;
++                root = candidate;
++                admitted = true;
++                break;
++            }
++        }
++        if !admitted {
++            return Err(bad("transition uniform branch self-map not proved"));
++        }
++    }
++    let ci = (0..nz)
++        .map(|i| di::points(c.row(i)))
++        .collect::<CoreResult<Vec<_>>>()?;
++    let condition = mul_up(div_up(di::rows_norm(&ci)?, gap)?, di::rows_norm(&j)?)?;
++    if condition > policy.condition_cap {
++        return Err(bad("transition condition cap"));
++    }
++    Ok(TransitionBranchProof {
++        times,
++        differential_box: xb,
++        branch: branch.to_vec(),
++        root_box: root.iter().map(|v| v.as_pair()).collect(),
++        self_map_box: local.iter().map(|v| v.as_pair()).collect(),
++        defect: q,
++        condition_upper: condition,
++        initial,
++        work,
++    })
++}
++
++/// Synchronization of a vector reset under an original polynomial post DAE.
++#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
++pub enum VectorSyncRoute {
++    BoxPicard,
++    SchurPicard,
++    Centered,
++    GreenMoment,
++}
++#[derive(Clone, Debug, Serialize)]
++pub struct VectorResetComponent {
++    pub enclosure: [f64; 2],
++    pub transport_error: f64,
++    pub reduced_lip: f64,
++    pub prepared_work: InitWork,
++    #[serde(skip)]
++    power: Poly,
++    #[serde(skip)]
++    native_times: [f64; 2],
++}
++/// Old-mode physical reset image on a subinterval of its authentic slab.
++pub fn vector_reset_component(
++    src: &DaeSource,
++    reset: &DeclaredPolynomial,
++    y: &[Poly],
++    c: &SlabCertificate,
++    times: [f64; 2],
++    route: VectorSyncRoute,
++    derivative: GuardDerivativeRoute,
++) -> CoreResult<VectorResetComponent> {
++    if !(c.times[0] <= times[0] && times[0] <= times[1] && times[1] <= c.times[1]) {
++        return Err(bad("vector reset slab domain"));
++    }
++    let value = if route == VectorSyncRoute::BoxPicard {
++        GuardValueRoute::Box
++    } else {
++        GuardValueRoute::Transport
++    };
++    let proof = GuardProof::new(src, reset, y, c, derivative, value)?;
++    let clock = Iv::new(times[0], times[1])?;
++    let h = p(c.times[1])?.sub(p(c.times[0])?)?;
++    let u = clock.sub(p(c.times[0])?)?.div(h)?;
++    let u = Iv::new(u.lo.max(0.), u.hi.min(1.))?;
++    let cg = proof
++        .cg_poly
++        .iter()
++        .map(|v| eval(v, u))
++        .collect::<CoreResult<Vec<_>>>()?;
++    let az = div_up(di::norm(&cg), proof.gap)?;
++    let ex = proof.whole_x;
++    let er = add_up(
++        mul_up(proof.evidence.reduced_lip, ex)?,
++        mul_up(proof.evidence.algebraic_guard_lip, az)?,
++    )?;
++    let r = if value == GuardValueRoute::Box {
++        let ez = add_up(az, mul_up(proof.zx_lip, ex)?)?;
++        let mut values = Vec::with_capacity(y.len());
++        for (i, v) in y.iter().enumerate() {
++            let b = eval(v, u)?;
++            if i < proof.nx {
++                values.push(intersect(b.add(Iv::new(-ex, ex)?)?, proof.x_range[i])?);
++            } else {
++                let j = i - proof.nx;
++                values.push(intersect(
++                    intersect(b, proof.z_range[j])?.add(Iv::new(-ez, ez)?)?,
++                    proof.root_box[j],
++                )?);
++            }
++        }
++        di::evaluate(std::slice::from_ref(reset), clock, &values)?.v[0]
++    } else {
++        eval(&proof.h_poly, u)?.add(Iv::new(-er, er)?)?
++    };
++    Ok(VectorResetComponent {
++        enclosure: r.as_pair(),
++        transport_error: er,
++        reduced_lip: proof.evidence.reduced_lip,
++        prepared_work: proof.evidence.prepared_work,
++        power: proof.h_poly,
++        native_times: c.times,
++    })
++}
++#[derive(Clone, Debug, Serialize)]
++pub struct VectorBranchProof {
++    pub times: [f64; 2],
++    pub differential_box: Vec<[f64; 2]>,
++    pub root_box: Vec<[f64; 2]>,
++    pub self_map_box: Vec<[f64; 2]>,
++    pub defect: f64,
++    pub condition_upper: f64,
++    pub initial: InitReport,
++    pub work: InitWork,
++    pub field: Vec<[f64; 2]>,
++    pub reduced_jacobian: Vec<Vec<[f64; 2]>>,
++    pub reduced_clock: Vec<[f64; 2]>,
++    pub nominal_field: Vec<[f64; 2]>,
++}
++/// Existence/uniqueness of the declared branch for every time and x in a
++/// rectangular domain, followed by signed Schur bounds of original f.
++#[allow(clippy::too_many_arguments)]
++pub fn certify_vector_branch(
++    src: &DaeSource,
++    times: [f64; 2],
++    xb: &[[f64; 2]],
++    center: &[f64],
++    z_seed: &[f64],
++    branch: &[[f64; 2]],
++    policy: InitPolicy,
++    route: InitRoute,
++) -> CoreResult<VectorBranchProof> {
++    crate::affine_event_certificate::check_affine_event_arithmetic()?;
++    let nx = src.nx();
++    let nz = src.nz();
++    let t = Iv::new(times[0], times[1])?;
++    let x = iv_pairs(xb)?;
++    if x.len() != nx
++        || center.len() != nx
++        || !x.iter().zip(center).all(|(a, &b)| a.contains(b))
++        || policy.mode != InitMode::ProjectAlgebraic
++        || branch.len() != nz
++        || !matches!(
++            route,
++            InitRoute::Reuse | InitRoute::PreparedBatch | InitRoute::ScalarRoot
++        )
++    {
++        return Err(bad("vector uniform branch contract"));
++    }
++    let initial = src.initialize(times[1], center, z_seed, branch, policy, route)?;
++    let b = iv_pairs(branch)?;
++    let zc = di::points(&initial.z)?;
++    let mut point = di::points(center)?;
++    point.extend_from_slice(&zc);
++    let jp = jz(&di::evaluate(&src.g, p(times[1])?, &point)?, nx);
++    let mut work = InitWork::default();
++    let c = di::preconditioner(
++        &di::center_matrix(&jp)?,
++        route,
++        &ParallelExecution::sequential(),
++        &mut work,
++    )?;
++    let mut full = x.clone();
++    full.extend_from_slice(&b);
++    let j = jz(&di::evaluate(&src.g, t, &full)?, nx);
++    let err = di::defect(&c, &j)?;
++    let q = di::rows_norm(&err)?;
++    let gap = sub_down(1., q)?;
++    if gap <= 0. {
++        return Err(bad("vector uniform branch contraction not proved"));
++    }
++    let mut base = x.clone();
++    base.extend_from_slice(&zc);
++    let cg = di::matvec(&c, &di::evaluate(&src.g, t, &base)?.v)?;
++    let image = |local: &[Iv], error: &[Vec<Iv>]| -> CoreResult<Vec<Iv>> {
++        let delta = local
++            .iter()
++            .zip(&zc)
++            .map(|(&v, &z)| v.sub(z))
++            .collect::<CoreResult<Vec<_>>>()?;
++        let ed = di::iv_matvec(error, &delta)?;
++        zc.iter()
++            .zip(&cg)
++            .zip(&ed)
++            .map(|((&z, &v), &w)| z.sub(v)?.add(w))
++            .collect()
++    };
++    let mut local = b.clone();
++    let mut root = image(&local, &err)?;
++    if !di::subset(&root, &local) {
++        let rad = div_up(di::norm(&cg), gap)?;
++        let mut admitted = false;
++        for factor in [1.25, 2., 4., 8., 16., 32.] {
++            let radius = mul_up(factor, rad)?;
++            let trial = zc
++                .iter()
++                .map(|&v| v.add(Iv::new(-radius, radius)?))
++                .collect::<CoreResult<Vec<_>>>()?;
++            if !di::subset(&trial, &b) {
++                continue;
++            }
++            let mut v = x.clone();
++            v.extend_from_slice(&trial);
++            let el = di::defect(&c, &jz(&di::evaluate(&src.g, t, &v)?, nx))?;
++            let candidate = image(&trial, &el)?;
++            if di::subset(&candidate, &trial) {
++                local = trial;
++                root = candidate;
++                admitted = true;
++                break;
++            }
++        }
++        if !admitted {
++            return Err(bad("vector uniform branch self-map not proved"));
++        }
++    }
++    let ci = (0..nz)
++        .map(|i| di::points(c.row(i)))
++        .collect::<CoreResult<Vec<_>>>()?;
++    let condition = mul_up(div_up(di::rows_norm(&ci)?, gap)?, di::rows_norm(&j)?)?;
++    if condition > policy.condition_cap {
++        return Err(bad("vector condition cap"));
++    }
++    let mut y = x.clone();
++    y.extend_from_slice(&root);
++    let g = di::evaluate(&src.g, t, &y)?;
++    let f = di::evaluate(&src.f, t, &y)?;
++    let qr = di::rows_norm(&di::defect(&c, &jz(&g, nx))?)?;
++    let gr = sub_down(1., qr)?;
++    if gr <= 0. {
++        return Err(bad("vector reduced inverse defect"));
++    }
++    let mut columns = Vec::with_capacity(nx + 1);
++    for k in 0..=nx {
++        let rhs = g.j.iter().map(|r| -r[k]).collect::<Vec<_>>();
++        columns.push(product_bound(qr, gr, &di::matvec(&c, &rhs)?)?);
++    }
++    let mut reduced = Vec::with_capacity(nx);
++    for r in &f.j {
++        let v = (0..=nx)
++            .map(|k| r[k].add(guard_dot(&r[1 + nx..], &columns[k])?))
++            .collect::<CoreResult<Vec<_>>>()?;
++        reduced.push(v);
++    }
++    let mut nominal = di::points(center)?;
++    nominal.extend(iv_pairs(&initial.root_box)?);
++    let f0 = di::evaluate(&src.f, p(times[1])?, &nominal)?.v;
++    // Centered reduced mean-value bound intersects the direct source box.
++    let mut delta = vec![t.sub(p(times[1])?)?];
++    for (&v, &a) in x.iter().zip(center) {
++        delta.push(v.sub(p(a)?)?);
++    }
++    let field =
++        f.v.iter()
++            .zip(&f0)
++            .zip(&reduced)
++            .map(|((&f, &fc), r)| intersect(f, fc.add(guard_dot(r, &delta)?)?))
++            .collect::<CoreResult<Vec<_>>>()?;
++    Ok(VectorBranchProof {
++        times,
++        differential_box: xb.to_vec(),
++        root_box: root.iter().map(|v| v.as_pair()).collect(),
++        self_map_box: local.iter().map(|v| v.as_pair()).collect(),
++        defect: q,
++        condition_upper: condition,
++        initial,
++        work,
++        field: field.iter().map(|v| v.as_pair()).collect(),
++        reduced_jacobian: reduced
++            .iter()
++            .map(|r| r[1..].iter().map(|v| v.as_pair()).collect())
++            .collect(),
++        reduced_clock: reduced.iter().map(|r| r[0].as_pair()).collect(),
++        nominal_field: f0.iter().map(|v| v.as_pair()).collect(),
++    })
++}
++#[derive(Clone, Debug, Serialize)]
++pub struct VectorTubeProof {
++    pub attempts: Vec<VectorBranchProof>,
++    pub field: Vec<[f64; 2]>,
++    pub tube: Vec<[f64; 2]>,
++    pub picard_image: Vec<[f64; 2]>,
++}
++/// Strict self-map over original mode extension for every allowed reset
++/// clock and state. Uniform branch proof makes the reduced field C1.
++pub fn certify_vector_tube(
++    src: &DaeSource,
++    times: [f64; 2],
++    r: &[[f64; 2]],
++    z_seed: &[f64],
++    branch: &[[f64; 2]],
++    policy: InitPolicy,
++    route: InitRoute,
++) -> CoreResult<VectorTubeProof> {
++    let reset = iv_pairs(r)?;
++    if reset.len() != src.nx() {
++        return Err(bad("vector tube shape"));
++    }
++    let h = p(times[1])?.sub(p(times[0])?)?;
++    if h.lo < 0. {
++        return Err(bad("vector tube time"));
++    }
++    let elapsed = Iv::new(0., h.hi)?;
++    let pad = |v: Iv| -> CoreResult<Iv> {
++        let w = v.sub(p(v.lo)?)?.hi;
++        let margin = mul_up(0.125, w)?.max(1e-10_f64.max(mul_up(1e-14, v.mag())?));
++        v.add(Iv::new(-margin, margin)?)
++    };
++    let mut b = reset
++        .iter()
++        .map(|&v| pad(v))
++        .collect::<CoreResult<Vec<_>>>()?;
++    let mut attempts = Vec::with_capacity(8);
++    for _ in 0..8 {
++        let center = b.iter().map(|&v| di::mid(v)).collect::<Vec<_>>();
++        let xb = b.iter().map(|v| v.as_pair()).collect::<Vec<_>>();
++        let proof = certify_vector_branch(src, times, &xb, &center, z_seed, branch, policy, route)?;
++        let field = iv_pairs(&proof.field)?;
++        let image = reset
++            .iter()
++            .zip(&field)
++            .map(|(&r, &f)| r.add(elapsed.mul(f)?))
++            .collect::<CoreResult<Vec<_>>>()?;
++        let admitted = image
++            .iter()
++            .zip(&b)
++            .all(|(a, b)| b.lo < a.lo && a.hi < b.hi);
++        attempts.push(proof);
++        if admitted {
++            return Ok(VectorTubeProof {
++                field: field.iter().map(|v| v.as_pair()).collect(),
++                tube: xb,
++                picard_image: image.iter().map(|v| v.as_pair()).collect(),
++                attempts,
++            });
++        }
++        b = b
++            .iter()
++            .zip(&image)
++            .map(|(&a, &v)| pad(Iv::new(a.lo.min(v.lo), a.hi.max(v.hi))?))
++            .collect::<CoreResult<Vec<_>>>()?;
++    }
++    Err(bad("vector Picard tube budget exhausted"))
++}
++#[derive(Clone, Debug, Serialize)]
++pub struct VectorSyncEvidence {
++    pub synchronized: Vec<[f64; 2]>,
++    pub green_calls: usize,
++    pub forcing_remainder: Vec<[f64; 2]>,
++}
++// Local mean-value chart for an interval-coefficient represented polynomial.
++fn reset_centered_eval(poly: &[Iv], u: Iv) -> CoreResult<Iv> {
++    let center = p(di::mid(u))?;
++    let d = poly
++        .iter()
++        .enumerate()
++        .skip(1)
++        .map(|(k, v)| v.scale(k as f64))
++        .collect::<CoreResult<Vec<_>>>()?;
++    let tight = eval(poly, center)?.add(u.sub(center)?.mul(eval(&d, u)?)?)?;
++    intersect(eval(poly, u)?, tight)
++}
++/// Synchronize every reset clock in times to s. The tube must be an
++/// authentic proof on [times[0],s] for this exact post source and reset.
++pub fn synchronize_vector(
++    reset: &[VectorResetComponent],
++    times: [f64; 2],
++    s: f64,
++    tube: &VectorTubeProof,
++    route: VectorSyncRoute,
++    table: &RetroTable,
++) -> CoreResult<VectorSyncEvidence> {
++    let proof = tube
++        .attempts
++        .last()
++        .ok_or_else(|| bad("missing vector tube proof"))?;
++    let n = reset.len();
++    if n != tube.field.len() || proof.times != [times[0], s] || times[1] > s {
++        return Err(bad("vector sync domain"));
++    }
++    let clock = Iv::new(times[0], times[1])?;
++    let elapsed = p(s)?.sub(clock)?;
++    let elapsed = Iv::new(elapsed.lo.max(0.), elapsed.hi)?;
++    let field = iv_pairs(&tube.field)?;
++    let xb = iv_pairs(&tube.tube)?;
++    let mut out = VectorSyncEvidence {
++        synchronized: vec![],
++        green_calls: 0,
++        forcing_remainder: vec![],
++    };
++    for (i, r) in reset.iter().enumerate() {
++        let rect = Iv::new(r.enclosure[0], r.enclosure[1])?.add(elapsed.mul(field[i])?)?;
++        let h = p(r.native_times[1])?.sub(p(r.native_times[0])?)?;
++        let u = clock.sub(p(r.native_times[0])?)?.div(h)?;
++        let u = Iv::new(u.lo.max(0.), u.hi.min(1.))?;
++        let v = match route {
++            VectorSyncRoute::BoxPicard | VectorSyncRoute::SchurPicard => rect,
++            VectorSyncRoute::Centered => {
++                let k = di::mid(field[i]);
++                let shifted = add(
++                    &r.power,
++                    &[p(s)?.sub(p(r.native_times[0])?)?.scale(k)?, h.scale(-k)?],
++                )?;
++                let remainder = field[i].sub(p(k)?)?;
++                out.forcing_remainder.push(remainder.as_pair());
++                let corrected = reset_centered_eval(&shifted, u)?
++                    .add(Iv::new(-r.transport_error, r.transport_error)?)?
++                    .add(elapsed.mul(remainder)?)?;
++                intersect(rect, corrected)?
++            }
++            VectorSyncRoute::GreenMoment => {
++                // Diagonal unit damping is an exact split, not an
++                // approximation of the post Jacobian: F=-(X-e)+B.
++                let e = p(proof.initial.x[i]
++                    + di::mid(Iv::new(
++                        proof.nominal_field[i][0],
++                        proof.nominal_field[i][1],
++                    )?))?;
++                let mut residual = Iv::new(proof.nominal_field[i][0], proof.nominal_field[i][1])?
++                    .add(p(proof.initial.x[i])?)?
++                    .sub(e)?;
++                residual = residual.add(
++                    Iv::new(proof.reduced_clock[i][0], proof.reduced_clock[i][1])?
++                        .mul(Iv::new(-p(s)?.sub(p(times[0])?)?.hi, 0.)?)?,
++                )?;
++                for j in 0..n {
++                    let d = Iv::new(
++                        proof.reduced_jacobian[i][j][0],
++                        proof.reduced_jacobian[i][j][1],
++                    )?
++                    .add(p(if i == j { 1. } else { 0. })?)?;
++                    residual = residual.add(d.mul(xb[j].sub(p(proof.initial.x[j])?)?)?)?;
++                }
++                let remainder = intersect(residual, field[i].add(xb[i])?.sub(e)?)?;
++                out.forcing_remainder.push(remainder.as_pair());
++                let mut d = r
++                    .power
++                    .iter()
++                    .enumerate()
++                    .skip(1)
++                    .map(|(k, v)| v.scale(k as f64)?.div(h))
++                    .collect::<CoreResult<Vec<_>>>()?;
++                if d.is_empty() {
++                    d.push(zero());
++                }
++                let mut shifted = r.power.clone();
++                shifted[0] = shifted[0].sub(e)?;
++                let q = eval(&add(&d, &shifted)?, u)?;
++                let b = p(times[1])?;
++                let ub = b.sub(p(r.native_times[0])?)?.div(h)?;
++                let ub = Iv::new(ub.lo.max(0.), ub.hi.min(1.))?;
++                let db = p(s)?.sub(b)?;
++                let db = Iv::new(db.lo.max(0.), db.hi)?;
++                let gb = table.phi(db, 0)?;
++                let yb = e.add(gb.mul(eval(&shifted, ub)?)?)?;
++                let d = b.sub(clock)?;
++                let d = Iv::new(d.lo.max(0.), d.hi)?;
++                let weight = gb.mul(d)?.mul(table.phi(d, 1)?)?;
++                let ge = table.phi(elapsed, 0)?;
++                let err = mul_up(ge.hi, r.transport_error)?;
++                let forcing = elapsed.mul(table.phi(elapsed, 1)?)?.mul(remainder)?;
++                out.green_calls += 4;
++                let corrected = yb
++                    .sub(weight.mul(q)?)?
++                    .add(Iv::new(-err, err)?)?
++                    .add(forcing)?;
++                intersect(rect, corrected)?
++            }
++        };
++        out.synchronized.push(intersect(v, xb[i])?.as_pair());
++    }
++    Ok(out)
++}
+diff --git a/crates/vigilode/src/dae_evolution.rs b/crates/vigilode/src/dae_evolution.rs
+index 662630193..ee3477c75 100644
+--- a/crates/vigilode/src/dae_evolution.rs
++++ b/crates/vigilode/src/dae_evolution.rs
+@@ -44,6 +44,14 @@ impl EvolutionRoute {
+         if self == Self::Reduced3 { 3 } else { 5 }
+     }
+ }
++/// Absolute physical clock and certified differential-state radius.
++/// The caller owns the incoming certificate. None means unresolved, not zero.
++#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
++pub struct EvolutionEpoch {
++    pub start: f64,
++    pub end: f64,
++    pub incoming_x_error: Option<f64>,
++}
+ #[derive(Clone, Copy, Debug, Serialize)]
+ pub struct EvolutionPolicy {
+     pub init: InitPolicy,
+@@ -158,6 +166,9 @@ pub struct SlabRecord {
+ pub struct EvolutionRun {
+     pub route: EvolutionRoute,
+     pub initial: InitReport,
++    /// Nonlegacy epoch authority, retained in the receipt.
++    #[serde(skip_serializing_if = "Option::is_none")]
++    pub epoch: Option<EvolutionEpoch>,
+     driver: Solution,
+     pub accepted: Vec<Query>,
+     pub queries: Vec<Query>,
+@@ -305,8 +316,62 @@ pub fn evolve(
+     route: EvolutionRoute,
+     grid: &[f64],
+ ) -> CoreResult<EvolutionRun> {
+-    if !end.is_finite()
+-        || end <= 0.
++    evolve_epoch(
++        src,
++        x,
++        z,
++        branch,
++        EvolutionEpoch {
++            start: 0.,
++            end,
++            incoming_x_error: Some(0.),
++        },
++        opts,
++        policy,
++        route,
++        grid,
++    )
++}
++/// Integrate at an absolute physical clock with caller-certified incoming
++/// differential error. No event is detected or committed by this API.
++/// Unknown incoming radius allows numerical evolution but no global proof.
++#[allow(clippy::too_many_arguments)]
++pub fn evolve_epoch(
++    src: &DaeSource,
++    x: &[f64],
++    z: &[f64],
++    branch: &[[f64; 2]],
++    epoch: EvolutionEpoch,
++    opts: &Options,
++    policy: EvolutionPolicy,
++    route: EvolutionRoute,
++    grid: &[f64],
++) -> CoreResult<EvolutionRun> {
++    evolve_epoch_impl(src, x, z, branch, epoch, opts, policy, route, grid, None)
++}
++#[allow(clippy::too_many_arguments)]
++fn evolve_epoch_impl(
++    src: &DaeSource,
++    x: &[f64],
++    z: &[f64],
++    branch: &[[f64; 2]],
++    epoch: EvolutionEpoch,
++    opts: &Options,
++    policy: EvolutionPolicy,
++    route: EvolutionRoute,
++    grid: &[f64],
++    mut scan: Option<&mut dyn EpochObserver>,
++) -> CoreResult<EvolutionRun> {
++    let EvolutionEpoch {
++        start,
++        end,
++        incoming_x_error,
++    } = epoch;
++    if !start.is_finite()
++        || !end.is_finite()
++        || end <= start
++        || !(end - start).is_finite()
++        || incoming_x_error.is_some_and(|v| !v.is_finite() || v < 0.)
+         || !opts.dense_output
+         || !matches!(opts.atol, Atol::Scalar(_))
+         || !policy.tube_radius.is_finite()
+@@ -314,16 +379,25 @@ pub fn evolve(
+         || !policy.global_tol.is_finite()
+         || policy.global_tol <= 0.
+         || grid.len() > 4096
+-        || grid.iter().any(|t| !t.is_finite() || *t < 0. || *t > end)
++        || grid
++            .iter()
++            .any(|t| !t.is_finite() || *t < start || *t > end)
+         || grid.windows(2).any(|v| v[0] >= v[1])
+     {
+         return Err(bad("input/clock/dense scalar tolerance contract"));
+     }
+     let nx = src.nx();
+-    let initial = src.initialize(0., x, z, branch, policy.init, route.init())?;
++    let initial = src.initialize(start, x, z, branch, policy.init, route.init())?;
+     let warp = match route {
+-        EvolutionRoute::WarpDirect => Some(WarpSeed::new(src, end, QuotientMode::DirectBlock)?),
+-        EvolutionRoute::WarpFolded => Some(WarpSeed::new(src, end, QuotientMode::Folded)?),
++        EvolutionRoute::WarpDirect => Some(WarpSeed::new_window(
++            src,
++            start,
++            end,
++            QuotientMode::DirectBlock,
++        )?),
++        EvolutionRoute::WarpFolded => {
++            Some(WarpSeed::new_window(src, start, end, QuotientMode::Folded)?)
++        }
+         _ => None,
+     };
+     let e = Engine {
+@@ -336,7 +410,7 @@ pub fn evolve(
+         work: Arc::new(Mutex::new(ProjectionWork::default())),
+     };
+     let (p, y) = if route == EvolutionRoute::Mass {
+-        let a = initialize_mass_problem(src, 0., x, z, branch, policy.init, route.init())
++        let a = initialize_mass_problem(src, start, x, z, branch, policy.init, route.init())
+             .map_err(bad)?;
+         (a.problem, a.initial_state)
+     } else {
+@@ -377,10 +451,24 @@ pub fn evolve(
+         });
+         (p, x.to_vec())
+     };
+-    let driver = Rodas5p::solve(&p, (0., end), &y, opts).map_err(bad)?;
++    let driver = if let Some(scan) = scan.as_deref_mut() {
++        let mut inspect = |proposal: crate::solve::DenseProposal<'_>| scan.inspect(&e, proposal);
++        Rodas5p::solve_dense_controlled(&p, (start, end), &y, opts, &mut inspect).map_err(bad)?
++    } else {
++        Rodas5p::solve(&p, (start, end), &y, opts).map_err(bad)?
++    };
++    let expected_stop = scan
++        .as_ref()
++        .is_some_and(|v| v.stopped_at().is_some_and(|t| driver.t.last() == Some(&t)));
++    let actual_end = if expected_stop {
++        *driver.t.last().expect("accepted prefix")
++    } else {
++        end
++    };
+     let mut out = EvolutionRun {
+         route,
+         initial,
++        epoch: (start != 0. || incoming_x_error != Some(0.)).then_some(epoch),
+         driver,
+         accepted: vec![],
+         queries: vec![],
+@@ -394,8 +482,8 @@ pub fn evolve(
+         reason: None,
+         engine: e.clone(),
+     };
+-    if !out.driver.is_success()
+-        || out.driver.t.last() != Some(&end)
++    if (!out.driver.is_success() && !expected_stop)
++        || out.driver.t.last() != Some(&actual_end)
+         || !out.driver.splices.is_empty()
+     {
+         out.reason = Some(format!(
+@@ -405,7 +493,7 @@ pub fn evolve(
+         out.work = e.work.lock().map_err(|_| bad("work lock"))?.clone();
+         return Ok(out);
+     }
+-    let mut incoming = Some(0.);
++    let mut incoming = incoming_x_error;
+     for k in 0..out.driver.t.len() - 1 {
+         let times = [out.driver.t[k], out.driver.t[k + 1]];
+         let native = packet(&out.driver, k)?;
+@@ -588,3 +676,2360 @@ pub fn adaptive(
+         },
+     )
+ }
++
++/// Root-search routes. All require the same source-owned physical tube;
++/// a represented-polynomial hint has no physical authority.
++#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
++pub enum ThresholdRoute {
++    Bisection,
++    IntervalNewton,
++    DictionaryHint,
++}
++
++#[derive(Clone, Debug, Default, Serialize)]
++pub struct ThresholdWork {
++    pub inspected: usize,
++    pub guard_evals: usize,
++    pub hint_calls: usize,
++    pub hint_dictionary_uses: usize,
++    pub projection: ProjectionWork,
++    pub certified_slabs: usize,
++}
++pub use de::{GuardDerivativeRoute, GuardSlabEvidence, GuardValueRoute};
++struct DeclaredGuard {
++    source: rodas5p_integrators::retro_event_poly::DeclaredPolynomial,
++    derivative: GuardDerivativeRoute,
++    value: GuardValueRoute,
++}
++/// Bounded opt-in handling of an ambiguous accepted-step endpoint.
++#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
++pub enum PendingMethod {
++    Hull,
++    Piecewise,
++    PiecewiseProbe,
++}
++#[derive(Clone, Copy, Debug, Serialize)]
++pub struct PendingPolicy {
++    pub method: PendingMethod,
++    pub max_slabs: usize,
++}
++#[derive(Clone, Copy, Debug, Serialize)]
++pub struct PendingSlab {
++    pub times: [f64; 2],
++    pub left: [f64; 2],
++    pub right: [f64; 2],
++    pub velocity: [f64; 2],
++    pub probe: Option<(f64, [f64; 2])>,
++    pub incoming_radius: f64,
++    pub outgoing_radius: f64,
++    pub safe_before: f64,
++}
++#[derive(Clone, Debug, Serialize)]
++pub struct PendingReport {
++    pub policy: PendingPolicy,
++    pub records: Vec<PendingSlab>,
++    pub candidate: Option<[f64; 2]>,
++    pub episodes: usize,
++    pub refinements: usize,
++    pub resolution: Option<&'static str>,
++    pub blocked_initial: bool,
++}
++struct PendingState {
++    report: PendingReport,
++    active_start: Option<usize>,
++}
++impl PendingState {
++    fn new(policy: PendingPolicy) -> CoreResult<Self> {
++        if !(1..=64).contains(&policy.max_slabs) {
++            return Err(bad("pending slab cap"));
++        }
++        Ok(Self {
++            report: PendingReport {
++                policy,
++                records: Vec::with_capacity(policy.max_slabs),
++                candidate: None,
++                episodes: 0,
++                refinements: 0,
++                resolution: None,
++                blocked_initial: true,
++            },
++            active_start: None,
++        })
++    }
++    fn active(&self) -> bool {
++        self.active_start.is_some()
++    }
++    fn room(&self) -> bool {
++        self.report.records.len() < self.report.policy.max_slabs
++    }
++    fn add(&mut self, r: PendingSlab) -> CoreResult<()> {
++        if !self.room() {
++            self.report.resolution = Some("slab-cap");
++            return Err(bad("pending slab cap exhausted"));
++        }
++        if let Some(i) = self.active_start {
++            let prev = self.report.records.last().expect("active pending record");
++            if i >= self.report.records.len()
++                || prev.times[1] != r.times[0]
++                || prev.right[0] > r.left[1]
++                || r.left[0] > prev.right[1]
++                || prev.outgoing_radius != r.incoming_radius
++            {
++                self.report.resolution = Some("inconsistent-boundary");
++                return Err(bad("inconsistent pending boundary or physical radius"));
++            }
++        } else {
++            if r.left[1] >= 0. {
++                return Err(bad("pending requires negative anchor"));
++            }
++            self.active_start = Some(self.report.records.len());
++            self.report.episodes += 1;
++            self.report.candidate = None;
++        }
++        self.report.records.push(r);
++        Ok(())
++    }
++    fn enclose(&mut self) -> CoreResult<[f64; 2]> {
++        let rs =
++            &self.report.records[self.active_start.ok_or_else(|| bad("pending not active"))?..];
++        let first = rs.first().ok_or_else(|| bad("empty pending"))?;
++        let last = rs.last().expect("pending records");
++        if first.left[1] >= 0. || last.right[0] <= 0. {
++            return Err(bad("missing strict physical signs"));
++        }
++        fn newton(t: f64, g: [f64; 2], v: Iv) -> CoreResult<Iv> {
++            Iv::point(t)?.sub(Iv::new(g[0], g[1])?.div(v)?)
++        }
++        fn meet(a: Iv, b: Iv) -> Option<Iv> {
++            let lo = a.lo.max(b.lo);
++            let hi = a.hi.min(b.hi);
++            (lo <= hi).then_some(Iv { lo, hi })
++        }
++        let mut n = 0;
++        let answer = match self.report.policy.method {
++            PendingMethod::Hull => {
++                let d = Iv::new(
++                    rs.iter()
++                        .map(|r| r.velocity[0])
++                        .fold(f64::INFINITY, f64::min),
++                    rs.iter()
++                        .map(|r| r.velocity[1])
++                        .fold(f64::NEG_INFINITY, f64::max),
++                )?;
++                if d.lo <= 0. {
++                    return Err(bad("pending nontransverse"));
++                }
++                let mut i = Iv::new(first.times[0], last.times[1])?;
++                for r in rs {
++                    for (t, g) in [(r.times[0], r.left), (r.times[1], r.right)] {
++                        n += 1;
++                        i = meet(i, newton(t, g, d)?)
++                            .ok_or_else(|| bad("inconsistent pending hull"))?;
++                    }
++                }
++                i
++            }
++            PendingMethod::Piecewise | PendingMethod::PiecewiseProbe => {
++                let mut hull: Option<Iv> = None;
++                for r in rs {
++                    let d = Iv::new(r.velocity[0], r.velocity[1])?;
++                    if d.lo <= 0. {
++                        return Err(bad("pending nontransverse"));
++                    }
++                    let i = Iv::new(r.times[0], r.times[1])?;
++                    n += 2;
++                    let a = newton(r.times[0], r.left, d)?;
++                    let b = newton(r.times[1], r.right, d)?;
++                    let mut local = meet(i, a).and_then(|i| meet(i, b));
++                    if let Some((t, g)) = r.probe {
++                        n += 1;
++                        let w = newton(t, g, d)?;
++                        local = local.and_then(|i| meet(i, w));
++                    }
++                    if let Some(i) = local {
++                        hull = Some(match hull {
++                            None => i,
++                            Some(j) => Iv {
++                                lo: i.lo.min(j.lo),
++                                hi: i.hi.max(j.hi),
++                            },
++                        });
++                    }
++                }
++                hull.ok_or_else(|| bad("inconsistent pending piecewise enclosure"))?
++            }
++        };
++        self.report.refinements += n;
++        self.report.candidate = Some(answer.as_pair());
++        Ok(answer.as_pair())
++    }
++}
++struct ThresholdScan {
++    pending: Option<PendingState>,
++    threshold: f64,
++    guard: Option<DeclaredGuard>,
++    guard_slabs: Vec<GuardSlabEvidence>,
++    tolerance: f64,
++    route: ThresholdRoute,
++    incoming: Option<f64>,
++    safe: f64,
++    numerical_end: f64,
++    root: Option<[f64; 2]>,
++    stopped: bool,
++    reason: Option<String>,
++    work: ThresholdWork,
++}
++fn proposal_packet(
++    proposal: crate::solve::DenseProposal<'_>,
++) -> CoreResult<([f64; 2], NativePacket)> {
++    use crate::solve::DenseProposal;
++    let (times, basis, y0, y1, stages) = match proposal {
++        DenseProposal::Sequential(s) => (
++            [s.t_old, s.t_new],
++            DenseBasis::SequentialD,
++            s.y_old.clone(),
++            s.y_new.clone(),
++            s.stages.clone(),
++        ),
++        DenseProposal::Fast(s) => {
++            let k = s.len() - 1;
++            (
++                [s.t_old(k), s.t_new(k)],
++                DenseBasis::FastH,
++                s.state(k).to_vec(),
++                s.state(k + 1).to_vec(),
++                s.stage_rows(k)
++                    .chunks(s.dimension())
++                    .map(<[f64]>::to_vec)
++                    .collect(),
++            )
++        }
++    };
++    Ok((
++        times,
++        NativePacket {
++            basis,
++            coefficients: basis.coefficients()?.as_slice().to_vec(),
++            y0,
++            y1,
++            stages,
++        },
++    ))
++}
++fn guard_interval(p: &[Iv], times: [f64; 2], t: f64, error: f64, threshold: f64) -> CoreResult<Iv> {
++    let u = Iv::point(t)?
++        .sub(Iv::point(times[0])?)?
++        .div(Iv::point(times[1])?.sub(Iv::point(times[0])?)?)?;
++    let u = Iv::new(u.lo.max(0.), u.hi.min(1.))?;
++    let x = p
++        .iter()
++        .rev()
++        .try_fold(Iv::point(0.)?, |a, &b| a.mul(u)?.add(b))?;
++    x.sub(Iv::point(threshold)?)?.add(Iv::new(-error, error)?)
++}
++fn diameter(a: f64, b: f64) -> CoreResult<f64> {
++    rodas5p_core::directed::sub_up(b, a)
++}
++trait EpochObserver {
++    fn inspect(
++        &mut self,
++        e: &Engine,
++        proposal: crate::solve::DenseProposal<'_>,
++    ) -> rodas5p_integrators::AcceptControl;
++    fn stopped_at(&self) -> Option<f64>;
++}
++impl EpochObserver for ThresholdScan {
++    fn stopped_at(&self) -> Option<f64> {
++        self.stopped.then_some(self.numerical_end)
++    }
++    fn inspect(
++        &mut self,
++        e: &Engine,
++        proposal: crate::solve::DenseProposal<'_>,
++    ) -> rodas5p_integrators::AcceptControl {
++        use rodas5p_integrators::AcceptControl;
++        self.work.inspected += 1;
++        let answer = proposal_packet(proposal).and_then(|(times, native)| {
++            self.numerical_end = times[1];
++            self.scan(e, times, &native)
++        });
++        match answer {
++            Ok(false) => AcceptControl::Continue,
++            Ok(true) => {
++                self.stopped = true;
++                AcceptControl::Stop
++            }
++            Err(err) => {
++                self.reason = Some(err.to_string());
++                self.stopped = true;
++                AcceptControl::Stop
++            }
++        }
++    }
++}
++fn certify_native_packet(
++    e: &Engine,
++    times: [f64; 2],
++    native: &NativePacket,
++    incoming: Option<f64>,
++    work: &mut ProjectionWork,
++) -> CoreResult<(Vec<Vec<Iv>>, SlabCertificate)> {
++    let mut p = native.power()?;
++    if e.route != EvolutionRoute::Mass {
++        let (z, w) = de::reconstruct(
++            &e.src,
++            times,
++            &p,
++            &e.seed,
++            &e.branch,
++            e.policy.init,
++            e.route.init(),
++            e.warp.as_ref(),
++            e.route.nodes(),
++        )?;
++        for q in &w {
++            work.add(q, e.warp.is_some());
++        }
++        p.extend(z);
++    }
++    let c = de::certify_slab(
++        &e.src,
++        times,
++        &p,
++        &e.branch,
++        e.policy.tube_radius,
++        incoming,
++        e.policy.green,
++        e.policy.init.condition_cap,
++    )?;
++    if !c.global_qualified
++        || c.whole_z_error.is_none_or(|v| v > e.policy.global_tol)
++        || c.whole_x_error.is_none_or(|v| v > e.policy.global_tol)
++    {
++        return Err(bad("unqualified physical slab"));
++    }
++    Ok((p, c))
++}
++impl ThresholdScan {
++    fn scan(&mut self, e: &Engine, times: [f64; 2], native: &NativePacket) -> CoreResult<bool> {
++        let (p, c) =
++            certify_native_packet(e, times, native, self.incoming, &mut self.work.projection)?;
++        self.scan_certified(e, times, &p, &c)
++    }
++    fn scan_certified(
++        &mut self,
++        e: &Engine,
++        times: [f64; 2],
++        p: &[Vec<Iv>],
++        c: &SlabCertificate,
++    ) -> CoreResult<bool> {
++        self.work.certified_slabs += 1;
++        let proof = self
++            .guard
++            .as_ref()
++            .map(|g| de::GuardProof::new(&e.src, &g.source, p, c, g.derivative, g.value))
++            .transpose()?;
++        let velocity = if let Some(proof) = &proof {
++            let v = proof.evidence.velocity;
++            self.guard_slabs.push(proof.evidence.clone());
++            Iv::new(v[0], v[1])?
++        } else {
++            de::threshold_velocity(&e.src, c)?
++        };
++        if velocity.lo <= 0. {
++            return Err(bad("strict transverse increasing guard not proved"));
++        }
++        let incoming = self
++            .incoming
++            .ok_or_else(|| bad("unknown incoming radius"))?;
++        let outgoing = c.outgoing.ok_or_else(|| bad("unknown outgoing radius"))?;
++        let whole = c.whole_x_error.ok_or_else(|| bad("unknown whole radius"))?;
++        let a = times[0];
++        let b = times[1];
++        let mut g = |t: f64, error: f64| {
++            self.work.guard_evals += 1;
++            if let Some(proof) = &proof {
++                let v = proof.value_at(t, error)?;
++                self.guard_slabs
++                    .last_mut()
++                    .expect("current guard evidence")
++                    .evaluations
++                    .push(de::GuardPointEvidence {
++                        time: t,
++                        differential_radius: error,
++                        value: v.as_pair(),
++                    });
++                Ok(v)
++            } else {
++                guard_interval(&p[0], times, t, error, self.threshold)
++            }
++        };
++        let ga = g(a, incoming)?;
++        let gb = g(b, outgoing)?;
++        if let Some(pending) = self.pending.as_mut() {
++            if self.work.inspected == 1 && ga.hi < 0. {
++                pending.report.blocked_initial = false;
++            }
++            if !pending.active() && ga.hi >= 0. {
++                if self.work.inspected == 1 {
++                    pending.report.blocked_initial = true;
++                }
++                pending.report.resolution = Some("uncertain-left");
++                return Err(bad("uncertain left guard"));
++            }
++            if pending.active() || (gb.lo <= 0. && gb.hi >= 0.) {
++                if !pending.room() {
++                    pending.report.resolution = Some("slab-cap");
++                    return Err(bad("pending slab cap exhausted"));
++                }
++                let probe = if pending.report.policy.method == PendingMethod::PiecewiseProbe {
++                    let mut t = a * 0.5 + b * 0.5;
++                    if self.route == ThresholdRoute::DictionaryHint {
++                        use rodas5p_integrators::retro_event_poly::{
++                            RepresentedPolynomial, RootRoute,
++                        };
++                        self.work.hint_calls += 1;
++                        let cp = proof
++                            .as_ref()
++                            .expect("declared pending guard")
++                            .hint_coefficients();
++                        if let Ok(r) = RepresentedPolynomial::from_power(&cp)
++                            .and_then(|r| r.isolate(RootRoute::DictionaryCompanion, 2f64.powi(-35)))
++                        {
++                            self.work.hint_dictionary_uses += r.work.dictionary_uses;
++                            if r.roots.len() == 1 {
++                                let u = r.roots[0].theta;
++                                let tt = a + (b - a) * (u[0] * 0.5 + u[1] * 0.5);
++                                if a < tt && tt < b {
++                                    t = tt;
++                                }
++                            }
++                        }
++                    }
++                    if a < t && t < b {
++                        Some((t, g(t, whole)?.as_pair()))
++                    } else {
++                        None
++                    }
++                } else {
++                    None
++                };
++                pending.add(PendingSlab {
++                    times,
++                    left: ga.as_pair(),
++                    right: gb.as_pair(),
++                    velocity: velocity.as_pair(),
++                    probe,
++                    incoming_radius: incoming,
++                    outgoing_radius: outgoing,
++                    safe_before: self.safe,
++                })?;
++                self.incoming = Some(outgoing);
++                if gb.hi < 0. {
++                    // Monotonicity through the pending episode proves the
++                    // entire numerical continuation was still pre-event.
++                    self.safe = b;
++                    pending.active_start = None;
++                    pending.report.resolution = Some("negative-recovered");
++                    return Ok(false);
++                }
++                if gb.lo > 0. {
++                    let i = pending.enclose()?;
++                    if diameter(i[0], i[1])? > self.tolerance {
++                        pending.report.resolution = Some("width-unresolved");
++                        return Err(bad("pending physical root width exceeds tolerance"));
++                    }
++                    self.root = Some(i);
++                    self.safe = i[0];
++                    pending.active_start = None;
++                    pending.report.resolution = Some("certified");
++                    return Ok(true);
++                }
++                pending.report.resolution = Some("awaiting-positive");
++                return Ok(false);
++            }
++        }
++        if ga.hi >= 0. {
++            return Err(bad("uncertain left guard"));
++        }
++        if gb.hi < 0. {
++            self.safe = b;
++            self.incoming = Some(outgoing);
++            return Ok(false);
++        }
++        if gb.lo <= 0. {
++            return Err(bad("uncertain right guard; refine before committing"));
++        }
++        // Unique physical root by strict signs and uniform positive derivative.
++        let mut lo = a;
++        let mut hi = b;
++        let mut hint = None;
++        if self.route == ThresholdRoute::DictionaryHint {
++            use rodas5p_integrators::retro_event_poly::{RepresentedPolynomial, RootRoute};
++            self.work.hint_calls += 1;
++            let cp = if let Some(proof) = &proof {
++                proof.hint_coefficients()
++            } else {
++                let mut cp = p[0]
++                    .iter()
++                    .map(|v| v.lo * 0.5 + v.hi * 0.5)
++                    .collect::<Vec<_>>();
++                cp[0] -= self.threshold;
++                cp
++            };
++            if let Ok(r) = RepresentedPolynomial::from_power(&cp)
++                .and_then(|r| r.isolate(RootRoute::DictionaryCompanion, 2f64.powi(-35)))
++            {
++                self.work.hint_dictionary_uses += r.work.dictionary_uses;
++                if r.roots.len() == 1 {
++                    let u = r.roots[0].theta;
++                    let t = a + (b - a) * (u[0] * 0.5 + u[1] * 0.5);
++                    if t > a && t < b {
++                        hint = Some(t);
++                    }
++                }
++            }
++        }
++        for _ in 0..64 {
++            if diameter(lo, hi)? <= self.tolerance {
++                self.root = Some([lo, hi]);
++                self.safe = lo;
++                self.incoming = Some(outgoing);
++                return Ok(true);
++            }
++            let mid = hint.take().unwrap_or(lo * 0.5 + hi * 0.5);
++            if !(lo < mid && mid < hi) {
++                break;
++            }
++            let v = g(mid, whole)?;
++            let old = (lo, hi);
++            if self.route != ThresholdRoute::Bisection {
++                let n = Iv::point(mid)?.sub(v.div(velocity)?)?;
++                lo = lo.max(n.lo);
++                hi = hi.min(n.hi);
++                if lo > hi {
++                    return Err(bad("inconsistent physical root enclosure"));
++                }
++            } else if v.hi < 0. {
++                lo = mid;
++            } else if v.lo > 0. {
++                hi = mid;
++            } else {
++                let left = lo * 0.5 + mid * 0.5;
++                let right = mid * 0.5 + hi * 0.5;
++                if g(left, whole)?.hi < 0. {
++                    lo = left;
++                }
++                if g(right, whole)?.lo > 0. {
++                    hi = right;
++                }
++            }
++            if old == (lo, hi) {
++                break;
++            }
++        }
++        if diameter(lo, hi)? <= self.tolerance {
++            self.root = Some([lo, hi]);
++            self.safe = lo;
++            return Ok(true);
++        }
++        Err(bad("physical root width exceeds tolerance"))
++    }
++}
++/// The numerical continuation is private: only the certified old-mode
++/// prefix can be queried. All trial solver work stays in stats.
++pub struct ThresholdRun {
++    trial: EvolutionRun,
++    root: Option<[f64; 2]>,
++    committed_until: f64,
++    numerical_end: f64,
++    reason: Option<String>,
++    pub work: ThresholdWork,
++    guard_slabs: Vec<GuardSlabEvidence>,
++    pending_report: Option<PendingReport>,
++}
++impl ThresholdRun {
++    pub fn pending_report(&self) -> Option<&PendingReport> {
++        self.pending_report.as_ref()
++    }
++    pub fn guard_slabs(&self) -> &[GuardSlabEvidence] {
++        &self.guard_slabs
++    }
++    pub fn root(&self) -> Option<[f64; 2]> {
++        self.root
++    }
++    pub fn committed_until(&self) -> f64 {
++        self.committed_until
++    }
++    pub fn numerical_end(&self) -> f64 {
++        self.numerical_end
++    }
++    pub fn reason(&self) -> Option<&str> {
++        self.reason.as_deref()
++    }
++    pub fn stats(&self) -> &crate::Stats {
++        &self.trial.driver.stats
++    }
++    /// Recorded projection work of the numerical driver and certificate replay.
++    /// Guard-scanning projection work is recorded separately in work.
++    pub fn projection_work(&self) -> &ProjectionWork {
++        &self.trial.work
++    }
++    pub fn pre_query(&self, t: f64) -> CoreResult<Query> {
++        if self
++            .pending_report
++            .as_ref()
++            .is_some_and(|r| r.blocked_initial)
++            || !t.is_finite()
++            || t > self.committed_until
++        {
++            return Err(bad("outside certified pre-event prefix"));
++        }
++        let q = self.trial.query(t)?;
++        if q.physical_error_upper
++            .is_none_or(|b| b > self.trial.engine.policy.global_tol)
++        {
++            return Err(bad("unqualified physical query"));
++        }
++        Ok(q)
++    }
++}
++/// Single strictly increasing scalar differential threshold. No claim for
++/// grazing, opaque or competing guards. The caller supplies initial authority.
++#[allow(clippy::too_many_arguments)]
++pub fn evolve_to_threshold(
++    src: &DaeSource,
++    x: &[f64],
++    z: &[f64],
++    branch: &[[f64; 2]],
++    epoch: EvolutionEpoch,
++    opts: &Options,
++    policy: EvolutionPolicy,
++    route: EvolutionRoute,
++    threshold: f64,
++    tolerance: f64,
++    root_route: ThresholdRoute,
++) -> CoreResult<ThresholdRun> {
++    if src.nx() != 1
++        || x.len() != 1
++        || !threshold.is_finite()
++        || !tolerance.is_finite()
++        || tolerance <= 0.
++    {
++        return Err(bad("scalar threshold contract"));
++    }
++    let rad = epoch
++        .incoming_x_error
++        .ok_or_else(|| bad("physical incoming radius required"))?;
++    if !rad.is_finite() || rad < 0. || Iv::point(x[0])?.add(Iv::new(-rad, rad)?)?.hi >= threshold {
++        return Err(bad("initial guard not strictly below threshold"));
++    }
++    let mut scan = ThresholdScan {
++        pending: None,
++        threshold,
++        guard: None,
++        guard_slabs: vec![],
++        tolerance,
++        route: root_route,
++        incoming: Some(rad),
++        safe: epoch.start,
++        numerical_end: epoch.start,
++        root: None,
++        stopped: false,
++        reason: None,
++        work: ThresholdWork::default(),
++    };
++    let trial = evolve_epoch_impl(
++        src,
++        x,
++        z,
++        branch,
++        epoch,
++        opts,
++        policy,
++        route,
++        &[],
++        Some(&mut scan),
++    )?;
++    if !scan.stopped && (!trial.driver.is_success() || trial.driver.t.last() != Some(&epoch.end)) {
++        scan.reason = Some("native driver ended before certified event or horizon".into());
++    }
++    if scan.root.is_some() && !trial.branch_qualified {
++        scan.root = None;
++        scan.safe = epoch.start;
++        scan.reason = Some("replayed physical branch proof failed".into());
++    }
++    Ok(ThresholdRun {
++        trial,
++        root: scan.root,
++        committed_until: scan.safe,
++        numerical_end: scan.numerical_end,
++        reason: scan.reason,
++        work: scan.work,
++        guard_slabs: scan.guard_slabs,
++        pending_report: scan.pending.map(|p| p.report),
++    })
++}
++
++/// Source-owned single polynomial guard H(t,x,z)=0 on the certified branch.
++/// Initial physical sign must be negative and all inspected slabs strictly
++/// increasing in H. No root can be authorized by a polynomial hint alone.
++#[allow(clippy::too_many_arguments)]
++pub fn evolve_to_guard(
++    src: &DaeSource,
++    x: &[f64],
++    z: &[f64],
++    branch: &[[f64; 2]],
++    epoch: EvolutionEpoch,
++    opts: &Options,
++    policy: EvolutionPolicy,
++    route: EvolutionRoute,
++    guard: &rodas5p_integrators::retro_event_poly::DeclaredPolynomial,
++    tolerance: f64,
++    root_route: ThresholdRoute,
++    derivative: GuardDerivativeRoute,
++    value: GuardValueRoute,
++) -> CoreResult<ThresholdRun> {
++    evolve_to_guard_impl(
++        src, x, z, branch, epoch, opts, policy, route, guard, tolerance, root_route, derivative,
++        value, None,
++    )
++}
++/// Bounded speculative continuation in the ORIGINAL mode. A source
++/// extension across the event is required; only the safe prefix is exposed.
++#[allow(clippy::too_many_arguments)]
++pub fn evolve_to_guard_pending(
++    src: &DaeSource,
++    x: &[f64],
++    z: &[f64],
++    branch: &[[f64; 2]],
++    epoch: EvolutionEpoch,
++    opts: &Options,
++    policy: EvolutionPolicy,
++    route: EvolutionRoute,
++    guard: &rodas5p_integrators::retro_event_poly::DeclaredPolynomial,
++    tolerance: f64,
++    root_route: ThresholdRoute,
++    derivative: GuardDerivativeRoute,
++    value: GuardValueRoute,
++    pending: PendingPolicy,
++) -> CoreResult<ThresholdRun> {
++    evolve_to_guard_impl(
++        src,
++        x,
++        z,
++        branch,
++        epoch,
++        opts,
++        policy,
++        route,
++        guard,
++        tolerance,
++        root_route,
++        derivative,
++        value,
++        Some(PendingState::new(pending)?),
++    )
++}
++#[allow(clippy::too_many_arguments)]
++fn evolve_to_guard_impl(
++    src: &DaeSource,
++    x: &[f64],
++    z: &[f64],
++    branch: &[[f64; 2]],
++    epoch: EvolutionEpoch,
++    opts: &Options,
++    policy: EvolutionPolicy,
++    route: EvolutionRoute,
++    guard: &rodas5p_integrators::retro_event_poly::DeclaredPolynomial,
++    tolerance: f64,
++    root_route: ThresholdRoute,
++    derivative: GuardDerivativeRoute,
++    value: GuardValueRoute,
++    pending: Option<PendingState>,
++) -> CoreResult<ThresholdRun> {
++    guard.validate(src.nx() + src.nz())?;
++    if x.len() != src.nx() || !tolerance.is_finite() || tolerance <= 0. {
++        return Err(bad("declared guard contract"));
++    }
++    let rad = epoch
++        .incoming_x_error
++        .ok_or_else(|| bad("physical incoming radius required"))?;
++    if !rad.is_finite() || rad < 0. {
++        return Err(bad("invalid incoming radius"));
++    }
++    let mut scan = ThresholdScan {
++        pending,
++        threshold: 0.,
++        guard: Some(DeclaredGuard {
++            source: guard.clone(),
++            derivative,
++            value,
++        }),
++        guard_slabs: vec![],
++        tolerance,
++        route: root_route,
++        incoming: Some(rad),
++        safe: epoch.start,
++        numerical_end: epoch.start,
++        root: None,
++        stopped: false,
++        reason: None,
++        work: ThresholdWork::default(),
++    };
++    let trial = evolve_epoch_impl(
++        src,
++        x,
++        z,
++        branch,
++        epoch,
++        opts,
++        policy,
++        route,
++        &[],
++        Some(&mut scan),
++    )?;
++    if !scan.stopped && (!trial.driver.is_success() || trial.driver.t.last() != Some(&epoch.end)) {
++        scan.reason = Some("native driver ended before certified event or horizon".into());
++    }
++    if scan.root.is_some() && !trial.branch_qualified {
++        scan.root = None;
++        scan.safe = epoch.start;
++        scan.reason = Some("replayed physical branch proof failed".into());
++    }
++    if let Some(p) = scan.pending.as_mut() {
++        if p.active() && scan.reason.is_none() && scan.root.is_none() {
++            p.report.resolution = Some("horizon-unresolved");
++            scan.reason = Some("pending guard unresolved at horizon".into());
++        }
++        if scan.root.is_some() && (!trial.global_qualified || !trial.pointwise_qualified) {
++            scan.root = None;
++            scan.safe = epoch.start;
++            scan.reason = Some("pending replay physical proof failed".into());
++            p.report.resolution = Some("replay-unqualified");
++        }
++        if scan.reason.is_some() && p.report.resolution == Some("awaiting-positive") {
++            p.report.resolution = Some("continuation-refused");
++        }
++    }
++    Ok(ThresholdRun {
++        trial,
++        root: scan.root,
++        committed_until: scan.safe,
++        numerical_end: scan.numerical_end,
++        reason: scan.reason,
++        work: scan.work,
++        guard_slabs: scan.guard_slabs,
++        pending_report: scan.pending.map(|p| p.report),
++    })
++}
++
++/// The differential reset restricted to the single threshold is
++/// x^+ = offset + time_scale * tau. The new differential source is
++/// constructed here, not accepted as an unrelated user callback.
++#[derive(Clone, Copy, Debug, Serialize)]
++pub struct AffineDaeReset {
++    pub rate: f64,
++    pub equilibrium: f64,
++    pub offset: f64,
++    pub time_scale: f64,
++}
++#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
++pub enum AffineSyncRoute {
++    Rectangle,
++    GreenMoment,
++    CriticalPoint,
++}
++#[derive(Serialize)]
++pub struct AffineRestartRun {
++    pub sync_route: AffineSyncRoute,
++    pub event_time: [f64; 2],
++    pub synchronized_x: [f64; 2],
++    pub incoming_radius: f64,
++    pub post: EvolutionRun,
++}
++impl AffineDaeReset {
++    fn sync(self, times: [f64; 2], route: AffineSyncRoute) -> CoreResult<Iv> {
++        use rodas5p_core::retro_dictionary::RealMode;
++        use rodas5p_integrators::retro_green::RetroTable;
++        let table = RetroTable::with_dictionary(RealMode::Hybrid)?;
++        let s = Iv::point(times[1])?;
++        let t = Iv::new(times[0], times[1])?;
++        let a = Iv::point(self.rate)?;
++        let e = Iv::point(self.equilibrium)?;
++        let aa = Iv::point(self.offset)?;
++        let b = Iv::point(self.time_scale)?;
++        let at = |t: Iv| -> CoreResult<Iv> {
++            let dt = s.sub(t)?.mul(a)?;
++            let gain = table.phi(Iv::new(dt.lo.max(0.), dt.hi)?, 0)?;
++            e.add(gain.mul(aa.add(b.mul(t)?)?.sub(e)?)?)
++        };
++        match route {
++            AffineSyncRoute::Rectangle => at(t),
++            AffineSyncRoute::GreenMoment => {
++                let dt = s.sub(t)?;
++                let u = Iv::new(0., dt.hi)?;
++                let au = a.mul(u)?;
++                let au = Iv::new(au.lo.max(0.), au.hi)?;
++                let ph1 = table.phi(au, 1)?;
++                let ph2 = table.phi(au, 2)?;
++                let d = ph1.sub(ph2)?;
++                let d = Iv::new(d.lo.max(0.), d.hi)?;
++                let rs = aa.add(b.mul(s)?)?;
++                rs.sub(b.add(a.mul(rs.sub(e)?)?)?.mul(u)?.mul(ph1)?)?
++                    .add(a.mul(b)?.mul(u)?.mul(u)?.mul(d)?)
++            }
++            AffineSyncRoute::CriticalPoint => {
++                let l = at(Iv::point(times[0])?)?;
++                let r = at(s)?;
++                let mut out = Iv::new(l.lo.min(r.lo), l.hi.max(r.hi))?;
++                if self.time_scale != 0. {
++                    let turn = -(b.add(a.mul(aa.sub(e)?)?)?.div(a.mul(b)?)?);
++                    let lo = turn.lo.max(t.lo);
++                    let hi = turn.hi.min(t.hi);
++                    if lo <= hi {
++                        let v = at(Iv::new(lo, hi)?)?;
++                        out = Iv::new(out.lo.min(v.lo), out.hi.max(v.hi))?;
++                    }
++                }
++                Ok(out)
++            }
++        }
++    }
++}
++impl ThresholdRun {
++    /// A single mode transition. No second guard is declared in this API.
++    /// Do not restart without a physically certified root. Algebraic
++    /// projection authority is explicit; no reset of error radius to zero.
++    #[allow(clippy::too_many_arguments)]
++    pub fn restart_affine(
++        &self,
++        reset: AffineDaeReset,
++        constraints: Vec<rodas5p_integrators::retro_event_poly::DeclaredPolynomial>,
++        z_seed: &[f64],
++        branch: &[[f64; 2]],
++        end: f64,
++        opts: &Options,
++        policy: EvolutionPolicy,
++        route: EvolutionRoute,
++        sync_route: AffineSyncRoute,
++        grid: &[f64],
++    ) -> CoreResult<AffineRestartRun> {
++        use rodas5p_integrators::retro_dae_init::InitMode;
++        use rodas5p_integrators::retro_event_poly::{AffineFactor, DeclaredPolynomial, EventTerm};
++        let root = self
++            .root
++            .filter(|_| self.reason.is_none())
++            .ok_or_else(|| bad("no physical event authority"))?;
++        if policy.init.mode != InitMode::ProjectAlgebraic
++            || !reset.rate.is_finite()
++            || reset.rate <= 0.
++            || ![reset.equilibrium, reset.offset, reset.time_scale, end]
++                .iter()
++                .all(|v| v.is_finite())
++            || end <= root[1]
++        {
++            return Err(bad(
++                "affine reset requires explicit algebraic projection and positive rate",
++            ));
++        }
++        let forcing = Iv::point(reset.rate)?.mul(Iv::point(reset.equilibrium)?)?;
++        if forcing.lo != forcing.hi {
++            return Err(bad("affine source coefficient not exactly represented"));
++        }
++        let src = DaeSource::new(
++            vec![DeclaredPolynomial::new(vec![
++                EventTerm {
++                    coefficient: -reset.rate,
++                    factors: vec![AffineFactor::component(0, 0.)],
++                },
++                EventTerm {
++                    coefficient: forcing.lo,
++                    factors: vec![],
++                },
++            ])?],
++            constraints,
++        )?;
++        let sync = reset.sync(root, sync_route)?;
++        let center = sync.lo * 0.5 + sync.hi * 0.5;
++        let radius = diameter(sync.lo, center)?.max(diameter(center, sync.hi)?);
++        let post = evolve_epoch(
++            &src,
++            &[center],
++            z_seed,
++            branch,
++            EvolutionEpoch {
++                start: root[1],
++                end,
++                incoming_x_error: Some(radius),
++            },
++            opts,
++            policy,
++            route,
++            grid,
++        )?;
++        Ok(AffineRestartRun {
++            sync_route,
++            event_time: root,
++            synchronized_x: sync.as_pair(),
++            incoming_radius: radius,
++            post,
++        })
++    }
++}
++
++/// Receipt for one source-bound checkpoint. Radius encloses the actual
++/// differential state at the represented checkpoint center.
++#[derive(Clone, Debug, Serialize)]
++pub struct GuardCheckpoint {
++    pub time: f64,
++    pub differential: Vec<f64>,
++    pub algebraic: Vec<f64>,
++    pub radius: f64,
++    pub projection: InitWork,
++    pub retry_h0: f64,
++    pub remaining_attempts: usize,
++}
++/// Private ownership of both numerical attempts and the original safe prefix.
++/// A retry failure cannot erase the first run or authorize a reset.
++pub struct GuardCheckpointRun {
++    first: ThresholdRun,
++    retry: Option<ThresholdRun>,
++    checkpoint: Option<GuardCheckpoint>,
++    retry_error: Option<String>,
++}
++impl GuardCheckpointRun {
++    pub fn first(&self) -> &ThresholdRun {
++        &self.first
++    }
++    pub fn retry(&self) -> Option<&ThresholdRun> {
++        self.retry.as_ref()
++    }
++    pub fn checkpoint(&self) -> Option<&GuardCheckpoint> {
++        self.checkpoint.as_ref()
++    }
++    pub fn retry_error(&self) -> Option<&str> {
++        self.retry_error.as_deref()
++    }
++    pub fn attempts_used(&self) -> usize {
++        self.first.stats().attempts + self.retry.as_ref().map_or(0, |r| r.stats().attempts)
++    }
++    pub fn root(&self) -> Option<[f64; 2]> {
++        self.first
++            .root()
++            .or_else(|| self.retry.as_ref().and_then(|r| r.root()))
++    }
++    pub fn committed_until(&self) -> f64 {
++        self.retry
++            .as_ref()
++            .map_or(self.first.committed_until(), |r| {
++                self.first.committed_until().max(r.committed_until())
++            })
++    }
++    pub fn pre_query(&self, t: f64) -> CoreResult<Query> {
++        if t <= self.first.committed_until() {
++            self.first.pre_query(t)
++        } else {
++            self.retry
++                .as_ref()
++                .ok_or_else(|| bad("no certified retry prefix"))?
++                .pre_query(t)
++        }
++    }
++    /// The selected certified event authority may be passed to the existing
++    /// affine restart transaction. Never exposes an uncertified candidate.
++    pub fn event_authority(&self) -> Option<&ThresholdRun> {
++        if self.first.root().is_some() {
++            Some(&self.first)
++        } else {
++            self.retry.as_ref().filter(|r| r.root().is_some())
++        }
++    }
++}
++/// One bounded re-integration from the last certified negative checkpoint.
++/// Same immutable source, branch, guard, tolerance, pending cap, and shared
++/// native attempt budget. This is not an in-place driver rollback.
++#[allow(clippy::too_many_arguments)]
++pub fn evolve_to_guard_checkpoint(
++    src: &DaeSource,
++    x: &[f64],
++    z: &[f64],
++    branch: &[[f64; 2]],
++    epoch: EvolutionEpoch,
++    opts: &Options,
++    policy: EvolutionPolicy,
++    route: EvolutionRoute,
++    guard: &rodas5p_integrators::retro_event_poly::DeclaredPolynomial,
++    tolerance: f64,
++    root_route: ThresholdRoute,
++    derivative: GuardDerivativeRoute,
++    value: GuardValueRoute,
++    pending: PendingPolicy,
++) -> CoreResult<GuardCheckpointRun> {
++    let first = evolve_to_guard_pending(
++        src, x, z, branch, epoch, opts, policy, route, guard, tolerance, root_route, derivative,
++        value, pending,
++    )?;
++    let mut out = GuardCheckpointRun {
++        first,
++        retry: None,
++        checkpoint: None,
++        retry_error: None,
++    };
++    let r = &out.first;
++    if r.root().is_some()
++        || !r.pending_report().is_some_and(|p| {
++            matches!(p.resolution, Some("slab-cap" | "width-unresolved")) && !p.blocked_initial
++        })
++    {
++        return Ok(out);
++    }
++    let make_checkpoint = || -> CoreResult<GuardCheckpoint> {
++        let time = r.committed_until();
++        let remaining = opts
++            .max_steps
++            .checked_sub(r.stats().attempts)
++            .filter(|v| *v > 0)
++            .ok_or_else(|| bad("shared attempt budget exhausted"))?;
++        let q = r.pre_query(time)?;
++        let slab = r
++            .trial
++            .slabs
++            .get(r.trial.slabs.partition_point(|s| s.times[1] < time))
++            .ok_or_else(|| bad("checkpoint slab missing"))?;
++        let cert = slab
++            .certificate
++            .as_ref()
++            .filter(|c| c.global_qualified)
++            .ok_or_else(|| bad("checkpoint physical certificate missing"))?;
++        let ein = if time == slab.times[0] {
++            cert.incoming
++        } else if time == slab.times[1] {
++            cert.outgoing
++                .ok_or_else(|| bad("checkpoint outgoing radius"))?
++        } else {
++            return Err(bad("checkpoint must be a native endpoint"));
++        };
++        let nx = src.nx();
++        let p = slab.power[..nx]
++            .iter()
++            .map(|row| {
++                row.iter()
++                    .map(|v| Iv::new(v[0], v[1]))
++                    .collect::<CoreResult<Vec<_>>>()
++            })
++            .collect::<CoreResult<Vec<_>>>()?;
++        let radius = de::query_x_error(&p, slab.times, time, &q.state[..nx], ein)?;
++        let h0 = opts.h0 * 0.5;
++        if !h0.is_finite() || h0 <= 0. || time + h0 <= time {
++            return Err(bad("unrepresentable checkpoint refinement"));
++        }
++        Ok(GuardCheckpoint {
++            time,
++            differential: q.state[..nx].to_vec(),
++            algebraic: q.state[nx..].to_vec(),
++            radius,
++            projection: q.projection.work,
++            retry_h0: h0,
++            remaining_attempts: remaining,
++        })
++    };
++    let cp = match make_checkpoint() {
++        Ok(cp) => cp,
++        Err(e) => {
++            out.retry_error = Some(e.to_string());
++            return Ok(out);
++        }
++    };
++    let mut retry_opts = opts.clone();
++    retry_opts.h0 = cp.retry_h0;
++    retry_opts.max_steps = cp.remaining_attempts;
++    let retry = evolve_to_guard_pending(
++        src,
++        &cp.differential,
++        &cp.algebraic,
++        branch,
++        EvolutionEpoch {
++            start: cp.time,
++            end: epoch.end,
++            incoming_x_error: Some(cp.radius),
++        },
++        &retry_opts,
++        policy,
++        route,
++        guard,
++        tolerance,
++        root_route,
++        derivative,
++        value,
++        pending,
++    );
++    out.checkpoint = Some(cp);
++    match retry {
++        Ok(v) => out.retry = Some(v),
++        Err(e) => out.retry_error = Some(e.to_string()),
++    }
++    Ok(out)
++}
++
++pub use de::{ResetEnvelopeRoute, ResetSlabEvidence, TransitionBranchProof};
++/// Source-owned post differential flow, deliberately restricted to scalar
++/// autonomous damping. The post algebraic source is declared separately.
++#[derive(Clone, Copy, Debug, Serialize)]
++pub struct DampedResetFlow {
++    pub rate: f64,
++    pub equilibrium: f64,
++}
++/// A rejected reset retains its evidence but does not expose a committed
++/// post-event trajectory. Old event authority is immutable.
++#[derive(Serialize)]
++pub struct PolynomialRestartRun {
++    pub event_time: [f64; 2],
++    pub envelope_route: ResetEnvelopeRoute,
++    pub slab_evidence: Vec<ResetSlabEvidence>,
++    pub reset_x: [f64; 2],
++    pub synchronized_x: [f64; 2],
++    pub transition_x: [f64; 2],
++    pub incoming_radius: f64,
++    pub branch_proof: Option<TransitionBranchProof>,
++    pub reason: Option<String>,
++    post_trial: Option<EvolutionRun>,
++}
++impl PolynomialRestartRun {
++    pub fn post(&self) -> Option<&EvolutionRun> {
++        if self.reason.is_none() {
++            self.post_trial
++                .as_ref()
++                .filter(|r| r.global_qualified && r.pointwise_qualified && r.branch_qualified)
++        } else {
++            None
++        }
++    }
++    pub fn post_diagnostic(&self) -> Option<&EvolutionRun> {
++        self.post_trial.as_ref()
++    }
++}
++impl ThresholdRun {
++    /// Polynomial state-dependent reset with source-owned root authority.
++    /// The pre-event continuation is used privately only within the proven
++    /// root interval. No external event time or arbitrary postflow callback.
++    #[allow(clippy::too_many_arguments)]
++    pub fn restart_polynomial(
++        &self,
++        reset: &rodas5p_integrators::retro_event_poly::DeclaredPolynomial,
++        flow: DampedResetFlow,
++        constraints: Vec<rodas5p_integrators::retro_event_poly::DeclaredPolynomial>,
++        z_seed: &[f64],
++        branch: &[[f64; 2]],
++        end: f64,
++        opts: &Options,
++        policy: EvolutionPolicy,
++        route: EvolutionRoute,
++        envelope: ResetEnvelopeRoute,
++        derivative: GuardDerivativeRoute,
++        branch_route: InitRoute,
++        grid: &[f64],
++    ) -> CoreResult<PolynomialRestartRun> {
++        use rodas5p_core::retro_dictionary::RealMode;
++        use rodas5p_integrators::retro_dae_init::InitMode;
++        use rodas5p_integrators::retro_event_poly::{AffineFactor, DeclaredPolynomial, EventTerm};
++        use rodas5p_integrators::retro_green::RetroTable;
++        let root = self
++            .root
++            .filter(|_| self.reason.is_none())
++            .ok_or_else(|| bad("no physical event authority"))?;
++        if !self.trial.global_qualified
++            || !self.trial.pointwise_qualified
++            || !self.trial.branch_qualified
++            || policy.init.mode != InitMode::ProjectAlgebraic
++            || !flow.rate.is_finite()
++            || flow.rate <= 0.
++            || !flow.equilibrium.is_finite()
++            || !end.is_finite()
++            || end <= root[1]
++        {
++            return Err(bad("polynomial reset source/flow authority"));
++        }
++        reset.validate(self.trial.engine.src.nx() + self.trial.engine.src.nz())?;
++        let forcing = Iv::point(flow.rate)?.mul(Iv::point(flow.equilibrium)?)?;
++        if forcing.lo != forcing.hi {
++            return Err(bad("affine source coefficient not exactly represented"));
++        }
++        let post_src = DaeSource::new(
++            vec![DeclaredPolynomial::new(vec![
++                EventTerm {
++                    coefficient: -flow.rate,
++                    factors: vec![AffineFactor::component(0, 0.)],
++                },
++                EventTerm {
++                    coefficient: forcing.lo,
++                    factors: vec![],
++                },
++            ])?],
++            constraints,
++        )?;
++        let table = RetroTable::with_dictionary(RealMode::Hybrid)?;
++        let mut evidence = Vec::new();
++        let mut covered = root[0];
++        let mut reset_box: Option<Iv> = None;
++        let mut sync_box: Option<Iv> = None;
++        fn hull(old: Option<Iv>, pair: [f64; 2]) -> CoreResult<Iv> {
++            let v = Iv::new(pair[0], pair[1])?;
++            Ok(old.map_or(v, |u| Iv {
++                lo: u.lo.min(v.lo),
++                hi: u.hi.max(v.hi),
++            }))
++        }
++        for s in &self.trial.slabs {
++            let lo = root[0].max(s.times[0]);
++            let hi = root[1].min(s.times[1]);
++            if lo > hi {
++                continue;
++            }
++            if lo > covered {
++                return Err(bad("uncovered event clock"));
++            }
++            let c = s
++                .certificate
++                .as_ref()
++                .filter(|c| c.global_qualified)
++                .ok_or_else(|| bad("unqualified event slab"))?;
++            let power = s
++                .power
++                .iter()
++                .map(|row| {
++                    row.iter()
++                        .map(|v| Iv::new(v[0], v[1]))
++                        .collect::<CoreResult<Vec<_>>>()
++                })
++                .collect::<CoreResult<Vec<_>>>()?;
++            let e = de::reset_slab(
++                &self.trial.engine.src,
++                reset,
++                &power,
++                c,
++                [lo, hi],
++                root[1],
++                flow.rate,
++                flow.equilibrium,
++                envelope,
++                derivative,
++                &table,
++            )?;
++            reset_box = Some(hull(reset_box, e.reset_x)?);
++            sync_box = Some(hull(sync_box, e.synchronized_x)?);
++            covered = covered.max(hi);
++            evidence.push(e);
++        }
++        if covered != root[1] || evidence.is_empty() {
++            return Err(bad("event slab coverage incomplete"));
++        }
++        let reset_box = reset_box.expect("nonempty reset");
++        let sync = sync_box.expect("nonempty sync");
++        let center = (sync.lo * 0.5 + sync.hi * 0.5).clamp(sync.lo, sync.hi);
++        let radius = diameter(sync.lo, center)?.max(diameter(center, sync.hi)?);
++        let ball = Iv::point(center)?.add(Iv::new(-radius, radius)?)?;
++        // Each affine damped trajectory is monotone between its own reset
++        // and synchronization value. Include the full rounded restart ball.
++        let transition = Iv::new(reset_box.lo.min(ball.lo), reset_box.hi.max(ball.hi))?;
++        let mut out = PolynomialRestartRun {
++            event_time: root,
++            envelope_route: envelope,
++            slab_evidence: evidence,
++            reset_x: reset_box.as_pair(),
++            synchronized_x: sync.as_pair(),
++            transition_x: transition.as_pair(),
++            incoming_radius: radius,
++            branch_proof: None,
++            reason: None,
++            post_trial: None,
++        };
++        let proof = match de::certify_transition_branch(
++            &post_src,
++            root,
++            transition.as_pair(),
++            center,
++            z_seed,
++            branch,
++            policy.init,
++            branch_route,
++        ) {
++            Ok(v) => v,
++            Err(e) => {
++                out.reason = Some(e.to_string());
++                return Ok(out);
++            }
++        };
++        let z = proof.initial.z.clone();
++        out.branch_proof = Some(proof);
++        match evolve_epoch(
++            &post_src,
++            &[center],
++            &z,
++            branch,
++            EvolutionEpoch {
++                start: root[1],
++                end,
++                incoming_x_error: Some(radius),
++            },
++            opts,
++            policy,
++            route,
++            grid,
++        ) {
++            Ok(v) => {
++                if !v.global_qualified || !v.pointwise_qualified || !v.branch_qualified {
++                    out.reason = Some("post physical trajectory not qualified".into());
++                }
++                out.post_trial = Some(v);
++            }
++            Err(e) => out.reason = Some(e.to_string()),
++        }
++        Ok(out)
++    }
++}
++
++pub use de::{
++    VectorBranchProof, VectorResetComponent, VectorSyncEvidence, VectorSyncRoute, VectorTubeProof,
++};
++#[derive(Clone, Copy, Debug, Serialize)]
++pub struct VectorResetPolicy {
++    pub sync: VectorSyncRoute,
++    pub derivative: GuardDerivativeRoute,
++    pub branch_route: InitRoute,
++    pub subdivisions: usize,
++}
++#[derive(Serialize)]
++pub struct VectorResetCell {
++    pub times: [f64; 2],
++    pub reset: Vec<VectorResetComponent>,
++    pub tube: Option<VectorTubeProof>,
++    pub sync: Option<VectorSyncEvidence>,
++    pub reason: Option<String>,
++}
++#[derive(Serialize)]
++pub struct VectorRestartRun {
++    pub event_time: [f64; 2],
++    pub policy: VectorResetPolicy,
++    pub cells: Vec<VectorResetCell>,
++    pub synchronized_x: Option<Vec<[f64; 2]>>,
++    pub incoming_radius: Option<f64>,
++    pub restart_branch: Option<VectorBranchProof>,
++    pub reason: Option<String>,
++    post_trial: Option<EvolutionRun>,
++}
++impl VectorRestartRun {
++    pub fn post(&self) -> Option<&EvolutionRun> {
++        if self.reason.is_none() {
++            self.post_trial
++                .as_ref()
++                .filter(|r| r.global_qualified && r.branch_qualified && r.pointwise_qualified)
++        } else {
++            None
++        }
++    }
++    pub fn post_diagnostic(&self) -> Option<&EvolutionRun> {
++        self.post_trial.as_ref()
++    }
++}
++impl ThresholdRun {
++    /// Source-bound vector polynomial reset and short uncertain-clock
++    /// flowpipe for a genuinely coupled original index-one post source.
++    #[allow(clippy::too_many_arguments)]
++    pub fn restart_vector(
++        &self,
++        reset: &[rodas5p_integrators::retro_event_poly::DeclaredPolynomial],
++        post_src: &DaeSource,
++        z_seed: &[f64],
++        branch: &[[f64; 2]],
++        end: f64,
++        opts: &Options,
++        policy: EvolutionPolicy,
++        route: EvolutionRoute,
++        reset_policy: VectorResetPolicy,
++        grid: &[f64],
++    ) -> CoreResult<VectorRestartRun> {
++        use rodas5p_core::retro_dictionary::RealMode;
++        use rodas5p_integrators::{retro_dae_init::InitMode, retro_green::RetroTable};
++        let root = self
++            .root
++            .filter(|_| self.reason.is_none())
++            .ok_or_else(|| bad("no physical event authority"))?;
++        if !self.trial.global_qualified
++            || !self.trial.pointwise_qualified
++            || !self.trial.branch_qualified
++            || policy.init.mode != InitMode::ProjectAlgebraic
++            || !end.is_finite()
++            || end <= root[1]
++            || reset.len() != post_src.nx()
++            || !matches!(reset_policy.subdivisions, 1 | 4)
++        {
++            return Err(bad("vector reset authority/domain"));
++        }
++        for r in reset {
++            r.validate(self.trial.engine.src.nx() + self.trial.engine.src.nz())?;
++        }
++        let table = RetroTable::with_dictionary(RealMode::Hybrid)?;
++        let mut out = VectorRestartRun {
++            event_time: root,
++            policy: reset_policy,
++            cells: vec![],
++            synchronized_x: None,
++            incoming_radius: None,
++            restart_branch: None,
++            reason: None,
++            post_trial: None,
++        };
++        let mut covered = root[0];
++        let mut total: Option<Vec<[f64; 2]>> = None;
++        for slab in &self.trial.slabs {
++            let lo = root[0].max(slab.times[0]);
++            let hi = root[1].min(slab.times[1]);
++            if lo > hi {
++                continue;
++            }
++            if lo > covered {
++                return Err(bad("vector reset coverage gap"));
++            }
++            let c = slab
++                .certificate
++                .as_ref()
++                .filter(|v| v.global_qualified)
++                .ok_or_else(|| bad("uncertified vector reset slab"))?;
++            let power = slab
++                .power
++                .iter()
++                .map(|row| {
++                    row.iter()
++                        .map(|v| Iv::new(v[0], v[1]))
++                        .collect::<CoreResult<Vec<_>>>()
++                })
++                .collect::<CoreResult<Vec<_>>>()?;
++            let n = if lo == hi {
++                1
++            } else {
++                reset_policy.subdivisions
++            };
++            let mut a = lo;
++            for j in 1..=n {
++                let b = if j == n {
++                    hi
++                } else {
++                    (lo + (hi - lo) * (j as f64 / n as f64)).clamp(a, hi)
++                };
++                if out.cells.len() >= 64 {
++                    out.reason = Some("vector reset cell cap exhausted".into());
++                    return Ok(out);
++                }
++                let mut cell = VectorResetCell {
++                    times: [a, b],
++                    reset: vec![],
++                    tube: None,
++                    sync: None,
++                    reason: None,
++                };
++                let result = (|| -> CoreResult<()> {
++                    for r in reset {
++                        cell.reset.push(de::vector_reset_component(
++                            &self.trial.engine.src,
++                            r,
++                            &power,
++                            c,
++                            [a, b],
++                            reset_policy.sync,
++                            reset_policy.derivative,
++                        )?);
++                    }
++                    let r = cell.reset.iter().map(|v| v.enclosure).collect::<Vec<_>>();
++                    let tube = de::certify_vector_tube(
++                        post_src,
++                        [a, root[1]],
++                        &r,
++                        z_seed,
++                        branch,
++                        policy.init,
++                        reset_policy.branch_route,
++                    )?;
++                    let sync = de::synchronize_vector(
++                        &cell.reset,
++                        [a, b],
++                        root[1],
++                        &tube,
++                        reset_policy.sync,
++                        &table,
++                    );
++                    cell.tube = Some(tube);
++                    let sync = sync?;
++                    if let Some(h) = total.as_mut() {
++                        for (v, &w) in h.iter_mut().zip(&sync.synchronized) {
++                            v[0] = v[0].min(w[0]);
++                            v[1] = v[1].max(w[1]);
++                        }
++                    } else {
++                        total = Some(sync.synchronized.clone());
++                    }
++                    cell.sync = Some(sync);
++                    Ok(())
++                })();
++                if let Err(e) = result {
++                    let e = e.to_string();
++                    cell.reason = Some(e.clone());
++                    out.cells.push(cell);
++                    out.reason = Some(e);
++                    return Ok(out);
++                }
++                out.cells.push(cell);
++                a = b;
++            }
++            covered = covered.max(hi);
++        }
++        if covered != root[1] || total.is_none() {
++            return Err(bad("vector reset coverage incomplete"));
++        }
++        let sync = total.expect("nonempty synchronized box");
++        let center = sync
++            .iter()
++            .map(|v| (v[0] * 0.5 + v[1] * 0.5).clamp(v[0], v[1]))
++            .collect::<Vec<_>>();
++        let mut radius = 0_f64;
++        for (b, &c) in sync.iter().zip(&center) {
++            radius = radius.max(diameter(b[0], c)?.max(diameter(c, b[1])?));
++        }
++        let ball = center
++            .iter()
++            .map(|&v| {
++                Iv::point(v)?
++                    .add(Iv::new(-radius, radius)?)
++                    .map(|x| x.as_pair())
++            })
++            .collect::<CoreResult<Vec<_>>>()?;
++        out.synchronized_x = Some(sync);
++        out.incoming_radius = Some(radius);
++        let proof = match de::certify_vector_branch(
++            post_src,
++            [root[1], root[1]],
++            &ball,
++            &center,
++            z_seed,
++            branch,
++            policy.init,
++            reset_policy.branch_route,
++        ) {
++            Ok(v) => v,
++            Err(e) => {
++                out.reason = Some(e.to_string());
++                return Ok(out);
++            }
++        };
++        let z = proof.initial.z.clone();
++        out.restart_branch = Some(proof);
++        match evolve_epoch(
++            post_src,
++            &center,
++            &z,
++            branch,
++            EvolutionEpoch {
++                start: root[1],
++                end,
++                incoming_x_error: Some(radius),
++            },
++            opts,
++            policy,
++            route,
++            grid,
++        ) {
++            Ok(v) => {
++                if !v.global_qualified || !v.branch_qualified || !v.pointwise_qualified {
++                    out.reason = Some("vector post physical trajectory not qualified".into());
++                }
++                out.post_trial = Some(v);
++            }
++            Err(e) => out.reason = Some(e.to_string()),
++        }
++        Ok(out)
++    }
++}
++
++use rodas5p_integrators::retro_event_poly::DeclaredPolynomial;
++
++/// One physical initial family, 2..8 competing increasing guards. Independent
++/// repeats native integration; Shared and Correlated use one accepted-step run.
++#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
++pub enum MultiGuardRoute {
++    Independent,
++    Shared,
++    Correlated,
++}
++#[derive(Clone, Copy, Debug, Serialize)]
++pub struct MultiGuardPolicy {
++    pub method: MultiGuardRoute,
++    pub tolerance: f64,
++    pub root_route: ThresholdRoute,
++    pub derivative: GuardDerivativeRoute,
++    pub value: GuardValueRoute,
++    pub pending: PendingPolicy,
++    pub max_slabs: usize,
++}
++#[derive(Clone, Debug, Serialize)]
++pub struct GuardOrderEvidence {
++    pub index: usize,
++    pub root: Option<[f64; 2]>,
++    pub safe: f64,
++    pub initial_negative: bool,
++    pub reason: Option<String>,
++    pub work: ThresholdWork,
++    pub slabs: Vec<GuardSlabEvidence>,
++    pub pending: Option<PendingReport>,
++}
++#[derive(Clone, Debug, Serialize)]
++pub struct GuardDifferenceCell {
++    pub times: [f64; 2],
++    pub enclosure: [f64; 2],
++    pub prepared_work: InitWork,
++}
++#[derive(Clone, Debug, Serialize)]
++pub struct GuardOrderComparison {
++    pub earlier: usize,
++    pub later: usize,
++    pub compared_root: [f64; 2],
++    pub cells: Vec<GuardDifferenceCell>,
++    pub positive: bool,
++    pub reason: Option<String>,
++}
++#[derive(Clone, Debug, Default, Serialize)]
++pub struct MultiGuardWork {
++    pub native_runs: usize,
++    pub attempts: usize,
++    pub driver_rhs: u64,
++    pub physical_certificates: usize,
++    pub shared_projection: ProjectionWork,
++    pub replay_projection_rhs: usize,
++    pub independent_scan_projection_rhs: usize,
++    pub guard_evals: usize,
++    pub hint_calls: usize,
++    pub dictionary_uses: usize,
++    pub guard_prepared_rhs: usize,
++    pub comparison_attempts: usize,
++    pub difference_cells: usize,
++    pub difference_prepared_rhs: usize,
++}
++impl MultiGuardWork {
++    fn driver(&mut self, r: &EvolutionRun) {
++        self.native_runs += 1;
++        self.attempts += r.driver.stats.attempts;
++        self.driver_rhs += r.driver.stats.counters.rhs_calls;
++        self.replay_projection_rhs += r.work.rhs_count;
++    }
++    fn guard(&mut self, r: &GuardOrderEvidence, independent: bool) {
++        self.guard_evals += r.work.guard_evals;
++        self.hint_calls += r.work.hint_calls;
++        self.dictionary_uses += r.work.hint_dictionary_uses;
++        self.guard_prepared_rhs += r
++            .slabs
++            .iter()
++            .map(|s| s.prepared_work.rhs_count)
++            .sum::<usize>();
++        if independent {
++            self.physical_certificates += r.work.certified_slabs;
++            self.independent_scan_projection_rhs += r.work.projection.rhs_count;
++        }
++    }
++}
++/// Only this facade may authorize one of the private single-guard runs.
++pub struct MultiGuardRun {
++    method: MultiGuardRoute,
++    guards: Vec<GuardOrderEvidence>,
++    comparisons: Vec<GuardOrderComparison>,
++    winner: Option<usize>,
++    safe: f64,
++    initial_negative: bool,
++    reason: Option<String>,
++    runs: Vec<ThresholdRun>,
++    pub work: MultiGuardWork,
++}
++impl MultiGuardRun {
++    pub fn winner(&self) -> Option<usize> {
++        self.winner
++    }
++    pub fn guards(&self) -> &[GuardOrderEvidence] {
++        &self.guards
++    }
++    pub fn comparisons(&self) -> &[GuardOrderComparison] {
++        &self.comparisons
++    }
++    pub fn committed_until(&self) -> f64 {
++        self.safe
++    }
++    pub fn reason(&self) -> Option<&str> {
++        self.reason.as_deref()
++    }
++    pub fn event_authority(&self) -> Option<&ThresholdRun> {
++        let j = self.winner?;
++        self.runs
++            .get(if self.method == MultiGuardRoute::Independent {
++                j
++            } else {
++                0
++            })
++    }
++    pub fn pre_query(&self, t: f64) -> CoreResult<Query> {
++        if !self.initial_negative || !t.is_finite() || t > self.safe {
++            return Err(bad("outside ordered physical prefix"));
++        }
++        self.event_authority()
++            .or_else(|| self.runs.first())
++            .ok_or_else(|| bad("no physical ordered trajectory"))?
++            .pre_query(t)
++    }
++}
++struct SharedGuardSlab {
++    power: Vec<Vec<Iv>>,
++    cert: SlabCertificate,
++}
++struct MultiScan {
++    scans: Vec<ThresholdScan>,
++    incoming: Option<f64>,
++    numerical_end: f64,
++    stopped: bool,
++    selected: Option<usize>,
++    reason: Option<String>,
++    policy: MultiGuardPolicy,
++    history: Vec<SharedGuardSlab>,
++    comparisons: Vec<GuardOrderComparison>,
++    work: MultiGuardWork,
++}
++fn guard_scan(
++    guard: &DeclaredPolynomial,
++    epoch: EvolutionEpoch,
++    policy: MultiGuardPolicy,
++) -> CoreResult<ThresholdScan> {
++    Ok(ThresholdScan {
++        pending: Some(PendingState::new(policy.pending)?),
++        threshold: 0.,
++        guard: Some(DeclaredGuard {
++            source: guard.clone(),
++            derivative: policy.derivative,
++            value: policy.value,
++        }),
++        guard_slabs: vec![],
++        tolerance: policy.tolerance,
++        route: policy.root_route,
++        incoming: epoch.incoming_x_error,
++        safe: epoch.start,
++        numerical_end: epoch.start,
++        root: None,
++        stopped: false,
++        reason: None,
++        work: ThresholdWork::default(),
++    })
++}
++fn initial_proved(s: &ThresholdScan) -> bool {
++    s.pending
++        .as_ref()
++        .is_some_and(|p| !p.report.blocked_initial)
++}
++fn root_valid(s: &ThresholdScan) -> Option<[f64; 2]> {
++    s.root.filter(|_| s.reason.is_none())
++}
++fn scan_receipt(s: &ThresholdScan, index: usize) -> GuardOrderEvidence {
++    GuardOrderEvidence {
++        index,
++        root: root_valid(s),
++        safe: s.safe,
++        initial_negative: initial_proved(s),
++        reason: s.reason.clone(),
++        work: s.work.clone(),
++        slabs: s.guard_slabs.clone(),
++        pending: s.pending.as_ref().map(|p| p.report.clone()),
++    }
++}
++fn run_receipt(r: &ThresholdRun, index: usize, start: f64) -> GuardOrderEvidence {
++    let qualified =
++        r.trial.global_qualified && r.trial.pointwise_qualified && r.trial.branch_qualified;
++    GuardOrderEvidence {
++        index,
++        root: r.root.filter(|_| qualified && r.reason.is_none()),
++        safe: if qualified { r.committed_until } else { start },
++        initial_negative: qualified
++            && r.pending_report
++                .as_ref()
++                .is_some_and(|p| !p.blocked_initial),
++        reason: r
++            .reason
++            .clone()
++            .or_else(|| (!qualified).then_some("unqualified physical replay".into())),
++        work: r.work.clone(),
++        slabs: r.guard_slabs.clone(),
++        pending: r.pending_report.clone(),
++    }
++}
++fn disjoint_or_absent(candidate: [f64; 2], other: &GuardOrderEvidence) -> bool {
++    other.initial_negative
++        && match other.root {
++            Some(r) => candidate[1] < r[0],
++            None => candidate[1] <= other.safe,
++        }
++}
++fn independent_winner(gs: &[GuardOrderEvidence]) -> Option<usize> {
++    if !gs.iter().all(|g| g.initial_negative) {
++        return None;
++    }
++    let mut found = None;
++    for g in gs {
++        if let Some(root) = g.root {
++            if gs
++                .iter()
++                .all(|h| g.index == h.index || disjoint_or_absent(root, h))
++            {
++                if found.is_some() {
++                    return None;
++                }
++                found = Some(g.index);
++            }
++        }
++    }
++    found
++}
++/// Exact opposite coefficient cancellation for syntactically identical
++/// affine-factor lists. No rounded coefficient addition or factor expansion.
++fn guard_difference(
++    a: &DeclaredPolynomial,
++    b: &DeclaredPolynomial,
++) -> CoreResult<DeclaredPolynomial> {
++    use rodas5p_integrators::retro_event_poly::EventTerm;
++    fn same(a: &EventTerm, b: &EventTerm) -> bool {
++        a.factors.len() == b.factors.len()
++            && a.factors.iter().zip(&b.factors).all(|(x, y)| {
++                x.constant.to_bits() == y.constant.to_bits()
++                    && x.time.to_bits() == y.time.to_bits()
++                    && x.state.len() == y.state.len()
++                    && x.state
++                        .iter()
++                        .zip(&y.state)
++                        .all(|(&(i, a), &(j, b))| i == j && a.to_bits() == b.to_bits())
++            })
++    }
++    let mut terms = a.terms().to_vec();
++    for t in b.terms() {
++        if let Some(i) = terms
++            .iter()
++            .position(|x| x.coefficient.to_bits() == t.coefficient.to_bits() && same(x, t))
++        {
++            terms.remove(i);
++        } else {
++            let mut q = t.clone();
++            q.coefficient = -q.coefficient;
++            terms.push(q);
++        }
++    }
++    if terms.is_empty() {
++        terms.push(EventTerm {
++            coefficient: 0.,
++            factors: vec![],
++        });
++    }
++    DeclaredPolynomial::new(terms)
++}
++impl MultiScan {
++    fn compare(&mut self, e: &Engine, j: usize, k: usize, root: [f64; 2]) -> bool {
++        if let Some(v) = self
++            .comparisons
++            .iter()
++            .find(|v| v.earlier == j && v.later == k)
++        {
++            return v.positive;
++        }
++        self.work.comparison_attempts += 1;
++        let mut out = GuardOrderComparison {
++            earlier: j,
++            later: k,
++            compared_root: root,
++            cells: vec![],
++            positive: false,
++            reason: None,
++        };
++        let result = (|| -> CoreResult<bool> {
++            let a = &self.scans[j].guard.as_ref().expect("declared guard").source;
++            let b = &self.scans[k].guard.as_ref().expect("declared guard").source;
++            let d = guard_difference(a, b)?;
++            let mut covered = root[0];
++            for slab in &self.history {
++                let lo = slab.cert.times[0].max(root[0]);
++                let hi = slab.cert.times[1].min(root[1]);
++                if lo > hi {
++                    continue;
++                }
++                if lo > covered {
++                    return Err(bad("guard difference coverage gap"));
++                }
++                let v = de::vector_reset_component(
++                    &e.src,
++                    &d,
++                    &slab.power,
++                    &slab.cert,
++                    [lo, hi],
++                    de::VectorSyncRoute::SchurPicard,
++                    self.policy.derivative,
++                )?;
++                self.work.difference_cells += 1;
++                self.work.difference_prepared_rhs += v.prepared_work.rhs_count;
++                out.cells.push(GuardDifferenceCell {
++                    times: [lo, hi],
++                    enclosure: v.enclosure,
++                    prepared_work: v.prepared_work,
++                });
++                if v.enclosure[0] <= 0. {
++                    return Ok(false);
++                }
++                covered = covered.max(hi);
++            }
++            Ok(!out.cells.is_empty() && covered == root[1])
++        })();
++        match result {
++            Ok(v) => out.positive = v,
++            Err(e) => out.reason = Some(e.to_string()),
++        }
++        let yes = out.positive;
++        self.comparisons.push(out);
++        yes
++    }
++    fn choose(&mut self, e: &Engine) -> Option<usize> {
++        // A failure to certify one initial guard blocks the transaction.
++        if !self.scans.iter().all(initial_proved) {
++            return None;
++        }
++        let mut found = None;
++        for j in 0..self.scans.len() {
++            let Some(root) = root_valid(&self.scans[j]) else {
++                continue;
++            };
++            let mut ok = true;
++            for k in 0..self.scans.len() {
++                if k == j {
++                    continue;
++                }
++                let other = root_valid(&self.scans[k]);
++                let strict = match other {
++                    Some(r) => root[1] < r[0],
++                    None => root[1] <= self.scans[k].safe,
++                };
++                if strict {
++                    continue;
++                }
++                // At competitor's root, H_k=0. If H_j>0 there,
++                // assuming tau_k<=tau_j contradicts H_j<0 before
++                // its unique first root (or H_j=0 at equality).
++                if self.policy.method == MultiGuardRoute::Correlated
++                    && other.is_some_and(|b| b[1] >= root[0] && self.compare(e, j, k, b))
++                {
++                    continue;
++                }
++                ok = false;
++                break;
++            }
++            if ok {
++                if found.is_some() {
++                    return None;
++                }
++                found = Some(j);
++            }
++        }
++        found
++    }
++}
++impl EpochObserver for MultiScan {
++    fn stopped_at(&self) -> Option<f64> {
++        self.stopped.then_some(self.numerical_end)
++    }
++    fn inspect(
++        &mut self,
++        e: &Engine,
++        proposal: crate::solve::DenseProposal<'_>,
++    ) -> rodas5p_integrators::AcceptControl {
++        use rodas5p_integrators::AcceptControl;
++        let result = (|| -> CoreResult<bool> {
++            let (times, native) = proposal_packet(proposal)?;
++            self.numerical_end = times[1];
++            if self.work.physical_certificates >= self.policy.max_slabs {
++                return Err(bad("multi-guard slab budget exhausted"));
++            }
++            let (p, c) = certify_native_packet(
++                e,
++                times,
++                &native,
++                self.incoming,
++                &mut self.work.shared_projection,
++            )?;
++            self.work.physical_certificates += 1;
++            for scan in &mut self.scans {
++                if scan.stopped {
++                    continue;
++                }
++                scan.work.inspected += 1;
++                scan.numerical_end = times[1];
++                if scan.incoming != self.incoming {
++                    return Err(bad("guard shared radius mismatch"));
++                }
++                match scan.scan_certified(e, times, &p, &c) {
++                    Ok(stop) => scan.stopped = stop,
++                    Err(e) => {
++                        scan.reason = Some(e.to_string());
++                        scan.stopped = true;
++                    }
++                }
++            }
++            self.incoming = c.outgoing;
++            if self.policy.method == MultiGuardRoute::Correlated {
++                self.history.push(SharedGuardSlab { power: p, cert: c });
++            }
++            self.selected = self.choose(e);
++            if self.selected.is_some() {
++                return Ok(true);
++            }
++            if self.scans.iter().all(|s| s.stopped) {
++                return Err(bad("first-event order unresolved"));
++            }
++            // No need for an additional accepted proposal after exhausting
++            // the physical certificate budget.
++            if self.work.physical_certificates >= self.policy.max_slabs {
++                return Err(bad("multi-guard slab budget exhausted"));
++            }
++            Ok(false)
++        })();
++        match result {
++            Ok(false) => AcceptControl::Continue,
++            Ok(true) => {
++                self.stopped = true;
++                AcceptControl::Stop
++            }
++            Err(e) => {
++                self.reason = Some(e.to_string());
++                self.stopped = true;
++                AcceptControl::Stop
++            }
++        }
++    }
++}
++/// Competing guards all belong to the same original physical source,
++/// initial family and branch; no index-order tie-breaking.
++#[allow(clippy::too_many_arguments)]
++pub fn evolve_to_first_guard(
++    src: &DaeSource,
++    x: &[f64],
++    z: &[f64],
++    branch: &[[f64; 2]],
++    epoch: EvolutionEpoch,
++    opts: &Options,
++    policy: EvolutionPolicy,
++    route: EvolutionRoute,
++    guards: &[DeclaredPolynomial],
++    mp: MultiGuardPolicy,
++) -> CoreResult<MultiGuardRun> {
++    if !(2..=8).contains(&guards.len())
++        || !(1..=128).contains(&mp.max_slabs)
++        || !(1..=64).contains(&mp.pending.max_slabs)
++        || !mp.tolerance.is_finite()
++        || mp.tolerance <= 0.
++        || epoch
++            .incoming_x_error
++            .is_none_or(|v| !v.is_finite() || v < 0.)
++    {
++        return Err(bad("multi-guard policy/initial authority"));
++    }
++    for g in guards {
++        g.validate(src.nx() + src.nz())?;
++    }
++    if mp.method == MultiGuardRoute::Independent {
++        let mut out = MultiGuardRun {
++            method: mp.method,
++            guards: vec![],
++            comparisons: vec![],
++            winner: None,
++            safe: epoch.start,
++            initial_negative: false,
++            reason: None,
++            runs: vec![],
++            work: MultiGuardWork::default(),
++        };
++        for (i, g) in guards.iter().enumerate() {
++            let remaining = opts.max_steps.saturating_sub(out.work.attempts);
++            if remaining == 0 {
++                out.reason = Some("shared native attempt budget exhausted".into());
++                break;
++            }
++            let mut o = opts.clone();
++            o.max_steps = remaining.min(mp.max_slabs);
++            match evolve_to_guard_pending(
++                src,
++                x,
++                z,
++                branch,
++                epoch,
++                &o,
++                policy,
++                route,
++                g,
++                mp.tolerance,
++                mp.root_route,
++                mp.derivative,
++                mp.value,
++                mp.pending,
++            ) {
++                Ok(r) => {
++                    let receipt = run_receipt(&r, i, epoch.start);
++                    out.work.driver(&r.trial);
++                    out.work.guard(&receipt, true);
++                    out.guards.push(receipt);
++                    out.runs.push(r);
++                }
++                Err(e) => {
++                    out.reason = Some(e.to_string());
++                    break;
++                }
++            }
++        }
++        if out.guards.len() == guards.len() {
++            out.initial_negative = out.guards.iter().all(|r| r.initial_negative);
++            if out.initial_negative {
++                out.winner = independent_winner(&out.guards);
++                out.safe = if let Some(i) = out.winner {
++                    out.guards[i].root.expect("winner")[0]
++                } else {
++                    out.guards.iter().map(|g| g.safe).fold(epoch.end, f64::min)
++                };
++            }
++            if out.winner.is_none() && (!out.initial_negative || out.safe < epoch.end) {
++                out.reason = Some("first-event order unresolved".into());
++            }
++        } else if out.reason.is_none() {
++            out.reason = Some("incomplete guard receipts".into());
++        }
++        return Ok(out);
++    }
++    let scans = guards
++        .iter()
++        .map(|g| guard_scan(g, epoch, mp))
++        .collect::<CoreResult<Vec<_>>>()?;
++    let mut multi = MultiScan {
++        scans,
++        incoming: epoch.incoming_x_error,
++        numerical_end: epoch.start,
++        stopped: false,
++        selected: None,
++        reason: None,
++        policy: mp,
++        history: Vec::with_capacity(if mp.method == MultiGuardRoute::Correlated {
++            mp.max_slabs
++        } else {
++            0
++        }),
++        comparisons: vec![],
++        work: MultiGuardWork::default(),
++    };
++    let trial = evolve_epoch_impl(
++        src,
++        x,
++        z,
++        branch,
++        epoch,
++        opts,
++        policy,
++        route,
++        &[],
++        Some(&mut multi),
++    )?;
++    let qualified = trial.global_qualified && trial.pointwise_qualified && trial.branch_qualified;
++    let initial = qualified && multi.scans.iter().all(initial_proved);
++    if !qualified {
++        multi.selected = None;
++        multi.reason = Some("shared replay physical proof failed".into());
++    }
++    if !initial {
++        multi.selected = None;
++    }
++    let receipts = multi
++        .scans
++        .iter()
++        .enumerate()
++        .map(|(i, s)| scan_receipt(s, i))
++        .collect::<Vec<_>>();
++    let safe = if !initial {
++        epoch.start
++    } else if let Some(j) = multi.selected {
++        receipts[j].root.expect("winner")[0]
++    } else {
++        receipts.iter().map(|r| r.safe).fold(epoch.end, f64::min)
++    };
++    if multi.selected.is_none() && (!initial || safe < epoch.end) && multi.reason.is_none() {
++        multi.reason = Some("first-event order unresolved at horizon".into());
++    }
++    multi.work.driver(&trial);
++    for g in &receipts {
++        multi.work.guard(g, false);
++    }
++    let root = multi.selected.and_then(|j| receipts[j].root);
++    let chosen = multi.selected.map(|i| &receipts[i]);
++    let r = ThresholdRun {
++        trial,
++        root,
++        committed_until: safe,
++        numerical_end: multi.numerical_end,
++        reason: multi.reason.clone(),
++        work: chosen.map(|g| g.work.clone()).unwrap_or_default(),
++        guard_slabs: chosen.map(|g| g.slabs.clone()).unwrap_or_default(),
++        pending_report: chosen.and_then(|g| g.pending.clone()),
++    };
++    Ok(MultiGuardRun {
++        method: mp.method,
++        guards: receipts,
++        comparisons: multi.comparisons,
++        winner: multi.selected,
++        safe,
++        initial_negative: initial,
++        reason: multi.reason,
++        runs: vec![r],
++        work: multi.work,
++    })
++}
++/// One declared transition per input guard, in the original input order.
++/// Only the uniquely certified earliest guard's transition is evaluated.
++pub struct OrderedVectorTransition<'a> {
++    pub reset: &'a [DeclaredPolynomial],
++    pub source: &'a DaeSource,
++    pub z_seed: &'a [f64],
++    pub branch: &'a [[f64; 2]],
++    pub route: EvolutionRoute,
++    pub policy: VectorResetPolicy,
++}
++pub struct OrderedVectorRestart {
++    pub event_index: usize,
++    pub run: VectorRestartRun,
++}
++impl MultiGuardRun {
++    pub fn restart_ordered_vector(
++        &self,
++        transitions: &[OrderedVectorTransition<'_>],
++        end: f64,
++        opts: &Options,
++        policy: EvolutionPolicy,
++        grid: &[f64],
++    ) -> CoreResult<OrderedVectorRestart> {
++        if transitions.len() != self.guards.len() {
++            return Err(bad("ordered transition shape"));
++        }
++        let j = self
++            .winner
++            .ok_or_else(|| bad("no unique first-event authority"))?;
++        let a = self
++            .event_authority()
++            .ok_or_else(|| bad("missing first-event run"))?;
++        let tr = &transitions[j];
++        let run = a.restart_vector(
++            tr.reset, tr.source, tr.z_seed, tr.branch, end, opts, policy, tr.route, tr.policy, grid,
++        )?;
++        Ok(OrderedVectorRestart {
++            event_index: j,
++            run,
++        })
++    }
++}
+diff --git a/crates/vigilode/src/solve.rs b/crates/vigilode/src/solve.rs
+index 8dec17fe7..1e12765cf 100644
+--- a/crates/vigilode/src/solve.rs
++++ b/crates/vigilode/src/solve.rs
+@@ -300,6 +300,14 @@ struct Run {
+     segments: Option<Extension>,
+ }
+ 
++#[cfg(feature = "polynomial-events")]
++pub(crate) enum DenseProposal<'a> {
++    Sequential(&'a rodas5p_integrators::Rodas5pDenseSegment),
++    Fast(&'a rodas5p_integrators::FastDenseSegments),
++}
++#[cfg(feature = "polynomial-events")]
++type DenseControl<'a> =
++    dyn for<'p> FnMut(DenseProposal<'p>) -> rodas5p_integrators::AcceptControl + 'a;
+ impl Rodas5p {
+     /// Integrate `problem` from `t_span.0` to `t_span.1` starting at `y0`.
+     ///
+@@ -418,6 +426,32 @@ impl Rodas5p {
+             None,
+             #[cfg(feature = "polynomial-events")]
+             None,
++            #[cfg(feature = "polynomial-events")]
++            None,
++        )
++    }
++
++    #[cfg(feature = "polynomial-events")]
++    pub(crate) fn solve_dense_controlled(
++        problem: &Problem,
++        span: (f64, f64),
++        y: &[f64],
++        opts: &Options,
++        accept: &mut DenseControl<'_>,
++    ) -> Result<Solution, SolveError> {
++        Self::solve_with_clients_and_events(
++            problem,
++            span,
++            y,
++            opts,
++            &[],
++            None,
++            crate::MfStageSolvePolicy::Shipped,
++            BandedStagePolicy::Shipped,
++            None,
++            None,
++            None,
++            Some(accept),
+         )
+     }
+ 
+@@ -436,6 +470,7 @@ impl Rodas5p {
+         #[cfg(feature = "polynomial-events")] mut poly: Option<
+             &mut crate::polynomial_events::PolyTransaction<'_>,
+         >,
++        #[cfg(feature = "polynomial-events")] mut dense_accept: Option<&mut DenseControl<'_>>,
+     ) -> Result<Solution, SolveError> {
+         let atol = validate(problem, t_span, y0, opts)?;
+         let mut adaptive = AdaptiveStepConfig {
+@@ -566,6 +601,18 @@ impl Rodas5p {
+                 "event transaction requires fast dense route".into(),
+             ));
+         }
++        #[cfg(feature = "polynomial-events")]
++        if dense_accept.is_some()
++            && (!problem.events.is_empty()
++                || poly.is_some()
++                || event_policy.is_some()
++                || !opts.dense_output
++                || !matches!(plan, Plan::FastDense { .. } | Plan::SequentialDense))
++        {
++            return Err(SolveError::InvalidInput(
++                "controlled native dense route required".into(),
++            ));
++        }
+         let mut transaction =
+             event_policy.map(|p| crate::events::Transaction::new(&problem.events, p, t_span.0, y0));
+         if transaction.as_ref().is_some_and(|t| t.failure.is_some()) {
+@@ -758,7 +805,7 @@ impl Rodas5p {
+                     }
+                 };
+                 #[cfg(feature = "polynomial-events")]
+-                let has_poly = poly.is_some();
++                let has_poly = poly.is_some() || dense_accept.is_some();
+                 #[cfg(not(feature = "polynomial-events"))]
+                 let has_poly = false;
+                 let (entry_point, result) = if transaction.is_some() || has_poly {
+@@ -767,6 +814,10 @@ impl Rodas5p {
+                         if let Some(tx) = poly.as_deref_mut() {
+                             return tx.inspect(segments);
+                         }
++                        #[cfg(feature = "polynomial-events")]
++                        if let Some(f) = dense_accept.as_deref_mut() {
++                            return f(DenseProposal::Fast(segments));
++                        }
+                         transaction
+                             .as_mut()
+                             .expect("sampled transaction")
+@@ -997,7 +1048,20 @@ impl Rodas5p {
+                 // so the run does not record one (10 n f64 per accepted
+                 // step); the run is otherwise bit for bit the same.
+                 let plan_out = OutputSamplingPlan::dense(schedule.clone());
+-                let run = if opts.dense_output {
++                #[cfg(feature = "polynomial-events")]
++                let controlled = if let Some(f) = dense_accept.as_deref_mut() {
++                    let mut accept = |seg: &rodas5p_integrators::Rodas5pDenseSegment| {
++                        f(DenseProposal::Sequential(seg))
++                    };
++                    Some(rodas5p_integrators::integrate_adaptive_dense_observed_with_segments_and_control(&ode,t_span,y0,&adaptive,&plan_out,control,interior_sampling,&mut accept).map_err(|e| driver_error(e,&guard))?)
++                } else {
++                    None
++                };
++                #[cfg(not(feature = "polynomial-events"))]
++                let controlled: Option<AdaptiveDenseSegmentRun> = None;
++                let run = if let Some(run) = controlled {
++                    run
++                } else if opts.dense_output {
+                     integrate_adaptive_dense_observed_with_segments(
+                         &ode,
+                         t_span,
+@@ -1716,6 +1780,8 @@ impl Rodas5p {
+             Some(policy),
+             #[cfg(feature = "polynomial-events")]
+             None,
++            #[cfg(feature = "polynomial-events")]
++            None,
+         )
+     }
+     /// Integrate a single declared polynomial event with exact root isolation
+@@ -1744,6 +1810,7 @@ impl Rodas5p {
+             None,
+             None,
+             Some(&mut tx),
++            None,
+         )?;
+         Ok(crate::polynomial_events::PolynomialEventRun {
+             solution,

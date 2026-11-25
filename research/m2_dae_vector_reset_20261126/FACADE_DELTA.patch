@@ -1,0 +1,267 @@
+--- a/crates/vigilode/src/dae_evolution.rs
++++ b/crates/vigilode/src/dae_evolution.rs
+@@ -2055,3 +2055,264 @@
+         Ok(out)
+     }
+ }
++
++pub use de::{
++    VectorBranchProof, VectorResetComponent, VectorSyncEvidence, VectorSyncRoute, VectorTubeProof,
++};
++#[derive(Clone, Copy, Debug, Serialize)]
++pub struct VectorResetPolicy {
++    pub sync: VectorSyncRoute,
++    pub derivative: GuardDerivativeRoute,
++    pub branch_route: InitRoute,
++    pub subdivisions: usize,
++}
++#[derive(Serialize)]
++pub struct VectorResetCell {
++    pub times: [f64; 2],
++    pub reset: Vec<VectorResetComponent>,
++    pub tube: Option<VectorTubeProof>,
++    pub sync: Option<VectorSyncEvidence>,
++    pub reason: Option<String>,
++}
++#[derive(Serialize)]
++pub struct VectorRestartRun {
++    pub event_time: [f64; 2],
++    pub policy: VectorResetPolicy,
++    pub cells: Vec<VectorResetCell>,
++    pub synchronized_x: Option<Vec<[f64; 2]>>,
++    pub incoming_radius: Option<f64>,
++    pub restart_branch: Option<VectorBranchProof>,
++    pub reason: Option<String>,
++    post_trial: Option<EvolutionRun>,
++}
++impl VectorRestartRun {
++    pub fn post(&self) -> Option<&EvolutionRun> {
++        if self.reason.is_none() {
++            self.post_trial
++                .as_ref()
++                .filter(|r| r.global_qualified && r.branch_qualified && r.pointwise_qualified)
++        } else {
++            None
++        }
++    }
++    pub fn post_diagnostic(&self) -> Option<&EvolutionRun> {
++        self.post_trial.as_ref()
++    }
++}
++impl ThresholdRun {
++    /// Source-bound vector polynomial reset and short uncertain-clock
++    /// flowpipe for a genuinely coupled original index-one post source.
++    #[allow(clippy::too_many_arguments)]
++    pub fn restart_vector(
++        &self,
++        reset: &[rodas5p_integrators::retro_event_poly::DeclaredPolynomial],
++        post_src: &DaeSource,
++        z_seed: &[f64],
++        branch: &[[f64; 2]],
++        end: f64,
++        opts: &Options,
++        policy: EvolutionPolicy,
++        route: EvolutionRoute,
++        reset_policy: VectorResetPolicy,
++        grid: &[f64],
++    ) -> CoreResult<VectorRestartRun> {
++        use rodas5p_core::retro_dictionary::RealMode;
++        use rodas5p_integrators::{retro_dae_init::InitMode, retro_green::RetroTable};
++        let root = self
++            .root
++            .filter(|_| self.reason.is_none())
++            .ok_or_else(|| bad("no physical event authority"))?;
++        if !self.trial.global_qualified
++            || !self.trial.pointwise_qualified
++            || !self.trial.branch_qualified
++            || policy.init.mode != InitMode::ProjectAlgebraic
++            || !end.is_finite()
++            || end <= root[1]
++            || reset.len() != post_src.nx()
++            || !matches!(reset_policy.subdivisions, 1 | 4)
++        {
++            return Err(bad("vector reset authority/domain"));
++        }
++        for r in reset {
++            r.validate(self.trial.engine.src.nx() + self.trial.engine.src.nz())?;
++        }
++        let table = RetroTable::with_dictionary(RealMode::Hybrid)?;
++        let mut out = VectorRestartRun {
++            event_time: root,
++            policy: reset_policy,
++            cells: vec![],
++            synchronized_x: None,
++            incoming_radius: None,
++            restart_branch: None,
++            reason: None,
++            post_trial: None,
++        };
++        let mut covered = root[0];
++        let mut total: Option<Vec<[f64; 2]>> = None;
++        for slab in &self.trial.slabs {
++            let lo = root[0].max(slab.times[0]);
++            let hi = root[1].min(slab.times[1]);
++            if lo > hi {
++                continue;
++            }
++            if lo > covered {
++                return Err(bad("vector reset coverage gap"));
++            }
++            let c = slab
++                .certificate
++                .as_ref()
++                .filter(|v| v.global_qualified)
++                .ok_or_else(|| bad("uncertified vector reset slab"))?;
++            let power = slab
++                .power
++                .iter()
++                .map(|row| {
++                    row.iter()
++                        .map(|v| Iv::new(v[0], v[1]))
++                        .collect::<CoreResult<Vec<_>>>()
++                })
++                .collect::<CoreResult<Vec<_>>>()?;
++            let n = if lo == hi {
++                1
++            } else {
++                reset_policy.subdivisions
++            };
++            let mut a = lo;
++            for j in 1..=n {
++                let b = if j == n {
++                    hi
++                } else {
++                    (lo + (hi - lo) * (j as f64 / n as f64)).clamp(a, hi)
++                };
++                if out.cells.len() >= 64 {
++                    out.reason = Some("vector reset cell cap exhausted".into());
++                    return Ok(out);
++                }
++                let mut cell = VectorResetCell {
++                    times: [a, b],
++                    reset: vec![],
++                    tube: None,
++                    sync: None,
++                    reason: None,
++                };
++                let result = (|| -> CoreResult<()> {
++                    for r in reset {
++                        cell.reset.push(de::vector_reset_component(
++                            &self.trial.engine.src,
++                            r,
++                            &power,
++                            c,
++                            [a, b],
++                            reset_policy.sync,
++                            reset_policy.derivative,
++                        )?);
++                    }
++                    let r = cell.reset.iter().map(|v| v.enclosure).collect::<Vec<_>>();
++                    let tube = de::certify_vector_tube(
++                        post_src,
++                        [a, root[1]],
++                        &r,
++                        z_seed,
++                        branch,
++                        policy.init,
++                        reset_policy.branch_route,
++                    )?;
++                    let sync = de::synchronize_vector(
++                        &cell.reset,
++                        [a, b],
++                        root[1],
++                        &tube,
++                        reset_policy.sync,
++                        &table,
++                    );
++                    cell.tube = Some(tube);
++                    let sync = sync?;
++                    if let Some(h) = total.as_mut() {
++                        for (v, &w) in h.iter_mut().zip(&sync.synchronized) {
++                            v[0] = v[0].min(w[0]);
++                            v[1] = v[1].max(w[1]);
++                        }
++                    } else {
++                        total = Some(sync.synchronized.clone());
++                    }
++                    cell.sync = Some(sync);
++                    Ok(())
++                })();
++                if let Err(e) = result {
++                    let e = e.to_string();
++                    cell.reason = Some(e.clone());
++                    out.cells.push(cell);
++                    out.reason = Some(e);
++                    return Ok(out);
++                }
++                out.cells.push(cell);
++                a = b;
++            }
++            covered = covered.max(hi);
++        }
++        if covered != root[1] || total.is_none() {
++            return Err(bad("vector reset coverage incomplete"));
++        }
++        let sync = total.expect("nonempty synchronized box");
++        let center = sync
++            .iter()
++            .map(|v| (v[0] * 0.5 + v[1] * 0.5).clamp(v[0], v[1]))
++            .collect::<Vec<_>>();
++        let mut radius = 0_f64;
++        for (b, &c) in sync.iter().zip(&center) {
++            radius = radius.max(diameter(b[0], c)?.max(diameter(c, b[1])?));
++        }
++        let ball = center
++            .iter()
++            .map(|&v| {
++                Iv::point(v)?
++                    .add(Iv::new(-radius, radius)?)
++                    .map(|x| x.as_pair())
++            })
++            .collect::<CoreResult<Vec<_>>>()?;
++        out.synchronized_x = Some(sync);
++        out.incoming_radius = Some(radius);
++        let proof = match de::certify_vector_branch(
++            post_src,
++            [root[1], root[1]],
++            &ball,
++            &center,
++            z_seed,
++            branch,
++            policy.init,
++            reset_policy.branch_route,
++        ) {
++            Ok(v) => v,
++            Err(e) => {
++                out.reason = Some(e.to_string());
++                return Ok(out);
++            }
++        };
++        let z = proof.initial.z.clone();
++        out.restart_branch = Some(proof);
++        match evolve_epoch(
++            post_src,
++            &center,
++            &z,
++            branch,
++            EvolutionEpoch {
++                start: root[1],
++                end,
++                incoming_x_error: Some(radius),
++            },
++            opts,
++            policy,
++            route,
++            grid,
++        ) {
++            Ok(v) => {
++                if !v.global_qualified || !v.branch_qualified || !v.pointwise_qualified {
++                    out.reason = Some("vector post physical trajectory not qualified".into());
++                }
++                out.post_trial = Some(v);
++            }
++            Err(e) => out.reason = Some(e.to_string()),
++        }
++        Ok(out)
++    }
++}

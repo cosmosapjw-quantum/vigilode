@@ -1,0 +1,240 @@
+--- a/crates/rodas5p-integrators/src/retro_dae_evolution.rs
++++ b/crates/rodas5p-integrators/src/retro_dae_evolution.rs
+@@ -676,3 +676,237 @@
+     let f = di::evaluate(&src.f, Iv::new(c.times[0], c.times[1])?, &y)?;
+     Ok(f.v[0])
+ }
++
++/// Alternative physical tangent enclosures. A prepared inverse is only a
++/// candidate; its defect against the original interval Jacobian is checked.
++#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
++pub enum GuardDerivativeRoute {
++    Tangent,
++    Schur,
++    PreparedSchur,
++}
++#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
++pub enum GuardValueRoute {
++    Box,
++    Transport,
++}
++
++#[derive(Clone, Debug, Serialize)]
++pub struct GuardPointEvidence {
++    pub time: f64,
++    pub differential_radius: f64,
++    pub value: [f64; 2],
++}
++#[derive(Clone, Debug, Serialize)]
++pub struct GuardSlabEvidence {
++    pub evaluations: Vec<GuardPointEvidence>,
++    pub times: [f64; 2],
++    pub derivative_route: GuardDerivativeRoute,
++    pub value_route: GuardValueRoute,
++    pub velocity: [f64; 2],
++    pub reduced_gradient: Vec<[f64; 2]>,
++    pub reduced_clock: [f64; 2],
++    pub inverse_defect: f64,
++    pub reduced_lip: f64,
++    pub algebraic_guard_lip: f64,
++    pub prepared_work: InitWork,
++}
++
++/// Conditional on an authentic certificate for the same original source,
++/// polynomial and slab. Only the facade constructs event authority.
++pub struct GuardProof<'a> {
++    guard: &'a DeclaredPolynomial,
++    y: &'a [Poly],
++    nx: usize,
++    times: [f64; 2],
++    x_range: Vec<Iv>,
++    z_range: Vec<Iv>,
++    root_box: Vec<Iv>,
++    h_poly: Poly,
++    cg_poly: Vec<Poly>,
++    gap: f64,
++    zx_lip: f64,
++    whole_x: f64,
++    pub evidence: GuardSlabEvidence,
++}
++fn iv_pairs(v: &[[f64; 2]]) -> CoreResult<Vec<Iv>> {
++    v.iter().map(|a| Iv::new(a[0], a[1])).collect()
++}
++fn intersect(a: Iv, b: Iv) -> CoreResult<Iv> {
++    Iv::new(a.lo.max(b.lo), a.hi.min(b.hi))
++}
++fn guard_dot(a: &[Iv], b: &[Iv]) -> CoreResult<Iv> {
++    a.iter()
++        .zip(b)
++        .try_fold(zero(), |s, (&a, &b)| s.add(a.mul(b)?))
++}
++impl<'a> GuardProof<'a> {
++    pub fn new(
++        src: &DaeSource,
++        guard: &'a DeclaredPolynomial,
++        y: &'a [Poly],
++        cert: &SlabCertificate,
++        derivative: GuardDerivativeRoute,
++        value: GuardValueRoute,
++    ) -> CoreResult<Self> {
++        let nx = src.nx();
++        let nz = src.nz();
++        guard.validate(nx + nz)?;
++        if !cert.global_qualified
++            || y.len() != nx + nz
++            || cert.x_range.len() != nx
++            || cert.z_range.len() != nz
++            || cert.branch_root_box.len() != nz
++            || cert.preconditioner.len() != nz * nz
++        {
++            return Err(bad("guard source/slab shape"));
++        }
++        let time = Iv::new(cert.times[0], cert.times[1])?;
++        let xb = iv_pairs(&cert.x_range)?;
++        let zb = iv_pairs(&cert.z_range)?;
++        let rb = iv_pairs(&cert.branch_root_box)?;
++        let mut physical = xb.clone();
++        physical.extend_from_slice(&rb);
++        let f = di::evaluate(&src.f, time, &physical)?;
++        let g = di::evaluate(&src.g, time, &physical)?;
++        let hg = di::evaluate(std::slice::from_ref(guard), time, &physical)?;
++        let h = &hg.j[0];
++        let j = jz(&g, nx);
++        let original = DenseMatrix::new(nz, nz, cert.preconditioner.clone())?;
++        let mut work = InitWork::default();
++        let c = if derivative == GuardDerivativeRoute::PreparedSchur {
++            let center = di::center_matrix(&j)?;
++            di::preconditioner(
++                &center,
++                InitRoute::PreparedBatch,
++                &ParallelExecution::sequential(),
++                &mut work,
++            )?
++        } else {
++            original.clone()
++        };
++        let q = di::rows_norm(&di::defect(&c, &j)?)?;
++        let gap = sub_down(1., q)?;
++        if gap <= 0. {
++            return Err(bad("guard inverse defect"));
++        }
++        let solve =
++            |rhs: &[Iv]| -> CoreResult<Vec<Iv>> { product_bound(q, gap, &di::matvec(&c, rhs)?) };
++        let hz = &h[1 + nx..];
++        let mut reduced = Vec::with_capacity(nx + 1);
++        for (k, &hk) in h[..=nx].iter().enumerate() {
++            let rhs = g.j.iter().map(|r| -r[k]).collect::<Vec<_>>();
++            reduced.push(hk.add(guard_dot(hz, &solve(&rhs)?)?)?);
++        }
++        let velocity = if derivative == GuardDerivativeRoute::Tangent {
++            let rhs =
++                g.j.iter()
++                    .map(|r| r[0].add(guard_dot(&r[1..1 + nx], &f.v)?).map(|v| -v))
++                    .collect::<CoreResult<Vec<_>>>()?;
++            h[0].add(guard_dot(&h[1..1 + nx], &f.v)?)?
++                .add(guard_dot(hz, &solve(&rhs)?)?)?
++        } else {
++            reduced[0].add(guard_dot(&reduced[1..], &f.v)?)?
++        };
++        let reduced_lip = di::rows_norm(&[reduced[1..].to_vec()])?;
++        // The straight segment between represented V and true Z(t,U)
++        // lies in this hull; use it for the algebraic correction only.
++        let mut hull = xb.clone();
++        for (&v, &r) in zb.iter().zip(&rb) {
++            hull.push(Iv::new(v.lo.min(r.lo), v.hi.max(r.hi))?);
++        }
++        let hh = di::evaluate(std::slice::from_ref(guard), time, &hull)?;
++        let algebraic_guard_lip = di::rows_norm(&[hh.j[0][1 + nx..].to_vec()])?;
++        let clock = [p(cert.times[0])?, p(cert.times[1])?.sub(p(cert.times[0])?)?];
++        let h_poly = compose(guard, &clock, y)?;
++        let gp = src
++            .g
++            .iter()
++            .map(|g| compose(g, &clock, y))
++            .collect::<CoreResult<Vec<_>>>()?;
++        let cg_poly = c_polys(&original, &gp)?;
++        let original_gap = sub_down(1., cert.branch_defect)?;
++        if original_gap <= 0. {
++            return Err(bad("guard original branch defect"));
++        }
++        let whole_x = cert
++            .whole_x_error
++            .ok_or_else(|| bad("guard physical radius"))?;
++        Ok(Self {
++            guard,
++            y,
++            nx,
++            times: cert.times,
++            x_range: xb,
++            z_range: zb,
++            root_box: rb,
++            h_poly,
++            cg_poly,
++            gap: original_gap,
++            zx_lip: cert.zx_norm_upper,
++            whole_x,
++            evidence: GuardSlabEvidence {
++                evaluations: vec![],
++                times: cert.times,
++                derivative_route: derivative,
++                value_route: value,
++                velocity: velocity.as_pair(),
++                reduced_gradient: reduced[1..].iter().map(|v| v.as_pair()).collect(),
++                reduced_clock: reduced[0].as_pair(),
++                inverse_defect: q,
++                reduced_lip,
++                algebraic_guard_lip,
++                prepared_work: work,
++            },
++        })
++    }
++    /// Only an advisory polynomial, never an authority on physical roots.
++    pub fn hint_coefficients(&self) -> Vec<f64> {
++        self.h_poly.iter().map(|&v| di::mid(v)).collect()
++    }
++    /// At a physical time in the certified slab; error must be an externally
++    /// established differential radius (endpoint or whole-slab).
++    pub fn value_at(&self, t: f64, error: f64) -> CoreResult<Iv> {
++        if !(self.times[0] <= t && t <= self.times[1])
++            || !error.is_finite()
++            || error < 0.
++            || error > self.whole_x
++        {
++            return Err(bad("guard query outside physical radius"));
++        }
++        let u = p(t)?
++            .sub(p(self.times[0])?)?
++            .div(p(self.times[1])?.sub(p(self.times[0])?)?)?;
++        let u = Iv::new(u.lo.max(0.), u.hi.min(1.))?;
++        let cg = self
++            .cg_poly
++            .iter()
++            .map(|v| eval(v, u))
++            .collect::<CoreResult<Vec<_>>>()?;
++        let az = div_up(di::norm(&cg), self.gap)?;
++        match self.evidence.value_route {
++            GuardValueRoute::Transport => {
++                let r = add_up(
++                    mul_up(self.evidence.reduced_lip, error)?,
++                    mul_up(self.evidence.algebraic_guard_lip, az)?,
++                )?;
++                eval(&self.h_poly, u)?.add(Iv::new(-r, r)?)
++            }
++            GuardValueRoute::Box => {
++                let mut values = Vec::with_capacity(self.y.len());
++                let ez = add_up(az, mul_up(self.zx_lip, error)?)?;
++                for (i, v) in self.y.iter().enumerate() {
++                    let a = eval(v, u)?;
++                    if i < self.nx {
++                        values.push(intersect(a.add(Iv::new(-error, error)?)?, self.x_range[i])?);
++                    } else {
++                        let k = i - self.nx;
++                        let a = intersect(a, self.z_range[k])?;
++                        values.push(intersect(a.add(Iv::new(-ez, ez)?)?, self.root_box[k])?);
++                    }
++                }
++                Ok(di::evaluate(std::slice::from_ref(self.guard), p(t)?, &values)?.v[0])
++            }
++        }
++    }
++}

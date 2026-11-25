@@ -1,0 +1,75 @@
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/vigilode)
+error[E0425]: cannot find type `MultiGuardRoute` in this scope
+  --> crates/vigilode/tests/dae_multi_guard_contracts.rs:17:17
+   |
+17 | fn order(method:MultiGuardRoute)->MultiGuardPolicy{MultiGuardPolicy{meth...
+   |                 ^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `MultiGuardPolicy` in this scope
+  --> crates/vigilode/tests/dae_multi_guard_contracts.rs:17:35
+   |
+17 | ...iGuardRoute)->MultiGuardPolicy{MultiGuardPolicy{method,tolerance:1e-3...
+   |                  ^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `MultiGuardPolicy` in this scope
+  --> crates/vigilode/tests/dae_multi_guard_contracts.rs:17:52
+   |
+17 | ...tiGuardPolicy{MultiGuardPolicy{method,tolerance:1e-3,root_route:Thres...
+   |                  ^^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `MultiGuardRoute` in this scope
+  --> crates/vigilode/tests/dae_multi_guard_contracts.rs:18:35
+   |
+18 | fn run(guards:&[P],rad:f64,method:MultiGuardRoute)->MultiGuardRun{
+   |                                   ^^^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find type `MultiGuardRun` in this scope
+  --> crates/vigilode/tests/dae_multi_guard_contracts.rs:18:53
+   |
+18 | fn run(guards:&[P],rad:f64,method:MultiGuardRoute)->MultiGuardRun{
+   |                                                     ^^^^^^^^^^^^^ not found in this scope
+
+error[E0425]: cannot find function `evolve_to_first_guard` in this scope
+    --> crates/vigilode/tests/dae_multi_guard_contracts.rs:19:2
+     |
+  19 |    evolve_to_first_guard(&src(),&[0.],&[0.],&[[-1.,5.]],ep(rad),&opts(...
+     |    ^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/vigilode/src/dae_evolution.rs:1345:1
+     |
+1345 | / pub fn evolve_to_guard(
+1346 | |     src: &DaeSource,
+1347 | |     x: &[f64],
+1348 | |     z: &[f64],
+...    |
+1358 | |     value: GuardValueRoute,
+1359 | | ) -> CoreResult<ThresholdRun> {
+     | |_____________________________- similarly named function `evolve_to_guard` defined here
+     |
+help: a function with a similar name exists
+     |
+  19 -  evolve_to_first_guard(&src(),&[0.],&[0.],&[[-1.,5.]],ep(rad),&opts(),policy(),EvolutionRoute::Mass,guards,order(method)).unwrap()
+  19 +  evolve_to_guard(&src(),&[0.],&[0.],&[[-1.,5.]],ep(rad),&opts(),policy(),EvolutionRoute::Mass,guards,order(method)).unwrap()
+     |
+
+error[E0433]: failed to resolve: use of undeclared type `MultiGuardRoute`
+  --> crates/vigilode/tests/dae_multi_guard_contracts.rs:25:12
+   |
+25 |  for m in [MultiGuardRoute::Independent,MultiGuardRoute::Shared]{
+   |            ^^^^^^^^^^^^^^^ use of undeclared type `MultiGuardRoute`
+
+error[E0433]: failed to resolve: use of undeclared type `MultiGuardRoute`
+  --> crates/vigilode/tests/dae_multi_guard_contracts.rs:25:41
+   |
+25 |  for m in [MultiGuardRoute::Independent,MultiGuardRoute::Shared]{
+   |                                         ^^^^^^^^^^^^^^^ use of undeclared type `MultiGuardRoute`
+
+error[E0433]: failed to resolve: use of undeclared type `MultiGuardRoute`
+  --> crates/vigilode/tests/dae_multi_guard_contracts.rs:28:24
+   |
+28 |  let r=run(&guards,rad,MultiGuardRoute::Correlated);
+   |                        ^^^^^^^^^^^^^^^ use of undeclared type `MultiGuardRoute`
+
+Some errors have detailed explanations: E0422, E0425, E0433.
+For more information about an error, try `rustc --explain E0422`.
+error: could not compile `vigilode` (test "dae_multi_guard_contracts") due to 9 previous errors

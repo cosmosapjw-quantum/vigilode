@@ -1,0 +1,6 @@
+Verify SOURCE_SHA256SUMS in worktree, or apply IMPLEMENTATION_FROM_E0121EC7.patch to exact parent and copy seven dae_*_contracts.rs to crates/vigilode/tests. Rust 1.94.1 locked offline deps.
+export CARGO_TARGET_DIR=/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain
+cargo test --locked --offline --release -j6 -p vigilode --features polynomial-events --test dae_multi_guard_contracts --test dae_vector_reset_contracts --test dae_nonlinear_reset_contracts --test dae_pending_guard_contracts --test dae_general_guard_contracts --test dae_event_stop_contracts --test dae_epoch_restart_contracts --test dae_evolution_contracts --test polynomial_event_contracts --test event_transaction_contracts -- --test-threads=1
+cargo check --locked --offline -j6 -p vigilode --no-default-features
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_multi_guard_contracts training -- --ignored --exact --nocapture --test-threads=1
+Capture CELL rows as training.log in fresh evidence directory. Copy guide.py/audit.py, run guide.py generate with fresh ledger, audit.py, guide.py select. Replay compare parsed CELL JSON only, not durations. Prior vector reset replay same training command with --test dae_vector_reset_contracts. No holdout.

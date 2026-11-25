@@ -1,0 +1,16 @@
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/vigilode)
+error[E0433]: failed to resolve: use of undeclared type `ThresholdRoute`
+  --> crates/vigilode/tests/dae_event_stop_contracts.rs:14:99
+   |
+14 | ...1,1e-6,ThresholdRoute::Bisection).unwrap();
+   |           ^^^^^^^^^^^^^^ use of undeclared type `ThresholdRoute`
+
+error[E0425]: cannot find function `evolve_to_threshold` in this scope
+  --> crates/vigilode/tests/dae_event_stop_contracts.rs:14:11
+   |
+14 |   let run=evolve_to_threshold(&src(),&[0.],&[0.],&[[-1.,8.]],ep,&opts(),...
+   |           ^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+Some errors have detailed explanations: E0425, E0433.
+For more information about an error, try `rustc --explain E0425`.
+error: could not compile `vigilode` (test "dae_event_stop_contracts") due to 2 previous errors

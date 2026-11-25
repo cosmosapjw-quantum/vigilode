@@ -1,0 +1,52 @@
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/vigilode)
+error[E0422]: cannot find struct, variant or union type `AffineDaeReset` in this scope
+   --> crates/vigilode/tests/dae_event_stop_contracts.rs:103:11
+    |
+103 |   let cfg=AffineDaeReset{rate:1.,equilibrium:0.,offset:1.5,time_scale:-...
+    |           ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0422]: cannot find struct, variant or union type `AffineDaeReset` in this scope
+   --> crates/vigilode/tests/dae_event_stop_contracts.rs:126:27
+    |
+126 |  assert!(r.restart_affine(AffineDaeReset{rate:1.,equilibrium:0.,offset:...
+    |                           ^^^^^^^^^^^^^^ not found in this scope
+
+error[E0433]: failed to resolve: use of undeclared type `AffineSyncRoute`
+   --> crates/vigilode/tests/dae_event_stop_contracts.rs:102:22
+    |
+102 | ...e in [AffineSyncRoute::Rectangle,AffineSyncRoute::GreenMoment,Affine...
+    |          ^^^^^^^^^^^^^^^ use of undeclared type `AffineSyncRoute`
+
+error[E0433]: failed to resolve: use of undeclared type `AffineSyncRoute`
+   --> crates/vigilode/tests/dae_event_stop_contracts.rs:102:49
+    |
+102 | ...angle,AffineSyncRoute::GreenMoment,AffineSyncRoute::CriticalPoint]{
+    |          ^^^^^^^^^^^^^^^ use of undeclared type `AffineSyncRoute`
+
+error[E0433]: failed to resolve: use of undeclared type `AffineSyncRoute`
+   --> crates/vigilode/tests/dae_event_stop_contracts.rs:102:78
+    |
+102 | ...oment,AffineSyncRoute::CriticalPoint]{
+    |          ^^^^^^^^^^^^^^^ use of undeclared type `AffineSyncRoute`
+
+error[E0599]: no method named `restart_affine` found for struct `ThresholdRun` in the current scope
+   --> crates/vigilode/tests/dae_event_stop_contracts.rs:106:13
+    |
+106 |   let r=pre.restart_affine(cfg,reset_constraints(),&[3.],&[[-4.,5.]],en...
+    |             ^^^^^^^^^^^^^^ method not found in `ThresholdRun`
+
+error[E0599]: no method named `restart_affine` found for struct `ThresholdRun` in the current scope
+   --> crates/vigilode/tests/dae_event_stop_contracts.rs:126:12
+    |
+126 |  assert!(r.restart_affine(AffineDaeReset{rate:1.,equilibrium:0.,offset:...
+    |            ^^^^^^^^^^^^^^ method not found in `ThresholdRun`
+
+error[E0433]: failed to resolve: use of undeclared type `AffineSyncRoute`
+   --> crates/vigilode/tests/dae_event_stop_contracts.rs:126:169
+    |
+126 | ...:Mass,AffineSyncRoute::Rectangle,&[]).is_err());
+    |          ^^^^^^^^^^^^^^^ use of undeclared type `AffineSyncRoute`
+
+Some errors have detailed explanations: E0422, E0433, E0599.
+For more information about an error, try `rustc --explain E0422`.
+error: could not compile `vigilode` (test "dae_event_stop_contracts") due to 8 previous errors

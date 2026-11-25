@@ -1,0 +1,34 @@
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/vigilode)
+error[E0422]: cannot find struct, variant or union type `PendingPolicy` in this scope
+  --> crates/vigilode/tests/dae_pending_guard_contracts.rs:23:174
+   |
+23 | ...oute::Transport,PendingPolicy{method,max_slabs:8}).unwrap();
+   |                    ^^^^^^^^^^^^^ not found in this scope
+
+error[E0433]: failed to resolve: use of undeclared type `PendingMethod`
+  --> crates/vigilode/tests/dae_pending_guard_contracts.rs:22:18
+   |
+22 |   for method in [PendingMethod::Hull,PendingMethod::Piecewise,PendingMet...
+   |                  ^^^^^^^^^^^^^ use of undeclared type `PendingMethod`
+
+error[E0433]: failed to resolve: use of undeclared type `PendingMethod`
+  --> crates/vigilode/tests/dae_pending_guard_contracts.rs:22:38
+   |
+22 | ...d::Hull,PendingMethod::Piecewise,PendingMethod::PiecewiseProbe]{
+   |            ^^^^^^^^^^^^^ use of undeclared type `PendingMethod`
+
+error[E0433]: failed to resolve: use of undeclared type `PendingMethod`
+  --> crates/vigilode/tests/dae_pending_guard_contracts.rs:22:63
+   |
+22 | ...ecewise,PendingMethod::PiecewiseProbe]{
+   |            ^^^^^^^^^^^^^ use of undeclared type `PendingMethod`
+
+error[E0425]: cannot find function `evolve_to_guard_pending` in this scope
+  --> crates/vigilode/tests/dae_pending_guard_contracts.rs:23:10
+   |
+23 |    let r=evolve_to_guard_pending(&s,&[0.],&[0.],&b,ep(0.,2.),&o,policy()...
+   |          ^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope
+
+Some errors have detailed explanations: E0422, E0425, E0433.
+For more information about an error, try `rustc --explain E0422`.
+error: could not compile `vigilode` (test "dae_pending_guard_contracts") due to 5 previous errors

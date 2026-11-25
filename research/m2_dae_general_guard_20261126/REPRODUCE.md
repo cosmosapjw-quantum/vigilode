@@ -1,0 +1,6 @@
+Use the local worktree and verify SOURCE_SHA256SUMS; or reconstruct from exact base by applying IMPLEMENTATION_FROM_E0121EC7.patch and copying GUARD_TEST_SOURCE.rs, EVENT_TEST_SOURCE.rs and EPOCH_TEST_SOURCE.rs to crate tests. Rust 1.94.1, locked offline dependencies.
+export CARGO_TARGET_DIR=/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain
+cargo test --locked --offline --release -j6 -p vigilode --features polynomial-events --test dae_general_guard_contracts --test dae_event_stop_contracts --test dae_epoch_restart_contracts --test dae_evolution_contracts --test polynomial_event_contracts --test event_transaction_contracts -- --test-threads=1
+cargo check --locked --offline -j6 -p vigilode --no-default-features
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_general_guard_contracts training -- --ignored --exact --nocapture --test-threads=1
+Capture CELL rows into training.log in a fresh evidence directory. Run guide.py generate (fresh exact ledger), audit.py, guide.py select. Compare fixed JSON receipts from repeated runs; exclude test harness duration. Old M2-03b training replay command same with --test dae_event_stop_contracts. No holdout.

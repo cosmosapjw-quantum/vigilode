@@ -1,0 +1,26 @@
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/vigilode)
+error[E0425]: cannot find function `evolve_to_guard_checkpoint` in this scope
+    --> crates/vigilode/tests/dae_pending_guard_contracts.rs:175:8
+     |
+ 175 |    let r=evolve_to_guard_checkpoint(&src,&[0.],&[0.],&b,ep(0.,2.),&o,p...
+     |          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/vigilode/src/dae_evolution.rs:1360:1
+     |
+1360 | / pub fn evolve_to_guard_pending(
+1361 | |     src: &DaeSource,
+1362 | |     x: &[f64],
+1363 | |     z: &[f64],
+...    |
+1374 | |     pending: PendingPolicy,
+1375 | | ) -> CoreResult<ThresholdRun> {
+     | |_____________________________- similarly named function `evolve_to_guard_pending` defined here
+     |
+help: a function with a similar name exists
+     |
+ 175 -  let r=evolve_to_guard_checkpoint(&src,&[0.],&[0.],&b,ep(0.,2.),&o,po,EvolutionRoute::Mass,&h,1e-6,ThresholdRoute::IntervalNewton,GuardDerivativeRoute::Schur,GuardValueRoute::Transport,PendingPolicy{method:PendingMethod::Piecewise,max_slabs:1}).unwrap();
+ 175 +  let r=evolve_to_guard_pending(&src,&[0.],&[0.],&b,ep(0.,2.),&o,po,EvolutionRoute::Mass,&h,1e-6,ThresholdRoute::IntervalNewton,GuardDerivativeRoute::Schur,GuardValueRoute::Transport,PendingPolicy{method:PendingMethod::Piecewise,max_slabs:1}).unwrap();
+     |
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `vigilode` (test "dae_pending_guard_contracts") due to 1 previous error

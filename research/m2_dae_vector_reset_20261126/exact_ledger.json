@@ -1,0 +1,291 @@
+{
+  "schema_version": "3.1.0",
+  "events": [
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "CENTERED",
+      "payload": {
+        "claim_id": "CENTERED",
+        "statement": "P+(s-t)*F = P+(s-t)*k+(s-t)*(F-k)",
+        "formal_statement": "POLY_IDENTITY: F*s - F*t + P = F*s - F*t + P",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite polynomial identities only"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795626853.5306242,
+      "seq": 0,
+      "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "4f814adda186319c34b55633f1625e10879f36537d782fc57d9429d89a282b51"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "CENTERED",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "519f137c7231e7a71cceb52ceed57c317b44475c02abd5649dc9442d342da4d3",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "P+(s-t)*F",
+            "rhs": "P+(s-t)*k+(s-t)*(F-k)"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: F*s - F*t + P = F*s - F*t + P",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-25T17:14:13Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795626853.5328236,
+      "seq": 1,
+      "prev_hash": "4f814adda186319c34b55633f1625e10879f36537d782fc57d9429d89a282b51",
+      "hash": "b68f1b0647fbdf6128f06d6b2943e487ae90497e607defbdccfa714952036a58"
+    },
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "SPLIT",
+      "payload": {
+        "claim_id": "SPLIT",
+        "statement": "F = -(X-e)+(F+X-e)",
+        "formal_statement": "POLY_IDENTITY: F = F",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite polynomial identities only"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795626853.5331354,
+      "seq": 2,
+      "prev_hash": "b68f1b0647fbdf6128f06d6b2943e487ae90497e607defbdccfa714952036a58",
+      "hash": "49e31f5dccc9d0a9a5d6d69d16a6ab40007f52783c0c2da4db75da35a0781245"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "SPLIT",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "e98232c1779a0c3a3d6dfc9b883840e5f2f72b204f00f67ea0803cf5ff909926",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "F",
+            "rhs": "-(X-e)+(F+X-e)"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: F = F",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-25T17:14:13Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795626853.5338137,
+      "seq": 3,
+      "prev_hash": "49e31f5dccc9d0a9a5d6d69d16a6ab40007f52783c0c2da4db75da35a0781245",
+      "hash": "b099b6c8a0d1c4aad0471db2f65fc08edc3b8d12a8a39a4b12e8e7a3b5b1d900"
+    },
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "EXCURSION",
+      "payload": {
+        "claim_id": "EXCURSION",
+        "statement": "(a-q)*(a-q)-(b-q)*(b-q) = (a-b)*(a+b-2*q)",
+        "formal_statement": "POLY_IDENTITY: -2*a*q + a^2 + 2*b*q - b^2 = -2*a*q + a^2 + 2*b*q - b^2",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite polynomial identities only"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795626853.5342758,
+      "seq": 4,
+      "prev_hash": "b099b6c8a0d1c4aad0471db2f65fc08edc3b8d12a8a39a4b12e8e7a3b5b1d900",
+      "hash": "a9143ad5c9534fb4ae3a195b9c2db363cfcab9d13f9f9ddca13c7cce5a739952"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "EXCURSION",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "680c4f95b8074ab2fccc79db852b2be5eeaefcc1cf6af4b8555de652b8c8da4d",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "(a-q)*(a-q)-(b-q)*(b-q)",
+            "rhs": "(a-b)*(a+b-2*q)"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: -2*a*q + a^2 + 2*b*q - b^2 = -2*a*q + a^2 + 2*b*q - b^2",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-25T17:14:13Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795626853.5369022,
+      "seq": 5,
+      "prev_hash": "a9143ad5c9534fb4ae3a195b9c2db363cfcab9d13f9f9ddca13c7cce5a739952",
+      "hash": "870dd92fc16acc9c3bf569d4feb75df9f1e7f595697f20d70261ba298d968ec2"
+    }
+  ],
+  "claims": {
+    "CENTERED": {
+      "claim_id": "CENTERED",
+      "statement": "P+(s-t)*F = P+(s-t)*k+(s-t)*(F-k)",
+      "formal_statement": "POLY_IDENTITY: F*s - F*t + P = F*s - F*t + P",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite polynomial identities only"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "519f137c7231e7a71cceb52ceed57c317b44475c02abd5649dc9442d342da4d3",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "P+(s-t)*F",
+              "rhs": "P+(s-t)*k+(s-t)*(F-k)"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: F*s - F*t + P = F*s - F*t + P",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-25T17:14:13Z"
+        }
+      ]
+    },
+    "SPLIT": {
+      "claim_id": "SPLIT",
+      "statement": "F = -(X-e)+(F+X-e)",
+      "formal_statement": "POLY_IDENTITY: F = F",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite polynomial identities only"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "e98232c1779a0c3a3d6dfc9b883840e5f2f72b204f00f67ea0803cf5ff909926",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "F",
+              "rhs": "-(X-e)+(F+X-e)"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: F = F",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-25T17:14:13Z"
+        }
+      ]
+    },
+    "EXCURSION": {
+      "claim_id": "EXCURSION",
+      "statement": "(a-q)*(a-q)-(b-q)*(b-q) = (a-b)*(a+b-2*q)",
+      "formal_statement": "POLY_IDENTITY: -2*a*q + a^2 + 2*b*q - b^2 = -2*a*q + a^2 + 2*b*q - b^2",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite polynomial identities only"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "680c4f95b8074ab2fccc79db852b2be5eeaefcc1cf6af4b8555de652b8c8da4d",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "(a-q)*(a-q)-(b-q)*(b-q)",
+              "rhs": "(a-b)*(a+b-2*q)"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: -2*a*q + a^2 + 2*b*q - b^2 = -2*a*q + a^2 + 2*b*q - b^2",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-25T17:14:13Z"
+        }
+      ]
+    }
+  },
+  "head": "870dd92fc16acc9c3bf569d4feb75df9f1e7f595697f20d70261ba298d968ec2",
+  "trust": [
+    "PROVED_EXACT_CERTIFICATE",
+    "PROVED_FORMAL_KERNEL"
+  ]
+}

@@ -1,0 +1,135 @@
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/vigilode)
+    Finished `release` profile [optimized] target(s) in 1m 13s
+     Running tests/dae_epoch_restart_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/dae_epoch_restart_contracts-321c93ca15cf240b)
+
+running 7 tests
+test forcing_uses_absolute_time ... ok
+test green_moment_reset_to_native_epoch ... ok
+test physical_epoch_and_carried_radius ... ok
+test reanchored_warp_pencil ... ok
+test training ... ignored, candidate campaign
+test unknown_and_overlarge_never_certified ... ok
+test zero_origin_legacy_equivalence ... ok
+
+test result: ok. 6 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.19s
+
+     Running tests/dae_event_stop_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/dae_event_stop_contracts-4985f2db4b9c2516)
+
+running 5 tests
+test ambiguity_and_projection_authority ... ok
+test detected_event_resets_at_physical_upper_clock ... ok
+test first_physical_crossing_stops_native_driver ... ok
+test negative_controls_and_no_event ... ok
+test training ... ignored, finite development campaign
+
+test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/dae_evolution_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/dae_evolution_contracts-4ef63716e2c528ac)
+
+running 8 tests
+test dense_constraint_projection ... ok
+test holdout ... ignored, frozen selected paths
+test physical_tube_and_schur_reconstruction ... ok
+test rank_loss_ambiguity_and_false_global_claim ... ok
+test recovery ... ignored, separate post-holdout fallback diagnostic
+test red_options_matched_dense_projection ... ok
+test training ... ignored, finite candidate campaign
+test warp_is_real_pencil_and_original_projection ... ok
+
+test result: ok. 5 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running tests/dae_general_guard_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/dae_general_guard_contracts-8a08088c62eab92f)
+
+running 4 tests
+test algebraic_guard_is_physical ... ok
+test general_guard_fail_closed ... ok
+test schur_keeps_constraint_cancellation ... ok
+test training ... ignored, finite development campaign
+
+test result: ok. 3 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/dae_mode_chain_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/dae_mode_chain_contracts-71dc93770d1b656b)
+
+running 5 tests
+test actual_warp_chain_and_repeated_mode ... ok
+test cumulative_budget_dwell_and_branch_refusals ... ok
+test synchronization_gap_refusal_and_schur_recovery ... ok
+test three_modes_carry_clock_radius_and_order ... ok
+test training ... ignored, finite chained development campaign
+
+test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+     Running tests/dae_multi_guard_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/dae_multi_guard_contracts-b643ab376b665ac6)
+
+running 5 tests
+test genuine_order_switch_and_exact_tie_refuse ... ok
+test only_selected_vector_transition_is_evaluated ... ok
+test overlap_is_not_a_tie_when_difference_is_certified ... ok
+test shared_native_stop_absence_and_budget ... ok
+test training ... ignored, finite multi-guard development campaign
+
+test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/dae_nonlinear_reset_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/dae_nonlinear_reset_contracts-151770e4dc743a89)
+
+running 6 tests
+test branch_ambiguity_and_wrong_authority_are_refused ... ok
+test exact_clock_warp_and_checkpoint_authority ... ok
+test nominal_branch_is_not_uniform_branch_authority ... ok
+test nonlinear_reset_uses_physical_authority_and_branch ... ok
+test pending_multislab_event_is_covered ... ok
+test training ... ignored, finite development candidate campaign
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests/dae_pending_guard_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/dae_pending_guard_contracts-62742565ab3c6319)
+
+running 6 tests
+test boundary_event_pending_then_certified ... ok
+test cap_horizon_and_uncertainty_floor ... ok
+test checkpoint_cannot_erase_real_uncertainty_or_budget ... ok
+test checkpoint_restart_preserves_old_prefix_and_charges_both_runs ... ok
+test piecewise_derivative_reduces_dependency ... ok
+test training ... ignored, bounded development candidate campaign
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/dae_vector_reset_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/dae_vector_reset_contracts-5da2e31abfd4e31e)
+
+running 5 tests
+test coupled_cancellation_and_exact_clock_warp ... ok
+test intermediate_excursion_requires_flowpipe ... ok
+test no_rank_loss_or_ambiguous_branch_commit ... ok
+test training ... ignored, finite vector reset development campaign
+test vector_nonlinear_source_coupled_restart ... ok
+
+test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/event_transaction_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/event_transaction_contracts-6d5a71afe7d44768)
+
+running 8 tests
+test exact_ties_direction_and_event_order ... ok
+test explicit_banded_and_vector_atol_transaction ... ok
+test failure_rolls_back_entire_containing_proposal ... ok
+test hidden_tangent_is_not_certified ... ok
+test invalid_initial_event_and_invalid_policy_do_not_call_rhs ... ok
+test nonterminal_bitwise_and_zero_at_initial_convention ... ok
+test terminal_prevents_future_fatal_callback ... ok
+test terminal_stops_before_later_rhs_callback ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/polynomial_event_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/polynomial_event_contracts-09956f3ba3ce8f12)
+
+running 8 tests
+test actual_adaptive_portfolio_recomputes_original_count ... ok
+test actual_robertson_packet_export_for_independent_composition ... ok
+test degree16_and_sign_screens_and_refusals ... ok
+test exact_multiplicities_and_boundary_convention ... ok
+test hidden_pair_and_touch_on_real_driver ... ok
+test native_state_and_multicomponent_composition ... ok
+test represented_clock_overlap_is_explicit ... ok
+test zero_and_invalid_declarations_fail_closed ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+

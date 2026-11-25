@@ -1,0 +1,22 @@
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-integrators)
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/vigilode)
+error: implementation of `FnMut` is not general enough
+   --> crates/vigilode/src/dae_evolution.rs:456:69
+    |
+456 | ...ts, &mut inspect).map_err(bad)?
+    |        ^^^^^^^^^^^^ implementation of `FnMut` is not general enough
+    |
+    = note: closure with signature `fn(DenseProposal<'2>) -> AcceptControl` must implement `FnMut<(DenseProposal<'1>,)>`, for any lifetime `'1`...
+    = note: ...but it actually implements `FnMut<(DenseProposal<'2>,)>`, for some specific lifetime `'2`
+
+error: implementation of `FnOnce` is not general enough
+   --> crates/vigilode/src/dae_evolution.rs:456:69
+    |
+456 | ...s, &mut inspect).map_err(bad)?
+    |       ^^^^^^^^^^^^ implementation of `FnOnce` is not general enough
+    |
+    = note: closure with signature `fn(DenseProposal<'2>) -> AcceptControl` must implement `FnOnce<(DenseProposal<'1>,)>`, for any lifetime `'1`...
+    = note: ...but it actually implements `FnOnce<(DenseProposal<'2>,)>`, for some specific lifetime `'2`
+
+error: could not compile `vigilode` (lib) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...

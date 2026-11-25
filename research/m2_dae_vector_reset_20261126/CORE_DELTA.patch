@@ -1,0 +1,457 @@
+--- a/crates/rodas5p-integrators/src/retro_dae_evolution.rs
++++ b/crates/rodas5p-integrators/src/retro_dae_evolution.rs
+@@ -1185,3 +1185,454 @@
+         work,
+     })
+ }
++
++/// Synchronization of a vector reset under an original polynomial post DAE.
++#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
++pub enum VectorSyncRoute {
++    BoxPicard,
++    SchurPicard,
++    Centered,
++    GreenMoment,
++}
++#[derive(Clone, Debug, Serialize)]
++pub struct VectorResetComponent {
++    pub enclosure: [f64; 2],
++    pub transport_error: f64,
++    pub reduced_lip: f64,
++    pub prepared_work: InitWork,
++    #[serde(skip)]
++    power: Poly,
++    #[serde(skip)]
++    native_times: [f64; 2],
++}
++/// Old-mode physical reset image on a subinterval of its authentic slab.
++pub fn vector_reset_component(
++    src: &DaeSource,
++    reset: &DeclaredPolynomial,
++    y: &[Poly],
++    c: &SlabCertificate,
++    times: [f64; 2],
++    route: VectorSyncRoute,
++    derivative: GuardDerivativeRoute,
++) -> CoreResult<VectorResetComponent> {
++    if !(c.times[0] <= times[0] && times[0] <= times[1] && times[1] <= c.times[1]) {
++        return Err(bad("vector reset slab domain"));
++    }
++    let value = if route == VectorSyncRoute::BoxPicard {
++        GuardValueRoute::Box
++    } else {
++        GuardValueRoute::Transport
++    };
++    let proof = GuardProof::new(src, reset, y, c, derivative, value)?;
++    let clock = Iv::new(times[0], times[1])?;
++    let h = p(c.times[1])?.sub(p(c.times[0])?)?;
++    let u = clock.sub(p(c.times[0])?)?.div(h)?;
++    let u = Iv::new(u.lo.max(0.), u.hi.min(1.))?;
++    let cg = proof
++        .cg_poly
++        .iter()
++        .map(|v| eval(v, u))
++        .collect::<CoreResult<Vec<_>>>()?;
++    let az = div_up(di::norm(&cg), proof.gap)?;
++    let ex = proof.whole_x;
++    let er = add_up(
++        mul_up(proof.evidence.reduced_lip, ex)?,
++        mul_up(proof.evidence.algebraic_guard_lip, az)?,
++    )?;
++    let r = if value == GuardValueRoute::Box {
++        let ez = add_up(az, mul_up(proof.zx_lip, ex)?)?;
++        let mut values = Vec::with_capacity(y.len());
++        for (i, v) in y.iter().enumerate() {
++            let b = eval(v, u)?;
++            if i < proof.nx {
++                values.push(intersect(b.add(Iv::new(-ex, ex)?)?, proof.x_range[i])?);
++            } else {
++                let j = i - proof.nx;
++                values.push(intersect(
++                    intersect(b, proof.z_range[j])?.add(Iv::new(-ez, ez)?)?,
++                    proof.root_box[j],
++                )?);
++            }
++        }
++        di::evaluate(std::slice::from_ref(reset), clock, &values)?.v[0]
++    } else {
++        eval(&proof.h_poly, u)?.add(Iv::new(-er, er)?)?
++    };
++    Ok(VectorResetComponent {
++        enclosure: r.as_pair(),
++        transport_error: er,
++        reduced_lip: proof.evidence.reduced_lip,
++        prepared_work: proof.evidence.prepared_work,
++        power: proof.h_poly,
++        native_times: c.times,
++    })
++}
++#[derive(Clone, Debug, Serialize)]
++pub struct VectorBranchProof {
++    pub times: [f64; 2],
++    pub differential_box: Vec<[f64; 2]>,
++    pub root_box: Vec<[f64; 2]>,
++    pub self_map_box: Vec<[f64; 2]>,
++    pub defect: f64,
++    pub condition_upper: f64,
++    pub initial: InitReport,
++    pub work: InitWork,
++    pub field: Vec<[f64; 2]>,
++    pub reduced_jacobian: Vec<Vec<[f64; 2]>>,
++    pub reduced_clock: Vec<[f64; 2]>,
++    pub nominal_field: Vec<[f64; 2]>,
++}
++/// Existence/uniqueness of the declared branch for every time and x in a
++/// rectangular domain, followed by signed Schur bounds of original f.
++#[allow(clippy::too_many_arguments)]
++pub fn certify_vector_branch(
++    src: &DaeSource,
++    times: [f64; 2],
++    xb: &[[f64; 2]],
++    center: &[f64],
++    z_seed: &[f64],
++    branch: &[[f64; 2]],
++    policy: InitPolicy,
++    route: InitRoute,
++) -> CoreResult<VectorBranchProof> {
++    crate::affine_event_certificate::check_affine_event_arithmetic()?;
++    let nx = src.nx();
++    let nz = src.nz();
++    let t = Iv::new(times[0], times[1])?;
++    let x = iv_pairs(xb)?;
++    if x.len() != nx
++        || center.len() != nx
++        || !x.iter().zip(center).all(|(a, &b)| a.contains(b))
++        || policy.mode != InitMode::ProjectAlgebraic
++        || branch.len() != nz
++        || !matches!(
++            route,
++            InitRoute::Reuse | InitRoute::PreparedBatch | InitRoute::ScalarRoot
++        )
++    {
++        return Err(bad("vector uniform branch contract"));
++    }
++    let initial = src.initialize(times[1], center, z_seed, branch, policy, route)?;
++    let b = iv_pairs(branch)?;
++    let zc = di::points(&initial.z)?;
++    let mut point = di::points(center)?;
++    point.extend_from_slice(&zc);
++    let jp = jz(&di::evaluate(&src.g, p(times[1])?, &point)?, nx);
++    let mut work = InitWork::default();
++    let c = di::preconditioner(
++        &di::center_matrix(&jp)?,
++        route,
++        &ParallelExecution::sequential(),
++        &mut work,
++    )?;
++    let mut full = x.clone();
++    full.extend_from_slice(&b);
++    let j = jz(&di::evaluate(&src.g, t, &full)?, nx);
++    let err = di::defect(&c, &j)?;
++    let q = di::rows_norm(&err)?;
++    let gap = sub_down(1., q)?;
++    if gap <= 0. {
++        return Err(bad("vector uniform branch contraction not proved"));
++    }
++    let mut base = x.clone();
++    base.extend_from_slice(&zc);
++    let cg = di::matvec(&c, &di::evaluate(&src.g, t, &base)?.v)?;
++    let image = |local: &[Iv], error: &[Vec<Iv>]| -> CoreResult<Vec<Iv>> {
++        let delta = local
++            .iter()
++            .zip(&zc)
++            .map(|(&v, &z)| v.sub(z))
++            .collect::<CoreResult<Vec<_>>>()?;
++        let ed = di::iv_matvec(error, &delta)?;
++        zc.iter()
++            .zip(&cg)
++            .zip(&ed)
++            .map(|((&z, &v), &w)| z.sub(v)?.add(w))
++            .collect()
++    };
++    let mut local = b.clone();
++    let mut root = image(&local, &err)?;
++    if !di::subset(&root, &local) {
++        let rad = div_up(di::norm(&cg), gap)?;
++        let mut admitted = false;
++        for factor in [1.25, 2., 4., 8., 16., 32.] {
++            let radius = mul_up(factor, rad)?;
++            let trial = zc
++                .iter()
++                .map(|&v| v.add(Iv::new(-radius, radius)?))
++                .collect::<CoreResult<Vec<_>>>()?;
++            if !di::subset(&trial, &b) {
++                continue;
++            }
++            let mut v = x.clone();
++            v.extend_from_slice(&trial);
++            let el = di::defect(&c, &jz(&di::evaluate(&src.g, t, &v)?, nx))?;
++            let candidate = image(&trial, &el)?;
++            if di::subset(&candidate, &trial) {
++                local = trial;
++                root = candidate;
++                admitted = true;
++                break;
++            }
++        }
++        if !admitted {
++            return Err(bad("vector uniform branch self-map not proved"));
++        }
++    }
++    let ci = (0..nz)
++        .map(|i| di::points(c.row(i)))
++        .collect::<CoreResult<Vec<_>>>()?;
++    let condition = mul_up(div_up(di::rows_norm(&ci)?, gap)?, di::rows_norm(&j)?)?;
++    if condition > policy.condition_cap {
++        return Err(bad("vector condition cap"));
++    }
++    let mut y = x.clone();
++    y.extend_from_slice(&root);
++    let g = di::evaluate(&src.g, t, &y)?;
++    let f = di::evaluate(&src.f, t, &y)?;
++    let qr = di::rows_norm(&di::defect(&c, &jz(&g, nx))?)?;
++    let gr = sub_down(1., qr)?;
++    if gr <= 0. {
++        return Err(bad("vector reduced inverse defect"));
++    }
++    let mut columns = Vec::with_capacity(nx + 1);
++    for k in 0..=nx {
++        let rhs = g.j.iter().map(|r| -r[k]).collect::<Vec<_>>();
++        columns.push(product_bound(qr, gr, &di::matvec(&c, &rhs)?)?);
++    }
++    let mut reduced = Vec::with_capacity(nx);
++    for r in &f.j {
++        let v = (0..=nx)
++            .map(|k| r[k].add(guard_dot(&r[1 + nx..], &columns[k])?))
++            .collect::<CoreResult<Vec<_>>>()?;
++        reduced.push(v);
++    }
++    let mut nominal = di::points(center)?;
++    nominal.extend(iv_pairs(&initial.root_box)?);
++    let f0 = di::evaluate(&src.f, p(times[1])?, &nominal)?.v;
++    // Centered reduced mean-value bound intersects the direct source box.
++    let mut delta = vec![t.sub(p(times[1])?)?];
++    for (&v, &a) in x.iter().zip(center) {
++        delta.push(v.sub(p(a)?)?);
++    }
++    let field =
++        f.v.iter()
++            .zip(&f0)
++            .zip(&reduced)
++            .map(|((&f, &fc), r)| intersect(f, fc.add(guard_dot(r, &delta)?)?))
++            .collect::<CoreResult<Vec<_>>>()?;
++    Ok(VectorBranchProof {
++        times,
++        differential_box: xb.to_vec(),
++        root_box: root.iter().map(|v| v.as_pair()).collect(),
++        self_map_box: local.iter().map(|v| v.as_pair()).collect(),
++        defect: q,
++        condition_upper: condition,
++        initial,
++        work,
++        field: field.iter().map(|v| v.as_pair()).collect(),
++        reduced_jacobian: reduced
++            .iter()
++            .map(|r| r[1..].iter().map(|v| v.as_pair()).collect())
++            .collect(),
++        reduced_clock: reduced.iter().map(|r| r[0].as_pair()).collect(),
++        nominal_field: f0.iter().map(|v| v.as_pair()).collect(),
++    })
++}
++#[derive(Clone, Debug, Serialize)]
++pub struct VectorTubeProof {
++    pub attempts: Vec<VectorBranchProof>,
++    pub field: Vec<[f64; 2]>,
++    pub tube: Vec<[f64; 2]>,
++    pub picard_image: Vec<[f64; 2]>,
++}
++/// Strict self-map over original mode extension for every allowed reset
++/// clock and state. Uniform branch proof makes the reduced field C1.
++pub fn certify_vector_tube(
++    src: &DaeSource,
++    times: [f64; 2],
++    r: &[[f64; 2]],
++    z_seed: &[f64],
++    branch: &[[f64; 2]],
++    policy: InitPolicy,
++    route: InitRoute,
++) -> CoreResult<VectorTubeProof> {
++    let reset = iv_pairs(r)?;
++    if reset.len() != src.nx() {
++        return Err(bad("vector tube shape"));
++    }
++    let h = p(times[1])?.sub(p(times[0])?)?;
++    if h.lo < 0. {
++        return Err(bad("vector tube time"));
++    }
++    let elapsed = Iv::new(0., h.hi)?;
++    let pad = |v: Iv| -> CoreResult<Iv> {
++        let w = v.sub(p(v.lo)?)?.hi;
++        let margin = mul_up(0.125, w)?.max(1e-10_f64.max(mul_up(1e-14, v.mag())?));
++        v.add(Iv::new(-margin, margin)?)
++    };
++    let mut b = reset
++        .iter()
++        .map(|&v| pad(v))
++        .collect::<CoreResult<Vec<_>>>()?;
++    let mut attempts = Vec::with_capacity(8);
++    for _ in 0..8 {
++        let center = b.iter().map(|&v| di::mid(v)).collect::<Vec<_>>();
++        let xb = b.iter().map(|v| v.as_pair()).collect::<Vec<_>>();
++        let proof = certify_vector_branch(src, times, &xb, &center, z_seed, branch, policy, route)?;
++        let field = iv_pairs(&proof.field)?;
++        let image = reset
++            .iter()
++            .zip(&field)
++            .map(|(&r, &f)| r.add(elapsed.mul(f)?))
++            .collect::<CoreResult<Vec<_>>>()?;
++        let admitted = image
++            .iter()
++            .zip(&b)
++            .all(|(a, b)| b.lo < a.lo && a.hi < b.hi);
++        attempts.push(proof);
++        if admitted {
++            return Ok(VectorTubeProof {
++                field: field.iter().map(|v| v.as_pair()).collect(),
++                tube: xb,
++                picard_image: image.iter().map(|v| v.as_pair()).collect(),
++                attempts,
++            });
++        }
++        b = b
++            .iter()
++            .zip(&image)
++            .map(|(&a, &v)| pad(Iv::new(a.lo.min(v.lo), a.hi.max(v.hi))?))
++            .collect::<CoreResult<Vec<_>>>()?;
++    }
++    Err(bad("vector Picard tube budget exhausted"))
++}
++#[derive(Clone, Debug, Serialize)]
++pub struct VectorSyncEvidence {
++    pub synchronized: Vec<[f64; 2]>,
++    pub green_calls: usize,
++    pub forcing_remainder: Vec<[f64; 2]>,
++}
++// Local mean-value chart for an interval-coefficient represented polynomial.
++fn reset_centered_eval(poly: &[Iv], u: Iv) -> CoreResult<Iv> {
++    let center = p(di::mid(u))?;
++    let d = poly
++        .iter()
++        .enumerate()
++        .skip(1)
++        .map(|(k, v)| v.scale(k as f64))
++        .collect::<CoreResult<Vec<_>>>()?;
++    let tight = eval(poly, center)?.add(u.sub(center)?.mul(eval(&d, u)?)?)?;
++    intersect(eval(poly, u)?, tight)
++}
++/// Synchronize every reset clock in times to s. The tube must be an
++/// authentic proof on [times[0],s] for this exact post source and reset.
++pub fn synchronize_vector(
++    reset: &[VectorResetComponent],
++    times: [f64; 2],
++    s: f64,
++    tube: &VectorTubeProof,
++    route: VectorSyncRoute,
++    table: &RetroTable,
++) -> CoreResult<VectorSyncEvidence> {
++    let proof = tube
++        .attempts
++        .last()
++        .ok_or_else(|| bad("missing vector tube proof"))?;
++    let n = reset.len();
++    if n != tube.field.len() || proof.times != [times[0], s] || times[1] > s {
++        return Err(bad("vector sync domain"));
++    }
++    let clock = Iv::new(times[0], times[1])?;
++    let elapsed = p(s)?.sub(clock)?;
++    let elapsed = Iv::new(elapsed.lo.max(0.), elapsed.hi)?;
++    let field = iv_pairs(&tube.field)?;
++    let xb = iv_pairs(&tube.tube)?;
++    let mut out = VectorSyncEvidence {
++        synchronized: vec![],
++        green_calls: 0,
++        forcing_remainder: vec![],
++    };
++    for (i, r) in reset.iter().enumerate() {
++        let rect = Iv::new(r.enclosure[0], r.enclosure[1])?.add(elapsed.mul(field[i])?)?;
++        let h = p(r.native_times[1])?.sub(p(r.native_times[0])?)?;
++        let u = clock.sub(p(r.native_times[0])?)?.div(h)?;
++        let u = Iv::new(u.lo.max(0.), u.hi.min(1.))?;
++        let v = match route {
++            VectorSyncRoute::BoxPicard | VectorSyncRoute::SchurPicard => rect,
++            VectorSyncRoute::Centered => {
++                let k = di::mid(field[i]);
++                let shifted = add(
++                    &r.power,
++                    &[p(s)?.sub(p(r.native_times[0])?)?.scale(k)?, h.scale(-k)?],
++                )?;
++                let remainder = field[i].sub(p(k)?)?;
++                out.forcing_remainder.push(remainder.as_pair());
++                let corrected = reset_centered_eval(&shifted, u)?
++                    .add(Iv::new(-r.transport_error, r.transport_error)?)?
++                    .add(elapsed.mul(remainder)?)?;
++                intersect(rect, corrected)?
++            }
++            VectorSyncRoute::GreenMoment => {
++                // Diagonal unit damping is an exact split, not an
++                // approximation of the post Jacobian: F=-(X-e)+B.
++                let e = p(proof.initial.x[i]
++                    + di::mid(Iv::new(
++                        proof.nominal_field[i][0],
++                        proof.nominal_field[i][1],
++                    )?))?;
++                let mut residual = Iv::new(proof.nominal_field[i][0], proof.nominal_field[i][1])?
++                    .add(p(proof.initial.x[i])?)?
++                    .sub(e)?;
++                residual = residual.add(
++                    Iv::new(proof.reduced_clock[i][0], proof.reduced_clock[i][1])?
++                        .mul(Iv::new(-p(s)?.sub(p(times[0])?)?.hi, 0.)?)?,
++                )?;
++                for j in 0..n {
++                    let d = Iv::new(
++                        proof.reduced_jacobian[i][j][0],
++                        proof.reduced_jacobian[i][j][1],
++                    )?
++                    .add(p(if i == j { 1. } else { 0. })?)?;
++                    residual = residual.add(d.mul(xb[j].sub(p(proof.initial.x[j])?)?)?)?;
++                }
++                let remainder = intersect(residual, field[i].add(xb[i])?.sub(e)?)?;
++                out.forcing_remainder.push(remainder.as_pair());
++                let mut d = r
++                    .power
++                    .iter()
++                    .enumerate()
++                    .skip(1)
++                    .map(|(k, v)| v.scale(k as f64)?.div(h))
++                    .collect::<CoreResult<Vec<_>>>()?;
++                if d.is_empty() {
++                    d.push(zero());
++                }
++                let mut shifted = r.power.clone();
++                shifted[0] = shifted[0].sub(e)?;
++                let q = eval(&add(&d, &shifted)?, u)?;
++                let b = p(times[1])?;
++                let ub = b.sub(p(r.native_times[0])?)?.div(h)?;
++                let ub = Iv::new(ub.lo.max(0.), ub.hi.min(1.))?;
++                let db = p(s)?.sub(b)?;
++                let db = Iv::new(db.lo.max(0.), db.hi)?;
++                let gb = table.phi(db, 0)?;
++                let yb = e.add(gb.mul(eval(&shifted, ub)?)?)?;
++                let d = b.sub(clock)?;
++                let d = Iv::new(d.lo.max(0.), d.hi)?;
++                let weight = gb.mul(d)?.mul(table.phi(d, 1)?)?;
++                let ge = table.phi(elapsed, 0)?;
++                let err = mul_up(ge.hi, r.transport_error)?;
++                let forcing = elapsed.mul(table.phi(elapsed, 1)?)?.mul(remainder)?;
++                out.green_calls += 4;
++                let corrected = yb
++                    .sub(weight.mul(q)?)?
++                    .add(Iv::new(-err, err)?)?
++                    .add(forcing)?;
++                intersect(rect, corrected)?
++            }
++        };
++        out.synchronized.push(intersect(v, xb[i])?.as_pair());
++    }
++    Ok(out)
++}

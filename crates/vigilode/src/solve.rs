@@ -300,6 +300,14 @@ struct Run {
     segments: Option<Extension>,
 }
 
+#[cfg(feature = "polynomial-events")]
+pub(crate) enum DenseProposal<'a> {
+    Sequential(&'a rodas5p_integrators::Rodas5pDenseSegment),
+    Fast(&'a rodas5p_integrators::FastDenseSegments),
+}
+#[cfg(feature = "polynomial-events")]
+type DenseControl<'a> =
+    dyn for<'p> FnMut(DenseProposal<'p>) -> rodas5p_integrators::AcceptControl + 'a;
 impl Rodas5p {
     /// Integrate `problem` from `t_span.0` to `t_span.1` starting at `y0`.
     ///
@@ -418,6 +426,32 @@ impl Rodas5p {
             None,
             #[cfg(feature = "polynomial-events")]
             None,
+            #[cfg(feature = "polynomial-events")]
+            None,
+        )
+    }
+
+    #[cfg(feature = "polynomial-events")]
+    pub(crate) fn solve_dense_controlled(
+        problem: &Problem,
+        span: (f64, f64),
+        y: &[f64],
+        opts: &Options,
+        accept: &mut DenseControl<'_>,
+    ) -> Result<Solution, SolveError> {
+        Self::solve_with_clients_and_events(
+            problem,
+            span,
+            y,
+            opts,
+            &[],
+            None,
+            crate::MfStageSolvePolicy::Shipped,
+            BandedStagePolicy::Shipped,
+            None,
+            None,
+            None,
+            Some(accept),
         )
     }
 
@@ -436,6 +470,7 @@ impl Rodas5p {
         #[cfg(feature = "polynomial-events")] mut poly: Option<
             &mut crate::polynomial_events::PolyTransaction<'_>,
         >,
+        #[cfg(feature = "polynomial-events")] mut dense_accept: Option<&mut DenseControl<'_>>,
     ) -> Result<Solution, SolveError> {
         let atol = validate(problem, t_span, y0, opts)?;
         let mut adaptive = AdaptiveStepConfig {
@@ -564,6 +599,18 @@ impl Rodas5p {
         if event_policy.is_some() && !matches!(plan, Plan::FastDense { .. }) {
             return Err(SolveError::InvalidInput(
                 "event transaction requires fast dense route".into(),
+            ));
+        }
+        #[cfg(feature = "polynomial-events")]
+        if dense_accept.is_some()
+            && (!problem.events.is_empty()
+                || poly.is_some()
+                || event_policy.is_some()
+                || !opts.dense_output
+                || !matches!(plan, Plan::FastDense { .. } | Plan::SequentialDense))
+        {
+            return Err(SolveError::InvalidInput(
+                "controlled native dense route required".into(),
             ));
         }
         let mut transaction =
@@ -758,7 +805,7 @@ impl Rodas5p {
                     }
                 };
                 #[cfg(feature = "polynomial-events")]
-                let has_poly = poly.is_some();
+                let has_poly = poly.is_some() || dense_accept.is_some();
                 #[cfg(not(feature = "polynomial-events"))]
                 let has_poly = false;
                 let (entry_point, result) = if transaction.is_some() || has_poly {
@@ -766,6 +813,10 @@ impl Rodas5p {
                         #[cfg(feature = "polynomial-events")]
                         if let Some(tx) = poly.as_deref_mut() {
                             return tx.inspect(segments);
+                        }
+                        #[cfg(feature = "polynomial-events")]
+                        if let Some(f) = dense_accept.as_deref_mut() {
+                            return f(DenseProposal::Fast(segments));
                         }
                         transaction
                             .as_mut()
@@ -997,7 +1048,20 @@ impl Rodas5p {
                 // so the run does not record one (10 n f64 per accepted
                 // step); the run is otherwise bit for bit the same.
                 let plan_out = OutputSamplingPlan::dense(schedule.clone());
-                let run = if opts.dense_output {
+                #[cfg(feature = "polynomial-events")]
+                let controlled = if let Some(f) = dense_accept.as_deref_mut() {
+                    let mut accept = |seg: &rodas5p_integrators::Rodas5pDenseSegment| {
+                        f(DenseProposal::Sequential(seg))
+                    };
+                    Some(rodas5p_integrators::integrate_adaptive_dense_observed_with_segments_and_control(&ode,t_span,y0,&adaptive,&plan_out,control,interior_sampling,&mut accept).map_err(|e| driver_error(e,&guard))?)
+                } else {
+                    None
+                };
+                #[cfg(not(feature = "polynomial-events"))]
+                let controlled: Option<AdaptiveDenseSegmentRun> = None;
+                let run = if let Some(run) = controlled {
+                    run
+                } else if opts.dense_output {
                     integrate_adaptive_dense_observed_with_segments(
                         &ode,
                         t_span,
@@ -1716,6 +1780,8 @@ impl Rodas5p {
             Some(policy),
             #[cfg(feature = "polynomial-events")]
             None,
+            #[cfg(feature = "polynomial-events")]
+            None,
         )
     }
     /// Integrate a single declared polynomial event with exact root isolation
@@ -1744,6 +1810,7 @@ impl Rodas5p {
             None,
             None,
             Some(&mut tx),
+            None,
         )?;
         Ok(crate::polynomial_events::PolynomialEventRun {
             solution,
