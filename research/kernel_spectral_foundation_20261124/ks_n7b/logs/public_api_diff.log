@@ -1,0 +1,154 @@
+# command: git diff 13d264756bbd639385cc9ea1627efbe51e43304f HEAD -- crates/vigilode/src crates/vigilode/Cargo.toml
+# wrapper: none
+# cargo_target_dir: /home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain
+# started: 2026-11-25T12:06:59+09:00
+# head: bd4bf649d989f4de1ba21328a5a15437c0fcfa60
+# dirty: 0
+# load: 4.36 4.76 6.33 6/5977 3769850
+diff --git a/crates/vigilode/src/spatial/separable.rs b/crates/vigilode/src/spatial/separable.rs
+index 0c2b7775..2c1fec86 100644
+--- a/crates/vigilode/src/spatial/separable.rs
++++ b/crates/vigilode/src/spatial/separable.rs
+@@ -6,9 +6,11 @@
+ //! system per longitude mode on the sphere, one scalar per wave vector on the box.
+ //! Reflection makes the blocks of modes `m` and `np - m` equal. Complex conjugation makes the
+ //! spectra of real data Hermitian. So the sphere needs `floor(np/2) + 1` factorizations, and
+-//! one complex FFT per pair of rings in each direction. The box transforms its real field as
+-//! complex data by default; [`BoxTransform::PairedReal`] applies the same pairing to its x-rows
+-//! and transforms only the Hermitian half along y and z (task KS-N7).
++//! one complex FFT per pair of rings in each direction. By default the box applies the same
++//! pairing to its x-rows and transforms only the Hermitian half along y and z
++//! ([`BoxTransform::PairedReal`], tasks KS-N7 and KS-N7b); [`BoxTransform::Complex`] transforms
++//! its real field as complex data. A run records the box transform that ran in
++//! [`SeparableReport::box_transform`].
+ //!
+ //! The derivations, with their claim status, are in
+ //! `research/kernel_spectral_foundation_20261124/THEORY.md`:
+@@ -30,7 +32,8 @@ use crate::SolveError;
+ 
+ type Jvp = Arc<dyn Fn(f64, &[f64], &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>;
+ 
+-/// Identifier of the separable stage client in [`crate::DriverWork::SeparableClient`].
++/// Identifier of the separable stage client in [`crate::DriverWork::SeparableClient`]. Both box
++/// transforms run under it; [`SeparableReport::box_transform`] records which one ran.
+ pub const SEPARABLE_STAGE_CLIENT_ID: &str = "vigilode-separable-fourier-stages-v1";
+ 
+ /// How the separable solver treats the problem's own Jacobian.
+@@ -65,18 +68,23 @@ impl Default for SeparableMode {
+ 
+ /// How the periodic box transforms its real fields (task KS-N7). Both variants are the same
+ /// linear map in exact arithmetic. A sphere grid ignores the choice: its kernel always packs
+-/// two real rings into one complex FFT (THEORY.md §2.3 (ii)).
+-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
++/// two real rings into one complex FFT (THEORY.md §2.3 (ii)). A run records the transform in
++/// [`SeparableReport::box_transform`]; it serializes as its [`Self::name`].
++#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize)]
++#[serde(rename_all = "kebab-case")]
+ #[non_exhaustive]
+ pub enum BoxTransform {
+     /// Full complex FFTs of the real field (imaginary part zero) along x, y and z, forward
+-    /// and inverse; the real part of the result is kept. The default.
+-    #[default]
++    /// and inverse; the real part of the result is kept. The default until task KS-N7b; still
++    /// selectable with [`SeparableStages::with_box_transform`].
+     Complex,
+-    /// Two-for-one real FFT: rows `2q` and `2q + 1` are packed as `u + i v` along x and
+-    /// separated by the involution `R Z(m) = conj Z(nx - m)`; only the Hermitian half
+-    /// `k <= nx/2` of the x-spectra is transformed along y and z. About half the FFTs and half
+-    /// the buffer memory of [`Self::Complex`].
++    /// Two-for-one real FFT, the default (task KS-N7b): rows `2q` and `2q + 1` are packed as
++    /// `u + i v` along x and separated by the involution `R Z(m) = conj Z(nx - m)`; only the
++    /// Hermitian half `k <= nx/2` of the x-spectra is transformed along y and z. About half the
++    /// FFT lines of [`Self::Complex`]. Its buffer holds `(nx/2 + 1) ny nz` complex values plus
++    /// one batch of packed lines (at most 4096 values, or one line when `nx > 4096`), against
++    /// `nx ny nz` for [`Self::Complex`] (0.57 of it at 256x256).
++    #[default]
+     PairedReal,
+ }
+ 
+@@ -125,7 +133,7 @@ pub struct SpectralBounds {
+     pub explicit_step_bound: f64,
+ }
+ 
+-/// What the separable stage client did in one run.
++/// What the separable stage client did in one run, and the box transform it ran.
+ #[derive(Clone, Copy, Debug, Default, PartialEq, Serialize)]
+ pub struct SeparableReport {
+     /// Preparations of `W(z)` (one per attempt).
+@@ -146,6 +154,10 @@ pub struct SeparableReport {
+     pub max_backward_error: f64,
+     /// Largest `|(z - c) M(x) - M(b)| / sum_i A_i |b_i|` over the solves.
+     pub max_mass_defect: f64,
++    /// The transform of the periodic box's stage solves ([`SeparableStages::box_transform`]);
++    /// `None` on a sphere grid, whose kernel always pairs rings (task KS-N7b, finding F5 of the
++    /// KS-N7 review).
++    pub box_transform: Option<BoxTransform>,
+ }
+ 
+ /// The separable stage solver of one grid for a declared Jacobian `L + c I`.
+@@ -160,8 +172,10 @@ pub struct SeparableStages {
+ impl DiffusionGrid {
+     /// The separable (Fourier) stage solver for problems whose Jacobian is
+     /// `L + linear_rate I`, with `L` this grid's heat operator ([`Self::apply`]). The mode is
+-    /// [`SeparableMode::default`] (`Verified`); see [`SeparableStages::with_mode`]. Run it
+-    /// with [`crate::VigilODE::solve_separable`].
++    /// [`SeparableMode::default`] (`Verified`); see [`SeparableStages::with_mode`]. A periodic
++    /// box uses [`BoxTransform::default`] (`PairedReal`); see
++    /// [`SeparableStages::with_box_transform`]. Run it with
++    /// [`crate::VigilODE::solve_separable`].
+     pub fn separable_stages(&self, linear_rate: f64) -> Result<SeparableStages, SolveError> {
+         if !linear_rate.is_finite() {
+             return Err(invalid("the declared linear rate must be finite"));
+@@ -195,7 +209,8 @@ impl SeparableStages {
+     }
+ 
+     /// The same solver with the periodic box's transform `transform` (default
+-    /// [`BoxTransform::Complex`]). A sphere grid ignores it.
++    /// [`BoxTransform::PairedReal`]; [`BoxTransform::Complex`] stays selectable). A sphere grid
++    /// ignores it.
+     pub fn with_box_transform(mut self, transform: BoxTransform) -> Self {
+         self.box_transform = transform;
+         self
+@@ -286,7 +301,8 @@ impl SeparableStages {
+         Kernel::new(&self.grid, self.box_transform).crossings(z, self.linear_rate)
+     }
+ 
+-    /// The stage client for the protected client driver; `report` collects its work.
++    /// The stage client for the protected client driver; `report` collects its work and
++    /// records the box transform of the kernel the client runs.
+     pub(crate) fn client(&self, report: Arc<Mutex<SeparableReport>>) -> Box<dyn StageLinearSystem> {
+         let n = self.dimension();
+         let weights = match &*self.grid.geometry {
+@@ -296,8 +312,14 @@ impl SeparableStages {
+                 .collect(),
+             Geometry::Cartesian { .. } => vec![1.0; n],
+         };
++        let kernel = Kernel::new(&self.grid, self.box_transform);
++        // Read from the kernel that runs, so the record cannot drift from the arithmetic.
++        report
++            .lock()
++            .unwrap_or_else(PoisonError::into_inner)
++            .box_transform = kernel.box_transform();
+         Box::new(SeparableClient {
+-            kernel: Kernel::new(&self.grid, self.box_transform),
++            kernel,
+             linear_rate: self.linear_rate,
+             mode: self.mode,
+             weights,
+@@ -343,6 +365,14 @@ impl Kernel {
+         }
+     }
+ 
++    /// The box transform this kernel runs; `None` on a sphere grid.
++    fn box_transform(&self) -> Option<BoxTransform> {
++        match self {
++            Self::Sphere(_) => None,
++            Self::Box(k) => Some(k.transform),
++        }
++    }
++
+     /// Eigenvalues of `L + c I` at or above `z`, with multiplicity.
+     fn crossings(&mut self, z: f64, c: f64) -> usize {
+         match self {
+# exit: 0
+# finished: 2026-11-25T12:06:59+09:00
