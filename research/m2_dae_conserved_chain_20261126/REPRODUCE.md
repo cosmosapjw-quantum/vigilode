@@ -1,0 +1,4 @@
+Exact branch research/m2-dae-conserved-chain-20261126; EXEC_SHA.txt and INPUT_SHA256SUMS bind source and inputs. Rust locked offline, SciPy1.17.0.
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_conserved_chain_contracts -- --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_conserved_chain_contracts training -- --ignored --exact --nocapture --test-threads=1
+Capture focused3.log and training.log in scratch evidence directory; gzip-decompress preserved logs when auditing original run. Copy audit.py, cycle_audit.py, reference.py, structural.py, exact_native.py, exact_transport.py, guide.py; python3 audit.py; python3 cycle_audit.py; python3 guide.py select. Generate with fresh ledger (guide.py generate). Compare parsed CELL JSON not durations. Feature-off and regression test names in regression.log.gz. No holdout.
