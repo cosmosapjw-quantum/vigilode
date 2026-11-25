@@ -7,14 +7,18 @@ inputs changed since its baseline, the targets that have no measurement yet, and
 failed in the baseline run. The owner runs the whole suite before a release.
 
 Baseline: the newest earlier run of the same job on the same branch, of the same event and from the
-same repository, whose outcome says that its selection ran to the end ("complete") at a head that
-is an ancestor of this head and that ran on the same runner image (when no run on this image
-qualifies, the newest qualifying run on another image, and rule 1 runs the whole suite). It hands
-over its outcome (failed targets, runner image, pull-request base) and its input map.
+same repository, whose outcome says that its selection ran to the end ("complete"), or that lists
+the units it did not run (a run that its time budget or a cancellation stopped, OD-L1-29), at a
+head that is an ancestor of this head and that ran on the same runner image (when no run on this
+image qualifies, the newest qualifying run on another image, and rule 1 runs the whole suite). It
+hands over its outcome (failed targets, units not run, runner image, pull-request base) and its
+input map. An outcome file that cannot be read passes its run over; a map that cannot be read
+counts as no map.
 
 Input map: every run measures, for every test target that it runs, the repository files the target
-depends on and replaces the target's entry; entries of targets that did not run are carried over.
-A target whose measurement fails loses its entry (rule 5 runs it next time).
+depends on and replaces the target's entry; entries of targets that it did not select are carried
+over. A target whose measurement fails loses its entry (rule 5 runs it next time); so does a
+selected target that did not run.
   compile   files in the rustc dep-info of the target's own artifact (integration tests, lib and
             bin unit tests, examples): mod, #[path], include!, include_str!, include_bytes!
   executed  files with a covered region (-C instrument-coverage; the package's binaries included)
@@ -26,6 +30,13 @@ A target whose measurement fails loses its entry (rule 5 runs it next time).
 Per package the map also records the inputs of the library and binaries as other crates link them
 (the dep-info of the non-test artifacts). Paths outside the repository, under the cargo target
 directory, under .git or under the measurement directory are dropped. Doc tests are not measured.
+
+Run (OD-L1-29): one command per target, measured right after it; the outcome and the map are
+written after every command (and the outcome before it) by atomic replacement, so a cancelled job
+still saves every finished target. With --budget-minutes no command starts after the budget and a
+command still running then is stopped; the outcome lists every selected unit that did not run
+(not_run), complete is false, and the run exits with 1. Units that the baseline run stopped or was
+running when it ended run after all other units.
 
 Selection rules, in this order; none has a tunable number:
 1. FULL when asked (workflow_dispatch with full, main), when there is no baseline or no input map,
@@ -53,8 +64,9 @@ Selection rules, in this order; none has a tunable number:
 5. A target in scope without a map entry (new, or its measurement failed) runs whenever the diff is
    not empty; so does the target of a declared negative control that has no map entry. A package
    whose library and binary inputs are not recorded counts as structurally changed then.
-6. Targets that failed in the baseline run (negative controls included) run again if they still
-   exist and their required features are enabled; others are dropped with a note.
+6. Targets that failed in the baseline run (negative controls included), and units that it
+   selected but did not run, run again if they still exist and their required features are
+   enabled; others are dropped with a note.
 7. An example whose compile set contains a changed path is compiled (`cargo test --no-run
    --example`); a package that runs whole compiles all its examples.
 8. Doc tests run whenever their package runs whole or has a selected target, and for body changes
@@ -67,8 +79,9 @@ Subcommands:
   select    --baseline <json> --head <sha> [--pr-base <sha>] --scope <pkg ...> --workflow-file <path>
             [--full <true|false>] [--control <pkg>:<target>#<test> ...] --out <json>
   run       --selection <json> --mode normal|ignored [--profile <p>] [--skip <test> ...]
-            --outcome <json> [--measure --baseline <json> --map-out <json> [--work-dir <dir>]
-            [--control-maps <json> ...] [--failed-controls <file>] [--jobs <n>]]
+            --outcome <json> [--budget-minutes <m> [--started-at <epoch seconds>]]
+            [--measure --baseline <json> --map-out <json> [--work-dir <dir>]
+            [--control-maps <json> ...] [--failed-controls <file>]]
   control   --selection <json> --target <pkg>:<target> --test <name> --signature <text>
             [--profile <p>] --map-out <json> --failed-file <file> [--work-dir <dir>]
   has       --selection <json> --target <package>:<target>   (prints yes or no)
@@ -76,20 +89,25 @@ Subcommands:
 """
 
 import argparse
-import concurrent.futures
+import contextlib
 import filecmp
 import glob
+import io
 import json
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 import urllib.parse
 
 SCHEMA_SELECTION = "vigilode.ci.test-selection.v3"
-SCHEMA_OUTCOME = "vigilode.ci.test-outcome.v2"
+# v3 (OD-L1-29): an incomplete outcome lists the units it did not run and can be a baseline.
+SCHEMA_OUTCOME = "vigilode.ci.test-outcome.v3"
 SCHEMA_MAP = "vigilode.ci.coverage-map.v2"
 SCHEMA_CONTROL = "vigilode.ci.control-measurement.v1"
 GLOBAL_FILES = ("Cargo.toml", "Cargo.lock")
@@ -109,6 +127,12 @@ TRACED = ("openat,?open,?openat2,?creat,execve,?execveat,?stat,?lstat,newfstatat
           "?statfs,?getxattr,?lgetxattr,?listxattr,?llistxattr")
 MESSAGES = "--message-format=json-diagnostic-rendered-ansi"
 RERUN = re.compile(r"`-p (\S+) (--lib|--doc|--test (\S+)|--bin (\S+))`")
+# Seconds between SIGTERM and SIGKILL when a command is stopped, and again for its output to close
+# (OD-L1-29). The test processes and the fake ones of the self-test end on SIGTERM.
+STOP_GRACE = 10.0
+# The least time between the time budget of a selecting job and its limit that check_workflows
+# accepts: about three times the work after the budget measured on hosted runners (V4_NOTES R40).
+MIN_MARGIN_MINUTES = 5
 ORDER = ("rodas5p-core", "rodas5p-krylov", "rodas5p-integrators", "rodas5p-fair-ab", "rodas5p-cli",
          "vigilode", "vigilode-coupled")
 LIB_KINDS = ("lib", "rlib", "dylib", "cdylib", "staticlib", "proc-macro")
@@ -137,9 +161,26 @@ def load_json(path):
 
 
 def write_json(path, data):
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=1, sort_keys=True)
-        f.write("\n")
+    """Write a JSON file by atomic replacement: a temporary file in the same directory replaces it,
+    so a reader (the save step of a cancelled job) sees the old file or the new one, never a part
+    of one (OD-L1-29)."""
+    directory = os.path.dirname(os.path.abspath(path))
+    fd, tmp = tempfile.mkstemp(dir=directory, prefix="." + os.path.basename(path) + ".", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=1, sort_keys=True)
+            f.write("\n")
+        os.chmod(tmp, 0o644)
+        os.replace(tmp, path)
+    except BaseException:
+        with contextlib.suppress(OSError):
+            os.unlink(tmp)
+        raise
+
+
+def clock():
+    """Seconds since the epoch. The time budget reads it; the self-test replaces it."""
+    return time.time()
 
 
 def is_ancestor(root, base, head):
@@ -876,12 +917,14 @@ def match_inputs(sets, status, path, cls, own_crate, created=(), listing=None):
     return "; ".join(why)
 
 
-def decide(changes, packages, scope, cmap, pmap, classify_fn, exists_fn, failed=(), controls=()):
+def decide(changes, packages, scope, cmap, pmap, classify_fn, exists_fn, failed=(), controls=(), not_run=()):
     """Rules 3-9 for the changes [(status, path)] since the baseline. classify_fn(path) classifies
-    a modified .rs package source; exists_fn('base'|'head', dirs) returns the dirs that exist."""
+    a modified .rs package source; exists_fn('base'|'head', dirs) returns the dirs that exist.
+    failed and not_run are the baseline run's failed units and the units it did not run."""
     scope = [s for s in scope if s in packages]
     sel = {"packages": {}, "classified": {}, "owners": {}, "notes": [],
-           "baseline_failures_added": [], "baseline_failures_dropped": []}
+           "baseline_failures_added": [], "baseline_failures_dropped": [],
+           "baseline_not_run_added": [], "baseline_not_run_dropped": []}
 
     def add(pkg, target, why):
         if pkg not in scope:
@@ -998,6 +1041,25 @@ def decide(changes, packages, scope, cmap, pmap, classify_fn, exists_fn, failed=
         add(pkg, target, "failed in the baseline run" + (" (negative control)" if item.get("negative_control") else ""))
         sel["baseline_failures_added"].append(label)
 
+    # Rule 6, units not run (OD-L1-29): the baseline run selected them but did not run their tests
+    # (its time budget ended, it was cancelled, their command did not run its tests). That run
+    # dropped their map entries, so they are unmapped as well; they run whatever the diff.
+    for item in not_run:
+        if not isinstance(item, dict):
+            continue
+        pkg, target = item.get("package"), item.get("target")
+        if pkg not in scope:
+            continue
+        label = f"{pkg}:{target}"
+        info = packages.get(pkg)
+        if info is None or not target or not is_current(info, target):
+            unmet = info and info["unmet"].get(target)
+            why = f"requires the features {', '.join(unmet)}" if unmet else "no longer a test target"
+            sel["baseline_not_run_dropped"].append(f"{label}: {why}")
+            continue
+        add(pkg, target, f"not run in the baseline run ({item.get('why') or 'no reason recorded'})")
+        sel["baseline_not_run_added"].append(label)
+
     # Rule 8: doc tests run with every package that has a selected target.
     for pkg, e in sel["packages"].items():
         if not e["all"] and (e["lib"] or e["targets"]) and packages[pkg]["doc"] and not e["doc"]:
@@ -1040,10 +1102,46 @@ def tested_pr_base(root, head, payload):
 
 
 def load_map(path):
+    """The baseline run's input map, or None when it is missing, unreadable or not of the expected
+    shape (rule 1 then runs the whole suite: 'the baseline run left no input map')."""
     if not path or not os.path.exists(path):
         return None
-    data = load_json(path)
-    return data if data.get("schema") == SCHEMA_MAP and isinstance(data.get("targets"), dict) else None
+    try:
+        data = load_json(path)
+    except (OSError, ValueError):
+        return None
+    if not isinstance(data, dict) or data.get("schema") != SCHEMA_MAP or not isinstance(data.get("targets"), dict):
+        return None
+    packages = data.get("packages", {})
+    if not isinstance(packages, dict) or not all(isinstance(k, str) and "::" in k for k in data["targets"]):
+        return None
+    for item in list(data["targets"].values()) + list(packages.values()):
+        if not isinstance(item, dict):
+            return None
+        for s in SETS:
+            values = item.get(s, [])
+            if not isinstance(values, list) or not all(isinstance(v, str) for v in values):
+                return None
+    return data
+
+
+def unit_pairs(items):
+    """[(package, target)] of a list of {'package', 'target', ...} objects; other items are left out."""
+    if not isinstance(items, list):
+        return []
+    return [(x["package"], x["target"]) for x in items
+            if isinstance(x, dict) and isinstance(x.get("package"), str) and isinstance(x.get("target"), str)]
+
+
+def unit_dicts(units):
+    return [{"package": p, "target": t} for p, t in units]
+
+
+def last_units(baseline, selection):
+    """The units that the baseline run stopped, was running when it ended or ran last itself, as
+    far as this selection runs them: they run after every other unit (V4_NOTES R43)."""
+    return unit_dicts(u for u in dict.fromkeys(unit_pairs(baseline.get("run_last")))
+                      if selected(selection, *u))
 
 
 def select(args):
@@ -1070,7 +1168,8 @@ def select(args):
                  "environment": env_now, "changed": [], "packages": {}, "notes": [], "classified": {},
                  "owners": {}, "map_targets": None if cmap is None else len(cmap["targets"]),
                  "controls": list(args.control), "baseline_failures_added": [],
-                 "baseline_failures_dropped": []}
+                 "baseline_failures_dropped": [], "baseline_not_run_added": [],
+                 "baseline_not_run_dropped": [], "run_last": []}
     first_notes = []
     if env_now["pr_base"] != env_now["pr_base_payload"]:
         first_notes.append(f"the checked-out merge commit has the base {env_now['pr_base']}, the event "
@@ -1086,13 +1185,15 @@ def select(args):
         for name in scope:
             selection["packages"][name] = dict(new_entry(), all=True, lib=packages[name]["lib"],
                                                doc=packages[name]["doc"], why={"*": reasons})
+        selection["run_last"] = last_units(baseline, selection)
         return finish(selection, args.out)
     selection.update(decide(
         changes, packages, scope, cmap["targets"], cmap.get("packages", {}),
         lambda path: classify_source_change(root, base, head, path),
         lambda side, dirs: existing_dirs(root, base if side == "base" else head, dirs),
-        baseline.get("failed", []), args.control))
+        baseline.get("failed", []), args.control, baseline.get("not_run", [])))
     selection["notes"] = first_notes + selection["notes"]
+    selection["run_last"] = last_units(baseline, selection)
     return finish(selection, args.out)
 
 
@@ -1116,6 +1217,14 @@ def finish(selection, out):
     lines += [f"- {path}: {cls}" for path, cls in sorted(selection.get("classified", {}).items())]
     lines += [f"- added from the baseline failures: {x}" for x in selection["baseline_failures_added"]]
     lines += [f"- dropped from the baseline failures: {x}" for x in selection["baseline_failures_dropped"]]
+    added = selection.get("baseline_not_run_added", [])
+    if added:
+        lines.append(f"- added from the units the baseline run did not run ({len(added)}): "
+                     + ", ".join(added[:40]) + (", ..." if len(added) > 40 else ""))
+    lines += [f"- dropped from the units the baseline run did not run: {x}"
+              for x in selection.get("baseline_not_run_dropped", [])]
+    lines += [f"- runs last (stopped or cut in the baseline run): {u['package']}:{u['target']}"
+              for u in selection.get("run_last", [])]
     lines += [f"- note: {n}" for n in selection["notes"]]
     text = "\n".join(lines) + "\n"
     print(text, flush=True)
@@ -1200,36 +1309,103 @@ def build_filters(entry, info):
     return filters or None
 
 
+def plan_steps(selection, packages, mode, profile, skips, measure, run_last=()):
+    """The commands of a run in order, each with the units it runs: [{kind, package, cmd, units}],
+    a unit being (package, target) with target 'lib', 'bin:<name>', '<test>', 'doc' or
+    'example:<name>'. Measured: one build per package (it compiles the package's selected
+    examples), then one command per test target or doc test. Unmeasured: one cargo test per
+    package, one build of its examples, one run of its doc tests. Steps holding a unit of run_last
+    (the baseline run stopped it or was running it when it ended, V4_NOTES R43) come after every
+    other step; builds stay first."""
+    prof = profile_args(profile)
+    steps = []
+    if measure:
+        for name in ordered(selection["packages"]):
+            entry, info = selection["packages"][name], packages.get(name)
+            if info is None:
+                continue
+            filters = build_filters(entry, info)
+            if filters is not None:
+                examples = info["examples"] if entry["all"] else [e for e in entry.get("examples", []) if e in info["examples"]]
+                steps.append({"kind": "build", "package": name,
+                              "cmd": ["cargo", "test", "--locked", "--no-run", MESSAGES] + prof + ["-p", name] + filters,
+                              "units": [(name, "example:" + e) for e in examples]})
+        for name, target in units(selection, packages):
+            steps.append({"kind": "doc" if target == "doc" else "test", "package": name,
+                          "cmd": (["cargo", "test", "--locked", "--no-fail-fast", MESSAGES] + prof + ["-p", name]
+                                  + target_args(target) + harness_args(mode, skips)),
+                          "units": [(name, target)]})
+    else:
+        for name in ordered(selection["packages"]):
+            entry, info = selection["packages"][name], packages.get(name)
+            if info is None:
+                continue
+            base = ["cargo", "test", "--locked", "--no-fail-fast"] + prof + ["-p", name]
+            if entry["all"]:
+                every = ([(name, t) for t in unit_keys(info)] + ([(name, "doc")] if info["doc"] else [])
+                         + [(name, "example:" + e) for e in info["examples"]])
+                steps.append({"kind": "package", "package": name, "cmd": base + harness_args(mode, skips),
+                              "units": every})
+                continue
+            filters = build_filters(dict(entry, examples=[]), info)
+            if filters:
+                steps.append({"kind": "package", "package": name, "cmd": base + filters + harness_args(mode, skips),
+                              "units": ([(name, "lib")] if entry["lib"] and info["lib"] else [])
+                              + [(name, t) for t in entry["targets"] if is_current(info, t)]})
+            if entry.get("examples"):
+                examples = [e for e in entry["examples"] if e in info["examples"]]
+                steps.append({"kind": "examples", "package": name,
+                              "cmd": (["cargo", "test", "--locked", "--no-run"] + prof + ["-p", name]
+                                      + [a for e in examples for a in ("--example", e)]),
+                              "units": [(name, "example:" + e) for e in examples]})
+            if entry.get("doc") and info["doc"]:
+                steps.append({"kind": "doc", "package": name, "cmd": base + ["--doc"] + harness_args(mode, skips),
+                              "units": [(name, "doc")]})
+    last = set(run_last)
+    later = [s["kind"] != "build" and bool(last.intersection(s["units"])) for s in steps]
+    return [s for s, x in zip(steps, later) if not x] + [s for s, x in zip(steps, later) if x]
+
+
 def commands(selection, packages, mode, profile, skips):
     """One cargo test per package (the unmeasured mode)."""
-    cmds = []
-    for name in ordered(selection["packages"]):
-        entry, info = selection["packages"][name], packages.get(name)
-        if info is None:
-            continue
-        base = ["cargo", "test", "--locked", "--no-fail-fast"] + profile_args(profile) + ["-p", name]
-        if entry["all"]:
-            cmds.append(base + harness_args(mode, skips))
-            continue
-        filters = build_filters(dict(entry, examples=[]), info)
-        if filters:
-            cmds.append(base + filters + harness_args(mode, skips))
-        if entry.get("examples"):
-            cmds.append(["cargo", "test", "--locked", "--no-run"] + profile_args(profile) + ["-p", name]
-                        + [a for e in entry["examples"] if e in info["examples"] for a in ("--example", e)])
-        if entry.get("doc") and info["doc"]:
-            cmds.append(base + ["--doc"] + harness_args(mode, skips))
-    return cmds
+    return [s["cmd"] for s in plan_steps(selection, packages, mode, profile, skips, measure=False)]
 
 
-def stream(cmd, cwd, env, artifacts=None):
-    """Run a command, echo its output line by line (cargo JSON messages are consumed: artifacts are
-    recorded, diagnostics printed rendered) and return (exit code, text output)."""
+def exited(proc):
+    """True when the process has exited. It is not reaped (WNOWAIT), so its pid, which is also the
+    id of its process group, stays taken until proc.wait()."""
+    if proc.returncode is not None:
+        return True
+    try:
+        return os.waitid(os.P_PID, proc.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT) is not None
+    except ChildProcessError:
+        return True
+
+
+def stop_group(proc, reader, grace):
+    """Stop the session that stream() started for `proc` (cargo, strace, the test process and
+    their children): SIGTERM to its process group, SIGKILL `grace` seconds later."""
+    for sig in (signal.SIGTERM, signal.SIGKILL):
+        with contextlib.suppress(ProcessLookupError, PermissionError):
+            os.killpg(proc.pid, sig)
+        end = time.monotonic() + grace
+        while (reader.is_alive() or not exited(proc)) and time.monotonic() < end:
+            reader.join(0.1)
+            if not reader.is_alive():
+                time.sleep(0.1)
+
+
+def stream(cmd, cwd, env, artifacts=None, deadline=None, grace=STOP_GRACE):
+    """Run a command in a session of its own and echo its output line by line (cargo JSON messages
+    are consumed: artifacts are recorded, diagnostics printed rendered). When clock() reaches
+    `deadline` (seconds since the epoch) the command is stopped with its process group (OD-L1-29).
+    Returns (exit code, text output, stopped)."""
     print("+ " + " ".join(cmd), flush=True)
     proc = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env,
-                            encoding="utf-8", errors="surrogateescape")
+                            encoding="utf-8", errors="surrogateescape", start_new_session=True)
     lines = []
-    for line in proc.stdout:
+
+    def echo(line):
         if line.startswith('{"reason":'):
             try:
                 msg = json.loads(line)
@@ -1243,11 +1419,37 @@ def stream(cmd, cwd, env, artifacts=None):
                     sys.stdout.write(rendered)
                     sys.stdout.flush()
                     lines.append(rendered)
-                continue
+                return
         sys.stdout.write(line)
         sys.stdout.flush()
         lines.append(line)
-    return proc.wait(), "".join(lines)
+
+    def pump():
+        for line in proc.stdout:
+            try:
+                echo(line)
+            except Exception as exc:  # keep draining the pipe, or the command blocks on it
+                lines.append(f"[select_tests: a line of output was not handled: {exc!r}]\n")
+                print(lines[-1], end="", flush=True)
+
+    reader = threading.Thread(target=pump, daemon=True)
+    reader.start()
+    stopped = False
+    try:
+        while reader.is_alive() or not exited(proc):
+            if deadline is not None and clock() >= deadline:
+                stopped = True
+                print(f"the time budget ended: stopping `{' '.join(cmd)}`", flush=True)
+                stop_group(proc, reader, grace)
+                break
+            if reader.is_alive():
+                reader.join(1.0 if deadline is None else max(0.0, min(deadline - clock(), 1.0)))
+            else:
+                time.sleep(0.1)  # the output is closed, the command has not ended yet
+    except BaseException:  # a signal to the selector: the command does not outlive it
+        stop_group(proc, reader, grace)
+        raise
+    return proc.wait(), "".join(lines), stopped
 
 
 def failed_controls(path):
@@ -1293,48 +1495,57 @@ def measure_unit(repo, llvm, strace_ok, unit, bins, prof_dir, trace_dir, initial
     return dict({"compile": unit["compile"], "executed": executed}, **traced), None
 
 
+class Interrupted(Exception):
+    """A termination signal reached the selector (a cancelled job)."""
+
+
+def raise_interrupted(signum, _frame):
+    raise Interrupted(signal.Signals(signum).name)
+
+
 def run(args):
+    """Run the planned commands one at a time. Before each command the outcome is written with the
+    command as `running`; after it the target is measured and the input map and the outcome are
+    written; every write replaces its file atomically. With --budget-minutes no command starts
+    after the budget, and the command still running then is stopped (OD-L1-29, V4_NOTES R37-R45)."""
     root = repo_root()
     selection = load_json(args.selection)
     packages, target_dir = workspace(root)
+    if args.budget_minutes is not None and not args.budget_minutes > 0:
+        raise SystemExit("--budget-minutes must be positive")
+    started = float(args.started_at) if args.started_at else clock()
+    deadline = None if args.budget_minutes is None else started + 60.0 * args.budget_minutes
+    run_last = unit_pairs(selection.get("run_last"))
+    steps = plan_steps(selection, packages, args.mode, args.profile, args.skip, args.measure, run_last)
+    planned = list(dict.fromkeys(u for s in steps for u in s["units"]))
+    planned_set = set(planned)
     outcome = {"schema": SCHEMA_OUTCOME, "head": selection["head"], "mode": args.mode,
-               "selection_mode": selection["mode"], "complete": True, "commands": [], "failed": [],
+               "selection_mode": selection["mode"], "complete": False, "commands": [], "failed": [],
                "negative_controls_failed": [], "measurement": None,
-               "environment": selection.get("environment", {})}
+               "environment": selection.get("environment", {}), "measured": [], "not_run": [],
+               "running": None, "stop": None, "run_last": [],
+               "budget": {"minutes": args.budget_minutes, "started_at": started, "deadline": deadline}}
     status = 0
     work = os.path.abspath(args.work_dir or tempfile.mkdtemp(prefix="ci-measure-"))
     os.makedirs(work, exist_ok=True)
     repo = Repo(root, target_dir, drop=[work])
     arts = Artifacts(repo, packages)
-
-    def execute(cmd, env=None, build=False):
-        nonlocal status
-        code, text = stream(cmd, root, env, arts)
-        failed = failed_targets(text)
-        broken = code != 0 and not failed
-        outcome["commands"].append({"command": " ".join(cmd), "exit_code": code,
-                                    "failed_targets": sorted(f"{p}:{t}" for p, t in failed),
-                                    "did_not_run_its_tests": broken, "build": build})
-        outcome["failed"] += [{"package": p, "target": t} for p, t in sorted(failed)]
-        if broken:
-            outcome["complete"] = False
-        if code != 0:
-            status = 1
-        return code, not broken
-
+    done, why_not, measured, lost, stats = set(), {}, {}, [], {}
     for item in failed_controls(args.failed_controls):
         outcome["failed"].append(item)
         outcome["negative_controls_failed"].append(f"{item['package']}:{item['target']}")
 
-    if not args.measure:
-        for cmd in commands(selection, packages, args.mode, args.profile, args.skip):
-            execute(cmd)
-    else:
-        base_targets, base_packages = {}, {}
+    carried, base_packages = {}, {}
+    if args.measure:
         if selection["mode"] != "full" and args.baseline:
             previous = load_map(load_json(args.baseline).get("map_path"))
             if previous:
-                base_targets, base_packages = previous["targets"], previous.get("packages", {})
+                # The entries of the targets this run does not select carry over. A selected
+                # target's entry is replaced when the target is measured and is gone otherwise:
+                # a target that did not run is unmapped (OD-L1-29).
+                keys = {f"{p}::{t}" for p, t in planned if t != "doc"}
+                carried = {k: v for k, v in previous["targets"].items() if k not in keys}
+                base_packages = previous.get("packages", {})
         llvm = llvm_bin()
         strace, strace_version, strace_note = strace_works(shutil.which(args.strace), work)
         strace_ok = strace is not None
@@ -1342,92 +1553,174 @@ def run(args):
                      if not (k.startswith("CARGO_TARGET_") and k.endswith("_RUNNER"))}
         build_env = dict(clean_env, LLVM_PROFILE_FILE=os.path.join(work, "_unused", "%p-%m.profraw"))
         runner_var = "CARGO_TARGET_" + host_triple().upper().replace("-", "_") + "_RUNNER"
-        prof = profile_args(args.profile)
-        for name in ordered(selection["packages"]):
-            if name not in packages:
-                continue
-            filters = build_filters(selection["packages"][name], packages[name])
-            if filters is not None:
-                execute(["cargo", "test", "--locked", "--no-run", MESSAGES] + prof + ["-p", name] + filters,
-                        env=build_env, build=True)
-        jobs = []
-        for name, target in units(selection, packages):
-            cmd = (["cargo", "test", "--locked", "--no-fail-fast", MESSAGES] + prof + ["-p", name]
-                   + target_args(target) + harness_args(args.mode, args.skip))
-            if target == "doc":
-                execute(cmd, env=build_env)
-                continue
-            key = f"{name}::{target}"
-            workdir = os.path.join(work, re.sub(r"[^A-Za-z0-9_.-]", "_", key))
-            shutil.rmtree(workdir, ignore_errors=True)
-            prof_dir, trace_dir = os.path.join(workdir, "profiles"), os.path.join(workdir, "trace")
-            os.makedirs(prof_dir)
-            os.makedirs(trace_dir)
-            env = dict(clean_env, LLVM_PROFILE_FILE=os.path.join(prof_dir, "%p-%m.profraw"))
-            if strace_ok:
-                env[runner_var] = strace_runner(strace, trace_dir)
-            _, ran = execute(cmd, env=env)
-            jobs.append((key, name, target, workdir, prof_dir, trace_dir, ran))
-
-        stats = {}
-
-        def measure(job):
-            key, name, target, workdir, prof_dir, trace_dir, ran = job
-            stats[key] = {}
+        for path in args.control_maps:  # measured by the control steps before this one
             try:
-                if not ran:
-                    return key, None, ["its command did not run its tests"]
-                item, why = measure_unit(repo, llvm, strace_ok, arts.units.get((name, target)),
-                                         arts.bins.get(name, set()), prof_dir, trace_dir,
-                                         os.path.join(repo.real, packages[name]["dir"]), workdir, stats[key])
-                return key, item, why
-            except Exception as exc:  # a measurement error must not lose the outcome
-                return key, None, [f"measurement error: {exc!r}"]
-            finally:
-                shutil.rmtree(workdir, ignore_errors=True)
-
-        measured, lost = {}, []
-        workers = args.jobs or len(os.sched_getaffinity(0))
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
-            for key, item, why in pool.map(measure, jobs):
-                if item is None:
-                    lost.append({"target": key, "why": why})
-                else:
-                    measured[key] = item
-                    stats[key].update({s: len(item[s]) for s in SETS})
-        for (name, example), deps in sorted(arts.examples.items()):
-            key = f"{name}::example:{example}"
-            if deps is None:
-                lost.append({"target": key, "why": ["no dep-info of its artifact"]})
-            else:
-                measured[key] = {"compile": deps}
-        for path in args.control_maps:
-            if not os.path.exists(path):
-                continue
-            fragment = load_json(path)
-            if fragment.get("schema") != SCHEMA_CONTROL:
+                fragment = load_json(path) if os.path.exists(path) else None
+            except (OSError, ValueError):
+                fragment = None
+            if (not isinstance(fragment, dict) or fragment.get("schema") != SCHEMA_CONTROL
+                    or not isinstance(fragment.get("key"), str)):
                 continue
             if fragment.get("entry") is None:
                 lost.append({"target": fragment["key"], "why": fragment.get("why") or ["not measured"]})
             else:
                 measured[fragment["key"]] = fragment["entry"]
-        recorded = {n: sorted(files) for n, files in arts.inputs.items() if n not in arts.inputs_failed}
-        cmap, pmap = update_map(base_targets, base_packages, measured, [x["target"] for x in lost],
-                                recorded, sorted(arts.inputs_failed), packages, selection["scope"],
-                                selection["head"])
-        write_json(args.map_out, {"schema": SCHEMA_MAP, "head": selection["head"], "mode": args.mode,
-                                  "targets": cmap, "packages": pmap})
-        outcome["measurement"] = {
-            "refreshed": len(measured), "lost": lost, "map_targets": len(cmap),
-            "packages_recorded": sorted(recorded), "packages_lost": sorted(arts.inputs_failed),
-            "llvm_bin": llvm, "strace": strace_version, "strace_note": strace_note, "work_dir": work,
-            "stats": stats}
-    write_json(args.outcome, outcome)
+
+    def save(with_map=True):
+        if args.measure and with_map:
+            recorded = {n: sorted(files) for n, files in arts.inputs.items() if n not in arts.inputs_failed}
+            cmap, pmap = update_map(carried, base_packages, measured, [x["target"] for x in lost], recorded,
+                                    sorted(arts.inputs_failed), packages, selection["scope"], selection["head"])
+            write_json(args.map_out, {"schema": SCHEMA_MAP, "head": selection["head"], "mode": args.mode,
+                                      "targets": cmap, "packages": pmap})
+            outcome["measurement"] = {
+                "refreshed": len(measured), "lost": lost, "map_targets": len(cmap),
+                "packages_recorded": sorted(recorded), "packages_lost": sorted(arts.inputs_failed),
+                "llvm_bin": llvm, "strace": strace_version, "strace_note": strace_note, "work_dir": work,
+                "stats": stats}
+        outcome["measured"] = sorted(measured)
+        outcome["not_run"] = [{"package": p, "target": t, "why": why_not.get((p, t), "not run yet")}
+                              for p, t in planned if (p, t) not in done]
+        outcome["complete"] = not outcome["not_run"] and not any(
+            c["did_not_run_its_tests"] for c in outcome["commands"])
+        cut = unit_pairs((outcome["stop"] or {}).get("units"))
+        outcome["run_last"] = unit_dicts(dict.fromkeys(
+            cut + [u for u in run_last if u in planned_set and u not in done]))
+        write_json(args.outcome, outcome)
+
+    def record(cmd, code, text, seconds, build):
+        """The command's line of the outcome; True when the command ran its tests."""
+        nonlocal status
+        failed = failed_targets(text)
+        broken = code != 0 and not failed
+        outcome["commands"].append({"command": " ".join(cmd), "exit_code": code, "seconds": seconds,
+                                    "failed_targets": sorted(f"{p}:{t}" for p, t in failed),
+                                    "did_not_run_its_tests": broken, "build": build})
+        outcome["failed"] += [{"package": p, "target": t} for p, t in sorted(failed)]
+        if code != 0:
+            status = 1
+        return not broken
+
+    def measure_target(name, target, workdir, prof_dir, trace_dir, seconds):
+        key = f"{name}::{target}"
+        stats[key] = {"seconds": seconds}
+        try:
+            item, why = measure_unit(repo, llvm, strace_ok, arts.units.get((name, target)),
+                                     arts.bins.get(name, set()), prof_dir, trace_dir,
+                                     os.path.join(repo.real, packages[name]["dir"]), workdir, stats[key])
+        except Exception as exc:  # a measurement error must not lose the outcome
+            item, why = None, [f"measurement error: {exc!r}"]
+        if item is None:
+            lost.append({"target": key, "why": why})
+        else:
+            measured[key] = item
+            stats[key].update({s: len(item[s]) for s in SETS})
+
+    def compiled_examples(name):
+        """The examples of `name` that the builds have compiled, measured or lost."""
+        out = set()
+        for (pkg, example), deps in sorted(arts.examples.items()):
+            if pkg != name:
+                continue
+            key = f"{pkg}::example:{example}"
+            if deps is not None:
+                measured[key] = {"compile": deps}
+            elif all(x["target"] != key for x in lost):
+                lost.append({"target": key, "why": ["no dep-info of its artifact"]})
+            out.add((pkg, "example:" + example))
+        return out
+
+    stop, current = None, []
+    handlers = {s: signal.signal(s, raise_interrupted) for s in (signal.SIGTERM,)}
+    try:
+        save()
+        for step in steps:
+            if deadline is not None and clock() >= deadline:
+                stop = {"reason": "the time budget ended", "units": []}
+                break
+            current = step["units"]
+            outcome["running"] = {"command": " ".join(step["cmd"]), "units": unit_dicts(current)}
+            save(with_map=False)
+            env, workdir = None, None
+            if args.measure:
+                env = build_env
+                if step["kind"] == "test":
+                    ((name, target),) = current
+                    workdir = os.path.join(work, re.sub(r"[^A-Za-z0-9_.-]", "_", f"{name}::{target}"))
+                    shutil.rmtree(workdir, ignore_errors=True)
+                    prof_dir, trace_dir = os.path.join(workdir, "profiles"), os.path.join(workdir, "trace")
+                    os.makedirs(prof_dir)
+                    os.makedirs(trace_dir)
+                    env = dict(clean_env, LLVM_PROFILE_FILE=os.path.join(prof_dir, "%p-%m.profraw"))
+                    if strace_ok:
+                        env[runner_var] = strace_runner(strace, trace_dir)
+            began = clock()
+            code, text, cut = stream(step["cmd"], root, env, arts, deadline)
+            seconds = round(clock() - began, 3)
+            if cut:
+                for u in current:
+                    why_not[u] = "stopped when the time budget ended"
+                stop = {"reason": "the time budget ended", "units": unit_dicts(current)}
+                if workdir:
+                    shutil.rmtree(workdir, ignore_errors=True)
+                break
+            ran = record(step["cmd"], code, text, seconds, step["kind"] == "build")
+            if workdir:
+                if ran:
+                    measure_target(name, target, workdir, prof_dir, trace_dir, seconds)
+                shutil.rmtree(workdir, ignore_errors=True)
+            if args.measure and step["kind"] == "build":
+                built, missing = compiled_examples(step["package"]), "not compiled by its build"
+            else:
+                built, missing = set(current) if ran else set(), "its command did not run its tests"
+            for u in current:
+                if u in built:
+                    done.add(u)
+                else:
+                    why_not[u] = missing
+            current = []
+            outcome["running"] = None
+            save()
+    except (KeyboardInterrupt, Interrupted) as exc:
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)
+        signame = "SIGINT" if isinstance(exc, KeyboardInterrupt) else str(exc)
+        left = [u for u in current if u not in done]
+        for u in left:
+            why_not[u] = f"stopped by the signal {signame}"
+        stop = {"reason": f"the signal {signame}", "units": unit_dicts(left)}
+    handlers.setdefault(signal.SIGINT, signal.getsignal(signal.SIGINT))
+    for s in handlers:
+        signal.signal(s, signal.SIG_IGN)  # the last write completes
+    try:
+        if stop is not None:
+            for u in planned:
+                if u not in done and u not in why_not:
+                    why_not[u] = "not started: " + stop["reason"]
+            outcome["stop"] = dict(stop, minutes=round((clock() - started) / 60.0, 2))
+            status = 1
+        outcome["running"] = None
+        save()
+    finally:
+        for s, h in handlers.items():
+            signal.signal(s, h)
+    message = None
+    if stop is not None:
+        message = (f"the run stopped after {outcome['stop']['minutes']} minutes ({stop['reason']}): "
+                   f"{len(outcome['not_run'])} of its {len(planned)} selected units did not run; "
+                   f"{args.outcome} lists them under not_run and the next run selects them")
+        print(message, flush=True)
+        if os.environ.get("GITHUB_ACTIONS") == "true":
+            print(f"::error title=Selected tests did not run::{message}", flush=True)
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:
         with open(summary, "a", encoding="utf-8") as f:
             f.write(f"### Test outcome ({args.mode}): {len(outcome['commands'])} commands, "
                     f"{len(outcome['failed'])} failing targets, complete: {outcome['complete']}\n")
+            if message:
+                f.write(f"- {message}\n")
+            f.writelines(f"- not run `{x['package']}` `{x['target']}`: {x['why']}\n" for x in outcome["not_run"][:40])
+            if len(outcome["not_run"]) > 40:
+                f.write(f"- ... and {len(outcome['not_run']) - 40} more units not run (outcome.json)\n")
             m = outcome["measurement"]
             if m:
                 f.write(f"- input map: {m['refreshed']} entries measured, {len(m['lost'])} lost, "
@@ -1488,10 +1781,10 @@ def control(args):
     env = dict(clean_env, LLVM_PROFILE_FILE=os.path.join(prof_dir, "%p-%m.profraw"))
     if strace:
         env["CARGO_TARGET_" + host_triple().upper().replace("-", "_") + "_RUNNER"] = strace_runner(strace, trace_dir)
-    build_code, _ = stream(["cargo", "test", "--locked", "--no-run", MESSAGES] + prof + ["-p", pkg, "--test", target],
-                           root, build_env, arts)
-    code, text = stream(["cargo", "test", "--locked", MESSAGES] + prof + ["-p", pkg, "--test", target]
-                        + harness_args("ignored", [], exact=args.test), root, env, arts)
+    build_code, _, _ = stream(["cargo", "test", "--locked", "--no-run", MESSAGES] + prof + ["-p", pkg, "--test", target],
+                              root, build_env, arts)
+    code, text, _ = stream(["cargo", "test", "--locked", MESSAGES] + prof + ["-p", pkg, "--test", target]
+                           + harness_args("ignored", [], exact=args.test), root, env, arts)
     verdict = None
     if build_code != 0:
         verdict = "the target did not build"
@@ -1537,14 +1830,50 @@ def runner_image(env):
     return (env.get("image_os") or None, env.get("image_version") or None)
 
 
+def read_outcome(path):
+    """(outcome, None) when the outcome file of an earlier run can be a baseline, else (None, why
+    the run is passed over). It can when its schema is the current one, its fields have the
+    expected types, and it is complete or lists the units it did not run (OD-L1-29)."""
+    try:
+        outcome = load_json(path)
+    except (OSError, ValueError):
+        return None, "unreadable outcome"
+    if not isinstance(outcome, dict):
+        return None, "unreadable outcome"
+    if outcome.get("schema") != SCHEMA_OUTCOME:
+        return None, "not complete"  # an earlier schema, as before
+    for field in ("failed", "not_run", "run_last"):
+        value = outcome.get(field, [])
+        if not isinstance(value, list) or len(unit_pairs(value)) != len(value):
+            return None, "unreadable outcome"
+    if (not isinstance(outcome.get("head"), str) or not outcome["head"]
+            or not isinstance(outcome.get("environment") or {}, dict)):
+        return None, "unreadable outcome"
+    if not outcome.get("complete") and "not_run" not in outcome:
+        return None, "not complete"
+    return outcome, None
+
+
+def deferred_units(outcome):
+    """The units that the run stopped or was running when it ended, and its own run_last units:
+    the next run runs them after every other unit (V4_NOTES R43). Examples are only built."""
+    units = unit_pairs(outcome.get("run_last"))
+    for field in ("stop", "running"):
+        value = outcome.get(field)
+        if isinstance(value, dict):
+            units += unit_pairs(value.get("units"))
+    return unit_dicts(u for u in dict.fromkeys(units) if not u[1].startswith("example:"))
+
+
 def baseline(args):
     """The baseline: the newest earlier run of this job on this branch, of the same event and from
-    this repository, whose outcome is complete at an ancestor of the head and that ran on the same
-    runner image. Hosted runners serve more than one image version at a time (review M-N1), so
-    runs on another image are passed over; when no run on this image qualifies, the newest
-    qualifying run on another image is the baseline and rule 1 makes the selection full."""
-    out = {"base": None, "run_id": None, "failed": [], "map_path": None, "environment": {}, "note": "",
-           "errors": []}
+    this repository, whose outcome is complete, or lists the units it did not run (OD-L1-29), at an
+    ancestor of the head and that ran on the same runner image. Hosted runners serve more than one
+    image version at a time (review M-N1), so runs on another image are passed over; when no run on
+    this image qualifies, the newest qualifying run on another image is the baseline and rule 1
+    makes the selection full. An outcome file that cannot be read passes its run over."""
+    out = {"base": None, "run_id": None, "complete": None, "failed": [], "not_run": [], "run_last": [],
+           "map_path": None, "environment": {}, "note": "", "errors": []}
     repository = os.environ.get("GITHUB_REPOSITORY")
     event = os.environ.get("GITHUB_EVENT_NAME") or None
     image_now = (os.environ.get("ImageOS") or None, os.environ.get("ImageVersion") or None)
@@ -1567,7 +1896,8 @@ def baseline(args):
                     if str(r["id"]) != str(args.run_id) and (current is None or r["id"] < current)]
             runs.sort(key=lambda r: (r["created_at"], r["id"]), reverse=True)
             counts = {"of another event": 0, "from another repository": 0, "without the artifact": 0,
-                      "not complete": 0, "not an ancestor": 0, "on another runner image": 0}
+                      "unreadable outcome": 0, "not complete": 0, "not an ancestor": 0,
+                      "on another runner image": 0}
             chosen, fallback, scratch = None, None, []
             for r in runs:
                 # Pull-request, push and dispatch runs test different trees (merge commit, branch)
@@ -1592,12 +1922,10 @@ def baseline(args):
                         out["errors"].append(f"download of run {r['id']} failed (exit {got.returncode}): "
                                              f"{got.stderr.strip()[-300:]}")
                 else:
-                    outcome = load_json(path)
-                    if outcome.get("schema") != SCHEMA_OUTCOME or not outcome.get("complete"):
-                        why = "not complete"
-                    elif args.head and not is_ancestor(root, outcome["head"], args.head):
+                    outcome, why = read_outcome(path)  # why: unreadable outcome, not complete
+                    if why is None and args.head and not is_ancestor(root, outcome["head"], args.head):
                         why = "not an ancestor"
-                    elif runner_image(outcome.get("environment") or {}) != image_now:
+                    elif why is None and runner_image(outcome.get("environment") or {}) != image_now:
                         why = "on another runner image"
                         if fallback is None:
                             fallback = (r, outcome, tmp)
@@ -1619,9 +1947,17 @@ def baseline(args):
                     keep = os.path.join(os.path.dirname(os.path.abspath(args.out)), "baseline_map.json")
                     shutil.copyfile(map_path, keep)
                     out["map_path"] = keep
-                out.update(base=outcome["head"], run_id=r["id"], failed=outcome.get("failed", []),
-                           environment=outcome.get("environment") or {},
+                complete = bool(outcome.get("complete"))
+                out.update(base=outcome["head"], run_id=r["id"], complete=complete,
+                           failed=outcome.get("failed", []), not_run=outcome.get("not_run", []),
+                           run_last=deferred_units(outcome), environment=outcome.get("environment") or {},
                            note=f"run {r['id']} ran its selection to the end at {outcome['head'][:8]}")
+                if not complete:
+                    stop = outcome.get("stop") if isinstance(outcome.get("stop"), dict) else {}
+                    out["note"] = (f"run {r['id']} stopped before the end at {outcome['head'][:8]} "
+                                   f"({stop.get('reason') or 'cancelled, or a command did not run its tests'}): "
+                                   f"the targets it measured are mapped, the {len(out['not_run'])} units "
+                                   f"it did not run are selected")
                 if chosen is fallback:
                     image = runner_image(out["environment"])
                     out["note"] += (f"; no complete run on the runner image {image_now[0]} {image_now[1]}, "
@@ -1778,6 +2114,32 @@ def check_workflows(root, members=None):
     for text, name, job, minutes in ((prod, "production.yml", "test", 300), (ign, "ignored-tests.yml", "ignored-tests", 330)):
         if f"timeout-minutes: {minutes}\n" not in job_block(text, job):
             problems.append(f"{name}: job {job} has not the time limit of {minutes} minutes (F-10)")
+    # Liveness (OD-L1-29, V4_NOTES R39-R41, R46): each selecting job records its start first, runs
+    # its selection with a time budget at least MIN_MARGIN_MINUTES under its limit, counted from
+    # that start, and saves its outcome also when it is cancelled.
+    for text, name, job in ((prod, "production.yml", "test"), (prod, "production.yml", "test-cli-fair-ab"),
+                            (ign, "ignored-tests.yml", "ignored-tests")):
+        block = job_block(text, job)
+        if not block:
+            continue  # reported above
+        # The steps of the job, without comment lines (a comment belongs to the step after it).
+        steps = ["\n".join(x for x in s.splitlines() if not x.lstrip().startswith("#"))
+                 for s in re.split(r"^      - ", block.split("\n    steps:\n", 1)[-1], flags=re.M)[1:]]
+        if not steps or not re.search(r'^\s*run: echo "JOB_STARTED_AT=\$\(date \+%s\)" >> "\$GITHUB_ENV"\s*$',
+                                      steps[0], re.M):
+            problems.append(f"{name}: job {job} does not record its start (JOB_STARTED_AT) in its first step (OD-L1-29)")
+        limit = re.search(r"^    timeout-minutes: (\d+)\s*$", block, re.M)
+        for step in steps:
+            if "select_tests.py run " in step:
+                budget = re.search(r"--budget-minutes (\d+(?:\.\d+)?)\b", step)
+                if not budget or '--started-at "$JOB_STARTED_AT"' not in step:
+                    problems.append(f"{name}: job {job} runs its selection without --budget-minutes and "
+                                    f'--started-at "$JOB_STARTED_AT" (OD-L1-29)')
+                elif not limit or float(limit.group(1)) - float(budget.group(1)) < MIN_MARGIN_MINUTES:
+                    problems.append(f"{name}: job {job} leaves less than {MIN_MARGIN_MINUTES} minutes between "
+                                    f"its time budget and its time limit (V4_NOTES R40)")
+            if "uses: actions/upload-artifact@" in step and not re.search(r"^\s*if: always\(\)\s*$", step, re.M):
+                problems.append(f"{name}: job {job} does not save its outcome when it is cancelled (if: always(), OD-L1-29)")
     if "select_tests.py has" in ign and "|| exit 1" not in ign:
         problems.append("ignored-tests.yml: a failing has call does not fail its step")
     if ign.count("select_tests.py control") != 2 or "--failed-controls" not in ign:
@@ -1789,6 +2151,364 @@ def check_workflows(root, members=None):
         if "Run the workspace test closure" in a1 or "cargo test --workspace --all-targets --locked\n" in a1:
             problems.append("a1-inner-tolerance-parity.yml: still runs the workspace test closure")
     return problems
+
+
+FAKE_CARGO = r'''
+import json, os, subprocess, sys
+repo, target = os.environ["FAKE_REPO"], os.environ["FAKE_TARGET"]
+tests = ["a_fast", "b_fast", "c_slow", "d_after"]
+args = sys.argv[1:]
+if args[:1] == ["metadata"]:
+    targets = [{"name": "p", "kind": ["lib"], "test": False, "doctest": False}]
+    targets += [{"name": t, "kind": ["test"], "test": True} for t in tests]
+    print(json.dumps({"packages": [{"name": "p", "manifest_path": repo + "/crates/p/Cargo.toml",
+                                    "dependencies": [], "features": {}, "targets": targets}],
+                      "target_directory": target}))
+    sys.exit(0)
+harness = args[args.index("--") + 1:] if "--" in args else []
+args = args[:args.index("--")] if "--" in args else args
+names = [args[i + 1] for i, a in enumerate(args) if a == "--test"]
+deps = os.path.join(target, "debug", "deps")
+os.makedirs(deps, exist_ok=True)
+
+def artifact(kind, name):
+    stem = os.path.join(deps, name + "-0123456789abcdef")
+    source = repo + ("/crates/p/src/lib.rs" if kind == "lib" else "/crates/p/tests/" + name + ".rs")
+    with open(stem + ".d", "w") as f:
+        f.write(stem + ": " + source + "\n")
+    if kind == "test":
+        with open(os.environ["FAKE_EXE"]) as f:
+            body = f.read()
+        with open(stem, "w") as f:
+            f.write("#!" + sys.executable + "\n" + body)
+        os.chmod(stem, 0o755)
+    files = [stem] if kind == "test" else [os.path.join(deps, "lib" + name + "-0123456789abcdef.rlib")]
+    print(json.dumps({"reason": "compiler-artifact", "manifest_path": repo + "/crates/p/Cargo.toml",
+                      "target": {"kind": [kind], "name": name}, "profile": {"test": kind == "test"},
+                      "filenames": files, "executable": stem if kind == "test" else None}), flush=True)
+    return stem
+
+artifact("lib", "p")
+if "--no-run" in args:
+    for name in names or tests:
+        artifact("test", name)
+    sys.exit(0)
+exe = artifact("test", names[0])
+runner = os.environ.get("CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUNNER", "").split()
+code = subprocess.call(runner + [exe] + harness)
+if code:
+    print("error: test failed, to rerun pass `-p p --test " + names[0] + "`", flush=True)
+sys.exit(code)
+'''
+FAKE_TEST = r'''
+import os, sys, time
+name = os.path.basename(sys.argv[0]).rsplit("-", 1)[0]
+profile = os.environ.get("LLVM_PROFILE_FILE")
+if profile:
+    path = profile.replace("%p", str(os.getpid())).replace("%m", "0")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    open(path, "w").close()
+flags = os.environ["FAKE_FLAGS"]
+if name == "c_slow" and os.path.exists(os.path.join(flags, "slow")):
+    with open(os.path.join(flags, "slow-started.tmp"), "w") as f:
+        f.write(str(os.getpid()))
+    os.replace(os.path.join(flags, "slow-started.tmp"), os.path.join(flags, "slow-started"))
+    time.sleep(600)
+print("running 1 test")
+print("test " + name + " ... ok")
+print("")
+print("test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out")
+'''
+FAKE_STRACE = r'''
+import os, subprocess, sys
+args = sys.argv[1:]
+if args == ["-V"]:
+    print("strace -- version 6.8 (self-test fake)")
+    sys.exit(0)
+prefix = args[args.index("-o") + 1]
+command = args[args.index("-e") + 2:]
+name = os.path.basename(command[0]).rsplit("-", 1)[0]
+repo = os.environ["FAKE_REPO"]
+with open(prefix + "." + str(os.getpid()), "w") as f:
+    f.write('openat(AT_FDCWD<%s>, "data/%s.json", O_RDONLY|O_CLOEXEC) = 3<%s/data/%s.json>\n' % (repo, name, repo, name))
+sys.exit(subprocess.call(command))
+'''
+FAKE_TOOLS = {
+    "rustc": 'print("rustc 1.94.1 (self-test fake)\\nhost: x86_64-unknown-linux-gnu")\n',
+    "llvm-profdata": 'import sys\nopen(sys.argv[sys.argv.index("-o") + 1], "w").close()\n',
+    "llvm-cov": ('import json, os\nprint(json.dumps({"data": [{"files": [{"filename": os.environ["FAKE_REPO"]'
+                 ' + "/crates/p/src/lib.rs", "summary": {"regions": {"covered": 1}}}]}]}))\n'),
+}
+FAKE_GH = ('#!/bin/sh\nD="$(dirname "$0")/.."\n'
+           'if [ "$1" = api ]; then cat "$D/listing.json"; exit 0; fi\n'
+           'id="$3"; while [ $# -gt 0 ]; do [ "$1" = -D ] && dest="$2"; shift; done\n'
+           '[ -f "$D/art/$id/outcome.json" ] && { cp "$D/art/$id/"* "$dest/"; exit 0; }\n'
+           'echo "no valid artifacts found to download" >&2; exit 1\n')
+
+
+def liveness_self_test():
+    """OD-L1-29 on a fake workspace and toolchain (cargo, rustc, strace, llvm tools, gh): a run
+    that its time budget stops writes an incomplete outcome and a map of what it measured; the
+    next selection maps the measured targets and selects the rest, the stopped one last; a
+    complete baseline selects as before; a cancelled run (SIGKILL) leaves a usable outcome; and
+    unreadable outcome and map files are passed over or count as missing."""
+    global clock
+    # Atomic writes: a failed write leaves the old file and no temporary file.
+    with tempfile.TemporaryDirectory() as d:
+        path = os.path.join(d, "x.json")
+        write_json(path, {"a": 1})
+        try:
+            write_json(path, {"a": object()})
+            raise AssertionError("an object that JSON cannot hold was written")
+        except TypeError:
+            pass
+        assert load_json(path) == {"a": 1} and os.listdir(d) == ["x.json"], os.listdir(d)
+    # A command is stopped at its deadline with its whole process group, also when it ignores SIGTERM.
+    began = time.monotonic()
+    code, text, cut = stream(["sh", "-c", "trap '' TERM; echo started; sleep 30 & sleep 30; wait"], None, None,
+                             deadline=clock() + 1.0, grace=0.5)
+    assert cut and "started" in text and time.monotonic() - began < 10, (code, text, cut, time.monotonic() - began)
+    assert stream(["sh", "-c", "echo hi; exit 3"], None, None) == (3, "hi\n", False)
+    # Outcome files: what qualifies as a baseline, what is passed over.
+    with tempfile.TemporaryDirectory() as d:
+        def outcome_of(text):
+            with open(os.path.join(d, "o.json"), "w", encoding="utf-8") as f:
+                f.write(text)
+            return read_outcome(os.path.join(d, "o.json"))[1]
+        good = {"schema": SCHEMA_OUTCOME, "head": "h", "complete": False, "failed": [],
+                "not_run": [{"package": "p", "target": "t", "why": "w"}]}
+        assert outcome_of(json.dumps(good)) is None
+        assert outcome_of(json.dumps(dict(good, complete=True, not_run=[]))) is None
+        for bad, why in (("", "unreadable outcome"), ("{", "unreadable outcome"), ("[]", "unreadable outcome"),
+                         (json.dumps(dict(good, not_run="x")), "unreadable outcome"),
+                         (json.dumps(dict(good, not_run=[{"package": "p"}])), "unreadable outcome"),
+                         (json.dumps(dict(good, head=None)), "unreadable outcome"),
+                         (json.dumps(dict(good, failed=[1])), "unreadable outcome"),
+                         (json.dumps({k: v for k, v in good.items() if k != "not_run"}), "not complete"),
+                         (json.dumps(dict(good, schema="vigilode.ci.test-outcome.v2", complete=True)), "not complete")):
+            assert outcome_of(bad) == why, (bad, outcome_of(bad), why)
+        for bad in ("", "{", "[]", json.dumps({"schema": SCHEMA_MAP, "targets": []}),
+                    json.dumps({"schema": SCHEMA_MAP, "targets": {"no-key": {}}}),
+                    json.dumps({"schema": SCHEMA_MAP, "targets": {"p::t": {"read": "x"}}}),
+                    json.dumps({"schema": SCHEMA_MAP, "targets": {}, "packages": {"p": {"compile": [1]}}})):
+            with open(os.path.join(d, "m.json"), "w", encoding="utf-8") as f:
+                f.write(bad)
+            assert load_map(os.path.join(d, "m.json")) is None, bad
+    assert deferred_units({"run_last": [{"package": "p", "target": "a"}],
+                           "running": {"units": [{"package": "p", "target": "example:e"}, {"package": "p", "target": "b"}]},
+                           "stop": {"units": [{"package": "p", "target": "a"}]}}) == [
+        {"package": "p", "target": "a"}, {"package": "p", "target": "b"}]
+
+    with tempfile.TemporaryDirectory() as d:
+        d = os.path.realpath(d)
+        repo, target, flags, fake, llvm = (os.path.join(d, x) for x in ("repo", "target", "flags", "bin", "llvm"))
+        for x in (flags, fake, llvm):
+            os.makedirs(x)
+        tests = ["a_fast", "b_fast", "c_slow", "d_after"]
+        ident = ["-c", "user.name=ci", "-c", "user.email=ci@localhost", "-c", "commit.gpgsign=false"]
+        sh(GIT + ["init", "-q", repo])
+        files = {"Cargo.toml": '[workspace]\nmembers = ["crates/p"]\n', "crates/p/Cargo.toml": '[package]\nname = "p"\n',
+                 "crates/p/src/lib.rs": "pub fn f() {}\n"}
+        files.update({f"crates/p/tests/{t}.rs": "#[test]\nfn t() {}\n" for t in tests})
+        files.update({f"data/{t}.json": "{}\n" for t in tests})
+        for rel, content in files.items():
+            os.makedirs(os.path.dirname(os.path.join(repo, rel)), exist_ok=True)
+            with open(os.path.join(repo, rel), "w", encoding="utf-8") as f:
+                f.write(content)
+        sh(GIT + ["-C", repo, "add", "--"] + sorted(files))
+        sh(GIT + ident + ["-C", repo, "commit", "-q", "-m", "fake workspace"])
+        head = sh(GIT + ["-C", repo, "rev-parse", "HEAD"]).stdout.strip()
+        for directory, name, body in [(fake, "cargo", FAKE_CARGO), (fake, "strace", FAKE_STRACE),
+                                      (fake, "rustc", FAKE_TOOLS["rustc"]), (llvm, "llvm-profdata", FAKE_TOOLS["llvm-profdata"]),
+                                      (llvm, "llvm-cov", FAKE_TOOLS["llvm-cov"]), (d, "fake_test.py", FAKE_TEST)]:
+            with open(os.path.join(directory, name), "w", encoding="utf-8") as f:
+                f.write(("" if name == "fake_test.py" else f"#!{sys.executable}\n") + body)
+            os.chmod(os.path.join(directory, name), 0o755)
+        with open(os.path.join(fake, "gh"), "w", encoding="utf-8") as f:
+            f.write(FAKE_GH)
+        os.chmod(os.path.join(fake, "gh"), 0o755)
+        patch = {"PATH": fake + os.pathsep + os.environ.get("PATH", ""), "VIGILODE_LLVM_BIN": llvm, "FAKE_REPO": repo,
+                 "FAKE_TARGET": target, "FAKE_FLAGS": flags, "FAKE_EXE": os.path.join(d, "fake_test.py"),
+                 "GITHUB_REPOSITORY": "o/r", "GITHUB_EVENT_NAME": "pull_request"}
+        unset = ("GITHUB_STEP_SUMMARY", "GITHUB_ACTIONS", "ImageOS", "ImageVersion")
+        env = dict({k: v for k, v in os.environ.items() if k not in unset}, **patch)
+        sel1 = {"schema": SCHEMA_SELECTION, "head": head, "base": None, "scope": ["p"], "mode": "selected",
+                "environment": {}, "packages": {"p": dict(new_entry(), targets=list(tests))}, "run_last": []}
+        write_json(os.path.join(d, "sel1.json"), sel1)
+        T0 = 1_000_000.0
+
+        def run_here(name, selection, baseline=None, budget=None, fake_clock=None):
+            """run() in this process (cwd, environment and clock patched); (exit code, outcome, map)."""
+            global clock
+            args = argparse.Namespace(selection=os.path.join(d, selection), mode="normal", profile="dev", skip=[],
+                                      outcome=os.path.join(d, f"{name}-outcome.json"), measure=True,
+                                      baseline=baseline, map_out=os.path.join(d, f"{name}-map.json"),
+                                      work_dir=os.path.join(d, f"{name}-work"), control_maps=[], failed_controls=None,
+                                      strace=os.path.join(fake, "strace"), jobs=0, budget_minutes=budget,
+                                      started_at=str(T0) if budget else "")
+            saved_env, saved_cwd, real_clock = dict(os.environ), os.getcwd(), clock
+            os.environ.clear()
+            os.environ.update(env)
+            os.chdir(repo)
+            log = io.StringIO()
+            try:
+                clock = fake_clock or real_clock
+                with contextlib.redirect_stdout(log):
+                    code = run(args)
+            finally:
+                clock = real_clock
+                os.chdir(saved_cwd)
+                os.environ.clear()
+                os.environ.update(saved_env)
+            return code, load_json(args.outcome), load_json(args.map_out), log.getvalue()
+
+        def publish(run_id, name, selection):
+            """The artifact of a fake run: outcome, map and selection (copied like the save step)."""
+            art = os.path.join(d, "art", str(run_id))
+            os.makedirs(art, exist_ok=True)
+            for src, dst in ((f"{name}-outcome.json", "outcome.json"), (f"{name}-map.json", "map.json"),
+                             (selection, "selection.json")):
+                if os.path.exists(os.path.join(d, src)):
+                    shutil.copyfile(os.path.join(d, src), os.path.join(art, dst))
+
+        def lookup(name, run_ids):
+            with open(os.path.join(d, "listing.json"), "w", encoding="utf-8") as f:
+                json.dump({"workflow_runs": [{"id": i, "created_at": f"2026-11-25T10:{i % 60:02d}:00Z",
+                                              "event": "pull_request", "head_repository": {"full_name": "o/r"}}
+                                             for i in run_ids]}, f)
+            out = os.path.join(d, f"{name}.json")
+            r = subprocess.run([sys.executable, "-I", os.path.abspath(__file__), "baseline", "--workflow", "w.yml",
+                                "--artifact", "a", "--branch", "b", "--run-id", "999", "--head", head, "--out", out],
+                               cwd=repo, env=env, capture_output=True, text=True)
+            assert r.returncode == 0, r.stdout + r.stderr
+            return out, load_json(out)
+
+        def choose(name, baseline_path, at):
+            out = os.path.join(d, f"{name}.json")
+            r = subprocess.run([sys.executable, "-I", os.path.abspath(__file__), "select", "--baseline", baseline_path,
+                                "--head", at, "--scope", "p", "--workflow-file", ".github/workflows/w.yml", "--out", out],
+                               cwd=repo, env=env, capture_output=True, text=True)
+            assert r.returncode == 0, r.stdout + r.stderr
+            return load_json(out)
+
+        def targets(selection):
+            return {p: e["targets"] for p, e in selection["packages"].items()}
+
+        # 1. The budget ends while c_slow runs: c_slow is stopped, d_after does not start; the outcome is
+        # incomplete and lists both, the map holds what was measured. The baseline map has old entries
+        # of all four targets: the two that did not run lose theirs.
+        stale = {"compile": ["crates/p/tests/old.rs"], "executed": [], "read": [], "dirs": [], "absent": [], "head": "old"}
+        write_json(os.path.join(d, "m0.json"), {"schema": SCHEMA_MAP, "head": "old", "mode": "normal",
+                                                 "targets": {f"p::{t}": stale for t in tests}, "packages": {}})
+        write_json(os.path.join(d, "b0.json"), {"map_path": os.path.join(d, "m0.json")})
+        open(os.path.join(flags, "slow"), "w").close()
+        code, outcome, cmap, log = run_here("r1", "sel1.json", baseline=os.path.join(d, "b0.json"), budget=1.0,
+                                            fake_clock=lambda: T0 + (61.0 if os.path.exists(
+                                                os.path.join(flags, "slow-started")) else 1.0))
+        assert code == 1 and outcome["complete"] is False and outcome["running"] is None, (code, outcome, log)
+        assert [(x["target"], x["why"]) for x in outcome["not_run"]] == [
+            ("c_slow", "stopped when the time budget ended"), ("d_after", "not started: the time budget ended")], outcome
+        assert outcome["measured"] == ["p::a_fast", "p::b_fast"] and len(outcome["commands"]) == 3, outcome
+        assert outcome["stop"] == {"reason": "the time budget ended", "units": [{"package": "p", "target": "c_slow"}],
+                                   "minutes": 1.02} and outcome["run_last"] == [{"package": "p", "target": "c_slow"}], outcome
+        assert sorted(cmap["targets"]) == ["p::a_fast", "p::b_fast"], cmap
+        assert cmap["targets"]["p::a_fast"] == {"compile": ["crates/p/tests/a_fast.rs"], "executed": ["crates/p/src/lib.rs"],
+                                                "read": ["data/a_fast.json"], "dirs": [], "absent": [], "head": head}, cmap
+        assert cmap["packages"] == {"p": {"compile": ["crates/p/src/lib.rs"], "head": head}}, cmap
+        assert "the run stopped after 1.02 minutes (the time budget ended): 2 of its 4 selected units did not run" in log, log
+        with open(os.path.join(flags, "slow-started")) as f:
+            slow = int(f.read())
+        for _ in range(100):  # the stopped test process is gone (or a zombie awaiting its reaper)
+            try:
+                with open(f"/proc/{slow}/stat") as f:
+                    if f.read().rsplit(")", 1)[1].split()[0] == "Z":
+                        break
+            except OSError:
+                break
+            time.sleep(0.05)
+        else:
+            raise AssertionError(f"the stopped test process {slow} is still running")
+        publish(201, "r1", "sel1.json")
+
+        # 2. The next selection maps the measured targets and selects the rest; the stopped one runs last.
+        b1, base1 = lookup("b1", [201])
+        assert base1["run_id"] == 201 and base1["complete"] is False and base1["base"] == head, base1
+        assert [x["target"] for x in base1["not_run"]] == ["c_slow", "d_after"], base1
+        assert base1["run_last"] == [{"package": "p", "target": "c_slow"}] and "stopped before the end" in base1["note"], base1
+        s2 = choose("s2", b1, head)
+        assert s2["mode"] == "selected" and targets(s2) == {"p": ["c_slow", "d_after"]}, s2
+        assert s2["baseline_not_run_added"] == ["p:c_slow", "p:d_after"], s2
+        assert s2["run_last"] == [{"package": "p", "target": "c_slow"}], s2
+        with open(os.path.join(repo, "data", "a_fast.json"), "w") as f:
+            f.write('{"changed": true}\n')
+        sh(GIT + ident + ["-C", repo, "commit", "-q", "-a", "-m", "change a_fast's input"])
+        head2 = sh(GIT + ["-C", repo, "rev-parse", "HEAD"]).stdout.strip()
+        s2b = choose("s2b", b1, head2)
+        assert targets(s2b) == {"p": ["a_fast", "c_slow", "d_after"]}, s2b
+        assert s2b["packages"]["p"]["why"]["a_fast"] == ["reads data/a_fast.json"], s2b
+        sh(GIT + ["-C", repo, "checkout", "-q", head])
+
+        # 3. The next run runs the rest, c_slow last, and completes; its complete outcome selects as before.
+        os.remove(os.path.join(flags, "slow"))
+        os.remove(os.path.join(flags, "slow-started"))
+        code, outcome, cmap, log = run_here("r2", "s2.json", baseline=b1)
+        assert code == 0 and outcome["complete"] is True and outcome["not_run"] == [] and outcome["stop"] is None, outcome
+        assert [c["command"].split()[-1] for c in outcome["commands"]] == ["d_after", "d_after", "c_slow"], outcome
+        assert sorted(cmap["targets"]) == ["p::a_fast", "p::b_fast", "p::c_slow", "p::d_after"], cmap
+        assert outcome["run_last"] == [] and outcome["measured"] == ["p::c_slow", "p::d_after"], outcome
+        publish(202, "r2", "s2.json")
+        b2, base2 = lookup("b2", [201, 202])
+        assert base2["run_id"] == 202 and base2["complete"] is True and base2["not_run"] == [] and base2["run_last"] == [], base2
+        assert "ran its selection to the end" in base2["note"], base2
+        s3 = choose("s3", b2, head)
+        assert s3["mode"] == "selected" and s3["packages"] == {} and s3["baseline_not_run_added"] == [], s3
+        assert targets(choose("s3b", b2, head2)) == {"p": ["a_fast"]}
+
+        # 4. A cancelled run (the selector killed while c_slow runs) leaves the outcome it wrote before
+        # c_slow: a usable baseline that names c_slow as running.
+        open(os.path.join(flags, "slow"), "w").close()
+        proc = subprocess.Popen([sys.executable, "-I", os.path.abspath(__file__), "run", "--selection",
+                                 os.path.join(d, "sel1.json"), "--mode", "normal", "--outcome", os.path.join(d, "r4-outcome.json"),
+                                 "--measure", "--map-out", os.path.join(d, "r4-map.json"), "--work-dir", os.path.join(d, "r4-work"),
+                                 "--strace", os.path.join(fake, "strace")],
+                                cwd=repo, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        for _ in range(1200):
+            if os.path.exists(os.path.join(flags, "slow-started")) or proc.poll() is not None:
+                break
+            time.sleep(0.05)
+        assert proc.poll() is None, "the selector ended before c_slow started"
+        proc.kill()
+        proc.wait()
+        with open(os.path.join(flags, "slow-started")) as f:
+            slow = int(f.read())
+        with contextlib.suppress(OSError):
+            os.killpg(os.getpgid(slow), signal.SIGKILL)
+        outcome = load_json(os.path.join(d, "r4-outcome.json"))
+        assert outcome["complete"] is False and outcome["stop"] is None, outcome
+        assert outcome["running"]["units"] == [{"package": "p", "target": "c_slow"}], outcome
+        assert [(x["target"], x["why"]) for x in outcome["not_run"]] == [("c_slow", "not run yet"), ("d_after", "not run yet")]
+        assert outcome["measured"] == ["p::a_fast", "p::b_fast"], outcome
+        assert sorted(load_json(os.path.join(d, "r4-map.json"))["targets"]) == ["p::a_fast", "p::b_fast"]
+        assert not [x for x in os.listdir(d) if x.endswith(".tmp")]
+        publish(203, "r4", "sel1.json")
+        b4, base4 = lookup("b4", [201, 202, 203])
+        assert base4["run_id"] == 203 and base4["run_last"] == [{"package": "p", "target": "c_slow"}], base4
+        s4 = choose("s4", b4, head)
+        assert targets(s4) == {"p": ["c_slow", "d_after"]} and s4["run_last"] == [{"package": "p", "target": "c_slow"}], s4
+
+        # 5. Unreadable outcome files pass their run over; an unreadable map counts as no map (full).
+        for run_id, text in ((305, ""), (304, "{not json"), (303, json.dumps(dict(load_json(os.path.join(d, "r1-outcome.json")), not_run="x")))):
+            os.makedirs(os.path.join(d, "art", str(run_id)), exist_ok=True)
+            with open(os.path.join(d, "art", str(run_id), "outcome.json"), "w") as f:
+                f.write(text)
+        publish(302, "r1", "sel1.json")
+        for broken_map in ("{", ""):
+            with open(os.path.join(d, "art", "302", "map.json"), "w") as f:
+                f.write(broken_map)
+            b5, base5 = lookup("b5", [301, 302, 303, 304, 305])
+            assert base5["run_id"] == 302 and "3 unreadable outcome" in base5["note"], base5
+            s5 = choose("s5", b5, head)
+            assert s5["mode"] == "full" and s5["reasons"] == ["the baseline run left no input map"], s5
 
 
 def self_test():
@@ -2140,6 +2860,27 @@ fn g() -> usize {
     assert s["baseline_failures_dropped"] == ["int:gone: no longer a test target",
                                               "int:audit2_x: requires the features audit"], s
     assert all("audit2_x" not in str(e) for e in pick([("M", "x")], the_map={})["packages"].values())
+    # rule 6, units not run (OD-L1-29): selected whatever the diff, filtered like the failures (with
+    # none, as from a complete baseline, decide() is the call that every case above makes)
+    not_run = [{"package": "int", "target": "t_ok", "why": "stopped when the time budget ended"},
+               {"package": "int", "target": "gone"}, {"package": "int", "target": "audit2_x"},
+               {"package": "vig", "target": "doc"}, {"package": "int", "target": "example:ex"},
+               {"package": "cli", "target": "bin:cli"}, {"package": "out", "target": "x"}, "junk"]
+    s = decide([], pk, scope, cmap, pmap, lambda path: "structural", lambda side, dirs: set(), (), (), not_run)
+    assert chosen(s) == {"int:t_ok", "int:doc", "int:example:ex", "vig:doc", "cli:bin:cli"}, chosen(s)
+    assert s["baseline_not_run_added"] == ["int:t_ok", "vig:doc", "int:example:ex", "cli:bin:cli"], s
+    assert s["baseline_not_run_dropped"] == ["int:gone: no longer a test target",
+                                             "int:audit2_x: requires the features audit"], s
+    assert "stopped when the time budget ended" in s["packages"]["int"]["why"]["t_ok"][0], s
+    # the order of a run: units that the baseline run stopped run last, builds stay first
+    sel_order = {"packages": {"int": dict(new_entry(), targets=["t_base", "t_ok"], examples=["ex"]),
+                              "core": dict(new_entry(), targets=["c1"])}}
+    steps = plan_steps(sel_order, pk, "normal", "dev", [], True, [("core", "c1")])
+    assert [(s["kind"], s["units"]) for s in steps] == [
+        ("build", []), ("build", [("int", "example:ex")]), ("test", [("int", "t_base")]),
+        ("test", [("int", "t_ok")]), ("test", [("core", "c1")])], steps
+    assert [s["units"] for s in plan_steps(sel_order, pk, "normal", "dev", [], False, [("int", "t_ok")])] == [
+        [("core", "c1")], [("int", "example:ex")], [("int", "t_base"), ("int", "t_ok")]]
     # rule 1: full-mode triggers (image and pull-request base: F8/F-04, F14)
     env = {"image_os": "ubuntu24", "image_version": "20261117.1", "pr_base": "aaa"}
     assert full_reasons(False, "b", True, True, env, dict(env)) == []
@@ -2270,8 +3011,10 @@ fn g() -> usize {
         assert members == {"probe-m": "m"}, members
         found = [p.split(": ", 1)[0] for p in check_sources(d, members)]
         assert found == ["m/src/lib.rs:2", "m/src/lib.rs:4", "m/src/lib.rs:5", "m/src/lib.rs:7"], check_sources(d, members)
+    # liveness of a run that cannot finish inside its job limit (OD-L1-29)
+    liveness_self_test()
     # the workflows (F-01, F-03, F-05, F-06, F-07, F-11, F-12, F8/F-04, F14; S-N2, M-N2, M-N4, M-N6,
-    # M-N8) and the source facts of the workspace (S-N6)
+    # M-N8; OD-L1-29) and the source facts of the workspace (S-N6)
     root = repo_root()
     if os.path.isdir(os.path.join(root, ".github", "workflows")) and os.path.exists(os.path.join(root, "Cargo.toml")):
         members = workspace_members(root)
@@ -2297,6 +3040,18 @@ fn g() -> usize {
                                                      "--scope rodas5p-fair-ab"))
             assert "the same artifact" in str(probe("production.yml", "name: ci-test-outcome-test-cli-fair-ab",
                                                     "name: ci-test-outcome-test"))
+            # OD-L1-29: a save step that a cancellation skips, a run without a budget, a budget too
+            # close to the limit, a job that does not record its start first
+            assert "ignored-tests does not save its outcome when it is cancelled" in str(probe(
+                "ignored-tests.yml", "if: always()\n        uses: actions/upload-artifact",
+                "if: ${{ !cancelled() }}\n        uses: actions/upload-artifact"))
+            assert "job test runs its selection without --budget-minutes" in str(probe(
+                "production.yml", "--budget-minutes 290 ", ""))
+            assert "job test-cli-fair-ab leaves less than 5 minutes" in str(probe(
+                "production.yml", "--budget-minutes 110 ", "--budget-minutes 116 "))
+            assert "ignored-tests does not record its start" in str(probe(
+                "ignored-tests.yml", '      - name: Record the start of the job\n', '      - name: Record the start\n'
+                "        run: true\n      - name: Record the start of the job again\n"))
     print("self-test passed", flush=True)
     return 0
 
@@ -2334,7 +3089,13 @@ def main():
     r.add_argument("--control-maps", nargs="*", default=[])
     r.add_argument("--failed-controls")
     r.add_argument("--strace", default="strace")
+    # The measurement runs right after each target since OD-L1-29; --jobs is accepted and unused.
     r.add_argument("--jobs", type=int, default=0)
+    # No command starts after the budget, and a command still running then is stopped (OD-L1-29).
+    r.add_argument("--budget-minutes", type=float)
+    # The start the budget counts from, in seconds since the epoch (the start of the job); the
+    # start of this command when it is missing or empty.
+    r.add_argument("--started-at", default="")
     c = sub.add_parser("control")
     c.add_argument("--selection", required=True)
     c.add_argument("--target", required=True)
