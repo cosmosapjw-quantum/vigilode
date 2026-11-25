@@ -2277,3 +2277,58 @@ impl RobertsonModel {
         Ok(out)
     }
 }
+
+/// Absolute-time query of a source-owned relative phase certificate.
+/// Both methods use the exact affine lift, not the rounded algebraic
+/// reconstruction. The owning facade supplies genuine native slabs.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum PhaseQueryRoute {
+    Horner,
+    Centered,
+}
+#[derive(Clone, Debug, Serialize)]
+pub struct PhaseCellEvidence {
+    pub native_times: [f64; 2],
+    pub phase: [f64; 2],
+    pub represented: [[f64; 2]; 3],
+    pub enclosure: [[f64; 2]; 3],
+    pub error_l1: f64,
+}
+pub fn phase_slab_enclosure(
+    y: &[Poly],
+    c: &SlabCertificate,
+    phase: [f64; 2],
+    route: PhaseQueryRoute,
+) -> CoreResult<PhaseCellEvidence> {
+    if y.len() != 3
+        || !c.global_qualified
+        || c.conservation.is_none()
+        || !(c.times[0] <= phase[0] && phase[0] <= phase[1] && phase[1] <= c.times[1])
+    {
+        return Err(bad("relative phase slab authority"));
+    }
+    let error = c
+        .whole_x_error
+        .ok_or_else(|| bad("missing phase L1 error"))?;
+    let h = p(c.times[1])?.sub(p(c.times[0])?)?;
+    let u = Iv::new(phase[0], phase[1])?.sub(p(c.times[0])?)?.div(h)?;
+    let u = Iv::new(u.lo.max(0.), u.hi.min(1.))?;
+    let z = add(&[p(1.)?], &scale(&add(&y[0], &y[1])?, p(-1.)?)?)?;
+    let mut represented = [[0.; 2]; 3];
+    let mut enclosure = [[0.; 2]; 3];
+    for (i, row) in [&y[0], &y[1], &z].into_iter().enumerate() {
+        let v = match route {
+            PhaseQueryRoute::Horner => eval(row, u)?,
+            PhaseQueryRoute::Centered => reset_centered_eval(row, u)?,
+        };
+        represented[i] = v.as_pair();
+        enclosure[i] = intersect(v.add(Iv::new(-error, error)?)?, Iv::new(0., 1.)?)?.as_pair();
+    }
+    Ok(PhaseCellEvidence {
+        native_times: c.times,
+        phase,
+        represented,
+        enclosure,
+        error_l1: error,
+    })
+}
