@@ -1,0 +1,47 @@
+Node V10_PPSW1_DECISION (loop L1, wave 4 group D, owner decision OD-L1-30; task by OD-L1-2: one experiment, then judge)
+Worktree: /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v10, branch research/production-loop-20261116-w4-v10, base 45d0da19.
+Write scope: research/production_loop_20261116/ppsw1_decision/** only.
+
+2026-11-25 12:14 KST - session start, notes before any code or run.
+
+Frozen text that decides (PREREGISTRATION.md, table of 2026-11-17, row V10, and TASK_CONTRACTS.json V10_PPSW1_DECISION):
+  pass: stable for sigma in {1.2, 1.3, 1.5} with the independent oracle, matched-error step ratio <= 1.5 on new problems,
+        and measured wall >= 1.15x in >= 1 pre-registered regime
+  kill/fallback: unstable for sigma > 1.1, or the ratios fail: freeze as opt-in comparator.
+Everything the frozen text leaves open goes into PREDECLARED.json, committed before the first measured run.
+
+Sources read (sha256 at base 45d0da19):
+  crates/rodas5p-integrators/src/ppsw1.rs                 d2b27044d1ae75cfda80ff6cd93dc80884ceae09bba2b56c513e50e32297e20d (protected; not edited)
+  crates/rodas5p-integrators/src/ppsw1_linear_backend.rs  0b2410895ee6581eecb981c8910e6dbe1b867ce38248495973fe9c763cbd3978
+  crates/vigilode/src/selection/peer.rs (PeerOde adapter)  8053325f939da490ee043e0f3b097f17da151d05bad0ca18bcfaf6614e75fc17
+  research/production_unification_20261115/peer_qualification/oracle_coefficients.py 9341105b1d7b9308b6fad24900e74a78c2d76a60d3ded304c661394de5576ea8 (independent oracle, route R1)
+  research/production_unification_20261115/peer_qualification/theta_oracle.py        9338bb462fad71c29fe0f58a301befcfa71e280b62d1c1f9ad4e0e22b8e6b7c7
+
+Facts collected before the design (reading only, no run of any arm):
+  - The U11 holdout ran vigilode::PeerOde::solve (1 and 6 threads) against vigilode::Rodas5p::solve (dense J) on HIRES (n=8),
+    Oregonator (n=3), Brusselator MOL32 (n=64). These three problems are the consumed holdout; they are not used for any
+    step-ratio or wall decision here. Their sizes equal three of the four cost sizes n in {3, 8, 64, 1000} of the task;
+    they are used only for the per-attempt cost decomposition of the U11 result (no accuracy or step claim on them).
+  - PeerOde (facade) builds ParallelExecution::rayon(threads) inside every solve (COD-08) and since V03 part A controls the
+    starter interval by step doubling (COD-02 repaired in the adapter, not in ppsw1.rs).
+  - ppsw1.rs rebuilds the 6x6 double-double tableau(sigma) in every attempt (stage_inputs_unchecked -> tableau(sigma)).
+  - The step-ratio cap enters ppsw1.rs at three places: check_sigma (cap.min(1.10)), propose_ratio (cap.min(1.10)),
+    Session::new (cap <= 1.10). PAPER_STEP_RATIO_BOUND = 1.5 is recorded but unused.
+  - Literature (owner PDFs in the main checkout, read only): Schmitt & Weiner SINUM 42 (2004): Theorem 3.1 / Lemma 3.2 -
+    with beta from (23), products of >= s-2+1 = 5 matrices B are rank one (1 v^T) and products of >= 6 matrices beta vanish,
+    for ANY step-size sequence: zero stability and the stiff limit hold for every bounded ratio sequence; "stronger
+    z-uniform stability results for these methods with nonconstant stepsize sequences are not yet available".
+    Section 4: sigma_max = 1.5 for all PPSW methods in their tests. Weiner, Schmitt, Podhaisky APNUM 48 (2004): random
+    ratio sequences sigma_k in [2 - sigma_max, sigma_max], bnorm = max entries of products up to m = 10000.
+  - U03 theta oracle: frozen-z constant-ratio matrix M(z, 1.1) has spectral radius 1.04 for z in [-4.9, -1.5] at theta = 1
+    (a one-step indicator, not a variable-step product; z changes with h).
+
+Plan (in this order; each step committed):
+  1. NOTES.txt (this file).
+  2. PREDECLARED.json: problem set, tolerances, arms, references, error metric, interpolation rule, stability criterion,
+     regimes, timing quality rule, re-measurement rule, decision rule. Commit before any measured run.
+  3. runner/: standalone package with its own [workspace]; src/ppsw1.rs = research copy with exactly three changes;
+     src/ppsw1_linear_backend.rs = byte copy; driver = copy of the PeerOde::solve loop over the research Session;
+     fidelity tests (control arm == vigilode::PeerOde::solve bit for bit; cache changes no bit; tableau cache audit).
+  4. oracle/: stability oracle importing the U03 route-R1 oracle; executed forced-sequence runs in the runner.
+  5. reference/: SciPy references; logs/: raw logs; parse_results.py -> RESULTS.json; render_report.py -> REPORT_KO.md.
