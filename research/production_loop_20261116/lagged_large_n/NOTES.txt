@@ -1,0 +1,41 @@
+Loop L1 node V09_LAGGED_LARGE_N - working notes (plain text; the owner report is REPORT_KO.md, rendered by make_report.py)
+
+Started 2026-11-25 (wave 4 group D, owner decision OD-L1-30). Worktree branch research/production-loop-20261116-w4-v09 at 45d0da19.
+Write scope: research/production_loop_20261116/lagged_large_n/** only. No crate source is changed.
+
+Question
+  Does the existing lagged-LU RODAS5P driver (crates/rodas5p-integrators/src/rodas5p_lagged.rs: exact J at every
+  new state, the LU of an earlier W reused as preconditioner of the stage solves) beat the protected fast dense
+  driver in the regime where the factorisation dominates the step (dense n >= 256, 2D method of lines stored
+  densely)? Frozen discriminators (PREREGISTRATION.md 2026-11-17, row V09):
+    PASS: wall >= 1.15x at matched error in at least one size class with LU per step <= 0.5 and step ratio <= 1.05
+    KILL: LU per step > 0.8 or steps > 1.2x in every class
+
+Facts read before any design choice (no run of the lagged driver yet)
+  - Lineage: b1-lagged (Richardson, no staleness rule) kill gate FAIL on HIRES and Brusselator n=100
+    (fact/accepted 0.654 and 0.854); b1b-gmres FAIL (accuracy, 12x steps on Brusselator); b1c-staleness
+    (gated arm GMRES + Bounded) FAIL: HIRES 0.588 > 0.4, Brusselator 0.244 PASS (L-0141).
+  - The unified frontend (V03) already lists the driver: method id rodas5p-lagged-richardson-v1
+    (crates/vigilode/src/selection/frontend.rs), ExplicitApiOnly, ImplementedUnqualified, provider form Dense only,
+    options Rodas5pLaggedOptions::default() (Richardson, StalenessRule::Off). The facade lowering of a Dense
+    Jacobian attaches no JVP (crates/vigilode/src/solve.rs, build), so W x is the driver's dense matvec.
+  - Both drivers share Workspace::choose_lu: n <= 64 or Jacobian density <= 0.1 -> in-place zero-skipping LU
+    (legacy policy), otherwise faer's LU. faer is built without its rayon feature, so every factorisation is
+    sequential. The dense matvec of the lagged driver (DenseMatrix::matvec_into) is one sequential sum per row.
+  - V04 (cost_anatomy): dense radnet n=512 4.8 ms per step with f_LU 0.79; n=2048 218 ms per step, f_LU 0.86;
+    dense-stored 1D Brusselator n=2048 19.8 ms per step with f_LU 0.98 (in-place LU).
+  - Host: Ryzen 9 5900X, 12 cores / 24 threads; timing cores 9-11 under the shared timing lock; other projects keep
+    the 1-minute load at about 4-14, so most wall comparisons will rest on the factor-2 clause of the timing rule
+    and on instructions:u.
+
+Plan (each step committed separately)
+  1. this file
+  2. PREDECLARED.json (design: problems, sizes, tolerances, spans, arms, reference, interpolation rule, size classes,
+     timing quality rule) - written after the runner self-tests and a sizing pilot of the protected fast arm only
+  3. runner source and the pilot logs
+  4. PROTOCOL.json (binary pins, operational choices left open) before the first measured run
+  5. references (scipy Radau, independent numpy right-hand sides) and the consistency check
+  6. counts phase (all arms, one integration per process under perf stat)
+  7. trace phase (exploratory: per-attempt refresh positions of the lagged arms)
+  8. timing phase (fast and the two deciding lagged configurations, cores 9-11, timing lock)
+  9. parse_results.py -> RESULTS.json, make_report.py -> REPORT_KO.md
