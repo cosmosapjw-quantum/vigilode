@@ -14,6 +14,8 @@
 #   run.sh unit                                  the tests of this node with their output, logs/unit.log
 #   run.sh checks                                tests, sentinels, clippy, fmt, loop checker, logs/checks.log
 #   run.sh checker-all                           every complaint of the loop checker, logs/checker_all.log
+#   run.sh doc                                   rustdoc of the crate (warnings of the assembly files),
+#                                                logs/doc.log
 #
 # Labels: A = commit A (the code before the change), B = after the change.
 # Cells: nlkpp-dense-n400 nlkpp-band-n4096-r24 bruss1d-n131072 bruss1d-n128-dense bruss1d-n128-coloured
@@ -123,6 +125,22 @@ unit)
     } >"$log" 2>&1
     echo "$log"
     ;;
+doc)
+    # rustdoc of the crate; parse_results.py counts the warnings that name an assembly file.
+    cd "$ROOT"
+    log="$LOGS/doc.log"
+    cmd="flock -w 14400 $LOCK taskset -c $CPUS cargo +1.94.1 doc --locked -j 4 -p rodas5p-integrators --no-deps"
+    {
+        echo "# node V31 log"
+        echo "# date: $(date --iso-8601=seconds)"
+        echo "# git head: $(git -C "$ROOT" rev-parse HEAD)"
+        echo "# git status (tracked changes): $(git -C "$ROOT" status --porcelain --untracked-files=no | wc -l)"
+        echo "# command: $cmd"
+        run cargo_locked doc --locked -j 4 -p rodas5p-integrators --no-deps
+        echo "# date at end: $(date --iso-8601=seconds)"
+    } >"$log" 2>&1
+    echo "$log"
+    ;;
 checker-all)
     # The loop checker without stopping at its first complaint (checker_all.py).
     cd "$ROOT"
@@ -194,7 +212,7 @@ EOF
     echo "$log"
     ;;
 *)
-    sed -n '2,23p' "${BASH_SOURCE[0]}"
+    sed -n '2,25p' "${BASH_SOURCE[0]}"
     exit 2
     ;;
 esac
