@@ -171,6 +171,41 @@
       "topic": "CI: the change-based job test-cli-fair-ab added in the fix round of the CI selection v3",
       "selected": "권고사항 수용 및 CI job 유지",
       "meaning": "Keep the job: rodas5p-cli and rodas5p-fair-ab get their own queued, change-based CI test job (the removal of the A1 workspace step had left about 200 of their tests without any CI run)."
+    },
+    {
+      "id": "OD-L1-26",
+      "date_kst": "2026-11-25 09:21",
+      "topic": "V27b: corrected re-evaluation of the FBP Auto route",
+      "selected": "남은 노드들을 이어서 마저 진행해. 수정은 전부 승인할게.",
+      "meaning": "Run V27b as proposed on 2026-11-25 00:4x: fix the two conflicting sentences of the V27 pre-registration (E1 over undeclared cases only, E3 without the runs that owner decision D1 ends), diagnose E7 (P_scalar_fd accuracy) and correct the design if needed, and evaluate on a fresh problem set under a new pre-registration (node V30)."
+    },
+    {
+      "id": "OD-L1-27",
+      "date_kst": "2026-11-25 09:21",
+      "topic": "V29 follow-up: default first-use check on wide declared bands",
+      "selected": "남은 노드들을 이어서 마저 진행해. 수정은 전부 승인할게.",
+      "meaning": "The default first-use check of the coloured route takes CheckColumns::All where the multi-colouring check would need at least n right-hand sides (All is exact up to rounding and not more expensive); MultiColouring otherwise (node V31)."
+    },
+    {
+      "id": "OD-L1-28",
+      "date_kst": "2026-11-25 09:21",
+      "topic": "Protected file crates/rodas5p-integrators/src/stage_batch.rs: concurrency probe",
+      "selected": "남은 노드들을 이어서 마저 진행해. 수정은 전부 승인할게.",
+      "meaning": "Change the protected stage_batch.rs so that its concurrency probe waits, with a bound, until a second task is active; parallel-observed and the scientific checksum then no longer depend on the scheduler; the checksum composition stays (node V32; fixes the flaky CLI test of CI triage section 12.1)."
+    },
+    {
+      "id": "OD-L1-29",
+      "date_kst": "2026-11-25 09:21",
+      "topic": "CI: liveness of the ignored-tests job",
+      "selected": "남은 노드들을 이어서 마저 진행해. 수정은 전부 승인할게.",
+      "meaning": "Edit tools/ci/select_tests.py and the workflows so that a full selection that cannot finish inside the job limit still seeds the next run: per-target incremental outcome and input map, a self time budget, save steps that run on cancellation, baselines from incomplete outcomes for the targets they measured (node V33; CI triage section 12.2)."
+    },
+    {
+      "id": "OD-L1-30",
+      "date_kst": "2026-11-25 09:21",
+      "topic": "Remaining nodes of the loop",
+      "selected": "남은 노드들을 이어서 마저 진행해. 수정은 전부 승인할게.",
+      "meaning": "Resume the paused nodes and finish the remaining ones: the independent review of V22, V23 (capabilities truth), the jvp_calls counter of the banded sparse-JVP route (node V34), group 4 (V09, V10, V11), V12 and V13 with the final whole-branch review. The authorization limits of not_authorized stay."
     }
   ],
   "plan_approval": {

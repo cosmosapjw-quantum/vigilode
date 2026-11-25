@@ -1832,6 +1832,182 @@
         "research/production_loop_20261116/assembly_default/REVIEW.json"
       ],
       "state_note": "PASS (ledger L-0341): the default first-use check of the assembly client is MultiColouring on the coloured route (band back ends included, any execution) and Sample(8) on the dense route; the 36 identity runs of node V08 keep their Jacobian, state and output bits, only the first-use check counters change (18, 59, 150 right-hand sides, +1 threaded); on the V26 corpus the default decides as MC in 9693 of 9693 decisions; suites, clippy and fmt pass. Independent review accept_with_corrections (F1-F7 minor; F4: MC can cost more than n right-hand sides on wide declared bands, stated in the rustdoc by 0b24be8c; taking All there is an owner decision). Merged (2eb2aeed)."
+    },
+    {
+      "id": "V30_ROUTER_BREAKEVEN_V27B",
+      "depends": [
+        "V27_ROUTER_HYPERPARAMETER_FREE"
+      ],
+      "status": "PLANNED",
+      "purpose": "Owner decision OD-L1-26: corrected re-evaluation of the forward break-even pilots (FBP) Auto route of V27: E1 over undeclared cases only, E3 without the runs that D1 ends, a diagnosis of E7 (P_scalar_fd) with a design correction if its cause is in the route, and a fresh problem set disjoint from the 35 problems of V27.",
+      "write_allowlist": [
+        "research/production_loop_20261116/router_breakeven_v27b/**",
+        "crates/vigilode/src/session.rs",
+        "crates/vigilode/src/unified/**",
+        "crates/vigilode/tests/unified_breakeven_*.rs",
+        "crates/vigilode/tests/unified_router_contracts.rs"
+      ],
+      "equations_and_design": [
+        "router_hyperparameter_free/DESIGN_RECOMMENDED.md (FBP) and fbp_implementation.patch (branch w3-v27); corrections and the fresh set frozen in router_breakeven_v27b/PREDECLARED.json before any run of the deciding set"
+      ],
+      "acceptance_checks": [
+        "E7 diagnosis recorded with executed runs",
+        "E1-E10 as corrected in PREDECLARED.json on the fresh set; the Auto route changes iff all pass",
+        "default-path golden files unchanged; facade suite, clippy, fmt"
+      ],
+      "completion_requires": [
+        "PREDECLARED.json on origin before any run of the deciding set",
+        "RESULTS.json from executed runs",
+        "independent review"
+      ],
+      "failure_action": "Today's Auto route stays; the FBP code stays on its builder branch.",
+      "protected": [
+        "official G0",
+        "reference/holdout bytes",
+        "default method routing",
+        "tolerances/controller constants",
+        "stage threshold of the linear solve"
+      ],
+      "evidence": [],
+      "state_note": "Recorded 2026-11-25 (OD-L1-26)."
+    },
+    {
+      "id": "V31_ASSEMBLY_DEFAULT_WIDE_BAND",
+      "depends": [
+        "V29_ASSEMBLY_DEFAULT_MC"
+      ],
+      "status": "PLANNED",
+      "purpose": "Owner decision OD-L1-27: the default first-use check of the coloured route is CheckColumns::All where CheckColourings::total_groups >= n, MultiColouring otherwise.",
+      "write_allowlist": [
+        "crates/rodas5p-integrators/src/stage_clients/assembly.rs",
+        "crates/rodas5p-integrators/src/stage_clients/assembly/**",
+        "crates/rodas5p-integrators/tests/stage_clients_assembly_*.rs",
+        "research/production_loop_20261116/assembly_wide_band/**"
+      ],
+      "equations_and_design": [
+        "Implementation of an owner decision; the arithmetic of the assembled Jacobian does not change."
+      ],
+      "acceptance_checks": [
+        "V08 identity cells bit-identical with unchanged check counters (their total_groups < n)",
+        "on the V26 corpus every wrong declaration detected by the V29 default stays detected; the cases where the rule picks All are listed",
+        "tests: a wide band picks All, the equality case picks All, a narrow band keeps MultiColouring; no allocation after new() on the sequential routes",
+        "clippy -D warnings, fmt, stage_clients_* and the sentinels"
+      ],
+      "completion_requires": [
+        "independent review"
+      ],
+      "failure_action": "The V29 default stays.",
+      "protected": [
+        "official G0",
+        "reference/holdout bytes",
+        "default method routing",
+        "tolerances/controller constants",
+        "stage threshold of the linear solve"
+      ],
+      "evidence": [],
+      "state_note": "Recorded 2026-11-25 (OD-L1-27)."
+    },
+    {
+      "id": "V32_STAGE_BATCH_PROBE",
+      "depends": [],
+      "status": "PLANNED",
+      "purpose": "Owner decision OD-L1-28: the concurrency probe of the protected stage_batch.rs waits, with a bound, until a second task is active, so that parallel-observed and the scientific checksum do not depend on the scheduler; the checksum composition stays.",
+      "write_allowlist": [
+        "crates/rodas5p-integrators/src/stage_batch.rs",
+        "crates/rodas5p-integrators/tests/stage_batch_probe_*.rs",
+        "research/production_loop_20261116/stage_batch_probe/**"
+      ],
+      "equations_and_design": [
+        "CI triage section 12.1 (ci/v3_first_hosted/checksum_flip.py): the hosted second run differed only in parallel-observed."
+      ],
+      "acceptance_checks": [
+        "the smoke-profile scientific checksum on the owner host equals 4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950 (unchanged composition)",
+        "a test that starts the probe while the pool's workers are delayed still observes >= 2",
+        "rodas5p-cli cli_contracts and the stage_batch tests pass; clippy, fmt"
+      ],
+      "completion_requires": [
+        "independent review",
+        "CHECKPOINT protected blob of stage_batch.rs re-pinned under OD-L1-28 at merge"
+      ],
+      "failure_action": "The protected file stays; the flaky test is documented.",
+      "protected": [
+        "official G0",
+        "reference/holdout bytes",
+        "default method routing",
+        "tolerances/controller constants",
+        "stage threshold of the linear solve"
+      ],
+      "evidence": [],
+      "state_note": "Recorded 2026-11-25 (OD-L1-28)."
+    },
+    {
+      "id": "V33_CI_IGNORED_LIVENESS",
+      "depends": [],
+      "status": "PLANNED",
+      "purpose": "Owner decision OD-L1-29: a full selection that cannot finish inside the job limit still seeds the next run (per-target incremental outcome and input map, self time budget, save on cancellation, baselines from incomplete outcomes for the targets they measured).",
+      "write_allowlist": [
+        "tools/ci/**",
+        ".github/workflows/ignored-tests.yml",
+        ".github/workflows/production.yml",
+        "research/production_loop_20261116/ci/**"
+      ],
+      "equations_and_design": [
+        "CI triage sections 12.2 and 12.3"
+      ],
+      "acceptance_checks": [
+        "self-test: a run stopped by its budget writes an incomplete outcome with its measured targets; the next selection uses them as mapped and selects the rest as unmapped; complete baselines select as before (all earlier self-test cases pass)",
+        "the save steps run on cancellation; YAML valid; reachability of ignored tests unchanged",
+        "after merge: the hosted ignored run leaves a baseline (recorded when available)"
+      ],
+      "completion_requires": [
+        "independent review (soundness and mechanics)"
+      ],
+      "failure_action": "The v3 workflows stay; the liveness defect stays documented.",
+      "protected": [
+        "official G0",
+        "reference/holdout bytes",
+        "default method routing",
+        "tolerances/controller constants",
+        "stage threshold of the linear solve"
+      ],
+      "evidence": [],
+      "state_note": "Recorded 2026-11-25 (OD-L1-29)."
+    },
+    {
+      "id": "V34_JVP_CALLS_COUNTER",
+      "depends": [
+        "V23_CAPABILITIES_TRUTH"
+      ],
+      "status": "PLANNED",
+      "purpose": "Owner decision OD-L1-30 (paused node of 2026-11-24): Stats::counters.jvp_calls reads 0 on the facade's banded sparse-JVP route although products are evaluated; count them truthfully.",
+      "write_allowlist": [
+        "crates/vigilode/src/solve.rs",
+        "crates/vigilode/src/capabilities.rs",
+        "crates/vigilode/tests/capabilities_*.rs",
+        "crates/vigilode/tests/jvp_counter_*.rs",
+        "research/production_loop_20261116/jvp_counter/**"
+      ],
+      "equations_and_design": [
+        "Counter truthfulness; no arithmetic change."
+      ],
+      "acceptance_checks": [
+        "a failing-first test shows jvp_calls = 0 on the base and the true count after the change",
+        "state bits and other counters of the route unchanged; default-path golden files unchanged",
+        "facade suite, clippy, fmt"
+      ],
+      "completion_requires": [
+        "independent review"
+      ],
+      "failure_action": "The counter defect stays documented.",
+      "protected": [
+        "official G0",
+        "reference/holdout bytes",
+        "default method routing",
+        "tolerances/controller constants",
+        "stage threshold of the linear solve"
+      ],
+      "evidence": [],
+      "state_note": "Recorded 2026-11-25 (OD-L1-30)."
     }
   ],
   "execution_policy": "Resume ready bounded tasks; research/implementation may overlap only with disjoint writes. Qualification dependencies restrict promotion, not safe opt-in refactoring.",
