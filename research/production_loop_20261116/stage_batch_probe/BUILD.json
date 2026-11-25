@@ -1,0 +1,132 @@
+{
+ "schema": "vigilode.loop.build-return.v1",
+ "node": "V32_STAGE_BATCH_PROBE",
+ "run_id": "wf_660859bd-2cd",
+ "build": {
+  "status": "done",
+  "summary": "V32 is done on branch research/production-loop-20261116-w4-v32 (head b9bbd934, not pushed). Only run_concurrency_probe changed in stage_batch.rs, plus the OnceLock import. Each probe task marks itself active, then sleeps in 100 us steps until two tasks have been active at once or a shared deadline (first task's arrival + 2 s) passes. The checksum composition, report schema, 8 tasks x 1 ms and 4-thread pool are unchanged. stage_batch.rs blob c2f44c32 -> fb68321b; the orchestrator must re-pin it (OD-L1-28). Old failure: the task-text strace runs (1 and 2 CPUs) gave 0/160. strace with busy loops on the tracer's CPU gave 6/680, each with the hosted checksum 577161eb. The late-worker test (a global allocator delays rayon workers with index >= 1 by 300 ms) fails on the old probe 20/20 and passes on the new one 20/20. New CLI: 0/400 runs false, all 4079849b. Interleaved busy-loop runs: old 4/240 vs new 0/240. Diagnostic: longest rendezvous wait 33 ms, against the 2 s bound. cli_contracts, the stage_batch tests, clippy and fmt pass. The loop checker flags only the stage_batch.rs blob.",
+  "checks": [
+   {
+    "name": "cli_contracts (final source, blob fb68321b)",
+    "command": "cargo +1.94.1 test --locked -j 4 --release -p rodas5p-cli --test cli_contracts --no-fail-fast",
+    "exit_code": 0,
+    "result": "25 passed, 0 failed (stage_batch_feasibility_cli_emits_deterministic_within_step_report ok)"
+   },
+   {
+    "name": "stage_batch test targets",
+    "command": "cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --test stage_batch_contracts --test generic_scope_contracts --test stage_batch_probe_contracts --test stage_batch_probe_late_workers --test stage_batch_probe_latency --no-fail-fast -- --nocapture",
+    "exit_code": 0,
+    "result": "10 passed, 0 failed, 1 ignored (latency diagnostic)"
+   },
+   {
+    "name": "clippy",
+    "command": "cargo +1.94.1 clippy --locked -j 4 --release -p rodas5p-integrators --no-deps --lib --test stage_batch_probe_contracts --test stage_batch_probe_late_workers --test stage_batch_probe_latency -- -D warnings",
+    "exit_code": 0,
+    "result": "no warnings"
+   },
+   {
+    "name": "fmt",
+    "command": "cargo +1.94.1 fmt -p rodas5p-integrators -- --check",
+    "exit_code": 0,
+    "result": "clean"
+   },
+   {
+    "name": "loop checker",
+    "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
+    "exit_code": 1,
+    "result": "expected, verbatim: ValueError: protected file changed: crates/rodas5p-integrators/src/stage_batch.rs"
+   },
+   {
+    "name": "loop checker, remaining checks",
+    "command": "python3 -I research/production_loop_20261116/stage_batch_probe/loop_checker_rest.py",
+    "exit_code": 0,
+    "result": "PASS: strict JSON, task/DAG structure, ancestry, protected and evidence identities (only the stage_batch.rs blob reported, fb68321b != c2f44c32)"
+   },
+   {
+    "name": "new tests built against the old probe (TDD)",
+    "command": "cargo +1.94.1 test ... --test stage_batch_probe_late_workers --test stage_batch_probe_contracts (stage_batch.rs = d4e2772f)",
+    "exit_code": 101,
+    "result": "late-worker test FAILED: 'repeat 0: probe observed 1 simultaneously active task(s) with late workers'; contracts test passed"
+   },
+   {
+    "name": "late-worker test executables, interleaved",
+    "command": "repeat_tests.sh logs/tests/late_workers_repeat.log 20 old=<exe> new=<exe>",
+    "exit_code": 0,
+    "result": "old probe 0/20 passed (20 x 'probe observed 1'); new probe 20/20 passed (late workers 7 per report, observed max 4)"
+   }
+  ],
+  "discriminators": [
+   {
+    "name": "old failure provoked",
+    "frozen_threshold": "PASS if the old probe reports stage_parallelism_observed=false under provocation; NOT_DECIDABLE if never",
+    "measured": "Task-text strace1/strace2: 0/160. All CLI conditions: 6/680 false, only with busy loops on the tracer's CPU (hog1 3/160, hog4 3/180). Every false run has observed max 1 and checksum 577161eb, the hosted value. Late-worker test executable: 20/20 failed.",
+    "verdict": "PASS"
+   },
+   {
+    "name": "new code never shows the failure under the same provocation",
+    "frozen_threshold": "0 new-probe runs with stage_parallelism_observed=false in every condition and every late-worker test run",
+    "measured": "CLI 0/400 false, run interleaved with the old binary (busy-loop conditions: old 4/240 vs new 0/240; one-sided Fisher p=0.062, descriptive only). Late-worker test 20/20 passed.",
+    "verdict": "PASS"
+   },
+   {
+    "name": "checksum unchanged",
+    "frozen_threshold": "smoke checksum on this host = 4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950, same composition",
+    "measured": "All 400 new CLI runs and all test reports give 4079849b. All 674 old runs that observed concurrency give the same value. The checksum rebuilt from each report's fields matches it in every run (0 mismatches).",
+    "verdict": "PASS"
+   },
+   {
+    "name": "suites",
+    "frozen_threshold": "cli_contracts, stage_batch test targets, new tests, clippy -D warnings, fmt exit 0",
+    "measured": "cli_contracts 25/0; stage_batch_contracts 4/0, generic_scope_contracts 4/0, stage_batch_probe_contracts 1/0, stage_batch_probe_late_workers 1/0 (+1 ignored diagnostic); clippy 0; fmt 0",
+    "verdict": "PASS"
+   }
+  ],
+  "verdict": "PASS. The bounded rendezvous (2 s bound, 100 us steps) makes parallel-observed and the smoke checksum independent of when the probe pool's workers start. The checksum stays 4079849b with the same composition. Completion still needs an independent review and the orchestrator's re-pin of the stage_batch.rs blob (c2f44c32 -> fb68321b).",
+  "open_issues": [
+   "CHECKPOINT protected blob of crates/rodas5p-integrators/src/stage_batch.rs must be re-pinned c2f44c327c53d7c6dfe7ba80b26cd43486d56b43 -> fb68321b94dd4caf8a895ea7e2f9aad5363b80f2 under OD-L1-28 (fb68321b differs from the evidence binaries' 1a44222f only in one probe comment's wording)",
+   "Independent review required (TASK_CONTRACTS completion_requires)",
+   "Task-text conditions (strace -f on 1/2 CPUs) did not provoke the failure (0/160). Provocation needed busy loops on the tracer's CPU, and its rate is low, so the CLI comparison is statistically weak. The deterministic evidence is the late-worker test.",
+   "provoke.sh defect kept and documented: the kill reaches only the wrapper subshell, so 30 s busy loops accumulated on CPU 8 (tens alive, rebuilt from runs.tsv). It affected old and new runs alike in b2.",
+   "Hosted tracing mode (strace -ff --seccomp-bpf -e trace=<file syscalls>) was not reproduced exactly; strace -f -e trace=none was used",
+   "Residual by design: a host on which no second worker runs within 2 s still reports parallel-observed=false (the 2 s wait is paid once per report)",
+   "The late-worker test relies on rayon-core 1.13 and crossbeam-epoch, where a worker's first allocation comes at its first steal; a late>=3 guard checks that the delay fired",
+   "New ignored diagnostic test stage_batch_probe_latency copies the probe's structure; it must be kept in step if the probe's constants change"
+  ],
+  "key_numbers": [
+   "old CLI false: 6/680 (hog1 3/160, hog4 3/180, strace1 0/80, strace2 0/80, shared1 0/80, hogonly1 0/100)",
+   "new CLI false: 0/400; Clopper-Pearson 95% upper bound 0.75%",
+   "b2 interleaved busy-loop runs: old 4/240 vs new 0/240, one-sided Fisher p=0.062 (descriptive)",
+   "late-worker test executable: old 0/20 pass, new 20/20 pass",
+   "rendezvous wait diagnostic (200 fresh pools each): plain max 0.018 ms, strace1 max 0.651 ms, hog30 p99 32.0 ms, max 33.3 ms; 0 pools without a second task (bound 2 s)",
+   "smoke checksum 4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950 unchanged; false value 577161eb = hosted second run",
+   "stage_batch.rs blob c2f44c32 -> fb68321b"
+  ],
+  "files_written": [
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/crates/rodas5p-integrators/src/stage_batch.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/crates/rodas5p-integrators/tests/stage_batch_probe_contracts.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/crates/rodas5p-integrators/tests/stage_batch_probe_late_workers.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/crates/rodas5p-integrators/tests/stage_batch_probe_latency.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/research/production_loop_20261116/stage_batch_probe/NOTES.txt",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/research/production_loop_20261116/stage_batch_probe/RESULTS.json",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/research/production_loop_20261116/stage_batch_probe/REPORT_KO.md",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/research/production_loop_20261116/stage_batch_probe/parse_results.py",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/research/production_loop_20261116/stage_batch_probe/provoke.sh",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/research/production_loop_20261116/stage_batch_probe/pack_logs.py",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/research/production_loop_20261116/stage_batch_probe/repeat_tests.sh",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/research/production_loop_20261116/stage_batch_probe/run_checks.sh",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/research/production_loop_20261116/stage_batch_probe/latency.sh",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/research/production_loop_20261116/stage_batch_probe/loop_checker_rest.py",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/research/production_loop_20261116/stage_batch_probe/logs/"
+  ],
+  "rulings": [
+   "An integration test cannot reach the private probe pool. The 'workers delayed' test therefore uses a test-binary global allocator that delays rayon workers with index >= 1 at their first allocation, so stage_batch.rs gets no test hook.",
+   "The pinned checksum 4079849b is asserted only when every row's max_abs_difference is exactly 0 (true on this host and the hosted runner). The composition is checked on every host, so no new host-dependent bit anchor is added.",
+   "The task-text strace runs did not provoke the failure, so conditions were added: busy loops, a shared tracer and a no-strace control. All are labelled as additions. Old and new runs were interleaved in b2.",
+   "The provoke.sh busy-loop defect was documented and quantified, not fixed and rerun, so the committed script is the one that produced the logs",
+   "Raw reports are packed per condition into reports.tar.xz with a sha256 manifest, verified by read-back",
+   "Wall times and rendezvous waits are labelled diagnostic and no verdict uses them"
+  ],
+  "branch": "research/production-loop-20261116-w4-v32",
+  "head_commit": "b9bbd93497416dd0a4d600005a2ad0fe1a99c00f"
+ }
+}

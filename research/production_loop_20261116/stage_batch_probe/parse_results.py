@@ -21,6 +21,7 @@ import os
 import re
 import struct
 import subprocess
+import sys
 import statistics
 import tarfile
 
@@ -499,6 +500,24 @@ def render(results):
         f"wall time은 진단값이며 어떤 판정에도 쓰지 않는다. 기준 commit d4e2772f, 파싱 시점 head "
         f"`{code_info['head_when_parsed'][:8]}`.",
         "",
+        "**정정 고지 (2026-11-25, 독립 리뷰 `REVIEW.json`, 판정 accept_with_corrections).** 리뷰어가 원 보고 1080개를 "
+        "다시 세어 같은 판정을 얻었다(이전 6/680 false, 새 0/400). 아래 네 가지를 바로잡는다. 이 고지는 "
+        "`parse_results.py --report-only`로 커밋된 `RESULTS.json`에서 렌더링했다.",
+        "",
+        "1. 같은 원인의 flaky가 기존 테스트 `stage_batch_contracts::local_rayon_pool_executes_rhs_rows_concurrently_and_"
+        "preserves_order`에도 있었다(새 4-thread pool, 2 ms 작업 8개, 대기 없이 최대 >= 2를 단언; 리뷰어의 LD_PRELOAD "
+        "shim에서 3/3 실패). 이 노드의 허용 경로 밖이어서 builder는 손대지 않았다. 병합 때 orchestrator가 같은 상한 있는 "
+        "대기를 그 테스트의 병렬 단계에만 넣었다(OD-L1-28, OD-L1-30).",
+        "2. 반복 실행에 쓴 증거 실행 파일(probe-bins의 late_workers_test-old/-new, contracts_test-old/-new)은 rustfmt가 "
+        "줄을 나누기 전의 소스로 빌드되었다. 그래서 커밋된 소스로 바이트 단위 재빌드가 되지 않는다(build-id와 panic 위치 "
+        "줄 번호만 다르다). 리뷰어가 커밋된 소스로 다시 빌드한 결과의 동작은 같다(이전 10/10 실패, 새 10/10 통과).",
+        "3. late-worker 테스트의 `late >= 3` 조건은 probe pool 자신의 worker가 늦었다는 증명이 아니다(벤치마크 pool 둘만으로 "
+        "1 + 3 = 4). 지금은 모든 보고가 7이고 이전 probe가 실패하므로 유효하다. 의존성 갱신 뒤를 위해서는 `late == 7`로 "
+        "묶는 편이 안전하다.",
+        "4. 요약의 '6/680'은 분모가 섞였다. 바쁜 loop 조건의 strace 실행은 340회(hog1 3/160, hog4 3/180)이고, 680은 이전 "
+        "CLI 실행 전체다. 과제 문안의 조건만으로는 0/160이었다. 판정은 결정적 증거(late-worker 테스트와 리뷰어의 shim: "
+        "이전 CLI false 6/6)에 기댄다.",
+        "",
         "## 1. 원인",
         "",
         "`run_concurrency_probe`는 새 local rayon pool(4 thread)을 만들고 곧바로 작업 8개(각 1 ms sleep)를 넣는다. "
@@ -644,6 +663,15 @@ def render(results):
 
 
 def main():
+    if "--report-only" in sys.argv[1:]:
+        # Re-render REPORT_KO.md from the committed RESULTS.json (added 2026-11-25 for the review's
+        # correction notice); RESULTS.json is not rewritten.
+        with open(os.path.join(HERE, "RESULTS.json"), encoding="utf-8") as handle:
+            committed = json.load(handle)
+        with open(os.path.join(HERE, "REPORT_KO.md"), "w", encoding="utf-8") as handle:
+            handle.write(render(committed))
+        print("REPORT_KO.md rendered from the committed RESULTS.json")
+        return
     batches, table, failing, per_batch = provocation()
     tests = node_tests()
     repeats = late_worker_repeats()

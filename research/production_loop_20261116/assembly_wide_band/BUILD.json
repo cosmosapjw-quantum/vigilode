@@ -1,0 +1,116 @@
+{
+ "schema": "vigilode.loop.build-return.v1",
+ "node": "V31_ASSEMBLY_DEFAULT_WIDE_BAND",
+ "run_id": "wf_660859bd-2cd",
+ "build": {
+  "status": "done",
+  "summary": "V31 is implemented with all four discriminators PASS. When the declared pattern of the coloured route has CheckColourings::total_groups_of(pattern) >= n, AssemblyOptions::default_first_use_check now returns CheckColumns::All. Otherwise it stays MultiColouring, and the dense route keeps Sample(8). total_groups_of is new and reads only the pattern (its CPR colouring, band and order), so no right-hand side is evaluated. It shares band_plan and refinement_plan with from_parts. Every check stays selectable. A vs B used the same programs (the V29 program unchanged, plus the new stage_clients_assembly_wide_band_record). The 36 identity runs match in every field. In the V26 corpus the rule changes only 6 correct ring patterns, where total_groups equals n; decisions and costs are unchanged. A 799-case supplement and a survey of 378 patterns were added. No declaration detected by A was missed by B, and no correct pattern was rejected. Two existing-test pins were edited, each with its reason recorded.",
+  "checks": [
+   {
+    "name": "stage_clients_* + ppsw1_6b_contracts + ptsw2b_contracts (--no-fail-fast)",
+    "command": "flock ... taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --no-fail-fast --test 'stage_clients_*' --test ppsw1_6b_contracts --test ptsw2b_contracts",
+    "exit_code": 0,
+    "result": "34 binaries, 157 passed, 0 failed, 15 ignored (logs/checks.log at cc875d68, 0 tracked changes)"
+   },
+   {
+    "name": "clippy -D warnings (lib + all 13 stage_clients_assembly_* targets)",
+    "command": "cargo +1.94.1 clippy --locked -j 4 --release -p rodas5p-integrators --lib --test <13 assembly targets> --no-deps -- -D warnings",
+    "exit_code": 0,
+    "result": "0 warnings"
+   },
+   {
+    "name": "fmt",
+    "command": "cargo +1.94.1 fmt -p rodas5p-integrators -- --check",
+    "exit_code": 0,
+    "result": "clean"
+   },
+   {
+    "name": "node unit tests",
+    "command": "run.sh unit (wide_band, wide_band_alloc, default, default_alloc)",
+    "exit_code": 0,
+    "result": "11 passed, 0 failed; the All default made 0 allocations at the first and two later linearizations; a requested MC check made 12 or 14 (counter-example)"
+   },
+   {
+    "name": "rustdoc",
+    "command": "cargo +1.94.1 doc --locked -p rodas5p-integrators --no-deps",
+    "exit_code": 0,
+    "result": "23 pre-existing warnings, none in assembly files"
+   },
+   {
+    "name": "loop checker",
+    "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
+    "exit_code": 1,
+    "result": "ValueError: implementation changed; rerun affected tests/update checkpoint: crates/rodas5p-integrators/src/stage_clients/assembly.rs (only complaint per checker_all.py; pinned file this node may change)"
+   }
+  ],
+  "discriminators": [
+   {
+    "name": "identity unchanged",
+    "measured": "36 V08 runs (5 cells, both band back ends, arms prot/seq/t1/t2/t4/t6): 0 field mismatches A vs B (fingerprints, steps, every counter incl. check counters); total_groups 18/59/150 < n; commit A = V29 B in 36/36 runs and 4846/4846 cases",
+    "frozen_threshold": "bit-identical, unchanged check counters",
+    "verdict": "PASS"
+   },
+   {
+    "name": "rule per route implemented",
+    "measured": "0 rule mismatches over identity runs, 9696 corpus decisions, 378 survey patterns, 799 supplement cases (seq,t6); dense route Sample(8) everywhere; 11/11 node unit tests pass",
+    "frozen_threshold": "All iff total_groups >= n (coloured), MultiColouring otherwise, Sample(8) dense",
+    "verdict": "PASS"
+   },
+   {
+    "name": "corpus detection not worse than A",
+    "measured": "V26 corpus: detected by A not by B 0; misses A 5 = B 5 (unchanged seq dense impure first-use path + rounding-limited omit1024/e3072-r768-c769); correct rejected 0. Supplement (612 cases rule=All, 574 wrong): detected by A not by B 0, misses 0, correct rejected 0",
+    "frozen_threshold": "0 regressions",
+    "verdict": "PASS"
+   },
+   {
+    "name": "suites",
+    "measured": "tests+sentinels 157/0 in 34 binaries; clippy 0; fmt 0; loop checker only the pinned assembly.rs complaint",
+    "frozen_threshold": "exit 0, only allowed pinned-file complaint",
+    "verdict": "PASS"
+   }
+  ],
+  "verdict": "PASS: the V31 default (All where total_groups >= n) is implemented. The identity cells and corpus detection are unchanged, and the suites are green; independent review is still needed.",
+  "open_issues": [
+   "Independent review is required by the contract (completion_requires).",
+   "The CHECKPOINT implemented_source_sha256 pin of crates/rodas5p-integrators/src/stage_clients/assembly.rs needs an update after the merge; multi.rs is not pinned.",
+   "On the V26 corpus the rule only fires at equality (6 correct ring patterns, same cost). The saving comes from irregular wide patterns: survey default-check right-hand sides fell from 70871 to 62792; supplement random patterns with total_groups > n fell from 2354 to 1608 (seq). Every full band in the survey has total_groups <= n.",
+   "On wrong declarations the full check can spend more right-hand sides before it fails than MC, with the same decision (supplement random omissions with total_groups > n: 6823 vs 7782, seq).",
+   "In general, a rounding-limited omission caught by MC's multi-column shifts but missed by All is not excluded; none occurred in the corpus or supplement.",
+   "Deviations of form: no PROTOCOL.json (the plan, the list and the programs were committed before commit A). The supplement was widened after two scratch smoke runs, before commit A (NOTES entry 3). The CARGO_TARGET_DIR was seeded by copying the w3-v26 release directory to reuse registry dependencies."
+  ],
+  "branch": "research/production-loop-20261116-w4-v31",
+  "head_commit": "372ce99a9f89ef616402b6543800acd3d8a58c13",
+  "files_written": [
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v31/crates/rodas5p-integrators/src/stage_clients/assembly.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v31/crates/rodas5p-integrators/src/stage_clients/assembly/multi.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v31/crates/rodas5p-integrators/tests/stage_clients_assembly_default.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v31/crates/rodas5p-integrators/tests/stage_clients_assembly_default_alloc.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v31/crates/rodas5p-integrators/tests/stage_clients_assembly_wide_band.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v31/crates/rodas5p-integrators/tests/stage_clients_assembly_wide_band_alloc.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v31/crates/rodas5p-integrators/tests/stage_clients_assembly_wide_band_record.rs",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v31/research/production_loop_20261116/assembly_wide_band/NOTES.txt",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v31/research/production_loop_20261116/assembly_wide_band/run.sh",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v31/research/production_loop_20261116/assembly_wide_band/checker_all.py",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v31/research/production_loop_20261116/assembly_wide_band/parse_results.py",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v31/research/production_loop_20261116/assembly_wide_band/RESULTS.json",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v31/research/production_loop_20261116/assembly_wide_band/REPORT_KO.md",
+   "/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v31/research/production_loop_20261116/assembly_wide_band/logs/"
+  ],
+  "key_numbers": [
+   "Rule: All iff CheckColourings::total_groups_of(pattern) >= n (coloured route); MC otherwise; Sample(8) dense",
+   "V08 cells total_groups 18/59/150 < n: 36/36 runs A=B in every field",
+   "V26 corpus: rule picks All on 6 cases (correct/ring-n{12,13,14,15,16,32}-true, total_groups == n), cost unchanged (n, n+1 threaded)",
+   "Supplement: 799 cases, 612 rule=All (574 wrong), 0 regressions; 138/574 wrong rule=All cases per execution reach the check (rest caught by the build)",
+   "Survey: 378 patterns, total_groups >= n in 184 (>n 133, =n 51), worst 111 = 1.85 n (n 60, band 27,27); review-like subset 60/72 > n",
+   "Default-check RHS sum on survey: A 70871 -> B 62792 (sum n 80892)",
+   "Unit test: 252/252 omissions of wide n=60 pattern detected by the All default, 102 by the check itself",
+   "Checks: 34 binaries, 157 passed, 0 failed, 15 ignored; clippy 0; fmt 0"
+  ],
+  "rulings": [
+   "Applied the orchestrator ruling '>= n' (at equality All costs the same and is exact).",
+   "The rule lives in AssemblyOptions::default_first_use_check (options construction), not in AssemblyStageClient::new, so an explicit with_first_use_check(MultiColouring) stays MC.",
+   "With threads the default is All on the calling thread, mirroring V29 (MC, not MC_P); AllPooled stays selectable.",
+   "The V29 recording program was reused unchanged; the new survey/supplement program is a separate ignored target."
+  ]
+ }
+}

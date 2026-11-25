@@ -1876,7 +1876,7 @@
       "depends": [
         "V29_ASSEMBLY_DEFAULT_MC"
       ],
-      "status": "PLANNED",
+      "status": "COMPLETE_SCOPED",
       "purpose": "Owner decision OD-L1-27: the default first-use check of the coloured route is CheckColumns::All where CheckColourings::total_groups >= n, MultiColouring otherwise.",
       "write_allowlist": [
         "crates/rodas5p-integrators/src/stage_clients/assembly.rs",
@@ -1904,13 +1904,16 @@
         "tolerances/controller constants",
         "stage threshold of the linear solve"
       ],
-      "evidence": [],
-      "state_note": "Recorded 2026-11-25 (OD-L1-27)."
+      "evidence": [
+        "research/production_loop_20261116/assembly_wide_band/RESULTS.json",
+        "research/production_loop_20261116/assembly_wide_band/REVIEW.json"
+      ],
+      "state_note": "PASS (ledger L-0342): the default first-use check of the coloured route is All where CheckColourings::total_groups_of(pattern) >= n, MultiColouring otherwise; the 36 V08 identity runs are unchanged in every field; on the V26 corpus the rule fires on 6 correct ring patterns at equality (same cost) and no detection is lost on the corpus or a 799-case supplement. Independent review accept_with_corrections (F1: All is not a superset of MultiColouring under rounding, a constructed counterexample; rustdoc corrected at merge). Merged bb2e6dd9."
     },
     {
       "id": "V32_STAGE_BATCH_PROBE",
       "depends": [],
-      "status": "PLANNED",
+      "status": "COMPLETE_SCOPED",
       "purpose": "Owner decision OD-L1-28: the concurrency probe of the protected stage_batch.rs waits, with a bound, until a second task is active, so that parallel-observed and the scientific checksum do not depend on the scheduler; the checksum composition stays.",
       "write_allowlist": [
         "crates/rodas5p-integrators/src/stage_batch.rs",
@@ -1937,8 +1940,11 @@
         "tolerances/controller constants",
         "stage threshold of the linear solve"
       ],
-      "evidence": [],
-      "state_note": "Recorded 2026-11-25 (OD-L1-28)."
+      "evidence": [
+        "research/production_loop_20261116/stage_batch_probe/RESULTS.json",
+        "research/production_loop_20261116/stage_batch_probe/REVIEW.json"
+      ],
+      "state_note": "PASS (ledger L-0343): the concurrency probe of the protected stage_batch.rs waits (2 s bound, 100 us steps) until two tasks are active together; old probe 6/680 provoked runs without observed concurrency (checksum 577161eb), new probe 0/400; the smoke checksum stays 4079849b with the same composition; protected blob re-pinned under OD-L1-28. The same mechanism in stage_batch_contracts.rs received the same wait at merge. Independent review accept_with_corrections. Merged 01c33a8c."
     },
     {
       "id": "V33_CI_IGNORED_LIVENESS",

@@ -1,0 +1,141 @@
+{
+ "schema": "vigilode.loop.review.v1",
+ "node": "V31_ASSEMBLY_DEFAULT_WIDE_BAND",
+ "run_id": "wf_660859bd-2cd",
+ "builder_head": "372ce99a9f89ef616402b6543800acd3d8a58c13",
+ "merged_into": "research/production-loop-20261116 (merge commits bb2e6dd9 for V31, 01c33a8c for V32)",
+ "review": {
+  "node": "V31_ASSEMBLY_DEFAULT_WIDE_BAND",
+  "verdict": "accept_with_corrections",
+  "summary": "accept_with_corrections. Scope: 45 paths, all in the allowlist; no protected file. Order: notes, program, A recordings (1952c87c), change, tests, B recordings, results. The builder's parser, re-run in a fresh clone, gives the same RESULTS.json and REPORT_KO.md (only head_at_parse differs). My own parser gives every number: 36 identity runs with 0 mismatches; corpus 6 All cases, 0 lost detections, misses 5=5; supplement 612 All cases, 0 lost; survey 184/378, 70871->62792. Recording binaries rebuilt at 1952c87c and at HEAD are bit-identical to the logged ones, and re-runs give all 6091 A and 6091 B records again. Tests 157/0/15 in 34 binaries; clippy 0; fmt clean; rustdoc has 23 old warnings, none in assembly files; the checker names only assembly.rs. Probes: total_groups_of equals the built total on all 66,066 patterns of order 4 or less and on 11,520 random ones. Edge patterns (n=1, diagonal, empty, arrow, both band kernels, t1/t2) run the default once with the right count, and nothing is allocated after new(). Minor corrections: a constructed rounding-limited omission is detected by the V29 default and missed by the V31 default (160/160 each), and the rustdoc should say this can happen; the NOTES times are wrong.",
+  "scope_ok": true,
+  "protected_ok": true,
+  "discriminator_checks": [
+   {
+    "name": "identity unchanged",
+    "builder_value": "36 V08 runs: 0 field mismatches A vs B; total_groups 18/59/150 < n; commit A = V29 B in 36/36 runs and 4846/4846 cases",
+    "reviewer_value": "My own parser: 36 runs A=B in every field, 0 cell-record mismatches, A = V29 B in 36/36 runs and in every cell record; coloured cells n/total_groups 128/18, 131072/59, 4096/150 (both band back ends); B check counters, e.g. seq 1/n/total_groups and t* 1/n/total_groups+1. Recording binaries rebuilt at 1952c87c (cead5cf5, dff81c2d) and at HEAD (f1d464a1, e4155aa8) match the logged sha256; re-runs of all 14 A and 14 B logs give every JSON record again (6091 + 6091, 0 differing).",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "rule per route implemented",
+    "builder_value": "0 rule mismatches over identity runs, 9696 corpus decisions, 378 survey patterns, 799 supplement cases; dense Sample(8); 11/11 unit tests",
+    "reviewer_value": "0 rule mismatches in my own recount (identity, 9696 corpus decisions, 378 survey, 799x2 supplement; A everywhere MC/Sample(8)). Probe P1: total_groups_of == CheckColourings::of().total_groups() and default == rule on all 66,066 patterns of order 1-4 and 11,520 random patterns of order 5-40. Probe P2: on 40 edge and random patterns (n=1 [[0]]/[[]] -> MC with 0 RHS; n=2 diagonal/empty -> All; dense/arrow -> MC 0; corner, diagonals n=3..11) x dense LU, tight and protected band kernels x seq/t1/t2, the default runs once with n (All) or total_groups (MC) RHS (+1 threaded), the Jacobian bits equal an unchecked client, and explicit MC spends exactly total_groups_of (+1).",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "corpus detection not worse than A",
+    "builder_value": "V26: detected by A not by B 0; misses A 5 = B 5; correct rejected 0. Supplement: 0 / 0 / 0",
+    "reviewer_value": "Reproduced on the frozen sets: V26 corpus: the rule picks All only for correct/ring-n{12..16,32}-true (tg = n; same decisions and costs 12..32 / +1 t6); detected by A not by B 0, detected by B not by A 0; misses 5 = 5 (impure16-dense seq first_use; omit1024/e3072-r768-c769 x4); correct rejected 0. Supplement: 612 All (574 wrong), 0 lost, 0 misses, 0 correct rejected; costs 2354->1608 and 6823->7782. Outside these sets the general claim fails: see finding F1 (constructed, 160/160 lost).",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "suites",
+    "builder_value": "tests 157/0 in 34 binaries; clippy 0; fmt 0; loop checker only pinned assembly.rs",
+    "reviewer_value": "Re-run in a fresh clone at 372ce99a: stage_clients_* + ppsw1_6b_contracts + ptsw2b_contracts --no-fail-fast exit 0, 34 binaries, 157 passed, 0 failed, 15 ignored; clippy -D warnings on the lib + all 13 stage_clients_assembly_* targets (verbose run confirms each was linted) exit 0, 0 warnings; fmt --check exit 0; cargo doc exit 0 with 23 warnings, none in assembly files; check_checkpoint.py exit 1, ValueError naming only crates/rodas5p-integrators/src/stage_clients/assembly.rs; checker_all.py: 1 complaint.",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   }
+  ],
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "minor",
+    "claim": "'No declaration detected by A was missed by B' and the rustdoc of default_first_use_check ('at equality it costs as much and is exact') hold only on the tested sets. In general the V31 default (All) misses rounding-limited wrong declarations that the V29 default (MultiColouring) detects; NOTES and REPORT say only that this is 'not excluded'.",
+    "evidence": "Reviewer probe /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/review_V31_ASSEMBLY_DEFAULT_WIDE_BAND/probes/review_v31_p3_portable.rs. Pattern: the builder's wide pattern random_band_rows(60,27,0.1,1), total_groups 111, band moduli [55,56]. Row i is (1 + 1e6(1 - y_j)) + 3*2^-29*y_k, where (i,j) is declared and (i,k) is not; k = j +/- 55 or 56 (same group of a further colouring, other client colour); y_j = 1, y_k = 0. Shifting y_k alone adds 0.75 of half an ulp at f_i = 1 and is lost to rounding; with y_j also shifted, f_i lies in [0.5,1) and a bit changes. At commit 1952c87c the default detects 160 of 160 decisions (80 cases x seq/t3, MultiColouringEntryDiffers); logs/p3_portable_A.log. At HEAD the default is All and passes all 160 with 60/61 RHS; logs/p3_portable_B2.log. An earlier HEAD run reused the commit-A library because the target dir was shared; it is kept as logs/p3_portable_B_INVALID_reused_commitA_lib.log. Explicit All passes and explicit MC fails (probe.log, P3: 40/40).",
+    "correction": "Add one sentence to the rustdoc of default_first_use_check and CheckColumns::All. It should say that the full check is not a superset of MC under rounding: an omission whose effect is visible only in a multi-column state can be detected by MC and missed by All (reproducer above). Write 'exact up to rounding' at equality, and change the open issue from 'not excluded' to 'exists (constructed)'. The practical impact is negligible: the coupling is 5.6e-9 next to an entry of 1e6, and All gains the structural cases that MC misses (L-0338). The owner decision is unaffected."
+   },
+   {
+    "id": "F2",
+    "severity": "minor",
+    "claim": "NOTES.txt gives commit times that contradict git; the commit order itself is correct.",
+    "evidence": "Entry 2 is headed '09:42', and entry 3 lists 'bb09dfb4 (09:42)', but git puts bb09dfb4 at 09:36:58. Entry 4 lists 4ca979f7 and 63170db9 at '09:56'; git has 09:57:10. Order by git: notes 97be3d66, bb09dfb4; program 1952c87c; A logs (09:47-09:48, head 1952c87c); commit A 789c4ea3; change 4ca979f7; tests 63170db9; B logs (09:57-09:59, head 63170db9); cc875d68.",
+    "correction": "Add a correction line to NOTES, or note in the merge record that git times are authoritative."
+   },
+   {
+    "id": "F3",
+    "severity": "minor",
+    "claim": "The rustdoc parenthesis '(wide declared bands)' for when the rule picks All is incomplete. All is also picked for irregular sparse patterns, where the MC band construction degenerates to n single-column groups (the same states as All, so detection is identical), and for small-n diagonal or empty patterns.",
+    "evidence": "Probe P1 (logs/probe.log): All for 47,649 of 65,536 patterns of order 4, and for 126-267 of 320 random patterns per order 5-40. P2: All for diagonal n=2..5 and 7..10, empty n=2 and 5, corner n=9, and random non-banded patterns with total_groups == n.",
+    "correction": "Optional wording: 'for example wide declared bands; also irregular patterns, whose further colourings are single columns'."
+   }
+  ],
+  "reran": [
+   {
+    "command": "git diff --name-status d4e2772f..372ce99a + allowlist/protected check (python fnmatch)",
+    "exit_code": 0,
+    "result": "45 paths, 0 outside allowlist, 0 protected; base d4e2772f is the parent of the first commit; builder worktree clean (0 tracked changes)"
+   },
+   {
+    "command": "python3 -I research/production_loop_20261116/assembly_wide_band/parse_results.py (fresh clone at 372ce99a)",
+    "exit_code": 0,
+    "result": "RESULTS.json and REPORT_KO.md identical to the committed ones except head_at_parse (06485d86 -> 372ce99a); strict JSON (no NaN)"
+   },
+   {
+    "command": "python3 -I review_analysis.py <V31 logs> <V29 logs> (reviewer's own parser)",
+    "exit_code": 0,
+    "result": "all discriminator numbers reproduced (identity 36/0, corpus 4846/9696/6 All/0 lost/misses 5=5, survey 378/184/133/51/1.85/70871/62792/80892, supplement 799/612/574/0 lost, costs 2354/1608, 6823/7782)"
+   },
+   {
+    "command": "flock ... cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --no-fail-fast --test 'stage_clients_*' --test ppsw1_6b_contracts --test ptsw2b_contracts (CARGO_TARGET_DIR=.../w4-v31-review)",
+    "exit_code": 0,
+    "result": "34 binaries, 157 passed, 0 failed, 15 ignored"
+   },
+   {
+    "command": "flock ... cargo +1.94.1 clippy [-v] --locked -j 4 --release -p rodas5p-integrators --lib --test <13 stage_clients_assembly_* targets> --no-deps -- -D warnings",
+    "exit_code": 0,
+    "result": "0 warnings; verbose run shows clippy-driver on the lib and all 13 targets"
+   },
+   {
+    "command": "cargo +1.94.1 fmt -p rodas5p-integrators -- --check",
+    "exit_code": 0,
+    "result": "clean"
+   },
+   {
+    "command": "flock ... cargo +1.94.1 doc --locked -j 4 -p rodas5p-integrators --no-deps",
+    "exit_code": 0,
+    "result": "23 warnings, none in assembly files"
+   },
+   {
+    "command": "python3 -I research/production_loop_20261116/check_checkpoint.py; python3 -I .../assembly_wide_band/checker_all.py",
+    "exit_code": 1,
+    "result": "ValueError: implementation changed; rerun affected tests/update checkpoint: crates/rodas5p-integrators/src/stage_clients/assembly.rs (only complaint; checker_all count 1)"
+   },
+   {
+    "command": "rerun.sh B with recording binaries rebuilt at HEAD (sha256 f1d464a1.., e4155aa8.. = B logs)",
+    "exit_code": 0,
+    "result": "14 logs, 6091 JSON records identical to the builder's B logs (wall_s_diagnostic ignored), exit codes 0"
+   },
+   {
+    "command": "cargo test --no-run at 1952c87c (worktree of the review clone) + rerun.sh A",
+    "exit_code": 0,
+    "result": "binaries sha256 cead5cf5.., dff81c2d.. = A logs; 6091 records identical to the A logs"
+   },
+   {
+    "command": "cargo test --release -p rodas5p-integrators --test review_v31_probe -- --nocapture --test-threads 1 (scratch-only probe P1-P5)",
+    "exit_code": 0,
+    "result": "5 passed: P1 77,586 patterns, rule/total_groups_of exact; P2 edge patterns x 3 back ends x seq/t1/t2 counts and bits OK; P3 40/40 MC detects, All default misses; P4 diag+(0,n-1) detected n=2..12"
+   },
+   {
+    "command": "cargo test --release -p rodas5p-integrators --test review_v31_alloc_probe -- --nocapture (scratch-only, counting allocator)",
+    "exit_code": 0,
+    "result": "0 allocations at the first and two later linearizations for All defaults (n2 diagonal/empty, n5 empty, n7 diagonal, n9 corner) and the MC n=1 case, on dense LU and both band kernels, equal to unchecked"
+   },
+   {
+    "command": "review_v31_p3_portable at commit 1952c87c and at HEAD (lib rebuild forced)",
+    "exit_code": 0,
+    "result": "A default MultiColouring: 160/160 detected; HEAD default All: 160/160 missed (an earlier HEAD run that reused the A library is discarded and labelled INVALID)"
+   }
+  ]
+ },
+ "orchestrator_actions": [
+  "Builder branch research/production-loop-20261116-w4-v31 (head 372ce99a) merged into the loop branch (merge commit bb2e6dd9).",
+  "F1 and F3: rustdoc of AssemblyOptions::default_first_use_check corrected at merge (All is exact up to rounding but not a superset of MultiColouring under rounding, with the review's construction; All is also picked for irregular patterns whose further colourings are single columns and for small diagonal or empty patterns); module doc likewise. Documentation only.",
+  "F2: git commit times are authoritative over the times typed in NOTES.txt (notice item 2).",
+  "Correction notice rendered into REPORT_KO.md by parse_results.py --report-only from the committed RESULTS.json; RESULTS.json unchanged.",
+  "CHECKPOINT implemented_source_sha256 of assembly.rs updated after the merge verification."
+ ]
+}

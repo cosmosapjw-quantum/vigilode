@@ -2,6 +2,12 @@
 
 이 문서는 `parse_results.py`가 `logs/`의 원시 로그에서 계산해 만든다. 손으로 적은 수치는 없다. 기준 커밋 `d4e2772f`, 파싱 시점 HEAD `06485d86`.
 
+**정정 고지 (2026-11-25, 독립 리뷰 `REVIEW.json`, 판정 accept_with_corrections).** 리뷰어가 자기 파서로 모든 수치를 다시 얻었다. 아래 세 가지를 바로잡는다. 이 고지는 `parse_results.py --report-only`로 커밋된 `RESULTS.json`에서 렌더링했다.
+
+1. 'A가 잡은 잘못된 선언을 B가 놓친 경우 0'과 rustdoc의 '같은 비용이면 정확하다'는 시험한 집합에서만 성립한다. 일반적으로 새 기본값 `All`은 반올림 때문에, V29의 기본값 `MultiColouring`이 잡는 잘못된 선언을 놓칠 수 있다. 리뷰어가 만든 예(1e6 항 옆의 약 5.6e-9 결합: 그 열만 움직이면 반올림으로 사라지고, 그룹이 선언된 열과 함께 움직이면 비트가 바뀐다)에서 commit A의 기본값은 160/160을 잡고 HEAD의 기본값은 160/160을 놓쳤다. 실무 영향은 무시할 만하다. 병합 때 rustdoc에 '반올림 범위에서 정확'이 MC의 상위집합을 뜻하지 않는다는 문장을 넣었다.
+2. NOTES.txt의 commit 시각 몇 개가 git과 다르다(예: bb09dfb4는 09:42가 아니라 09:36:58). 순서는 맞고, git 시각이 기준이다.
+3. rustdoc의 '(넓은 선언 띠)'는 불완전했다. 불규칙 패턴(추가 채색이 단일 열이라 두 검사가 같은 상태를 움직임)과 작은 대각·빈 패턴에서도 `All`이 된다. 병합 때 rustdoc를 고쳤다.
+
 ## 1. 결론
 
 - **identity unchanged**: 통과. 36 runs; field mismatches A/B: 0; cell record mismatches: 0; total_groups of the coloured cells: [18, 59, 150]

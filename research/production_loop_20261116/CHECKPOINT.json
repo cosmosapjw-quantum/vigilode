@@ -12,7 +12,7 @@
     "crates/rodas5p-core/src/coefficients.rs": "c309a3b9d902f8a3865fbedaaf7fad45e5448ea5",
     "crates/rodas5p-integrators/src/sequential.rs": "1e5e94d7b02e6846bc425036981cb2169a7c0efb",
     "crates/rodas5p-integrators/src/parallel.rs": "ffdfb1cef258ed43586db0323eb0e7f9de27dd53",
-    "crates/rodas5p-integrators/src/stage_batch.rs": "c2f44c327c53d7c6dfe7ba80b26cd43486d56b43",
+    "crates/rodas5p-integrators/src/stage_batch.rs": "fb68321b94dd4caf8a895ea7e2f9aad5363b80f2",
     "crates/rodas5p-integrators/src/ptsw2b.rs": "f491b0a3f5f351d0fe933b06bf9ea30a0c730922",
     "crates/rodas5p-integrators/src/candidates.rs": "2a6c7a7179a34932938ee4233d48b31457e38cf1",
     "crates/rodas5p-krylov/src/block_gmres.rs": "68968fc1e764d2dd355373928ed11406c8dc9c1c",
@@ -113,7 +113,11 @@
     "research/production_loop_20261116/mf_p1_budget/RESULTS.json": "c5dd5179f2ccd50ec24e96e553c28cff0c9b0054f7076d8ca802cb26df20648d",
     "research/production_loop_20261116/mf_p1_budget/REVIEW.json": "724a06b10446e1f26b875e26fb0e38f6b963ea17f19a35353914633059031a64",
     "research/production_loop_20261116/assembly_default/RESULTS.json": "4dc9979982d143308a7cebd700993c9f68403f6bd3f786e0bdaa251da1596e14",
-    "research/production_loop_20261116/assembly_default/REVIEW.json": "3821af90949c6bc250af4893caa1c4fc0fc36b3e9f63db654e98df8c714d7dbc"
+    "research/production_loop_20261116/assembly_default/REVIEW.json": "3821af90949c6bc250af4893caa1c4fc0fc36b3e9f63db654e98df8c714d7dbc",
+    "research/production_loop_20261116/assembly_wide_band/RESULTS.json": "8508cdb19d37c3417eaac10a97f6c64ad955da658a60242f659219a5cbf39059",
+    "research/production_loop_20261116/assembly_wide_band/REVIEW.json": "4499f347901c5d5edbaa21e570b0cd1a0f889b3eb253a0d3e96ed5f47d2f97bd",
+    "research/production_loop_20261116/stage_batch_probe/RESULTS.json": "84ae5ab267b801d16147af47c7ae5c69b8abb2d7af729695bb07b8d7be0d52b4",
+    "research/production_loop_20261116/stage_batch_probe/REVIEW.json": "152115d82b6ca3a3ef3ceef8952942339e29b3e5e744516998fbccee7b2548da"
   },
   "implemented_source_sha256": {
     "crates/vigilode/tests/default_path_golden.rs": "9ef2b4b7aff1d92b14c7f28c764e5ff791a2823091ec50cf8ffc1167366863ec",
@@ -164,7 +168,7 @@
     "crates/vigilode/tests/unified_router_contracts.rs": "03e58ae0b62e6e1b916ec6a275abe28c26a5c1680ef7c5f7aa407171e7986a71",
     "crates/vigilode/tests/unified_production_solver_contracts.rs": "635c068d03a03a6d1053f6744fb4364cd3b7bbe868d72a74fd0cdf09352f5357",
     "crates/vigilode/examples/unified_production_solver.rs": "40e423913b1cce7c86ee2ebf92bc1dd6e1e709f0f70ea47813ec6efb463e53d2",
-    "crates/rodas5p-integrators/src/stage_clients/assembly.rs": "5876da5345ecce2b5409dc358193a1797a2d018df14f14639efe8871d077dfc0",
+    "crates/rodas5p-integrators/src/stage_clients/assembly.rs": "901335fdecd9a5105e99a5f47390f9d443f71dd7df4e7e815680103fadd3af28",
     "crates/rodas5p-integrators/src/stage_clients/assembly/engine.rs": "b5f4ff70fded1cd4d48b40ffd484cc5bf3216c723817507ad795db43c0f3e24a",
     "crates/rodas5p-integrators/src/stage_clients/assembly/pattern.rs": "05ec338343713f2d104222c6356dc9edb0f6de0cad76249e8706cd8c33cbf265",
     "crates/rodas5p-integrators/tests/stage_clients_assembly_identity.rs": "eea2e4db274eb59f4fe4900ac630029309b3ef251115fdc211d4aa0fdfe29ac8",
@@ -209,7 +213,8 @@
     "2026-11-24: node V24 merged (28f3ad86, 9daf78fd), epoch 3, owner decision OD-L1-11: the protected blob crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs is re-pinned (a3896e3a751cf921f83ac1e5f5e6a20bb64f7676 to 8c389ca973568402125b48e5574304d31640e9d2); it gains the opt-in policy of the stage solve and its shipped policy is bit-identical (discriminator D0). The sentinel test files ppsw1_6b_contracts.rs and ptsw2b_contracts.rs, gmres_staged.rs, routing.rs and five new test files are in the implemented sources; six evidence files of mf_adaptive are added. Frozen verdict FAIL: the default of the matrix-free route is unchanged.",
     "2026-11-24: owner decisions OD-L1-15 to OD-L1-18 appended to OWNER_DECISIONS_20261116.json (identity updated); nodes V25 and V26 pre-registered (addendum A7, mf_p1_confirm/PREDECLARED.json and assembly_check/PREDECLARED.json added to the evidence list); node V27 is a design phase.",
     "2026-11-24: owner decision OD-L1-19 appended (identity updated): the CI test jobs run a change-based selection (tools/ci/select_tests.py); the whole suite runs before the release.",
-    "2026-11-24: owner decision OD-L1-20 appended (identity updated): coverage-based selection inside a crate."
+    "2026-11-24: owner decision OD-L1-20 appended (identity updated): coverage-based selection inside a crate.",
+    "2026-11-25: owner decisions OD-L1-26 to OD-L1-30 appended (identity updated). Node V32: the protected crates/rodas5p-integrators/src/stage_batch.rs re-pinned under OD-L1-28 (only run_concurrency_probe changed); node V31: assembly.rs re-pinned; RESULTS and REVIEW of both nodes added to the evidence list."
   ],
   "epochs": [
     {
@@ -281,5 +286,8 @@
     "crates/rodas5p-integrators/src/sequential.rs",
     "crates/vigilode/src/lib.rs",
     "crates/vigilode/src/switching.rs"
-  ]
+  ],
+  "protected_blobs_changed_by_owner_decisions": {
+    "crates/rodas5p-integrators/src/stage_batch.rs": "OD-L1-28 (node V32, merge 01c33a8c): bounded rendezvous in run_concurrency_probe only; blob c2f44c327c53d7c6dfe7ba80b26cd43486d56b43 -> fb68321b94dd4caf8a895ea7e2f9aad5363b80f2"
+  }
 }

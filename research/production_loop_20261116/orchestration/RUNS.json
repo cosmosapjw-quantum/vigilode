@@ -197,19 +197,26 @@
       "script": "wave4_groupA.js",
       "script_sha256": "8b70f40b76665ce0eb91567650de686830039cf88a198dc23322df2cf850b220",
       "what": "wave 4 group A: L1 V31 (All on wide bands) and V32 (protected stage_batch probe); KS-N7 (two-for-one real FFT) and KS-N8 (field-of-values theory); each with an independent review; launched 2026-11-25 09:3x KST",
+      "status": "completed",
+      "args_base": "d4e2772f (L1), 05b5e3e3 (KS)",
+      "agent_count": 8,
+      "total_tokens": 2789920,
+      "duration_ms": 5331800,
+      "errors": [],
+      "outputs": "V31 PASS (merged bb2e6dd9), V32 PASS (merged 01c33a8c), KS-N7 implementation PASS with the timing cell left to the orchestrator, KS-N8 D1 PASS and D2 FAIL (kill not met); every review accept_with_corrections (one major: KS-N7 rustdoc private link breaks the CI docs job)"
+    },
+    {
+      "run_id": "wf_fdd7f935-265",
+      "script": "wave4_groupB.js",
+      "what": "wave 4 group B: V33 with two reviewers, V23 then V34 with a reviewer, the review of V22, V30 phase 1; launched 2026-11-25 10:5x KST (inline copy of the staged script plus a line reserving cores 8 and 20 for the KS-N3 measurement)",
       "status": "running or record not yet written",
-      "args_base": "d4e2772f (L1), 05b5e3e3 (KS)"
+      "args_base": "d4e2772f"
     }
   ],
   "staged": [
     {
       "script": "wave2_group4.js",
       "script_sha256": "1f49891f97873b9003fb230eddbcbe1fc0fb0dc27c9e4eff4a96fcb6c70496ae"
-    },
-    {
-      "script": "wave4_groupB.js",
-      "script_sha256": "9bb767f640796459f24521c007a2ee10589f7da60b7053a877f227b721d28353",
-      "what": "wave 4 group B: V33 with two reviewers, V23 then V34 with a reviewer, the review of V22, V30 phase 1; launches after group A"
     }
   ]
 }
