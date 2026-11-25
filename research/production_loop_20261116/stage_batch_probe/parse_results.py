@@ -599,9 +599,35 @@ def render(results):
         "## 8. 남는 점",
         "",
         "- 과제 문장의 조건(strace1, strace2; 1개/2개 CPU에서 strace -f)만으로는 이 host에서 실패가 나오지 않았다. "
-        "실패는 추적기와 같은 CPU에 바쁜 loop를 둔 조건과 늦은 worker test에서만 나왔다.",
-        "- 2 s 상한은 늦은 worker가 2 s 넘게 시작하지 못하는 host에서는 여전히 1을 보고한다(설계상 상한).",
-        "- 독립 검토와 CHECKPOINT 재고정(OD-L1-28)이 완료 조건이다.",
+        "실패는 추적기와 같은 CPU에 바쁜 loop를 둔 조건(hog1, hog4)과 늦은 worker test에서만 나왔다. 같은 바쁜 loop에 "
+        "strace가 없으면(hogonly1) 실패가 없었다: thread 생성 때의 ptrace 정지가 필요한 요소다.",
+        "- CLI 유발 비율이 낮아(4절) CLI 비교만으로는 약한 증거다(단측 Fisher p는 기술 통계). 결정적인 증거는 늦은 "
+        "worker test다(이전 probe에서 매번 실패, 새 probe에서 매번 통과).",
+        "- hosted runner의 추적 방식(`strace -ff --seccomp-bpf -y -e trace=<파일 syscall>`)을 그대로 재현하지는 "
+        "않았다. 여기서는 `strace -f -qq -e trace=none`(모든 syscall 정지)을 썼다.",
+        "- `provoke.sh`의 바쁜 loop 결함(4절)은 고치지 않고 기록했다. 모든 hog run이 같은 결함을 갖고, b2에서는 "
+        "이전/새 binary가 같은 상태를 번갈아 받았다.",
+        "- 2 s 상한: 두 번째 worker가 2 s 넘게 돌지 못하는 host에서는 여전히 1을 보고한다(설계상 상한, 7절의 대기 "
+        "분포와 비교).",
+        "- 독립 검토와 CHECKPOINT의 `stage_batch.rs` 보호 blob 재고정(OD-L1-28)이 완료 조건이다.",
+        "",
+        "## 9. 재현",
+        "",
+        "```",
+        "# 이전/새 CLI binary (CARGO_TARGET_DIR의 probe-bins/에 복사해 둔다)",
+        "cargo +1.94.1 build --locked -j 4 --release -p rodas5p-cli",
+        "# 유발 실험 (b2: 번갈아 실행)",
+        "BINARIES=\"old=<rodas5p-old> new=<rodas5p-new>\" ./provoke.sh b2 40 strace1 strace2 shared1 hogonly1",
+        "BINARIES=\"old=<rodas5p-old> new=<rodas5p-new>\" ./provoke.sh b2 120 hog1 hog4",
+        "python3 -I pack_logs.py logs/b2",
+        "# 늦은 worker test executable, 이전/새 probe로 build한 것을 번갈아 20회",
+        "./repeat_tests.sh logs/tests/late_workers_repeat.log 20 old=<exe-old> new=<exe-new>",
+        "# rendezvous 대기 진단",
+        "./latency.sh <stage_batch_probe_latency exe> 200 plain strace1 hog30",
+        "# 검사, 결과",
+        "CARGO_TARGET_DIR=... LOCK=... ./run_checks.sh",
+        "python3 -I parse_results.py",
+        "```",
         "",
     ]
     return "\n".join(lines)
