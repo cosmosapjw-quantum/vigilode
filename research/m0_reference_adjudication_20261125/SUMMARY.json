@@ -1,0 +1,3870 @@
+{
+  "api_failures": 12,
+  "cases": [
+    {
+      "cohort": "canonical",
+      "finest_discrepancy": 1.7977050833231665e-14,
+      "historical_disputed": true,
+      "historical_levels": [
+        {
+          "atol": 1e-16,
+          "cross_family_disagreement": 6.107231614143355e-10,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": null,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": null,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-11
+        },
+        {
+          "atol": 1e-17,
+          "cross_family_disagreement": 9.743112114058569e-11,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 2.677919252497351e-10,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 4.930837909235831e-10,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-12
+        },
+        {
+          "atol": 1e-18,
+          "cross_family_disagreement": 2.3291956463017346e-11,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 1.3283940669800461e-11,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 1.0653793811263355e-10,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-13
+        }
+      ],
+      "historical_replay_equal": true,
+      "invariant_max_abs": 1.1102230246251565e-16,
+      "n": 3,
+      "new_status": "EMPIRICAL_QUALIFIED_NEW_PROTOCOL",
+      "old_reference_difference": [
+        2.4605171858068523e-11,
+        2.4605171857047917e-11
+      ],
+      "problem": "robertson",
+      "protocols": [
+        {
+          "cross": [
+            [
+              1.8625126916650425e-07,
+              1.8625120908403806e-07
+            ],
+            [
+              1.0242425682944914e-05,
+              1.0242260960980098e-05
+            ],
+            [
+              2.4397191303706647e-15,
+              2.439719130370675e-15
+            ]
+          ],
+          "families": [
+            "julia-radau9-bigfloat",
+            "wolfram-stiffness-extrapolation"
+          ],
+          "finest_discrepancy": 2.439719130370675e-15,
+          "level_counts": [
+            3,
+            3
+          ],
+          "max_discrepancy": 1.0242426111734874e-05,
+          "precision_metric": "mpmath85",
+          "protocol": "extended-state-v1",
+          "records": [
+            [
+              {
+                "_row": 1,
+                "_sha256": "dc6d39af087586baf4e04f3c63e1b1601b15b2877122bcf2122bae57402aa3c1",
+                "_source": "independent/julia_big_scalar_atol.jsonl",
+                "accepted": 190,
+                "atol": 1.0000000000000001e-21,
+                "family": "julia-radau9-bigfloat",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "robertson",
+                "rejected": 3,
+                "retcode": "Success",
+                "rtol": 1e-15,
+                "wall_s": 38.33935499191284
+              },
+              {
+                "_row": 2,
+                "_sha256": "dc6d39af087586baf4e04f3c63e1b1601b15b2877122bcf2122bae57402aa3c1",
+                "_source": "independent/julia_big_scalar_atol.jsonl",
+                "accepted": 236,
+                "atol": 1.0000000000000001e-23,
+                "family": "julia-radau9-bigfloat",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "robertson",
+                "rejected": 2,
+                "retcode": "Success",
+                "rtol": 1e-17,
+                "wall_s": 0.12542200088500977
+              },
+              {
+                "_row": 3,
+                "_sha256": "dc6d39af087586baf4e04f3c63e1b1601b15b2877122bcf2122bae57402aa3c1",
+                "_source": "independent/julia_big_scalar_atol.jsonl",
+                "accepted": 335,
+                "atol": 1e-25,
+                "family": "julia-radau9-bigfloat",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "robertson",
+                "rejected": 1,
+                "retcode": "Success",
+                "rtol": 1e-19,
+                "wall_s": 0.09425187110900879
+              }
+            ],
+            [
+              {
+                "_row": 1,
+                "_sha256": "39450389e4b43e82c1442237488a65dbf63296b2e0fd3c1e04e7ccc159b23234",
+                "_source": "independent/robertson.wl.1.json",
+                "family": "wolfram-stiffness-extrapolation",
+                "goal": 15,
+                "grid_points": 101,
+                "ok": true,
+                "problem": "robertson",
+                "wall_s": 42.503526,
+                "working_precision": 40
+              },
+              {
+                "_row": 1,
+                "_sha256": "a6ea124e39e670ad98699e1e788338c0a7823b2d0f3394950b16f48062d4cf49",
+                "_source": "independent/robertson.wl.2.json",
+                "family": "wolfram-stiffness-extrapolation",
+                "goal": 17,
+                "grid_points": 101,
+                "ok": true,
+                "problem": "robertson",
+                "wall_s": 27.687015,
+                "working_precision": 50
+              },
+              {
+                "_row": 1,
+                "_sha256": "1be83c1d70260a1a4edf181359d21091d1ca70ed286aabff427556ed9176dc60",
+                "_source": "independent/robertson.wl.3.json",
+                "family": "wolfram-stiffness-extrapolation",
+                "goal": 19,
+                "grid_points": 101,
+                "ok": true,
+                "problem": "robertson",
+                "wall_s": 61.567231,
+                "working_precision": 60
+              }
+            ]
+          ],
+          "status": "FAILED_METRIC",
+          "successive": [
+            [
+              [
+                6.625028402447767e-13,
+                6.625028402455275e-13
+              ],
+              [
+                3.697905997167635e-14,
+                3.6979059971678716e-14
+              ]
+            ],
+            [
+              [
+                1.0242426111734874e-05,
+                1.0242261389714852e-05
+              ],
+              [
+                1.0242260958901894e-05,
+                1.0242425680866664e-05
+              ]
+            ]
+          ]
+        },
+        {
+          "cross": [
+            [
+              6.966442691026401e-13,
+              6.966442691034709e-13
+            ],
+            [
+              4.0505319777955243e-14,
+              4.0505319777958083e-14
+            ],
+            [
+              1.7977050833231265e-14,
+              1.7977050833231665e-14
+            ]
+          ],
+          "families": [
+            "julia-radau9-bigfloat",
+            "scipy-radau-grid-endpoints"
+          ],
+          "finest_discrepancy": 1.7977050833231665e-14,
+          "level_counts": [
+            3,
+            3
+          ],
+          "max_discrepancy": 6.966442691034709e-13,
+          "precision_metric": "mpmath85",
+          "protocol": "canonical-endpoint-v2",
+          "records": [
+            [
+              {
+                "_row": 1,
+                "_sha256": "dc6d39af087586baf4e04f3c63e1b1601b15b2877122bcf2122bae57402aa3c1",
+                "_source": "independent/julia_big_scalar_atol.jsonl",
+                "accepted": 190,
+                "atol": 1.0000000000000001e-21,
+                "family": "julia-radau9-bigfloat",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "robertson",
+                "rejected": 3,
+                "retcode": "Success",
+                "rtol": 1e-15,
+                "wall_s": 38.33935499191284
+              },
+              {
+                "_row": 2,
+                "_sha256": "dc6d39af087586baf4e04f3c63e1b1601b15b2877122bcf2122bae57402aa3c1",
+                "_source": "independent/julia_big_scalar_atol.jsonl",
+                "accepted": 236,
+                "atol": 1.0000000000000001e-23,
+                "family": "julia-radau9-bigfloat",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "robertson",
+                "rejected": 2,
+                "retcode": "Success",
+                "rtol": 1e-17,
+                "wall_s": 0.12542200088500977
+              },
+              {
+                "_row": 3,
+                "_sha256": "dc6d39af087586baf4e04f3c63e1b1601b15b2877122bcf2122bae57402aa3c1",
+                "_source": "independent/julia_big_scalar_atol.jsonl",
+                "accepted": 335,
+                "atol": 1e-25,
+                "family": "julia-radau9-bigfloat",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "robertson",
+                "rejected": 1,
+                "retcode": "Success",
+                "rtol": 1e-19,
+                "wall_s": 0.09425187110900879
+              }
+            ],
+            [
+              {
+                "_row": 1,
+                "_sha256": "cf019c69d12f8bf1de5de3a0b518f32050cf84d36508ad8b41d846f493b58702",
+                "_source": "independent/canonical_extra.jsonl",
+                "atol": 1.0000000000000001e-19,
+                "family": "scipy-radau-grid-endpoints",
+                "grid_points": 101,
+                "nfev": 37562,
+                "ok": true,
+                "problem": "robertson",
+                "rtol": 1e-13,
+                "wall_s": 1.582571775012184
+              },
+              {
+                "_row": 2,
+                "_sha256": "cf019c69d12f8bf1de5de3a0b518f32050cf84d36508ad8b41d846f493b58702",
+                "_source": "independent/canonical_extra.jsonl",
+                "atol": 5.0000000000000005e-20,
+                "family": "scipy-radau-grid-endpoints",
+                "grid_points": 101,
+                "nfev": 44655,
+                "ok": true,
+                "problem": "robertson",
+                "rtol": 5e-14,
+                "wall_s": 1.7982896850444376
+              },
+              {
+                "_row": 3,
+                "_sha256": "cf019c69d12f8bf1de5de3a0b518f32050cf84d36508ad8b41d846f493b58702",
+                "_source": "independent/canonical_extra.jsonl",
+                "atol": 2.5000000000000002e-20,
+                "family": "scipy-radau-grid-endpoints",
+                "grid_points": 101,
+                "nfev": 52475,
+                "ok": true,
+                "problem": "robertson",
+                "rtol": 2.5e-14,
+                "wall_s": 2.1001887369784527
+              }
+            ]
+          ],
+          "status": "PASS_EMPIRICAL",
+          "successive": [
+            [
+              [
+                6.625028402447767e-13,
+                6.625028402455275e-13
+              ],
+              [
+                3.697905997167635e-14,
+                3.6979059971678716e-14
+              ]
+            ],
+            [
+              [
+                1.0534159936232706e-14,
+                1.0534159936232606e-14
+              ],
+              [
+                1.659054206764014e-14,
+                1.6590542067640256e-14
+              ]
+            ]
+          ]
+        }
+      ],
+      "selected_family": "julia-radau9-bigfloat",
+      "selected_max_discrepancy": 6.966442691034709e-13,
+      "selected_protocol": "canonical-endpoint-v2"
+    },
+    {
+      "cohort": "canonical",
+      "finest_discrepancy": 3.31629452420724e-13,
+      "historical_disputed": true,
+      "historical_levels": [
+        {
+          "atol": 1e-16,
+          "cross_family_disagreement": 1.0988495109731683e-08,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": null,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": null,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-11
+        },
+        {
+          "atol": 1e-17,
+          "cross_family_disagreement": 2.477074797128963e-09,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 1.806340366014776e-10,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 1.2745859458718847e-08,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-12
+        },
+        {
+          "atol": 1e-18,
+          "cross_family_disagreement": 4.945093477523222e-10,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 3.252931480826559e-11,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 2.758831121393621e-09,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-13
+        }
+      ],
+      "historical_replay_equal": true,
+      "invariant_max_abs": 0.0,
+      "n": 8,
+      "new_status": "EMPIRICAL_QUALIFIED_NEW_PROTOCOL",
+      "old_reference_difference": [
+        4.945004877264935e-10,
+        4.945004884172248e-10
+      ],
+      "problem": "hires",
+      "protocols": [
+        {
+          "cross": [
+            [
+              12.541783859798418,
+              1252.5694574612082
+            ],
+            [
+              2.433196949695398e-12,
+              2.4331969496787906e-12
+            ],
+            [
+              9.513781277591743e-14,
+              9.513781277589205e-14
+            ]
+          ],
+          "families": [
+            "julia-radau9-bigfloat",
+            "wolfram-stiffness-extrapolation"
+          ],
+          "finest_discrepancy": 9.513781277591743e-14,
+          "level_counts": [
+            3,
+            3
+          ],
+          "max_discrepancy": 1252.5694574612082,
+          "precision_metric": "mpmath85",
+          "protocol": "extended-state-v1",
+          "records": [
+            [
+              {
+                "_row": 4,
+                "_sha256": "dc6d39af087586baf4e04f3c63e1b1601b15b2877122bcf2122bae57402aa3c1",
+                "_source": "independent/julia_big_scalar_atol.jsonl",
+                "accepted": 306,
+                "atol": 1.0000000000000001e-21,
+                "family": "julia-radau9-bigfloat",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "hires",
+                "rejected": 3,
+                "retcode": "Success",
+                "rtol": 1e-15,
+                "wall_s": 12.119893074035645
+              },
+              {
+                "_row": 5,
+                "_sha256": "dc6d39af087586baf4e04f3c63e1b1601b15b2877122bcf2122bae57402aa3c1",
+                "_source": "independent/julia_big_scalar_atol.jsonl",
+                "accepted": 432,
+                "atol": 1.0000000000000001e-23,
+                "family": "julia-radau9-bigfloat",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "hires",
+                "rejected": 3,
+                "retcode": "Success",
+                "rtol": 1e-17,
+                "wall_s": 0.39647579193115234
+              },
+              {
+                "_row": 6,
+                "_sha256": "dc6d39af087586baf4e04f3c63e1b1601b15b2877122bcf2122bae57402aa3c1",
+                "_source": "independent/julia_big_scalar_atol.jsonl",
+                "accepted": 667,
+                "atol": 1e-25,
+                "family": "julia-radau9-bigfloat",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "hires",
+                "rejected": 4,
+                "retcode": "Success",
+                "rtol": 1e-19,
+                "wall_s": 0.601830005645752
+              }
+            ],
+            [
+              {
+                "_row": 1,
+                "_sha256": "027254b476dd168b4ac0c8e194b8d266a77c15467850f14b7d0fef9bfacdc580",
+                "_source": "independent/hires.wl.1.json",
+                "family": "wolfram-stiffness-extrapolation",
+                "goal": 15,
+                "grid_points": 101,
+                "ok": true,
+                "problem": "hires",
+                "wall_s": 15.579602,
+                "working_precision": 40
+              },
+              {
+                "_row": 1,
+                "_sha256": "760062abb4594d0a6dd0082bfdccf2487877ce24824eb3334bd6d394beaf1bb6",
+                "_source": "independent/hires.wl.2.json",
+                "family": "wolfram-stiffness-extrapolation",
+                "goal": 17,
+                "grid_points": 101,
+                "ok": true,
+                "problem": "hires",
+                "wall_s": 50.751969,
+                "working_precision": 50
+              },
+              {
+                "_row": 1,
+                "_sha256": "8c75e19cc10754764414d563d66a94b73da2794933f4300669618b4fb4fd9dbf",
+                "_source": "independent/hires.wl.3.json",
+                "family": "wolfram-stiffness-extrapolation",
+                "goal": 19,
+                "grid_points": 101,
+                "ok": true,
+                "problem": "hires",
+                "wall_s": 92.645732,
+                "working_precision": 60
+              }
+            ]
+          ],
+          "status": "FAILED_METRIC",
+          "successive": [
+            [
+              [
+                4.4119149530861096e-11,
+                4.411914952547712e-11
+              ],
+              [
+                2.343567615155721e-12,
+                2.343567615140314e-12
+              ]
+            ],
+            [
+              [
+                1252.5694574610752,
+                12.541783859798409
+              ],
+              [
+                5.1043368208603534e-14,
+                5.104336820859617e-14
+              ]
+            ]
+          ]
+        },
+        {
+          "cross": [
+            [
+              4.427645012950238e-11,
+              4.427645012407984e-11
+            ],
+            [
+              2.4687539738465744e-12,
+              2.4687539738294888e-12
+            ],
+            [
+              3.31629452420724e-13,
+              3.316294524205736e-13
+            ]
+          ],
+          "families": [
+            "julia-radau9-bigfloat",
+            "scipy-radau-grid-endpoints"
+          ],
+          "finest_discrepancy": 3.31629452420724e-13,
+          "level_counts": [
+            3,
+            3
+          ],
+          "max_discrepancy": 4.427645012950238e-11,
+          "precision_metric": "mpmath85",
+          "protocol": "canonical-endpoint-v2",
+          "records": [
+            [
+              {
+                "_row": 4,
+                "_sha256": "dc6d39af087586baf4e04f3c63e1b1601b15b2877122bcf2122bae57402aa3c1",
+                "_source": "independent/julia_big_scalar_atol.jsonl",
+                "accepted": 306,
+                "atol": 1.0000000000000001e-21,
+                "family": "julia-radau9-bigfloat",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "hires",
+                "rejected": 3,
+                "retcode": "Success",
+                "rtol": 1e-15,
+                "wall_s": 12.119893074035645
+              },
+              {
+                "_row": 5,
+                "_sha256": "dc6d39af087586baf4e04f3c63e1b1601b15b2877122bcf2122bae57402aa3c1",
+                "_source": "independent/julia_big_scalar_atol.jsonl",
+                "accepted": 432,
+                "atol": 1.0000000000000001e-23,
+                "family": "julia-radau9-bigfloat",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "hires",
+                "rejected": 3,
+                "retcode": "Success",
+                "rtol": 1e-17,
+                "wall_s": 0.39647579193115234
+              },
+              {
+                "_row": 6,
+                "_sha256": "dc6d39af087586baf4e04f3c63e1b1601b15b2877122bcf2122bae57402aa3c1",
+                "_source": "independent/julia_big_scalar_atol.jsonl",
+                "accepted": 667,
+                "atol": 1e-25,
+                "family": "julia-radau9-bigfloat",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "hires",
+                "rejected": 4,
+                "retcode": "Success",
+                "rtol": 1e-19,
+                "wall_s": 0.601830005645752
+              }
+            ],
+            [
+              {
+                "_row": 4,
+                "_sha256": "cf019c69d12f8bf1de5de3a0b518f32050cf84d36508ad8b41d846f493b58702",
+                "_source": "independent/canonical_extra.jsonl",
+                "atol": 1.0000000000000001e-19,
+                "family": "scipy-radau-grid-endpoints",
+                "grid_points": 101,
+                "nfev": 93637,
+                "ok": true,
+                "problem": "hires",
+                "rtol": 1e-13,
+                "wall_s": 3.768795742013026
+              },
+              {
+                "_row": 5,
+                "_sha256": "cf019c69d12f8bf1de5de3a0b518f32050cf84d36508ad8b41d846f493b58702",
+                "_source": "independent/canonical_extra.jsonl",
+                "atol": 5.0000000000000005e-20,
+                "family": "scipy-radau-grid-endpoints",
+                "grid_points": 101,
+                "nfev": 110513,
+                "ok": true,
+                "problem": "hires",
+                "rtol": 5e-14,
+                "wall_s": 3.4816407750477083
+              },
+              {
+                "_row": 6,
+                "_sha256": "cf019c69d12f8bf1de5de3a0b518f32050cf84d36508ad8b41d846f493b58702",
+                "_source": "independent/canonical_extra.jsonl",
+                "atol": 2.5000000000000002e-20,
+                "family": "scipy-radau-grid-endpoints",
+                "grid_points": 101,
+                "nfev": 131183,
+                "ok": true,
+                "problem": "hires",
+                "rtol": 2.5e-14,
+                "wall_s": 4.128806819964666
+              }
+            ]
+          ],
+          "status": "PASS_EMPIRICAL",
+          "successive": [
+            [
+              [
+                4.4119149530861096e-11,
+                4.411914952547712e-11
+              ],
+              [
+                2.343567615155721e-12,
+                2.343567615140314e-12
+              ]
+            ],
+            [
+              [
+                3.9538884652744857e-13,
+                3.953888465276624e-13
+              ],
+              [
+                7.333192834418574e-13,
+                7.333192834411188e-13
+              ]
+            ]
+          ]
+        }
+      ],
+      "selected_family": "julia-radau9-bigfloat",
+      "selected_max_discrepancy": 4.427645012950238e-11,
+      "selected_protocol": "canonical-endpoint-v2"
+    },
+    {
+      "cohort": "canonical",
+      "finest_discrepancy": 2.7767647506066284e-13,
+      "historical_disputed": true,
+      "historical_levels": [
+        {
+          "atol": 1e-12,
+          "cross_family_disagreement": 5.353956980761471e-09,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": null,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": null,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-11
+        },
+        {
+          "atol": 1e-13,
+          "cross_family_disagreement": 7.513976475147348e-10,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 4.47155051306322e-09,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 4.669321112394812e-10,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-12
+        },
+        {
+          "atol": 1e-14,
+          "cross_family_disagreement": 8.379393327741478e-11,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 6.310989322285346e-10,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 7.991099726637514e-11,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-13
+        }
+      ],
+      "historical_replay_equal": true,
+      "n": 2,
+      "new_status": "EMPIRICAL_QUALIFIED_NEW_PROTOCOL",
+      "old_reference_difference": [
+        1.9697471849815106e-11,
+        1.9697471849266407e-11
+      ],
+      "problem": "van-der-pol-mu1000",
+      "protocols": [
+        {
+          "families": [
+            "julia-radau9-bigfloat",
+            "wolfram-stiffness-extrapolation"
+          ],
+          "level_counts": [
+            3,
+            2
+          ],
+          "protocol": "extended-state-v1",
+          "records": [
+            [
+              {
+                "_row": 7,
+                "_sha256": "dc6d39af087586baf4e04f3c63e1b1601b15b2877122bcf2122bae57402aa3c1",
+                "_source": "independent/julia_big_scalar_atol.jsonl",
+                "accepted": 957,
+                "atol": 1e-17,
+                "family": "julia-radau9-bigfloat",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "van-der-pol-mu1000",
+                "rejected": 25,
+                "retcode": "Success",
+                "rtol": 1e-15,
+                "wall_s": 13.206275939941406
+              },
+              {
+                "_row": 8,
+                "_sha256": "dc6d39af087586baf4e04f3c63e1b1601b15b2877122bcf2122bae57402aa3c1",
+                "_source": "independent/julia_big_scalar_atol.jsonl",
+                "accepted": 1466,
+                "atol": 1e-19,
+                "family": "julia-radau9-bigfloat",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "van-der-pol-mu1000",
+                "rejected": 21,
+                "retcode": "Success",
+                "rtol": 1e-17,
+                "wall_s": 0.21190810203552246
+              },
+              {
+                "_row": 9,
+                "_sha256": "dc6d39af087586baf4e04f3c63e1b1601b15b2877122bcf2122bae57402aa3c1",
+                "_source": "independent/julia_big_scalar_atol.jsonl",
+                "accepted": 2271,
+                "atol": 1e-21,
+                "family": "julia-radau9-bigfloat",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "van-der-pol-mu1000",
+                "rejected": 17,
+                "retcode": "Success",
+                "rtol": 1e-19,
+                "wall_s": 0.29436779022216797
+              }
+            ],
+            [
+              {
+                "_row": 1,
+                "_sha256": "fa6b00d3c8008d219b64b4e91fa6c52948863bd893fb4fab334fefaf2d4a8567",
+                "_source": "independent/van-der-pol-mu1000.wl.1.json",
+                "family": "wolfram-stiffness-extrapolation",
+                "goal": 15,
+                "grid_points": 101,
+                "ok": true,
+                "problem": "van-der-pol-mu1000",
+                "wall_s": 16.079895,
+                "working_precision": 40
+              },
+              {
+                "_row": 1,
+                "_sha256": "6b8b56fd021ae45510de0a6291f8dd81a6135f035a2c3a561f3089516586c757",
+                "_source": "independent/van-der-pol-mu1000.wl.2.json",
+                "family": "wolfram-stiffness-extrapolation",
+                "goal": 17,
+                "grid_points": 101,
+                "ok": true,
+                "problem": "van-der-pol-mu1000",
+                "wall_s": 75.001437,
+                "working_precision": 50
+              }
+            ]
+          ],
+          "status": "INCOMPLETE"
+        },
+        {
+          "cross": [
+            [
+              4.899225528428051e-12,
+              4.899225528394383e-12
+            ],
+            [
+              1.6051366518476145e-13,
+              1.605136651847955e-13
+            ],
+            [
+              2.7767647506066284e-13,
+              2.776764750605574e-13
+            ]
+          ],
+          "families": [
+            "julia-radau9-bigfloat",
+            "scipy-radau-grid-endpoints"
+          ],
+          "finest_discrepancy": 2.7767647506066284e-13,
+          "level_counts": [
+            3,
+            3
+          ],
+          "max_discrepancy": 4.987306552470627e-12,
+          "precision_metric": "mpmath85",
+          "protocol": "canonical-endpoint-v2",
+          "records": [
+            [
+              {
+                "_row": 7,
+                "_sha256": "dc6d39af087586baf4e04f3c63e1b1601b15b2877122bcf2122bae57402aa3c1",
+                "_source": "independent/julia_big_scalar_atol.jsonl",
+                "accepted": 957,
+                "atol": 1e-17,
+                "family": "julia-radau9-bigfloat",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "van-der-pol-mu1000",
+                "rejected": 25,
+                "retcode": "Success",
+                "rtol": 1e-15,
+                "wall_s": 13.206275939941406
+              },
+              {
+                "_row": 8,
+                "_sha256": "dc6d39af087586baf4e04f3c63e1b1601b15b2877122bcf2122bae57402aa3c1",
+                "_source": "independent/julia_big_scalar_atol.jsonl",
+                "accepted": 1466,
+                "atol": 1e-19,
+                "family": "julia-radau9-bigfloat",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "van-der-pol-mu1000",
+                "rejected": 21,
+                "retcode": "Success",
+                "rtol": 1e-17,
+                "wall_s": 0.21190810203552246
+              },
+              {
+                "_row": 9,
+                "_sha256": "dc6d39af087586baf4e04f3c63e1b1601b15b2877122bcf2122bae57402aa3c1",
+                "_source": "independent/julia_big_scalar_atol.jsonl",
+                "accepted": 2271,
+                "atol": 1e-21,
+                "family": "julia-radau9-bigfloat",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "van-der-pol-mu1000",
+                "rejected": 17,
+                "retcode": "Success",
+                "rtol": 1e-19,
+                "wall_s": 0.29436779022216797
+              }
+            ],
+            [
+              {
+                "_row": 7,
+                "_sha256": "cf019c69d12f8bf1de5de3a0b518f32050cf84d36508ad8b41d846f493b58702",
+                "_source": "independent/canonical_extra.jsonl",
+                "atol": 1e-15,
+                "family": "scipy-radau-grid-endpoints",
+                "grid_points": 101,
+                "nfev": 308477,
+                "ok": true,
+                "problem": "van-der-pol-mu1000",
+                "rtol": 1e-13,
+                "wall_s": 10.0834850249812
+              },
+              {
+                "_row": 8,
+                "_sha256": "cf019c69d12f8bf1de5de3a0b518f32050cf84d36508ad8b41d846f493b58702",
+                "_source": "independent/canonical_extra.jsonl",
+                "atol": 5e-16,
+                "family": "scipy-radau-grid-endpoints",
+                "grid_points": 101,
+                "nfev": 366626,
+                "ok": true,
+                "problem": "van-der-pol-mu1000",
+                "rtol": 5e-14,
+                "wall_s": 11.247335957014002
+              },
+              {
+                "_row": 9,
+                "_sha256": "cf019c69d12f8bf1de5de3a0b518f32050cf84d36508ad8b41d846f493b58702",
+                "_source": "independent/canonical_extra.jsonl",
+                "atol": 2.5e-16,
+                "family": "scipy-radau-grid-endpoints",
+                "grid_points": 101,
+                "nfev": 431722,
+                "ok": true,
+                "problem": "van-der-pol-mu1000",
+                "rtol": 2.5e-14,
+                "wall_s": 14.750275060010608
+              }
+            ]
+          ],
+          "status": "PASS_EMPIRICAL",
+          "successive": [
+            [
+              [
+                4.987306552470627e-12,
+                4.987306552435737e-12
+              ],
+              [
+                3.1302323627307554e-13,
+                3.130232362732075e-13
+              ]
+            ],
+            [
+              [
+                1.3106066209373575e-13,
+                1.310606620937592e-13
+              ],
+              [
+                1.250417046769947e-13,
+                1.2504170467697338e-13
+              ]
+            ]
+          ]
+        }
+      ],
+      "selected_family": "julia-radau9-bigfloat",
+      "selected_max_discrepancy": 4.987306552470627e-12,
+      "selected_protocol": "canonical-endpoint-v2"
+    },
+    {
+      "cohort": "canonical",
+      "finest_discrepancy": 1.7477871708863243e-13,
+      "historical_disputed": true,
+      "historical_levels": [
+        {
+          "atol": 1e-12,
+          "cross_family_disagreement": 2.7401522596459498e-08,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": null,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": null,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-11
+        },
+        {
+          "atol": 1e-13,
+          "cross_family_disagreement": 7.265942363780992e-09,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 1.907704837875069e-08,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 2.208896525132888e-09,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-12
+        },
+        {
+          "atol": 1e-14,
+          "cross_family_disagreement": 5.066276104682801e-10,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 6.445243425032836e-09,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 3.6980144338530377e-10,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-13
+        }
+      ],
+      "historical_replay_equal": true,
+      "n": 3,
+      "new_status": "EMPIRICAL_QUALIFIED_NEW_PROTOCOL",
+      "old_reference_difference": [
+        6.673524961000417e-11,
+        6.673524961762229e-11
+      ],
+      "problem": "oregonator",
+      "protocols": [
+        {
+          "families": [
+            "julia-radau9-bigfloat",
+            "wolfram-stiffness-extrapolation"
+          ],
+          "level_counts": [
+            3,
+            0
+          ],
+          "protocol": "extended-state-v1",
+          "records": [
+            [
+              {
+                "_row": 10,
+                "_sha256": "dc6d39af087586baf4e04f3c63e1b1601b15b2877122bcf2122bae57402aa3c1",
+                "_source": "independent/julia_big_scalar_atol.jsonl",
+                "accepted": 1282,
+                "atol": 1.0000000000000001e-21,
+                "family": "julia-radau9-bigfloat",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "oregonator",
+                "rejected": 22,
+                "retcode": "Success",
+                "rtol": 1e-15,
+                "wall_s": 12.901890993118286
+              },
+              {
+                "_row": 11,
+                "_sha256": "dc6d39af087586baf4e04f3c63e1b1601b15b2877122bcf2122bae57402aa3c1",
+                "_source": "independent/julia_big_scalar_atol.jsonl",
+                "accepted": 1948,
+                "atol": 1.0000000000000001e-23,
+                "family": "julia-radau9-bigfloat",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "oregonator",
+                "rejected": 39,
+                "retcode": "Success",
+                "rtol": 1e-17,
+                "wall_s": 0.4427618980407715
+              },
+              {
+                "_row": 12,
+                "_sha256": "dc6d39af087586baf4e04f3c63e1b1601b15b2877122bcf2122bae57402aa3c1",
+                "_source": "independent/julia_big_scalar_atol.jsonl",
+                "accepted": 2904,
+                "atol": 1e-25,
+                "family": "julia-radau9-bigfloat",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "oregonator",
+                "rejected": 26,
+                "retcode": "Success",
+                "rtol": 1e-19,
+                "wall_s": 0.6085379123687744
+              }
+            ],
+            []
+          ],
+          "status": "INCOMPLETE"
+        },
+        {
+          "cross": [
+            [
+              1.276313690509049e-11,
+              1.2763136904883554e-11
+            ],
+            [
+              4.33002562088395e-10,
+              4.330025617636963e-10
+            ],
+            [
+              1.93340267991913e-11,
+              1.9334026799838746e-11
+            ]
+          ],
+          "families": [
+            "julia-radau9-bigfloat",
+            "scipy-radau-grid-endpoints"
+          ],
+          "finest_discrepancy": 1.9334026799838746e-11,
+          "level_counts": [
+            3,
+            3
+          ],
+          "max_discrepancy": 4.33002562088395e-10,
+          "precision_metric": "mpmath85",
+          "protocol": "canonical-endpoint-v2",
+          "records": [
+            [
+              {
+                "_row": 10,
+                "_sha256": "dc6d39af087586baf4e04f3c63e1b1601b15b2877122bcf2122bae57402aa3c1",
+                "_source": "independent/julia_big_scalar_atol.jsonl",
+                "accepted": 1282,
+                "atol": 1.0000000000000001e-21,
+                "family": "julia-radau9-bigfloat",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "oregonator",
+                "rejected": 22,
+                "retcode": "Success",
+                "rtol": 1e-15,
+                "wall_s": 12.901890993118286
+              },
+              {
+                "_row": 11,
+                "_sha256": "dc6d39af087586baf4e04f3c63e1b1601b15b2877122bcf2122bae57402aa3c1",
+                "_source": "independent/julia_big_scalar_atol.jsonl",
+                "accepted": 1948,
+                "atol": 1.0000000000000001e-23,
+                "family": "julia-radau9-bigfloat",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "oregonator",
+                "rejected": 39,
+                "retcode": "Success",
+                "rtol": 1e-17,
+                "wall_s": 0.4427618980407715
+              },
+              {
+                "_row": 12,
+                "_sha256": "dc6d39af087586baf4e04f3c63e1b1601b15b2877122bcf2122bae57402aa3c1",
+                "_source": "independent/julia_big_scalar_atol.jsonl",
+                "accepted": 2904,
+                "atol": 1e-25,
+                "family": "julia-radau9-bigfloat",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "oregonator",
+                "rejected": 26,
+                "retcode": "Success",
+                "rtol": 1e-19,
+                "wall_s": 0.6085379123687744
+              }
+            ],
+            [
+              {
+                "_row": 10,
+                "_sha256": "cf019c69d12f8bf1de5de3a0b518f32050cf84d36508ad8b41d846f493b58702",
+                "_source": "independent/canonical_extra.jsonl",
+                "atol": 1.0000000000000001e-19,
+                "family": "scipy-radau-grid-endpoints",
+                "grid_points": 101,
+                "nfev": 402975,
+                "ok": true,
+                "problem": "oregonator",
+                "rtol": 1e-13,
+                "wall_s": 14.34385107801063
+              },
+              {
+                "_row": 11,
+                "_sha256": "cf019c69d12f8bf1de5de3a0b518f32050cf84d36508ad8b41d846f493b58702",
+                "_source": "independent/canonical_extra.jsonl",
+                "atol": 5.0000000000000005e-20,
+                "family": "scipy-radau-grid-endpoints",
+                "grid_points": 101,
+                "nfev": 477679,
+                "ok": true,
+                "problem": "oregonator",
+                "rtol": 5e-14,
+                "wall_s": 14.60928024200257
+              },
+              {
+                "_row": 12,
+                "_sha256": "cf019c69d12f8bf1de5de3a0b518f32050cf84d36508ad8b41d846f493b58702",
+                "_source": "independent/canonical_extra.jsonl",
+                "atol": 2.5000000000000002e-20,
+                "family": "scipy-radau-grid-endpoints",
+                "grid_points": 101,
+                "nfev": 563205,
+                "ok": true,
+                "problem": "oregonator",
+                "rtol": 2.5e-14,
+                "wall_s": 17.177380509965587
+              }
+            ]
+          ],
+          "status": "FAILED_METRIC",
+          "successive": [
+            [
+              [
+                4.3270476296179806e-10,
+                4.3270476328604847e-10
+              ],
+              [
+                4.216560081929239e-10,
+                4.2165600788501925e-10
+              ]
+            ],
+            [
+              [
+                9.911973071298466e-14,
+                9.911973071299656e-14
+              ],
+              [
+                7.894545428793271e-14,
+                7.894545428792512e-14
+              ]
+            ]
+          ]
+        },
+        {
+          "cross": [
+            [
+              1.547093954037572e-13,
+              1.547093954037864e-13
+            ],
+            [
+              2.5372308548329996e-13,
+              2.537230854833782e-13
+            ],
+            [
+              1.7477871708859533e-13,
+              1.7477871708863243e-13
+            ]
+          ],
+          "families": [
+            "direct-radau7-mp",
+            "scipy-radau-grid-endpoints"
+          ],
+          "finest_discrepancy": 1.7477871708863243e-13,
+          "level_counts": [
+            3,
+            3
+          ],
+          "max_discrepancy": 2.537230854833782e-13,
+          "precision_metric": "mpmath85",
+          "protocol": "direct-high-precision-v3",
+          "records": [
+            [
+              {
+                "_row": 1,
+                "_sha256": "523f03d30591bcd1427fe483faeb3c2afcc46b7b2bc76d4dcd50d2c800f3c983",
+                "_source": "independent/oregonator_hp.jsonl",
+                "atol": 1e-21,
+                "attempts": 1007,
+                "family": "direct-radau7-mp",
+                "grid_points": 101,
+                "max_accepted_stage_residual": 9.952225891697435e-46,
+                "newton_iterations": 15742,
+                "ok": true,
+                "precision_bits": 224,
+                "problem": "oregonator",
+                "rejected": 41,
+                "rtol": 1e-15,
+                "wall_s": 9.801760911941528
+              },
+              {
+                "_row": 2,
+                "_sha256": "523f03d30591bcd1427fe483faeb3c2afcc46b7b2bc76d4dcd50d2c800f3c983",
+                "_source": "independent/oregonator_hp.jsonl",
+                "atol": 1e-23,
+                "attempts": 1329,
+                "family": "direct-radau7-mp",
+                "grid_points": 101,
+                "max_accepted_stage_residual": 9.006690835906272e-46,
+                "newton_iterations": 20358,
+                "ok": true,
+                "precision_bits": 224,
+                "problem": "oregonator",
+                "rejected": 27,
+                "rtol": 1e-17,
+                "wall_s": 9.23226809501648
+              },
+              {
+                "_row": 3,
+                "_sha256": "523f03d30591bcd1427fe483faeb3c2afcc46b7b2bc76d4dcd50d2c800f3c983",
+                "_source": "independent/oregonator_hp.jsonl",
+                "atol": 1e-25,
+                "attempts": 1844,
+                "family": "direct-radau7-mp",
+                "grid_points": 101,
+                "max_accepted_stage_residual": 9.908888941947146e-46,
+                "newton_iterations": 27789,
+                "ok": true,
+                "precision_bits": 224,
+                "problem": "oregonator",
+                "rejected": 16,
+                "rtol": 1e-19,
+                "wall_s": 12.620659828186035
+              }
+            ],
+            [
+              {
+                "_row": 10,
+                "_sha256": "cf019c69d12f8bf1de5de3a0b518f32050cf84d36508ad8b41d846f493b58702",
+                "_source": "independent/canonical_extra.jsonl",
+                "atol": 1.0000000000000001e-19,
+                "family": "scipy-radau-grid-endpoints",
+                "grid_points": 101,
+                "nfev": 402975,
+                "ok": true,
+                "problem": "oregonator",
+                "rtol": 1e-13,
+                "wall_s": 14.34385107801063
+              },
+              {
+                "_row": 11,
+                "_sha256": "cf019c69d12f8bf1de5de3a0b518f32050cf84d36508ad8b41d846f493b58702",
+                "_source": "independent/canonical_extra.jsonl",
+                "atol": 5.0000000000000005e-20,
+                "family": "scipy-radau-grid-endpoints",
+                "grid_points": 101,
+                "nfev": 477679,
+                "ok": true,
+                "problem": "oregonator",
+                "rtol": 5e-14,
+                "wall_s": 14.60928024200257
+              },
+              {
+                "_row": 12,
+                "_sha256": "cf019c69d12f8bf1de5de3a0b518f32050cf84d36508ad8b41d846f493b58702",
+                "_source": "independent/canonical_extra.jsonl",
+                "atol": 2.5000000000000002e-20,
+                "family": "scipy-radau-grid-endpoints",
+                "grid_points": 101,
+                "nfev": 563205,
+                "ok": true,
+                "problem": "oregonator",
+                "rtol": 2.5e-14,
+                "wall_s": 17.177380509965587
+              }
+            ]
+          ],
+          "status": "PASS_EMPIRICAL",
+          "successive": [
+            [
+              [
+                4.880900557097803e-20,
+                4.880900557097803e-20
+              ],
+              [
+                2.3519306324124108e-21,
+                2.3519306324124108e-21
+              ]
+            ],
+            [
+              [
+                9.911973071298466e-14,
+                9.911973071299656e-14
+              ],
+              [
+                7.894545428793271e-14,
+                7.894545428792512e-14
+              ]
+            ]
+          ]
+        }
+      ],
+      "selected_family": "direct-radau7-mp",
+      "selected_max_discrepancy": 2.537230854833782e-13,
+      "selected_protocol": "direct-high-precision-v3"
+    },
+    {
+      "cohort": "canonical",
+      "finest_discrepancy": 1.5952660045897602e-13,
+      "historical_disputed": true,
+      "historical_levels": [
+        {
+          "atol": 1e-12,
+          "cross_family_disagreement": 1.7193566004323447e-09,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": null,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": null,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-11
+        },
+        {
+          "atol": 1e-13,
+          "cross_family_disagreement": 2.731208246841207e-10,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 1.3014271723545505e-09,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 4.791773239694152e-10,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-12
+        },
+        {
+          "atol": 1e-14,
+          "cross_family_disagreement": 5.493665310786136e-11,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 2.552138990833643e-10,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 8.787303312314597e-11,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-13
+        }
+      ],
+      "historical_replay_equal": true,
+      "n": 100,
+      "new_status": "EMPIRICAL_QUALIFIED_NEW_PROTOCOL",
+      "old_reference_difference": [
+        1.973409542989237e-11,
+        1.9734095429290063e-11
+      ],
+      "problem": "brusselator-1d-n100",
+      "protocols": [
+        {
+          "cross": [
+            [
+              5.9871293557427585e-09,
+              5.987129358920379e-09
+            ],
+            [
+              9.84244085338677e-10,
+              9.842440853497469e-10
+            ],
+            [
+              3.102097421007138e-11,
+              3.102097421007111e-11
+            ]
+          ],
+          "families": [
+            "scipy-dop853",
+            "julia-vern9"
+          ],
+          "finest_discrepancy": 3.102097421007138e-11,
+          "level_counts": [
+            3,
+            3
+          ],
+          "max_discrepancy": 6.32272888949678e-09,
+          "precision_metric": "binary64",
+          "protocol": "uncapped-v1",
+          "records": [
+            [
+              {
+                "_row": 1,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 1e-14,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 6953,
+                "ok": true,
+                "problem": "brusselator-1d-n100",
+                "rtol": 1e-12,
+                "wall_s": 0.15310122002847493
+              },
+              {
+                "_row": 2,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 1e-15,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 6485,
+                "ok": true,
+                "problem": "brusselator-1d-n100",
+                "rtol": 1e-13,
+                "wall_s": 0.1332947399932891
+              },
+              {
+                "_row": 3,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 2.9999999999999994e-16,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 6233,
+                "ok": true,
+                "problem": "brusselator-1d-n100",
+                "rtol": 3e-14,
+                "wall_s": 0.12878241302678362
+              }
+            ],
+            [
+              {
+                "_row": 1,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 817,
+                "atol": 1e-14,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "brusselator-1d-n100",
+                "rejected": 1,
+                "retcode": "Success",
+                "rtol": 1e-12,
+                "wall_s": 5.362462997436523
+              },
+              {
+                "_row": 2,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 1010,
+                "atol": 1e-15,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "brusselator-1d-n100",
+                "rejected": 2,
+                "retcode": "Success",
+                "rtol": 1e-13,
+                "wall_s": 0.0030508041381835938
+              },
+              {
+                "_row": 3,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 1131,
+                "atol": 2.9999999999999994e-16,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "brusselator-1d-n100",
+                "rejected": 2,
+                "retcode": "Success",
+                "rtol": 3e-14,
+                "wall_s": 0.002992868423461914
+              }
+            ]
+          ],
+          "status": "FAILED_METRIC",
+          "successive": [
+            [
+              [
+                6.3227288863999945e-09,
+                6.32272888949678e-09
+              ],
+              [
+                9.897370232809692e-10,
+                9.897370232920478e-10
+              ]
+            ],
+            [
+              [
+                1.1547257746456712e-14,
+                1.154725774645679e-14
+              ],
+              [
+                6.573735014296493e-15,
+                6.573735014296468e-15
+              ]
+            ]
+          ]
+        },
+        {
+          "cross": [
+            [
+              7.677552988829656e-14,
+              7.677552988829302e-14
+            ],
+            [
+              1.9940764656668078e-13,
+              1.9940764656670474e-13
+            ],
+            [
+              1.5952660045897602e-13,
+              1.5952660045896274e-13
+            ]
+          ],
+          "families": [
+            "scipy-dop853-capped",
+            "julia-vern9-capped"
+          ],
+          "finest_discrepancy": 1.5952660045897602e-13,
+          "level_counts": [
+            3,
+            3
+          ],
+          "max_discrepancy": 3.3985806689078664e-13,
+          "precision_metric": "binary64",
+          "protocol": "capped-v2",
+          "records": [
+            [
+              {
+                "_row": 1,
+                "_sha256": "3916bb7c16cf86a4e11baa681e23a9f9ac7d234445a87e2b26346cc6750ad35a",
+                "_source": "independent/bruss_scipy.jsonl",
+                "atol": 1e-14,
+                "family": "scipy-dop853-capped",
+                "grid_points": 101,
+                "max_step": 0.005,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 24305,
+                "ok": true,
+                "problem": "brusselator-1d-n100",
+                "rtol": 1e-12,
+                "wall_s": 0.28258841001661494
+              },
+              {
+                "_row": 2,
+                "_sha256": "3916bb7c16cf86a4e11baa681e23a9f9ac7d234445a87e2b26346cc6750ad35a",
+                "_source": "independent/bruss_scipy.jsonl",
+                "atol": 1e-15,
+                "family": "scipy-dop853-capped",
+                "grid_points": 101,
+                "max_step": 0.0025,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 48305,
+                "ok": true,
+                "problem": "brusselator-1d-n100",
+                "rtol": 1e-13,
+                "wall_s": 0.5051302579813637
+              },
+              {
+                "_row": 3,
+                "_sha256": "3916bb7c16cf86a4e11baa681e23a9f9ac7d234445a87e2b26346cc6750ad35a",
+                "_source": "independent/bruss_scipy.jsonl",
+                "atol": 2.9999999999999994e-16,
+                "family": "scipy-dop853-capped",
+                "grid_points": 101,
+                "max_step": 0.00125,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 96305,
+                "ok": true,
+                "problem": "brusselator-1d-n100",
+                "rtol": 3e-14,
+                "wall_s": 1.0753949859645218
+              }
+            ],
+            [
+              {
+                "_row": 1,
+                "_sha256": "6f9a81f80be654bfdb541c459b53ca4025e257b9d5025a15860658483ac42b37",
+                "_source": "independent/bruss_julia.jsonl",
+                "accepted": 2001,
+                "atol": 1e-14,
+                "family": "julia-vern9-capped",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "brusselator-1d-n100",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 1e-12,
+                "wall_s": 5.8865439891815186
+              },
+              {
+                "_row": 2,
+                "_sha256": "6f9a81f80be654bfdb541c459b53ca4025e257b9d5025a15860658483ac42b37",
+                "_source": "independent/bruss_julia.jsonl",
+                "accepted": 4000,
+                "atol": 1e-15,
+                "family": "julia-vern9-capped",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "brusselator-1d-n100",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 1e-13,
+                "wall_s": 0.014163017272949219
+              },
+              {
+                "_row": 3,
+                "_sha256": "6f9a81f80be654bfdb541c459b53ca4025e257b9d5025a15860658483ac42b37",
+                "_source": "independent/bruss_julia.jsonl",
+                "accepted": 8000,
+                "atol": 2.9999999999999994e-16,
+                "family": "julia-vern9-capped",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "brusselator-1d-n100",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 3e-14,
+                "wall_s": 0.031122922897338867
+              }
+            ]
+          ],
+          "status": "PASS_EMPIRICAL",
+          "successive": [
+            [
+              [
+                1.574079749042943e-15,
+                1.574079749042942e-15
+              ],
+              [
+                4.802921936253491e-15,
+                4.8029219362534795e-15
+              ]
+            ],
+            [
+              [
+                2.749041438166094e-13,
+                2.7490414381665487e-13
+              ],
+              [
+                3.3985806689078664e-13,
+                3.3985806689071747e-13
+              ]
+            ]
+          ]
+        },
+        {
+          "cross": [
+            [
+              1.6499602381187466e-13,
+              1.649960238118487e-13
+            ],
+            [
+              1.934710442732836e-13,
+              1.934710442733054e-13
+            ],
+            [
+              1.611841053862798e-13,
+              1.6118410538626622e-13
+            ]
+          ],
+          "families": [
+            "scipy-radau-capped",
+            "julia-vern9-capped"
+          ],
+          "finest_discrepancy": 1.611841053862798e-13,
+          "level_counts": [
+            3,
+            3
+          ],
+          "max_discrepancy": 3.3985806689078664e-13,
+          "precision_metric": "binary64",
+          "protocol": "capped-orthogonal-radau",
+          "records": [
+            [
+              {
+                "_row": 4,
+                "_sha256": "3916bb7c16cf86a4e11baa681e23a9f9ac7d234445a87e2b26346cc6750ad35a",
+                "_source": "independent/bruss_scipy.jsonl",
+                "atol": 1e-14,
+                "family": "scipy-radau-capped",
+                "grid_points": 101,
+                "max_step": 0.005,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 30503,
+                "ok": true,
+                "problem": "brusselator-1d-n100",
+                "rtol": 1e-12,
+                "wall_s": 1.416187380964402
+              },
+              {
+                "_row": 5,
+                "_sha256": "3916bb7c16cf86a4e11baa681e23a9f9ac7d234445a87e2b26346cc6750ad35a",
+                "_source": "independent/bruss_scipy.jsonl",
+                "atol": 1e-15,
+                "family": "scipy-radau-capped",
+                "grid_points": 101,
+                "max_step": 0.0025,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 54288,
+                "ok": true,
+                "problem": "brusselator-1d-n100",
+                "rtol": 1e-13,
+                "wall_s": 3.2807702539721504
+              },
+              {
+                "_row": 6,
+                "_sha256": "3916bb7c16cf86a4e11baa681e23a9f9ac7d234445a87e2b26346cc6750ad35a",
+                "_source": "independent/bruss_scipy.jsonl",
+                "atol": 2.9999999999999994e-16,
+                "family": "scipy-radau-capped",
+                "grid_points": 101,
+                "max_step": 0.00125,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 81350,
+                "ok": true,
+                "problem": "brusselator-1d-n100",
+                "rtol": 3e-14,
+                "wall_s": 4.177608017984312
+              }
+            ],
+            [
+              {
+                "_row": 1,
+                "_sha256": "6f9a81f80be654bfdb541c459b53ca4025e257b9d5025a15860658483ac42b37",
+                "_source": "independent/bruss_julia.jsonl",
+                "accepted": 2001,
+                "atol": 1e-14,
+                "family": "julia-vern9-capped",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "brusselator-1d-n100",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 1e-12,
+                "wall_s": 5.8865439891815186
+              },
+              {
+                "_row": 2,
+                "_sha256": "6f9a81f80be654bfdb541c459b53ca4025e257b9d5025a15860658483ac42b37",
+                "_source": "independent/bruss_julia.jsonl",
+                "accepted": 4000,
+                "atol": 1e-15,
+                "family": "julia-vern9-capped",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "brusselator-1d-n100",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 1e-13,
+                "wall_s": 0.014163017272949219
+              },
+              {
+                "_row": 3,
+                "_sha256": "6f9a81f80be654bfdb541c459b53ca4025e257b9d5025a15860658483ac42b37",
+                "_source": "independent/bruss_julia.jsonl",
+                "accepted": 8000,
+                "atol": 2.9999999999999994e-16,
+                "family": "julia-vern9-capped",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "brusselator-1d-n100",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 3e-14,
+                "wall_s": 0.031122922897338867
+              }
+            ]
+          ],
+          "status": "PASS_EMPIRICAL",
+          "successive": [
+            [
+              [
+                1.1246702036046788e-13,
+                1.1246702036045074e-13
+              ],
+              [
+                1.0747772975730202e-14,
+                1.074777297573007e-14
+              ]
+            ],
+            [
+              [
+                2.749041438166094e-13,
+                2.7490414381665487e-13
+              ],
+              [
+                3.3985806689078664e-13,
+                3.3985806689071747e-13
+              ]
+            ]
+          ]
+        }
+      ],
+      "selected_family": "julia-vern9-capped",
+      "selected_max_discrepancy": 3.3985806689078664e-13,
+      "selected_protocol": "capped-v2"
+    },
+    {
+      "cohort": "spatial",
+      "finest_discrepancy": 9.577684270883734e-16,
+      "historical_disputed": false,
+      "historical_levels": [
+        {
+          "atol": 1e-12,
+          "cross_family_disagreement": 8.014814159225704e-11,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": null,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": true,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": null,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-10
+        },
+        {
+          "atol": 1e-13,
+          "cross_family_disagreement": 1.673078708718783e-11,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 9.978690542822834e-12,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": true,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 8.20143745029633e-11,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-11
+        },
+        {
+          "atol": 1e-14,
+          "cross_family_disagreement": 4.162203242405505e-12,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 1.294174037511086e-12,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": true,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 1.61919689318998e-11,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-12
+        }
+      ],
+      "historical_replay_equal": true,
+      "linear_action_exact_grid_diagnostic": [
+        6.682020599908712e-16,
+        6.682020599908712e-16
+      ],
+      "n": 86,
+      "new_status": "EMPIRICAL_QUALIFIED_NEW_PROTOCOL",
+      "old_reference_difference": [
+        4.172798121071062e-12,
+        4.1727981210640936e-12
+      ],
+      "problem": "sphere-photon-2d",
+      "protocols": [
+        {
+          "cross": [
+            [
+              2.6811110724488688e-14,
+              2.681111072448962e-14
+            ],
+            [
+              3.0168250487804647e-15,
+              3.0168250487804773e-15
+            ],
+            [
+              9.577684270883726e-16,
+              9.577684270883734e-16
+            ]
+          ],
+          "families": [
+            "scipy-dop853",
+            "julia-vern9"
+          ],
+          "finest_discrepancy": 9.577684270883734e-16,
+          "level_counts": [
+            3,
+            3
+          ],
+          "max_discrepancy": 2.782030302990765e-14,
+          "precision_metric": "binary64",
+          "protocol": "spatial-shared-rhs-v1",
+          "records": [
+            [
+              {
+                "_row": 4,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 1e-14,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 302,
+                "ok": true,
+                "problem": "sphere-photon-2d",
+                "rtol": 1e-12,
+                "wall_s": 0.0082001379923895
+              },
+              {
+                "_row": 5,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 1e-15,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 377,
+                "ok": true,
+                "problem": "sphere-photon-2d",
+                "rtol": 1e-13,
+                "wall_s": 0.010811461019329727
+              },
+              {
+                "_row": 6,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 2.9999999999999994e-16,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 437,
+                "ok": true,
+                "problem": "sphere-photon-2d",
+                "rtol": 3e-14,
+                "wall_s": 0.012505862046964467
+              }
+            ],
+            [
+              {
+                "_row": 4,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 24,
+                "atol": 1e-14,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "sphere-photon-2d",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 1e-12,
+                "wall_s": 0.0006878376007080078
+              },
+              {
+                "_row": 5,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 30,
+                "atol": 1e-15,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "sphere-photon-2d",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 1e-13,
+                "wall_s": 0.0006968975067138672
+              },
+              {
+                "_row": 6,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 35,
+                "atol": 2.9999999999999994e-16,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "sphere-photon-2d",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 3e-14,
+                "wall_s": 0.0007801055908203125
+              }
+            ]
+          ],
+          "status": "PASS_EMPIRICAL",
+          "successive": [
+            [
+              [
+                2.7820303029906645e-14,
+                2.782030302990765e-14
+              ],
+              [
+                3.4819776232028564e-15,
+                3.481977623202853e-15
+              ]
+            ],
+            [
+              [
+                1.0957349264806407e-15,
+                1.0957349264806413e-15
+              ],
+              [
+                1.2313562521711699e-15,
+                1.2313562521711697e-15
+              ]
+            ]
+          ]
+        }
+      ],
+      "selected_family": "julia-vern9",
+      "selected_max_discrepancy": 2.782030302990765e-14,
+      "selected_protocol": "spatial-shared-rhs-v1"
+    },
+    {
+      "cohort": "spatial",
+      "finest_discrepancy": 2.927310191522873e-14,
+      "historical_disputed": true,
+      "historical_levels": [
+        {
+          "atol": 1e-12,
+          "cross_family_disagreement": 1.0686073660029991e-09,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": null,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": null,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-10
+        },
+        {
+          "atol": 1e-13,
+          "cross_family_disagreement": 1.3652380132874877e-10,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 5.135993580395073e-10,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 6.052344643538457e-10,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-11
+        },
+        {
+          "atol": 1e-14,
+          "cross_family_disagreement": 3.472196846059341e-11,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 1.4274547209050633e-11,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 1.3255692969168596e-10,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-12
+        }
+      ],
+      "historical_replay_equal": true,
+      "n": 96,
+      "new_status": "EMPIRICAL_QUALIFIED_NEW_PROTOCOL",
+      "old_reference_difference": [
+        2.8162035230076024e-11,
+        2.816203523098014e-11
+      ],
+      "problem": "semilinear-advection-diffusion-2d",
+      "protocols": [
+        {
+          "cross": [
+            [
+              5.153851646793582e-13,
+              5.153851646794713e-13
+            ],
+            [
+              7.048884901017259e-14,
+              7.048884901018279e-14
+            ],
+            [
+              2.927310191522701e-14,
+              2.927310191522873e-14
+            ]
+          ],
+          "families": [
+            "scipy-dop853",
+            "julia-vern9"
+          ],
+          "finest_discrepancy": 2.927310191522873e-14,
+          "level_counts": [
+            3,
+            3
+          ],
+          "max_discrepancy": 5.232369726347179e-13,
+          "precision_metric": "binary64",
+          "protocol": "spatial-shared-rhs-v1",
+          "records": [
+            [
+              {
+                "_row": 8,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 1e-14,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 602,
+                "ok": true,
+                "problem": "semilinear-advection-diffusion-2d",
+                "rtol": 1e-12,
+                "wall_s": 0.015608270012307912
+              },
+              {
+                "_row": 9,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 1e-15,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 797,
+                "ok": true,
+                "problem": "semilinear-advection-diffusion-2d",
+                "rtol": 1e-13,
+                "wall_s": 0.020444191992282867
+              },
+              {
+                "_row": 10,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 2.9999999999999994e-16,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 917,
+                "ok": true,
+                "problem": "semilinear-advection-diffusion-2d",
+                "rtol": 3e-14,
+                "wall_s": 0.023348603979684412
+              }
+            ],
+            [
+              {
+                "_row": 7,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 41,
+                "atol": 1e-14,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "semilinear-advection-diffusion-2d",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 1e-12,
+                "wall_s": 0.00047898292541503906
+              },
+              {
+                "_row": 8,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 53,
+                "atol": 1e-15,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "semilinear-advection-diffusion-2d",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 1e-13,
+                "wall_s": 0.0005280971527099609
+              },
+              {
+                "_row": 9,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 60,
+                "atol": 2.9999999999999994e-16,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "semilinear-advection-diffusion-2d",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 3e-14,
+                "wall_s": 0.0005590915679931641
+              }
+            ]
+          ],
+          "status": "PASS_EMPIRICAL",
+          "successive": [
+            [
+              [
+                5.232369726346427e-13,
+                5.232369726347179e-13
+              ],
+              [
+                7.921027158073668e-14,
+                7.92102715807424e-14
+              ]
+            ],
+            [
+              [
+                2.065797297815358e-14,
+                2.065797297815282e-14
+              ],
+              [
+                1.9579369514845766e-14,
+                1.9579369514845365e-14
+              ]
+            ]
+          ]
+        }
+      ],
+      "selected_family": "julia-vern9",
+      "selected_max_discrepancy": 5.232369726347179e-13,
+      "selected_protocol": "spatial-shared-rhs-v1"
+    },
+    {
+      "cohort": "spatial",
+      "finest_discrepancy": 1.0684380269989896e-14,
+      "historical_disputed": true,
+      "historical_levels": [
+        {
+          "atol": 1e-12,
+          "cross_family_disagreement": 5.257992959416857e-10,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": null,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": null,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-10
+        },
+        {
+          "atol": 1e-13,
+          "cross_family_disagreement": 1.2174768655503523e-10,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 1.4278964312516004e-10,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 4.705649713963412e-10,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-11
+        },
+        {
+          "atol": 1e-14,
+          "cross_family_disagreement": 2.924410730392881e-11,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 1.4008086573948225e-11,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 1.1762775585750437e-10,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-12
+        }
+      ],
+      "historical_replay_equal": true,
+      "n": 216,
+      "new_status": "EMPIRICAL_QUALIFIED_NEW_PROTOCOL",
+      "old_reference_difference": [
+        2.920283502419148e-11,
+        2.920283502198529e-11
+      ],
+      "problem": "semilinear-advection-diffusion-3d",
+      "protocols": [
+        {
+          "cross": [
+            [
+              4.172201273966669e-13,
+              4.172201273976217e-13
+            ],
+            [
+              4.207421804144666e-14,
+              4.2074218041457085e-14
+            ],
+            [
+              1.0684380269989444e-14,
+              1.0684380269989896e-14
+            ]
+          ],
+          "families": [
+            "scipy-dop853",
+            "julia-vern9"
+          ],
+          "finest_discrepancy": 1.0684380269989896e-14,
+          "level_counts": [
+            3,
+            3
+          ],
+          "max_discrepancy": 4.1755534836103596e-13,
+          "precision_metric": "binary64",
+          "protocol": "spatial-shared-rhs-v1",
+          "records": [
+            [
+              {
+                "_row": 11,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 1e-14,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 272,
+                "ok": true,
+                "problem": "semilinear-advection-diffusion-3d",
+                "rtol": 1e-12,
+                "wall_s": 0.008055092010181397
+              },
+              {
+                "_row": 12,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 1e-15,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 362,
+                "ok": true,
+                "problem": "semilinear-advection-diffusion-3d",
+                "rtol": 1e-13,
+                "wall_s": 0.0106557949911803
+              },
+              {
+                "_row": 13,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 2.9999999999999994e-16,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 407,
+                "ok": true,
+                "problem": "semilinear-advection-diffusion-3d",
+                "rtol": 3e-14,
+                "wall_s": 0.012104589026421309
+              }
+            ],
+            [
+              {
+                "_row": 10,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 22,
+                "atol": 1e-14,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "semilinear-advection-diffusion-3d",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 1e-12,
+                "wall_s": 0.0006809234619140625
+              },
+              {
+                "_row": 11,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 27,
+                "atol": 1e-15,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "semilinear-advection-diffusion-3d",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 1e-13,
+                "wall_s": 0.0007669925689697266
+              },
+              {
+                "_row": 12,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 30,
+                "atol": 2.9999999999999994e-16,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "semilinear-advection-diffusion-3d",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 3e-14,
+                "wall_s": 0.0009310245513916016
+              }
+            ]
+          ],
+          "status": "PASS_EMPIRICAL",
+          "successive": [
+            [
+              [
+                4.175553483600811e-13,
+                4.1755534836103596e-13
+              ],
+              [
+                4.250889570421579e-14,
+                4.2508895704226275e-14
+              ]
+            ],
+            [
+              [
+                1.1967403927987001e-14,
+                1.1967403927987012e-14
+              ],
+              [
+                6.727058148656342e-15,
+                6.727058148656385e-15
+              ]
+            ]
+          ]
+        }
+      ],
+      "selected_family": "julia-vern9",
+      "selected_max_discrepancy": 4.1755534836103596e-13,
+      "selected_protocol": "spatial-shared-rhs-v1"
+    },
+    {
+      "cohort": "spatial",
+      "finest_discrepancy": 5.934027401499078e-16,
+      "historical_disputed": false,
+      "historical_levels": [
+        {
+          "atol": 1e-12,
+          "cross_family_disagreement": 4.516826888573526e-11,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": null,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": true,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": null,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-10
+        },
+        {
+          "atol": 1e-13,
+          "cross_family_disagreement": 1.1585993484096853e-11,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 7.331045150256975e-12,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": true,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 5.281416429498505e-11,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-11
+        },
+        {
+          "atol": 1e-14,
+          "cross_family_disagreement": 2.1034914038559876e-12,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 1.493229431539152e-12,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": true,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 1.2160869016711338e-11,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-12
+        }
+      ],
+      "historical_replay_equal": true,
+      "linear_action_exact_grid_diagnostic": [
+        5.649059002235734e-16,
+        5.649059002235753e-16
+      ],
+      "n": 302,
+      "new_status": "EMPIRICAL_QUALIFIED_NEW_PROTOCOL",
+      "old_reference_difference": [
+        2.114413470327397e-12,
+        2.1144134703267757e-12
+      ],
+      "problem": "sphere-photon-3d",
+      "protocols": [
+        {
+          "cross": [
+            [
+              1.6556875707151436e-14,
+              1.6556875707151395e-14
+            ],
+            [
+              1.9537843759478215e-15,
+              1.9537843759478215e-15
+            ],
+            [
+              5.934027401499078e-16,
+              5.934027401499078e-16
+            ]
+          ],
+          "families": [
+            "scipy-dop853",
+            "julia-vern9"
+          ],
+          "finest_discrepancy": 5.934027401499078e-16,
+          "level_counts": [
+            3,
+            3
+          ],
+          "max_discrepancy": 1.7249492259062656e-14,
+          "precision_metric": "binary64",
+          "protocol": "spatial-shared-rhs-v1",
+          "records": [
+            [
+              {
+                "_row": 14,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 1e-14,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 272,
+                "ok": true,
+                "problem": "sphere-photon-3d",
+                "rtol": 1e-12,
+                "wall_s": 0.009780452004633844
+              },
+              {
+                "_row": 15,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 1e-15,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 347,
+                "ok": true,
+                "problem": "sphere-photon-3d",
+                "rtol": 1e-13,
+                "wall_s": 0.012118596001528203
+              },
+              {
+                "_row": 16,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 2.9999999999999994e-16,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 392,
+                "ok": true,
+                "problem": "sphere-photon-3d",
+                "rtol": 3e-14,
+                "wall_s": 0.013671829015947878
+              }
+            ],
+            [
+              {
+                "_row": 13,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 22,
+                "atol": 1e-14,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "sphere-photon-3d",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 1e-12,
+                "wall_s": 0.0021820068359375
+              },
+              {
+                "_row": 14,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 28,
+                "atol": 1e-15,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "sphere-photon-3d",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 1e-13,
+                "wall_s": 0.0034248828887939453
+              },
+              {
+                "_row": 15,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 32,
+                "atol": 2.9999999999999994e-16,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "sphere-photon-3d",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 3e-14,
+                "wall_s": 0.002541065216064453
+              }
+            ]
+          ],
+          "status": "PASS_EMPIRICAL",
+          "successive": [
+            [
+              [
+                1.7249492259062656e-14,
+                1.724949225906258e-14
+              ],
+              [
+                2.094836614566442e-15,
+                2.0948366145664402e-15
+              ]
+            ],
+            [
+              [
+                7.815891909987173e-16,
+                7.815891909987214e-16
+              ],
+              [
+                5.587055926095798e-16,
+                5.587055926095782e-16
+              ]
+            ]
+          ]
+        }
+      ],
+      "selected_family": "julia-vern9",
+      "selected_max_discrepancy": 1.7249492259062656e-14,
+      "selected_protocol": "spatial-shared-rhs-v1"
+    },
+    {
+      "cohort": "spatial",
+      "finest_discrepancy": 6.579033280714173e-15,
+      "historical_disputed": true,
+      "historical_levels": [
+        {
+          "atol": 1e-12,
+          "cross_family_disagreement": 3.349422536873998e-10,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": null,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": null,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-10
+        },
+        {
+          "atol": 1e-13,
+          "cross_family_disagreement": 8.191184942058268e-11,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 2.391014784432052e-11,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 3.5307300718747323e-10,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-11
+        },
+        {
+          "atol": 1e-14,
+          "cross_family_disagreement": 1.6800222843344344e-11,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 4.321401521844766e-12,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": true,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 9.072394171465747e-11,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-12
+        }
+      ],
+      "historical_replay_equal": true,
+      "linear_action_exact_grid_diagnostic": [
+        6.501790840715817e-15,
+        6.5017908407158204e-15
+      ],
+      "n": 64,
+      "new_status": "EMPIRICAL_QUALIFIED_NEW_PROTOCOL",
+      "old_reference_difference": [
+        1.7288426324265387e-11,
+        1.7288426324110937e-11
+      ],
+      "problem": "spherical-diffusion-2d",
+      "protocols": [
+        {
+          "cross": [
+            [
+              8.08952934977936e-14,
+              8.089529349779094e-14
+            ],
+            [
+              9.576198844954827e-15,
+              9.576198844954807e-15
+            ],
+            [
+              6.579033280714168e-15,
+              6.579033280714173e-15
+            ]
+          ],
+          "families": [
+            "scipy-dop853",
+            "julia-vern9"
+          ],
+          "finest_discrepancy": 6.579033280714173e-15,
+          "level_counts": [
+            3,
+            3
+          ],
+          "max_discrepancy": 8.127687121725375e-14,
+          "precision_metric": "binary64",
+          "protocol": "spatial-shared-rhs-v1",
+          "records": [
+            [
+              {
+                "_row": 18,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 1e-14,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 227,
+                "ok": true,
+                "problem": "spherical-diffusion-2d",
+                "rtol": 1e-12,
+                "wall_s": 0.006631876982282847
+              },
+              {
+                "_row": 19,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 1e-15,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 302,
+                "ok": true,
+                "problem": "spherical-diffusion-2d",
+                "rtol": 1e-13,
+                "wall_s": 0.008249622012954205
+              },
+              {
+                "_row": 20,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 2.9999999999999994e-16,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 347,
+                "ok": true,
+                "problem": "spherical-diffusion-2d",
+                "rtol": 3e-14,
+                "wall_s": 0.009181343019008636
+              }
+            ],
+            [
+              {
+                "_row": 16,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 17,
+                "atol": 1e-14,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "spherical-diffusion-2d",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 1e-12,
+                "wall_s": 0.0004010200500488281
+              },
+              {
+                "_row": 17,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 22,
+                "atol": 1e-15,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "spherical-diffusion-2d",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 1e-13,
+                "wall_s": 0.00043201446533203125
+              },
+              {
+                "_row": 18,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 25,
+                "atol": 2.9999999999999994e-16,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "spherical-diffusion-2d",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 3e-14,
+                "wall_s": 0.00047588348388671875
+              }
+            ]
+          ],
+          "status": "PASS_EMPIRICAL",
+          "successive": [
+            [
+              [
+                8.127687121725375e-14,
+                8.127687121725126e-14
+              ],
+              [
+                1.0942686969660436e-14,
+                1.0942686969660387e-14
+              ]
+            ],
+            [
+              [
+                8.568617538582928e-15,
+                8.568617538583027e-15
+              ],
+              [
+                6.447438808631622e-15,
+                6.447438808631619e-15
+              ]
+            ]
+          ]
+        }
+      ],
+      "selected_family": "julia-vern9",
+      "selected_max_discrepancy": 8.127687121725375e-14,
+      "selected_protocol": "spatial-shared-rhs-v1"
+    },
+    {
+      "cohort": "spatial",
+      "finest_discrepancy": 2.2422061246178042e-14,
+      "historical_disputed": true,
+      "historical_levels": [
+        {
+          "atol": 1e-12,
+          "cross_family_disagreement": 1.3704674718030505e-09,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": null,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": null,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-10
+        },
+        {
+          "atol": 1e-13,
+          "cross_family_disagreement": 2.6253969372573146e-10,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 4.2500793136170617e-10,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 1.521281246691026e-09,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-11
+        },
+        {
+          "atol": 1e-14,
+          "cross_family_disagreement": 5.828665949565616e-11,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 2.1344942666420856e-11,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 2.947674519769664e-10,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-12
+        }
+      ],
+      "historical_replay_equal": true,
+      "n": 64,
+      "new_status": "EMPIRICAL_QUALIFIED_NEW_PROTOCOL",
+      "old_reference_difference": [
+        5.897437105776587e-11,
+        5.897437106371187e-11
+      ],
+      "problem": "allen-cahn-2d",
+      "protocols": [
+        {
+          "cross": [
+            [
+              6.897558920753868e-13,
+              6.897558920762366e-13
+            ],
+            [
+              7.134398590525167e-14,
+              7.134398590525767e-14
+            ],
+            [
+              2.2422061246177414e-14,
+              2.2422061246178042e-14
+            ]
+          ],
+          "families": [
+            "scipy-dop853",
+            "julia-vern9"
+          ],
+          "finest_discrepancy": 2.2422061246178042e-14,
+          "level_counts": [
+            3,
+            3
+          ],
+          "max_discrepancy": 6.910688251266839e-13,
+          "precision_metric": "binary64",
+          "protocol": "spatial-shared-rhs-v1",
+          "records": [
+            [
+              {
+                "_row": 22,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 1e-14,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 122,
+                "ok": true,
+                "problem": "allen-cahn-2d",
+                "rtol": 1e-12,
+                "wall_s": 0.0034837520215660334
+              },
+              {
+                "_row": 23,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 1e-15,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 152,
+                "ok": true,
+                "problem": "allen-cahn-2d",
+                "rtol": 1e-13,
+                "wall_s": 0.0040257120272144675
+              },
+              {
+                "_row": 24,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 2.9999999999999994e-16,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 182,
+                "ok": true,
+                "problem": "allen-cahn-2d",
+                "rtol": 3e-14,
+                "wall_s": 0.004894134006462991
+              }
+            ],
+            [
+              {
+                "_row": 19,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 10,
+                "atol": 1e-14,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "allen-cahn-2d",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 1e-12,
+                "wall_s": 0.00012087821960449219
+              },
+              {
+                "_row": 20,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 14,
+                "atol": 1e-15,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "allen-cahn-2d",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 1e-13,
+                "wall_s": 0.00013709068298339844
+              },
+              {
+                "_row": 21,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 16,
+                "atol": 2.9999999999999994e-16,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "allen-cahn-2d",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 3e-14,
+                "wall_s": 0.00013899803161621094
+              }
+            ]
+          ],
+          "status": "PASS_EMPIRICAL",
+          "successive": [
+            [
+              [
+                6.910688251258302e-13,
+                6.910688251266839e-13
+              ],
+              [
+                7.305694327382451e-14,
+                7.305694327383067e-14
+              ]
+            ],
+            [
+              [
+                9.169069710339406e-15,
+                9.169069710339608e-15
+              ],
+              [
+                6.639204007343827e-15,
+                6.639204007343942e-15
+              ]
+            ]
+          ]
+        }
+      ],
+      "selected_family": "julia-vern9",
+      "selected_max_discrepancy": 6.910688251266839e-13,
+      "selected_protocol": "spatial-shared-rhs-v1"
+    },
+    {
+      "cohort": "spatial",
+      "finest_discrepancy": 7.846690769309627e-14,
+      "historical_disputed": true,
+      "historical_levels": [
+        {
+          "atol": 1e-12,
+          "cross_family_disagreement": 8.665078996221643e-10,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": null,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": null,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-10
+        },
+        {
+          "atol": 1e-13,
+          "cross_family_disagreement": 1.9028525688297764e-10,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 2.495292609808975e-10,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 9.931246744844653e-10,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-11
+        },
+        {
+          "atol": 1e-14,
+          "cross_family_disagreement": 3.22225564449585e-11,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 3.205424043079633e-11,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 1.789878336418622e-10,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-12
+        }
+      ],
+      "historical_replay_equal": true,
+      "n": 128,
+      "new_status": "EMPIRICAL_QUALIFIED_NEW_PROTOCOL",
+      "old_reference_difference": [
+        3.2165943639071186e-11,
+        3.2165943642827413e-11
+      ],
+      "problem": "gray-scott-2d",
+      "protocols": [
+        {
+          "cross": [
+            [
+              1.1344042283927367e-12,
+              1.1344042283901213e-12
+            ],
+            [
+              2.7862030242287977e-13,
+              2.7862030242273103e-13
+            ],
+            [
+              7.846690769309627e-14,
+              7.846690769308521e-14
+            ]
+          ],
+          "families": [
+            "scipy-dop853",
+            "julia-vern9"
+          ],
+          "finest_discrepancy": 7.846690769309627e-14,
+          "level_counts": [
+            3,
+            3
+          ],
+          "max_discrepancy": 1.1344042283927367e-12,
+          "precision_metric": "binary64",
+          "protocol": "spatial-shared-rhs-v1",
+          "records": [
+            [
+              {
+                "_row": 25,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 1e-14,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 146,
+                "ok": true,
+                "problem": "gray-scott-2d",
+                "rtol": 1e-12,
+                "wall_s": 0.0036638039746321738
+              },
+              {
+                "_row": 26,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 1e-15,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 149,
+                "ok": true,
+                "problem": "gray-scott-2d",
+                "rtol": 1e-13,
+                "wall_s": 0.004608931019902229
+              },
+              {
+                "_row": 27,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 2.9999999999999994e-16,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 176,
+                "ok": true,
+                "problem": "gray-scott-2d",
+                "rtol": 3e-14,
+                "wall_s": 0.005123248032759875
+              }
+            ],
+            [
+              {
+                "_row": 22,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 12,
+                "atol": 1e-14,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "gray-scott-2d",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 1e-12,
+                "wall_s": 0.00035309791564941406
+              },
+              {
+                "_row": 23,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 16,
+                "atol": 1e-15,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "gray-scott-2d",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 1e-13,
+                "wall_s": 0.00039005279541015625
+              },
+              {
+                "_row": 24,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 20,
+                "atol": 2.9999999999999994e-16,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "gray-scott-2d",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 3e-14,
+                "wall_s": 0.00046896934509277344
+              }
+            ]
+          ],
+          "status": "PASS_EMPIRICAL",
+          "successive": [
+            [
+              [
+                1.1273810674392057e-12,
+                1.127381067436617e-12
+              ],
+              [
+                2.7074612841017634e-13,
+                2.7074612841003573e-13
+              ]
+            ],
+            [
+              [
+                4.801564353460608e-15,
+                4.801564353460522e-15
+              ],
+              [
+                6.42180575781641e-15,
+                6.4218057578165364e-15
+              ]
+            ]
+          ]
+        }
+      ],
+      "selected_family": "julia-vern9",
+      "selected_max_discrepancy": 1.1344042283927367e-12,
+      "selected_protocol": "spatial-shared-rhs-v1"
+    },
+    {
+      "cohort": "spatial",
+      "finest_discrepancy": 8.175245005373792e-14,
+      "historical_disputed": true,
+      "historical_levels": [
+        {
+          "atol": 1e-12,
+          "cross_family_disagreement": 5.349404046094956e-10,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": null,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": null,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-10
+        },
+        {
+          "atol": 1e-13,
+          "cross_family_disagreement": 1.0642224944269544e-10,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 9.496900124537555e-11,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 6.283998859248923e-10,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-11
+        },
+        {
+          "atol": 1e-14,
+          "cross_family_disagreement": 8.628145288496127e-11,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 2.0550209191417352e-11,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 1.7309247430912816e-10,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-12
+        }
+      ],
+      "historical_replay_equal": true,
+      "n": 72,
+      "new_status": "EMPIRICAL_QUALIFIED_NEW_PROTOCOL",
+      "old_reference_difference": [
+        8.629936436405791e-11,
+        8.629936433301561e-11
+      ],
+      "problem": "burgers-2d",
+      "protocols": [
+        {
+          "cross": [
+            [
+              5.55881248684983e-13,
+              5.558812486847244e-13
+            ],
+            [
+              1.2433152308953894e-12,
+              1.2433152308889054e-12
+            ],
+            [
+              8.175245005373792e-14,
+              8.175245005371112e-14
+            ]
+          ],
+          "families": [
+            "scipy-dop853",
+            "julia-vern9"
+          ],
+          "finest_discrepancy": 8.175245005373792e-14,
+          "level_counts": [
+            3,
+            3
+          ],
+          "max_discrepancy": 1.5352235586591175e-12,
+          "precision_metric": "binary64",
+          "protocol": "spatial-shared-rhs-v1",
+          "records": [
+            [
+              {
+                "_row": 28,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 1e-14,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 1817,
+                "ok": true,
+                "problem": "burgers-2d",
+                "rtol": 1e-12,
+                "wall_s": 0.03837933501927182
+              },
+              {
+                "_row": 29,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 1e-15,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 1961,
+                "ok": true,
+                "problem": "burgers-2d",
+                "rtol": 1e-13,
+                "wall_s": 0.041762525972444564
+              },
+              {
+                "_row": 30,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 2.9999999999999994e-16,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 2402,
+                "ok": true,
+                "problem": "burgers-2d",
+                "rtol": 3e-14,
+                "wall_s": 0.05025547003606334
+              }
+            ],
+            [
+              {
+                "_row": 25,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 120,
+                "atol": 1e-14,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "burgers-2d",
+                "rejected": 85,
+                "retcode": "Success",
+                "rtol": 1e-12,
+                "wall_s": 0.001786947250366211
+              },
+              {
+                "_row": 26,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 165,
+                "atol": 1e-15,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "burgers-2d",
+                "rejected": 69,
+                "retcode": "Success",
+                "rtol": 1e-13,
+                "wall_s": 0.0019791126251220703
+              },
+              {
+                "_row": 27,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 213,
+                "atol": 2.9999999999999994e-16,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "burgers-2d",
+                "rejected": 74,
+                "retcode": "Success",
+                "rtol": 3e-14,
+                "wall_s": 0.0023250579833984375
+              }
+            ]
+          ],
+          "status": "PASS_EMPIRICAL",
+          "successive": [
+            [
+              [
+                6.057110691512401e-13,
+                6.057110691508735e-13
+              ],
+              [
+                6.439695811385102e-14,
+                6.439695811385407e-14
+              ]
+            ],
+            [
+              [
+                1.5352235586591175e-12,
+                1.535223558649232e-12
+              ],
+              [
+                1.2330037601997222e-12,
+                1.2330037602060992e-12
+              ]
+            ]
+          ]
+        }
+      ],
+      "selected_family": "julia-vern9",
+      "selected_max_discrepancy": 1.5352235586591175e-12,
+      "selected_protocol": "spatial-shared-rhs-v1"
+    },
+    {
+      "cohort": "spatial",
+      "finest_discrepancy": 3.908267395139825e-14,
+      "historical_disputed": true,
+      "historical_levels": [
+        {
+          "atol": 1e-12,
+          "cross_family_disagreement": 2.417083519668217e-09,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": null,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": null,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-10
+        },
+        {
+          "atol": 1e-13,
+          "cross_family_disagreement": 3.602671850585332e-10,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 1.5719952563459341e-09,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 9.111838026162868e-10,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-11
+        },
+        {
+          "atol": 1e-14,
+          "cross_family_disagreement": 7.998645800830794e-11,
+          "cvode_grid_points": 101,
+          "cvode_previous_level_disagreement": 2.257668489666977e-10,
+          "cvode_status": {
+            "kind": "success"
+          },
+          "pass": false,
+          "radau5_grid_points": 101,
+          "radau5_previous_level_disagreement": 2.333105122963933e-10,
+          "radau5_status": {
+            "kind": "success"
+          },
+          "rtol": 1e-12
+        }
+      ],
+      "historical_replay_equal": true,
+      "n": 72,
+      "new_status": "EMPIRICAL_QUALIFIED_NEW_PROTOCOL",
+      "old_reference_difference": [
+        3.273946236896048e-11,
+        3.273946236604512e-11
+      ],
+      "problem": "sine-gordon-2d",
+      "protocols": [
+        {
+          "cross": [
+            [
+              1.3705413065918977e-12,
+              1.3705413065949132e-12
+            ],
+            [
+              1.6721296652129411e-13,
+              1.6721296652130126e-13
+            ],
+            [
+              3.908267395139825e-14,
+              3.9082673951397024e-14
+            ]
+          ],
+          "families": [
+            "scipy-dop853",
+            "julia-vern9"
+          ],
+          "finest_discrepancy": 3.908267395139825e-14,
+          "level_counts": [
+            3,
+            3
+          ],
+          "max_discrepancy": 1.3705413065949132e-12,
+          "precision_metric": "binary64",
+          "protocol": "spatial-shared-rhs-v1",
+          "records": [
+            [
+              {
+                "_row": 31,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 1e-14,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 281,
+                "ok": true,
+                "problem": "sine-gordon-2d",
+                "rtol": 1e-12,
+                "wall_s": 0.007185588998254389
+              },
+              {
+                "_row": 32,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 1e-15,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 359,
+                "ok": true,
+                "problem": "sine-gordon-2d",
+                "rtol": 1e-13,
+                "wall_s": 0.00942034600302577
+              },
+              {
+                "_row": 33,
+                "_sha256": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+                "_source": "independent/scipy.jsonl",
+                "atol": 2.9999999999999994e-16,
+                "family": "scipy-dop853",
+                "grid_points": 101,
+                "message": "The solver successfully reached the end of the integration interval.",
+                "nfev": 404,
+                "ok": true,
+                "problem": "sine-gordon-2d",
+                "rtol": 3e-14,
+                "wall_s": 0.010463188984431326
+              }
+            ],
+            [
+              {
+                "_row": 28,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 27,
+                "atol": 1e-14,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "sine-gordon-2d",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 1e-12,
+                "wall_s": 0.0005891323089599609
+              },
+              {
+                "_row": 29,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 36,
+                "atol": 1e-15,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "sine-gordon-2d",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 1e-13,
+                "wall_s": 0.0007081031799316406
+              },
+              {
+                "_row": 30,
+                "_sha256": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+                "_source": "independent/julia_spatial.jsonl",
+                "accepted": 46,
+                "atol": 2.9999999999999994e-16,
+                "family": "julia-vern9",
+                "grid_points": 101,
+                "ok": true,
+                "problem": "sine-gordon-2d",
+                "rejected": 0,
+                "retcode": "Success",
+                "rtol": 3e-14,
+                "wall_s": 0.00086212158203125
+              }
+            ]
+          ],
+          "status": "PASS_EMPIRICAL",
+          "successive": [
+            [
+              [
+                1.2246330506900659e-12,
+                1.2246330506924551e-12
+              ],
+              [
+                1.8640622884518972e-13,
+                1.8640622884519836e-13
+              ]
+            ],
+            [
+              [
+                4.942393810578682e-14,
+                4.942393810578486e-14
+              ],
+              [
+                6.250448602419777e-14,
+                6.250448602419552e-14
+              ]
+            ]
+          ]
+        }
+      ],
+      "selected_family": "julia-vern9",
+      "selected_max_discrepancy": 1.3705413065949132e-12,
+      "selected_protocol": "spatial-shared-rhs-v1"
+    }
+  ],
+  "historical_disputed": 12,
+  "historical_expanded_fresh_rows": 2076,
+  "historical_original_rows": 1032,
+  "new_qualified": 14,
+  "new_unresolved": 0,
+  "original_replay_exact": 14,
+  "qualification": "empirical finite-grid only; old disputes not modified; no matched-error reclassification",
+  "raw_execution_rows": 122,
+  "raw_ok_flags": 110,
+  "schema": "vigilode.m0-adjudication.v1",
+  "source_sha256": {
+    "independent/bruss_julia.jsonl": "6f9a81f80be654bfdb541c459b53ca4025e257b9d5025a15860658483ac42b37",
+    "independent/bruss_scipy.jsonl": "3916bb7c16cf86a4e11baa681e23a9f9ac7d234445a87e2b26346cc6750ad35a",
+    "independent/canonical_extra.jsonl": "cf019c69d12f8bf1de5de3a0b518f32050cf84d36508ad8b41d846f493b58702",
+    "independent/hires.wl.1.json": "027254b476dd168b4ac0c8e194b8d266a77c15467850f14b7d0fef9bfacdc580",
+    "independent/hires.wl.2.json": "760062abb4594d0a6dd0082bfdccf2487877ce24824eb3334bd6d394beaf1bb6",
+    "independent/hires.wl.3.json": "8c75e19cc10754764414d563d66a94b73da2794933f4300669618b4fb4fd9dbf",
+    "independent/julia_big.jsonl": "5b55b23f92ff666c71258df1fda53a263e939da865b7d3dc2357e186e8bff2da",
+    "independent/julia_big_scalar_atol.jsonl": "dc6d39af087586baf4e04f3c63e1b1601b15b2877122bcf2122bae57402aa3c1",
+    "independent/julia_spatial.jsonl": "763b35bc15ffe114ec23e8473d1ffb432b34d59adc03c42386142c9a597e6649",
+    "independent/oregonator_hp.jsonl": "523f03d30591bcd1427fe483faeb3c2afcc46b7b2bc76d4dcd50d2c800f3c983",
+    "independent/robertson.wl.1.json": "39450389e4b43e82c1442237488a65dbf63296b2e0fd3c1e04e7ccc159b23234",
+    "independent/robertson.wl.2.json": "a6ea124e39e670ad98699e1e788338c0a7823b2d0f3394950b16f48062d4cf49",
+    "independent/robertson.wl.3.json": "1be83c1d70260a1a4edf181359d21091d1ca70ed286aabff427556ed9176dc60",
+    "independent/scipy.jsonl": "9bcc03a3568d01781a477b9df96e3f7370d698a926b30835f3db0b1901c2d3c6",
+    "independent/van-der-pol-mu1000.wl.1.json": "fa6b00d3c8008d219b64b4e91fa6c52948863bd893fb4fab334fefaf2d4a8567",
+    "independent/van-der-pol-mu1000.wl.2.json": "6b8b56fd021ae45510de0a6291f8dd81a6135f035a2c3a561f3089516586c757"
+  },
+  "threshold": 1e-10
+}
