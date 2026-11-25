@@ -116,3 +116,28 @@ V08 IDENTITY CELLS: total_groups < n everywhere, so the rule keeps MultiColourin
 EXISTING TESTS THAT PIN THE DEFAULT ON A PATTERN WITH total_groups >= n (first search, to be completed)
 - tests/stage_clients_assembly_default.rs:153 AssemblyOptions::coloured(ring_pattern(16)) asserted MultiColouring
   at :155; ring_pattern(16) has total_groups 16 = n (list above), so the rule picks All there.
+
+== 2026-11-25 09:50, entry 3 (program, commit A recorded; nothing of the client edited) ==
+
+COMMITS SO FAR
+- 97be3d66 (09:34) entry 1, bb09dfb4 (09:42) entry 2.
+- 1952c87c (09:47) the recording program tests/stage_clients_assembly_wide_band_record.rs (ignored test v31_record;
+  modes survey and wide), run.sh, checker_all.py (a copy of the V29 wrapper with the V31 tag). Before the commit
+  the program was built and smoke-run twice into the scratchpad (not evidence); the supplement was widened after
+  the first smoke run (16 omissions per random pattern instead of 6, and the family ring: every single-entry
+  omission of the six ring patterns with total_groups == n) because in the first smoke run most wrong random
+  declarations were caught by the build itself (UncoveredRowChanged) before any check.
+- logs/*_A_*.log (this commit): binaries built at 1952c87c with 0 tracked changes, client sources sha256
+  1bd9a99b.. (the code of d4e2772f); V29 program unchanged (source sha256 43f68080.., the V29 value).
+  identity_A_<cell> (5 cells, both band back ends of nlkpp-band-n4096-r24), corpus_A_<group> (controls seq,t3,t6;
+  the six other groups seq,t6), survey_A, wide_A_random (families random, band, ring, narrow; seq,t6).
+
+THE LIST WITH TODAY'S CODE (the A recording, CheckColourings::of of every declared pattern)
+- V26 corpus: the same 6 cases as entry 2 (correct/ring-n{12,13,14,15,16,32}-true, total_groups == n); every
+  coloured case of the corpus carries its colourings record in A (none missing).
+- V08 cells: total_groups 18 / 59 / 150 < n; dense cells without pattern; the default of every arm in A:
+  MultiColouring (coloured) and Sample(8) (dense).
+- Supplement (wide_A): 799 cases; survey_A: 378 random banded patterns, total_groups >= n in 184 of them
+  (> n in 133, == n in 51), worst 111 for n = 60 (1.85 n, bandwidth (27, 27): the band construction 55 + 56).
+- V29 program meta (default_coloured of banded(4, 1, 1)) and the V31 meta probes: total_groups of banded(4, 1, 1)
+  is 4 = n and of banded(60, 27, 27) is 60 = n (expected to become All in B); banded(16, 2, 2): 11 < 16.
