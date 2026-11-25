@@ -1,0 +1,38 @@
+    Checking num-traits v0.2.19
+    Checking rodas5p-core v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-core)
+    Checking num-complex v0.4.6
+    Checking pulp v0.22.3
+    Checking nano-gemm-c64 v0.2.1
+    Checking nano-gemm-c32 v0.2.1
+    Checking gemm-common v0.19.0
+    Checking gemm-f32 v0.19.0
+    Checking gemm-f64 v0.19.0
+    Checking gemm-c32 v0.19.0
+    Checking gemm-c64 v0.19.0
+error: the use of negated comparison operators on partially ordered types produces code that is hard to read and refactor, please consider using the `partial_cmp` method instead, to make it clear that the two values could be incomparable
+   --> crates/rodas5p-core/src/warp_cubic.rs:205:12
+    |
+205 |         if !(gap > 0.0) {
+    |            ^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#neg_cmp_op_on_partial_ord
+    = note: `-D clippy::neg-cmp-op-on-partial-ord` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::neg_cmp_op_on_partial_ord)]`
+
+error: the loop variable `i` is used to index `b`
+   --> crates/rodas5p-core/src/warp_cubic.rs:270:22
+    |
+270 |             for i in 0..n {
+    |                      ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+    = note: `-D clippy::needless-range-loop` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and enumerate()
+    |
+270 -             for i in 0..n {
+270 +             for (i, <item>) in b.iter().enumerate().take(n) {
+    |
+
+error: could not compile `rodas5p-core` (lib) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...

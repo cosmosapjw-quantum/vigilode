@@ -1,0 +1,54 @@
+   Compiling rodas5p-core v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-core)
+    Finished `release` profile [optimized] target(s) in 13.05s
+     Running tests/pp16_complex_shift_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/pp16_complex_shift_contracts-aff70c0ca6944d5d)
+
+running 6 tests
+test gain_one_would_under_bound_complex_shift ... ok
+test complex_jet_candidates_and_work ... ok
+test negative_controls_fail_closed ... ok
+test partial_fraction_contracts ... ok
+test scalar_hand_case_and_gain ... ok
+test real_gamma_reproduces_real_shift_status ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/shared_shift_jet_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/shared_shift_jet_contracts-21ab030b332e69d7)
+
+running 6 tests
+test exact_current_target_certificate_rejects_wrong_candidate ... ok
+test independent_columns_and_executed_work_are_preserved ... ok
+test identity_limits_and_extreme_center_scaling ... ok
+test invalid_inputs_unsupported_operators_and_budgets_are_errors ... ok
+test under_resolution_and_too_small_tolerance_fail_closed ... ok
+test large_target_set_budget_includes_coordinate_gamma_and_tolerance_slots ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/warp_cubic_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/warp_cubic_contracts-50f083bd7ab157d8)
+
+running 9 tests
+CONFLUENCE s=5e-1 packet_error=3.3306690738754696e-16 packet_bound=1.7593211704548667e-14 direct=Some((6.938893903907228e-16, 1.784633840391435e-14, Certified))
+MANUFACTURED p=[0.0, 0.0, 0.0] error=0e0 bound=7.494005416219815e-15 work=CubicWork { center_solves: 3, direction_matvecs: 2, correction_updates: 0, residual_fmas: 24 }
+MANUFACTURED p=[0.0, -0.25, 0.0] error=2.220446049250313e-16 bound=7.85482789922299e-15 work=CubicWork { center_solves: 16, direction_matvecs: 15, correction_updates: 6, residual_fmas: 24 }
+MANUFACTURED p=[0.0, 0.25, 0.0] error=2.7755575615628914e-17 bound=7.494005416219815e-15 work=CubicWork { center_solves: 16, direction_matvecs: 15, correction_updates: 6, residual_fmas: 24 }
+MANUFACTURED p=[0.015625, -0.15625, 0.125] error=2.220446049250313e-16 bound=8.10462807976365e-15 work=CubicWork { center_solves: 29, direction_matvecs: 28, correction_updates: 8, residual_fmas: 24 }
+MANUFACTURED p=[0.0078125, 0.0, -0.375] error=1.1102230246251565e-16 bound=7.748142405450417e-15 work=CubicWork { center_solves: 38, direction_matvecs: 37, correction_updates: 11, residual_fmas: 24 }
+MANUFACTURED p=[0.0, -1.0, 0.0] error=2.220446049250313e-16 bound=7.896461262646434e-15 work=CubicWork { center_solves: 26, direction_matvecs: 25, correction_updates: 11, residual_fmas: 24 }
+MANUFACTURED p=[0.25, 0.125, -0.25] error=2.7755575615628914e-16 bound=8.078607227623999e-15 work=CubicWork { center_solves: 38, direction_matvecs: 37, correction_updates: 11, residual_fmas: 24 }
+test exact_confluence_keeps_all_three_independent_coefficients ... ok
+test measure_work_precision ... ignored, single-core paired diagnostic kernel timings
+test contraction_and_accuracy_refusals_are_not_singularity_claims ... ok
+test prepare_noncommuting_confluent_pencil ... CONFLUENCE s=1e-2 packet_error=4.6351811278100286e-14 packet_bound=7.900934815111153e-14 direct=Some((1.003225280626907e-12, 1.6033950782893956e-12, Certified))
+ok
+CONFLUENCE s=1e-4 packet_error=4.440892098500626e-16 packet_bound=1.752987266905358e-14 direct=Some((1.5109352241582386e-8, 2.2586200183833068e-8, Rejected))
+test real_and_complex_modal_equations_and_repeated_root_derivative ... ok
+CONFLUENCE s=1e-6 packet_error=1.942890293094024e-15 packet_bound=1.9387945564856055e-14 direct=Some((9.922270731421712e-5, 0.00015372039891221978, Rejected))
+CONFLUENCE s=1e-8 packet_error=3.885780586188048e-16 packet_bound=1.75287204090473e-14 direct=Some((0.9447853805745532, 1.5084128821147906, Rejected))
+test shared_shift_compatible_pencil_agrees_at_the_same_targets ... ok
+CONFLUENCE s=0e0 packet_error=3.885780586188048e-16 packet_bound=1.7520879995719764e-14 direct=None
+test confluence_sweep_preserves_derivative_information ... ok
+test scaled_mirror_weighted_cubic_packet_is_not_an_affine_root_count ... ok
+test full_cubic_block_oracle_and_dyadic_manufactured_certificates ... ok
+
+test result: ok. 8 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

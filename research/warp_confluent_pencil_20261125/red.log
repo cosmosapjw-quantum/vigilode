@@ -1,0 +1,23 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling rodas5p-core v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-core)
+    Finished `release` profile [optimized] target(s) in 29.52s
+     Running tests/warp_cubic_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/warp_cubic_contracts-50f083bd7ab157d8)
+
+running 1 test
+test prepare_noncommuting_confluent_pencil ... FAILED
+
+failures:
+
+---- prepare_noncommuting_confluent_pencil stdout ----
+
+thread 'prepare_noncommuting_confluent_pencil' (462518) panicked at crates/rodas5p-core/tests/warp_cubic_contracts.rs:7:5:
+assertion failed: CubicPacket::prepare(&w, &d, [0.; 3]).is_ok()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    prepare_noncommuting_confluent_pencil
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-core --test warp_cubic_contracts`

@@ -1,0 +1,118 @@
+   Compiling rodas5p-core v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-core)
+    Finished `release` profile [optimized] target(s) in 41.45s
+     Running unittests src/lib.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/rodas5p_core-e22e9967e708ac0c)
+
+running 62 tests
+test coefficients::tests::a_tampered_snapshot_is_rejected_before_parsing ... ok
+test directed::tests::directed_results_bracket_the_exact_value ... ok
+test laguerre_adjoint::tests::a_constant_coefficient_gives_its_magnitude ... ok
+test coefficients::tests::the_cached_tableau_equals_a_fresh_derivation_bit_for_bit ... ok
+test leja_action::production_audit_suffix::certificate_norm_is_outward_at_normal_and_subnormal_scales ... ok
+test leja_action::production_audit_suffix::coefficient_sum_and_output_replay_cover_additive_underflow ... ok
+test leja_action::production_audit_suffix::interval_matvec_replay_covers_underflow_and_cancellation ... ok
+test leja_action::production_audit_suffix::interval_replay_refuses_nonfinite_action_and_checks_normalized_boundary ... ok
+test leja_action::production_audit_suffix::recurrence_interval_replay_covers_subnormal_additive_underflow ... ok
+test leja_action::production_audit_suffix::refused_output_preserves_certificate_work_accounting ... ok
+test leja_action::tests::cloud_taylor_lower_bounds_stay_nonnegative_under_underflow ... ok
+test leja_action::tests::counted_node_prefix_includes_interval_domain_construction ... ok
+test leja_action::tests::divided_differences_match_closed_forms ... ok
+test leja_action::tests::zero_center_scalar_phi_radii_enclose_nonbinary_factorials ... ok
+test leja_setup_work::tests::local_counted_table_initializer_records_cold_and_warm_cost_once ... ok
+test leja_setup_work::tests::local_legacy_once_lock_is_partial_unattributed_without_refusal ... ok
+test leja_action::tests::failed_exponential_does_not_charge_unattempted_result_vectors ... ok
+test n01_affine_owner::tests::actual_rhs_and_jvp_current_time ... ok
+test n01_affine_owner::tests::bad_source_and_nonpositive_resolvent_refused ... ok
+test n01_affine_owner::tests::exact_dt_source_owned_delta_b_delta_j ... ok
+test n01_affine_owner::tests::foreign_source_and_norm_rejected ... ok
+test n01_affine_owner::tests::nonfinite_clock_inputs_and_tolerances_fail_closed ... ok
+test n01_affine_owner::tests::output_only_commits_after_both_gates ... ok
+test n01_affine_owner::tests::overflow_in_callback_is_transactional ... ok
+test n01_mass_action_owner::tests::callback_overflow_refuses_without_writing ... ok
+test n01_mass_action_owner::tests::canonical_robertson_rates_stay_source_owned ... ok
+test n01_affine_owner::tests::stale_clock_epoch_rejected_even_when_coefficients_same ... ok
+test n01_mass_action_owner::tests::foreign_owner_cannot_reuse_snapshot ... ok
+test n01_mass_action_owner::tests::invalid_weights_rates_and_nonfinite_rejected ... ok
+test n01_mass_action_owner::tests::negative_and_outside_box_state_fail_transactionally ... ok
+test n01_mass_action_owner::tests::nonlinear_mass_conservation_and_jvp ... ok
+test n01_mass_action_owner::tests::nonpositive_margin_refuses_even_generous_budget ... ok
+test n01_mass_action_owner::tests::original_gate_and_physical_gate_both_required ... ok
+test n01_mass_action_owner::tests::public_callbacks_reject_negative_concentrations ... ok
+test n01_mass_action_owner::tests::stale_clock_and_state_refuse_without_output_mutation ... ok
+test n01_source_owner::tests::mutated_norm_rhs_and_jacobian_refuse ... ok
+test n01_source_owner::tests::nonnormal_lognorm_and_conversion ... ok
+test n01_source_owner::tests::rejected_physical_gate_keeps_output ... ok
+test n01_source_owner::tests::rejects_unbounded_and_unverified_callback ... ok
+test n01_mass_action_owner::tests::finite_stage_and_jvp_gap ... ok
+test leja_setup_work::tests::local_once_lock_charges_only_the_initializer_winner ... ok
+test n01_source_owner::tests::residual_only_does_not_bypass_physical_gate ... ok
+test n01_source_owner::tests::resolvent_margin_and_no_output_mutation ... ok
+test n01_source_owner::tests::stale_epoch_clock_and_source_refuse_transactionally ... ok
+test norms::tests::zero_scale_rule ... ok
+test operator::terminal_application_work_tests::failed_jvp_charges_callback_once_before_shifted_mass ... ok
+test operator::terminal_application_work_tests::successful_shifted_work_is_unchanged_and_hook_is_additive ... ok
+test polynomial_action::tests::series_enclose_known_values ... ok
+test taylor_phi_total::tests::scalar_case_matches_the_closed_form ... ok
+test laguerre_adjoint::tests::envelopes_cover_the_adjoint_polynomials ... ok
+test leja_action::production_audit_suffix::test_complex_imaginary_leja_distribution ... ok
+test leja_action::production_audit_suffix::test_complex_leja_divided_differences_accuracy ... ok
+test leja_action::production_audit_suffix::test_complex_leja_action_harmonic_oscillator ... ok
+test leja_action::production_audit_suffix::test_complex_leja_workspace_zero_allocation ... ok
+test leja_action::tests::failed_counted_cache_miss_retains_historical_coefficient_setup_attempt ... ok
+test leja_action::tests::leja_points_start_at_the_ends_and_stay_distinct ... ok
+test leja_action::tests::actual_leja_points_initializer_has_cold_and_warm_receipts ... ok
+test leja_action::tests::cloud_prefix_sweep_matches_separate_prefixes_bitwise ... ok
+test leja_action::production_audit_suffix::suffix_bound_covers_the_actual_suffix_not_a_prefix ... ok
+test leja_action::production_audit_suffix::positive_outward_support_increases_t1_exponential_factor ... ok
+test leja_action::production_audit_suffix::trusted_prewarm_matches_cold_and_encloses_diagonal_exponential ... ok
+test leja_action::production_audit_suffix::interval_matvec_overflow_refusal_preserves_workspace_work ... ok
+
+test result: ok. 62 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running tests/lu_workspace_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/lu_workspace_contracts-9eb786fa57c3ef47)
+
+running 1 test
+test pivoted_lu_workspace_contracts ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pp16_complex_shift_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/pp16_complex_shift_contracts-aff70c0ca6944d5d)
+
+running 6 tests
+test gain_one_would_under_bound_complex_shift ... ok
+test complex_jet_candidates_and_work ... ok
+test negative_controls_fail_closed ... ok
+test partial_fraction_contracts ... ok
+test scalar_hand_case_and_gain ... ok
+test real_gamma_reproduces_real_shift_status ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/shared_shift_jet_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/shared_shift_jet_contracts-21ab030b332e69d7)
+
+running 6 tests
+test exact_current_target_certificate_rejects_wrong_candidate ... ok
+test identity_limits_and_extreme_center_scaling ... ok
+test invalid_inputs_unsupported_operators_and_budgets_are_errors ... ok
+test independent_columns_and_executed_work_are_preserved ... ok
+test under_resolution_and_too_small_tolerance_fail_closed ... ok
+test large_target_set_budget_includes_coordinate_gamma_and_tolerance_slots ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/warp_cubic_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/warp_cubic_contracts-50f083bd7ab157d8)
+
+running 11 tests
+test contraction_and_accuracy_refusals_are_not_singularity_claims ... ok
+test measure_prepared_cache ... ignored, paired prepared-cache diagnostic; both arms reuse their factors
+test measure_work_precision ... ignored, single-core paired diagnostic kernel timings
+test exact_confluence_keeps_all_three_independent_coefficients ... ok
+test prepare_noncommuting_confluent_pencil ... ok
+test emit_exact_binary_residual_fixtures ... ok
+test real_and_complex_modal_equations_and_repeated_root_derivative ... ok
+test confluence_sweep_preserves_derivative_information ... ok
+test shared_shift_compatible_pencil_agrees_at_the_same_targets ... ok
+test scaled_mirror_weighted_cubic_packet_is_not_an_affine_root_count ... ok
+test full_cubic_block_oracle_and_dyadic_manufactured_certificates ... ok
+
+test result: ok. 9 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
