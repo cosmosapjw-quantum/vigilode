@@ -1,0 +1,192 @@
+KS-N8 derivation notes (theory before the script; THEORY.md section 10 is rendered from these)
+Status letters as in THEORY.md: D derived here, I imported (named), T tested by scripts/verify_fov.py,
+P proposal, O open. UNVERIFIED marks a statement that is neither proven here nor checked.
+
+D0  Grid (crates/vigilode/src/spatial.rs, DiffusionGrid::sphere). nt rings, np cells per ring, radius R,
+    diffusivity kappa, dth = pi/nt, dph = 2 pi/np. Ring r (0..nt-1) has colatitude th_r = (r + 1/2) dth and
+    cell area A_r = (R sin(dth/2)) (R dph) (2 sin th_r). Latitude face f (0..nt) sits at colatitude f dth;
+    faces 0 and nt have zero length. Diffusion: face conductance K_f = kappa sin(f dth) dph / dth
+    (K_0 = K_nt = 0), n_r = K_r / A_r, s_r = K_{r+1} / A_r (the code's theta_rate), azimuth rate
+    a_r = kappa (dth / (sin th_r dph)) / A_r. L as in THEORY 2.2, J = L + c I + T with T the transport below.
+    The code has no advection term: T is defined here on the code's grid.
+
+D1  Ring-constant velocity and the discrete transport T (flux form, finite volume).
+    Zonal speed u_r per ring; meridional speed v_f per latitude face, positive towards larger colatitude.
+    Volume fluxes: zonal psi_r = u_r R dth through every meridian face of ring r (face length R dth);
+    meridional phi_f = v_f R sin(f dth) dph through face f (phi_0 = phi_nt = 0 automatically).
+      A_r dq[r,x]/dt  contains  psi_r (qhat[r,x-1/2] - qhat[r,x+1/2])   (zonal)
+                               + phi_r qhat[face r] - phi_{r+1} qhat[face r+1]   (meridional)
+    Centred face value: mean of the two cells. Upwind: donor cell.
+    b_r := psi_r / A_r = u_r R dth / A_r. div_r := (phi_{r+1} - phi_r) / A_r (zonal fluxes cancel in a cell).
+    Cell Peclet numbers: zonal Pe_r = |b_r| / (2 a_r) = |u_r| R sin th_r dph / (2 kappa),
+    meridional Pe_f = |phi_f| / (2 K_f) = |v_f| R dth / (2 kappa).
+    Choice of scheme: centred is primary. It is second order; for divergence-free flow it is
+    A-skew-adjoint (D3), so it adds non-normality without damping, the hard case for a certificate,
+    and its A-Hermitian part is exactly the diffusion operator of 4.2, which makes the certificate
+    directly comparable. Upwind is secondary: by D2 it is centred plus an A-self-adjoint negative
+    semidefinite artificial diffusion, so every Hermitian-part statement below covers it too.
+
+L1 (D) Divergence-free ring-constant flow is zonal: div_r = 0 for all r <=> phi_f = 0 for all f.
+    Proof: phi_0 = 0 and phi_{r+1} = phi_r + A_r div_r; induction. Also sum_r A_r div_r = phi_nt - phi_0 = 0,
+    so a flow with some div_r != 0 has max_r(-div_r) > 0.
+
+L2 (D) Mode blocks. Ring-constant coefficients and periodic x: T commutes with Z_np. With
+    u[r,x] = sum_m U_r(m) e^{i th_m x}, th_m = 2 pi m / np, a shift x -> x +- 1 becomes e^{+- i th_m}:
+      centred:  T_m = diag(-i b_r sin th_m) + V
+      upwind:   T_m = diag(-|b_r| (1 - cos th_m) - i b_r sin th_m) + Vup
+    V (centred, m-independent, real tridiagonal):
+      V[r][r-1] = phi_r / (2 A_r),  V[r][r+1] = -phi_{r+1} / (2 A_r),  V[r][r] = -div_r / 2.
+    Vup (donor cell): Vup[r][r-1] = max(phi_r, 0) / A_r, Vup[r][r+1] = -min(phi_{r+1}, 0) / A_r,
+      Vup[r][r] = (min(phi_r, 0) - max(phi_{r+1}, 0)) / A_r.
+    B_m = L_m + c I + T_m: tridiagonal, complex diagonal for 0 < m < np/2 when b != 0, non-symmetric
+    real off-diagonals when phi != 0. B_{np-m} = conj(B_m) (L_m, V real; sin changes sign, cos does not):
+    the reflection of 2.3 is lost (it reverses the flow), the conjugation involution stays.
+
+L3 (D) Upwind = centred + artificial diffusion. Donor value = centred value - sign(F)(jump)/2, so the
+    upwind face flux is the centred flux plus a diffusive flux with conductance |F|/2 (F = psi_r on
+    meridian faces, phi_f on latitude faces). Hence T_up = T_c + D_art with D_art = -A^{-1} d^T K' d,
+    K' = diag(|F|/2): A-self-adjoint and negative semidefinite (same algebra as 3.1). In mode m:
+    zonal part -(|b_r|/2)(2 - 2 cos th_m), meridional part Vup - V.
+
+L4 (D) A-adjoint structure. <u,v>_A = sum_i A_i conj(u_i) v_i, X^dagger = A^{-1} X^T A for real X.
+    (i) L^dagger = L (3.1).
+    (ii) zonal centred part T_z: A is constant on a ring, so A commutes with the in-ring shifts S+-;
+        T_z = -(b/2)(S+ - S-) and S+^T = S-, so T_z^dagger = -T_z (A-skew-adjoint).
+    (iii) meridional centred V = A^{-1} G with G[r][r-1] = phi_r/2, G[r][r+1] = -phi_{r+1}/2,
+        G[r][r] = (phi_r - phi_{r+1})/2. V^dagger = A^{-1} G^T, so (V + V^dagger)/2 = A^{-1}(G + G^T)/2.
+        Off-diagonal of G + G^T: -phi_{r+1}/2 + phi_{r+1}/2 = 0. Diagonal: phi_r - phi_{r+1}.
+        Hence (V + V^dagger)/2 = -diag(div_r)/2.
+    (iv) D_art^dagger = D_art <= 0 (L3).
+    (v) mass: column sums of G vanish (-phi_j/2 + (phi_j - phi_{j+1})/2 + phi_{j+1}/2 = 0) and the
+        zonal and artificial-diffusion parts are in flux form, so 1^T A T = 0. Hence 1^T A J = c 1^T A
+        and the stage mass identity (z - c) M(x) = M(b) of 3.4 holds unchanged for every stage solve.
+    Consequence, with Ahat = diag(sqrt A_r), Bt_m = Ahat B_m Ahat^{-1}:
+      Ht_m := (Bt_m + Bt_m^*)/2 = Ahat (L_m + c I - diag(div)/2 + D_art,m) Ahat^{-1}
+        real symmetric tridiagonal; diagonal c - n_r - s_r - a_r sig_m - div_r/2
+        [- |b_r|(1 - cos th_m) zonal upwind] [- (|phi_r| + |phi_{r+1}|)/(2 A_r) meridional upwind],
+        off-diagonal sqrt(n_{r+1} s_r) [+ |phi_{r+1}| / (2 sqrt(A_r A_{r+1})) meridional upwind],
+        sig_m = 2 - 2 cos th_m. It depends on m only through cos th_m, so Ht_{np-m} = Ht_m:
+        floor(np/2) + 1 distinct matrices, as in 2.3.
+      Kt_m := (Bt_m - Bt_m^*)/(2i): Hermitian tridiagonal, diagonal -b_r sin th_m,
+        Kt[r][r+1] = i phi_{r+1} / (2 sqrt(A_r A_{r+1})) = conj(Kt[r+1][r]).
+    The symmetry of Ahat L_m Ahat^{-1} uses A_r s_r = A_{r+1} n_{r+1} (same face conductance, 3.1).
+
+T1 (D from I) Numerical range. P = I_nt (x) F (F the unitary DFT along a ring) is unitary in <.,.>_A,
+    because A is constant on rings. P J P^* = direct sum of B_m. Hence
+      W_A(J) := {<Jx, x>_A : ||x||_A = 1} = conv( union_m W(Bt_m) )
+    (I: the numerical range of a direct sum is the convex hull of the union; Horn and Johnson,
+    Topics in Matrix Analysis, 1.2), spec J = union_m spec B_m subset union_m W(Bt_m) (I: Bx = lx gives
+    <Bx,x> = l), and the A-logarithmic norm
+      mu_A(J) := max Re W_A(J) = lambda_max((J + J^dagger)/2) = max_m lambda_max(Ht_m).
+    The Euclidean log norm of the task text, mu_2(J) = lambda_max((J + J^T)/2) = max_m mu_2(B_m)
+    (the DFT is also unitary in the Euclidean inner product), satisfies the same theorems in the
+    Euclidean norm. It is not the right norm here: for zero velocity the Euclidean symmetric part of L
+    has a positive eigenvalue whenever neighbouring ring areas differ (2x2 example
+    [[-s, s], [n, -n]], n != s: determinant of the symmetric part is -(s - n)^2/4 < 0), so mu_2 > c
+    and the Euclidean certificate does not reduce to 4.2. The script measures mu_2 - mu_A.
+
+T2 (D from I) Hermitian-part inertia certificate (replaces 4.2).
+    For real z, let p_r(m) be the Thomas pivots of z I - Ht_m (no pivoting). Sylvester's law of inertia
+    (I) applied to the LDL^T factorization gives, for z not an eigenvalue of a leading principal
+    submatrix (a zero or NaN pivot is counted as non-positive, i.e. as a refusal),
+      #{r : p_r(m) <= 0} = #{eigenvalues of Ht_m at or above z},
+      C(z) := sum over m in 0..np-1 = #{eigenvalues of (J + J^dagger)/2 at or above z}
+    (with the half spectrum: m = 0 and m = np/2 once, 0 < m < np/2 twice). C(z) = 0 <=> z > mu_A(J).
+    If C(z) = 0:
+    (a) Solvability and resolvent. For every x: Re <W(z) x, x>_A = z ||x||_A^2 - Re <J x, x>_A
+        >= (z - mu_A) ||x||_A^2; with Cauchy-Schwarz, ||W(z) x||_A >= (z - mu_A) ||x||_A. So W(z) is
+        invertible and ||W(z)^{-1}||_A <= 1 / (z - mu_A(J)). Per mode: ||(z I - Bt_m)^{-1}||_2 <=
+        1 / (z - lambda_max(Ht_m)). For complex w outside the closure of W_A(J):
+        ||(w I - J)^{-1}||_A <= 1 / dist(w, W_A(J)) (I, same argument after a rotation).
+    (b) Thomas on the complex block itself. The pivots of W_m = z I - B_m (no pivoting) satisfy
+        Re p_r >= z - lambda_max(Ht_m) >= z - mu_A > 0, and the multipliers satisfy
+        |l_r| <= |B_m[r][r-1]| / (z - mu_A).
+        Proof: Ahat W_m Ahat^{-1} = (Ahat Lo Ahat^{-1})(Ahat Up Ahat^{-1}) has the same diagonal of the
+        upper factor, so W_m and Wt_m := z I - Bt_m have the same pivots. p_r is the Schur complement of
+        the leading r x r block M_r in the leading (r+1) x (r+1) block M_{r+1} of Wt_m. Take
+        x = (-M_r^{-1} w y; y), w the column above the diagonal; then M_{r+1} x = (0; p_r y) and
+        Re(p_r) |y|^2 = Re x^* M_{r+1} x >= delta |x|^2 >= delta |y|^2 with
+        delta = lambda_min(Herm(M_{r+1})) >= lambda_min(Herm(Wt_m)) = z - lambda_max(Ht_m)
+        (Cauchy interlacing for a principal submatrix of the Hermitian part). M_r is invertible
+        because its Hermitian part is positive definite (induction). l_r = W[r][r-1] / p_{r-1}.
+    (c) Reduction. Zero velocity: Ht_m is the symmetrized 4.2 block and C(z) is the 4.2 count.
+        A-normal J (solid-body rotation: b_r constant, phi = 0; then Bt_m = Ht_m - i b sin th_m I):
+        C(z) = #{l in spec J : Re l >= z} exactly. Non-normal J: only C(z) = 0 has a meaning
+        (Re l <= mu_A for every eigenvalue); C(z) > 0 does not count eigenvalues of J. Example:
+        J = [[1, 4], [0, 1]], H = [[1, 2], [2, 1]], z = 1/2: two eigenvalues with Re >= z, C = 1.
+        The certificate is one-sided for non-normal J: it may refuse a z for which W(z) is regular.
+
+P3 (D) The value of mu_A.
+    (i) mu_A(J) >= c always: x = 1 gives <J1, 1>_A = c ||1||_A^2 + 1^T A T 1 = c ||1||_A^2 (L4 v).
+    (ii) Divergence-free (zonal) flow, centred or upwind: mu_A(J) = c. Ahat L_m Ahat^{-1} <= 0,
+        D_art <= 0 and div = 0, so Ht_m <= c I; with (i) equality. The certificate is z > c, as for
+        diffusion. The resolvent bound is attained: J 1 = c 1 and J^dagger 1 = c 1, so
+        W(z)^{-1} 1 = 1/(z - c), and ||W(z)^{-1}||_A = 1/(z - c).
+    (iii) General ring-constant flow: c <= mu_A(J) <= c + max_r(-div_r)/2 (Weyl: Ht_m is the sum of
+        c I - diag(div)/2 and negative semidefinite terms). The exact value: bisection on C(z).
+    (iv) Comparison with Gershgorin (the 5.2 construction: row discs of the mode blocks B_m).
+        alpha_G := max_{m,r} (Re B_m[r][r] + |B_m[r][r-1]| + |B_m[r][r+1]|) >= c + max_r(-div_r).
+        Proof at m = 0, row r: centred, Re d = c - n_r - s_r - div_r/2 and the radius is at least
+        n_r + s_r + V[r][r-1] + V[r][r+1] = n_r + s_r - div_r/2 (triangle inequality), so the right
+        edge is >= c - div_r. Upwind: the row is Metzler (off-diagonals >= 0) and its sum is c - div_r,
+        so the right edge equals c - div_r. Therefore
+          alpha_F := mu_A(J) <= c + max(-div)/2 <= c + max(-div) <= alpha_G,
+        i.e. alpha_F - c <= (alpha_G - c)/2: the field of values at least halves the Gershgorin growth
+        bound for divergent flow, and both equal c for zonal flow (for zonal flow the right edge of row r
+        of B_m is c - a_r sig_m [- |b_r|(1 - cos th_m)] <= c, equal at m = 0).
+        Not a theorem: a comparison with weighted or column Gershgorin variants. For a monotone
+        (Metzler) operator the area-weighted column sums equal c (mass conservation), so the weighted
+        L1 log norm mu_{1,A}(J) = c is sharper than mu_A for divergent flow, in its own norm. The script
+        reports it as a diagnostic.
+
+T4 (I + D) Contractivity (replaces 5.1).
+    (a) ||exp(t J)||_A <= exp(t mu_A(J)), t >= 0 (I: Dahlquist 1958 / Lozinskii; from
+        d/dt ||y||_A^2 = 2 Re <J y, y>_A <= 2 mu_A ||y||_A^2).
+    (b) For a rational R with no pole in Re w <= h mu_A and bounded there:
+        ||R(hJ)||_A <= sup_{Re w <= h mu_A} |R(w)|. (I: von Neumann's theorem for inner-product norms,
+        Hairer and Wanner, Solving ODEs II, section IV.11, applied to hJ - h mu_A I, whose A-log norm is
+        0, and to w -> R(w + h mu_A).) RODAS5P: R(w) = 1 + w b^T (I - w beta)^{-1} 1 has its only pole at
+        w = 1/gamma (beta lower triangular with diagonal gamma), so the hypothesis is h mu_A < 1/gamma,
+        i.e. z = 1/(h gamma) > mu_A: the certificate condition of T2. If mu_A <= 0 and R is A-stable,
+        ||R(hJ)||_A <= 1 for every h > 0. Unlike 5.1 this is an inequality: J is not A-normal, so
+        ||R(hJ)||_A is no longer max over the spectrum.
+    (c) Zonal flow with c <= 0: both bounds equal 1 and are attained by the constants.
+
+T5 (D from I) Spectral and stiffness enclosure (replaces the Gershgorin bound of 5.2).
+    Support function of W(Bt_m) in direction phi: h_m(phi) = lambda_max(cos phi Ht_m + sin phi Kt_m)
+    (Hermitian part of e^{-i phi} Bt_m). With phi_k = 2 pi k / K,
+      P_m := intersection over k of {w : Re(e^{-i phi_k} w) <= h_m(phi_k)}  contains W(Bt_m) and spec B_m;
+      spec J subset union_m P_m;  W_A(J) subset conv(union_m P_m).
+    K = 4 is the Bendixson rectangle [lambda_min(Ht_m), lambda_max(Ht_m)] x i[lambda_min(Kt_m),
+    lambda_max(Kt_m)] (I: Bendixson 1902); a larger K is Johnson's outer polygon (I: Johnson 1978).
+    Each h_m(phi_k) is the top eigenvalue of a Hermitian tridiagonal matrix (a unitary diagonal
+    similarity makes it real symmetric), computable with a certified bracket by bisection on the
+    Sturm count of T2: O(nt) per probe, K (floor(np/2) + 1) nt probes per bisection step, once per
+    problem because J is constant. The script uses dense eigvalsh (the certified bisection is P).
+    Stiffness radius: rho_F := max_m max over the vertices v of P_m of |v - c| >= max |l - c| over
+    spec J and over W_A(J). Gershgorin: rho_G := max_{m,r} (|B_m[r][r] - c| + radius).
+    Zonal flow (D): the real extent of each Bendixson rectangle lies inside the real extent of the
+    Gershgorin discs of B_m (Ht_m is similar to the real tridiagonal L_m + c I + Re T_m, whose row
+    discs are the real projections of the discs of B_m), and Kt_m = diag(-b_r sin th_m) is exact, so
+    iota_F = max |b_r sin th_m| < iota_G = max (|b_r sin th_m| + n_r + s_r) when kappa > 0.
+    rho_F <= rho_G is not proven (the rectangle corner can combine the polar real extent with an
+    equatorial imaginary extent); the script measures it with K = 256.
+    Stiffness for explicit methods: for non-normal J the spectrum does not bound ||R_E(hJ)^n||. The
+    numerical range does: ||f(X)|| <= (1 + sqrt 2) max over W(X) of |f| (I: Crouzeix and Palencia
+    2017, inner-product norms). So h W_A(J) inside the stability region of the explicit method gives
+    ||R_E(hJ)^n||_A <= 1 + sqrt 2 for every n. The 5.3 step bound beta / rho_bar becomes the largest
+    h with h conv(union P_m) inside the DOPRI5 region, a two-dimensional condition: P for the router
+    (KS-N5), UNVERIFIED here.
+
+S6  What the solver would need (P, not implemented). Modes 0 < m < np/2 become complex tridiagonal;
+    W_{np-m} = conj(W_m) and real data keep U(np-m) = conj U(m), so the half spectrum still suffices,
+    with one complex right-hand side per mode instead of the two real ones of 2.3(i). The certificate
+    costs one real symmetric Thomas sweep of z I - Ht_m per distinct mode, and none for zonal flow
+    (z > c). The pivot bound of T2(b) controls growth in the complex sweep. The mass identity (L4 v)
+    and Verified mode (T5 of section 7) carry over.
+
+Checks planned (scripts/verify_fov.py): block formulas (dense conjugation), closed form of Ht_m, mu_A
+    grid vs modes, C(z) vs dense eigenvalue counts, resolvent bound (A and Euclidean), complex Thomas
+    pivots and solves, stage mass identity, exp(tJ) bound, RODAS5P R(hJ) bound, eigenvalues inside
+    union P_m and the Gershgorin union, P3(iv) alpha_F <= alpha_G (proven, so a check), and the
+    measured ratios for the D2 verdict.

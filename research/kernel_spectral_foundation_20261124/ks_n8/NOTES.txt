@@ -81,3 +81,11 @@ the contractivity bound (5.1) and the Gershgorin spectral/stiffness bound (5.2-5
 
 5. Honesty rules: numbers in KS_N8_FOV.json come from the script's executed run; failed or negative
    checks are kept; what the script does not check is marked UNVERIFIED in THEORY.md 10.
+
+6. Amendments made before the script existed or ran (09:50 KST)
+   - Polygon directions K = 256 instead of 64 (still a multiple of 4), so that the polygon's
+     overestimate of the numerical range is negligible next to the Gershgorin margins.
+   - Exit code: 0 iff every validity check of (a) and (b) holds, the proven inequality
+     alpha_F <= alpha_G (DERIVATION P3 iv) holds in every case, and every (c) metric is finite.
+     The D2 verdict (PASS/FAIL/KILL) is a measurement and is reported in the JSON, not in the exit code.
+   - Derivation written to ks_n8/DERIVATION.txt before the script.
