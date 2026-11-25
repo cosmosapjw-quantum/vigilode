@@ -1,85 +1,41 @@
 # check cli_contracts
-# head 02eb3afb482a715aa39e9db6463c5cfcc61638f4 stage_batch.rs blob 1a44222f2e8b64738bbfc4e67d8b2482407ea287
-# start 2026-11-25 10:00:54 KST loadavg 28.28 17.74 18.13 68/6130 2948359
+# head 4a90ac87abdbf58fa6ee9069f91973c5de6695c4 stage_batch.rs blob fb68321b94dd4caf8a895ea7e2f9aad5363b80f2
+# start 2026-11-25 10:32:26 KST loadavg 21.05 20.77 32.87 9/5958 3262746
 # command: cargo_locked test --locked -j 4 --release -p rodas5p-cli --test cli_contracts --no-fail-fast
-   Compiling num-traits v0.2.19
-   Compiling serde_core v1.0.229
-   Compiling getrandom v0.3.4
-   Compiling zerocopy v0.8.56
-   Compiling rand_core v0.9.5
-   Compiling thiserror v2.0.19
-   Compiling utf8parse v0.2.2
-   Compiling anstyle-parse v1.0.0
-   Compiling is_terminal_polyfill v1.70.2
-   Compiling anstyle-query v1.1.5
-   Compiling num-complex v0.4.6
-   Compiling colorchoice v1.0.5
-   Compiling anstyle v1.0.14
-   Compiling anstream v1.0.0
-   Compiling pulp v0.22.3
-   Compiling nano-gemm-c32 v0.2.1
-   Compiling nano-gemm-c64 v0.2.1
-   Compiling ppv-lite86 v0.2.21
-   Compiling serde v1.0.229
-   Compiling serde_json v1.0.151
-   Compiling gemm-common v0.19.0
-   Compiling gemm-f32 v0.19.0
-   Compiling gemm-c64 v0.19.0
-   Compiling gemm-c32 v0.19.0
-   Compiling gemm-f64 v0.19.0
-   Compiling qd v0.8.0
-   Compiling faer-traits v0.24.0
-   Compiling gemm v0.19.0
-   Compiling nano-gemm v0.2.2
-   Compiling faer v0.24.4
-   Compiling rand_chacha v0.9.0
-   Compiling rand v0.9.5
-   Compiling csv-core v0.1.13
-   Compiling strsim v0.11.1
-   Compiling clap_lex v1.1.0
-   Compiling ryu v1.0.23
-   Compiling clap_builder v4.6.6
-   Compiling csv v1.4.0
-   Compiling rand_distr v0.5.1
-   Compiling rand_pcg v0.9.0
-   Compiling anyhow v1.0.104
-   Compiling clap v4.6.6
-   Compiling rodas5p-core v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/crates/rodas5p-core)
-   Compiling rodas5p-krylov v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/crates/rodas5p-krylov)
-   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/crates/rodas5p-integrators)
    Compiling rodas5p-fair-ab v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/crates/rodas5p-fair-ab)
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/crates/rodas5p-integrators)
    Compiling rodas5p-cli v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/crates/rodas5p-cli)
-    Finished `release` profile [optimized] target(s) in 2m 13s
+    Finished `release` profile [optimized] target(s) in 1m 51s
      Running tests/cli_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v32/release/deps/cli_contracts-1ff0c4957e18eeeb)
 
 running 25 tests
 test early_flow_defect_fields_are_backward_compatible_and_legacy_rows_fail_closed ... ok
-test generic_policy_redesign_attempt_trace_command_is_registered ... ok
-test generic_policy_redesign_actual_prefix_command_is_registered ... ok
-test generic_policy_redesign_atlas_command_is_registered ... ok
 test enforced_prefix_budget_cli_is_registered ... ok
-test generic_q1_q2_gate_is_deterministic_and_strictly_matrix_free ... ok
+test generic_policy_redesign_attempt_trace_command_is_registered ... ok
 test generic_policy_redesign_level2_prefix_command_is_registered ... ok
-test enforced_prefix_budget_cli_emits_transactional_fields ... ok
+test generic_policy_redesign_atlas_command_is_registered ... ok
+test generic_policy_redesign_actual_prefix_command_is_registered ... ok
 test homotopy_design_check_is_deterministic_and_exposes_required_screens ... ok
-test homotopy_path_controller_cli_is_deterministic_and_emits_schedule_telemetry ... ok
+test generic_q1_q2_gate_is_deterministic_and_strictly_matrix_free ... ok
 test native_integrator_gates_command_emits_deterministic_bdf_and_radau_rows ... ok
+test enforced_prefix_budget_cli_emits_transactional_fields ... ok
+test homotopy_path_controller_cli_is_deterministic_and_emits_schedule_telemetry ... ok
 test stage_growth_safety_cli_exposes_independent_calibration192_profile ... ok
 test early_defect_attempt_geometry_cli_is_threshold_free_and_machine_readable ... ok
-test stage_growth_safety_audit_cli_emits_explicit_budget_and_audit_fields ... ok
-test tolerance_scaled_early_defect_cli_is_threshold_free_and_machine_readable ... ok
-test validate_trace_and_benchmark_commands_emit_machine_readable_artifacts ... ok
-test homotopy_experiment_screen_emits_deterministic_safety_and_control_rows ... ok
 test adaptive_global_error_command_emits_current_family_report ... ok
+test stage_growth_safety_audit_cli_emits_explicit_budget_and_audit_fields ... ok
+test homotopy_experiment_screen_emits_deterministic_safety_and_control_rows ... ok
+test stage_batch_feasibility_cli_emits_deterministic_within_step_report ... ok
+test validate_trace_and_benchmark_commands_emit_machine_readable_artifacts ... ok
 test homotopy_rhs_telemetry_cli_is_deterministic_and_read_only ... ok
 test generic_q1_q2_adaptive_cli_emits_bounded_decision_report ... ok
+test tolerance_scaled_early_defect_cli_is_threshold_free_and_machine_readable ... ok
 test global_error_pareto_command_emits_deterministic_method_independent_report ... ok
-test stage_batch_feasibility_cli_emits_deterministic_within_step_report ... ok
 test homotopy_order_policy_screen_is_deterministic_and_thread_count_independent ... ok
 test unified_candidate_screen_combines_linear_and_nonlinear_tiers ... ok
 test matrix_free_common_w_cli_emits_strict_jf_report ... ok
 
-test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.92s
+test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.94s
 
-# end 2026-11-25 10:03:09 KST
+# end 2026-11-25 10:34:20 KST
 exit=0

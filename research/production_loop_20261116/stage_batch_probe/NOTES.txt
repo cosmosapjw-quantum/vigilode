@@ -119,5 +119,13 @@ report with only `parallel-observed` flipped to false).
   and on the hosted runner; a host with last-bit differences would have another deterministic
   checksum, which is not turned into a new host-dependent bit anchor).
 - Loop checker: stops at its first complaint, the expected protected blob of stage_batch.rs
-  (c2f44c32 -> 1a44222f; re-pinned by the orchestrator under OD-L1-28). loop_checker_rest.py runs
-  the checker's remaining checks with only that line reported instead of raised: PASS.
+  (c2f44c32 -> fb68321b at the end; 1a44222f at commit 02eb3afb, which differs from fb68321b only in
+  the wording of one comment in the probe; re-pinned by the orchestrator under OD-L1-28).
+  loop_checker_rest.py runs the checker's remaining checks with only that line reported instead
+  of raised: PASS.
+- Bound check (diagnostic, latency.sh + ignored test stage_batch_probe_latency): the probe's
+  structure on 200 fresh pools per condition; the rendezvous wait stayed in microseconds without a
+  provocation and reached tens of milliseconds under strace with 30 busy loops on the same CPU,
+  never close to the 2 s bound (numbers: RESULTS.json rendezvous_wait_diagnostic).
+- Final numbers and verdicts: RESULTS.json and REPORT_KO.md (parse_results.py). The final checks
+  (logs/checks) ran on the final source.

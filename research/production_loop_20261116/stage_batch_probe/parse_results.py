@@ -45,6 +45,11 @@ CONDITION_TEXT = {
 # consecutive runs accumulate on CPU 8. The live count at a run's start is rebuilt from runs.tsv.
 HOGS_PER_RUN = {"hog1": 2, "hog4": 4, "hogonly1": 2}
 HOG_SECONDS = 30.0
+LATENCY_TEXT = {
+    "plain": "고정과 추적기 없음",
+    "strace1": "taskset -c 8 strace -f -qq -e trace=none",
+    "hog30": "strace1 + CPU 8에 바쁜 loop 30개 (run 동안 유지, 뒤에 정지)",
+}
 
 
 def bits(value):
@@ -540,7 +545,9 @@ def render(results):
         "",
         fmt_table(rows),
         "",
-        f"false가 나온 run (모두 이전 binary):",
+        "false가 나온 run (binary: "
+        + ", ".join(f"{label} {count}" for label, count in sorted(collections.Counter(
+            f["binary"] for f in p["failing_runs"]).items())) + "):",
         "",
         fmt_table(failing) if len(failing) > 1 else "(없음)",
         "",
@@ -588,10 +595,13 @@ def render(results):
         "같은 rendezvous)을 무시된 test `stage_batch_probe_latency`가 재현하고 `latency.sh`가 조건별로 돌렸다. "
         "진단값이며 판정에 쓰지 않는다.",
         "",
-        fmt_table([["조건", "pool 수", "두 번째 작업 없음", "최소 s", "중앙값 s", "p90 s", "p99 s", "최대 s"]] + [
-            [f"{name}: {entry['header'][2:]}", entry.get("pools"), entry.get("second_task_never"),
-             entry.get("min"), entry.get("median"), entry.get("p90"), entry.get("p99"), entry.get("max")]
-            for name, entry in results["rendezvous_wait_diagnostic"].items()])
+        fmt_table([["조건", "pool 수", "두 번째 작업 없음", "최소 ms", "중앙값 ms", "p90 ms", "p99 ms", "최대 ms"]] + [
+            [f"{name}: {LATENCY_TEXT.get(name, name)}", entry.get("pools"), entry.get("second_task_never")]
+            + [number(None if entry.get(key) is None else 1e3 * entry[key], ".3f")
+               for key in ("min", "median", "p90", "p99", "max")]
+            for name, entry in sorted(results["rendezvous_wait_diagnostic"].items(),
+                                      key=lambda item: list(LATENCY_TEXT).index(item[0])
+                                      if item[0] in LATENCY_TEXT else len(LATENCY_TEXT))])
         if results["rendezvous_wait_diagnostic"] else "(실행 안 함)",
         "",
         "CLI run 전체의 wall 중앙값(4절 표)도 진단값이다.",

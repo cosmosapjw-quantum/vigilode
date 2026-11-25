@@ -1,0 +1,921 @@
+{
+ "node": "V32_STAGE_BATCH_PROBE",
+ "owner_decision": "OD-L1-28",
+ "generated_by": "research/production_loop_20261116/stage_batch_probe/parse_results.py",
+ "smoke_checksum_parallel_observed_true": "4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950",
+ "hosted_checksum_parallel_observed_false": "577161ebffb8eaf60ff44b02624e192d18853d72bff697bb34c27aa8ba52d6ea",
+ "code": {
+  "head_when_parsed": "4a90ac87abdbf58fa6ee9069f91973c5de6695c4",
+  "stage_batch_blob_before": "c2f44c327c53d7c6dfe7ba80b26cd43486d56b43",
+  "stage_batch_blob_after": "fb68321b94dd4caf8a895ea7e2f9aad5363b80f2",
+  "rendezvous_bound_seconds": 2.0,
+  "rendezvous_poll_seconds": 9.999999999999999e-05
+ },
+ "provenance": {
+  "provocation_binaries": {
+   "b1": {
+    "old": {
+     "path": "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v32/probe-bins/rodas5p-old-d4e2772f",
+     "sha256": "1dc4cb0a8741016401c51d6ae3e413553bac911b8d3b7c8506e9d4c61e502e9f"
+    }
+   },
+   "b1h": {
+    "old": {
+     "path": "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v32/probe-bins/rodas5p-old-d4e2772f",
+     "sha256": "1dc4cb0a8741016401c51d6ae3e413553bac911b8d3b7c8506e9d4c61e502e9f"
+    }
+   },
+   "b2": {
+    "old": {
+     "path": "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v32/probe-bins/rodas5p-old-d4e2772f",
+     "sha256": "1dc4cb0a8741016401c51d6ae3e413553bac911b8d3b7c8506e9d4c61e502e9f"
+    },
+    "new": {
+     "path": "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v32/probe-bins/rodas5p-new-02eb3afb",
+     "sha256": "5056821c371df10ab95f4ba8c45f3cd6ef3c81a2b000c4ab0041a52f4e67a5d2"
+    }
+   }
+  },
+  "stage_batch_blobs_in_logs": {
+   "1a44222f2e8b64738bbfc4e67d8b2482407ea287": [
+    "tests/new_code_new_tests.log"
+   ],
+   "c2f44c327c53d7c6dfe7ba80b26cd43486d56b43": [
+    "tests/old_code_new_tests.log"
+   ],
+   "fb68321b94dd4caf8a895ea7e2f9aad5363b80f2": [
+    "checks/cli_contracts.log",
+    "checks/clippy.log",
+    "checks/fmt.log",
+    "checks/integrators_stage_batch_tests.log",
+    "checks/loop_checker.log",
+    "checks/loop_checker_rest.log"
+   ]
+  }
+ },
+ "provocation": {
+  "batches": [
+   "b1",
+   "b1h",
+   "b2"
+  ],
+  "by_binary_condition": {
+   "new": {
+    "hog1": {
+     "condition": "strace1 + 2 busy loops started on CPU 8 per run",
+     "batches": [
+      "b2:120"
+     ],
+     "runs": 120,
+     "exit_nonzero": 0,
+     "missing_report": 0,
+     "nonempty_stderr": {},
+     "parallel_observed_false": 0,
+     "checksums": {
+      "4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950": 120
+     },
+     "composition_mismatches": 0,
+     "observed_max_parallel_tasks": {
+      "2": 8,
+      "3": 13,
+      "4": 99
+     },
+     "busy_loops_on_cpu8_at_start": {
+      "min": 22,
+      "median": 30.0,
+      "p90": 30,
+      "max": 32
+     },
+     "wall_seconds_diagnostic": {
+      "min": 1.3254,
+      "median": 2.1535,
+      "p90": 2.5601,
+      "max": 4.0606
+     },
+     "loadavg_1min_at_start": {
+      "min": 40.8,
+      "median": 62.18,
+      "p90": 66.31,
+      "max": 66.89
+     }
+    },
+    "hog4": {
+     "condition": "strace1 + 4 busy loops started on CPU 8 per run",
+     "batches": [
+      "b2:120"
+     ],
+     "runs": 120,
+     "exit_nonzero": 0,
+     "missing_report": 0,
+     "nonempty_stderr": {},
+     "parallel_observed_false": 0,
+     "checksums": {
+      "4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950": 120
+     },
+     "composition_mismatches": 0,
+     "observed_max_parallel_tasks": {
+      "2": 13,
+      "3": 21,
+      "4": 86
+     },
+     "busy_loops_on_cpu8_at_start": {
+      "min": 34,
+      "median": 44.0,
+      "p90": 44,
+      "max": 48
+     },
+     "wall_seconds_diagnostic": {
+      "min": 1.9856,
+      "median": 2.8641,
+      "p90": 3.4741,
+      "max": 3.8632
+     },
+     "loadavg_1min_at_start": {
+      "min": 52.39,
+      "median": 56.04,
+      "p90": 60.62,
+      "max": 66.8
+     }
+    },
+    "hogonly1": {
+     "condition": "taskset -c 8 + 2 busy loops started on CPU 8 per run, no strace",
+     "batches": [
+      "b2:40"
+     ],
+     "runs": 40,
+     "exit_nonzero": 0,
+     "missing_report": 0,
+     "nonempty_stderr": {},
+     "parallel_observed_false": 0,
+     "checksums": {
+      "4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950": 40
+     },
+     "composition_mismatches": 0,
+     "observed_max_parallel_tasks": {
+      "4": 40
+     },
+     "busy_loops_on_cpu8_at_start": {
+      "min": 4,
+      "median": 20.0,
+      "p90": 22,
+      "max": 28
+     },
+     "wall_seconds_diagnostic": {
+      "min": 0.6957,
+      "median": 2.9538,
+      "p90": 3.1068,
+      "max": 3.5451
+     },
+     "loadavg_1min_at_start": {
+      "min": 15.77,
+      "median": 42.5,
+      "p90": 48.98,
+      "max": 51.85
+     }
+    },
+    "shared1": {
+     "condition": "one strace -f on CPU 8 traces 4 concurrent runs",
+     "batches": [
+      "b2:40"
+     ],
+     "runs": 40,
+     "exit_nonzero": 0,
+     "missing_report": 0,
+     "nonempty_stderr": {},
+     "parallel_observed_false": 0,
+     "checksums": {
+      "4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950": 40
+     },
+     "composition_mismatches": 0,
+     "observed_max_parallel_tasks": {
+      "4": 40
+     },
+     "busy_loops_on_cpu8_at_start": {
+      "min": 0,
+      "median": 0.0,
+      "p90": 0,
+      "max": 0
+     },
+     "wall_seconds_diagnostic": {
+      "min": 0.1699,
+      "median": 0.2369,
+      "p90": 0.2559,
+      "max": 0.2718
+     },
+     "loadavg_1min_at_start": {
+      "min": 10.12,
+      "median": 12.35,
+      "p90": 12.35,
+      "max": 12.35
+     }
+    },
+    "strace1": {
+     "condition": "taskset -c 8 strace -f -qq -e trace=none (task text)",
+     "batches": [
+      "b2:40"
+     ],
+     "runs": 40,
+     "exit_nonzero": 0,
+     "missing_report": 0,
+     "nonempty_stderr": {},
+     "parallel_observed_false": 0,
+     "checksums": {
+      "4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950": 40
+     },
+     "composition_mismatches": 0,
+     "observed_max_parallel_tasks": {
+      "4": 40
+     },
+     "busy_loops_on_cpu8_at_start": {
+      "min": 0,
+      "median": 0.0,
+      "p90": 0,
+      "max": 0
+     },
+     "wall_seconds_diagnostic": {
+      "min": 0.0659,
+      "median": 0.0767,
+      "p90": 0.0856,
+      "max": 0.1119
+     },
+     "loadavg_1min_at_start": {
+      "min": 9.52,
+      "median": 10.04,
+      "p90": 10.04,
+      "max": 10.12
+     }
+    },
+    "strace2": {
+     "condition": "taskset -c 8,9 strace -f -qq -e trace=none (task text)",
+     "batches": [
+      "b2:40"
+     ],
+     "runs": 40,
+     "exit_nonzero": 0,
+     "missing_report": 0,
+     "nonempty_stderr": {},
+     "parallel_observed_false": 0,
+     "checksums": {
+      "4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950": 40
+     },
+     "composition_mismatches": 0,
+     "observed_max_parallel_tasks": {
+      "2": 1,
+      "3": 3,
+      "4": 36
+     },
+     "busy_loops_on_cpu8_at_start": {
+      "min": 0,
+      "median": 0.0,
+      "p90": 0,
+      "max": 0
+     },
+     "wall_seconds_diagnostic": {
+      "min": 0.0239,
+      "median": 0.0254,
+      "p90": 0.0318,
+      "max": 0.0389
+     },
+     "loadavg_1min_at_start": {
+      "min": 10.12,
+      "median": 10.12,
+      "p90": 10.12,
+      "max": 10.12
+     }
+    }
+   },
+   "old": {
+    "hog1": {
+     "condition": "strace1 + 2 busy loops started on CPU 8 per run",
+     "batches": [
+      "b1:40",
+      "b2:120"
+     ],
+     "runs": 160,
+     "exit_nonzero": 0,
+     "missing_report": 0,
+     "nonempty_stderr": {},
+     "parallel_observed_false": 3,
+     "checksums": {
+      "4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950": 157,
+      "577161ebffb8eaf60ff44b02624e192d18853d72bff697bb34c27aa8ba52d6ea": 3
+     },
+     "composition_mismatches": 0,
+     "observed_max_parallel_tasks": {
+      "1": 3,
+      "2": 18,
+      "3": 14,
+      "4": 125
+     },
+     "busy_loops_on_cpu8_at_start": {
+      "min": 2,
+      "median": 30.0,
+      "p90": 32,
+      "max": 40
+     },
+     "wall_seconds_diagnostic": {
+      "min": 0.1584,
+      "median": 1.9464,
+      "p90": 2.5157,
+      "max": 3.2227
+     },
+     "loadavg_1min_at_start": {
+      "min": 9.45,
+      "median": 46.055,
+      "p90": 66.27,
+      "max": 66.89
+     }
+    },
+    "hog4": {
+     "condition": "strace1 + 4 busy loops started on CPU 8 per run",
+     "batches": [
+      "b1h:60",
+      "b2:120"
+     ],
+     "runs": 180,
+     "exit_nonzero": 0,
+     "missing_report": 0,
+     "nonempty_stderr": {},
+     "parallel_observed_false": 3,
+     "checksums": {
+      "4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950": 177,
+      "577161ebffb8eaf60ff44b02624e192d18853d72bff697bb34c27aa8ba52d6ea": 3
+     },
+     "composition_mismatches": 0,
+     "observed_max_parallel_tasks": {
+      "1": 3,
+      "2": 37,
+      "3": 35,
+      "4": 105
+     },
+     "busy_loops_on_cpu8_at_start": {
+      "min": 24,
+      "median": 44.0,
+      "p90": 44,
+      "max": 50
+     },
+     "wall_seconds_diagnostic": {
+      "min": 1.5893,
+      "median": 2.8887,
+      "p90": 3.4301,
+      "max": 3.9004
+     },
+     "loadavg_1min_at_start": {
+      "min": 33.74,
+      "median": 54.835,
+      "p90": 58.77,
+      "max": 66.8
+     }
+    },
+    "hogonly1": {
+     "condition": "taskset -c 8 + 2 busy loops started on CPU 8 per run, no strace",
+     "batches": [
+      "b1h:60",
+      "b2:40"
+     ],
+     "runs": 100,
+     "exit_nonzero": 0,
+     "missing_report": 0,
+     "nonempty_stderr": {},
+     "parallel_observed_false": 0,
+     "checksums": {
+      "4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950": 100
+     },
+     "composition_mismatches": 0,
+     "observed_max_parallel_tasks": {
+      "4": 100
+     },
+     "busy_loops_on_cpu8_at_start": {
+      "min": 2,
+      "median": 22.0,
+      "p90": 22,
+      "max": 30
+     },
+     "wall_seconds_diagnostic": {
+      "min": 0.3612,
+      "median": 3.0058,
+      "p90": 3.1877,
+      "max": 3.8952
+     },
+     "loadavg_1min_at_start": {
+      "min": 10.77,
+      "median": 29.63,
+      "p90": 45.69,
+      "max": 51.85
+     }
+    },
+    "shared1": {
+     "condition": "one strace -f on CPU 8 traces 4 concurrent runs",
+     "batches": [
+      "b1:40",
+      "b2:40"
+     ],
+     "runs": 80,
+     "exit_nonzero": 0,
+     "missing_report": 0,
+     "nonempty_stderr": {},
+     "parallel_observed_false": 0,
+     "checksums": {
+      "4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950": 80
+     },
+     "composition_mismatches": 0,
+     "observed_max_parallel_tasks": {
+      "2": 7,
+      "3": 5,
+      "4": 68
+     },
+     "busy_loops_on_cpu8_at_start": {
+      "min": 0,
+      "median": 3.0,
+      "p90": 20,
+      "max": 28
+     },
+     "wall_seconds_diagnostic": {
+      "min": 0.1809,
+      "median": 0.4378,
+      "p90": 1.786,
+      "max": 3.241
+     },
+     "loadavg_1min_at_start": {
+      "min": 10.12,
+      "median": 22.845,
+      "p90": 36.34,
+      "max": 36.34
+     }
+    },
+    "strace1": {
+     "condition": "taskset -c 8 strace -f -qq -e trace=none (task text)",
+     "batches": [
+      "b1:40",
+      "b2:40"
+     ],
+     "runs": 80,
+     "exit_nonzero": 0,
+     "missing_report": 0,
+     "nonempty_stderr": {},
+     "parallel_observed_false": 0,
+     "checksums": {
+      "4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950": 80
+     },
+     "composition_mismatches": 0,
+     "observed_max_parallel_tasks": {
+      "3": 1,
+      "4": 79
+     },
+     "busy_loops_on_cpu8_at_start": {
+      "min": 0,
+      "median": 0.0,
+      "p90": 0,
+      "max": 0
+     },
+     "wall_seconds_diagnostic": {
+      "min": 0.0604,
+      "median": 0.0767,
+      "p90": 0.0875,
+      "max": 0.0995
+     },
+     "loadavg_1min_at_start": {
+      "min": 9.52,
+      "median": 10.04,
+      "p90": 10.17,
+      "max": 10.17
+     }
+    },
+    "strace2": {
+     "condition": "taskset -c 8,9 strace -f -qq -e trace=none (task text)",
+     "batches": [
+      "b1:40",
+      "b2:40"
+     ],
+     "runs": 80,
+     "exit_nonzero": 0,
+     "missing_report": 0,
+     "nonempty_stderr": {
+      "b2/run_019.json.stderr": "[pid 2944281] ???( <detached ...>"
+     },
+     "parallel_observed_false": 0,
+     "checksums": {
+      "4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950": 80
+     },
+     "composition_mismatches": 0,
+     "observed_max_parallel_tasks": {
+      "2": 2,
+      "3": 8,
+      "4": 70
+     },
+     "busy_loops_on_cpu8_at_start": {
+      "min": 0,
+      "median": 0.0,
+      "p90": 0,
+      "max": 0
+     },
+     "wall_seconds_diagnostic": {
+      "min": 0.0223,
+      "median": 0.0249,
+      "p90": 0.0305,
+      "max": 0.0548
+     },
+     "loadavg_1min_at_start": {
+      "min": 10.12,
+      "median": 10.145,
+      "p90": 10.17,
+      "max": 10.17
+     }
+    }
+   }
+  },
+  "failing_runs": [
+   {
+    "batch": "b1",
+    "binary": "old",
+    "condition": "hog1",
+    "run": 40,
+    "busy_loops_on_cpu8_at_start": 32,
+    "observed_max_parallel_tasks": 1,
+    "verdict": "stage-concurrency-not-observed",
+    "scientific_checksum": "577161ebffb8eaf60ff44b02624e192d18853d72bff697bb34c27aa8ba52d6ea"
+   },
+   {
+    "batch": "b1h",
+    "binary": "old",
+    "condition": "hog4",
+    "run": 22,
+    "busy_loops_on_cpu8_at_start": 40,
+    "observed_max_parallel_tasks": 1,
+    "verdict": "stage-concurrency-not-observed",
+    "scientific_checksum": "577161ebffb8eaf60ff44b02624e192d18853d72bff697bb34c27aa8ba52d6ea"
+   },
+   {
+    "batch": "b2",
+    "binary": "old",
+    "condition": "hog1",
+    "run": 79,
+    "busy_loops_on_cpu8_at_start": 28,
+    "observed_max_parallel_tasks": 1,
+    "verdict": "stage-concurrency-not-observed",
+    "scientific_checksum": "577161ebffb8eaf60ff44b02624e192d18853d72bff697bb34c27aa8ba52d6ea"
+   },
+   {
+    "batch": "b2",
+    "binary": "old",
+    "condition": "hog1",
+    "run": 97,
+    "busy_loops_on_cpu8_at_start": 28,
+    "observed_max_parallel_tasks": 1,
+    "verdict": "stage-concurrency-not-observed",
+    "scientific_checksum": "577161ebffb8eaf60ff44b02624e192d18853d72bff697bb34c27aa8ba52d6ea"
+   },
+   {
+    "batch": "b2",
+    "binary": "old",
+    "condition": "hog4",
+    "run": 13,
+    "busy_loops_on_cpu8_at_start": 48,
+    "observed_max_parallel_tasks": 1,
+    "verdict": "stage-concurrency-not-observed",
+    "scientific_checksum": "577161ebffb8eaf60ff44b02624e192d18853d72bff697bb34c27aa8ba52d6ea"
+   },
+   {
+    "batch": "b2",
+    "binary": "old",
+    "condition": "hog4",
+    "run": 18,
+    "busy_loops_on_cpu8_at_start": 44,
+    "observed_max_parallel_tasks": 1,
+    "verdict": "stage-concurrency-not-observed",
+    "scientific_checksum": "577161ebffb8eaf60ff44b02624e192d18853d72bff697bb34c27aa8ba52d6ea"
+   }
+  ],
+  "totals": {
+   "new": {
+    "runs": 400,
+    "parallel_observed_false": 0,
+    "exit_nonzero": 0,
+    "missing_report": 0
+   },
+   "old": {
+    "runs": 680,
+    "parallel_observed_false": 6,
+    "exit_nonzero": 0,
+    "missing_report": 0
+   }
+  },
+  "task_text_conditions": {
+   "new": {
+    "runs": 80,
+    "parallel_observed_false": 0,
+    "exit_nonzero": 0,
+    "missing_report": 0
+   },
+   "old": {
+    "runs": 160,
+    "parallel_observed_false": 0,
+    "exit_nonzero": 0,
+    "missing_report": 0
+   }
+  }
+ },
+ "statistics": {
+  "b2_hog_old_false": 4,
+  "b2_hog_old_runs": 240,
+  "b2_hog_new_false": 0,
+  "b2_hog_new_runs": 240,
+  "b2_hog_fisher_one_sided_p": 0.06171793962789354,
+  "new_runs": 400,
+  "new_false_rate_upper_95": 0.0074613555287995625,
+  "note": "descriptive; the verdicts do not use these numbers"
+ },
+ "node_tests": {
+  "old_code_new_tests": {
+   "stage_batch_blob": "c2f44c327c53d7c6dfe7ba80b26cd43486d56b43",
+   "exit": 101,
+   "binaries": [
+    "tests/stage_batch_probe_contracts.rs",
+    "tests/stage_batch_probe_late_workers.rs"
+   ],
+   "results": [
+    {
+     "passed": 1,
+     "failed": 0,
+     "ignored": 0
+    },
+    {
+     "passed": 0,
+     "failed": 1,
+     "ignored": 0
+    }
+   ],
+   "passed": 1,
+   "failed": 1,
+   "failed_tests": [
+    "probe_observes_concurrency_when_pool_workers_start_late"
+   ],
+   "contracts_line": [
+    "repeats=16 distinct_checksums=1 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950 pinned_comparisons=16"
+   ],
+   "late_worker_repeats": [],
+   "panics": [
+    "repeat 0: probe observed 1 simultaneously active task(s) with late workers"
+   ]
+  },
+  "new_code_new_tests": {
+   "stage_batch_blob": "1a44222f2e8b64738bbfc4e67d8b2482407ea287",
+   "exit": 0,
+   "binaries": [
+    "tests/stage_batch_probe_contracts.rs",
+    "tests/stage_batch_probe_late_workers.rs"
+   ],
+   "results": [
+    {
+     "passed": 1,
+     "failed": 0,
+     "ignored": 0
+    },
+    {
+     "passed": 1,
+     "failed": 0,
+     "ignored": 0
+    }
+   ],
+   "passed": 2,
+   "failed": 0,
+   "failed_tests": [],
+   "contracts_line": [
+    "repeats=16 distinct_checksums=1 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950 pinned_comparisons=16"
+   ],
+   "late_worker_repeats": [
+    {
+     "repeat": 0,
+     "late_workers": 7,
+     "observed_max_parallel_tasks": 4,
+     "checksum": "4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950"
+    },
+    {
+     "repeat": 1,
+     "late_workers": 7,
+     "observed_max_parallel_tasks": 4,
+     "checksum": "4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950"
+    },
+    {
+     "repeat": 2,
+     "late_workers": 7,
+     "observed_max_parallel_tasks": 4,
+     "checksum": "4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950"
+    },
+    {
+     "repeat": 3,
+     "late_workers": 7,
+     "observed_max_parallel_tasks": 4,
+     "checksum": "4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950"
+    }
+   ],
+   "panics": []
+  }
+ },
+ "late_worker_test_repeats": {
+  "old": {
+   "runs": 20,
+   "exit_zero": 0,
+   "exit_nonzero": 20,
+   "executable_sha256": "8342d42aa87bc73b2528c14db4c147cff65414620651b1163a3db5dd7edab5cf",
+   "panic_observed_1": 20
+  },
+  "new": {
+   "runs": 20,
+   "exit_zero": 20,
+   "exit_nonzero": 0,
+   "executable_sha256": "1b2739d9f6dc9ae6d55d65112cb5fccfa739e46ebf6fafbe15054e02ae454734",
+   "reports": 80,
+   "late_workers": {
+    "7": 80
+   },
+   "observed_max_parallel_tasks": {
+    "4": 80
+   },
+   "checksums": {
+    "4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950": 80
+   }
+  }
+ },
+ "rendezvous_wait_diagnostic": {
+  "hog30": {
+   "exit": 0,
+   "header": "# condition hog30 pools 200 cpu1 8 2026-11-25 10:31:35 KST loadavg 6.72 18.36 32.79 4/5952 3247273",
+   "pools": 200,
+   "second_task_never": 0,
+   "min": 5e-06,
+   "median": 1.6e-05,
+   "p90": 0.008956,
+   "p99": 0.032019,
+   "max": 0.033329,
+   "largest": [
+    0.033329,
+    0.033005,
+    0.032019,
+    0.030567,
+    0.029972
+   ]
+  },
+  "plain": {
+   "exit": 0,
+   "header": "# condition plain pools 200 cpu1 8 2026-11-25 10:31:32 KST loadavg 6.35 18.48 32.90 17/5965 3245467",
+   "pools": 200,
+   "second_task_never": 0,
+   "min": 0.0,
+   "median": 1e-06,
+   "p90": 4e-06,
+   "p99": 1.4e-05,
+   "max": 1.8e-05,
+   "largest": [
+    1.8e-05,
+    1.6e-05,
+    1.4e-05,
+    8e-06,
+    7e-06
+   ]
+  },
+  "strace1": {
+   "exit": 0,
+   "header": "# condition strace1 pools 200 cpu1 8 2026-11-25 10:31:33 KST loadavg 6.35 18.48 32.90 6/5952 3246334",
+   "pools": 200,
+   "second_task_never": 0,
+   "min": 4e-06,
+   "median": 1.3e-05,
+   "p90": 6.3e-05,
+   "p99": 0.000297,
+   "max": 0.000651,
+   "largest": [
+    0.000651,
+    0.000334,
+    0.000297,
+    0.00024,
+    0.00019
+   ]
+  }
+ },
+ "checks": {
+  "cli_contracts": {
+   "command": "cargo_locked test --locked -j 4 --release -p rodas5p-cli --test cli_contracts --no-fail-fast",
+   "head": "4a90ac87abdbf58fa6ee9069f91973c5de6695c4",
+   "exit": 0,
+   "binaries": [
+    "tests/cli_contracts.rs"
+   ],
+   "results": [
+    {
+     "passed": 25,
+     "failed": 0,
+     "ignored": 0
+    }
+   ],
+   "passed": 25,
+   "failed": 0,
+   "failed_tests": []
+  },
+  "clippy": {
+   "command": "cargo_locked clippy --locked -j 4 --release -p rodas5p-integrators --no-deps --lib --test stage_batch_probe_contracts --test stage_batch_probe_late_workers --test stage_batch_probe_latency -- -D warnings",
+   "head": "4a90ac87abdbf58fa6ee9069f91973c5de6695c4",
+   "exit": 0,
+   "warnings": 0,
+   "errors": 0
+  },
+  "fmt": {
+   "command": "cargo +1.94.1 fmt -p rodas5p-integrators -- --check",
+   "head": "4a90ac87abdbf58fa6ee9069f91973c5de6695c4",
+   "exit": 0
+  },
+  "integrators_stage_batch_tests": {
+   "command": "cargo_locked test --locked -j 4 --release -p rodas5p-integrators --test stage_batch_contracts --test generic_scope_contracts --test stage_batch_probe_contracts --test stage_batch_probe_late_workers --test stage_batch_probe_latency --no-fail-fast -- --nocapture",
+   "head": "4a90ac87abdbf58fa6ee9069f91973c5de6695c4",
+   "exit": 0,
+   "binaries": [
+    "tests/generic_scope_contracts.rs",
+    "tests/stage_batch_contracts.rs",
+    "tests/stage_batch_probe_contracts.rs",
+    "tests/stage_batch_probe_late_workers.rs",
+    "tests/stage_batch_probe_latency.rs"
+   ],
+   "results": [
+    {
+     "passed": 4,
+     "failed": 0,
+     "ignored": 0
+    },
+    {
+     "passed": 4,
+     "failed": 0,
+     "ignored": 0
+    },
+    {
+     "passed": 1,
+     "failed": 0,
+     "ignored": 0
+    },
+    {
+     "passed": 1,
+     "failed": 0,
+     "ignored": 0
+    },
+    {
+     "passed": 0,
+     "failed": 0,
+     "ignored": 1
+    }
+   ],
+   "passed": 10,
+   "failed": 0,
+   "failed_tests": []
+  },
+  "loop_checker": {
+   "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
+   "head": "4a90ac87abdbf58fa6ee9069f91973c5de6695c4",
+   "exit": 1,
+   "output": [
+    "Traceback (most recent call last):",
+    "  File \"/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/research/production_loop_20261116/check_checkpoint.py\", line 95, in <module>",
+    "    main()",
+    "  File \"/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/research/production_loop_20261116/check_checkpoint.py\", line 77, in main",
+    "    require(git('hash-object', path) == expected, 'protected file changed: ' + path)",
+    "  File \"/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/research/production_loop_20261116/check_checkpoint.py\", line 28, in require",
+    "    raise ValueError(message)",
+    "ValueError: protected file changed: crates/rodas5p-integrators/src/stage_batch.rs"
+   ]
+  },
+  "loop_checker_rest": {
+   "command": "python3 -I research/production_loop_20261116/stage_batch_probe/loop_checker_rest.py",
+   "head": "4a90ac87abdbf58fa6ee9069f91973c5de6695c4",
+   "exit": 0,
+   "output": [
+    "expected complaint (not raised): protected file changed: crates/rodas5p-integrators/src/stage_batch.rs fb68321b94dd4caf8a895ea7e2f9aad5363b80f2 != c2f44c327c53d7c6dfe7ba80b26cd43486d56b43",
+    "PASS: strict JSON, task/DAG structure, ancestry, protected and evidence identities",
+    "Scope: checkpoint reproducibility. Production HOLD; no new numerical qualification."
+   ]
+  }
+ },
+ "discriminators": [
+  {
+   "name": "old failure provoked",
+   "frozen_threshold": "PASS if any run of the old probe reports stage_parallelism_observed=false under a provocation; NOT_DECIDABLE if none does",
+   "measured": "CLI, task-text conditions strace1/strace2: 0/160 false; all CLI conditions: 6/680 false (in hog1, hog4), each with checksum ['577161eb']; late-worker test executable: 20/20 runs failed with 'probe observed 1'",
+   "verdict": "PASS"
+  },
+  {
+   "name": "new code never shows the failure under the same provocation",
+   "frozen_threshold": "0 runs of the new probe with stage_parallelism_observed=false in every provocation condition and every late-worker test run",
+   "measured": "CLI: 0/400 false (interleaved with the old binary in batch b2); late-worker test executable: 20/20 runs passed",
+   "verdict": "PASS"
+  },
+  {
+   "name": "checksum unchanged",
+   "frozen_threshold": "every new-probe smoke checksum (CLI runs and tests) equals 4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950; every old-probe run with parallel-observed=true has the same value; the composition rebuilt from each report equals its checksum",
+   "measured": "new CLI checksums {'4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950': 400}; old CLI checksums other than the false value {'4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950': 674}; test checksums ['4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950']; composition mismatches 0",
+   "verdict": "PASS"
+  },
+  {
+   "name": "suites",
+   "frozen_threshold": "cli_contracts, the stage_batch test targets (stage_batch_contracts, generic_scope_contracts, the two new ones), clippy -D warnings and fmt exit 0",
+   "measured": "cli_contracts: exit 0, 25 passed/0 failed; integrators_stage_batch_tests: exit 0, 10 passed/0 failed; clippy: exit 0; fmt: exit 0",
+   "verdict": "PASS"
+  }
+ ]
+}

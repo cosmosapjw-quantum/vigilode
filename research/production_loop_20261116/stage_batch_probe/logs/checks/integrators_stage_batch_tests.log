@@ -1,9 +1,9 @@
 # check integrators_stage_batch_tests
-# head 02eb3afb482a715aa39e9db6463c5cfcc61638f4 stage_batch.rs blob 1a44222f2e8b64738bbfc4e67d8b2482407ea287
-# start 2026-11-25 10:03:09 KST loadavg 45.06 29.82 22.67 34/6012 2963259
-# command: cargo_locked test --locked -j 4 --release -p rodas5p-integrators --test stage_batch_contracts --test generic_scope_contracts --test stage_batch_probe_contracts --test stage_batch_probe_late_workers --no-fail-fast -- --nocapture
+# head 4a90ac87abdbf58fa6ee9069f91973c5de6695c4 stage_batch.rs blob fb68321b94dd4caf8a895ea7e2f9aad5363b80f2
+# start 2026-11-25 10:34:20 KST loadavg 8.68 16.44 29.89 4/5947 3277345
+# command: cargo_locked test --locked -j 4 --release -p rodas5p-integrators --test stage_batch_contracts --test generic_scope_contracts --test stage_batch_probe_contracts --test stage_batch_probe_late_workers --test stage_batch_probe_latency --no-fail-fast -- --nocapture
    Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v32/crates/rodas5p-integrators)
-    Finished `release` profile [optimized] target(s) in 14.14s
+    Finished `release` profile [optimized] target(s) in 10.84s
      Running tests/generic_scope_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v32/release/deps/generic_scope_contracts-c228e3421736c18f)
 
 running 4 tests
@@ -30,7 +30,7 @@ running 1 test
 repeats=16 distinct_checksums=1 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950 pinned_comparisons=16
 test repeated_smoke_reports_observe_concurrency_with_one_unchanged_checksum ... ok
 
-test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
 
      Running tests/stage_batch_probe_late_workers.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v32/release/deps/stage_batch_probe_late_workers-0fc24072b1b91d49)
 
@@ -41,7 +41,14 @@ repeat=2 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f
 repeat=3 late_workers=7 observed_max_parallel_tasks=4 checksum=4079849b6d3c0702f14e6dfb977319f6f1f6891c046786a8bd7aff1f1d39c950
 test probe_observes_concurrency_when_pool_workers_start_late ... ok
 
-test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.24s
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.22s
 
-# end 2026-11-25 10:03:25 KST
+     Running tests/stage_batch_probe_latency.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v32/release/deps/stage_batch_probe_latency-768f5efa47961597)
+
+running 1 test
+test rendezvous_wait_on_fresh_pools_diagnostic ... ignored, diagnostic: rendezvous wait on fresh pools; run by hand (stage_batch_probe/latency.sh)
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+# end 2026-11-25 10:34:32 KST
 exit=0
