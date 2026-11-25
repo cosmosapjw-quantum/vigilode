@@ -1,0 +1,22 @@
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-integrators)
+    Finished `release` profile [optimized] target(s) in 1m 20s
+     Running tests/retro_causal_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/retro_causal_contracts-26ad7dfdccf12fac)
+
+running 1 test
+test endpoint_plan_transports_early_error_and_retains_dense_constraints ... FAILED
+
+failures:
+
+---- endpoint_plan_transports_early_error_and_retains_dense_constraints stdout ----
+
+thread 'endpoint_plan_transports_early_error_and_retains_dense_constraints' (689246) panicked at crates/rodas5p-integrators/tests/retro_causal_contracts.rs:11:57:
+called `Result::unwrap()` on an `Err` value: InvalidInput("RETRO causal plan not implemented")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    endpoint_plan_transports_early_error_and_retains_dense_constraints
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test retro_causal_contracts`

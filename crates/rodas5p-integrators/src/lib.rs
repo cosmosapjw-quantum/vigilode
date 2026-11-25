@@ -685,3 +685,6 @@ pub mod quadratic_branch;
 
 /// Opt-in research: certified diagonal Green slabs.
 pub mod retro_green;
+
+/// Opt-in research: future-informed causal budget with native RODAS5P.
+pub mod retro_causal;
