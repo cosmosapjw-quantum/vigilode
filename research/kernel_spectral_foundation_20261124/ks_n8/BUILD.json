@@ -1,0 +1,91 @@
+{
+ "schema": "vigilode.ks.build-return.v1",
+ "task": "KS-N8",
+ "run_id": "wf_660859bd-2cd",
+ "build": {
+  "status": "done",
+  "summary": "KS-N8 is a theory task with no Rust change. The operator is flux-form ring-constant advection-diffusion on the spatial.rs grid, centred as the primary scheme; upwind equals centred plus an A-self-adjoint negative semidefinite diffusion. Each mode block has a real symmetric tridiagonal A-Hermitian part, so the §4.2 pivot count applied to zI-Ht_m certifies z > mu_A(J). That gives ||W(z)^-1||_A <= 1/(z-mu_A), complex Thomas pivots with Re p >= z-mu_A, ||e^{tJ}||_A <= e^{t mu_A}, and ||R(hJ)||_A <= sup over Re w <= h mu_A of |R| (von Neumann). The RODAS5P pole condition is the same as the certificate condition. For zonal (divergence-free) flow mu_A = c exactly and the bound is attained. Proven: mu_A-c <= (alpha_G-c)/2. verify_fov.py ran 225 cases on 3 grids and every check holds (D1 PASS). D2 is FAIL under the rule frozen before the run: rho_F/rho_G is 0.644-0.997 except in 9 upwind Hadley cases at Peclet 30 (1.033-1.104). Kill does not apply, because all 225 cases are strictly tighter in rho or alpha. verify_foundation.py and verify_run.py pass. THEORY.md §10 is appended.",
+  "checks": [
+   {
+    "name": "verify_fov (FoV certificate, 225 cases on 3 grids)",
+    "command": "python3 -I research/kernel_spectral_foundation_20261124/scripts/verify_fov.py",
+    "exit_code": 0,
+    "result": "all_ok True; D1 PASS; D2 FAIL; rerun reproduces results/KS_N8_FOV.json byte-identically (sha256 d59cadcefcd8da399c14e18b3f98e923d976a510d2075f49d54e1c1a58a204d2)"
+   },
+   {
+    "name": "verify_foundation",
+    "command": "python3 -I research/kernel_spectral_foundation_20261124/scripts/verify_foundation.py /tmp/ks_foundation_check_ksn8",
+    "exit_code": 0,
+    "result": "F1-F8 ok, all_ok True"
+   },
+   {
+    "name": "verify_run",
+    "command": "python3 -I research/kernel_spectral_foundation_20261124/scripts/verify_run.py",
+    "exit_code": 0,
+    "result": "OK: 11 stages, 16 claims, 8 plan tasks, 3 timed grids, foundation checks pass"
+   },
+   {
+    "name": "symbolic check of the DERIVATION L4 closed forms (Wolfram 15, nt=4)",
+    "command": "mcp wolfram WolframLanguageEvaluator (code and output in ks_n8/logs/wolfram_l4_symbolic.txt)",
+    "result": "Hermitian and skew closed forms (centred, and upwind for both sign patterns), m=0 mass identity, zonal skew diagonal: all True"
+   }
+  ],
+  "discriminators": [
+   {
+    "name": "bound holds on 3 grids (D1)",
+    "frozen_threshold": "every validity check (A0-A11 solvability/resolvent/inertia/Thomas/mass/exp/RODAS5P, B0-B3 enclosure, C1 proven alpha inequality, plus G0 ring data and R0 RODAS5P sanity) holds on all 3 grids and all cases",
+    "measured": "26 check families, 0 failures over 225 cases. Worst normalized excesses: A-norm resolvent 2.6e-16, eigenvalue outside the FoV union 6.5e-15, RODAS5P ||R(hJ)||_A/bound-1 1.6e-13, ||e^{tJ}||_A/bound-1 1.1e-14. Hermitian-part pivot counts match the dense counts in all cases.",
+    "verdict": "PASS"
+   },
+   {
+    "name": "tighter than Gershgorin (D2)",
+    "frozen_threshold": "Reference: row Gershgorin discs of the mode blocks B_m. PASS iff rho_F <= rho_G(1+1e-12) and alpha_F <= alpha_G+1e-12*scale in every case, and every non-zero-velocity case is strictly tighter in rho or alpha. FAIL iff any case is looser. KILL iff no case is strictly tighter.",
+    "measured": "rho_F/rho_G: 0.958-0.982 (zero velocity), 0.958-0.997 (zonal), 0.644-1.104 (divergent). rho_F is looser in 9/225 cases, all upwind hadley_jet at Peclet 30: 1.104 (G1), 1.037 (G2), 1.033 (G3). 225/225 cases are strictly tighter in rho or alpha. alpha is never looser (proven); (mu_A-c)/(alpha_G-c) is 0.023-0.48 over the divergent cases.",
+    "verdict": "FAIL"
+   }
+  ],
+  "verdict": "Acceptance met: a stated bound, proven and checked on 3 grids (D1 PASS). D2 FAIL under the frozen rule: the FoV stiffness radius is looser than Gershgorin in 9/225 strongly divergent upwind cases. Kill does not apply: the abscissa is never looser (proven), strictly tighter for every divergent flow, and the radius is tighter in 216/225 cases. So the fallback (keep the separable route diffusion-only) is not forced by this node. The code nevertheless stays diffusion-only until a complex-block solver exists (P).",
+  "open_issues": [
+   "rho_F <= rho_G does not hold in general: it fails in 9 measured upwind Hadley cases at Peclet 30. There, Gershgorin stays the tighter spectral radius; only the field of values bounds norms (Crouzeix-Palencia).",
+   "Not implemented (P): certified Sturm bisection for the support values h_m(phi_k), and a separable solver with complex mode blocks, the half spectrum and the Hermitian-part certificate.",
+   "The DOPRI5 explicit step bound from the FoV enclosure (a two-dimensional fit into the stability region) is P for KS-N5 and UNVERIFIED.",
+   "Checked only on 3 small grids (6x10, 9x16, 11x15). Longitude-dependent velocity, which breaks Z_np, remains O.",
+   "For divergent flow the certificate is conservative: the true ||W^-1||_A is 3.0-851x below the bound near threshold, and mu_A exceeds the spectral abscissa by up to 45. For monotone schemes the area-weighted L1 log norm (= c) is sharper in its own norm.",
+   "The task text says numpy 2.4.2, but numpy 1.26.4 is what is installed (recorded in ks_n8/NOTES.txt).",
+   "RUN.json and PLAN.json were not edited (the orchestrator appends). Claim K15 (O) can move to D/T, with D2 FAIL recorded.",
+   "The branch is not pushed, per the rules."
+  ],
+  "branch": "research/stage-lattice-referee-20261124-ksn8",
+  "head_commit": "29e45994db371aa0ec5d9bc6626805dca9dd009c",
+  "files_written": [
+   "/home/cosmosapjw/worktrees/vigilode-stage-lattice-ksn8/research/kernel_spectral_foundation_20261124/THEORY.md",
+   "/home/cosmosapjw/worktrees/vigilode-stage-lattice-ksn8/research/kernel_spectral_foundation_20261124/scripts/verify_fov.py",
+   "/home/cosmosapjw/worktrees/vigilode-stage-lattice-ksn8/research/kernel_spectral_foundation_20261124/results/KS_N8_FOV.json",
+   "/home/cosmosapjw/worktrees/vigilode-stage-lattice-ksn8/research/kernel_spectral_foundation_20261124/ks_n8/NOTES.txt",
+   "/home/cosmosapjw/worktrees/vigilode-stage-lattice-ksn8/research/kernel_spectral_foundation_20261124/ks_n8/DERIVATION.txt",
+   "/home/cosmosapjw/worktrees/vigilode-stage-lattice-ksn8/research/kernel_spectral_foundation_20261124/ks_n8/logs/verify_fov.log",
+   "/home/cosmosapjw/worktrees/vigilode-stage-lattice-ksn8/research/kernel_spectral_foundation_20261124/ks_n8/logs/wolfram_l4_symbolic.txt",
+   "/home/cosmosapjw/worktrees/vigilode-stage-lattice-ksn8/research/kernel_spectral_foundation_20261124/ks_n8/logs/checks.log"
+  ],
+  "key_numbers": [
+   "225 cases: 3 grids x (zero velocity + 6 velocity families x Peclet 0.3/30 x centred/upwind) x 3 values of c",
+   "zonal flow: |mu_A - c| <= 3.8e-17*scale; resolvent bound 1/(z-c) attained to 1.0e-12",
+   "rho_F/rho_G: zero velocity 0.958-0.982, zonal 0.958-0.997, divergent 0.644-1.104 (9 looser: 1.104/1.037/1.033)",
+   "imaginary-extent ratio for zonal flow: 0.12-0.99; for zonal flow rho_F equals the spectral radius to within 2.2e-4",
+   "(mu_A-c)/(alpha_G-c) over the divergent cases: 0.023-0.48 (proven <= 0.5)",
+   "grid-space Gershgorin abscissa - c, zonal centred at Peclet 30: 3.3-788 (FoV gives 0); Varah's bound does not apply at 193 of 900 z values",
+   "Euclidean mu_2 - c at zero velocity: 0.0055-0.19 (> 0, so the Euclidean certificate does not reduce to §4.2)",
+   "Thomas pivot margin >= 3.5e-5*scale; backward error of the complex Thomas solves <= 1.4e-15; stage mass defect <= 5.6e-17",
+   "RODAS5P: sampled max|R(iy)| = 1+2.2e-16, |R(-1e12)| = 1.3e-11",
+   "script runtime about 22-28 s (diagnostic)"
+  ],
+  "rulings": [
+   "Norm: the area-weighted inner product <.,.>_A is primary (diffusion is self-adjoint in it, so the certificate reduces to §4.2). The Euclidean mu_2 of the task text is also proven and checked, but it is weaker for zero velocity.",
+   "Scheme: centred flux form is primary (undamped non-normality; its A-Hermitian part is the diffusion). Upwind is covered as centred plus negative semidefinite artificial diffusion.",
+   "Gershgorin reference for D2: row discs of the mode blocks B_m, i.e. the §5.2 construction applied to the advective blocks. Grid-space and weighted-column variants are reported as diagnostics only.",
+   "Amendments made before any run: K = 256 polygon directions instead of 64; the exit code covers the validity checks (A, B, C1); the D2 verdict is reported in the JSON.",
+   "Wall time was removed from KS_N8_FOV.json after the first official run, so reruns reproduce the file byte for byte. The numbers are unchanged.",
+   "A smoke run went to the scratchpad before the official run. Its numbers are identical (deterministic seeds); this is recorded in NOTES.txt."
+  ]
+ }
+}

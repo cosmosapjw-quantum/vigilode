@@ -1,0 +1,118 @@
+{
+ "schema": "vigilode.ks.review.v1",
+ "task": "KS-N8",
+ "run_id": "wf_660859bd-2cd",
+ "builder_head": "29e45994db371aa0ec5d9bc6626805dca9dd009c",
+ "merged_into": "research/stage-lattice-referee-20261124 (merge commit 197ee43d)",
+ "review": {
+  "node": "KS-N8",
+  "verdict": "accept_with_corrections",
+  "summary": "Bound not refuted. Re-derived §10/DERIVATION step by step (flux-form operator, A-Hermitian/skew closed forms, Sylvester count, Schur-complement pivot bound, Weyl, P3(iv) m=0 rows, von Neumann/RODAS5P pole, enclosure): correct. verify_fov.py rerun exit 0, byte-identical (d59cadce...); verify_foundation, verify_run exit 0; every §10 number matches the JSON. Independent face-based re-implementation (numerical DFT blocks, U-form RODAS5P, Pade expm) matches the builder operator and closed forms; 2125 validity cases (nt 1-48, np 1-96, kappa=0, Pe 0.01-1e5, z down to mu_A+1e-12 scale, complex w): no theorem violation beyond rounding (RODAS5P 1.3e-9 excess is -1.3e-18 in 50 digits). D1 PASS, D2 FAIL reproduced; kill not triggered (alpha_F<alpha_G strictly in all 2960 divergent cases). Corrections: (1) no-pivot complex Thomas is not backward stable near the threshold for centred divergent flow at high Pe or kappa=0 (growth 1e8, backward error to 5.5e-6): qualify 10.3(b), DERIVATION S6; (2) radius also looser for centred flow at Pe~1, incl. G1 hadley_jet (675/4748 looser): fix 10.6/10.7 generalization; (3) 10.5 'stays within' wording; (4) rho_F<=rho_G is N, not open.",
+  "scope_ok": true,
+  "protected_ok": true,
+  "discriminator_checks": [
+   {
+    "name": "bound holds on 3 grids (D1)",
+    "builder_value": "PASS: 26 check families, 0 failures over 225 cases on G1-G3",
+    "reviewer_value": "PASS: verify_fov.py rerun into scratch exit 0, all_ok True, KS_N8_FOV.json byte-identical (sha256 d59cadcefcd8da399c14e18b3f98e923d976a510d2075f49d54e1c1a58a204d2). Independent re-implementation, 2032 small-grid + 93 large-grid cases: inertia count, A-norm resolvent at real z and complex w, complex Thomas pivot/multiplier bounds, Weyl, C1, zonal mu_A=c and attainment, exp, RODAS5P, enclosure, mass. No violation beyond rounding.",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "tighter than Gershgorin (D2)",
+    "builder_value": "FAIL: rho_F > rho_G in 9/225 (upwind hadley_jet Pe 30); 225/225 strictly tighter in rho or alpha",
+    "reviewer_value": "FAIL reproduced from the JSON (9/225 looser, 225/225 strict). Extended runs (4748 classify + 273 large-grid cases): rho_F > rho_G in 687, all confirmed by a lower bound of the true numerical radius, max 1.2071=(1+sqrt2)/2; this includes 74 centred divergent cases. alpha_F < alpha_G strictly in every divergent case; C1 never violated. Non-strict cases are only exact zonal ties (nt=2, kappa=0). KILL not triggered.",
+    "reviewer_verdict": "FAIL",
+    "agrees": true
+   }
+  ],
+  "reran": [
+   {
+    "command": "python3 -I research/kernel_spectral_foundation_20261124/scripts/verify_fov.py <scratch>/review_KS-N8/rerun",
+    "exit_code": 0,
+    "result": "all_ok True; D1 PASS; D2 FAIL; KS_N8_FOV.json sha256 identical to the committed file"
+   },
+   {
+    "command": "python3 -I research/kernel_spectral_foundation_20261124/scripts/verify_foundation.py <scratch>/review_KS-N8/foundation_check",
+    "exit_code": 0,
+    "result": "F1-F8 ok, all_ok True"
+   },
+   {
+    "command": "python3 -I research/kernel_spectral_foundation_20261124/scripts/verify_run.py",
+    "exit_code": 0,
+    "result": "OK: 11 stages, 16 claims, 8 plan tasks, 3 timed grids"
+   },
+   {
+    "command": "python3 -I <scratch>/review_KS-N8/scripts/indep_fov.py out/validity.jsonl validity (+ large_validity)",
+    "exit_code": 0,
+    "result": "2032 + 93 cases, no theorem violation beyond rounding. Builder dense operator equals the face-based assembly to 1.4e-13 of scale, and its closed forms to 2.9e-13 (worst at Pe 1e4, np=2, from +-b/2 cancellation). Tolerance hits: RODAS5P 1.3e-9 (rounding at h~5e6/rho) and complex Thomas backward error (finding F1)."
+   },
+   {
+    "command": "python3 -I <scratch>/review_KS-N8/scripts/indep_fov.py out/classify.jsonl classify (+ large)",
+    "exit_code": 0,
+    "result": "4748 + 273 cases: 687 rho-looser (613 upwind, 74 centred divergent), zonal never looser, alpha strictly tighter for every divergent flow; reproduces builder rho_F/rho_G/alpha on 34 matching cases to 5e-14"
+   },
+   {
+    "command": "python3 -I <scratch>/review_KS-N8/scripts/thomas_near.py and thomas_k0.py",
+    "exit_code": 0,
+    "result": "near-threshold growth up to 1e8, backward error up to 5.5e-6 (centred divergent, Pe>=1e3 or kappa=0); LAPACK 4e-17; upwind <=2e-16; G1-G3 at Pe<=300 ~1e-16"
+   },
+   {
+    "command": "python3 -I <scratch>/review_KS-N8/scripts/rodas_mp.py (mpmath 50 digits)",
+    "exit_code": 0,
+    "result": "double-precision RODAS5P excess 1.34e-9 becomes norm/bound-1 = -1.26e-18 in 50 digits; bound holds"
+   },
+   {
+    "command": "python3 -I <scratch>/review_KS-N8/scripts/epoly.py fixtures/rodas5p_coefficients_snapshot.json",
+    "exit_code": 0,
+    "result": "E-polynomial: lowest coefficients are literal-rounding noise; |R(iy)| <= 1 + 1.1e-18; first significant term y^8 > 0 (A-stable up to rounding)"
+   },
+   {
+    "command": "python3 -I <scratch>/review_KS-N8/scripts/support_dense.py; json_claims.py; cert_resolution.py",
+    "exit_code": 0,
+    "result": "dense support function = max_m h_m to 5.9e-15 (88 cases, 64 directions); every §10 subset number matches the JSON; pivot certificate resolves mu_A to within 4 eps*||Ht||"
+   }
+  ],
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "minor",
+    "claim": "THEORY 10.3(b) reports 'the solves have backward error at most 1.4e-15' without the tested range, and DERIVATION S6 says 'The pivot bound of T2(b) controls growth in the complex sweep'.",
+    "evidence": "The bounds Re p_r >= z - lambda_max(Ht_m) and |l_r| <= |B_m[r][r-1]|/(z - mu_A) hold in every case checked. However, the multiplier bound grows like 1/(z - mu_A). For centred divergent flow at meridional Pe 1e3-1e5, or kappa=0, with z - mu_A in 1e-12..1e-6 of the scale, the no-pivot sweep reaches growth up to 1e8, multipliers up to 3e3, and backward error 1e-11 to 5.5e-6 (e.g. 6x10 kappa=0 hadley: 5.5e-6; 32x64 alt_merid Pe 1e5: 1.1e-9). LAPACK with partial pivoting gives 4e-17 on the same systems; upwind stays <= 2e-16. At the builder's settings (z >= mu_A + 1e-4 scale, Pe <= 30) the error is <= 1e-15. Evidence: scratchpad review_KS-N8/out/thomas_near.json and validity.jsonl.",
+    "correction": "In 10.3(b), state the tested range: z - mu_A >= 1e-4 of the scale and cell Pe <= 30. In DERIVATION S6, replace 'controls growth' with: growth is bounded only while z - mu_A is not small relative to |B_m[r][r-1]|. Also record that the P solver needs pivoting or a refusal margin for centred divergent flow at high Péclet near the threshold."
+   },
+   {
+    "id": "F2",
+    "severity": "minor",
+    "claim": "10.6: 'The 9 looser cases are all upwind Hadley-plus-jet flow at Péclet 30'. 10.7: 'For divergent upwind flow at high Péclet, the Gershgorin radius remains the tighter spectral radius'. The zonal table row: 'rho_F equals the spectral radius to within 2.2e-4'.",
+    "evidence": "These are artifacts of sampling Pe only at {0.3, 30}. On the builder's own G1 grid and its hadley_jet family at cell Pe 1, the centred radius is looser: rho_F/rho_G = 1.00081, confirmed by a lower bound of the true numerical radius. G2 and G3 show 1.00013 and 1.00017 (uniform_merid, polar_face). At Pe = 1 a centred meridional off-diagonal vanishes, the block becomes locally triangular and Gershgorin is exact for the spectrum. Over 4748 cases, 74/1480 centred divergent cases are looser (up to 1.054). Upwind divergent cases are looser in 601/1480, not always (random_both upwind 39/148); the maximum is 1.2071 = (1+sqrt2)/2, a Jordan-type 2x2 limit. Zonal flows are never looser. Zonal rho_F/rho_true - 1 reaches 4.9% on 2x4 and 3x5 grids and 7.1e-4 on G1-G3.",
+    "correction": "Rephrase: rho_F <= rho_G fails for divergent flow under both schemes, centred near cell Pe 1 and upwind at high Pe in many families. Mark the 2.2e-4 zonal figure as specific to the tested set. The D2 FAIL verdict is unchanged."
+   },
+   {
+    "id": "F3",
+    "severity": "minor",
+    "claim": "10.5: '||R(hJ)||_A stays within 1.6e-13 (relative) of the bound ... ||e^{tJ}||_A stays within 1.1e-14 of its bound'.",
+    "evidence": "A7 and A8 record max(norm/bound - 1), which is a one-sided excess. In KS_N8_FOV.json the per-case maxima for divergent flows are -1.9e-7..-1.6e-13 (RODAS5P) and -1.8e-6..-1.7e-12 (exp). The norms therefore sit below their bounds, not within 1.6e-13 of them.",
+    "correction": "Write 'never exceeds the bound by more than 1.6e-13 (relative) / 1.1e-14'."
+   },
+   {
+    "id": "F4",
+    "severity": "minor",
+    "claim": "10.7 lists 'rho_F <= rho_G in general (false in 9 measured cases)' under 'UNVERIFIED or open'.",
+    "evidence": "Counterexamples exist: 9 in the builder's run and 687 in the reviewer's runs, all confirmed against the true numerical range. That makes it a negative result, not an open question.",
+    "correction": "List it as N (negative result) with the counterexample families."
+   },
+   {
+    "id": "F5",
+    "severity": "minor",
+    "claim": "Nits.",
+    "evidence": "(a) §8 still marks advection as O and does not point to §10. (b) 10.3 drops the derivation's caveat that the Sylvester count equality needs z not to be an eigenvalue of a leading principal submatrix (a zero pivot is counted as a refusal). (c) The NOTES amendment is labelled 09:50 but was committed at 09:46:42; it still precedes the script (09:54) and the smoke run (09:52), so preregistration is intact. (d) NOTES gives the D2 scale as max(1, rho_G); the script uses max(1, rho_G+|c|). No verdict is affected.",
+    "correction": "Add a §8 pointer to §10, carry the leading-minor caveat into 10.3, and align the scale definition."
+   }
+  ]
+ },
+ "orchestrator_actions": [
+  "Builder branch research/stage-lattice-referee-20261124-ksn8 (head 29e45994) merged (merge commit 197ee43d).",
+  "F1-F5 applied at merge to THEORY.md section 10 (tested range of the backward-error statement and the need for pivoting near the threshold; rho_F <= rho_G stated as a negative result (N) with the counterexample families; 'never exceeds' instead of 'within'; the 2.2e-4 zonal figure limited to the tested set; the leading-minor caveat of the Sylvester count; a pointer from section 8), to ks_n8/DERIVATION.txt (growth bound) and appended to ks_n8/NOTES.txt (commit time, D2 scale). The verdicts D1 PASS and D2 FAIL are unchanged."
+ ]
+}

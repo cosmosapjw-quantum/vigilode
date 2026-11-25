@@ -1,0 +1,92 @@
+{
+ "schema": "vigilode.ks.build-return.v1",
+ "task": "KS-N7",
+ "run_id": "wf_660859bd-2cd",
+ "build": {
+  "status": "done",
+  "summary": "KS-N7 is done, with Complex still the default. A new BoxTransform::PairedReal option packs the x-rows two at a time as u + i v, separates them by R Z(m) = conj Z(nx-m), and transforms only the Hermitian half along y and z. It needs about half the FFT lines (0.502 at 256x256) and about half the buffer memory. A new stage_solver(z) prepares once and reuses its plans and buffers; it is what the timing test measures.\n\nOver 320 cases on 16 box grids (all box grids of the existing tests plus odd, minimum-size, prime-nx and 3-D sizes), PairedReal matches Complex to round-off: largest relative difference 1.874e-15. Its T1/T2 maxima are 8.110e-16 and 4.545e-17, against the 1e-13 bounds. The default arm still gives the recorded 3.373e-16 and 5.110e-17. Whole-IVP runs match the dense reference with the same attempts as Complex. Tests, clippy, fmt and verify_run all pass.\n\nThe timing verdict is not run; it is the orchestrator's owner-host cell. Smoke timings on the loaded agent host (diagnostic only) give 0.20 of Complex at 256x256. That ratio also reflects layout and index-arithmetic changes, not only the pairing.",
+  "branch": "research/stage-lattice-referee-20261124-ksn7",
+  "head_commit": "f53087a076839811aa6aade8c5384dbfed4115cc",
+  "files_written": [
+   "/home/cosmosapjw/worktrees/vigilode-stage-lattice-ksn7/crates/vigilode/src/spatial/separable.rs",
+   "/home/cosmosapjw/worktrees/vigilode-stage-lattice-ksn7/crates/vigilode/tests/spatial_separable.rs",
+   "/home/cosmosapjw/worktrees/vigilode-stage-lattice-ksn7/research/kernel_spectral_foundation_20261124/ks_n7/NOTES.txt",
+   "/home/cosmosapjw/worktrees/vigilode-stage-lattice-ksn7/research/kernel_spectral_foundation_20261124/ks_n7/make_results.py",
+   "/home/cosmosapjw/worktrees/vigilode-stage-lattice-ksn7/research/kernel_spectral_foundation_20261124/ks_n7/logs/ (env.txt, spatial_separable_test.log, clippy.log, fmt_check.log, verify_run.log, smoke_*.log x6, perfsmoke_*.log x4)",
+   "/home/cosmosapjw/worktrees/vigilode-stage-lattice-ksn7/research/kernel_spectral_foundation_20261124/results/KS_N7_IMPLEMENTATION.json"
+  ],
+  "checks": [
+   {
+    "name": "spatial_separable tests (code head 4539eada)",
+    "command": "cargo +1.94.1 test --locked -j 4 --release -p vigilode --test spatial_separable -- --nocapture",
+    "exit_code": 0,
+    "result": "9 passed, 0 failed, 3 ignored (4 new KS-N7 tests + 1 new ignored measurement)"
+   },
+   {
+    "name": "clippy",
+    "command": "cargo +1.94.1 clippy --locked -j 4 -p vigilode --all-targets --release --no-deps -- -D warnings",
+    "exit_code": 0,
+    "result": "pass"
+   },
+   {
+    "name": "fmt",
+    "command": "cargo +1.94.1 fmt -p vigilode -p rodas5p-integrators -- --check",
+    "exit_code": 0,
+    "result": "pass"
+   },
+   {
+    "name": "verify_run",
+    "command": "python3 -I research/kernel_spectral_foundation_20261124/scripts/verify_run.py",
+    "exit_code": 0,
+    "result": "OK at 4539eada and again at final head f53087a0"
+   },
+   {
+    "name": "make_results",
+    "command": "python3 -I research/kernel_spectral_foundation_20261124/ks_n7/make_results.py",
+    "exit_code": 0,
+    "result": "strict JSON written; agreement PASS, T1/T2 PASS, route PASS, selection PASS, timing NOT_RUN"
+   }
+  ],
+  "discriminators": [
+   {
+    "name": "agreement with Complex",
+    "frozen_threshold": "||x_p - x_c||_inf <= 1e-13 S/(z-c) on every case (S = T1 scale; ||W^-1||_inf = 1/(z-c) on the box)",
+    "measured": "max normalized 5.346e-16, max relative 1.874e-15 over 320 cases (16 box grids x 5 (z,c) x 4 RHS), 236 with differing bits",
+    "verdict": "PASS"
+   },
+   {
+    "name": "T1/T2 bounds for PairedReal",
+    "frozen_threshold": "backward error <= 1e-13 and stage mass defect <= 1e-13 (scales of the existing T1/T2 test)",
+    "measured": "backward 8.110e-16, mass 4.545e-17 over 320 solves (Complex same cases 7.271e-16, 4.545e-17; default arm existing test 3.373e-16, 5.110e-17 = recorded K5/K4)",
+    "verdict": "PASS"
+   },
+   {
+    "name": "box stage solve time PairedReal/Complex at 256x256",
+    "frozen_threshold": "<= 0.6 (kill: no gain); owner-host preregistered cell",
+    "measured": "not measured here; diagnostic smoke only: 0.20 (prepared), 0.26 (solve_stage scope), 128x128x64 0.30; perf smoke per-solve instructions 0.385, cycles 0.207",
+    "verdict": "NOT_RUN"
+   }
+  ],
+  "verdict": "PairedReal is implemented as an opt-in option and Complex stays the default. It agrees with Complex to round-off and meets the T1/T2 bounds on every tested box grid. The 0.6 timing acceptance is NOT_RUN and waits for the orchestrator's owner-host cell.",
+  "key_numbers": [
+   "agreement: 320 cases, max relative diff 1.874e-15, max normalized 5.346e-16 (bound 1e-13)",
+   "PairedReal T1/T2: backward 8.110e-16, mass defect 4.545e-17 (bound 1e-13)",
+   "default Complex arm T1/T2 unchanged: 3.373e-16 / 5.110e-17",
+   "route 12x10 and 4x6x5: same attempts 34/46, errors 6.635e-11/5.079e-11, route diff <= 1.3e-15",
+   "FFT lines ratio (analytic) 0.502 at 256x256, 0.506 at 128x128x64; half buffer 33024 vs 65536 complex at 256x256",
+   "diagnostic smoke 256x256 prepared median 0.295 ms vs 1.472 ms (0.20); 128x128x64 10.9 vs 36.3 ms",
+   "diagnostic perf per solve 256x256: instructions 3.73e6 vs 9.67e6, cycles 1.37e6 vs 6.63e6"
+  ],
+  "rulings": [
+   "spatial.rs (the re-export list) is outside KS-N7's allowed paths and was not edited. BoxTransform therefore implements FromStr and Display, and the tests select it by name.",
+   "Added SeparableStages::stage_solver(z), returning impl FnMut + Send + use<>: plans and buffers are built once, as in the driver. The measurement times this by default; KS_N7_SCOPE=solve_stage times the existing per-call construction instead.",
+   "PairedReal projects the DC and Nyquist entries to their real parts on the way back (irfft semantics), so no round-off leaks between the two rows of a pair."
+  ],
+  "open_issues": [
+   "At merge, add BoxTransform to the `pub use separable::{...}` line in crates/vigilode/src/spatial.rs (one line; outside KS-N7's paths). Until then the type cannot be named outside the crate; it is selected with .parse().",
+   "Timing cell for the orchestrator: KS_N7_ARM=complex|paired KS_N7_GRID=256x256 KS_N7_SOLVES=N, test spatial_separable::measure_box_transform_one_arm with --ignored --exact. One arm per process; the output line is prefixed KS_N7_MEASURE.",
+   "Attribution caveat: the timing gain also comes from the x-mode-major layout (no strided gathers along y) and from dropping the Complex arm's per-element integer index arithmetic. An index-free division loop could speed up the Complex default without changing its bits; this was not done.",
+   "The log of the first, pre-commit test run was overwritten when the run was repeated at the code head (an untracked-file git mv was silently skipped). Its printed values were identical."
+  ]
+ }
+}

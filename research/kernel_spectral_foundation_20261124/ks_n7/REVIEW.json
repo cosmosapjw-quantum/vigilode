@@ -1,0 +1,159 @@
+{
+ "schema": "vigilode.ks.review.v1",
+ "task": "KS-N7",
+ "run_id": "wf_660859bd-2cd",
+ "builder_head": "f53087a076839811aa6aade8c5384dbfed4115cc",
+ "merged_into": "research/stage-lattice-referee-20261124 (merge commit d8fbc073)",
+ "review": {
+  "node": "KS-N7",
+  "verdict": "accept_with_corrections",
+  "summary": "accept_with_corrections. Scope: separable.rs, an append-only test addition (433+/0-), ks_n7/ and results/KS_N7_IMPLEMENTATION.json. No protected path is touched, and the commits run notes, then code, then logs. Re-running make_results.py gives a byte-identical JSON. A rebuild of f53087a0 reproduces all 28 tagged log lines bit for bit, and fmt, clippy and verify_run pass. The Complex solve, the sphere kernel and the client are textually unchanged, and the default route gives the Complex bits. I checked the pairing algebra: the DC/Nyquist projection, odd nx and the lone row. On 18 grids the builder did not test, PairedReal matches Complex in 1776 cases (max normalized 3.3e-15) and dense elimination in 1040 cases (1.1e-15). Those grids include multi-batch grids with a lone last row, 4097x3, 2x5001, 256x256 and 128x128x64. Prepared reuse is bitwise and the routes take the same attempts. Major: the CI check RUSTDOCFLAGS=-D warnings fails on a doc link to the unexported BoxTransform; the planned re-export fixes it (verified). The timing check was not run (diagnostic: instructions 0.385).",
+  "scope_ok": true,
+  "protected_ok": true,
+  "discriminator_checks": [
+   {
+    "name": "agreement with Complex",
+    "builder_value": "max normalized 5.346e-16, max relative 1.874e-15 over 320 cases (236 differing)",
+    "reviewer_value": "Re-run identical. Plus 1776 cases on 18 grids the builder did not test: max normalized 3.309e-15 (bound 1e-13), 1083 differing. Against dense Gaussian elimination, 1040 cases: 1.147e-15 for both arms.",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "T1/T2 bounds for PairedReal",
+    "builder_value": "backward 8.110e-16, mass 4.545e-17 over 320 solves (Complex 7.271e-16, 4.545e-17)",
+    "reviewer_value": "Re-run identical. On the new grids: backward 1.010e-14 (Complex the same); mass with compensated summation <= 4.994e-16 for both arms. The naive-sum mass check exceeds 1e-13 on 10 DC cases, with identical values for Complex (an artifact of the check, F3).",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "default Complex arm unchanged",
+    "builder_value": "existing T1/T2 test 3.373e-16 / 5.110e-17 (= K5/K4)",
+    "reviewer_value": "Identical values. solve_complex is textually identical to the base BoxKernel::solve. The default route gives the explicit Complex bits on 100x97 and 30x31x33 (Trusted and Verified).",
+    "reviewer_verdict": "PASS",
+    "agrees": true
+   },
+   {
+    "name": "box stage solve time PairedReal/Complex at 256x256 <= 0.6",
+    "builder_value": "NOT_RUN (diagnostic smoke 0.20 time, 0.385 instructions)",
+    "reviewer_value": "NOT_RUN. Diagnostic perf, one arm per process, difference of 120 and 20 solves: instructions 3.726e6 vs 9.668e6 (0.385), cycles 0.213, median time 0.200.",
+    "reviewer_verdict": "NOT_RUN",
+    "agrees": true
+   }
+  ],
+  "findings": [
+   {
+    "id": "F1",
+    "severity": "major",
+    "claim": "At f53087a0 the CI docs check fails. RUSTDOCFLAGS='-D warnings' cargo doc -p vigilode (job docs in .github/workflows/production.yml) stops on the lint rustdoc::private_intra_doc_links: 'public documentation for `with_box_transform` links to private item `BoxTransform::Complex`' (separable.rs:198). BoxTransform is not re-exported. The builder did not run this check.",
+    "evidence": "/tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/review_KS-N7/out/doc.log exits 101. With BoxTransform added to `pub use separable::{...}` in spatial.rs (scratch copy only), the same command exits 0 (out/doc_with_reexport.log).",
+    "correction": "At merge, add BoxTransform to the re-export in crates/vigilode/src/spatial.rs (the builder's open issue; it also makes the type nameable). Alternatively, inside KS-N7's path, drop the brackets of that doc link. Add the rustdoc -D warnings command to the node's checks."
+   },
+   {
+    "id": "F2",
+    "severity": "minor",
+    "claim": "Test gap. None of the builder's asserting box grids (16 grids plus 12x10, 4x6x5 and 7x5x3) has more than one packing batch, nx > 4096 or a lone odd row in a later batch. Those PairedReal paths ran only in the 256x256 and 128x128x64 smoke runs, which assert nothing.",
+    "evidence": "Every builder grid has one batch: min(max(4096/nx,1), ceil(rows/2)) >= ceil(rows/2). The reviewer tests on 100x97, 101x83, 4097x3, 2x5001, 3x4099, 30x31x33, 13x29x31, 64x3x63, 256x256 and 128x128x64 pass: max normalized 3.3e-15, T1 1.0e-14, 40 bitwise checks of prepared reuse, and a solve on another thread.",
+    "correction": "Add one multi-batch grid with an odd row count (100x97 or 30x31x33) and 4097x3 to ks_n7_box_grids."
+   },
+   {
+    "id": "F3",
+    "severity": "minor",
+    "claim": "Pre-existing, not a KS-N7 regression. The T2 check sums the mass naively from left to right, so it does not scale with grid size. On constant right-hand sides of grids with about 8e3 or more cells at large z it exceeds 1e-13 (3.35e-12 at 128x128x64), with identical values for Complex and PairedReal.",
+    "evidence": "In out/ks_n7_review_test.log (first run), 10 DC cases fail the naive T2 check. In out/ks_n7_review_t2.log, the same 10 cases give identical values for Complex. A compensated (Neumaier) mass gives <= 4.994e-16 for both arms, with no case above the bound in 1776.",
+    "correction": "None for KS-N7. If T2 gates large grids, use compensated summation."
+   },
+   {
+    "id": "F4",
+    "severity": "minor",
+    "claim": "The timing check is underspecified. 'Box stage solve time' can mean the new prepared stage_solver (the default scope) or solve_stage, which builds the plans on every call. The diagnostic ratios also include the x-mode-major layout and the removed integer division per element, so they do not isolate the pairing; the builder discloses this.",
+    "evidence": "The reviewer's perf run reproduces the builder's: 0.385 instructions, 0.21 cycles. The analytic FFT-line ratio is 0.502.",
+    "correction": "The orchestrator should preregister the scope (prepared, as in the driver) and report the FFT-line ratio separately from the time ratio."
+   },
+   {
+    "id": "F5",
+    "severity": "minor",
+    "claim": "The solution does not record the transform. A PairedReal run reports client id vigilode-separable-fourier-stages-v1, the same as Complex, and SeparableReport has no transform field, so the two arms cannot be told apart in Solution stats or labels.",
+    "evidence": "solve.rs:528-532; SeparableReport in separable.rs:130-149",
+    "correction": "Record the transform in SeparableReport or in the client id before any change of the default."
+   },
+   {
+    "id": "F6",
+    "severity": "minor",
+    "claim": "Two reporting nits. 'About half the buffer memory': at 256x256 PairedReal allocates 33,024 + 4,096 batch-line values against 65,536, a ratio of 0.57. 'Route diff <= 1.3e-15': the logged maximum is 1.332e-15.",
+    "evidence": "BoxKernel::new; KS_N7_T3_ROUTES lines in logs/spatial_separable_test.log",
+    "correction": "State 0.57 and 1.33e-15."
+   },
+   {
+    "id": "F7",
+    "severity": "minor",
+    "claim": "Two process notes. First, tests/spatial_separable.rs is not in the PLAN.json KS-N7 file list; the edit is append-only (433+/0-) and is the test target PLAN names. Second, neither the builder nor the reviewer ran the full facade suite (--no-fail-fast) that CODING_AGENT_KO.txt lists.",
+    "evidence": "git diff --stat 05b5e3e3 f53087a0. Only spatial_separable.rs uses the separable API, and clippy --all-targets compiles every target.",
+    "correction": "The orchestrator should confirm that the test file was allowed, and run the facade suite at merge if it is required."
+   }
+  ],
+  "reran": [
+   {
+    "command": "git diff --name-status 05b5e3e3 f53087a0 (scope, protected paths, commit order and trailers)",
+    "exit_code": 0,
+    "result": "Only separable.rs, the test file (append-only), ks_n7/ and results/KS_N7_IMPLEMENTATION.json. No protected path. Linear history: notes, code, logs, docstring."
+   },
+   {
+    "command": "python3 -I research/kernel_spectral_foundation_20261124/ks_n7/make_results.py (scratch mirror)",
+    "exit_code": 0,
+    "result": "byte-identical to the committed KS_N7_IMPLEMENTATION.json"
+   },
+   {
+    "command": "cargo +1.94.1 fmt -p vigilode -p rodas5p-integrators -- --check (export of f53087a0)",
+    "exit_code": 0,
+    "result": "pass"
+   },
+   {
+    "command": "cargo +1.94.1 clippy --locked -j 4 -p vigilode --all-targets --release --no-deps -- -D warnings",
+    "exit_code": 0,
+    "result": "pass, 0 warnings"
+   },
+   {
+    "command": "cargo +1.94.1 test --locked -j 4 --release -p vigilode --test spatial_separable -- --nocapture (built with --no-run, binary run directly)",
+    "exit_code": 0,
+    "result": "9 passed, 3 ignored. All 28 tagged JSON lines identical to the builder's log."
+   },
+   {
+    "command": "RUSTDOCFLAGS='-D warnings' cargo +1.94.1 doc --locked -j 4 --release -p vigilode --no-deps",
+    "exit_code": 101,
+    "result": "private_intra_doc_links at separable.rs:198. With the BoxTransform re-export (scratch copy), exit 0."
+   },
+   {
+    "command": "python3 -I scripts/verify_run.py (copy whose output directory points to scratch)",
+    "exit_code": 0,
+    "result": "OK: 11 stages, 16 claims, 8 plan tasks, 3 timed grids, foundation checks pass"
+   },
+   {
+    "command": "reviewer tests ks_n7_review (scratch): agreement on new grids, dense reference, reuse, route and default",
+    "exit_code": 101,
+    "result": "3 passed, 1 failed. The failure is the naive-sum T2 check on 10 DC cases (F3). Agreement 1776 cases, max normalized 3.309e-15; dense 1040 cases, 1.147e-15; reuse 40 bitwise; routes on 100x97 and 30x31x33 with equal attempts and relative difference <= 3.3e-15; default route == Complex bits."
+   },
+   {
+    "command": "ks_n7_review --exact review_t2_mass_defect_naive_and_compensated_for_both_arms",
+    "exit_code": 0,
+    "result": "Naive-sum exceedances identical for both arms (10 each). Compensated max 4.994e-16 for both."
+   },
+   {
+    "command": "KS_N7_ARM=unset|paired|paired-real|complex|bogus spatial_separable --ignored --exact measure_box_transform_one_arm",
+    "exit_code": 0,
+    "result": "One test per process (11 filtered out), printing the selected transform; unset gives complex. 'bogus' panics (exit 101)."
+   },
+   {
+    "command": "perf stat -x, -e instructions:u,cycles:u, one arm per process, 256x256, 20 and 120 solves",
+    "exit_code": 0,
+    "result": "Diagnostic only: 3.726e6 vs 9.668e6 instructions per solve (0.385), cycles 0.213, median 0.200."
+   }
+  ]
+ },
+ "orchestrator_actions": [
+  "Builder branch research/stage-lattice-referee-20261124-ksn7 (head f53087a0) merged into research/stage-lattice-referee-20261124 (merge commit d8fbc073).",
+  "F1 (major): BoxTransform added to the public re-export of crates/vigilode/src/spatial.rs (outside KS-N7's file list; the builder's own open issue); the docs job command RUSTDOCFLAGS='-D warnings' cargo doc -p vigilode -p vigilode-coupled --no-deps --locked is re-run in results/ks_merge_verify_20261125.log.",
+  "F2: the grids box-100x97 (two packing batches, a lone odd row in the later one) and box-4097x3 (more than 4096 cells along x) added to ks_n7_box_grids; both KS-N7 tests run on them.",
+  "F3 (pre-existing naive T2 mass sum), F5 (the transform is not recorded in SeparableReport or the client id), F6 (0.57 memory ratio, 1.33e-15) and F7 (the test file is the PLAN's test target, append-only; the facade suite runs at merge) recorded in RUN.json; F5 must be closed before PairedReal could become the default.",
+  "F4: the owner-host timing cell is preregistered with the prepared stage solver as its scope and the analytic FFT-line ratio reported separately."
+ ]
+}

@@ -182,7 +182,10 @@ S6  What the solver would need (P, not implemented). Modes 0 < m < np/2 become c
     W_{np-m} = conj(W_m) and real data keep U(np-m) = conj U(m), so the half spectrum still suffices,
     with one complex right-hand side per mode instead of the two real ones of 2.3(i). The certificate
     costs one real symmetric Thomas sweep of z I - Ht_m per distinct mode, and none for zonal flow
-    (z > c). The pivot bound of T2(b) controls growth in the complex sweep. The mass identity (L4 v)
+    (z > c). The pivot bound of T2(b) bounds the growth of the complex sweep only while z - mu_A is
+    not small relative to |B_m[r][r-1]| (corrected after the independent check, finding F1: near
+    the threshold, centred divergent flow at high Peclet reaches growth 1e8 without pivoting; a
+    solver needs pivoting or a refusal margin there). The mass identity (L4 v)
     and Verified mode (T5 of section 7) carry over.
 
 Checks planned (scripts/verify_fov.py): block formulas (dense conjugation), closed form of Ht_m, mu_A

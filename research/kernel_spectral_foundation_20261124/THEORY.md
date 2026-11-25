@@ -225,7 +225,7 @@ inside the protected client driver `integrate_rodas5p_fast_client_observed_with_
 - Longitude-dependent coefficients break `Z_np` (**N** for exactness). `Verified` mode turns
   the separable solve into a preconditioner with a checked residual (T5).
 - Advection is non-normal. The inertia certificate (§4.2) and the contractivity bound (§5.1)
-  do not apply: **O**, field-of-values replacement needed.
+  do not apply: **O**, field-of-values replacement needed. §10 gives the replacement (KS-N8).
 - Nonlinear reaction `f(u)` with `f'` not ring-constant: same as the first point. A ring-wise
   linearization (`c_r` per ring) keeps the separability, since a ring-constant diagonal commutes
   with `Z_np`. The implementation takes one global `c`; per-ring `c_r` is **P**.
@@ -300,7 +300,8 @@ direct sum), and `spec J ⊂ ∪_m W(B̃_m)`. Sylvester's law (I), applied to `z
 
     C(z) := #{non-positive Thomas pivots of zI - H̃_m over all modes} = #{eigenvalues of (J + J^†)/2 at or above z},
 
-and `C(z) = 0 ⇔ z > μ_A(J)`. In all 225 cases, for `z` above and below `μ_A`, the counts over all
+and `C(z) = 0 ⇔ z > μ_A(J)`. The count equality needs `z` not to be an eigenvalue of a leading
+principal submatrix of `zI - H̃_m`; a zero pivot is counted as a refusal. In all 225 cases, for `z` above and below `μ_A`, the counts over all
 modes and over the half spectrum match the dense eigenvalue counts. When `C(z) = 0`:
 
 - (a) *Solvability and resolvent.* `Re <W(z) x, x>_A ≥ (z - μ_A) ||x||_A^2`, so by Cauchy–Schwarz
@@ -313,7 +314,12 @@ modes and over the half spectrum match the dense eigenvalue counts. When `C(z) =
   `x = (-M_r^{-1} w y; y)`, `Re(p_r) |y|^2 = Re x^* M_{r+1} x ≥ (z - λ_max(H̃_m)) |x|^2`, by Cauchy
   interlacing for the Hermitian part. This is the quantitative form of "all pivots positive". T (A5):
   every pivot exceeds its bound by at least 3.5e-5 of the scale, and the solves have backward error at
-  most 1.4e-15.
+  most 1.4e-15 in the tested range (`z - μ_A` at least 1e-4 of the scale, cell Péclet at most 30).
+  Corrected after the independent check (finding F1): the multiplier bound grows like `1/(z - μ_A)`,
+  and without pivoting the complex sweep is not backward stable near the threshold for centred
+  divergent flow at high Péclet (growth up to 1e8, backward error up to 5.5e-6 at `z - μ_A` of 1e-12
+  to 1e-6 of the scale, against 4e-17 with partial pivoting; upwind stays below 2e-16). A solver of
+  the complex blocks (P) needs pivoting or a refusal margin there.
 - (c) *Reduction, and only one direction.* For zero velocity, `C(z)` is the §4.2 count. For A-normal
   `J` (zero velocity, and solid-body rotation, where `b_r` is constant), `C(z) = #{λ : Re λ ≥ z}` and
   `||W(z)^{-1}||_A = 1/dist(z, spec J)` (T: A9). For non-normal `J`, only `C(z) = 0` carries
@@ -363,9 +369,10 @@ and to `w ↦ R(w + h μ_A)`. RODAS5P has `R(w) = 1 + w b^T (I - w β)^{-1} 1`, 
 `μ_A ≤ 0` (zonal flow with `c ≤ 0`), the RODAS5P step is A-contractive for every `h`, as in §5.1. It is
 now an inequality, because `J` is not A-normal and the norm is no longer a maximum over the spectrum.
 T: the script builds the stability function from `fixtures/rodas5p_coefficients_snapshot.json`
-(sampled `max |R(iy)| = 1 + 2.2e-16`, `|R(-1e12)| = 1.3e-11`). In all 225 cases, `||R(hJ)||_A` stays
-within 1.6e-13 (relative) of the bound, with equality attained by the constants in zonal flow at
-`c = 0`, and `||e^{tJ}||_A` stays within 1.1e-14 of its bound.
+(sampled `max |R(iy)| = 1 + 2.2e-16`, `|R(-1e12)| = 1.3e-11`). In all 225 cases, `||R(hJ)||_A` never
+exceeds the bound by more than 1.6e-13 (relative), with equality attained by the constants in zonal
+flow at `c = 0`, and `||e^{tJ}||_A` never exceeds its bound by more than 1.1e-14 (corrected after the
+independent check, finding F3: for divergent flow the norms sit below their bounds).
 
 **10.6 Spectral and stiffness enclosure (replaces §5.2; D from I, T: B0 to B3, C2).** The support
 function of `W(B̃_m)` is `h_m(φ) = λ_max(cos φ H̃_m + sin φ K̃_m)`, the top eigenvalue of a Hermitian
@@ -384,10 +391,15 @@ the `B_m` (the §5.2 construction applied to the advective blocks):
 | Velocity | Cases | `ρ_F/ρ_G` | Notes |
 | --- | --- | --- | --- |
 | Zero | 9 | 0.958 to 0.982 | the F5 ratio; the Hermitian part is exact |
-| Zonal | 144 | 0.958 to 0.997 | `ρ_F` equals the spectral radius to within 2.2e-4; imaginary-extent ratio 0.12 to 0.99, because `K̃_m = diag(-b_r sin θ_m)` is exact while Gershgorin adds `n_r + s_r` |
+| Zonal | 144 | 0.958 to 0.997 | `ρ_F` equals the spectral radius to within 2.2e-4 on the tested set; imaginary-extent ratio 0.12 to 0.99, because `K̃_m = diag(-b_r sin θ_m)` is exact while Gershgorin adds `n_r + s_r` |
 | Divergent | 72 | 0.64 to 1.10 | `ρ_F > ρ_G` in 9 cases (below) |
 
-The 9 looser cases are all upwind Hadley-plus-jet flow at Péclet 30, for every `c`: `ρ_F/ρ_G` is 1.104
+Corrected after the independent check (finding F2): the looser cases below are an artifact of
+sampling Péclet only at 0.3 and 30. With more Péclet numbers, `ρ_F > ρ_G` occurs for divergent flow
+under both schemes: centred near cell Péclet 1 (74 of 1480 centred divergent cases, up to 1.054;
+there a meridional off-diagonal vanishes and Gershgorin is exact for the spectrum) and upwind at high
+Péclet in many families (601 of 1480, up to 1.2071 = (1 + √2)/2, a Jordan-type 2×2 limit). Zonal
+flow is never looser. In the 225 frozen cases, the 9 looser cases are all upwind Hadley-plus-jet flow at Péclet 30, for every `c`: `ρ_F/ρ_G` is 1.104
 (G1), 1.037 (G2) and 1.033 (G3). The excess is at the left end: the leftmost point of `H̃_m` lies
 beyond the leftmost Gershgorin disc by the same ratio. The numerical range of these strongly non-normal
 blocks reaches further than their spectrum; there the Gershgorin radius exceeds the spectral radius by
@@ -408,15 +420,17 @@ Péclet 30). The kill criterion (no computable bound tighter than Gershgorin) do
 case is strictly tighter in `ρ` or in the abscissa, the abscissa is never looser (proven), and the
 radius is tighter in 216 of 225 cases. The kill fallback is therefore not forced. The separable route
 in the code stays diffusion-only only because no complex-block solver exists yet (P). For divergent
-upwind flow at high Péclet, the Gershgorin radius remains the tighter *spectral* radius, but only the
-field of values bounds norms.
+flow (centred near cell Péclet 1, upwind at high Péclet), the Gershgorin radius can be the tighter
+*spectral* radius, but only the field of values bounds norms.
 
 - **Proven** (D, from the imported results named above): 10.1, 10.2, 10.3 (a) to (c), 10.4 (i) to
   (iv), 10.5, and the enclosure property of 10.6.
 - **Only checked** (T): the ratios and margins quoted here, on 3 grids (`nt × np` = 6×10, 9×16, 11×15),
   7 velocity families and 2 Péclet numbers.
+- **Negative (N; corrected after the independent check, finding F4):** `ρ_F ≤ ρ_G` in general. It is
+  false for divergent flow (9 counterexamples in the frozen run, 687 in the independent check, all
+  confirmed against the true numerical range); zonal flow has no counterexample.
 - **UNVERIFIED or open:**
-  - `ρ_F ≤ ρ_G` in general (false in 9 measured cases);
   - the certified Sturm bisection for `h_m(φ_k)` (P);
   - a solver with complex mode blocks, the half spectrum and the Hermitian-part certificate (P, not
     implemented);
