@@ -1,0 +1,23 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-integrators)
+    Finished `release` profile [optimized] target(s) in 2m 00s
+     Running tests/warp_pp06_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/warp_pp06_contracts-082947de77e00d8d)
+
+running 1 test
+test quotient_reconstructs_high_degree_and_complex_conjugate_channels ... FAILED
+
+failures:
+
+---- quotient_reconstructs_high_degree_and_complex_conjugate_channels stdout ----
+
+thread 'quotient_reconstructs_high_degree_and_complex_conjugate_channels' (517456) panicked at crates/rodas5p-integrators/tests/warp_pp06_contracts.rs:13:83:
+called `Result::unwrap()` on an `Err` value: InvalidInput("Fourier FFT predictor: WARP quotient not implemented")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    quotient_reconstructs_high_degree_and_complex_conjugate_channels
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test warp_pp06_contracts`

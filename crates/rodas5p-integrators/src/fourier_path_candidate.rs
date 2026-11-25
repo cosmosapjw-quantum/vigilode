@@ -313,3 +313,6 @@ mod tests {
         assert!(relative_difference(&wrong, &conj_coefficients(&p)) > 0.5);
     }
 }
+
+/// Opt-in WARP quotient predictor.
+pub mod warp;
