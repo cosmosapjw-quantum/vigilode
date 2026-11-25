@@ -29,3 +29,64 @@ PLAN
 4. If the cause is a defect of the route: minimal correction, failing-first test, re-run
    unified_breakeven_contracts, unified_router_contracts, default_path_golden.
 5. Draft PREDECLARED.json with a fresh problem set; record its sha256 here.
+
+== 2026-11-25 11:22, entry 2 (E7 diagnosis done; no code of the route edited) ==
+
+TOOLS (all under this directory; nothing outside it changed)
+- e7_diag/: standalone cargo package (own [workspace], path dependency on this worktree's facade),
+  Cargo.lock = the V27 runner's lock with the root package renamed (the facade's dependency graph
+  is unchanged between 60d67729 and 91e9e582), built by e7_diag/build.sh: flock + taskset 0-5,12-17
+  + cargo +1.94.1 build --locked -j 4 --release, CARGO_TARGET_DIR .../w4-v30. No existing
+  Cargo.toml or Cargo.lock was edited (precedent: router_hyperparameter_free/runner).
+  Binary 1 sha256 01a78af8... (logs/e7/build.log), binary 2 95d0389c... (adds --tau; the --tol
+  output of both binaries is byte-identical, logs/e7/raw vs logs/e7/raw_95d0389c7a04).
+- run_e7.py: one process per tolerance pair A, L, S and one --tau process; raw stdout kept,
+  logs/e7/RUNS_INDEX.jsonl (UTC 02:14:51 run 1, 02:18:26 run 2). Counters and bits only.
+- analyze_e7.py -> E7_DIAGNOSIS.json (strict JSON; reads only raw output, V27 raw lines and the V27
+  reference; errors with mpmath at 50 digits against the closed form). sha256 caa4da6d...
+
+REPRODUCTION (P_scalar_fd, arms as V27; err = |y - y_ref| / (atol + rtol |y_ref|))
+  tol  err(N)       err(R)       ratio   E7    t_D = H          y_D - y(t_D)   D
+  A    4.119e-3     8.133e-5     50.65   FAIL  1.8192e-5        -7.25e-8       fails at max_steps (t 0.3228)
+  L    2.874e-7     8.133e-8     3.534   FAIL  4.0e-5           -2.24e-5       fails at max_steps (t 0.3171)
+  S    9.652e-5     3.065e-4     0.315   PASS  1.2562e-5        -1.14e-9       fails at max_steps (t 0.3228)
+  N, R and D final bits equal V27's raw lines; the handover replayed from the pilot record with the
+  public drivers (Dopri5::solve to t_D, pilot Rodas5p::solve h0 = H max_steps 1, leg Rodas5p::solve
+  h0 = H) equals N bit for bit at A, L, S.
+
+ISOLATING VARIANTS (ratio = err / err(R), fd problem; last step length)
+  exp              A ratio (last h)     L ratio (last h)     S ratio (last h)
+  NR = N           50.65  (0.7433)      3.534  (0.3261)      0.315  (0.0118)
+  R                1      (0.219)       1      (0.219)       1      (0.0771)
+  R_h0_H           31.85  (0.6447)      0.997  (0.2188)      152.4  (0.3796)   no handover at all
+  C_exact_state    31.84  (0.6447)      0.995  (0.2187)      152.3  (0.3796)   exact y(t_D)
+  C_cont           8.11   (0.4227)      21.59  (0.5720)      63.64  (0.2887)   no restart after pilot
+  C_rest_h0_user   0.999  (0.2190)      0.999  (0.2189)      0.999  (0.0770)   leg h0 = 1e-3 (R's ramp)
+  R_from_tD        8.14   (0.4232)      1.95   (0.2706)      20.65  (0.2021)
+  Derivatives: exact f_t (ft), exact J (jac), both (jac_ft): end states move by <= 1.3e-14; jac
+  and ft_fdclone (the drivers' central difference as a callback) are bit-identical to fd; f_t times
+  (1 +- 1e-8) moves the end state by ~2e-15. FD derivatives play no part.
+  One-step grid (--tau): local truncation error of one step of length h from the exact solution
+  grows like h^3 (log-log slopes 2.96 to 3.03 for h >= 1e-2 at ten start times); one step's
+  amplification of an initial deviation is R(z) ~ -12.4/z (|R| |z| median 12.44, 154 steps with
+  |z| >= 100): the DOPRI5 prefix error (-2.2e-5 at L) is below 1e-12 after five steps.
+  h0 scan of Rodas5p::solve alone (h0 = 10^(-6+j/8), j = 0..40): end error / err(R default) from
+  0.026 to 62.3 (median 17.6) at A and L (identical sequences: every step capped at x5), 0.018 to
+  296 (median 42) at S; 31 (A, L) and 34 (S) of 41 h0 values exceed the factor 3 of E7. log(end
+  error) vs log(last step): slope 2.43 (A, L, r^2 0.93), 2.86 (S).
+
+CAUSE (stated in E7_DIAGNOSIS.json "cause", numbers from the runs)
+  The end error of every RODAS5P run on P_scalar_fd is the local truncation error of its LAST step
+  (earlier errors are damped by R(z) ~ -12.4/z), and that error grows like h^3 with the last step's
+  length. With the estimate far below tolerance the controller grows each step by its cap 5, so
+  the last step's length is set by where the ramp from h0 lands before t1 (not by the tolerance).
+  R (h0 = 1e-3) ends with a short step 0.219 and is in the lucky tail (its error is 0.057 of the
+  scan median). The FBP leg is a plain Rodas5p::solve from t_D + H with h0 = H; it ends with 0.743
+  (A) and 0.326 (L). Rodas5p::solve with h0 = H and no handover gives the same magnitude (31.85 at
+  A). Hypotheses refuted: pilot state carried to t1 (damped; it acts only through the early step
+  proposals), controller history (C_cont fails too), FD time derivative, FD Jacobian, dense output
+  (not used; all 162 runs end exactly at t1 with the step's own state), error norm (one norm).
+  Verdict: the E7 failure is an inherent property of comparing two valid RODAS5P step sequences
+  on a problem whose error is far below tolerance (N: 0.0041 and 2.9e-7 of the tolerance unit),
+  with a rule without floor; NOT a defect of the route. No code change (steps 2's correction
+  clause does not apply); the V27 contract tests are therefore not re-run for a change.
