@@ -1,0 +1,165 @@
+# command: cargo +1.94.1 test --locked -j 4 --release -p vigilode --test spatial_separable -- --nocapture
+# wrapper: flock -w 14400 /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/locks/cargo_b.lock taskset -c 0-5,12-17
+# cargo_target_dir: /home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain
+# started: 2026-11-25T11:59:21+09:00
+# head: d72d943be0cc4c4dade9214ce256eaf881967078
+# dirty: 0
+# load: 7.08 7.06 7.77 7/5989 3719672
+   Compiling autocfg v1.5.1
+   Compiling version_check v0.9.5
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.47
+   Compiling bytemuck v1.25.2
+   Compiling nano-gemm-codegen v0.2.1
+   Compiling num-traits v0.2.19
+   Compiling paste v1.0.15
+   Compiling libm v0.2.16
+   Compiling bitflags v2.13.1
+   Compiling pulp v0.22.3
+   Compiling raw-cpuid v11.6.0
+   Compiling cfg-if v1.0.4
+   Compiling num-complex v0.4.6
+   Compiling reborrow v0.5.5
+   Compiling pulp-wasm-simd-flag v0.1.1
+   Compiling dyn-stack-macros v0.1.3
+   Compiling dyn-stack v0.13.2
+   Compiling once_cell v1.21.4
+   Compiling seq-macro v0.3.6
+   Compiling syn v1.0.109
+   Compiling generic-array v0.14.7
+   Compiling nano-gemm-core v0.2.1
+   Compiling typenum v1.20.1
+   Compiling libc v0.2.189
+   Compiling syn v3.0.3
+   Compiling syn v2.0.119
+   Compiling nano-gemm-f64 v0.2.1
+   Compiling nano-gemm-f32 v0.2.1
+   Compiling nano-gemm-c32 v0.2.1
+   Compiling nano-gemm-c64 v0.2.1
+   Compiling defer v0.2.1
+   Compiling serde_core v1.0.229
+   Compiling interpol v0.2.1
+   Compiling crossbeam-utils v0.8.22
+   Compiling private-gemm-x86 v0.1.20
+   Compiling gemm-common v0.19.0
+   Compiling crossbeam-epoch v0.9.20
+   Compiling zmij v1.0.23
+   Compiling gemm-c32 v0.19.0
+   Compiling equator-macro v0.2.1
+   Compiling gemm-f64 v0.19.0
+   Compiling equator v0.2.2
+   Compiling gemm-c64 v0.19.0
+   Compiling gemm-f32 v0.19.0
+   Compiling num_cpus v1.17.0
+   Compiling qd v0.8.0
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling equator-macro v0.6.0
+   Compiling serde_json v1.0.151
+   Compiling thiserror v2.0.19
+   Compiling serde v1.0.229
+   Compiling generativity v1.2.1
+   Compiling crossbeam-deque v0.8.7
+   Compiling faer-traits v0.24.0
+   Compiling equator v0.6.0
+   Compiling digest v0.10.7
+   Compiling nano-gemm v0.2.2
+   Compiling gemm v0.19.0
+   Compiling thiserror-impl v2.0.19
+   Compiling serde_derive v1.0.229
+   Compiling rayon-core v1.13.0
+   Compiling cpufeatures v0.2.17
+   Compiling memchr v2.8.3
+   Compiling itoa v1.0.18
+   Compiling faer v0.24.4
+   Compiling sha2 v0.10.9
+   Compiling num-integer v0.1.47
+   Compiling hex v0.4.3
+   Compiling strength_reduce v0.2.4
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-stage-lattice-kschain/crates/rodas5p-integrators)
+   Compiling either v1.17.0
+   Compiling rayon v1.12.0
+   Compiling transpose v0.2.3
+   Compiling primal-check v0.3.4
+   Compiling rustfft v6.4.1
+   Compiling rodas5p-core v0.2.0 (/home/cosmosapjw/worktrees/vigilode-stage-lattice-kschain/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.2.0 (/home/cosmosapjw/worktrees/vigilode-stage-lattice-kschain/crates/rodas5p-krylov)
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-stage-lattice-kschain/crates/vigilode)
+    Finished `release` profile [optimized] target(s) in 1m 34s
+     Running tests/spatial_separable.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/spatial_separable-3d3a502cd0e35586)
+
+running 13 tests
+test measure_box_transform_one_arm ... ignored, timing measurement; one arm per process, see KS_N7_ARM/KS_N7_GRID/KS_N7_SOLVES
+test measure_separable_against_preconditioned_gmres_stage_solves ... ignored, timing diagnostic; run with --ignored --nocapture
+test measure_separable_against_the_shipped_matrix_free_route ... ignored, timing diagnostic; run with --ignored --nocapture
+test box_transform_selection_defaults_parses_and_reuses_prepared_solvers ... ok
+test inertia_counts_the_modes_beyond_the_stage_pencil ... ok
+test separable_requests_outside_the_matrix_free_route_are_refused_before_any_callback ... ok
+SL_N5_T1T2 {"max_backward_error":3.373e-16,"max_mass_defect":5.110e-17}
+test separable_stage_solves_are_exact_and_mass_consistent ... ok
+
+thread 'the_run_record_names_the_box_transform_that_ran' (3729029) panicked at crates/vigilode/tests/spatial_separable.rs:1167:9:
+assertion `left == right` failed: box-12x10: the run record must name the transform that ran: {"client":"vigilode-separable-fourier-stages-v1","driver":"separable-client","jacobian_reuses":0,"report":{"corrections":0,"crossings_at_last_refusal":0,"max_backward_error":4.925698975530413e-16,"max_mass_defect":1.2578596021941564e-15,"preparations":34,"refused_preparations":0,"refused_solves":0,"residual_checks":272,"solves":272}}
+  left: Null
+ right: "complex"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test the_run_record_names_the_box_transform_that_ran ... FAILED
+
+KS_N7_T3 {"case":"box-12x10","mode":"Trusted","transform":"complex","error":6.635e-11,"attempts":34,"solves":272,"max_mass_defect":1.258e-15,"max_backward_error":0.000e0}
+
+KS_N7_T3 {"case":"box-12x10","mode":"Trusted","transform":"paired-real","error":6.635e-11,"attempts":34,"solves":272,"max_mass_defect":1.231e-15,"max_backward_error":0.000e0}
+
+KS_N7_T3_ROUTES {"case":"box-12x10","mode":"Trusted","max_difference":1.110e-15,"relative_difference":1.796e-15}
+
+KS_N7_T3 {"case":"box-12x10","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","transform":"complex","error":6.635e-11,"attempts":34,"solves":272,"max_mass_defect":1.258e-15,"max_backward_error":4.926e-16}
+
+KS_N7_T3 {"case":"box-12x10","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","transform":"paired-real","error":6.635e-11,"attempts":34,"solves":272,"max_mass_defect":1.231e-15,"max_backward_error":4.572e-16}
+
+KS_N7_T3_ROUTES {"case":"box-12x10","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","max_difference":1.110e-15,"relative_difference":1.796e-15}
+SL_N5_T3 {"case":"sphere-8x16","mode":"Trusted","error":8.600e-11,"attempts":61,"solves":488,"mass_drift":4.282e-16}
+SL_N5_T5 {"mode":"verified","error":5.165e-11,"corrections_per_solve":2.222,"refused_solves":0,"attempts":63}
+
+KS_N7_T3 {"case":"box-4x6x5","mode":"Trusted","transform":"complex","error":5.079e-11,"attempts":46,"solves":368,"max_mass_defect":9.494e-16,"max_backward_error":0.000e0}
+SL_N5_T3 {"case":"sphere-8x16","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","error":8.600e-11,"attempts":61,"solves":488,"mass_drift":4.282e-16}
+
+KS_N7_T3 {"case":"box-4x6x5","mode":"Trusted","transform":"paired-real","error":5.079e-11,"attempts":46,"solves":368,"max_mass_defect":1.175e-15,"max_backward_error":0.000e0}
+
+KS_N7_T3_ROUTES {"case":"box-4x6x5","mode":"Trusted","max_difference":1.332e-15,"relative_difference":2.197e-15}
+
+KS_N7_T3 {"case":"box-4x6x5","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","transform":"complex","error":5.079e-11,"attempts":46,"solves":368,"max_mass_defect":9.494e-16,"max_backward_error":6.120e-16}
+
+KS_N7_T3 {"case":"box-4x6x5","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","transform":"paired-real","error":5.079e-11,"attempts":46,"solves":368,"max_mass_defect":1.175e-15,"max_backward_error":6.062e-16}
+
+KS_N7_T3_ROUTES {"case":"box-4x6x5","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","max_difference":1.332e-15,"relative_difference":2.197e-15}
+test paired_real_box_route_matches_the_reference_and_the_complex_route ... ok
+SL_N5_T5 {"mode":"trusted-mismatched","error":2.291e-9,"attempts":819}
+
+KS_N7_T1T2 {"transform":"paired-real","solves":360,"max_backward_error":1.680e-15,"max_mass_defect":4.545e-17,"bound":1e-13}
+
+KS_N7_AGREEMENT {"cases":360,"differing_cases":276,"max_relative_difference":5.215e-14,"max_normalized_difference":6.964e-16,"bound_normalized":1e-13,"worst_case":"box-4097x3 z=0.5 c=0 seed17"}
+test paired_real_box_transform_agrees_with_the_complex_transform ... ok
+
+KS_N7_T1T2 {"transform":"complex","solves":360,"max_backward_error":1.187e-15,"max_mass_defect":4.545e-17,"bound":1e-13}
+test paired_real_box_solves_meet_the_t1_t2_bounds ... ok
+SL_N5_T3 {"case":"sphere-8x16","mode":"shipped","error":8.600e-11,"attempts":61,"mass_drift":1.427e-16}
+SL_N5_T3 {"case":"sphere-7x10","mode":"Trusted","error":1.169e-10,"attempts":42,"solves":336,"mass_drift":4.308e-16}
+SL_N5_T3 {"case":"sphere-7x10","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","error":1.169e-10,"attempts":42,"solves":336,"mass_drift":4.308e-16}
+SL_N5_T3 {"case":"sphere-7x10","mode":"shipped","error":1.169e-10,"attempts":42,"mass_drift":4.308e-16}
+SL_N5_T3 {"case":"box-12x10","mode":"Trusted","error":6.635e-11,"attempts":34,"solves":272,"mass_drift":3.935e-1}
+SL_N5_T3 {"case":"box-12x10","mode":"Verified { max_corrections: 4, tolerance: 1e-10 }","error":6.635e-11,"attempts":34,"solves":272,"mass_drift":3.935e-1}
+SL_N5_T3 {"case":"box-12x10","mode":"shipped","error":6.635e-11,"attempts":34,"mass_drift":3.935e-1}
+test separable_route_conserves_mass_and_matches_the_reference ... ok
+SL_N5_T5 {"mode":"far-mismatch","success":false,"refused_solves":50003,"attempts":100000}
+test verified_mode_corrects_a_mismatched_reaction_and_refuses_beyond_its_reach ... ok
+
+failures:
+
+failures:
+    the_run_record_names_the_box_transform_that_ran
+
+test result: FAILED. 9 passed; 1 failed; 3 ignored; 0 measured; 0 filtered out; finished in 1.36s
+
+error: test failed, to rerun pass `-p vigilode --test spatial_separable`
+# exit: 101
+# finished: 2026-11-25T12:00:57+09:00
