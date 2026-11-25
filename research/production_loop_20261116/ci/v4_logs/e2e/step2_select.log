@@ -1,0 +1,13 @@
+# command: flock -w 14400 /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/locks/cargo_a.lock taskset -c 0-5,12-17 /usr/bin/python3 -I -u /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v33/tools/ci/select_tests.py select --baseline /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v33/research/production_loop_20261116/ci/v4_logs/e2e/step2/baseline.json --head 52f4ca29bc2348e3e17bee8765eccb4f1937c39e --workflow-file .github/workflows/production.yml --out /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v33/research/production_loop_20261116/ci/v4_logs/e2e/step2/selection.json --scope rodas5p-core rodas5p-integrators
+# head: 52f4ca29bc2348e3e17bee8765eccb4f1937c39e
+# started: 2026-11-25T11:48:30+0900
+### Test selection: selected
+base `52f4ca29bc2348e3e17bee8765eccb4f1937c39e`, head `52f4ca29bc2348e3e17bee8765eccb4f1937c39e`, 0 changed paths, input map: 3 entries
+- `rodas5p-integrators`: ppsw1_linear_backend_contracts, ptsw2b_contracts, doc
+  - doc: its package has a selected target (doc tests are not measured)
+  - ppsw1_linear_backend_contracts: not run in the baseline run (stopped when the time budget ended)
+  - ptsw2b_contracts: not run in the baseline run (not started: the time budget ended)
+- added from the units the baseline run did not run (2): rodas5p-integrators:ppsw1_linear_backend_contracts, rodas5p-integrators:ptsw2b_contracts
+- runs last (stopped or cut in the baseline run): rodas5p-integrators:ppsw1_linear_backend_contracts
+
+# exit 0 after 136.9 s

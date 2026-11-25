@@ -1,0 +1,64 @@
+{
+ "base": null,
+ "changed": [],
+ "environment": {
+  "image_os": null,
+  "image_version": null,
+  "pr_base": null,
+  "pr_base_payload": null
+ },
+ "head": "52f4ca29bc2348e3e17bee8765eccb4f1937c39e",
+ "mode": "selected",
+ "notes": [
+  "hand-made e2e selection"
+ ],
+ "packages": {
+  "rodas5p-core": {
+   "all": false,
+   "doc": false,
+   "examples": [],
+   "lib": false,
+   "targets": [
+    "residual_gain_contract"
+   ],
+   "why": {
+    "residual_gain_contract": [
+     "e2e selection"
+    ]
+   }
+  },
+  "rodas5p-integrators": {
+   "all": false,
+   "doc": false,
+   "examples": [],
+   "lib": false,
+   "targets": [
+    "constants_provenance_contracts",
+    "generic_scope_contracts",
+    "ppsw1_linear_backend_contracts",
+    "ptsw2b_contracts"
+   ],
+   "why": {
+    "constants_provenance_contracts": [
+     "e2e selection"
+    ],
+    "generic_scope_contracts": [
+     "e2e selection"
+    ],
+    "ppsw1_linear_backend_contracts": [
+     "e2e selection"
+    ],
+    "ptsw2b_contracts": [
+     "e2e selection"
+    ]
+   }
+  }
+ },
+ "reasons": [],
+ "run_last": [],
+ "schema": "vigilode.ci.test-selection.v3",
+ "scope": [
+  "rodas5p-core",
+  "rodas5p-integrators"
+ ]
+}

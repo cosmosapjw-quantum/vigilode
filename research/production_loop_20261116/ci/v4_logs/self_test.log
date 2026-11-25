@@ -1,0 +1,9 @@
+# command: python3 -u tools/ci/select_tests.py self-test
+# head: 52f4ca29bc2348e3e17bee8765eccb4f1937c39e
++ sh -c trap '' TERM; echo started; sleep 30 & sleep 30; wait
+started
+the time budget ended: stopping `sh -c trap '' TERM; echo started; sleep 30 & sleep 30; wait`
++ sh -c echo hi; exit 3
+hi
+self-test passed
+# exit 0

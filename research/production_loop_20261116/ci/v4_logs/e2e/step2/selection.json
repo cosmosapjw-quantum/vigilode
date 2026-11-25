@@ -1,0 +1,60 @@
+{
+ "base": "52f4ca29bc2348e3e17bee8765eccb4f1937c39e",
+ "baseline_failures_added": [],
+ "baseline_failures_dropped": [],
+ "baseline_not_run_added": [
+  "rodas5p-integrators:ppsw1_linear_backend_contracts",
+  "rodas5p-integrators:ptsw2b_contracts"
+ ],
+ "baseline_not_run_dropped": [],
+ "baseline_run": 9001,
+ "changed": [],
+ "classified": {},
+ "controls": [],
+ "environment": {
+  "image_os": null,
+  "image_version": null,
+  "pr_base": null,
+  "pr_base_payload": null
+ },
+ "head": "52f4ca29bc2348e3e17bee8765eccb4f1937c39e",
+ "map_targets": 3,
+ "mode": "selected",
+ "notes": [],
+ "owners": {},
+ "packages": {
+  "rodas5p-integrators": {
+   "all": false,
+   "doc": true,
+   "examples": [],
+   "lib": false,
+   "targets": [
+    "ppsw1_linear_backend_contracts",
+    "ptsw2b_contracts"
+   ],
+   "why": {
+    "doc": [
+     "its package has a selected target (doc tests are not measured)"
+    ],
+    "ppsw1_linear_backend_contracts": [
+     "not run in the baseline run (stopped when the time budget ended)"
+    ],
+    "ptsw2b_contracts": [
+     "not run in the baseline run (not started: the time budget ended)"
+    ]
+   }
+  }
+ },
+ "reasons": [],
+ "run_last": [
+  {
+   "package": "rodas5p-integrators",
+   "target": "ppsw1_linear_backend_contracts"
+  }
+ ],
+ "schema": "vigilode.ci.test-selection.v3",
+ "scope": [
+  "rodas5p-core",
+  "rodas5p-integrators"
+ ]
+}

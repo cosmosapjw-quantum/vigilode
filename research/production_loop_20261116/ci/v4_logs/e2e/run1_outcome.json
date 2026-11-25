@@ -1,0 +1,143 @@
+{
+ "budget": {
+  "deadline": 1795574909.839,
+  "minutes": 3.0,
+  "started_at": 1795574729.839
+ },
+ "commands": [
+  {
+   "build": true,
+   "command": "cargo test --locked --no-run --message-format=json-diagnostic-rendered-ansi -p rodas5p-core --test residual_gain_contract",
+   "did_not_run_its_tests": false,
+   "exit_code": 0,
+   "failed_targets": [],
+   "seconds": 0.083
+  },
+  {
+   "build": true,
+   "command": "cargo test --locked --no-run --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --test constants_provenance_contracts --test generic_scope_contracts --test ppsw1_linear_backend_contracts --test ptsw2b_contracts",
+   "did_not_run_its_tests": false,
+   "exit_code": 0,
+   "failed_targets": [],
+   "seconds": 0.063
+  },
+  {
+   "build": false,
+   "command": "cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-core --test residual_gain_contract",
+   "did_not_run_its_tests": false,
+   "exit_code": 0,
+   "failed_targets": [],
+   "seconds": 0.069
+  },
+  {
+   "build": false,
+   "command": "cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --test constants_provenance_contracts",
+   "did_not_run_its_tests": false,
+   "exit_code": 0,
+   "failed_targets": [],
+   "seconds": 0.079
+  },
+  {
+   "build": false,
+   "command": "cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --test generic_scope_contracts",
+   "did_not_run_its_tests": false,
+   "exit_code": 0,
+   "failed_targets": [],
+   "seconds": 0.641
+  }
+ ],
+ "complete": false,
+ "environment": {
+  "image_os": null,
+  "image_version": null,
+  "pr_base": null,
+  "pr_base_payload": null
+ },
+ "failed": [],
+ "head": "52f4ca29bc2348e3e17bee8765eccb4f1937c39e",
+ "measured": [
+  "rodas5p-core::residual_gain_contract",
+  "rodas5p-integrators::constants_provenance_contracts",
+  "rodas5p-integrators::generic_scope_contracts"
+ ],
+ "measurement": {
+  "llvm_bin": "/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w3-llvm/rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin",
+  "lost": [],
+  "map_targets": 3,
+  "packages_lost": [],
+  "packages_recorded": [
+   "rodas5p-core",
+   "rodas5p-integrators",
+   "rodas5p-krylov"
+  ],
+  "refreshed": 3,
+  "stats": {
+   "rodas5p-core::residual_gain_contract": {
+    "absent": 0,
+    "compile": 2,
+    "dirs": 0,
+    "executed": 7,
+    "read": 0,
+    "seconds": 0.069,
+    "trace_files": 7,
+    "traced_calls": 115
+   },
+   "rodas5p-integrators::constants_provenance_contracts": {
+    "absent": 0,
+    "compile": 4,
+    "dirs": 0,
+    "executed": 3,
+    "read": 3,
+    "seconds": 0.079,
+    "trace_files": 3,
+    "traced_calls": 117
+   },
+   "rodas5p-integrators::generic_scope_contracts": {
+    "absent": 0,
+    "compile": 2,
+    "dirs": 20,
+    "executed": 10,
+    "read": 309,
+    "seconds": 0.641,
+    "trace_files": 5,
+    "traced_calls": 1030
+   }
+  },
+  "strace": "strace -- version 6.8",
+  "strace_note": null,
+  "work_dir": "/tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/v33/e2e/work-run1"
+ },
+ "mode": "normal",
+ "negative_controls_failed": [],
+ "not_run": [
+  {
+   "package": "rodas5p-integrators",
+   "target": "ppsw1_linear_backend_contracts",
+   "why": "stopped when the time budget ended"
+  },
+  {
+   "package": "rodas5p-integrators",
+   "target": "ptsw2b_contracts",
+   "why": "not started: the time budget ended"
+  }
+ ],
+ "run_last": [
+  {
+   "package": "rodas5p-integrators",
+   "target": "ppsw1_linear_backend_contracts"
+  }
+ ],
+ "running": null,
+ "schema": "vigilode.ci.test-outcome.v3",
+ "selection_mode": "selected",
+ "stop": {
+  "minutes": 3.0,
+  "reason": "the time budget ended",
+  "units": [
+   {
+    "package": "rodas5p-integrators",
+    "target": "ppsw1_linear_backend_contracts"
+   }
+  ]
+ }
+}

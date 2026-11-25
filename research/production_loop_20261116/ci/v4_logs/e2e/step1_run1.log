@@ -1,0 +1,59 @@
+# command: flock -w 14400 /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/locks/cargo_a.lock taskset -c 0-5,12-17 /usr/bin/python3 -I -u /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v33/tools/ci/select_tests.py run --selection /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v33/research/production_loop_20261116/ci/v4_logs/e2e/selection1.json --mode normal --measure --work-dir /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/v33/e2e/work-run1 --map-out /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v33/research/production_loop_20261116/ci/v4_logs/e2e/run1_map.json --outcome /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v33/research/production_loop_20261116/ci/v4_logs/e2e/run1_outcome.json --budget-minutes 3 --started-at 1795574729.839
+# head: 52f4ca29bc2348e3e17bee8765eccb4f1937c39e
+# started: 2026-11-25T11:45:29+0900
++ cargo test --locked --no-run --message-format=json-diagnostic-rendered-ansi -p rodas5p-core --test residual_gain_contract
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
++ cargo test --locked --no-run --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --test constants_provenance_contracts --test generic_scope_contracts --test ppsw1_linear_backend_contracts --test ptsw2b_contracts
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.05s
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-core --test residual_gain_contract
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.04s
+     Running tests/residual_gain_contract.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v33/debug/deps/residual_gain_contract-f07b9aac19213566)
+
+running 7 tests
+test export_runs ... ignored
+test test_transport_two_sided_gain_scaling ... ok
+test test_case_d_positives ... ok
+test test_assembly_uncertainty_validation ... ok
+test test_case_c_negatives ... ok
+test test_vg1_zero_allocation_hot_path ... ok
+test test_case_a_retained_oracle_and_parity ... ok
+
+test result: ok. 6 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --test constants_provenance_contracts
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.04s
+     Running tests/constants_provenance_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v33/debug/deps/constants_provenance_contracts-d92d76e498cca015)
+
+running 2 tests
+test source_artifact_hashes_are_current ... ok
+test constants_provenance_table_matches_source ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --test generic_scope_contracts
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.04s
+     Running tests/generic_scope_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v33/debug/deps/generic_scope_contracts-417f9d99cdfa9a46)
+
+running 4 tests
+test required_vectorized_jf_modules_exist_in_the_generic_base ... ok
+test radau3_cell_g_baseline_has_embedded_semantics_instead_of_a_source_byte_claim ... ok
+test bdf_v2_semantic_baseline_explicitly_retires_the_legacy_source_byte_freeze ... ok
+test generic_solver_core_does_not_embed_physical_client_bindings ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.57s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --test ppsw1_linear_backend_contracts
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.04s
+     Running tests/ppsw1_linear_backend_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v33/debug/deps/ppsw1_linear_backend_contracts-7fcfd2c4f647024e)
+
+running 7 tests
+test c5_measured_crossover_paired_interleaved ... ignored, timing: run with --ignored for the crossover evidence
+test c7_single_arm_process_metrics ... ignored, process metrics: one arm per process, driven by process_metrics.py
+test c2_stagnation_and_nonfinite_failures_are_typed_and_charged ... ok
+test c3_permission_refusals_happen_before_any_callback ... ok
+test c6_linear_budget_guard_refuses_before_any_callback ... ok
+test c1_dense_parity_diagonal_nonnormal_and_rank_deficient ... ok
+test c4_residual_to_step_error_budget_on_full_ivp has been running for over 60 seconds
+the time budget ended: stopping `cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --test ppsw1_linear_backend_contracts`
+the run stopped after 3.0 minutes (the time budget ended): 2 of its 5 selected units did not run; /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v33/research/production_loop_20261116/ci/v4_logs/e2e/run1_outcome.json lists them under not_run and the next run selects them
+# exit 1 after 180.1 s

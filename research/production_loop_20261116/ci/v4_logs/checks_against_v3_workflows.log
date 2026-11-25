@@ -1,0 +1,11 @@
+check_workflows of the v4 selector on the workflows of 6c71775b (v3, before the v4 workflow edits)
+problem: production.yml: job test does not record its start (JOB_STARTED_AT) in its first step (OD-L1-29)
+problem: production.yml: job test runs its selection without --budget-minutes and --started-at "$JOB_STARTED_AT" (OD-L1-29)
+problem: production.yml: job test does not save its outcome when it is cancelled (if: always(), OD-L1-29)
+problem: production.yml: job test-cli-fair-ab does not record its start (JOB_STARTED_AT) in its first step (OD-L1-29)
+problem: production.yml: job test-cli-fair-ab runs its selection without --budget-minutes and --started-at "$JOB_STARTED_AT" (OD-L1-29)
+problem: production.yml: job test-cli-fair-ab does not save its outcome when it is cancelled (if: always(), OD-L1-29)
+problem: ignored-tests.yml: job ignored-tests does not record its start (JOB_STARTED_AT) in its first step (OD-L1-29)
+problem: ignored-tests.yml: job ignored-tests runs its selection without --budget-minutes and --started-at "$JOB_STARTED_AT" (OD-L1-29)
+problem: ignored-tests.yml: job ignored-tests does not save its outcome when it is cancelled (if: always(), OD-L1-29)
+9 problems

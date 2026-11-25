@@ -131,7 +131,7 @@ that is still running when the budget ends (R39), and the next run runs that uni
   with the record step; its run step passes --budget-minutes B with --started-at
   "$JOB_STARTED_AT", with B at least 5 minutes under the job limit; its upload step has
   `if: always()`. Self-test probes: an upload with !cancelled(), a run step without a budget, a
-  budget equal to the limit, a job without the record step.
+  budget 4 minutes under the limit, a job whose first step is not the record step.
 
 4. Open (owner)
 ppsw1_linear_backend_contracts with --ignored, measured on a hosted runner, did not end within
@@ -139,3 +139,57 @@ ppsw1_linear_backend_contracts with --ignored, measured on a hosted runner, did 
 that selects it (it stays unmapped until it finishes once), runs it last, and fails. The other
 units converge over the runs. Fixing that test or excluding it is an owner decision; the test file
 is outside this node's write allowlist.
+
+5. Verification (v4_logs/; every number here is read from a log or JSON file there)
+- Self-test (self_test.log, head 52f4ca29): passed. New cases: atomic writes (a failed write leaves
+  the old file and no temporary file); a command stopped at its deadline with its process group,
+  also when it ignores SIGTERM and has a background child; which outcome files qualify and which
+  are passed over (empty, not JSON, a list, malformed lists, no head, an incomplete outcome
+  without not_run, an earlier schema); maps of the wrong shape count as missing; the units to run
+  last; decide() with units not run (selected whatever the diff, filtered like failures); the
+  order of a run (run_last last, builds first, measured and unmeasured). On a fake workspace and
+  toolchain (cargo, rustc, strace, llvm-profdata, llvm-cov, gh): (1) the budget ends while c_slow
+  runs: exit 1, c_slow stopped, d_after not started, a_fast and b_fast measured, the old map
+  entries of c_slow and d_after gone, the stopped test process gone; (2) baseline and select: at
+  the same head only c_slow and d_after, c_slow last; after a change of a_fast's input also a_fast;
+  (3) the next run completes with c_slow last, and its complete outcome selects nothing at the
+  same head and only a_fast after the change; (4) a run killed with SIGKILL while c_slow runs
+  leaves an outcome that names c_slow as running and is a usable baseline (c_slow last); (5) three
+  unreadable outcome files are passed over; an unreadable or empty map makes the selection full.
+  check_workflows probes: a save step with !cancelled(), a run step without a budget, a budget 4
+  minutes under the limit, a first step that does not record the start.
+- Mutation check (v4_self_test_mutants.py, self_test_mutants.log): 13 mutants of the selector,
+  each disabling one mechanism (the rule for units not run, run_last, the deadline in stream(),
+  the dropping of the entries of selected targets, atomic writes, partial baselines, the hand-over
+  of run_last, the write after each command, the write before each command, the outcome and map
+  validation, the exit code of a stopped run, the if: always() check): the self-test fails on all.
+- check_workflows of this selector on the v3 workflows (checks_against_v3_workflows.log): 9
+  problems, 3 per selecting job (no record step, no budget, a save step that a cancellation skips).
+- Reachability (check_ignored_tests_in_ci.log): 104 ignored tests, 104 reachable; the same on the
+  tree of the base commit d4e2772f (check_ignored_tests_in_ci_base.log).
+- YAML (workflows_yaml.log, PyYAML 6.0.1; actionlint is not installed): both workflows parse; in
+  each selecting job the first step records JOB_STARTED_AT, the run step has the budget 10 minutes
+  under the limit with --started-at, the save step has if: always(), and the queueing is unchanged.
+- Loop checker (check_checkpoint.log): PASS.
+- End to end with cargo 1.94.1, coverage (LLVM 21.1.8) and strace 6.8 (v4_e2e.py; raw outputs in
+  e2e/, parsed into e2e/summary.json; CPUs 0-5,12-17 under the host build lock):
+  * run 1, budget 3 minutes: residual_gain_contract, constants_provenance_contracts and
+    generic_scope_contracts ran and were measured (executed/read/dirs paths 7/0/0, 3/3/0,
+    10/309/20); ppsw1_linear_backend_contracts was stopped at 3.0 minutes, ptsw2b_contracts did not
+    start; exit 1; outcome complete=false, run_last ppsw1_linear_backend_contracts.
+  * save and lookup (fake gh, run 9001): accepted as a partial baseline; select at the same head:
+    ppsw1_linear_backend_contracts, ptsw2b_contracts and the integrators doc tests (rule 8), with
+    ppsw1_linear_backend_contracts last, nothing else.
+  * run 2, budget 45 minutes: ptsw2b_contracts, the doc tests (14 compile-fail tests), then
+    ppsw1_linear_backend_contracts (1577 s); complete, exit 0; the map holds all five targets.
+  * lookup after run 2 (run 9002): complete; select at the same head: no test.
+  * run 1b, no budget, SIGTERM to the selector 20 s into ppsw1_linear_backend_contracts: the
+    process group of that command stopped, the outcome written with the stop reason "the signal
+    SIGTERM" and the two units not run, exit 1 after 23 s; no test process left
+    (e2e/leftover_processes.log).
+- Write cost (recorded, decides nothing; v4_write_cost.py, write_cost.log): at the size of the
+  hosted test job (557 map entries, 475 commands) the three writes per command took 51 ms on this
+  shared host, about 24 s per full run.
+- Hosted evidence comes after the merge: the first ignored run is full (tools/ci/ changed); it is
+  expected to stop ppsw1_linear_backend_contracts at 320 minutes, save its outcome and fail, and
+  the next run to run the units after it first.

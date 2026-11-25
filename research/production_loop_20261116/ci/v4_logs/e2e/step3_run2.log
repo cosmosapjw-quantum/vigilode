@@ -1,0 +1,76 @@
+# command: flock -w 14400 /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/locks/cargo_a.lock taskset -c 0-5,12-17 /usr/bin/python3 -I -u /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v33/tools/ci/select_tests.py run --selection /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v33/research/production_loop_20261116/ci/v4_logs/e2e/step2/selection.json --mode normal --measure --work-dir /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/v33/e2e/work-run2 --map-out /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v33/research/production_loop_20261116/ci/v4_logs/e2e/run2_map.json --outcome /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v33/research/production_loop_20261116/ci/v4_logs/e2e/run2_outcome.json --baseline /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v33/research/production_loop_20261116/ci/v4_logs/e2e/step2/baseline.json --budget-minutes 45 --started-at 1795575046.950
+# head: 52f4ca29bc2348e3e17bee8765eccb4f1937c39e
+# started: 2026-11-25T11:50:47+0900
++ cargo test --locked --no-run --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --test ppsw1_linear_backend_contracts --test ptsw2b_contracts
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.05s
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --test ptsw2b_contracts
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.04s
+     Running tests/ptsw2b_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v33/debug/deps/ptsw2b_contracts-05113b33991ec159)
+
+running 24 tests
+test c2_implementation_stiff_limit_matrix_matches_exact_and_is_nilpotent ... ok
+test c1_exact_stiff_limit_matrix_is_nilpotent_of_index_three_with_rho_zero ... ok
+test d1_stage_inputs_use_only_previous_step_data_and_certified_formulas ... ok
+test a1_certified_data_is_internally_consistent_in_exact_arithmetic ... ok
+test b3_implementation_residuals_vanish_for_order2_and_not_for_order3 ... ok
+test b2_exact_order3_condition_fails_so_order_is_exactly_two ... ok
+test d3_both_stages_share_one_w_factor_and_satisfy_the_certified_stage_equations ... ok
+test d5_jvp_only_problem_reproduces_explicit_jacobian_stage_solution ... ok
+test b1_exact_order2_conditions_vanish_identically_in_sigma ... ok
+test a2_implementation_coefficients_equal_certified_values ... ok
+test e3_controller_uses_certified_constants_clip_and_hysteresis ... ok
+test d2_perturbing_one_current_stage_input_changes_no_other_current_stage_output ... ok
+test f1_rejected_attempt_does_not_mutate_history_or_controller_but_charges_work ... ok
+test f2_accepted_attempt_commits_exactly_the_certified_update ... ok
+test g2_method_identity_is_distinct_opt_in_control_with_the_declared_derivative_class ... ok
+test e2_error_norm_is_componentwise_scaled_rms_of_the_embedded_difference ... ok
+test e1_embedded_estimator_uses_its_own_exact_weights_and_is_order_one ... ok
+test g1_accepted_step_ceiling_is_the_owner_decided_1_10 ... ok
+test d4_serial_and_two_thread_stage_solves_are_bitwise_identical ... ok
+test i1_startup_plan_is_forward_only_with_certified_times ... ok
+test h1_default_candidate_catalog_is_unchanged_and_peerw_stays_deferred ... ok
+test j2_l_stable_damping_on_stiff_prothero_robinson ... ok
+test j1_observed_global_order_is_two_with_exact_startup ... ok
+test h2_protected_sources_are_byte_identical ... ok
+
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --doc
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.04s
+   Doc-tests rodas5p_integrators
+
+running 14 tests
+test crates/rodas5p-integrators/src/packet_trajectory.rs - packet_trajectory::RetainedVerifiedWindow (line 1035) - compile fail ... ok
+test crates/rodas5p-integrators/src/packet_curve_output.rs - packet_window::packet_curve::output::PacketFrozenOutput (line 17) - compile fail ... ok
+test crates/rodas5p-integrators/src/bound_pr101.rs - bound_pr101::Pr101OutputEnclosure (line 373) - compile fail ... ok
+test crates/rodas5p-integrators/src/packet_curve_output.rs - packet_window::packet_curve::output::PacketCurveOutputView (line 214) - compile fail ... ok
+test crates/rodas5p-integrators/src/packet_curve_output.rs - packet_window::packet_curve::output::PacketCertifiedView (line 31) - compile fail ... ok
+test crates/rodas5p-integrators/src/gray_scott_verified.rs - gray_scott_verified::BoundGrayScottProblem (line 23) - compile fail ... ok
+test crates/rodas5p-integrators/src/homotopy.rs - homotopy::PartialCouplingParameters (line 18) - compile fail ... ok
+test crates/rodas5p-integrators/src/packet_trajectory.rs - packet_trajectory::PreparedVerifiedWindow (line 1021) - compile fail ... ok
+test crates/rodas5p-integrators/src/packet_trajectory.rs - packet_trajectory::VerifiedTrajectoryState (line 1048) - compile fail ... ok
+test crates/rodas5p-integrators/src/packet_curve_output.rs - packet_window::packet_curve::output::PacketCurveOutputView (line 210) - compile fail ... ok
+test crates/rodas5p-integrators/src/packet_trajectory.rs - packet_trajectory::VerifiedTrajectoryPoint (line 912) - compile fail ... ok
+test crates/rodas5p-integrators/src/physical_error_budget.rs - physical_error_budget::PreparedPhysicalCandidate (line 413) - compile fail ... ok
+test crates/rodas5p-integrators/src/bound_pr101.rs - bound_pr101::BoundPr101Problem (line 39) - compile fail ... ok
+test crates/rodas5p-integrators/src/bound_collective.rs - bound_collective::BoundCollectiveProblem (line 28) - compile fail ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+
++ cargo test --locked --no-fail-fast --message-format=json-diagnostic-rendered-ansi -p rodas5p-integrators --test ppsw1_linear_backend_contracts
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.04s
+     Running tests/ppsw1_linear_backend_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v33/debug/deps/ppsw1_linear_backend_contracts-7fcfd2c4f647024e)
+
+running 7 tests
+test c5_measured_crossover_paired_interleaved ... ignored, timing: run with --ignored for the crossover evidence
+test c7_single_arm_process_metrics ... ignored, process metrics: one arm per process, driven by process_metrics.py
+test c2_stagnation_and_nonfinite_failures_are_typed_and_charged ... ok
+test c3_permission_refusals_happen_before_any_callback ... ok
+test c6_linear_budget_guard_refuses_before_any_callback ... ok
+test c1_dense_parity_diagonal_nonnormal_and_rank_deficient ... ok
+test c4_residual_to_step_error_budget_on_full_ivp has been running for over 60 seconds
+test c4_residual_to_step_error_budget_on_full_ivp ... ok
+
+test result: ok. 5 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 1576.88s
+
+# exit 0 after 1580.1 s

@@ -1,0 +1,40 @@
+# YAML syntax and structure of the two selecting workflows at 52f4ca29bc2348e3e17bee8765eccb4f1937c39e (PyYAML 6.0.1)
+production.yml: parsed, 7 jobs
+  job test:
+    timeout-minutes: 300
+    first step: Record the start of the job
+    first step run: echo "JOB_STARTED_AT=$(date +%s)" >> "$GITHUB_ENV"
+    run step condition: None
+    budget minutes: 290
+    margin minutes: 10.0
+    started-at: True
+    save step condition: always()
+    save step artifact: ci-test-outcome-test
+    concurrency: {'group': 'production-test-${{ github.ref }}', 'cancel-in-progress': False}
+    structure as designed: True
+  job test-cli-fair-ab:
+    timeout-minutes: 120
+    first step: Record the start of the job
+    first step run: echo "JOB_STARTED_AT=$(date +%s)" >> "$GITHUB_ENV"
+    run step condition: None
+    budget minutes: 110
+    margin minutes: 10.0
+    started-at: True
+    save step condition: always()
+    save step artifact: ci-test-outcome-test-cli-fair-ab
+    concurrency: {'group': 'production-test-cli-fair-ab-${{ github.ref }}', 'cancel-in-progress': False}
+    structure as designed: True
+ignored-tests.yml: parsed, 1 jobs
+  job ignored-tests:
+    timeout-minutes: 330
+    first step: Record the start of the job
+    first step run: echo "JOB_STARTED_AT=$(date +%s)" >> "$GITHUB_ENV"
+    run step condition: ${{ !cancelled() }}
+    budget minutes: 320
+    margin minutes: 10.0
+    started-at: True
+    save step condition: always()
+    save step artifact: ci-test-outcome-ignored-tests
+    concurrency: {'group': 'ignored-tests-${{ github.ref }}', 'cancel-in-progress': False}
+    structure as designed: True
+problems: 0

@@ -1,0 +1,13 @@
+decide ignores the units not run: killed (self-test failed) | AssertionError: set()
+plan ignores run_last: killed (self-test failed) | AssertionError: [{'kind': 'build', 'package': 'core', 'cmd': ['cargo', 'test', '--locked', '--no-run', '--message-format=json-diagnostic-rendered-ansi', '-p', 'core', '--test', 'c1'], 'units': []}, {'kind': 'build', 'pac
+stream ignores the deadline: killed (self-test failed) | AssertionError: (0, 'started\n', False, 30.007508150010835)
+run keeps the entries of selected targets: killed (self-test failed) | AssertionError: {'head': 'cdb307badbd6c0cdf4a0a43c60cb8704bf906c5a', 'mode': 'normal', 'packages': {'p': {'compile': ['crates/p/src/lib.rs'], 'head': 'cdb307badbd6c0cdf4a0a43c60cb8704bf906c5a'}}, 'schema': 'vigilode.ci.c
+write_json is not atomic: killed (self-test failed) | FileNotFoundError: [Errno 2] No such file or directory: '/tmp/tmpxj0p23u2/x.json'
+baseline rejects incomplete outcomes: killed (self-test failed) | AssertionError
+baseline drops run_last: killed (self-test failed) | AssertionError: {'base': '40ae7098f068804bcb93ca138a5d291ee64f3e11', 'complete': False, 'environment': {}, 'errors': [], 'failed': [], 'map_path': '/tmp/tmp8vistow_/baseline_map.json', 'not_run': [{'package': 'p', 'targe
+outcome written only at the end: killed (self-test failed) | AssertionError
+no outcome before a command: killed (self-test failed) | TypeError: 'NoneType' object is not subscriptable
+read_outcome accepts a malformed not_run: killed (self-test failed) | AssertionError: ('{"schema": "vigilode.ci.test-outcome.v3", "head": "h", "complete": false, "failed": [], "not_run": "x"}', None, 'unreadable outcome')
+load_map accepts malformed sets: killed (self-test failed) | AssertionError: {"schema": "vigilode.ci.coverage-map.v2", "targets": {"p::t": {"read": "x"}}}
+a stopped run exits 0: killed (self-test failed) | AssertionError: (0, {'budget': {'deadline': 1000060.0, 'minutes': 1.0, 'started_at': 1000000.0}, 'commands': [{'build': True, 'command': 'cargo test --locked --no-run --message-format=json-diagnostic-rendered-ansi -p p -
+check_workflows accepts !cancelled() saves: killed (self-test failed) | AssertionError
