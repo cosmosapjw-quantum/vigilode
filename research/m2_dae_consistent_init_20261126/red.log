@@ -1,0 +1,23 @@
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-integrators)
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/vigilode)
+    Finished `release` profile [optimized] target(s) in 48.41s
+     Running tests/dae_init_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/dae_init_contracts-40dc36af33294cc0)
+
+running 1 test
+test projection_keeps_x_and_computes_tangent ... FAILED
+
+failures:
+
+---- projection_keeps_x_and_computes_tangent stdout ----
+
+thread 'projection_keeps_x_and_computes_tangent' (1496127) panicked at crates/vigilode/tests/dae_init_contracts.rs:32:10:
+called `Result::unwrap()` on an `Err` value: InvalidInput("consistent initialization not implemented")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    projection_keeps_x_and_computes_tangent
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p vigilode --test dae_init_contracts`

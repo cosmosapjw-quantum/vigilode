@@ -713,3 +713,7 @@ pub mod retro_physical_event;
 /// Source-owned scalar hybrid event reset/restart research, opt-in.
 #[cfg(feature = "polynomial-events")]
 pub mod retro_hybrid_reset;
+
+/// Source-owned consistent DAE initialization research.
+#[cfg(feature = "polynomial-events")]
+pub mod retro_dae_init;

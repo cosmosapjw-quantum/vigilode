@@ -1,0 +1,38 @@
+{
+  "binary_sha256": "5049693b6c91923d2dad771a8e7ca6360c7e2f792599c089c147fe1ce4e29ea3",
+  "counts": {
+    "holdout": {
+      "adaptive_reaudited": 3,
+      "cells": 8,
+      "fixed_exact": 5,
+      "qualified": 8,
+      "refused": 0
+    },
+    "training": {
+      "adaptive_reaudited": 18,
+      "cells": 144,
+      "fixed_exact": 126,
+      "qualified": 118,
+      "refused": 26
+    }
+  },
+  "mass": [
+    {
+      "case": "analytic",
+      "max_abs_error": 1.2621681477753555e-11,
+      "max_original_constraint": 1.2885914725668242e-11,
+      "nodes": 19,
+      "rhs_calls": 162,
+      "scope": "empirical accepted-node smoke, no global enclosure"
+    },
+    {
+      "case": "robertson",
+      "max_abs_error": 3.3132452337270024e-10,
+      "max_original_constraint": 1.8568995082887674e-16,
+      "nodes": 27,
+      "rhs_calls": 250,
+      "scope": "empirical accepted-node smoke, no global enclosure"
+    }
+  ],
+  "scope": "exact static result replay; fresh independent oracle for adaptive selection"
+}

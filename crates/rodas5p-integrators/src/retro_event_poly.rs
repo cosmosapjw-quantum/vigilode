@@ -301,6 +301,42 @@ impl RepresentedPolynomial {
         spec.validate(0)?;
         Self::compose_inner(spec, t0, t1, |_| Err(bad("clock-only state")))
     }
+    /// Freeze the physical time and differential state exactly, and vary
+    /// the last (scalar algebraic) state on the supplied branch interval.
+    /// The report's time coordinate is the algebraic coordinate here.
+    pub fn frozen_scalar(
+        spec: &DeclaredPolynomial,
+        t: f64,
+        x: &[f64],
+        branch: [f64; 2],
+    ) -> CoreResult<Self> {
+        spec.validate(x.len() + 1)?;
+        let t = q(t)?;
+        let x = x.iter().map(|&v| q(v)).collect::<CoreResult<Vec<_>>>()?;
+        let a = q(branch[0])?;
+        let h = q(branch[1])? - &a;
+        if !h.is_positive() {
+            return Err(bad("scalar branch width"));
+        }
+        let mut p = vec![];
+        for term in &spec.terms {
+            let mut v = vec![q(term.coefficient)?];
+            for f in &term.factors {
+                let mut b = vec![q(f.constant)? + &t * q(f.time)?];
+                for &(i, w) in &f.state {
+                    let c = if i == x.len() {
+                        vec![a.clone(), h.clone()]
+                    } else {
+                        vec![x[i].clone()]
+                    };
+                    b = add(&b, &scale(&c, &q(w)?)?)?;
+                }
+                v = mul(&v, &b)?;
+            }
+            p = add(&p, &v)?;
+        }
+        Ok(Self { p, t0: a, h })
+    }
     /// Compose the actual accepted native packet, not a fitted polynomial.
     pub fn from_segment(
         s: &FastDenseSegments,

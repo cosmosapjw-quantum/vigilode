@@ -231,3 +231,70 @@ pub use rodas5p_integrators::retro_physical_event;
 
 /// Deterministic scalar hybrid reset and physical synchronization research.
 pub use rodas5p_integrators::retro_hybrid_reset;
+
+/// Source-owned consistent DAE initialization.
+pub use rodas5p_integrators::retro_dae_init;
+
+/// An initialized mass-matrix client using the same immutable declared source.
+/// The initial report certifies only the fixed initial point and local branch,
+/// not the later constrained evolution. No mass solver policy is changed.
+#[allow(missing_docs)]
+pub struct InitializedDae {
+    pub problem: crate::Problem,
+    pub initial_state: Vec<f64>,
+    pub report: retro_dae_init::InitReport,
+}
+
+/// Prepare an existing mass-matrix driver client from a certified initial
+/// point. No callbacks can be supplied separately from the declared source.
+pub fn initialize_mass_problem(
+    source: &retro_dae_init::DaeSource,
+    t: f64,
+    x: &[f64],
+    z: &[f64],
+    branch: &[[f64; 2]],
+    policy: retro_dae_init::InitPolicy,
+    route: retro_dae_init::InitRoute,
+) -> Result<InitializedDae, crate::SolveError> {
+    let report = source
+        .initialize(t, x, z, branch, policy, route)
+        .map_err(|e| crate::SolveError::InvalidInput(e.to_string()))?;
+    let nx = source.nx();
+    let n = nx + source.nz();
+    let mut m = vec![0.; n * n];
+    for i in 0..nx {
+        m[i * n + i] = 1.;
+    }
+    let a = source.clone();
+    let b = source.clone();
+    let c = source.clone();
+    let problem = crate::Problem::new(n, move |t, y, out| {
+        let r = a
+            .rhs_values(t, y)
+            .map_err(|e| crate::CallbackError::Fatal(e.to_string()))?;
+        out.copy_from_slice(&r);
+        Ok(())
+    })
+    .jacobian(crate::Jacobian::dense(move |t, y, out| {
+        let r = b
+            .jacobian_values(t, y)
+            .map_err(|e| crate::CallbackError::Fatal(e.to_string()))?;
+        out.copy_from_slice(&r);
+        Ok(())
+    }))
+    .time_derivative(move |t, y, out| {
+        let r = c
+            .time_values(t, y)
+            .map_err(|e| crate::CallbackError::Fatal(e.to_string()))?;
+        out.copy_from_slice(&r);
+        Ok(())
+    })
+    .mass(m);
+    let mut initial_state = report.x.clone();
+    initial_state.extend_from_slice(&report.z);
+    Ok(InitializedDae {
+        problem,
+        initial_state,
+        report,
+    })
+}

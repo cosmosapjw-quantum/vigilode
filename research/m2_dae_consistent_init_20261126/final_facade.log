@@ -1,0 +1,106 @@
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-integrators)
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/vigilode)
+    Finished `release` profile [optimized] target(s) in 1m 06s
+     Running tests/dae_init_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/dae_init_contracts-40dc36af33294cc0)
+
+running 6 tests
+test holdout ... ignored, frozen candidate selection
+test mass_client_same_source ... ok
+test projection_keeps_x_and_computes_tangent ... ok
+test rank_condition_and_prepared_admission ... ok
+test strict_preserves_input_and_branch_refusals ... ok
+test training ... ignored, finite candidate campaign
+
+test result: ok. 4 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/events_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/events_contracts-edaf5414ebe7039f)
+
+running 15 tests
+test crossing_at_step_endpoint_reported_once ... ok
+test even_crossings_in_a_half_interval_and_tangent_touches_are_missed ... ok
+test events_do_not_change_integration ... ok
+test events_found_on_a_large_step_are_roots_and_ordered ... ok
+test events_without_dense_output_refused ... ok
+test exponential_decay_half_life ... ok
+test iteration_cap_falls_back_to_bisection ... ok
+test nonfinite_event_function_fails_typed ... ok
+test nonfinite_event_keeps_an_earlier_driver_failure ... ok
+test oscillator_crossings ... ok
+test terminal_event_charges_work_after_it ... ok
+test terminal_event_truncates ... ok
+test terminal_event_wins_over_later_driver_failure ... ok
+test terminal_index_is_into_events_not_declaration ... ok
+test zero_at_t0_is_not_an_event ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/hybrid_reset_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/hybrid_reset_contracts-d9cce1c5a9d6e28c)
+
+running 7 tests
+test atomic_failure_and_anti_zeno_contract ... ok
+test holdout ... ignored, frozen selected physical candidates
+test imminent_guard_and_too_tight_state_budget_fail_closed ... ok
+test physical_terminal_requires_no_later_trials ... ok
+test repeated_resets_and_represented_control ... ok
+test time_dependent_reset_correlation_and_adaptive_accounting ... ok
+test training ... ignored, finite candidate campaign
+
+test result: ok. 5 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/p0_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/p0_contracts-f8ced4f4c8b89a4a)
+
+running 24 tests
+test a_fatal_jvp_inside_gmres_returns_the_partial_solution ... ok
+test a_fatal_rhs_after_several_steps_returns_the_last_accepted_state ... ok
+test a_fatal_rhs_on_the_banded_route_returns_the_last_accepted_state ... ok
+test a_fatal_rhs_on_the_dense_output_route_keeps_every_accepted_step ... ok
+test a_recoverable_midpoint_failure_rejects_on_every_facade_dense_route ... ok
+test at_none_outside_span_and_after_failure ... ok
+test at_without_dense_output_returns_stored_samples_only ... ok
+test banded_provider_on_the_dense_output_route_matches_the_dense_provider ... ok
+test dense_output_bit_identical_to_direct_fast_dense ... ok
+test dense_output_routes_to_fast_dense ... ok
+test empty_span_dense_output ... ok
+test enforce_and_mass_stay_sequential ... ok
+test enforcing_interior_error_survives_a_zero_error_scale_component ... ok
+test failure_reasons_name_the_drivers_failure_kind ... ok
+test finite_difference_band_on_the_dense_output_route_runs_and_agrees ... ok
+test interior_error_modes_route_with_the_named_control ... ok
+test mass_and_dense_output_refusals ... ok
+test mass_matrix_route_is_bit_identical_to_the_direct_dense_driver ... ok
+test mass_route_without_dense_output_is_the_same_run_without_segments ... ok
+test options_without_interior_error_deserialize_to_the_default ... ok
+test prothero_robinson_interior_error_is_controlled_through_the_facade ... ok
+test robertson_as_an_index1_dae_with_a_singular_mass_matrix ... ok
+test terminal_event_on_every_dense_store ... ok
+test uniform_vector_atol_equals_scalar_under_dense_output ... ok
+
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/physical_event_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/physical_event_contracts-378bc8457bd5d65c)
+
+running 7 tests
+test holdout ... ignored, frozen selection only
+test precision_campaign ... ignored, separately registered tight event-time campaign
+test precision_holdout ... ignored, tight selection frozen before holdout
+test real_touch_is_structural_and_coupled_source ... ok
+test scalar_physical_root_and_no_root ... ok
+test training ... ignored, explicit finite campaign with independent physical oracle
+test unresolved_grazing_and_initial_root_and_admission ... ok
+
+test result: ok. 3 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/polynomial_event_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/polynomial_event_contracts-09956f3ba3ce8f12)
+
+running 8 tests
+test actual_adaptive_portfolio_recomputes_original_count ... ok
+test actual_robertson_packet_export_for_independent_composition ... ok
+test degree16_and_sign_screens_and_refusals ... ok
+test exact_multiplicities_and_boundary_convention ... ok
+test hidden_pair_and_touch_on_real_driver ... ok
+test native_state_and_multicomponent_composition ... ok
+test represented_clock_overlap_is_explicit ... ok
+test zero_and_invalid_declarations_fail_closed ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+

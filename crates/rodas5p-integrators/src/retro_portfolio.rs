@@ -108,6 +108,20 @@ pub enum Route {
     ResetTransport,
     #[cfg(feature = "polynomial-events")]
     ResetCombined,
+    #[cfg(feature = "polynomial-events")]
+    DaeDirect,
+    #[cfg(feature = "polynomial-events")]
+    DaeReuse,
+    #[cfg(feature = "polynomial-events")]
+    DaeBatch,
+    #[cfg(feature = "polynomial-events")]
+    DaePreparedSerial,
+    #[cfg(feature = "polynomial-events")]
+    DaePreparedBatch,
+    #[cfg(feature = "polynomial-events")]
+    DaePreparedRayon,
+    #[cfg(feature = "polynomial-events")]
+    DaeScalarRoot,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
 pub enum AttemptStatus {
