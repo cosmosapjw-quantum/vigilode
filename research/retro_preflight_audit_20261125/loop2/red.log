@@ -1,0 +1,22 @@
+   Compiling rodas5p-core v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-core)
+    Finished `release` profile [optimized] target(s) in 7.72s
+     Running tests/lu_workspace_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/lu_workspace_contracts-befc8c3a0224f55c)
+
+running 1 test
+test preflight_batch_refuses_nonfinite_rhs_at_input_boundary ... FAILED
+
+failures:
+
+---- preflight_batch_refuses_nonfinite_rhs_at_input_boundary stdout ----
+
+thread 'preflight_batch_refuses_nonfinite_rhs_at_input_boundary' (1110723) panicked at crates/rodas5p-core/tests/lu_workspace_contracts.rs:99:5:
+LinearSolve("batched LU produced NaN/Inf")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    preflight_batch_refuses_nonfinite_rhs_at_input_boundary
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-core --test lu_workspace_contracts`

@@ -6,7 +6,8 @@ use crate::{
     retro_portfolio::{Portfolio, Route, Selection},
 };
 use rodas5p_core::{
-    CoreError, CoreResult, DenseMatrix, LuFactorization, LuSolveWorkspace, direct_solve,
+    CoreError, CoreResult, DenseMatrix, LuBatchWorkspace, LuFactorization, LuSolveWorkspace,
+    direct_solve,
     directed::{Interval, add_up, div_up, exp_interval, mul_up, sub_down},
     retro_dictionary::{Dictionary, RealMode},
 };
@@ -79,6 +80,52 @@ fn residual(a: &DenseMatrix, b: &[f64], x: &[f64]) -> CoreResult<f64> {
     }
     Ok(r)
 }
+/// Exact structural support, never a numerical threshold. Entries keep
+/// original column order. Nonzero coefficients, including subnormals, remain.
+struct ExactSupport {
+    rowptr: Vec<usize>,
+    entries: Vec<(usize, f64)>,
+}
+impl ExactSupport {
+    fn new(a: &DenseMatrix, nnz: usize) -> Self {
+        let mut rowptr = Vec::with_capacity(a.nrows() + 1);
+        let mut entries = Vec::with_capacity(nnz);
+        rowptr.push(0);
+        for i in 0..a.nrows() {
+            entries.extend(
+                a.row(i)
+                    .iter()
+                    .copied()
+                    .enumerate()
+                    .filter(|(_, v)| *v != 0.),
+            );
+            rowptr.push(entries.len());
+        }
+        Self { rowptr, entries }
+    }
+    fn residual(&self, b: &[f64], x: &[f64]) -> CoreResult<f64> {
+        if b.len() + 1 != self.rowptr.len()
+            || x.len() != b.len()
+            || b.iter().chain(x).any(|v| !v.is_finite())
+        {
+            return Err(bad("support residual shape/nonfinite"));
+        }
+        let mut r = 0.0_f64;
+        for (i, &bi) in b.iter().enumerate() {
+            let v = self.entries[self.rowptr[i]..self.rowptr[i + 1]]
+                .iter()
+                .try_fold(pt(bi)?, |s, &(j, a)| s.sub(pt(a)?.scale(x[j])?))?;
+            r = r.max(v.mag());
+        }
+        Ok(r)
+    }
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ResidualMode {
+    Auto,
+    Dense,
+    ExactSupport,
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum BatchMode {
     FreshFactor,
@@ -92,6 +139,9 @@ pub struct BatchReport {
     pub error_upper: f64,
     pub residual_upper: f64,
     pub setup_ns: u64,
+    pub residual_mode: ResidualMode,
+    pub residual_terms: usize,
+    pub batch_workspace_rebuilt: bool,
 }
 /// Owns the exact represented matrix and its factors; no lookup by shape
 /// is permitted. A changed source requires a new PreparedRhs owner.
@@ -99,6 +149,9 @@ pub struct PreparedRhs {
     a: DenseMatrix,
     lu: LuFactorization,
     scratch: LuSolveWorkspace,
+    batch_scratch: Option<LuBatchWorkspace>,
+    support: Option<ExactSupport>,
+    nnz: usize,
     gap: f64,
     par: faer::Par,
     setup_ns: u64,
@@ -113,10 +166,15 @@ impl PreparedRhs {
         let gap = enclosing_gap(&a)?;
         let lu = LuFactorization::new(&a)?;
         let scratch = LuSolveWorkspace::new(a.nrows());
+        let nnz = a.as_slice().iter().filter(|&&x| x != 0.).count();
+        let support = (nnz <= a.as_slice().len() / 2).then(|| ExactSupport::new(&a, nnz));
         Ok(Self {
             a,
             lu,
             scratch,
+            batch_scratch: None,
+            support,
+            nnz,
             gap,
             par: faer::get_global_parallelism(),
             setup_ns: start.elapsed().as_nanos().min(u64::MAX as u128) as u64,
@@ -144,9 +202,33 @@ impl PreparedRhs {
         mode: BatchMode,
         exec: &ParallelExecution,
     ) -> CoreResult<BatchReport> {
+        self.solve_with_verifier(rhs, mode, ResidualMode::Auto, exec)
+    }
+    /// Choose the original dense residual or exact stored support. The latter
+    /// is admitted only when the owner retained support within its memory cap.
+    pub fn solve_with_verifier(
+        &mut self,
+        rhs: &[Vec<f64>],
+        mode: BatchMode,
+        verifier: ResidualMode,
+        exec: &ParallelExecution,
+    ) -> CoreResult<BatchReport> {
         if self.par != faer::get_global_parallelism() {
             return Err(bad("faer parallelism changed since preparation"));
         }
+        let verifier = match verifier {
+            ResidualMode::Auto => {
+                if self.support.is_some() {
+                    ResidualMode::ExactSupport
+                } else {
+                    ResidualMode::Dense
+                }
+            }
+            ResidualMode::ExactSupport if self.support.is_none() => {
+                return Err(bad("exact support not retained for dense owner"));
+            }
+            v => v,
+        };
         crate::affine_event_certificate::check_affine_event_arithmetic()?;
         let n = self.a.nrows();
         if rhs.is_empty()
@@ -157,6 +239,7 @@ impl PreparedRhs {
         {
             return Err(bad("batch shape"));
         }
+        let mut batch_workspace_rebuilt = false;
         let values = match mode {
             BatchMode::FreshFactor => rhs
                 .iter()
@@ -170,7 +253,22 @@ impl PreparedRhs {
                 }
                 x
             }
-            BatchMode::FaerBatch => self.lu.solve_rows(rhs)?,
+            BatchMode::FaerBatch => {
+                if self
+                    .batch_scratch
+                    .as_ref()
+                    .is_none_or(|w| w.shape() != (n, rhs.len()))
+                {
+                    self.batch_scratch = Some(LuBatchWorkspace::new(n, rhs.len())?);
+                    batch_workspace_rebuilt = true;
+                }
+                let mut x = rhs.to_vec();
+                self.lu.solve_rows_in_place_with_workspace(
+                    &mut x,
+                    self.batch_scratch.as_mut().expect("prepared above"),
+                )?;
+                x
+            }
             BatchMode::RayonChunks => {
                 // Local Rayon workers each own scratch. Avoid nested faer
                 // parallelism; global faer policy is never changed.
@@ -197,7 +295,12 @@ impl PreparedRhs {
         let pairs = rhs.iter().zip(&values).collect::<Vec<_>>();
         let rr = exec.map_ordered(&pairs, |(b, x)| {
             crate::affine_event_certificate::check_affine_event_arithmetic()?;
-            residual(&self.a, b, x)
+            match verifier {
+                ResidualMode::ExactSupport => {
+                    self.support.as_ref().expect("admitted").residual(b, x)
+                }
+                _ => residual(&self.a, b, x),
+            }
         })?;
         let r = rr.into_iter().fold(0., f64::max);
         let error_upper = div_up(r, self.gap)?;
@@ -206,6 +309,14 @@ impl PreparedRhs {
             error_upper,
             residual_upper: r,
             setup_ns: self.setup_ns,
+            residual_mode: verifier,
+            residual_terms: rhs.len()
+                * if verifier == ResidualMode::ExactSupport {
+                    self.nnz
+                } else {
+                    n * n
+                },
+            batch_workspace_rebuilt,
         })
     }
     pub fn adaptive(
@@ -233,6 +344,7 @@ impl PreparedRhs {
             &[
                 self.a.nrows() as u64,
                 rhs.len() as u64,
+                self.nnz as u64,
                 self.gap.to_bits(),
                 exec.threads() as u64,
             ],

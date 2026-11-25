@@ -455,3 +455,110 @@ fn preflight_batch_invalid_input_leaves_buffers_unchanged() {
         assert_eq!(moments, [[sentinel; 36]; 3]);
     }
 }
+
+#[test]
+fn preflight_exact_support_and_cache_reuse() {
+    let seq = ParallelExecution::sequential();
+    let pool = ParallelExecution::rayon(4).unwrap();
+    for n in [8, 32, 128] {
+        for k in [1, 8, 32] {
+            let (a, b, x) = fixture(n, k);
+            let mut w = PreparedRhs::new(a.clone()).unwrap();
+            let dense = w
+                .solve_with_verifier(&b, BatchMode::FaerBatch, ResidualMode::Dense, &seq)
+                .unwrap();
+            assert!(dense.batch_workspace_rebuilt);
+            let sparse = w
+                .solve_with_verifier(&b, BatchMode::FaerBatch, ResidualMode::ExactSupport, &seq)
+                .unwrap();
+            assert!(!sparse.batch_workspace_rebuilt);
+            assert_eq!(dense.values, sparse.values);
+            assert_eq!(dense.error_upper, sparse.error_upper);
+            assert_eq!(sparse.residual_terms, (3 * n - 2) * k);
+            assert_eq!(dense.residual_terms, n * n * k);
+            let err = sparse
+                .values
+                .iter()
+                .flatten()
+                .zip(x.iter().flatten())
+                .map(|(a, b)| (a - b).abs())
+                .fold(0.0, f64::max);
+            assert!(err <= sparse.error_upper && sparse.error_upper < 1e-12);
+            let parallel = w
+                .solve_with_verifier(
+                    &b,
+                    BatchMode::RayonChunks,
+                    ResidualMode::ExactSupport,
+                    &pool,
+                )
+                .unwrap();
+            assert!(parallel.error_upper < 1e-12);
+            assert!(
+                w.solve(&b[..1], BatchMode::FaerBatch, &seq)
+                    .unwrap()
+                    .batch_workspace_rebuilt
+                    == (k != 1)
+            );
+            println!(
+                "SUPPORT {}",
+                json!({"n":n,"rhs":k,"dense_terms":dense.residual_terms,"support_terms":sparse.residual_terms,"bound":sparse.error_upper,"error":err})
+            );
+        }
+    }
+    let mut a = DenseMatrix::identity(8);
+    // Preserve a nonzero subnormal rather than dropping a small coefficient.
+    a[(0, 7)] = f64::from_bits(1);
+    let mut w = PreparedRhs::new(a).unwrap();
+    let b = vec![vec![0.5; 8]];
+    let r = w
+        .solve_with_verifier(&b, BatchMode::SerialReuse, ResidualMode::ExactSupport, &seq)
+        .unwrap();
+    assert_eq!(r.residual_terms, 9);
+}
+#[test]
+#[ignore = "owner timing, paired identical accuracy contract"]
+fn preflight_measure_exact_support() {
+    let seq = ParallelExecution::sequential();
+    let pool = ParallelExecution::rayon(4).unwrap();
+    for n in [32, 128, 256] {
+        for k in [1, 8, 64] {
+            let (a, b, _) = fixture(n, k);
+            let mut w = PreparedRhs::new(a).unwrap();
+            let mut times = [vec![], vec![], vec![]];
+            let mut bounds = [0.0_f64; 3];
+            for rep in 0..6 {
+                for i in 0..3 {
+                    let j = (rep + i) % 3;
+                    let start = Instant::now();
+                    let r = w
+                        .solve_with_verifier(
+                            &b,
+                            [
+                                BatchMode::FaerBatch,
+                                BatchMode::FaerBatch,
+                                BatchMode::RayonChunks,
+                            ][j],
+                            [
+                                ResidualMode::Dense,
+                                ResidualMode::ExactSupport,
+                                ResidualMode::ExactSupport,
+                            ][j],
+                            if j == 2 { &pool } else { &seq },
+                        )
+                        .unwrap();
+                    let elapsed = start.elapsed().as_nanos();
+                    bounds[j] = bounds[j].max(r.error_upper);
+                    black_box(r);
+                    if rep > 0 {
+                        times[j].push(elapsed);
+                    }
+                }
+            }
+            assert!(bounds.iter().all(|&x| x < 1e-12));
+            println!(
+                "PREFLIGHT_TIMING {}",
+                json!({"n":n,"rhs":k,"dense_ns":median(times[0].clone()),"support_ns":median(times[1].clone()),"rayon_support_ns":median(times[2].clone()),"bounds":bounds,"samples":times,"setup_ns":w.setup_ns()})
+            );
+        }
+    }
+}

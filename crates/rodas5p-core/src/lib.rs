@@ -73,6 +73,8 @@ pub use leja_setup_work::{
     CoefficientCacheObservation, LEJA_SETUP_RECEIPT_SCHEMA_V1, LejaSetupReceiptV1, LejaSetupWork,
     LejaSetupWorkSubtotal, OnceLockObservation, SetupCoverage,
 };
+#[cfg(feature = "retro-dictionary")]
+pub use matrix::LuBatchWorkspace;
 pub use matrix::{DenseMatrix, LuFactorization, LuSolveWorkspace, direct_solve, inverse};
 pub use matrix_functions::{
     DensePhiCombinationReport, dense_fused_phi_action, dense_fused_phi_action_report,

@@ -247,6 +247,40 @@ impl LuSolveWorkspace {
     }
 }
 
+/// Reusable aligned multi-column RHS and permutation scratch. The owner
+/// retains no factor identity; it is bound to shape and faer policy only.
+#[cfg(feature = "retro-dictionary")]
+pub struct LuBatchWorkspace {
+    n: usize,
+    cols: usize,
+    par: faer::Par,
+    rhs: Mat<f64>,
+    scratch: MemBuffer,
+}
+#[cfg(feature = "retro-dictionary")]
+impl LuBatchWorkspace {
+    pub fn new(n: usize, cols: usize) -> CoreResult<Self> {
+        if n == 0 || cols == 0 || n.checked_mul(cols).is_none_or(|v| v > 8_388_608) {
+            return Err(CoreError::InvalidInput(
+                "LU batch workspace cap/shape".into(),
+            ));
+        }
+        let par = faer::get_global_parallelism();
+        let req = faer::linalg::lu::partial_pivoting::solve::solve_in_place_scratch::<usize, f64>(
+            n, cols, par,
+        );
+        Ok(Self {
+            n,
+            cols,
+            par,
+            rhs: Mat::zeros(n, cols),
+            scratch: MemBuffer::new(req),
+        })
+    }
+    pub fn shape(&self) -> (usize, usize) {
+        (self.n, self.cols)
+    }
+}
 impl LuFactorization {
     pub fn new(a: &DenseMatrix) -> CoreResult<Self> {
         if a.nrows != a.ncols {
@@ -336,9 +370,63 @@ impl LuFactorization {
         }
     }
 
+    /// Full shape and finite-input validation before any caller mutation.
+    /// On a nonfinite solution, the original caller RHS is also retained.
+    #[cfg(feature = "retro-dictionary")]
+    pub fn solve_rows_in_place_with_workspace(
+        &self,
+        rows: &mut [Vec<f64>],
+        work: &mut LuBatchWorkspace,
+    ) -> CoreResult<()> {
+        if work.shape() != (self.n, rows.len())
+            || work.par != faer::get_global_parallelism()
+            || rows.iter().any(|r| r.len() != self.n)
+        {
+            return Err(CoreError::Dimension(
+                "LU batched RHS/workspace shape or policy mismatch".into(),
+            ));
+        }
+        if rows.iter().flatten().any(|x| !x.is_finite()) {
+            return Err(CoreError::NonFinite(
+                "LU batched RHS contains NaN/Inf".into(),
+            ));
+        }
+        for (j, row) in rows.iter().enumerate() {
+            for (i, &v) in row.iter().enumerate() {
+                work.rhs[(i, j)] = v;
+            }
+        }
+        faer::linalg::lu::partial_pivoting::solve::solve_in_place_with_conj(
+            self.lu.L(),
+            self.lu.U(),
+            self.lu.P(),
+            Conj::No,
+            work.rhs.as_mut(),
+            work.par,
+            MemStack::new(&mut work.scratch),
+        );
+        for j in 0..work.cols {
+            for i in 0..work.n {
+                if !work.rhs[(i, j)].is_finite() {
+                    return Err(CoreError::LinearSolve("batched LU produced NaN/Inf".into()));
+                }
+            }
+        }
+        for (j, row) in rows.iter_mut().enumerate() {
+            for (i, v) in row.iter_mut().enumerate() {
+                *v = work.rhs[(i, j)];
+            }
+        }
+        Ok(())
+    }
     pub fn solve_rows(&self, rhs_rows: &[Vec<f64>]) -> CoreResult<Vec<Vec<f64>>> {
         if rhs_rows.iter().any(|r| r.len() != self.n) {
             return Err(CoreError::Dimension("LU batched RHS shape mismatch".into()));
+        }
+        if rhs_rows.iter().flatten().any(|v| !v.is_finite()) {
+            return Err(CoreError::NonFinite(
+                "LU batched RHS contains NaN/Inf".into(),
+            ));
         }
         let cols = rhs_rows.len();
         let b = Mat::from_fn(self.n, cols, |i, j| rhs_rows[j][i]);

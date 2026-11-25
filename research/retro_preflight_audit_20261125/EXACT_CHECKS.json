@@ -1,0 +1,716 @@
+{
+  "exact_claims": 90,
+  "claims": [
+    {
+      "id": "DAE-SCHUR-CLEARED",
+      "scope": "scalar elimination; recovering z requires d != 0",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "d*(a*x+b*z)-b*(c*x+d*z)",
+      "rhs": "(a*d-b*c)*x"
+    },
+    {
+      "id": "AFFINE-SCALAR",
+      "scope": "scalar affine composition",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "a*(b*(c*x+u)+v)+w",
+      "rhs": "a*b*c*x+a*b*u+a*v+w"
+    },
+    {
+      "id": "AFFINE-MAT2-0",
+      "scope": "finite two-component symbolic ordered product",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "a00*(b00*(c00*x0+c01*x1+u0)+b01*(c10*x0+c11*x1+u1)+v0)+a01*(b10*(c00*x0+c01*x1+u0)+b11*(c10*x0+c11*x1+u1)+v1)+w0",
+      "rhs": "a00*b00*c00*x0+a00*b00*c01*x1+a00*b01*c10*x0+a00*b01*c11*x1+a01*b10*c00*x0+a01*b10*c01*x1+a01*b11*c10*x0+a01*b11*c11*x1+a00*b00*u0+a00*b01*u1+a01*b10*u0+a01*b11*u1+a00*v0+a01*v1+w0"
+    },
+    {
+      "id": "AFFINE-MAT2-1",
+      "scope": "finite two-component symbolic ordered product",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "a10*(b00*(c00*x0+c01*x1+u0)+b01*(c10*x0+c11*x1+u1)+v0)+a11*(b10*(c00*x0+c01*x1+u0)+b11*(c10*x0+c11*x1+u1)+v1)+w1",
+      "rhs": "a10*b00*c00*x0+a10*b00*c01*x1+a10*b01*c10*x0+a10*b01*c11*x1+a11*b10*c00*x0+a11*b10*c01*x1+a11*b11*c10*x0+a11*b11*c11*x1+a10*b00*u0+a10*b01*u1+a11*b10*u0+a11*b11*u1+a10*v0+a11*v1+w1"
+    },
+    {
+      "id": "LAGRANGE-PARTITION-3",
+      "scope": "original authenticated rational basis partition of unity",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "((1)*t^0+(-3)*t^1+(2)*t^2)+((0)*t^0+(4)*t^1+(-4)*t^2)+((0)*t^0+(-1)*t^1+(2)*t^2)",
+      "rhs": "1"
+    },
+    {
+      "id": "LAGRANGE-3-0-0",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(1)*(0)^0+(-3)*(0)^1+(2)*(0)^2",
+      "rhs": "1"
+    },
+    {
+      "id": "LAGRANGE-3-0-1",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(1)*(1/2)^0+(-3)*(1/2)^1+(2)*(1/2)^2",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-3-0-2",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(1)*(1)^0+(-3)*(1)^1+(2)*(1)^2",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-3-1-0",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(0)^0+(4)*(0)^1+(-4)*(0)^2",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-3-1-1",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/2)^0+(4)*(1/2)^1+(-4)*(1/2)^2",
+      "rhs": "1"
+    },
+    {
+      "id": "LAGRANGE-3-1-2",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1)^0+(4)*(1)^1+(-4)*(1)^2",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-3-2-0",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(0)^0+(-1)*(0)^1+(2)*(0)^2",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-3-2-1",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/2)^0+(-1)*(1/2)^1+(2)*(1/2)^2",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-3-2-2",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1)^0+(-1)*(1)^1+(2)*(1)^2",
+      "rhs": "1"
+    },
+    {
+      "id": "LAGRANGE-PARTITION-5",
+      "scope": "original authenticated rational basis partition of unity",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "((1)*t^0+(-25/3)*t^1+(70/3)*t^2+(-80/3)*t^3+(32/3)*t^4)+((0)*t^0+(16)*t^1+(-208/3)*t^2+(96)*t^3+(-128/3)*t^4)+((0)*t^0+(-12)*t^1+(76)*t^2+(-128)*t^3+(64)*t^4)+((0)*t^0+(16/3)*t^1+(-112/3)*t^2+(224/3)*t^3+(-128/3)*t^4)+((0)*t^0+(-1)*t^1+(22/3)*t^2+(-16)*t^3+(32/3)*t^4)",
+      "rhs": "1"
+    },
+    {
+      "id": "LAGRANGE-5-0-0",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(1)*(0)^0+(-25/3)*(0)^1+(70/3)*(0)^2+(-80/3)*(0)^3+(32/3)*(0)^4",
+      "rhs": "1"
+    },
+    {
+      "id": "LAGRANGE-5-0-1",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(1)*(1/4)^0+(-25/3)*(1/4)^1+(70/3)*(1/4)^2+(-80/3)*(1/4)^3+(32/3)*(1/4)^4",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-5-0-2",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(1)*(1/2)^0+(-25/3)*(1/2)^1+(70/3)*(1/2)^2+(-80/3)*(1/2)^3+(32/3)*(1/2)^4",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-5-0-3",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(1)*(3/4)^0+(-25/3)*(3/4)^1+(70/3)*(3/4)^2+(-80/3)*(3/4)^3+(32/3)*(3/4)^4",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-5-0-4",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(1)*(1)^0+(-25/3)*(1)^1+(70/3)*(1)^2+(-80/3)*(1)^3+(32/3)*(1)^4",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-5-1-0",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(0)^0+(16)*(0)^1+(-208/3)*(0)^2+(96)*(0)^3+(-128/3)*(0)^4",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-5-1-1",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/4)^0+(16)*(1/4)^1+(-208/3)*(1/4)^2+(96)*(1/4)^3+(-128/3)*(1/4)^4",
+      "rhs": "1"
+    },
+    {
+      "id": "LAGRANGE-5-1-2",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/2)^0+(16)*(1/2)^1+(-208/3)*(1/2)^2+(96)*(1/2)^3+(-128/3)*(1/2)^4",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-5-1-3",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(3/4)^0+(16)*(3/4)^1+(-208/3)*(3/4)^2+(96)*(3/4)^3+(-128/3)*(3/4)^4",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-5-1-4",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1)^0+(16)*(1)^1+(-208/3)*(1)^2+(96)*(1)^3+(-128/3)*(1)^4",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-5-2-0",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(0)^0+(-12)*(0)^1+(76)*(0)^2+(-128)*(0)^3+(64)*(0)^4",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-5-2-1",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/4)^0+(-12)*(1/4)^1+(76)*(1/4)^2+(-128)*(1/4)^3+(64)*(1/4)^4",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-5-2-2",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/2)^0+(-12)*(1/2)^1+(76)*(1/2)^2+(-128)*(1/2)^3+(64)*(1/2)^4",
+      "rhs": "1"
+    },
+    {
+      "id": "LAGRANGE-5-2-3",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(3/4)^0+(-12)*(3/4)^1+(76)*(3/4)^2+(-128)*(3/4)^3+(64)*(3/4)^4",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-5-2-4",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1)^0+(-12)*(1)^1+(76)*(1)^2+(-128)*(1)^3+(64)*(1)^4",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-5-3-0",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(0)^0+(16/3)*(0)^1+(-112/3)*(0)^2+(224/3)*(0)^3+(-128/3)*(0)^4",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-5-3-1",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/4)^0+(16/3)*(1/4)^1+(-112/3)*(1/4)^2+(224/3)*(1/4)^3+(-128/3)*(1/4)^4",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-5-3-2",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/2)^0+(16/3)*(1/2)^1+(-112/3)*(1/2)^2+(224/3)*(1/2)^3+(-128/3)*(1/2)^4",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-5-3-3",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(3/4)^0+(16/3)*(3/4)^1+(-112/3)*(3/4)^2+(224/3)*(3/4)^3+(-128/3)*(3/4)^4",
+      "rhs": "1"
+    },
+    {
+      "id": "LAGRANGE-5-3-4",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1)^0+(16/3)*(1)^1+(-112/3)*(1)^2+(224/3)*(1)^3+(-128/3)*(1)^4",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-5-4-0",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(0)^0+(-1)*(0)^1+(22/3)*(0)^2+(-16)*(0)^3+(32/3)*(0)^4",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-5-4-1",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/4)^0+(-1)*(1/4)^1+(22/3)*(1/4)^2+(-16)*(1/4)^3+(32/3)*(1/4)^4",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-5-4-2",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/2)^0+(-1)*(1/2)^1+(22/3)*(1/2)^2+(-16)*(1/2)^3+(32/3)*(1/2)^4",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-5-4-3",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(3/4)^0+(-1)*(3/4)^1+(22/3)*(3/4)^2+(-16)*(3/4)^3+(32/3)*(3/4)^4",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-5-4-4",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1)^0+(-1)*(1)^1+(22/3)*(1)^2+(-16)*(1)^3+(32/3)*(1)^4",
+      "rhs": "1"
+    },
+    {
+      "id": "LAGRANGE-PARTITION-7",
+      "scope": "original authenticated rational basis partition of unity",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "((1)*t^0+(-147/10)*t^1+(406/5)*t^2+(-441/2)*t^3+(315)*t^4+(-1134/5)*t^5+(324/5)*t^6)+((0)*t^0+(36)*t^1+(-1566/5)*t^2+(1044)*t^3+(-1674)*t^4+(1296)*t^5+(-1944/5)*t^6)+((0)*t^0+(-45)*t^1+(1053/2)*t^2+(-4149/2)*t^3+(3699)*t^4+(-3078)*t^5+(972)*t^6)+((0)*t^0+(40)*t^1+(-508)*t^2+(2232)*t^3+(-4356)*t^4+(3888)*t^5+(-1296)*t^6)+((0)*t^0+(-45/2)*t^1+(297)*t^2+(-2763/2)*t^3+(2889)*t^4+(-2754)*t^5+(972)*t^6)+((0)*t^0+(36/5)*t^1+(-486/5)*t^2+(468)*t^3+(-1026)*t^4+(5184/5)*t^5+(-1944/5)*t^6)+((0)*t^0+(-1)*t^1+(137/10)*t^2+(-135/2)*t^3+(153)*t^4+(-162)*t^5+(324/5)*t^6)",
+      "rhs": "1"
+    },
+    {
+      "id": "LAGRANGE-7-0-0",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(1)*(0)^0+(-147/10)*(0)^1+(406/5)*(0)^2+(-441/2)*(0)^3+(315)*(0)^4+(-1134/5)*(0)^5+(324/5)*(0)^6",
+      "rhs": "1"
+    },
+    {
+      "id": "LAGRANGE-7-0-1",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(1)*(1/6)^0+(-147/10)*(1/6)^1+(406/5)*(1/6)^2+(-441/2)*(1/6)^3+(315)*(1/6)^4+(-1134/5)*(1/6)^5+(324/5)*(1/6)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-0-2",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(1)*(1/3)^0+(-147/10)*(1/3)^1+(406/5)*(1/3)^2+(-441/2)*(1/3)^3+(315)*(1/3)^4+(-1134/5)*(1/3)^5+(324/5)*(1/3)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-0-3",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(1)*(1/2)^0+(-147/10)*(1/2)^1+(406/5)*(1/2)^2+(-441/2)*(1/2)^3+(315)*(1/2)^4+(-1134/5)*(1/2)^5+(324/5)*(1/2)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-0-4",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(1)*(2/3)^0+(-147/10)*(2/3)^1+(406/5)*(2/3)^2+(-441/2)*(2/3)^3+(315)*(2/3)^4+(-1134/5)*(2/3)^5+(324/5)*(2/3)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-0-5",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(1)*(5/6)^0+(-147/10)*(5/6)^1+(406/5)*(5/6)^2+(-441/2)*(5/6)^3+(315)*(5/6)^4+(-1134/5)*(5/6)^5+(324/5)*(5/6)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-0-6",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(1)*(1)^0+(-147/10)*(1)^1+(406/5)*(1)^2+(-441/2)*(1)^3+(315)*(1)^4+(-1134/5)*(1)^5+(324/5)*(1)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-1-0",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(0)^0+(36)*(0)^1+(-1566/5)*(0)^2+(1044)*(0)^3+(-1674)*(0)^4+(1296)*(0)^5+(-1944/5)*(0)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-1-1",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/6)^0+(36)*(1/6)^1+(-1566/5)*(1/6)^2+(1044)*(1/6)^3+(-1674)*(1/6)^4+(1296)*(1/6)^5+(-1944/5)*(1/6)^6",
+      "rhs": "1"
+    },
+    {
+      "id": "LAGRANGE-7-1-2",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/3)^0+(36)*(1/3)^1+(-1566/5)*(1/3)^2+(1044)*(1/3)^3+(-1674)*(1/3)^4+(1296)*(1/3)^5+(-1944/5)*(1/3)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-1-3",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/2)^0+(36)*(1/2)^1+(-1566/5)*(1/2)^2+(1044)*(1/2)^3+(-1674)*(1/2)^4+(1296)*(1/2)^5+(-1944/5)*(1/2)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-1-4",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(2/3)^0+(36)*(2/3)^1+(-1566/5)*(2/3)^2+(1044)*(2/3)^3+(-1674)*(2/3)^4+(1296)*(2/3)^5+(-1944/5)*(2/3)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-1-5",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(5/6)^0+(36)*(5/6)^1+(-1566/5)*(5/6)^2+(1044)*(5/6)^3+(-1674)*(5/6)^4+(1296)*(5/6)^5+(-1944/5)*(5/6)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-1-6",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1)^0+(36)*(1)^1+(-1566/5)*(1)^2+(1044)*(1)^3+(-1674)*(1)^4+(1296)*(1)^5+(-1944/5)*(1)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-2-0",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(0)^0+(-45)*(0)^1+(1053/2)*(0)^2+(-4149/2)*(0)^3+(3699)*(0)^4+(-3078)*(0)^5+(972)*(0)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-2-1",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/6)^0+(-45)*(1/6)^1+(1053/2)*(1/6)^2+(-4149/2)*(1/6)^3+(3699)*(1/6)^4+(-3078)*(1/6)^5+(972)*(1/6)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-2-2",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/3)^0+(-45)*(1/3)^1+(1053/2)*(1/3)^2+(-4149/2)*(1/3)^3+(3699)*(1/3)^4+(-3078)*(1/3)^5+(972)*(1/3)^6",
+      "rhs": "1"
+    },
+    {
+      "id": "LAGRANGE-7-2-3",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/2)^0+(-45)*(1/2)^1+(1053/2)*(1/2)^2+(-4149/2)*(1/2)^3+(3699)*(1/2)^4+(-3078)*(1/2)^5+(972)*(1/2)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-2-4",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(2/3)^0+(-45)*(2/3)^1+(1053/2)*(2/3)^2+(-4149/2)*(2/3)^3+(3699)*(2/3)^4+(-3078)*(2/3)^5+(972)*(2/3)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-2-5",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(5/6)^0+(-45)*(5/6)^1+(1053/2)*(5/6)^2+(-4149/2)*(5/6)^3+(3699)*(5/6)^4+(-3078)*(5/6)^5+(972)*(5/6)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-2-6",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1)^0+(-45)*(1)^1+(1053/2)*(1)^2+(-4149/2)*(1)^3+(3699)*(1)^4+(-3078)*(1)^5+(972)*(1)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-3-0",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(0)^0+(40)*(0)^1+(-508)*(0)^2+(2232)*(0)^3+(-4356)*(0)^4+(3888)*(0)^5+(-1296)*(0)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-3-1",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/6)^0+(40)*(1/6)^1+(-508)*(1/6)^2+(2232)*(1/6)^3+(-4356)*(1/6)^4+(3888)*(1/6)^5+(-1296)*(1/6)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-3-2",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/3)^0+(40)*(1/3)^1+(-508)*(1/3)^2+(2232)*(1/3)^3+(-4356)*(1/3)^4+(3888)*(1/3)^5+(-1296)*(1/3)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-3-3",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/2)^0+(40)*(1/2)^1+(-508)*(1/2)^2+(2232)*(1/2)^3+(-4356)*(1/2)^4+(3888)*(1/2)^5+(-1296)*(1/2)^6",
+      "rhs": "1"
+    },
+    {
+      "id": "LAGRANGE-7-3-4",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(2/3)^0+(40)*(2/3)^1+(-508)*(2/3)^2+(2232)*(2/3)^3+(-4356)*(2/3)^4+(3888)*(2/3)^5+(-1296)*(2/3)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-3-5",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(5/6)^0+(40)*(5/6)^1+(-508)*(5/6)^2+(2232)*(5/6)^3+(-4356)*(5/6)^4+(3888)*(5/6)^5+(-1296)*(5/6)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-3-6",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1)^0+(40)*(1)^1+(-508)*(1)^2+(2232)*(1)^3+(-4356)*(1)^4+(3888)*(1)^5+(-1296)*(1)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-4-0",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(0)^0+(-45/2)*(0)^1+(297)*(0)^2+(-2763/2)*(0)^3+(2889)*(0)^4+(-2754)*(0)^5+(972)*(0)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-4-1",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/6)^0+(-45/2)*(1/6)^1+(297)*(1/6)^2+(-2763/2)*(1/6)^3+(2889)*(1/6)^4+(-2754)*(1/6)^5+(972)*(1/6)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-4-2",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/3)^0+(-45/2)*(1/3)^1+(297)*(1/3)^2+(-2763/2)*(1/3)^3+(2889)*(1/3)^4+(-2754)*(1/3)^5+(972)*(1/3)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-4-3",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/2)^0+(-45/2)*(1/2)^1+(297)*(1/2)^2+(-2763/2)*(1/2)^3+(2889)*(1/2)^4+(-2754)*(1/2)^5+(972)*(1/2)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-4-4",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(2/3)^0+(-45/2)*(2/3)^1+(297)*(2/3)^2+(-2763/2)*(2/3)^3+(2889)*(2/3)^4+(-2754)*(2/3)^5+(972)*(2/3)^6",
+      "rhs": "1"
+    },
+    {
+      "id": "LAGRANGE-7-4-5",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(5/6)^0+(-45/2)*(5/6)^1+(297)*(5/6)^2+(-2763/2)*(5/6)^3+(2889)*(5/6)^4+(-2754)*(5/6)^5+(972)*(5/6)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-4-6",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1)^0+(-45/2)*(1)^1+(297)*(1)^2+(-2763/2)*(1)^3+(2889)*(1)^4+(-2754)*(1)^5+(972)*(1)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-5-0",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(0)^0+(36/5)*(0)^1+(-486/5)*(0)^2+(468)*(0)^3+(-1026)*(0)^4+(5184/5)*(0)^5+(-1944/5)*(0)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-5-1",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/6)^0+(36/5)*(1/6)^1+(-486/5)*(1/6)^2+(468)*(1/6)^3+(-1026)*(1/6)^4+(5184/5)*(1/6)^5+(-1944/5)*(1/6)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-5-2",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/3)^0+(36/5)*(1/3)^1+(-486/5)*(1/3)^2+(468)*(1/3)^3+(-1026)*(1/3)^4+(5184/5)*(1/3)^5+(-1944/5)*(1/3)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-5-3",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/2)^0+(36/5)*(1/2)^1+(-486/5)*(1/2)^2+(468)*(1/2)^3+(-1026)*(1/2)^4+(5184/5)*(1/2)^5+(-1944/5)*(1/2)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-5-4",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(2/3)^0+(36/5)*(2/3)^1+(-486/5)*(2/3)^2+(468)*(2/3)^3+(-1026)*(2/3)^4+(5184/5)*(2/3)^5+(-1944/5)*(2/3)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-5-5",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(5/6)^0+(36/5)*(5/6)^1+(-486/5)*(5/6)^2+(468)*(5/6)^3+(-1026)*(5/6)^4+(5184/5)*(5/6)^5+(-1944/5)*(5/6)^6",
+      "rhs": "1"
+    },
+    {
+      "id": "LAGRANGE-7-5-6",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1)^0+(36/5)*(1)^1+(-486/5)*(1)^2+(468)*(1)^3+(-1026)*(1)^4+(5184/5)*(1)^5+(-1944/5)*(1)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-6-0",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(0)^0+(-1)*(0)^1+(137/10)*(0)^2+(-135/2)*(0)^3+(153)*(0)^4+(-162)*(0)^5+(324/5)*(0)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-6-1",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/6)^0+(-1)*(1/6)^1+(137/10)*(1/6)^2+(-135/2)*(1/6)^3+(153)*(1/6)^4+(-162)*(1/6)^5+(324/5)*(1/6)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-6-2",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/3)^0+(-1)*(1/3)^1+(137/10)*(1/3)^2+(-135/2)*(1/3)^3+(153)*(1/3)^4+(-162)*(1/3)^5+(324/5)*(1/3)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-6-3",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1/2)^0+(-1)*(1/2)^1+(137/10)*(1/2)^2+(-135/2)*(1/2)^3+(153)*(1/2)^4+(-162)*(1/2)^5+(324/5)*(1/2)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-6-4",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(2/3)^0+(-1)*(2/3)^1+(137/10)*(2/3)^2+(-135/2)*(2/3)^3+(153)*(2/3)^4+(-162)*(2/3)^5+(324/5)*(2/3)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-6-5",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(5/6)^0+(-1)*(5/6)^1+(137/10)*(5/6)^2+(-135/2)*(5/6)^3+(153)*(5/6)^4+(-162)*(5/6)^5+(324/5)*(5/6)^6",
+      "rhs": "0"
+    },
+    {
+      "id": "LAGRANGE-7-6-6",
+      "scope": "finite exact nodal basis value",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "lhs": "(0)*(1)^0+(-1)*(1)^1+(137/10)*(1)^2+(-135/2)*(1)^3+(153)*(1)^4+(-162)*(1)^5+(324/5)*(1)^6",
+      "rhs": "1"
+    }
+  ],
+  "sturm_finite": {
+    "status": "CERTIFIED",
+    "count": 2,
+    "variations_left": 2,
+    "variations_right": 0,
+    "interval": [
+      "0",
+      "1"
+    ],
+    "chain": [
+      [
+        "-2",
+        "15",
+        "-36",
+        "27"
+      ],
+      [
+        "15",
+        "-72",
+        "81"
+      ],
+      [
+        "-2/9",
+        "2/3"
+      ]
+    ]
+  },
+  "matrix_finite": {
+    "shape": [
+      2,
+      2
+    ],
+    "rank": 2,
+    "pivot_columns_zero_based": [
+      0,
+      1
+    ],
+    "rref": [
+      [
+        "1",
+        "0"
+      ],
+      [
+        "0",
+        "1"
+      ]
+    ],
+    "status": "CERTIFIED_EXACT_LINEAR_ALGEBRA",
+    "field": "Q",
+    "determinant": "129/32",
+    "invertible": true,
+    "inverse": [
+      [
+        "64/129",
+        "-4/129"
+      ],
+      [
+        "8/129",
+        "64/129"
+      ]
+    ]
+  },
+  "negative_identity": {
+    "status": "REJECTED",
+    "residual": "t^2 - t",
+    "exact_over": "Q[variables]"
+  },
+  "fresh_verifier": {
+    "ok": true,
+    "unreplayed_external": [],
+    "claims": 90,
+    "trusted_base": "PASS"
+  },
+  "trust_base": [
+    "PROVED_EXACT_CERTIFICATE",
+    "PROVED_FORMAL_KERNEL"
+  ],
+  "non_claims": [
+    "No arbitrary DAE, event, IVP, or matched-error solver qualification.",
+    "All ledger statements are bounded exact algebraic subcontracts."
+  ]
+}
