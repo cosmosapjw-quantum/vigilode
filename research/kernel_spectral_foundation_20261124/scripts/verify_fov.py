@@ -762,7 +762,6 @@ def main():
         summary=summary,
         discriminators={"D1_bound_holds_on_3_grids": "PASS" if d1 else "FAIL", "D2_tighter_than_gershgorin": d2},
         cases=cases,
-        seconds=time.time() - started,
     )
     all_ok = d1 and checks["C2_metrics_finite"]["ok"]
     result["all_ok"] = all_ok
@@ -775,6 +774,7 @@ def main():
     print("D1_bound_holds_on_3_grids", "PASS" if d1 else "FAIL")
     print("D2_tighter_than_gershgorin", d2)
     print("all_ok", all_ok, "written", path)
+    print(f"seconds {time.time() - started:.1f} (diagnostic, not in the JSON)")
     return 0 if all_ok else 1
 
 
