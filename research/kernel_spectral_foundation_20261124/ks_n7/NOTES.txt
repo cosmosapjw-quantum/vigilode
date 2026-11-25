@@ -1,0 +1,194 @@
+KS-N7  Two-for-one real FFT on the periodic box (PLAN.json task KS-N7)
+=====================================================================
+Branch research/stage-lattice-referee-20261124-ksn7, worktree start 05b5e3e3.
+Owner instruction (2026-11-25 09:21 KST): continue the remaining nodes; all edits approved.
+Theory: THEORY.md 2.3 (ii) (conjugation involution), 2.4 (box), 3.4 (stage mass), 7 (T1/T2).
+
+0. Question
+-----------
+BoxKernel::solve (crates/vigilode/src/spatial/separable.rs) loads the real right-hand side as
+complex data (imaginary part 0) and runs full complex FFTs along x, y and z, forward and inverse.
+Half of that work transforms zeros and recomputes the conjugate half of a Hermitian spectrum.
+Does pairing rows (THEORY.md 2.3 (ii), the involution already used by the sphere kernel) halve
+the FFT work without changing the backward error (T1) or the stage mass identity (T2)?
+
+1. Layout and notation
+----------------------
+Box cells nx, ny, nz (nz = 1 in 2-D), x fastest: index = x + nx (y + ny z).
+A "row" is one x-line, r = y + ny z, rows = ny nz.  Every axis has at least 2 cells.
+hx = floor(nx/2) + 1 = number of distinct x-modes of a real row (k = 0 .. floor(nx/2)).
+N = nx ny nz.  F_x = DFT along x (length nx, e^{-2 pi i k x / nx}), likewise F_y, F_z.
+Stage matrix in Fourier space: W(kx,ky,kz) = (z - c) + e_x(kx) + e_y(ky) + e_z(kz),
+e_a(k) = rate_a 4 sin^2(pi k / n_a) (real, even: e_a(n_a - k) = e_a(k)).
+
+2. Algebra of the pairing
+-------------------------
+Rows r0 = 2q and r0 + 1 (q = 0 .. floor(rows/2) - 1) are packed along x as one complex line
+    w_q[x] = u[x] + i v[x],   u = b[row r0],  v = b[row r0 + 1]   (both real).
+One complex FFT of length nx gives Z(m) = U(m) + i V(m) with U = F_x u, V = F_x v.
+Real rows have Hermitian spectra, U(nx - m) = conj U(m) and V(nx - m) = conj V(m).
+Define the involution (R Z)(m) = conj Z((nx - m) mod nx). Then R Z = U - i V, so
+    U(m) = (Z(m) + (R Z)(m)) / 2,        V(m) = (Z(m) - (R Z)(m)) / (2 i),
+for m = 0 .. hx - 1 only; the other modes are the conjugates.  (2i)^{-1} multiplies by -i/2:
+(a + i b)(-i/2) = b/2 - i a/2, two exact halvings, no rounding beyond the subtraction.
+At m = 0 (and m = nx/2 for even nx) the partner is the mode itself: U = Re Z, V = Im Z exactly,
+so the DC and Nyquist entries of the half spectra are real by construction.
+This is the same separation as SphereKernel::solve (THEORY.md 2.3 (ii), check F8 to 1e-12).
+
+Inverse: after the y/z transforms, the division and the inverse y/z transforms, every row's
+x-spectrum X_r(k), k < hx, is again the half of a Hermitian spectrum (the symbol W is real and
+even in each axis, and the 3-D DFT of a real field satisfies F(-k) = conj F(k)).  Rebuild
+    Z(m) = X_{r0}(m) + i X_{r0+1}(m)                   for m <  hx,
+    Z(m) = conj X_{r0}(nx-m) + i conj X_{r0+1}(nx-m)    for m >= hx,
+with the DC (and Nyquist) values projected to their real parts first (irfft semantics; their
+imaginary parts are round-off and would otherwise leak from one row of the pair into the other).
+One inverse complex FFT of length nx then returns u + i v: Re -> row r0, Im -> row r0 + 1,
+both times 1/N.  Projection to the real part is what the Complex arm does at its very end
+(`v.re * scale`), so both arms are the same linear map in exact arithmetic.
+
+3. Where the Hermitian half is transformed along y and z
+--------------------------------------------------------
+The 3-D DFT of a real field is fixed by the planes kx = 0 .. floor(nx/2):
+F(nx - kx, ky, kz) = conj F(kx, -ky, -kz).  So after the x stage only the half spectra
+X_r(kx), kx < hx, are kept, in an x-mode-major buffer
+    half[kx * rows + r] = half[kx * rows + z * ny + y]     (hx * rows complex values).
+Along y and z these are genuinely complex data, so the y and z transforms are the existing full
+complex plans of lengths ny and nz, applied to hx of the nx planes only:
+  - y: for each (kx, z) the ny values are contiguous; one batched in-place call of the length-ny
+    plan over the whole buffer (hx nz lines), no gather/scatter.
+  - z (3-D only): for each kx the block half[kx*rows .. (kx+1)*rows] is an ny x nz array with
+    y fastest; z-lines are gathered at stride ny inside that block (a compact block, unlike the
+    Complex arm's stride nx ny over the whole field).
+The separation pass writes this transposed layout directly (the two rows of a pair are
+adjacent in it), and the rebuild pass reads it, so no extra transpose pass is needed.
+Division: loop kx, z, y with the denominator in the same association as the Complex arm,
+((z - c) + e_x(kx)) + e_y(y) + e_z(z), so the denominators are bit-identical, and no integer
+division per element.
+
+4. Odd sizes
+------------
+- Odd row count (rows = ny nz odd, i.e. ny and nz both odd): the last row is packed alone
+  (v = 0) and separated with the same formula U = (Z + R Z)/2, i.e. projected onto the
+  Hermitian subspace; its line costs one complex FFT for one real row.  No other change.
+- Odd nx: hx = (nx + 1)/2, there is no Nyquist mode; (nx - m) mod nx pairs every m >= 1 with a
+  distinct partner, m = 0 with itself.
+- Even nx: the Nyquist mode m = nx/2 is its own partner and is real after separation.
+- Pairs may straddle z planes when ny is odd (row (ny-1, z) with row (0, z+1)): harmless, the
+  x stage acts row by row and the separated rows go to their own positions r.
+- nx = 2, ny = 2, nz = 2 are covered (minimum sizes): hx = 2, partner of 1 is itself.
+
+5. FFT work (complex transforms of a given length, one direction; both directions double it)
+-------------------------------------------------------------------------------------------
+Complex arm:  x: rows lines of nx;  y: nx nz lines of ny;  z: nx ny lines of nz.
+PairedReal:   x: ceil(rows/2) lines of nx;  y: hx nz lines of ny;  z: hx ny lines of nz.
+At 256x256: 256 + 256 = 512 against 128 + 129 = 257 FFTs of length 256 per direction (0.502).
+Extra O(N) passes: pack, separate, rebuild, split (about N/2 complex values each), against the
+Complex arm's load and extract passes and its strided gather/scatter along y and z.
+The divisions drop from N to hx rows (about N/2).
+
+6. Plan reuse and memory
+------------------------
+Plans: the same rustfft complex plans (forward/inverse of lengths nx, ny, nz) serve both arms;
+they are built once per kernel (BoxKernel::new: once per SeparableStages client = once per run,
+once per solve_stage call) and reused by every solve.  No new plan kind, no new dependency.
+Scratch: one in-place scratch of the largest plan requirement, shared by all transforms.
+Memory (complex values of 16 bytes):
+  Complex arm:  buffer N (+ line max(ny, nz) + scratch).
+  PairedReal:   half hx * rows  (about N/2 + rows)
+                + a batch of packed lines, batch * nx, batch = min(ceil(rows/2),
+                  max(1, LINE_BATCH / nx)) with LINE_BATCH = 4096 complex (64 KiB): the x stage
+                  streams through the rows in batches (pack -> FFT -> separate into half; and
+                  rebuild -> inverse FFT -> split on the way back), so the packed lines never
+                  exist for the whole field.  (+ line nz + scratch).
+So PairedReal needs about half the memory of the Complex arm (256x256: 528 KiB + 64 KiB
+against 1 MiB), and its working set during the y/z stages is the half buffer only.
+Only the buffers of the selected arm are allocated.
+
+7. API (design constraint of the task)
+--------------------------------------
+- `BoxTransform { Complex, PairedReal }` (non_exhaustive, Copy, Default = Complex) in
+  separable.rs; `SeparableStages::with_box_transform(self, BoxTransform) -> Self` and
+  `SeparableStages::box_transform()`.  The default stays Complex: only the owner-host timing
+  cell may change the default (PLAN.json KS-N7 acceptance, orchestrator).
+- The sphere ignores the setting: SphereKernel already pairs rings (2.3 (ii)).
+- Constraint found: `vigilode::spatial` re-exports separable items in spatial.rs, which is
+  outside KS-N7's allowed paths.  Until the orchestrator adds `BoxTransform` to that
+  `pub use separable::{...}` line, the enum cannot be named outside the crate.  It therefore
+  also implements FromStr ("complex", "paired-real", alias "paired") and Display, so callers and
+  the tests select it with `.parse()` (type inferred from the setter), and the measurement test
+  maps KS_N7_ARM directly.  Open issue for the merge: one-line re-export.
+- `SeparableStages::stage_solver(z)`: a stage solver prepared once for z (plans, buffers and,
+  on the sphere, the Thomas factors built once), returned as `impl FnMut(&mut [f64]) ->
+  Result<(), SolveError> + Send` (no new nameable type needed).  It is what the protected driver
+  does per attempt (one preparation, eight stage solves), and it is the measured object of the
+  timing test.  `solve_stage` (kernel built per call) is unchanged.
+
+8. Tests (append to crates/vigilode/tests/spatial_separable.rs; existing assertions unchanged)
+------------------------------------------------------------------------------------------
+Box grids of the existing tests: 8x6, 5x7, 4x6x5 (T1/T2), 4x5 (T4), 12x10 (T3).
+Extra sizes for even/odd coverage: 2x2, 7x4, 6x9, 37x6 (prime nx), 3x3x3, 5x3x7, 2x5x3,
+9x2x2, 16x12x4, 33x17, 64x48 (16 grids in all).
+(z, c) range of the existing T1/T2 test: (0.5,0), (10,-1), (3,1), (1e4,0), (1e-3,0); seeds 0..3.
+(a) Agreement with Complex.  Stated bound: on the box W = (z-c) I - L is an M-matrix with
+    W 1 = (z - c) 1, hence ||W^{-1}||_inf = 1/(z - c), and ||W||_inf = (z - c) + rho_bar.
+    Two solves whose residuals meet the T1 bound eta * S, S = ((z-c) + rho_bar)||x||_inf +
+    ||b||_inf, differ by at most 2 eta S / (z - c).  Assert, with eta = 1e-13 (the T1 bound),
+        ||x_paired - x_complex||_inf <= 1e-13 * S / (z - c),
+    and print the largest relative difference ||x_p - x_c||_inf / ||x_c||_inf and the largest
+    normalized difference ||x_p - x_c||_inf (z - c) / S.
+(b) T1/T2 for PairedReal: backward error <= 1e-13 and stage mass defect <= 1e-13 with exactly
+    the scales of separable_stage_solves_are_exact_and_mass_consistent, on the same grids and
+    (z, c); plus right-hand sides whose paired rows differ in scale by 1e8 (the pairing mixes
+    the two rows of a pair inside one FFT; the normwise bound must still hold).
+(c) Client wiring: the T3 box case (12x10, c = -0.5) on the route with PairedReal: matches the
+    dense matrix-exponential reference within the T3 envelope, mass defect <= 1e-12, and agrees
+    with the Complex route within the same envelope.
+(d) API: default Complex; parse/Display round trip; the sphere ignores the setting (identical
+    bits); stage_solver gives the same bits as solve_stage.
+
+9. Measurement (ignored test measure_box_transform_one_arm)
+----------------------------------------------------------
+Env: KS_N7_ARM = complex | paired;  KS_N7_GRID = 256x256 | 128x128x64 (2 or 3 axes);
+KS_N7_SOLVES (default 200); KS_N7_SCOPE = prepared (default: stage_solver, plans and buffers
+reused, the driver's situation) | solve_stage (kernel built per call).  ONE arm per process, so
+perf stat counts one arm per process; one JSON line prefixed KS_N7_MEASURE on its own line:
+arm, grid, n, solves, scope, median/min/max seconds per stage solve, largest backward error
+(first and last solve), prepare seconds.  Agent runs are smoke tests with few solves on a loaded
+host: diagnostic only.  The deciding cell (<= 0.6 at 256x256) is the orchestrator's.
+
+10. Results
+-----------
+ks_n7/make_results.py parses the raw logs under ks_n7/logs/ (test output of the checks and
+the smoke runs) and writes results/KS_N7_IMPLEMENTATION.json (strict JSON): largest
+differences, backward errors and mass defects (PASS/FAIL against the stated bounds), smoke
+timings marked diagnostic, timing verdict NOT_RUN (orchestrator).
+
+11. Outcome (added after the runs; numbers from results/KS_N7_IMPLEMENTATION.json)
+--------------------------------------------------------------------------------
+Code commit 4539eada (separable.rs, spatial_separable.rs).  Toolchain 1.94.1.
+- Agreement with Complex: 320 cases (16 box grids x 5 (z, c) x 4 right-hand sides), 236 with
+  differing bits; largest ||x_p - x_c||_inf / ||x_c||_inf = 1.874e-15 (box-37x6, z = 0.5, rows
+  1e8 apart); largest normalized difference (z - c)/S ||x_p - x_c||_inf = 5.346e-16 against
+  the asserted 1e-13.  PASS.
+- T1/T2 for PairedReal on the same 320 solves: backward 8.110e-16, mass 4.545e-17 (Complex on
+  the same cases: 7.271e-16, 4.545e-17).  The existing T1/T2 test of the default arm returns
+  3.373e-16 / 5.110e-17, the values recorded before (RUN.json K5, K4).  PASS.
+- Route: 12x10 (T3) and 4x6x5 boxes, Trusted and Verified: same attempts as Complex (34, 46),
+  errors 6.635e-11 / 5.079e-11 against the dense reference, route difference <= 1.3e-15.
+- FFT lines per direction (analytic): 256x256 0.502, 128x128x64 0.506 of the Complex arm;
+  half buffer 33,024 against 65,536 complex values at 256x256.
+- Diagnostic smoke only (loaded agent host, load 10-30): median stage solve 256x256 prepared
+  0.295 ms against 1.472 ms (0.20); 128x128x64 10.9 ms against 36.3 ms (0.30); solve_stage
+  scope 0.39 against 1.54 ms (0.26).  perf stat smoke, one arm per process, per-solve
+  difference of 120 and 20 solves: instructions 3.73e6 against 9.67e6 (0.385), cycles 1.37e6
+  against 6.63e6 (0.207).
+- Attribution caveat: the time and instruction ratios are well below the FFT-line ratio 0.50
+  because PairedReal also drops the Complex arm's strided gather/scatter along y and its
+  per-element integer index arithmetic in the division loop.  The orchestrator's cell compares
+  the two implementations (as PLAN.json asks: "the current one"), not the pairing alone.
+  An index-free division loop with the same association would speed up the Complex arm with
+  identical bits (not done: the Complex arm stays the unchanged default and baseline).
+- Timing verdict: NOT_RUN here (owner-host preregistered cell; acceptance <= 0.6 at 256x256).
+- Open for the merge: re-export BoxTransform in crates/vigilode/src/spatial.rs
+  (`pub use separable::{..., BoxTransform, ...}`), outside KS-N7's paths.  Until then it is
+  selected by name (FromStr), as the tests do.
