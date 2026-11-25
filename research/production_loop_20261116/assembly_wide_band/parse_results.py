@@ -1191,7 +1191,8 @@ def render(r):
             line = f"- {c['name']}: 종료 코드 {c['exit_code']}"
             if "passed" in c:
                 line += f", 바이너리 {c['binaries']}, 통과 {c['passed']}, 실패 {c['failed']}, 무시 {c['ignored']}"
-            line += f". 마지막 줄: `{c['last_line'][:200]}`"
+            last = c["last_line"][:200].replace("`", "'")
+            line += f". 마지막 줄: `{last}`" if last else ". 출력 없음"
             out.append(line)
     else:
         out.append("checks.log 없음(미실행).")
