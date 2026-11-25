@@ -1,0 +1,4355 @@
+{
+  "counts": {
+    "coefficient_checks": 55610,
+    "exact_cell_checks": 11905,
+    "event_reference_checks": 4692,
+    "joint_reference_components": 96876,
+    "clock_sum_checks": 120,
+    "exact_monotone_ranges": 10584,
+    "represented_samples": 52920,
+    "inflation_checks": 10584,
+    "phase_queries": 3456,
+    "centered_strict_queries": 1084,
+    "phase_reference_components": 238464,
+    "fresh_reuse_equivalence": 36
+  },
+  "stops": [
+    {
+      "method": "JointCentered",
+      "stop": "Horizon",
+      "n": 12
+    },
+    {
+      "method": "JointCentered",
+      "stop": "OrderUnresolved",
+      "n": 24
+    },
+    {
+      "method": "JointGreen",
+      "stop": "Horizon",
+      "n": 12
+    },
+    {
+      "method": "JointGreen",
+      "stop": "OrderUnresolved",
+      "n": 24
+    },
+    {
+      "method": "PhaseFresh",
+      "stop": "Horizon",
+      "n": 30
+    },
+    {
+      "method": "PhaseFresh",
+      "stop": "OrderUnresolved",
+      "n": 6
+    },
+    {
+      "method": "PhaseReuse",
+      "stop": "Horizon",
+      "n": 30
+    },
+    {
+      "method": "PhaseReuse",
+      "stop": "OrderUnresolved",
+      "n": 6
+    }
+  ],
+  "reference_periods": {
+    "Radau": 0.0003484839278524756,
+    "BDF": 0.00034848392790827573
+  },
+  "initial_samples": {
+    "1.4901161193847656e-08": 23,
+    "9.313225746154785e-10": 23
+  },
+  "max_reference_spread": 4.9984521792464137e-14,
+  "max_joint_ratio": 0.999688283317316,
+  "raw_sha256": "602a232b53b4f1100980a0a2dcc7b1ccd65c218a83c29db97f3c13cdb0d4ee6e",
+  "rows": [
+    {
+      "case": "wide",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 38,
+      "rhs_proxy": 533,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4821559833536093e-07
+      ],
+      "max_relative_initial_after_reset": 1.0022168346698228e-07,
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 38,
+      "rhs_proxy": 532,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4821559833536093e-07
+      ],
+      "max_relative_initial_after_reset": 1.0022168302289307e-07,
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "PhaseFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 717,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 5.701179850058828e-08,
+      "last_horner_width": 5.837305984625785e-08,
+      "absolute_widths": [
+        4.4821559833536093e-07,
+        4.5286831409539156e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ],
+        [
+          0.0006967413795153359,
+          0.0006971942478294313
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "PhaseReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 478,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 5.701179850058828e-08,
+      "last_horner_width": 5.837305984625785e-08,
+      "absolute_widths": [
+        4.4821559833536093e-07,
+        4.5286831409539156e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ],
+        [
+          0.0006967413795153359,
+          0.0006971942478294313
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 38,
+      "rhs_proxy": 533,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4821559833536093e-07
+      ],
+      "max_relative_initial_after_reset": 1.0022168346698228e-07,
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 38,
+      "rhs_proxy": 532,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4821559833536093e-07
+      ],
+      "max_relative_initial_after_reset": 1.0022168302289307e-07,
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "PhaseFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 717,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 5.701179850058828e-08,
+      "last_horner_width": 5.837305984625785e-08,
+      "absolute_widths": [
+        4.4821559833536093e-07,
+        4.5286831409539156e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ],
+        [
+          0.0006967413795153359,
+          0.0006971942478294313
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "PhaseReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 478,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 5.701179850058828e-08,
+      "last_horner_width": 5.837305984625785e-08,
+      "absolute_widths": [
+        4.4821559833536093e-07,
+        4.5286831409539156e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ],
+        [
+          0.0006967413795153359,
+          0.0006971942478294313
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 38,
+      "rhs_proxy": 531,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4482225376832633e-07
+      ],
+      "max_relative_initial_after_reset": 9.94626446822487e-08,
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 38,
+      "rhs_proxy": 531,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4482225376832633e-07
+      ],
+      "max_relative_initial_after_reset": 9.946264423815949e-08,
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "PhaseFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 717,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 5.5948387151321635e-08,
+      "last_horner_width": 5.728978820739017e-08,
+      "absolute_widths": [
+        4.4482225376832633e-07,
+        4.4608701782456166e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ],
+        [
+          0.0006967447701634713,
+          0.0006971908571812959
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "PhaseReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 478,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 5.5948387151321635e-08,
+      "last_horner_width": 5.728978820739017e-08,
+      "absolute_widths": [
+        4.4482225376832633e-07,
+        4.4608701782456166e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ],
+        [
+          0.0006967447701634713,
+          0.0006971908571812959
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 38,
+      "rhs_proxy": 531,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4482225376832633e-07
+      ],
+      "max_relative_initial_after_reset": 9.94626446822487e-08,
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 38,
+      "rhs_proxy": 531,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4482225376832633e-07
+      ],
+      "max_relative_initial_after_reset": 9.946264423815949e-08,
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "PhaseFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 717,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 5.5948387151321635e-08,
+      "last_horner_width": 5.728978820739017e-08,
+      "absolute_widths": [
+        4.4482225376832633e-07,
+        4.4608701782456166e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ],
+        [
+          0.0006967447701634713,
+          0.0006971908571812959
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "PhaseReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 478,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 5.5948387151321635e-08,
+      "last_horner_width": 5.728978820739017e-08,
+      "absolute_widths": [
+        4.4482225376832633e-07,
+        4.4608701782456166e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ],
+        [
+          0.0006967447701634713,
+          0.0006971908571812959
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 5844,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559469476399e-07
+      ],
+      "max_relative_initial_after_reset": 1.0750067517858021e-07,
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 5845,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559469476399e-07
+      ],
+      "max_relative_initial_after_reset": 1.07500674734491e-07,
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "PhaseFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 8457,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 6.127209029363999e-08,
+      "last_horner_width": 6.635631151967285e-08,
+      "absolute_widths": [
+        4.807559469476399e-07,
+        4.865944890794461e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ],
+        [
+          0.0006967245475897954,
+          0.0006972111420788748
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "PhaseReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 5638,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 6.127209029363999e-08,
+      "last_horner_width": 6.635631151967285e-08,
+      "absolute_widths": [
+        4.807559469476399e-07,
+        4.865944890794461e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ],
+        [
+          0.0006967245475897954,
+          0.0006972111420788748
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 5844,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559469476399e-07
+      ],
+      "max_relative_initial_after_reset": 1.0750067517858021e-07,
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 5845,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559469476399e-07
+      ],
+      "max_relative_initial_after_reset": 1.07500674734491e-07,
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "PhaseFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 8457,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 6.127209029363999e-08,
+      "last_horner_width": 6.635631151967285e-08,
+      "absolute_widths": [
+        4.807559469476399e-07,
+        4.865944890794461e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ],
+        [
+          0.0006967245475897954,
+          0.0006972111420788748
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "PhaseReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 5638,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 6.127209029363999e-08,
+      "last_horner_width": 6.635631151967285e-08,
+      "absolute_widths": [
+        4.807559469476399e-07,
+        4.865944890794461e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ],
+        [
+          0.0006967245475897954,
+          0.0006972111420788748
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 5845,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488020474e-07
+      ],
+      "max_relative_initial_after_reset": 1.065477954748632e-07,
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 5845,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488020474e-07
+      ],
+      "max_relative_initial_after_reset": 1.0654779491975168e-07,
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "PhaseFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 8457,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 5.997043776880657e-08,
+      "last_horner_width": 6.496650321794449e-08,
+      "absolute_widths": [
+        4.764962488020474e-07,
+        4.78082189053243e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ],
+        [
+          0.0006967288037398084,
+          0.0006972068859288616
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "PhaseReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 5638,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 5.997043776880657e-08,
+      "last_horner_width": 6.496650321794449e-08,
+      "absolute_widths": [
+        4.764962488020474e-07,
+        4.78082189053243e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ],
+        [
+          0.0006967288037398084,
+          0.0006972068859288616
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 5845,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488020474e-07
+      ],
+      "max_relative_initial_after_reset": 1.065477954748632e-07,
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 5845,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488020474e-07
+      ],
+      "max_relative_initial_after_reset": 1.0654779491975168e-07,
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "PhaseFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 8457,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 5.997043776880657e-08,
+      "last_horner_width": 6.496650321794449e-08,
+      "absolute_widths": [
+        4.764962488020474e-07,
+        4.78082189053243e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ],
+        [
+          0.0006967288037398084,
+          0.0006972068859288616
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "PhaseReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 5638,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 5.997043776880657e-08,
+      "last_horner_width": 6.496650321794449e-08,
+      "absolute_widths": [
+        4.764962488020474e-07,
+        4.78082189053243e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ],
+        [
+          0.0006967288037398084,
+          0.0006972068859288616
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 3783,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559426472062e-07
+      ],
+      "max_relative_initial_after_reset": 1.0750067430257196e-07,
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 3783,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559426472062e-07
+      ],
+      "max_relative_initial_after_reset": 1.0750067374746045e-07,
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "PhaseFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 5478,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 6.12720891305079e-08,
+      "last_horner_width": 6.635631027889833e-08,
+      "absolute_widths": [
+        4.807559426472062e-07,
+        4.86594480554256e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ],
+        [
+          0.0006967245475940586,
+          0.0006972111420746128
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "PhaseReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 3652,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 6.12720891305079e-08,
+      "last_horner_width": 6.635631027889833e-08,
+      "absolute_widths": [
+        4.807559426472062e-07,
+        4.86594480554256e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ],
+        [
+          0.0006967245475940586,
+          0.0006972111420746128
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 3783,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559426472062e-07
+      ],
+      "max_relative_initial_after_reset": 1.0750067430257196e-07,
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 3783,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559426472062e-07
+      ],
+      "max_relative_initial_after_reset": 1.0750067374746045e-07,
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "PhaseFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 5478,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 6.12720891305079e-08,
+      "last_horner_width": 6.635631027889833e-08,
+      "absolute_widths": [
+        4.807559426472062e-07,
+        4.86594480554256e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ],
+        [
+          0.0006967245475940586,
+          0.0006972111420746128
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "PhaseReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 3652,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 6.12720891305079e-08,
+      "last_horner_width": 6.635631027889833e-08,
+      "absolute_widths": [
+        4.807559426472062e-07,
+        4.86594480554256e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ],
+        [
+          0.0006967245475940586,
+          0.0006972111420746128
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 3783,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488375008e-07
+      ],
+      "max_relative_initial_after_reset": 1.0654779548207314e-07,
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 3783,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488375008e-07
+      ],
+      "max_relative_initial_after_reset": 1.0654779492696163e-07,
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "PhaseFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 5478,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 5.997043776232846e-08,
+      "last_horner_width": 6.49665032233926e-08,
+      "absolute_widths": [
+        4.764962488375008e-07,
+        4.78082189192563e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ],
+        [
+          0.0006967288037397395,
+          0.000697206885928932
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "PhaseReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 3652,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 5.997043776232846e-08,
+      "last_horner_width": 6.49665032233926e-08,
+      "absolute_widths": [
+        4.764962488375008e-07,
+        4.78082189192563e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ],
+        [
+          0.0006967288037397395,
+          0.000697206885928932
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 3783,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488375008e-07
+      ],
+      "max_relative_initial_after_reset": 1.0654779548207314e-07,
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 3783,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488375008e-07
+      ],
+      "max_relative_initial_after_reset": 1.0654779492696163e-07,
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "PhaseFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 5478,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 5.997043776232846e-08,
+      "last_horner_width": 6.49665032233926e-08,
+      "absolute_widths": [
+        4.764962488375008e-07,
+        4.78082189192563e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ],
+        [
+          0.0006967288037397395,
+          0.000697206885928932
+        ]
+      ]
+    },
+    {
+      "case": "wide",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "PhaseReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 3652,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 5.997043776232846e-08,
+      "last_horner_width": 6.49665032233926e-08,
+      "absolute_widths": [
+        4.764962488375008e-07,
+        4.78082189192563e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ],
+        [
+          0.0006967288037397395,
+          0.000697206885928932
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 52,
+      "rhs_proxy": 746,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 9.819900230043267e-08,
+      "last_horner_width": null,
+      "absolute_widths": [
+        3.235473324604858e-08,
+        2.189981302552768e-07
+      ],
+      "max_relative_initial_after_reset": 4.895893576896328e-08,
+      "events": [
+        [
+          0.00034846772946956877,
+          0.0003485000842028148
+        ],
+        [
+          0.0006968583136459963,
+          0.0006970773117762516
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 52,
+      "rhs_proxy": 746,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 9.819899982831627e-08,
+      "last_horner_width": null,
+      "absolute_widths": [
+        3.235473324604858e-08,
+        2.189981302552768e-07
+      ],
+      "max_relative_initial_after_reset": 4.895893448102597e-08,
+      "events": [
+        [
+          0.00034846772946956877,
+          0.0003485000842028148
+        ],
+        [
+          0.0006968583136459963,
+          0.0006970773117762516
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "PhaseFresh",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 717,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 4.9255806108757004e-09,
+      "last_horner_width": 5.0394836370061796e-09,
+      "absolute_widths": [
+        3.235473324604858e-08,
+        3.7007449006187625e-08
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034846772946956877,
+          0.0003485000842028148
+        ],
+        [
+          0.0006969493099478805,
+          0.0006969863173968867
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "PhaseReuse",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 478,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 4.9255806108757004e-09,
+      "last_horner_width": 5.0394836370061796e-09,
+      "absolute_widths": [
+        3.235473324604858e-08,
+        3.7007449006187625e-08
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034846772946956877,
+          0.0003485000842028148
+        ],
+        [
+          0.0006969493099478805,
+          0.0006969863173968867
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 52,
+      "rhs_proxy": 746,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 9.819900230043267e-08,
+      "last_horner_width": null,
+      "absolute_widths": [
+        3.235473324604858e-08,
+        2.189981302552768e-07
+      ],
+      "max_relative_initial_after_reset": 4.895893576896328e-08,
+      "events": [
+        [
+          0.00034846772946956877,
+          0.0003485000842028148
+        ],
+        [
+          0.0006968583136459963,
+          0.0006970773117762516
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 52,
+      "rhs_proxy": 746,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 9.819899982831627e-08,
+      "last_horner_width": null,
+      "absolute_widths": [
+        3.235473324604858e-08,
+        2.189981302552768e-07
+      ],
+      "max_relative_initial_after_reset": 4.895893448102597e-08,
+      "events": [
+        [
+          0.00034846772946956877,
+          0.0003485000842028148
+        ],
+        [
+          0.0006968583136459963,
+          0.0006970773117762516
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "PhaseFresh",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 717,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 4.9255806108757004e-09,
+      "last_horner_width": 5.0394836370061796e-09,
+      "absolute_widths": [
+        3.235473324604858e-08,
+        3.7007449006187625e-08
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034846772946956877,
+          0.0003485000842028148
+        ],
+        [
+          0.0006969493099478805,
+          0.0006969863173968867
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "PhaseReuse",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 478,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 4.9255806108757004e-09,
+      "last_horner_width": 5.0394836370061796e-09,
+      "absolute_widths": [
+        3.235473324604858e-08,
+        3.7007449006187625e-08
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034846772946956877,
+          0.0003485000842028148
+        ],
+        [
+          0.0006969493099478805,
+          0.0006969863173968867
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 52,
+      "rhs_proxy": 746,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 8.64560399377422e-08,
+      "last_horner_width": null,
+      "absolute_widths": [
+        2.8966444806188905e-08,
+        1.931963991993156e-07
+      ],
+      "max_relative_initial_after_reset": 4.318980345395908e-08,
+      "events": [
+        [
+          0.0003484694236137887,
+          0.0003484983900585949
+        ],
+        [
+          0.000696871214802856,
+          0.0006970644112020553
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 52,
+      "rhs_proxy": 748,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 8.645603809636814e-08,
+      "last_horner_width": null,
+      "absolute_widths": [
+        2.8966444806188905e-08,
+        1.931963991993156e-07
+      ],
+      "max_relative_initial_after_reset": 4.318980243802099e-08,
+      "events": [
+        [
+          0.0003484694236137887,
+          0.0003484983900585949
+        ],
+        [
+          0.000696871214802856,
+          0.0006970644112020553
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "PhaseFresh",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 717,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 3.863777825097625e-09,
+      "last_horner_width": 3.956860132367621e-09,
+      "absolute_widths": [
+        2.8966444806188905e-08,
+        3.023120886253266e-08
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003484694236137887,
+          0.0003484983900585949
+        ],
+        [
+          0.0006969526980679523,
+          0.0006969829292768149
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "PhaseReuse",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 478,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 3.863777825097625e-09,
+      "last_horner_width": 3.956860132367621e-09,
+      "absolute_widths": [
+        2.8966444806188905e-08,
+        3.023120886253266e-08
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003484694236137887,
+          0.0003484983900585949
+        ],
+        [
+          0.0006969526980679523,
+          0.0006969829292768149
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 52,
+      "rhs_proxy": 746,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 8.64560399377422e-08,
+      "last_horner_width": null,
+      "absolute_widths": [
+        2.8966444806188905e-08,
+        1.931963991993156e-07
+      ],
+      "max_relative_initial_after_reset": 4.318980345395908e-08,
+      "events": [
+        [
+          0.0003484694236137887,
+          0.0003484983900585949
+        ],
+        [
+          0.000696871214802856,
+          0.0006970644112020553
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 52,
+      "rhs_proxy": 748,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 8.645603809636814e-08,
+      "last_horner_width": null,
+      "absolute_widths": [
+        2.8966444806188905e-08,
+        1.931963991993156e-07
+      ],
+      "max_relative_initial_after_reset": 4.318980243802099e-08,
+      "events": [
+        [
+          0.0003484694236137887,
+          0.0003484983900585949
+        ],
+        [
+          0.000696871214802856,
+          0.0006970644112020553
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "PhaseFresh",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 717,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 3.863777825097625e-09,
+      "last_horner_width": 3.956860132367621e-09,
+      "absolute_widths": [
+        2.8966444806188905e-08,
+        3.023120886253266e-08
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003484694236137887,
+          0.0003484983900585949
+        ],
+        [
+          0.0006969526980679523,
+          0.0006969829292768149
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "PhaseReuse",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 478,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 3.863777825097625e-09,
+      "last_horner_width": 3.956860132367621e-09,
+      "absolute_widths": [
+        2.8966444806188905e-08,
+        3.023120886253266e-08
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003484694236137887,
+          0.0003484983900585949
+        ],
+        [
+          0.0006969526980679523,
+          0.0006969829292768149
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 51,
+      "rhs_proxy": 8103,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 1.1550344370092456e-07,
+      "last_horner_width": null,
+      "absolute_widths": [
+        3.549768895586567e-08,
+        2.576159778979554e-07
+      ],
+      "max_relative_initial_after_reset": 5.7594149999547943e-08,
+      "events": [
+        [
+          0.0003484661735726896,
+          0.0003485016712616455
+        ],
+        [
+          0.000696839035326749,
+          0.000697096651304647
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 51,
+      "rhs_proxy": 8103,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 1.1550344039861535e-07,
+      "last_horner_width": null,
+      "absolute_widths": [
+        3.549768895586567e-08,
+        2.576159778979554e-07
+      ],
+      "max_relative_initial_after_reset": 5.759414824117531e-08,
+      "events": [
+        [
+          0.0003484661735726896,
+          0.0003485016712616455
+        ],
+        [
+          0.000696839035326749,
+          0.000697096651304647
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "PhaseFresh",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 8457,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 5.496314985445078e-09,
+      "last_horner_width": 5.93177445564494e-09,
+      "absolute_widths": [
+        3.549768895586567e-08,
+        4.133623108767189e-08
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003484661735726896,
+          0.0003485016712616455
+        ],
+        [
+          0.0006969471767187912,
+          0.0006969885129498789
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "PhaseReuse",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 5638,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 5.496314985445078e-09,
+      "last_horner_width": 5.93177445564494e-09,
+      "absolute_widths": [
+        3.549768895586567e-08,
+        4.133623108767189e-08
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003484661735726896,
+          0.0003485016712616455
+        ],
+        [
+          0.0006969471767187912,
+          0.0006969885129498789
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 51,
+      "rhs_proxy": 8103,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 1.1550344370092456e-07,
+      "last_horner_width": null,
+      "absolute_widths": [
+        3.549768895586567e-08,
+        2.576159778979554e-07
+      ],
+      "max_relative_initial_after_reset": 5.7594149999547943e-08,
+      "events": [
+        [
+          0.0003484661735726896,
+          0.0003485016712616455
+        ],
+        [
+          0.000696839035326749,
+          0.000697096651304647
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 51,
+      "rhs_proxy": 8103,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 1.1550344039861535e-07,
+      "last_horner_width": null,
+      "absolute_widths": [
+        3.549768895586567e-08,
+        2.576159778979554e-07
+      ],
+      "max_relative_initial_after_reset": 5.759414824117531e-08,
+      "events": [
+        [
+          0.0003484661735726896,
+          0.0003485016712616455
+        ],
+        [
+          0.000696839035326749,
+          0.000697096651304647
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "PhaseFresh",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 8457,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 5.496314985445078e-09,
+      "last_horner_width": 5.93177445564494e-09,
+      "absolute_widths": [
+        3.549768895586567e-08,
+        4.133623108767189e-08
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003484661735726896,
+          0.0003485016712616455
+        ],
+        [
+          0.0006969471767187912,
+          0.0006969885129498789
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "PhaseReuse",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 5638,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 5.496314985445078e-09,
+      "last_horner_width": 5.93177445564494e-09,
+      "absolute_widths": [
+        3.549768895586567e-08,
+        4.133623108767189e-08
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003484661735726896,
+          0.0003485016712616455
+        ],
+        [
+          0.0006969471767187912,
+          0.0006969885129498789
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 51,
+      "rhs_proxy": 8104,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 9.989808597870369e-08,
+      "last_horner_width": null,
+      "absolute_widths": [
+        3.124464399912371e-08,
+        2.232346389892696e-07
+      ],
+      "max_relative_initial_after_reset": 4.9906220787998405e-08,
+      "events": [
+        [
+          0.00034846830009516795,
+          0.0003484995447391671
+        ],
+        [
+          0.0006968562263892808,
+          0.0006970794610282701
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 51,
+      "rhs_proxy": 8103,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 9.989808352296273e-08,
+      "last_horner_width": null,
+      "absolute_widths": [
+        3.124464399912371e-08,
+        2.232346389892696e-07
+      ],
+      "max_relative_initial_after_reset": 4.9906219452139355e-08,
+      "events": [
+        [
+          0.00034846830009516795,
+          0.0003484995447391671
+        ],
+        [
+          0.0006968562263892808,
+          0.0006970794610282701
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "PhaseFresh",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 8457,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 4.1969584488538506e-09,
+      "last_horner_width": 4.54286852671112e-09,
+      "absolute_widths": [
+        3.124464399912371e-08,
+        3.283058425031932e-08
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034846830009516795,
+          0.0003484995447391671
+        ],
+        [
+          0.0006969514295422099,
+          0.0006969842601264602
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "PhaseReuse",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 5638,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 4.1969584488538506e-09,
+      "last_horner_width": 4.54286852671112e-09,
+      "absolute_widths": [
+        3.124464399912371e-08,
+        3.283058425031932e-08
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034846830009516795,
+          0.0003484995447391671
+        ],
+        [
+          0.0006969514295422099,
+          0.0006969842601264602
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 51,
+      "rhs_proxy": 8104,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 9.989808597870369e-08,
+      "last_horner_width": null,
+      "absolute_widths": [
+        3.124464399912371e-08,
+        2.232346389892696e-07
+      ],
+      "max_relative_initial_after_reset": 4.9906220787998405e-08,
+      "events": [
+        [
+          0.00034846830009516795,
+          0.0003484995447391671
+        ],
+        [
+          0.0006968562263892808,
+          0.0006970794610282701
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 51,
+      "rhs_proxy": 8103,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 9.989808352296273e-08,
+      "last_horner_width": null,
+      "absolute_widths": [
+        3.124464399912371e-08,
+        2.232346389892696e-07
+      ],
+      "max_relative_initial_after_reset": 4.9906219452139355e-08,
+      "events": [
+        [
+          0.00034846830009516795,
+          0.0003484995447391671
+        ],
+        [
+          0.0006968562263892808,
+          0.0006970794610282701
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "PhaseFresh",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 8457,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 4.1969584488538506e-09,
+      "last_horner_width": 4.54286852671112e-09,
+      "absolute_widths": [
+        3.124464399912371e-08,
+        3.283058425031932e-08
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034846830009516795,
+          0.0003484995447391671
+        ],
+        [
+          0.0006969514295422099,
+          0.0006969842601264602
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "PhaseReuse",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 5638,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 4.1969584488538506e-09,
+      "last_horner_width": 4.54286852671112e-09,
+      "absolute_widths": [
+        3.124464399912371e-08,
+        3.283058425031932e-08
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034846830009516795,
+          0.0003484995447391671
+        ],
+        [
+          0.0006969514295422099,
+          0.0006969842601264602
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 51,
+      "rhs_proxy": 5246,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 1.1550343181293104e-07,
+      "last_horner_width": null,
+      "absolute_widths": [
+        3.549768472639299e-08,
+        2.5761595112770274e-07
+      ],
+      "max_relative_initial_after_reset": 5.759414399356935e-08,
+      "events": [
+        [
+          0.00034846617357480467,
+          0.00034850167125953106
+        ],
+        [
+          0.0006968390353401355,
+          0.0006970966512912632
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 51,
+      "rhs_proxy": 5246,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 1.1550342068424764e-07,
+      "last_horner_width": null,
+      "absolute_widths": [
+        3.549768472639299e-08,
+        2.5761593491237505e-07
+      ],
+      "max_relative_initial_after_reset": 5.7594138600422485e-08,
+      "events": [
+        [
+          0.00034846617357480467,
+          0.00034850167125953106
+        ],
+        [
+          0.0006968390353482445,
+          0.0006970966512831569
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "PhaseFresh",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 5478,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 5.496313833778426e-09,
+      "last_horner_width": 5.9317732159004134e-09,
+      "absolute_widths": [
+        3.549768472639299e-08,
+        4.133622263338861e-08
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034846617357480467,
+          0.00034850167125953106
+        ],
+        [
+          0.000696947176723019,
+          0.0006969885129456524
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "PhaseReuse",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 3652,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 5.496313833778426e-09,
+      "last_horner_width": 5.9317732159004134e-09,
+      "absolute_widths": [
+        3.549768472639299e-08,
+        4.133622263338861e-08
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034846617357480467,
+          0.00034850167125953106
+        ],
+        [
+          0.000696947176723019,
+          0.0006969885129456524
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 51,
+      "rhs_proxy": 5246,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 1.1550343181293104e-07,
+      "last_horner_width": null,
+      "absolute_widths": [
+        3.549768472639299e-08,
+        2.5761595112770274e-07
+      ],
+      "max_relative_initial_after_reset": 5.759414399356935e-08,
+      "events": [
+        [
+          0.00034846617357480467,
+          0.00034850167125953106
+        ],
+        [
+          0.0006968390353401355,
+          0.0006970966512912632
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 51,
+      "rhs_proxy": 5246,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 1.1550342068424764e-07,
+      "last_horner_width": null,
+      "absolute_widths": [
+        3.549768472639299e-08,
+        2.5761593491237505e-07
+      ],
+      "max_relative_initial_after_reset": 5.7594138600422485e-08,
+      "events": [
+        [
+          0.00034846617357480467,
+          0.00034850167125953106
+        ],
+        [
+          0.0006968390353482445,
+          0.0006970966512831569
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "PhaseFresh",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 5478,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 5.496313833778426e-09,
+      "last_horner_width": 5.9317732159004134e-09,
+      "absolute_widths": [
+        3.549768472639299e-08,
+        4.133622263338861e-08
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034846617357480467,
+          0.00034850167125953106
+        ],
+        [
+          0.000696947176723019,
+          0.0006969885129456524
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "PhaseReuse",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 3652,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 5.496313833778426e-09,
+      "last_horner_width": 5.9317732159004134e-09,
+      "absolute_widths": [
+        3.549768472639299e-08,
+        4.133622263338861e-08
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034846617357480467,
+          0.00034850167125953106
+        ],
+        [
+          0.000696947176723019,
+          0.0006969885129456524
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 51,
+      "rhs_proxy": 5246,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 9.98980865907003e-08,
+      "last_horner_width": null,
+      "absolute_widths": [
+        3.124464409876189e-08,
+        2.232346402480283e-07
+      ],
+      "max_relative_initial_after_reset": 4.990622104427669e-08,
+      "events": [
+        [
+          0.00034846830009511846,
+          0.0003484995447392172
+        ],
+        [
+          0.0006968562263886522,
+          0.0006970794610289002
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 51,
+      "rhs_proxy": 5246,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 9.989808384852624e-08,
+      "last_horner_width": null,
+      "absolute_widths": [
+        3.124464409876189e-08,
+        2.232346402480283e-07
+      ],
+      "max_relative_initial_after_reset": 4.9906219708431196e-08,
+      "events": [
+        [
+          0.00034846830009511846,
+          0.0003484995447392172
+        ],
+        [
+          0.0006968562263886522,
+          0.0006970794610289002
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "PhaseFresh",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 5478,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 4.196958451537251e-09,
+      "last_horner_width": 4.542868532281209e-09,
+      "absolute_widths": [
+        3.124464409876189e-08,
+        3.2830584453824065e-08
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034846830009511846,
+          0.0003484995447392172
+        ],
+        [
+          0.0006969514295421088,
+          0.0006969842601265626
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "PhaseReuse",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 3652,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 4.196958451537251e-09,
+      "last_horner_width": 4.542868532281209e-09,
+      "absolute_widths": [
+        3.124464409876189e-08,
+        3.2830584453824065e-08
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034846830009511846,
+          0.0003484995447392172
+        ],
+        [
+          0.0006969514295421088,
+          0.0006969842601265626
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 51,
+      "rhs_proxy": 5246,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 9.98980865907003e-08,
+      "last_horner_width": null,
+      "absolute_widths": [
+        3.124464409876189e-08,
+        2.232346402480283e-07
+      ],
+      "max_relative_initial_after_reset": 4.990622104427669e-08,
+      "events": [
+        [
+          0.00034846830009511846,
+          0.0003484995447392172
+        ],
+        [
+          0.0006968562263886522,
+          0.0006970794610289002
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 51,
+      "rhs_proxy": 5246,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 9.989808384852624e-08,
+      "last_horner_width": null,
+      "absolute_widths": [
+        3.124464409876189e-08,
+        2.232346402480283e-07
+      ],
+      "max_relative_initial_after_reset": 4.9906219708431196e-08,
+      "events": [
+        [
+          0.00034846830009511846,
+          0.0003484995447392172
+        ],
+        [
+          0.0006968562263886522,
+          0.0006970794610289002
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "PhaseFresh",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 5478,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 4.196958451537251e-09,
+      "last_horner_width": 4.542868532281209e-09,
+      "absolute_widths": [
+        3.124464409876189e-08,
+        3.2830584453824065e-08
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034846830009511846,
+          0.0003484995447392172
+        ],
+        [
+          0.0006969514295421088,
+          0.0006969842601265626
+        ]
+      ]
+    },
+    {
+      "case": "narrow",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "PhaseReuse",
+      "radius": 9.313225746154785e-10,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 3652,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 4.196958451537251e-09,
+      "last_horner_width": 4.542868532281209e-09,
+      "absolute_widths": [
+        3.124464409876189e-08,
+        3.2830584453824065e-08
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034846830009511846,
+          0.0003484995447392172
+        ],
+        [
+          0.0006969514295421088,
+          0.0006969842601265626
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 239,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "max_relative_initial_after_reset": null,
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 239,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "max_relative_initial_after_reset": null,
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "PhaseFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 239,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "max_relative_initial_after_reset": null,
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "PhaseReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 239,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "max_relative_initial_after_reset": null,
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 36,
+      "rhs_proxy": 504,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4821559833536093e-07
+      ],
+      "max_relative_initial_after_reset": 1.0022168346698228e-07,
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 36,
+      "rhs_proxy": 504,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4821559833536093e-07
+      ],
+      "max_relative_initial_after_reset": 1.0022168302289307e-07,
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "PhaseFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 717,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 5.701179850058828e-08,
+      "last_horner_width": 5.837305984625785e-08,
+      "absolute_widths": [
+        4.4821559833536093e-07,
+        4.5286831409539156e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ],
+        [
+          0.0006967413795153359,
+          0.0006971942478294313
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "PhaseReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 478,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 5.701179850058828e-08,
+      "last_horner_width": 5.837305984625785e-08,
+      "absolute_widths": [
+        4.4821559833536093e-07,
+        4.5286831409539156e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ],
+        [
+          0.0006967413795153359,
+          0.0006971942478294313
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 239,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "max_relative_initial_after_reset": null,
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 239,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "max_relative_initial_after_reset": null,
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "PhaseFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 239,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "max_relative_initial_after_reset": null,
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "PhaseReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 239,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "max_relative_initial_after_reset": null,
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 36,
+      "rhs_proxy": 503,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4482225376832633e-07
+      ],
+      "max_relative_initial_after_reset": 9.94626446822487e-08,
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 36,
+      "rhs_proxy": 503,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4482225376832633e-07
+      ],
+      "max_relative_initial_after_reset": 9.946264423815949e-08,
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "PhaseFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 717,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 5.5948387151321635e-08,
+      "last_horner_width": 5.728978820739017e-08,
+      "absolute_widths": [
+        4.4482225376832633e-07,
+        4.4608701782456166e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ],
+        [
+          0.0006967447701634713,
+          0.0006971908571812959
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "PhaseReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 478,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 5.5948387151321635e-08,
+      "last_horner_width": 5.728978820739017e-08,
+      "absolute_widths": [
+        4.4482225376832633e-07,
+        4.4608701782456166e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ],
+        [
+          0.0006967447701634713,
+          0.0006971908571812959
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 2819,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "max_relative_initial_after_reset": null,
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 2819,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "max_relative_initial_after_reset": null,
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "PhaseFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 2819,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "max_relative_initial_after_reset": null,
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "PhaseReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 2819,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "max_relative_initial_after_reset": null,
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 36,
+      "rhs_proxy": 5668,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559469476399e-07
+      ],
+      "max_relative_initial_after_reset": 1.0750067517858021e-07,
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 36,
+      "rhs_proxy": 5669,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559469476399e-07
+      ],
+      "max_relative_initial_after_reset": 1.07500674734491e-07,
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "PhaseFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 8457,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 6.127209029363999e-08,
+      "last_horner_width": 6.635631151967285e-08,
+      "absolute_widths": [
+        4.807559469476399e-07,
+        4.865944890794461e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ],
+        [
+          0.0006967245475897954,
+          0.0006972111420788748
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "PhaseReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 5638,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 6.127209029363999e-08,
+      "last_horner_width": 6.635631151967285e-08,
+      "absolute_widths": [
+        4.807559469476399e-07,
+        4.865944890794461e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ],
+        [
+          0.0006967245475897954,
+          0.0006972111420788748
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 2819,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "max_relative_initial_after_reset": null,
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 2819,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "max_relative_initial_after_reset": null,
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "PhaseFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 2819,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "max_relative_initial_after_reset": null,
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "PhaseReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 2819,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "max_relative_initial_after_reset": null,
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 36,
+      "rhs_proxy": 5669,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488020474e-07
+      ],
+      "max_relative_initial_after_reset": 1.065477954748632e-07,
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 36,
+      "rhs_proxy": 5669,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488020474e-07
+      ],
+      "max_relative_initial_after_reset": 1.0654779491975168e-07,
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "PhaseFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 8457,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 5.997043776880657e-08,
+      "last_horner_width": 6.496650321794449e-08,
+      "absolute_widths": [
+        4.764962488020474e-07,
+        4.78082189053243e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ],
+        [
+          0.0006967288037398084,
+          0.0006972068859288616
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "PhaseReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 5638,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 5.997043776880657e-08,
+      "last_horner_width": 6.496650321794449e-08,
+      "absolute_widths": [
+        4.764962488020474e-07,
+        4.78082189053243e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ],
+        [
+          0.0006967288037398084,
+          0.0006972068859288616
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 1826,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "max_relative_initial_after_reset": null,
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 1826,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "max_relative_initial_after_reset": null,
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "PhaseFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 1826,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "max_relative_initial_after_reset": null,
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "PhaseReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 1826,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "max_relative_initial_after_reset": null,
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 36,
+      "rhs_proxy": 3670,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559426472062e-07
+      ],
+      "max_relative_initial_after_reset": 1.0750067430257196e-07,
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 36,
+      "rhs_proxy": 3670,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559426472062e-07
+      ],
+      "max_relative_initial_after_reset": 1.0750067374746045e-07,
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "PhaseFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 5478,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 6.12720891305079e-08,
+      "last_horner_width": 6.635631027889833e-08,
+      "absolute_widths": [
+        4.807559426472062e-07,
+        4.86594480554256e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ],
+        [
+          0.0006967245475940586,
+          0.0006972111420746128
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "PhaseReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 3652,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 6.12720891305079e-08,
+      "last_horner_width": 6.635631027889833e-08,
+      "absolute_widths": [
+        4.807559426472062e-07,
+        4.86594480554256e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ],
+        [
+          0.0006967245475940586,
+          0.0006972111420746128
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 1826,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "max_relative_initial_after_reset": null,
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 1826,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "max_relative_initial_after_reset": null,
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "PhaseFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 1826,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "max_relative_initial_after_reset": null,
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "PhaseReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 1826,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "max_relative_initial_after_reset": null,
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 36,
+      "rhs_proxy": 3670,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488375008e-07
+      ],
+      "max_relative_initial_after_reset": 1.0654779548207314e-07,
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 36,
+      "rhs_proxy": 3670,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488375008e-07
+      ],
+      "max_relative_initial_after_reset": 1.0654779492696163e-07,
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "PhaseFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 54,
+      "rhs_proxy": 5478,
+      "native_runs": 3,
+      "cache_hits": 0,
+      "last_width": 5.997043776232846e-08,
+      "last_horner_width": 6.49665032233926e-08,
+      "absolute_widths": [
+        4.764962488375008e-07,
+        4.78082189192563e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ],
+        [
+          0.0006967288037397395,
+          0.000697206885928932
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "PhaseReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 2,
+      "attempts": 36,
+      "rhs_proxy": 3652,
+      "native_runs": 2,
+      "cache_hits": 1,
+      "last_width": 5.997043776232846e-08,
+      "last_horner_width": 6.49665032233926e-08,
+      "absolute_widths": [
+        4.764962488375008e-07,
+        4.78082189192563e-07
+      ],
+      "max_relative_initial_after_reset": 0.0,
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ],
+        [
+          0.0006967288037397395,
+          0.000697206885928932
+        ]
+      ]
+    }
+  ]
+}

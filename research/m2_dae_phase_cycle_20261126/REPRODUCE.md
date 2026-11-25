@@ -1,0 +1,4 @@
+Exact branch research/m2-dae-phase-cycle-20261126; EXEC_SHA.txt and INPUT_SHA256SUMS bind source/inputs. Rust locked offline and SciPy1.17.0.
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_phase_cycle_contracts -- --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_phase_cycle_contracts training -- --ignored --exact --nocapture --test-threads=1
+Restore training.log in scratch from training.log.gz; copy audit.py, reference.py, structural.py, exact_native.py, guide.py; run python3 audit.py and python3 guide.py select. Generate guide.py generate with fresh ledger; exact archive identity in guide.py. Compare logical CELL JSON, not test wall time. Previous regression and replay records retained. No holdout.
