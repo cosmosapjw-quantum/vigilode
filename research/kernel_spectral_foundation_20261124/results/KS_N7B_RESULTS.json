@@ -1,0 +1,416 @@
+{
+ "schema": "vigilode-ks-n7b-results-v1",
+ "task": "KS-N7b",
+ "title": "PairedReal as the default box transform, after recording the transform in the run record (review F5 of KS-N7)",
+ "branch": "research/stage-lattice-referee-20261124-kschain",
+ "generated_by": "research/kernel_spectral_foundation_20261124/ks_n7b/make_results.py",
+ "notes": "research/kernel_spectral_foundation_20261124/ks_n7b/NOTES.txt",
+ "commits": [
+  {
+   "commit": "1016cd84d8b6c1b55dcac75c089afdc587850bb2",
+   "subject": "research(KS-N7b): notes section 6, outcome (numbers from results/KS_N7B_RESULTS.json)"
+  },
+  {
+   "commit": "5c67082552adcde948b8af9ff785fd432a1269f6",
+   "subject": "research(KS-N7b): facade suite at 78333d0a (--no-fail-fast): 584 passed, 0 failed, 4 ignored, exit 0; failing-first scope log; make_results.py"
+  },
+  {
+   "commit": "78333d0a811fcecacee8a6fb599578aa76b3ed88",
+   "subject": "research(KS-N7b): check logs at bd4bf649: clippy (vigilode all targets, integrators lib), rustdoc -D warnings (CI docs job), fmt, verify_run all exit 0; public API diff from the base"
+  },
+  {
+   "commit": "bd4bf649d989f4de1ba21328a5a15437c0fcfa60",
+   "subject": "research(KS-N7b): spatial_separable after the default commit: 11 passed, 0 failed; default recorded as paired-real and bit-identical to the explicit PairedReal run; the 28 tagged lines of the base run are unchanged"
+  },
+  {
+   "commit": "f5bdf295c6ad597e03a99644717b4c2c955c0b4c",
+   "subject": "feat(spatial): BoxTransform::PairedReal is the default box transform (KS-N7b, after the owner-host cell KS-N7-T)"
+  },
+  {
+   "commit": "f7dfdc9ed1ba8c5469cfa470c18b526feb3b0065",
+   "subject": "research(KS-N7b): spatial_separable after the record commit: 10 passed, 0 failed; the failing-first test passes; the 28 tagged lines of the base run are unchanged"
+  },
+  {
+   "commit": "3f971eeb38ecac7b7d7e724f633c67eee75340d0",
+   "subject": "feat(spatial): record the box transform that ran in SeparableReport (KS-N7b, review F5 of KS-N7)"
+  },
+  {
+   "commit": "c30002299dfc0097f9ea4dde4af8566e2a59ec2a",
+   "subject": "research(KS-N7b): base run of the failing-first test: FAILED by assertion (left Null, right \"complex\"); 9 other tests pass"
+  },
+  {
+   "commit": "d72d943be0cc4c4dade9214ce256eaf881967078",
+   "subject": "test(spatial): KS-N7b failing-first test: the run record must name the box transform that ran (review F5)"
+  },
+  {
+   "commit": "f89d7186a4137fe8da3c407e03257749d8646553",
+   "subject": "research(KS-N7b): notes: record the box transform in SeparableReport (review F5), then PairedReal as the box default"
+  }
+ ],
+ "code_commits": {
+  "failing_first_test": "d72d943be0cc4c4dade9214ce256eaf881967078",
+  "record": "3f971eeb38ecac7b7d7e724f633c67eee75340d0",
+  "default": "f5bdf295c6ad597e03a99644717b4c2c955c0b4c"
+ },
+ "environment": {
+  "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "cargo": "cargo 1.94.1 (29ea6fb6a 2026-03-24)",
+  "cpu": "AMD Ryzen 9 5900X 12-Core Processor",
+  "kernel": "7.0.0-43-generic",
+  "taskset": "0-5,12-17",
+  "cargo_target_dir": "/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain",
+  "cargo_semver_checks": "error: no such command: `semver-checks`"
+ },
+ "design": {
+  "choice": "SeparableReport::box_transform: Option<BoxTransform> (Some on the periodic box, None on a sphere grid), written by SeparableStages::client from the kernel it builds; BoxTransform derives Serialize (kebab case: complex, paired-real)",
+  "why": [
+   "The client id of DriverWork::SeparableClient is the constant SEPARABLE_STAGE_CLIENT_ID written in crates/vigilode/src/solve.rs:530, outside this task's paths; a constant cannot depend on the run, so a second client id needs a solve.rs edit.",
+   "The SeparableReport is the only per-run value that separable.rs hands to a Solution (StageLinearSystem has no identifier; the driver's client is dropped).",
+   "Decision KS-N7-T and the KS-N7 protocol name the report first; the report is typed; the client id keeps naming the client (same certificates for both transforms)."
+  ],
+  "api_change": {
+   "semver_tool": "cargo-semver-checks not installed (env.txt); public-API changes reviewed by hand from logs/public_api_diff.log",
+   "major": "SeparableReport gains the public field box_transform (all fields public, not non_exhaustive): downstream struct literals that list every field, and exhaustive destructuring patterns, stop compiling; literals with ..Default::default() keep compiling (the field defaults to None). The type was added at a0ec98ba on this research branch and is unreleased (not on main); the workspace has no such literal or pattern.",
+   "minor": "BoxTransform implements serde::Serialize (additive).",
+   "behavior": "BoxTransform::default() is PairedReal instead of Complex: a box built without with_box_transform runs the paired transform (same linear map, different rounding; K17 bounds the difference). The serialized run record gains the key report.box_transform.",
+   "unchanged": "No item removed or renamed; no signature changed; crates/vigilode/src/spatial.rs exports unchanged; SEPARABLE_STAGE_CLIENT_ID unchanged.",
+   "diff_lines": [
+    "-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]",
+    "+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize)]",
+    "+#[serde(rename_all = \"kebab-case\")]",
+    "-    #[default]",
+    "+    #[default]",
+    "+    pub box_transform: Option<BoxTransform>,"
+   ],
+   "diff_log": "research/kernel_spectral_foundation_20261124/ks_n7b/logs/public_api_diff.log"
+  },
+  "alternative_left_open": "A non-breaking second client id for the paired box solve: a const and a getter in separable.rs plus solve.rs:530 writing stages.client_id(); it can be added to the report field or replace it (orchestrator's choice; solve.rs is outside this task's paths)."
+ },
+ "scope": {
+  "changed_paths": [
+   "crates/vigilode/src/spatial/separable.rs",
+   "crates/vigilode/tests/spatial_separable.rs",
+   "research/kernel_spectral_foundation_20261124/ks_n7b/NOTES.txt",
+   "research/kernel_spectral_foundation_20261124/ks_n7b/logs/clippy_integrators.log",
+   "research/kernel_spectral_foundation_20261124/ks_n7b/logs/clippy_vigilode.log",
+   "research/kernel_spectral_foundation_20261124/ks_n7b/logs/doc.log",
+   "research/kernel_spectral_foundation_20261124/ks_n7b/logs/env.txt",
+   "research/kernel_spectral_foundation_20261124/ks_n7b/logs/facade_suite.log",
+   "research/kernel_spectral_foundation_20261124/ks_n7b/logs/failing_first_scope.log",
+   "research/kernel_spectral_foundation_20261124/ks_n7b/logs/fmt_check.log",
+   "research/kernel_spectral_foundation_20261124/ks_n7b/logs/public_api_diff.log",
+   "research/kernel_spectral_foundation_20261124/ks_n7b/logs/spatial_separable_after_default.log",
+   "research/kernel_spectral_foundation_20261124/ks_n7b/logs/spatial_separable_after_record.log",
+   "research/kernel_spectral_foundation_20261124/ks_n7b/logs/spatial_separable_base_failing_first.log",
+   "research/kernel_spectral_foundation_20261124/ks_n7b/logs/verify_run.log",
+   "research/kernel_spectral_foundation_20261124/ks_n7b/make_results.py",
+   "research/kernel_spectral_foundation_20261124/ks_n7b/run_logged.sh"
+  ],
+  "outside_allowed_paths": [],
+  "log": "research/kernel_spectral_foundation_20261124/ks_n7b/logs/scope_name_status.log"
+ },
+ "failing_first": {
+  "test": "crates/vigilode/tests/spatial_separable.rs::the_run_record_names_the_box_transform_that_ran",
+  "commit": "d72d943be0cc4c4dade9214ce256eaf881967078",
+  "dirty_tracked_files": "0",
+  "crates_changed_since_base": [
+   "crates/vigilode/tests/spatial_separable.rs"
+  ],
+  "outcome": "FAILED",
+  "exit_code": 101,
+  "summary": "FAILED: 9 passed, 1 failed, 3 ignored",
+  "panic_location": "crates/vigilode/tests/spatial_separable.rs:1167:9",
+  "assertion": "assertion `left == right` failed: box-12x10: the run record must name the transform that ran",
+  "left": "Null",
+  "right": "\"complex\"",
+  "other_tests_ok": true,
+  "log": "research/kernel_spectral_foundation_20261124/ks_n7b/logs/spatial_separable_base_failing_first.log"
+ },
+ "record": {
+  "after_record": {
+   "commit": "3f971eeb38ecac7b7d7e724f633c67eee75340d0",
+   "outcome": "ok",
+   "KS_N7B_RECORD": {
+    "box_12x10": [
+     "complex",
+     "paired-real"
+    ],
+    "sphere_7x10": null
+   }
+  },
+  "after_default": {
+   "commit": "f5bdf295c6ad597e03a99644717b4c2c955c0b4c",
+   "outcome": "ok",
+   "KS_N7B_RECORD": {
+    "box_12x10": [
+     "complex",
+     "paired-real"
+    ],
+    "sphere_7x10": null
+   }
+  }
+ },
+ "default": {
+  "KS_N7B_DEFAULT": {
+   "default": "paired-real",
+   "default_record": "paired-real",
+   "complex_record": "complex",
+   "sphere_record": null,
+   "default_equals_paired_bits": true,
+   "attempts_default": 34,
+   "attempts_complex": 34,
+   "error_default": 6.635e-11,
+   "error_complex": 6.635e-11,
+   "default_vs_complex": 1.11e-15,
+   "max_mass_defect_default": 1.231e-15,
+   "max_mass_defect_complex": 1.258e-15,
+   "max_backward_error_default": 4.572e-16,
+   "max_backward_error_complex": 4.926e-16
+  },
+  "test": "crates/vigilode/tests/spatial_separable.rs::the_box_defaults_to_the_paired_real_transform",
+  "selection_test": "box_transform_selection_defaults_parses_and_reuses_prepared_solvers"
+ },
+ "unchanged_lines": {
+  "SL_N5_T1T2": {
+   "lines": 1,
+   "identical_after_record": true,
+   "identical_after_default": true
+  },
+  "SL_N5_T3": {
+   "lines": 9,
+   "identical_after_record": true,
+   "identical_after_default": true
+  },
+  "SL_N5_T5": {
+   "lines": 3,
+   "identical_after_record": true,
+   "identical_after_default": true
+  },
+  "KS_N7_AGREEMENT": {
+   "lines": 1,
+   "identical_after_record": true,
+   "identical_after_default": true
+  },
+  "KS_N7_T1T2": {
+   "lines": 2,
+   "identical_after_record": true,
+   "identical_after_default": true
+  },
+  "KS_N7_T3": {
+   "lines": 8,
+   "identical_after_record": true,
+   "identical_after_default": true
+  },
+  "KS_N7_T3_ROUTES": {
+   "lines": 4,
+   "identical_after_record": true,
+   "identical_after_default": true
+  }
+ },
+ "bounds": {
+  "statement": "agreement ||x_p - x_c||_inf <= 1e-13 S/(z - c); T1 backward error <= 1e-13; T2 mass defect <= 1e-13 (scales of separable_stage_solves_are_exact_and_mass_consistent)",
+  "KS_N7_AGREEMENT": {
+   "cases": 360,
+   "differing_cases": 276,
+   "max_relative_difference": 5.215e-14,
+   "max_normalized_difference": 6.964e-16,
+   "bound_normalized": 1e-13,
+   "worst_case": "box-4097x3 z=0.5 c=0 seed17"
+  },
+  "KS_N7_T1T2": {
+   "complex": {
+    "transform": "complex",
+    "solves": 360,
+    "max_backward_error": 1.187e-15,
+    "max_mass_defect": 4.545e-17,
+    "bound": 1e-13
+   },
+   "paired-real": {
+    "transform": "paired-real",
+    "solves": 360,
+    "max_backward_error": 1.68e-15,
+    "max_mass_defect": 4.545e-17,
+    "bound": 1e-13
+   }
+  },
+  "SL_N5_T1T2_default_arm": {
+   "max_backward_error": 3.373e-16,
+   "max_mass_defect": 5.11e-17
+  }
+ },
+ "box_ivp": {
+  "tests": {
+   "separable_route_conserves_mass_and_matches_the_reference": "ok",
+   "paired_real_box_route_matches_the_reference_and_the_complex_route": "ok",
+   "the_run_record_names_the_box_transform_that_ran": "ok",
+   "the_box_defaults_to_the_paired_real_transform": "ok"
+  },
+  "SL_N5_T3_box_12x10_against_KS_N7_T3": [
+   {
+    "mode": "Trusted",
+    "default_route": {
+     "error": 6.635e-11,
+     "attempts": 34,
+     "solves": 272
+    },
+    "equals_paired_real_line": true,
+    "equals_complex_line": true
+   },
+   {
+    "mode": "Verified { max_corrections: 4, tolerance: 1e-10 }",
+    "default_route": {
+     "error": 6.635e-11,
+     "attempts": 34,
+     "solves": 272
+    },
+    "equals_paired_real_line": true,
+    "equals_complex_line": true
+   }
+  ],
+  "default_report_equals_paired_real_route_line": true,
+  "default_report_equals_complex_route_line": false,
+  "caveat": "At the printed precision the T3 box lines of both transforms agree (error, attempts, solves), so the T3 comparison alone does not tell the arms apart; the report values (max mass defect and backward error) and the bitwise equality of the default and explicit PairedReal runs do."
+ },
+ "checks": [
+  {
+   "name": "spatial_separable at the failing-first test commit (expected to fail)",
+   "command": "cargo +1.94.1 test --locked -j 4 --release -p vigilode --test spatial_separable -- --nocapture",
+   "head": "d72d943be0cc4c4dade9214ce256eaf881967078",
+   "exit_code": 101,
+   "result": "FAILED: 9 passed, 1 failed, 3 ignored",
+   "log": "research/kernel_spectral_foundation_20261124/ks_n7b/logs/spatial_separable_base_failing_first.log"
+  },
+  {
+   "name": "spatial_separable after the record commit",
+   "command": "cargo +1.94.1 test --locked -j 4 --release -p vigilode --test spatial_separable -- --nocapture",
+   "head": "3f971eeb38ecac7b7d7e724f633c67eee75340d0",
+   "exit_code": 0,
+   "result": "ok: 10 passed, 0 failed, 3 ignored",
+   "log": "research/kernel_spectral_foundation_20261124/ks_n7b/logs/spatial_separable_after_record.log"
+  },
+  {
+   "name": "spatial_separable after the default commit",
+   "command": "cargo +1.94.1 test --locked -j 4 --release -p vigilode --test spatial_separable -- --nocapture",
+   "head": "f5bdf295c6ad597e03a99644717b4c2c955c0b4c",
+   "exit_code": 0,
+   "result": "ok: 11 passed, 0 failed, 3 ignored",
+   "log": "research/kernel_spectral_foundation_20261124/ks_n7b/logs/spatial_separable_after_default.log"
+  },
+  {
+   "name": "facade suite (--no-fail-fast)",
+   "command": "cargo +1.94.1 test --locked -j 4 -p vigilode --release --no-fail-fast",
+   "head": "78333d0a811fcecacee8a6fb599578aa76b3ed88",
+   "exit_code": 0,
+   "result": "584 passed, 0 failed, 4 ignored; 69 sections (test binaries and doc-tests), 70 result blocks",
+   "log": "research/kernel_spectral_foundation_20261124/ks_n7b/logs/facade_suite.log",
+   "failed_tests": [],
+   "sections": 69,
+   "sections_without_result": 0
+  },
+  {
+   "name": "rustdoc -D warnings (CI docs job)",
+   "command": "env RUSTDOCFLAGS=-D\\ warnings cargo +1.94.1 doc -j 4 -p vigilode -p vigilode-coupled --no-deps --locked",
+   "head": "bd4bf649d989f4de1ba21328a5a15437c0fcfa60",
+   "exit_code": 0,
+   "result": "pass",
+   "log": "research/kernel_spectral_foundation_20261124/ks_n7b/logs/doc.log",
+   "detail": "   Generated /home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/doc/vigilode/index.html and 1 other file",
+   "warning_or_error_lines": 0
+  },
+  {
+   "name": "clippy vigilode --all-targets",
+   "command": "cargo +1.94.1 clippy --locked -j 4 -p vigilode --all-targets --release --no-deps -- -D warnings",
+   "head": "bd4bf649d989f4de1ba21328a5a15437c0fcfa60",
+   "exit_code": 0,
+   "result": "pass",
+   "log": "research/kernel_spectral_foundation_20261124/ks_n7b/logs/clippy_vigilode.log",
+   "detail": "    Finished `release` profile [optimized] target(s) in 43.23s",
+   "warning_or_error_lines": 0
+  },
+  {
+   "name": "clippy rodas5p-integrators --lib",
+   "command": "cargo +1.94.1 clippy --locked -j 4 -p rodas5p-integrators --lib --release --no-deps -- -D warnings",
+   "head": "bd4bf649d989f4de1ba21328a5a15437c0fcfa60",
+   "exit_code": 0,
+   "result": "pass",
+   "log": "research/kernel_spectral_foundation_20261124/ks_n7b/logs/clippy_integrators.log",
+   "detail": "    Finished `release` profile [optimized] target(s) in 29.92s",
+   "warning_or_error_lines": 0
+  },
+  {
+   "name": "fmt check",
+   "command": "cargo +1.94.1 fmt -p vigilode -p rodas5p-integrators -- --check",
+   "head": "bd4bf649d989f4de1ba21328a5a15437c0fcfa60",
+   "exit_code": 0,
+   "result": "pass",
+   "log": "research/kernel_spectral_foundation_20261124/ks_n7b/logs/fmt_check.log",
+   "detail": "",
+   "warning_or_error_lines": 0
+  },
+  {
+   "name": "verify_run",
+   "command": "python3 -I research/kernel_spectral_foundation_20261124/scripts/verify_run.py",
+   "head": "bd4bf649d989f4de1ba21328a5a15437c0fcfa60",
+   "exit_code": 0,
+   "result": "pass",
+   "log": "research/kernel_spectral_foundation_20261124/ks_n7b/logs/verify_run.log",
+   "detail": "OK: 14 stages, 20 claims, 8 plan tasks, 3 timed grids, foundation checks pass",
+   "warning_or_error_lines": 0
+  }
+ ],
+ "discriminators": [
+  {
+   "name": "failing-first test fails on the base by assertion",
+   "frozen_threshold": "at the failing-first commit (crates/ changed only in the test file): the new test FAILED by an assertion (left Null, right \"complex\"), every other test ok, exit != 0",
+   "measured": "FAILED: assertion `left == right` failed: box-12x10: the run record must name the transform that ran (left Null, right \"complex\"); others ok: True; exit 101",
+   "verdict": "PASS"
+  },
+  {
+   "name": "the run record distinguishes the transforms",
+   "frozen_threshold": "serialized report.box_transform = complex / paired-real on the T3 box and null on the T3 sphere, after the record commit and after the default commit",
+   "measured": "{\"after_record\": {\"box_12x10\": [\"complex\", \"paired-real\"], \"sphere_7x10\": null}, \"after_default\": {\"box_12x10\": [\"complex\", \"paired-real\"], \"sphere_7x10\": null}}",
+   "verdict": "PASS"
+  },
+  {
+   "name": "PairedReal is the default; Complex stays selectable",
+   "frozen_threshold": "BoxTransform::default() and separable_stages().box_transform() are PairedReal; a default run records paired-real (typed and serialized) and returns the explicit PairedReal bits; explicit Complex records complex; a sphere records None",
+   "measured": "{\"default\": \"paired-real\", \"default_record\": \"paired-real\", \"complex_record\": \"complex\", \"sphere_record\": null, \"default_equals_paired_bits\": true}",
+   "verdict": "PASS"
+  },
+  {
+   "name": "T1/T2 and the agreement test unchanged",
+   "frozen_threshold": "KS_N7_AGREEMENT and KS_N7_T1T2 lines identical to the base run; every bound <= 1e-13",
+   "measured": "agreement max normalized 6.964e-16 over 360 cases; PairedReal backward 1.680e-15, mass 4.545e-17; default arm T1/T2 3.373e-16 / 5.110e-17; identical lines: True",
+   "verdict": "PASS"
+  },
+  {
+   "name": "whole-IVP tests on box grids pass",
+   "frozen_threshold": "T3, the KS-N7 route test and the two KS-N7b tests ok; SL_N5_T3 box-12x10 equals the KS_N7_T3 paired-real line of the same mode",
+   "measured": "{\"tests_ok\": true, \"t3_equals_paired_line\": [true, true], \"report_equals_paired_route_line\": true}",
+   "verdict": "PASS"
+  },
+  {
+   "name": "facade suite",
+   "frozen_threshold": "cargo test -p vigilode --release --no-fail-fast: exit 0, 0 failed",
+   "measured": "584 passed, 0 failed, 4 ignored; 69 sections, each with a result block: True",
+   "verdict": "PASS"
+  },
+  {
+   "name": "docs, lint, format, run verifier",
+   "frozen_threshold": "exit 0 each",
+   "measured": "rustdoc -D warnings (CI docs job): exit 0; clippy vigilode --all-targets: exit 0; clippy rodas5p-integrators --lib: exit 0; fmt check: exit 0; verify_run: exit 0",
+   "verdict": "PASS"
+  },
+  {
+   "name": "scope",
+   "frozen_threshold": "only the task's allowed paths changed",
+   "measured": "17 paths changed, 0 outside",
+   "verdict": "PASS"
+  }
+ ],
+ "open_issues": [
+  "RUN.json stage KS-N7 and claim K17 say Complex stays the default; the orchestrator updates them (this task may not edit RUN.json). THEORY.md does not name the box default.",
+  "The default-arm T1/T2 line SL_N5_T1T2 (claims K5, K4) after the default change is identical to the base run: backward 3.373e-16, mass 5.110e-17.",
+  "The non-breaking second client id is left to the orchestrator (needs solve.rs:530)."
+ ]
+}

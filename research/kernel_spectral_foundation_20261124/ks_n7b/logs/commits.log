@@ -1,0 +1,19 @@
+# command: git log --format=%H\ %s 13d264756bbd639385cc9ea1627efbe51e43304f..HEAD
+# wrapper: none
+# cargo_target_dir: /home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain
+# started: 2026-11-25T12:17:50+09:00
+# head: 1016cd84d8b6c1b55dcac75c089afdc587850bb2
+# dirty: 0
+# load: 5.05 6.20 6.43 6/5971 3837693
+1016cd84d8b6c1b55dcac75c089afdc587850bb2 research(KS-N7b): notes section 6, outcome (numbers from results/KS_N7B_RESULTS.json)
+5c67082552adcde948b8af9ff785fd432a1269f6 research(KS-N7b): facade suite at 78333d0a (--no-fail-fast): 584 passed, 0 failed, 4 ignored, exit 0; failing-first scope log; make_results.py
+78333d0a811fcecacee8a6fb599578aa76b3ed88 research(KS-N7b): check logs at bd4bf649: clippy (vigilode all targets, integrators lib), rustdoc -D warnings (CI docs job), fmt, verify_run all exit 0; public API diff from the base
+bd4bf649d989f4de1ba21328a5a15437c0fcfa60 research(KS-N7b): spatial_separable after the default commit: 11 passed, 0 failed; default recorded as paired-real and bit-identical to the explicit PairedReal run; the 28 tagged lines of the base run are unchanged
+f5bdf295c6ad597e03a99644717b4c2c955c0b4c feat(spatial): BoxTransform::PairedReal is the default box transform (KS-N7b, after the owner-host cell KS-N7-T)
+f7dfdc9ed1ba8c5469cfa470c18b526feb3b0065 research(KS-N7b): spatial_separable after the record commit: 10 passed, 0 failed; the failing-first test passes; the 28 tagged lines of the base run are unchanged
+3f971eeb38ecac7b7d7e724f633c67eee75340d0 feat(spatial): record the box transform that ran in SeparableReport (KS-N7b, review F5 of KS-N7)
+c30002299dfc0097f9ea4dde4af8566e2a59ec2a research(KS-N7b): base run of the failing-first test: FAILED by assertion (left Null, right "complex"); 9 other tests pass
+d72d943be0cc4c4dade9214ce256eaf881967078 test(spatial): KS-N7b failing-first test: the run record must name the box transform that ran (review F5)
+f89d7186a4137fe8da3c407e03257749d8646553 research(KS-N7b): notes: record the box transform in SeparableReport (review F5), then PairedReal as the box default
+# exit: 0
+# finished: 2026-11-25T12:17:50+09:00
