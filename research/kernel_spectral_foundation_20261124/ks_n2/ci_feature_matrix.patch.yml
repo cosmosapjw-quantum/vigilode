@@ -1,0 +1,35 @@
+# KS-N2: proposed CI job for .github/workflows/production.yml (owner edit only: PLAN.json KS-N2
+# reserves .github/** for the owner; the agent prepares this text and does not apply it).
+# Insert under `jobs:` next to the other jobs. Both legs use the pinned toolchain of the workflow's
+# env (RUST_TOOLCHAIN: 1.94.1). The compile time of each leg is written to the job summary.
+#
+# Leg "default": the facade and its default dependencies without the research-gates feature
+#   (24 research modules leave the build, SL-N6).
+# Leg "research-gates": every target of rodas5p-integrators, whose self dev-dependency turns the
+#   feature on for its own tests (cargo check, not cargo test: an unfiltered test run of the crate
+#   has about 250 targets and belongs to the test job's change-based selection).
+  feature-matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        leg: [default, research-gates]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install the pinned Rust toolchain
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
+          rustup override set "$RUST_TOOLCHAIN"
+      - name: Build the facade without research-gates
+        if: matrix.leg == 'default'
+        run: |
+          start=$(date +%s)
+          cargo build --locked -p vigilode --release
+          echo "default leg: cargo build --locked -p vigilode --release took $(( $(date +%s) - start )) s" >> "$GITHUB_STEP_SUMMARY"
+      - name: Check every target of the integrators with research-gates
+        if: matrix.leg == 'research-gates'
+        run: |
+          start=$(date +%s)
+          cargo check --locked --release -p rodas5p-integrators --all-targets
+          echo "research-gates leg: cargo check --locked --release -p rodas5p-integrators --all-targets took $(( $(date +%s) - start )) s" >> "$GITHUB_STEP_SUMMARY"
