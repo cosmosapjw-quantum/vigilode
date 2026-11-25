@@ -4,7 +4,8 @@ research/kernel_spectral_foundation_20261124/results/KS_N7_IMPLEMENTATION.json (
 
 Inputs (all produced by executed runs; nothing is typed in by hand):
   logs/spatial_separable_test.log   cargo test of the spatial_separable target at the code head
-  logs/spatial_separable_test_precommit.log   the same run before the code commit (kept)
+  logs/spatial_separable_test_precommit.log   optional; absent in this run: the log of the first
+      (pre-commit, passing) run was overwritten when the run was repeated at the code head
   logs/clippy.log, logs/fmt_check.log, logs/verify_run.log   the other checks
   logs/smoke_<arm>_<grid>_<scope>.log   one-arm measurement smoke runs (diagnostic)
   logs/perfsmoke_<arm>_256x256_<solves>.log   the same under perf stat (diagnostic)
