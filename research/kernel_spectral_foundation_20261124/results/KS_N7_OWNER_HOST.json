@@ -1,0 +1,140 @@
+{
+ "schema": "vigilode.ks-n7-results.v1",
+ "task": "KS-N7 owner-host timing cell",
+ "protocol": "research/kernel_spectral_foundation_20261124/owner_host/KS_N7_PROTOCOL.json",
+ "environment": {
+  "start": "2026-11-25T11:45:35+09:00",
+  "head": "694acd2d157425acd3c9a24fb0d9a161aaa171bd",
+  "kernel": "7.0.0-43-generic",
+  "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "perf": "perf version 7.0.14",
+  "governor": "performance",
+  "core": 8,
+  "binary_sha256": "8b43c000141b481a06cf2f2dfb50aac352d65034be99c42018c6080db02e74e2",
+  "loadavg": "8.13 7.48 7.78 10/5996 3623679"
+ },
+ "end": {
+  "end": "2026-11-25T11:45:49+09:00",
+  "loadavg": "8.46 7.59 7.81 9/5994 3625351"
+ },
+ "cells": {
+  "256x256": {
+   "grid": "256x256",
+   "N": 1000,
+   "deciding": true,
+   "per_round": {
+    "complex": [
+     {
+      "round": 1,
+      "median_s": 0.001480555,
+      "instructions": 9672210.3,
+      "cycles": 6606113.275
+     },
+     {
+      "round": 2,
+      "median_s": 0.001487218,
+      "instructions": 9672207.01,
+      "cycles": 6718523.862
+     },
+     {
+      "round": 3,
+      "median_s": 0.001487929,
+      "instructions": 9672207.368,
+      "cycles": 6740015.882
+     }
+    ],
+    "paired": [
+     {
+      "round": 1,
+      "median_s": 0.000302566,
+      "instructions": 3730373.408,
+      "cycles": 1409756.754
+     },
+     {
+      "round": 2,
+      "median_s": 0.000292285,
+      "instructions": 3730372.565,
+      "cycles": 1377274.37
+     },
+     {
+      "round": 3,
+      "median_s": 0.000376616,
+      "instructions": 3730375.947,
+      "cycles": 1718428.976
+     }
+    ]
+   },
+   "max_load1": 8.46,
+   "wall_ratio": 0.20344428321873456,
+   "wall_ratio_per_round": [
+    0.2043598515421582,
+    0.19653137603229653,
+    0.25311422789662674
+   ],
+   "instructions_ratio": 0.3856796350688001,
+   "cycles_ratio": 0.20983132351045,
+   "decidable": true
+  },
+  "128x128x64": {
+   "grid": "128x128x64",
+   "N": 50,
+   "deciding": false,
+   "per_round": {
+    "complex": [
+     {
+      "round": 1,
+      "median_s": 0.033116018,
+      "instructions": 206685151.16,
+      "cycles": 152970478.74
+     },
+     {
+      "round": 2,
+      "median_s": 0.034762063,
+      "instructions": 206685155.38,
+      "cycles": 162575259.64
+     },
+     {
+      "round": 3,
+      "median_s": 0.03433554,
+      "instructions": 206685203.1,
+      "cycles": 159930446.16
+     }
+    ],
+    "paired": [
+     {
+      "round": 1,
+      "median_s": 0.009112684,
+      "instructions": 86697038.4,
+      "cycles": 43802021.54
+     },
+     {
+      "round": 2,
+      "median_s": 0.010425119,
+      "instructions": 86697020.76,
+      "cycles": 52580212.78
+     },
+     {
+      "round": 3,
+      "median_s": 0.00991626,
+      "instructions": 86697026.92,
+      "cycles": 49071491.06
+     }
+    ]
+   },
+   "max_load1": 8.46,
+   "wall_ratio": 0.2888045447952763,
+   "wall_ratio_per_round": [
+    0.2751745092057868,
+    0.2998993184035136,
+    0.2888045447952763
+   ],
+   "instructions_ratio": 0.4194642172564527,
+   "cycles_ratio": 0.3068302017422447,
+   "decidable": true
+  }
+ },
+ "max_backward_error": 3.895e-16,
+ "problems": [],
+ "verdict": "PASS",
+ "fallback": null
+}
