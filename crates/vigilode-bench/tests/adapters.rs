@@ -40,10 +40,12 @@ fn every_arm_matches_the_exact_solution_on_the_common_grid() {
             "{arm:?}: abs {abs:e}, wrms {err:e}"
         );
         assert!(calls.rhs > 0, "{arm:?} used the shared RHS");
-        assert!(
-            calls.jac + calls.jvp > 0,
-            "{arm:?} used the shared Jacobian"
-        );
+        if arm != Arm::DiffsolTsit45 {
+            assert!(
+                calls.jac + calls.jvp > 0,
+                "{arm:?} used the shared Jacobian"
+            );
+        }
         assert!(out.work.accepted_steps.unwrap_or(1) > 0, "{arm:?}");
     }
 }

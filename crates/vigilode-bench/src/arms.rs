@@ -56,6 +56,16 @@ pub enum Arm {
     DiffsolBdfDense,
     /// Diffsol 0.16.1 BDF, `FaerSparseMat` + `FaerSparseLU` (coloured Jacobian).
     DiffsolBdfSparse,
+    /// Diffsol built-in TR-BDF2, dense LU.
+    DiffsolTrbdf2Dense,
+    /// Diffsol built-in TR-BDF2, sparse coloured LU.
+    DiffsolTrbdf2Sparse,
+    /// Diffsol built-in ESDIRK34, dense LU.
+    DiffsolEsdirk34Dense,
+    /// Diffsol built-in ESDIRK34, sparse coloured LU.
+    DiffsolEsdirk34Sparse,
+    /// Diffsol built-in explicit Tsitouras RK 4(5).
+    DiffsolTsit45,
     /// SUNDIALS CVODE 6.4.1 BDF, dense direct linear solver.
     CvodeBdfDense,
     /// SUNDIALS CVODE 6.4.1 BDF, band direct linear solver.
@@ -90,7 +100,7 @@ pub enum Fidelity {
 
 impl Arm {
     /// Every arm, in report order.
-    pub const ALL: [Arm; 17] = [
+    pub const ALL: [Arm; 22] = [
         Arm::Vigilode,
         Arm::VigilodeBanded,
         Arm::VigilodeDense,
@@ -99,6 +109,11 @@ impl Arm {
         Arm::VigilodeBandedDenseOff,
         Arm::DiffsolBdfDense,
         Arm::DiffsolBdfSparse,
+        Arm::DiffsolTrbdf2Dense,
+        Arm::DiffsolTrbdf2Sparse,
+        Arm::DiffsolEsdirk34Dense,
+        Arm::DiffsolEsdirk34Sparse,
+        Arm::DiffsolTsit45,
         Arm::CvodeBdfDense,
         Arm::CvodeBdfBand,
         Arm::DvodeMf21,
@@ -146,6 +161,9 @@ impl Arm {
             | Self::VigilodeBandedDense
             | Self::VigilodeBandedDenseOff => "vigilode-rodas5p",
             Self::DiffsolBdfDense | Self::DiffsolBdfSparse => "diffsol-bdf",
+            Self::DiffsolTrbdf2Dense | Self::DiffsolTrbdf2Sparse => "diffsol-trbdf2",
+            Self::DiffsolEsdirk34Dense | Self::DiffsolEsdirk34Sparse => "diffsol-esdirk34",
+            Self::DiffsolTsit45 => "diffsol-tsit45",
             Self::CvodeBdfDense | Self::CvodeBdfBand => "sundials-cvode",
             Self::DvodeMf21 | Self::DvodeMf24 => "netlib-dvode",
             Self::Radau5 | Self::Radau5Band => "hairer-radau5",
@@ -175,6 +193,8 @@ impl Arm {
                 | Arm::Radau5Band
                 | Arm::RodasBand
                 | Arm::DiffsolBdfSparse
+                | Arm::DiffsolTrbdf2Sparse
+                | Arm::DiffsolEsdirk34Sparse
         )
     }
 
@@ -192,6 +212,13 @@ impl Arm {
             }
             Arm::DiffsolBdfDense | Arm::DiffsolBdfSparse => {
                 "OdeSolverMethod::solve_dense(t_eval) (BDF interpolation, stop time = last grid point)"
+            }
+            Arm::DiffsolTrbdf2Dense
+            | Arm::DiffsolTrbdf2Sparse
+            | Arm::DiffsolEsdirk34Dense
+            | Arm::DiffsolEsdirk34Sparse
+            | Arm::DiffsolTsit45 => {
+                "OdeSolverMethod::solve_dense(t_eval) (native RK interpolation, stop time = last grid point)"
             }
             Arm::CvodeBdfDense | Arm::CvodeBdfBand => {
                 "CV_ONE_STEP loop + CVodeGetDky(t, 0) for every grid time inside the last step"
@@ -221,11 +248,14 @@ impl Arm {
                 "facade defaults except dense_output = true, Atol::Scalar(rtol * atol_scale) and interior_error = Off (control arm: only the endpoint of each step is error controlled)",
                 "a row with output_clipped_steps != 0, or with Solution::at(t_k) = None inside the span of a successful run, is a protocol-violation",
             ],
-            Arm::DiffsolBdfDense => vec![
+            Arm::DiffsolBdfDense | Arm::DiffsolTrbdf2Dense | Arm::DiffsolEsdirk34Dense => vec![
                 "Jacobian assembled by Diffsol from n JVPs of the shared analytic Jacobian (builder rhs_implicit; no coloring, the dense default)",
             ],
-            Arm::DiffsolBdfSparse => vec![
+            Arm::DiffsolBdfSparse | Arm::DiffsolTrbdf2Sparse | Arm::DiffsolEsdirk34Sparse => vec![
                 "Jacobian assembled by Diffsol from coloured JVPs of the shared analytic Jacobian (sparsity detected by NaN propagation, the sparse default)",
+            ],
+            Arm::DiffsolTsit45 => vec![
+                "native explicit Tsit45; no implicit linear solver; shared analytic source builder",
             ],
             Arm::CvodeBdfDense | Arm::CvodeBdfBand => vec![
                 "one-step mode with a total cap of 100000 internal steps (CVODE's mxstep = 500 applies per CVode call and would not bind in one-step mode)",
@@ -356,6 +386,11 @@ pub fn run_with(
         }
         Arm::DiffsolBdfDense => diffsol_dense(model, grid, &y0, rtol, atol),
         Arm::DiffsolBdfSparse => diffsol_sparse(model, grid, &y0, rtol, atol),
+        Arm::DiffsolTrbdf2Dense => diffsol_trbdf2_dense(model, grid, &y0, rtol, atol),
+        Arm::DiffsolTrbdf2Sparse => diffsol_trbdf2_sparse(model, grid, &y0, rtol, atol),
+        Arm::DiffsolEsdirk34Dense => diffsol_esdirk34_dense(model, grid, &y0, rtol, atol),
+        Arm::DiffsolEsdirk34Sparse => diffsol_esdirk34_sparse(model, grid, &y0, rtol, atol),
+        Arm::DiffsolTsit45 => diffsol_tsit45(model, grid, &y0, rtol, atol),
         Arm::CvodeBdfDense | Arm::CvodeBdfBand => {
             let b = (arm == Arm::CvodeBdfBand).then_some(band);
             let cap = max_steps.map_or(CVODE_MAX_STEPS, |m| m as i64);
@@ -869,7 +904,7 @@ fn diffsol_stats(s: &diffsol::ode_solver::OdeSolverStatistics) -> (Work, Value) 
 }
 
 macro_rules! diffsol_arm {
-    ($name:ident, $mat:ty, $lu:ty, $coloring:expr) => {
+    ($name:ident, $mat:ty, $coloring:expr, $method:ident $(, $lu:ty)?) => {
         fn $name(model: &Model, grid: &[f64], y0: &[f64], rtol: f64, atol: f64) -> RunOutput {
             let (m1, m2) = (*model, *model);
             let n = model.n;
@@ -893,7 +928,7 @@ macro_rules! diffsol_arm {
                 Ok(p) => p,
                 Err(e) => return setup_failure(e.to_string()),
             };
-            let mut solver = match problem.bdf::<$lu>() {
+            let mut solver = match problem.$method $(::<$lu>)? () {
                 Ok(s) => s,
                 Err(e) => return setup_failure(e.to_string()),
             };
@@ -943,8 +978,43 @@ macro_rules! diffsol_arm {
     };
 }
 
-diffsol_arm!(diffsol_dense, FaerMat<f64>, FaerLU<f64>, false);
-diffsol_arm!(diffsol_sparse, FaerSparseMat<f64>, FaerSparseLU<f64>, true);
+diffsol_arm!(diffsol_dense, FaerMat<f64>, false, bdf, FaerLU<f64>);
+diffsol_arm!(
+    diffsol_sparse,
+    FaerSparseMat<f64>,
+    true,
+    bdf,
+    FaerSparseLU<f64>
+);
+diffsol_arm!(
+    diffsol_trbdf2_dense,
+    FaerMat<f64>,
+    false,
+    tr_bdf2,
+    FaerLU<f64>
+);
+diffsol_arm!(
+    diffsol_trbdf2_sparse,
+    FaerSparseMat<f64>,
+    true,
+    tr_bdf2,
+    FaerSparseLU<f64>
+);
+diffsol_arm!(
+    diffsol_esdirk34_dense,
+    FaerMat<f64>,
+    false,
+    esdirk34,
+    FaerLU<f64>
+);
+diffsol_arm!(
+    diffsol_esdirk34_sparse,
+    FaerSparseMat<f64>,
+    true,
+    esdirk34,
+    FaerSparseLU<f64>
+);
+diffsol_arm!(diffsol_tsit45, FaerMat<f64>, false, tsit45);
 
 fn internal_radau(model: &Model, grid: &[f64], y0: &[f64], rtol: f64, atol: f64) -> RunOutput {
     let adaptive = facade_adaptive(rtol, atol, None);
