@@ -1,0 +1,25 @@
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+    --> /home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-integrators/src/packet_trajectory.rs:1096:14
+     |
+1096 | ...   .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |x| x.checke...
+     |        ^^^^^^^^^^^^
+     |
+     = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+     |
+1096 -             .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |x| x.checked_add(1))
+1096 +             .try_update(Ordering::Relaxed, Ordering::Relaxed, |x| x.checked_add(1))
+     |
+
+warning: `rodas5p-integrators` (lib) generated 1 warning (run `cargo fix --lib -p rodas5p-integrators` to apply 1 suggestion)
+   Compiling vigilode-bench v0.1.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/vigilode-bench)
+    Finished `release` profile [optimized] target(s) in 6.69s
+     Running tests/qualification_reference_ladder_contract.rs (/home/cosmosapjw/.cargo-targets/vigilode-preflight-bench-20261125/release/deps/qualification_reference_ladder_contract-9705303f17a2753c)
+
+running 3 tests
+test test_empirical_uncertainty_vs_rigorous_enclosure_boundary ... ok
+test test_independent_level_pass_logic_fail_closed ... ok
+test test_spatial_problems_reference_ladder_configuration ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

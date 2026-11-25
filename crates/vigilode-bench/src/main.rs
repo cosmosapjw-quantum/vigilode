@@ -196,7 +196,15 @@ fn arg<'a>(args: &'a [String], flag: &str) -> Result<&'a str, String> {
 fn real_main() -> Result<(), String> {
     let args: Vec<String> = std::env::args().skip(1).collect();
     match args.first().map(String::as_str) {
-        Some("wp") => {
+        Some("reference-plan") => {
+            let corpus = Corpus::from_json(&std::fs::read_to_string(arg(&args, "--corpus")?).map_err(|e| e.to_string())?)?;
+            let plan = harness::reference_plan(&corpus)?;
+            let file = std::fs::OpenOptions::new().write(true).create_new(true)
+                .open(arg(&args, "--out")?).map_err(|e| e.to_string())?;
+            serde_json::to_writer_pretty(file, &plan).map_err(|e| e.to_string())
+        }
+        Some("wp" | "references") => {
+            let reference_only = args[0] == "references";
             let corpus_path = arg(&args, "--corpus")?;
             let out = arg(&args, "--out")?;
             if !verify_counters() {
@@ -230,7 +238,14 @@ fn real_main() -> Result<(), String> {
                 return Err("independent RADAU5/CVODE refinement protocol required by CLI".into());
             }
             let mut log = |s: &str| eprintln!("{s}");
-            let mut doc = harness::run_corpus(&corpus, &mut log)?;
+            if reference_only && std::path::Path::new(out).exists() {
+                return Err("reference-only output already exists".into());
+            }
+            let mut doc = if reference_only {
+                harness::run_references(&corpus, &mut log)?
+            } else {
+                harness::run_corpus(&corpus, &mut log)?
+            };
             let git = guard.finish()?;
             let source_receipt = json!({
                 "schema": source_identity::SCHEMA,
@@ -248,7 +263,13 @@ fn real_main() -> Result<(), String> {
             doc["provenance"] = provenance(source_receipt);
             doc["corpus_file"] = json!(corpus_path);
             let s = serde_json::to_string_pretty(&doc).map_err(|e| e.to_string())?;
-            std::fs::write(out, s + "\n").map_err(|e| e.to_string())
+            if reference_only {
+                use std::io::Write;
+                std::fs::OpenOptions::new().write(true).create_new(true).open(out)
+                    .and_then(|mut f| f.write_all((s + "\n").as_bytes())).map_err(|e| e.to_string())
+            } else {
+                std::fs::write(out, s + "\n").map_err(|e| e.to_string())
+            }
         }
         Some("report") => {
             let input = arg(&args, "--in")?;
@@ -259,7 +280,7 @@ fn real_main() -> Result<(), String> {
             std::fs::write(out, md).map_err(|e| e.to_string())
         }
         _ => Err(
-            "usage: vigilode-bench wp --corpus <file> --out <json> [--source-root <repo>] [--require-independent-reference] [--allow-dirty-source] | report --in <json> --out <md>"
+            "usage: vigilode-bench wp --corpus <file> --out <json> [--source-root <repo>] [--require-independent-reference] [--allow-dirty-source] | reference-plan --corpus <file> --out <new-json> | references --corpus <file> --out <new-json> | report --in <json> --out <md>"
                 .into(),
         ),
     }

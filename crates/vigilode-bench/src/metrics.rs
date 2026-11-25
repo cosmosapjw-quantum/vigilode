@@ -43,8 +43,16 @@ pub fn max_wrms(
                 // although the normalized difference is representable.
                 a / scale - b / scale
             };
-            // hypot avoids squaring overflow for representable large norms.
-            norm = norm.hypot(e / sqrt_n);
+            // Divide by sqrt(n) first only when the original component
+            // normalization overflowed. The final RMS can still be finite.
+            let normalized = if e.is_finite() {
+                e / sqrt_n
+            } else if difference.is_finite() {
+                (difference / sqrt_n) / scale
+            } else {
+                (a / sqrt_n) / scale - (b / sqrt_n) / scale
+            };
+            norm = norm.hypot(normalized);
         }
         let w = norm;
         if !w.is_finite() {
@@ -86,45 +94,64 @@ pub fn median(xs: &[f64]) -> f64 {
 /// entries; returns `None` unless `min(error) <= level <= max(error)`.
 /// Points with equal error are averaged (in log cost).
 pub fn interpolate_log(points: &[(f64, f64)], level: f64) -> Option<f64> {
-    // (log error, log cost, cost) with the original cost kept so that a
-    // level equal to a measured point returns that point's cost exactly.
-    let mut p: Vec<(f64, f64, f64)> = points
+    // Compare represented errors, not their rounded logarithms. Adjacent
+    // binary64 errors can have the same ln() even when genuinely distinct.
+    let mut p: Vec<(f64, f64)> = points
         .iter()
         .copied()
         .filter(|(e, c)| e.is_finite() && *e > 0.0 && c.is_finite() && *c > 0.0)
-        .map(|(e, c)| (e.ln(), c.ln(), c))
         .collect();
     if p.is_empty() || !(level.is_finite() && level > 0.0) {
         return None;
     }
     p.sort_by(|a, b| a.0.total_cmp(&b.0));
-    let mut merged: Vec<(f64, f64, usize, f64)> = Vec::new();
-    for (e, lc, c) in p {
-        match merged.last_mut() {
-            Some(last) if last.0 == e => {
-                last.1 += lc;
-                last.2 += 1;
-            }
-            _ => merged.push((e, lc, 1, c)),
-        }
-    }
-    let q: Vec<(f64, f64, Option<f64>)> = merged
-        .into_iter()
-        .map(|(e, lc, k, c)| (e, lc / k as f64, (k == 1).then_some(c)))
-        .collect();
-    let exact = |i: usize| q[i].2.unwrap_or_else(|| q[i].1.exp());
-    let l = level.ln();
-    if l < q[0].0 || l > q[q.len() - 1].0 {
+    if level < p[0].0 || level > p[p.len() - 1].0 {
         return None;
     }
-    if let Some(i) = q.iter().position(|x| x.0 == l) {
+    // Merge only truly equal errors. Keep bounds on the original costs to
+    // avoid overflow or underflow in a rounded exp of a log average.
+    let mut q: Vec<(f64, f64, usize, f64, f64)> = Vec::new();
+    for (e, c) in p {
+        match q.last_mut() {
+            Some(last) if last.0 == e => {
+                last.2 += 1;
+                last.1 += (c.ln() - last.1) / (last.2 as f64);
+                last.3 = last.3.min(c);
+                last.4 = last.4.max(c);
+            }
+            _ => q.push((e, c.ln(), 1, c, c)),
+        }
+    }
+    let exact = |i: usize| {
+        if q[i].2 == 1 {
+            q[i].3
+        } else {
+            q[i].1.exp().clamp(q[i].3, q[i].4)
+        }
+    };
+    if let Some(i) = q.iter().position(|r| r.0 == level) {
         return Some(exact(i));
     }
-    for w in q.windows(2) {
-        let ((e0, c0, _), (e1, c1, _)) = (w[0], w[1]);
-        if l > e0 && l < e1 {
-            let s = (l - e0) / (e1 - e0);
-            return Some((c0 + s * (c1 - c0)).exp());
+    fn log_distance(a: f64, b: f64) -> f64 {
+        let d = (b - a) / a;
+        if d.is_finite() && d < 0.5 {
+            d.ln_1p()
+        } else {
+            b.ln() - a.ln()
+        }
+    }
+    for (i, w) in q.windows(2).enumerate() {
+        let (e0, c0, _, _, _) = w[0];
+        let (e1, c1, _, _, _) = w[1];
+        if e0 < level && level < e1 {
+            let t = log_distance(e0, level) / log_distance(e0, e1);
+            if !t.is_finite() || !(0. ..=1.).contains(&t) {
+                return None;
+            }
+            let a = exact(i);
+            let b = exact(i + 1);
+            let value = (c0 + t * (c1 - c0)).exp().clamp(a.min(b), a.max(b));
+            return (value.is_finite() && value > 0.).then_some(value);
         }
     }
     None
@@ -190,5 +217,35 @@ mod tests {
         )
         .unwrap();
         assert!(e.is_finite() && (e / 1.0e200 - 1.0).abs() < 3.0e-16);
+    }
+}
+
+#[cfg(test)]
+mod preflight_adversarial {
+    use super::*;
+    #[test]
+    fn adjacent_binary64_errors_are_not_equal_or_extrapolated() {
+        let e = 1e-300_f64;
+        let lo = e.next_down();
+        let hi = e.next_up();
+        assert_eq!(lo.ln(), e.ln());
+        assert_eq!(hi.ln(), e.ln());
+        assert_eq!(interpolate_log(&[(e, 2.)], lo), None);
+        assert_eq!(interpolate_log(&[(e, 2.), (hi, 8.)], e), Some(2.));
+        assert_eq!(interpolate_log(&[(e, 2.), (hi, 8.)], hi), Some(8.));
+        assert!((interpolate_log(&[(lo, 2.), (hi, 8.)], e).unwrap() - 4.).abs() < 4e-15);
+    }
+    #[test]
+    fn normalized_rms_can_be_finite_when_component_ratio_overflows() {
+        let got = max_wrms(&[vec![1e308, 0., 0., 0.]], &[vec![0.; 4]], &[0.5; 4], 0.).unwrap();
+        assert_eq!(got, 1e308);
+        let got = max_wrms(
+            &[vec![f64::MAX, 0., 0., 0.]],
+            &[vec![-f64::MAX, 0., 0., 0.]],
+            &[1.; 4],
+            0.,
+        )
+        .unwrap();
+        assert_eq!(got, f64::MAX);
     }
 }

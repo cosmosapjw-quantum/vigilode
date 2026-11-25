@@ -1,0 +1,29 @@
+warning: use of deprecated method `std::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+    --> /home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-integrators/src/packet_trajectory.rs:1096:14
+     |
+1096 | ...   .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |x| x.checke...
+     |        ^^^^^^^^^^^^
+     |
+     = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+     |
+1096 -             .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |x| x.checked_add(1))
+1096 +             .try_update(Ordering::Relaxed, Ordering::Relaxed, |x| x.checked_add(1))
+     |
+
+warning: `rodas5p-integrators` (lib) generated 1 warning (run `cargo fix --lib -p rodas5p-integrators` to apply 1 suggestion)
+   Compiling vigilode-bench v0.1.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/vigilode-bench)
+    Finished `release` profile [optimized] target(s) in 7.64s
+     Running unittests src/lib.rs (/home/cosmosapjw/.cargo-targets/vigilode-preflight-bench-20261125/release/deps/vigilode_bench-ee5d92f7b7c6c9fc)
+
+running 7 tests
+test metrics::preflight_adversarial::adjacent_binary64_errors_are_not_equal_or_extrapolated ... ok
+test metrics::preflight_adversarial::normalized_rms_can_be_finite_when_component_ratio_overflows ... ok
+test metrics::tests::interpolation_brackets_only ... ok
+test metrics::tests::invalid_metric_cannot_be_reported_as_zero_error ... ok
+test metrics::tests::median_even_and_odd ... ok
+test metrics::tests::representable_large_normalized_errors_remain_finite ... ok
+test metrics::tests::wrms_matches_hand_value ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 16 filtered out; finished in 0.00s
+

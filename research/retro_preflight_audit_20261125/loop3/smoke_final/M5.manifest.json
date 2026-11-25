@@ -1,0 +1,97 @@
+{
+  "assertion_tested": "aperiodic_combinations",
+  "checks": [
+    {
+      "check_id": "process-and-coverage",
+      "expected": {
+        "cells": 32,
+        "exit": 0,
+        "source_unchanged": true
+      },
+      "observed": {
+        "cells": 32,
+        "exit": 0,
+        "source_unchanged": true,
+        "unique": 32
+      },
+      "verdict": "PASS"
+    }
+  ],
+  "conventions": {
+    "binary64": "Rust release; original solver contracts",
+    "results": "finite smoke fixtures; not a performance adjudication"
+  },
+  "domain": {
+    "expected_cells": 32,
+    "scope": "noncommuting discrete transitions and existing continuous nonautonomous solver"
+  },
+  "environment": {
+    "architecture": "x86_64",
+    "os": "Linux-7.0.0-43-generic-x86_64-with-glibc2.39",
+    "software": {
+      "harness_archive_sha256": "937ddfd13e860162e6bf454d0b3178c64d34a59de5c0d1df98dc513020f678ee",
+      "mathharness": "3.1.0",
+      "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)"
+    },
+    "threads": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "RAYON_NUM_THREADS": "4"
+    }
+  },
+  "execution": {
+    "argv": [
+      "/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/retro_preflight_combinations-f3820646b6828958",
+      "aperiodic_combinations",
+      "--exact",
+      "--nocapture",
+      "--test-threads=1"
+    ],
+    "binary_sha256": "4be06896e9d12c0214198ad16731aeffaac4c3f5af65c2e20c384f32bb7a9351",
+    "cwd": ".",
+    "exit_code": 0,
+    "finished_at": "2026-11-25T14:06:40.135910+00:00",
+    "runtime_seconds": 0.04556335398228839,
+    "started_at": "2026-11-25T14:06:40.090338+00:00"
+  },
+  "failure_kind": null,
+  "inputs": [
+    {
+      "artifact_id": "source-lock",
+      "immutable": true,
+      "path": "research/retro_preflight_audit_20261125/loop3/smoke_final/sources.json",
+      "sha256_after": "d0bf8f9ac3fd1cf321ab3da32e6a33631fa570ac74397f24cb8299da7a35202a",
+      "sha256_before": "d0bf8f9ac3fd1cf321ab3da32e6a33631fa570ac74397f24cb8299da7a35202a"
+    }
+  ],
+  "non_claims": [
+    "M0 not executed; no new reference or matched-error classification",
+    "No universal DAE/event/aperiodic solver qualification",
+    "Finite test cases only"
+  ],
+  "objective": "prepare actual experiment combinations",
+  "outputs": [
+    {
+      "artifact_id": "M5.log",
+      "path": "research/retro_preflight_audit_20261125/loop3/smoke_final/M5.log",
+      "role": "log",
+      "sha256": "423730d4df7e8287d7f13f8e28f0e3fe058b82923270e03bf7f01bdf0d4ea09a"
+    },
+    {
+      "artifact_id": "M5.stderr",
+      "path": "research/retro_preflight_audit_20261125/loop3/smoke_final/M5.stderr",
+      "role": "log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifact_id": "M5.json",
+      "path": "research/retro_preflight_audit_20261125/loop3/smoke_final/M5.json",
+      "role": "result",
+      "sha256": "e0c61a88b65a7d37da03cafcb7b4820ca7ec8582407e02fe120136ec3723f5b5"
+    }
+  ],
+  "project_id": "vigilode",
+  "run_id": "retro-preflight-M5",
+  "schema": "mhg-run/1.0",
+  "status": "completed"
+}

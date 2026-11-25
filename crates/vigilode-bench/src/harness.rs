@@ -421,6 +421,55 @@ fn independent_reference_for(
     })
 }
 
+/// Construct the independent reference plan without evaluating an RHS or
+/// calling any solver. The original corpus and grid are retained verbatim.
+pub fn reference_plan(c: &Corpus) -> Result<Value, String> {
+    c.validate()?;
+    let protocol = c
+        .reference
+        .independent_protocol
+        .as_ref()
+        .ok_or("independent reference protocol required")?;
+    let mut cases = Vec::new();
+    for p in &c.problems {
+        let grid = c.grid(p);
+        cases.push(json!({
+            "problem": p.id,
+            "grid": grid,
+            "reference_atol": p.reference_atol,
+            "levels": protocol.rtols.iter().zip(&protocol.atol_factors)
+                .map(|(&rtol, &factor)| json!({"rtol": rtol, "atol": p.reference_atol * factor}))
+                .collect::<Vec<_>>(),
+        }));
+    }
+    Ok(json!({
+        "schema": "vigilode.reference-plan.v1",
+        "status": "PLANNED_NOT_RUN",
+        "corpus": c,
+        "cases": cases,
+        "solver_calls": 0,
+    }))
+}
+
+/// Execute only the existing independent reference ladder. This is not a
+/// work-precision campaign and does not adjudicate historical disputed flags.
+pub fn run_references(c: &Corpus, log: Log) -> Result<Value, String> {
+    let plan = reference_plan(c)?;
+    let mut references = Vec::new();
+    for p in &c.problems {
+        log(&format!("reference {}", p.id));
+        references.push(independent_reference_for(c, p, &c.grid(p), log)?);
+    }
+    Ok(json!({
+        "schema": "vigilode.reference-only.v1",
+        "status": "EMPIRICAL_REFERENCE_LADDER",
+        "plan": plan,
+        "references": references,
+        "timing_authority": "diagnostic_only",
+        "historical_reclassification": false,
+    }))
+}
+
 /// Run the whole corpus.
 pub fn run_corpus(c: &Corpus, log: Log) -> Result<Value, String> {
     c.validate()?;

@@ -1,0 +1,29 @@
+
+running 2 tests
+test preflight_adversarial::adjacent_binary64_errors_are_not_equal_or_extrapolated ... FAILED
+test preflight_adversarial::normalized_rms_can_be_finite_when_component_ratio_overflows ... FAILED
+
+failures:
+
+---- preflight_adversarial::adjacent_binary64_errors_are_not_equal_or_extrapolated stdout ----
+
+thread 'preflight_adversarial::adjacent_binary64_errors_are_not_equal_or_extrapolated' (1117064) panicked at crates/vigilode-bench/src/metrics.rs:206:9:
+assertion `left == right` failed
+  left: Some(2.0)
+ right: None
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- preflight_adversarial::normalized_rms_can_be_finite_when_component_ratio_overflows stdout ----
+
+thread 'preflight_adversarial::normalized_rms_can_be_finite_when_component_ratio_overflows' (1117065) panicked at crates/vigilode-bench/src/metrics.rs:214:9:
+assertion `left == right` failed
+  left: inf
+ right: 1e308
+
+
+failures:
+    preflight_adversarial::adjacent_binary64_errors_are_not_equal_or_extrapolated
+    preflight_adversarial::normalized_rms_can_be_finite_when_component_ratio_overflows
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
