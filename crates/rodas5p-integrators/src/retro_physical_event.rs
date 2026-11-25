@@ -47,6 +47,28 @@ fn sign(v: Iv) -> i8 {
 fn intersection(a: Iv, b: Iv) -> CoreResult<Iv> {
     Iv::new(a.lo.max(b.lo), a.hi.min(b.hi))
 }
+/// One physical interval-Newton contraction. The caller owns the first-root
+/// existence proof and a derivative enclosure on the complete bracket.
+pub(crate) fn contract_root_once(
+    lo: f64,
+    hi: f64,
+    x: f64,
+    fx: Iv,
+    d: Iv,
+    left: i8,
+    right: i8,
+) -> CoreResult<[f64; 2]> {
+    let mut nx = Iv::new(lo, hi)?;
+    if !d.contains_zero() {
+        nx = intersection(nx, pt(x)?.sub(fx.div(d)?)?)?;
+    }
+    if sign(fx) == left {
+        nx.lo = nx.lo.max(x);
+    } else if sign(fx) == right {
+        nx.hi = nx.hi.min(x);
+    }
+    Iv::new(nx.lo, nx.hi).map(Iv::as_pair)
+}
 fn hull(b: &[Iv]) -> CoreResult<Iv> {
     Iv::new(
         b.iter().map(|x| x.lo).fold(f64::INFINITY, f64::min),
@@ -744,18 +766,7 @@ impl PhysicalPath {
                 let old = (lo, hi);
                 // MVT interval Newton with the certified derivative range
                 // on the original whole slab, valid even if sign uncertain.
-                let box_n = pt(x)?.sub(fx.div(d)?)?;
-                let nx = intersection(Iv::new(lo, hi)?, box_n)?;
-                lo = nx.lo;
-                hi = nx.hi;
-                if sign(fx) == signs[0] {
-                    lo = lo.max(x);
-                } else if sign(fx) == signs[1] {
-                    hi = hi.min(x);
-                }
-                if lo > hi {
-                    return Err(bad("empty physical root bracket"));
-                }
+                [lo, hi] = contract_root_once(lo, hi, x, fx, d, signs[0], signs[1])?;
                 if old == (lo, hi) {
                     break;
                 }

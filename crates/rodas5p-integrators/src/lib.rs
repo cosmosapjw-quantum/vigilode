@@ -709,3 +709,7 @@ pub mod retro_event_poly;
 /// Source-owned physical root enclosure research, opt-in.
 #[cfg(feature = "polynomial-events")]
 pub mod retro_physical_event;
+
+/// Source-owned scalar hybrid event reset/restart research, opt-in.
+#[cfg(feature = "polynomial-events")]
+pub mod retro_hybrid_reset;

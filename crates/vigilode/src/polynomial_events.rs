@@ -228,3 +228,6 @@ impl<'a> PolyTransaction<'a> {
 
 /// Source-owned physical root proof, not a termination API.
 pub use rodas5p_integrators::retro_physical_event;
+
+/// Deterministic scalar hybrid reset and physical synchronization research.
+pub use rodas5p_integrators::retro_hybrid_reset;

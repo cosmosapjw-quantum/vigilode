@@ -1,0 +1,570 @@
+{
+  "schema_version": "3.1.0",
+  "events": [
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "FLOW-COMPOSITION",
+      "payload": {
+        "claim_id": "FLOW-COMPOSITION",
+        "statement": "E2*(E1*y+(1-E1)*q)+(1-E2)*q = E1*E2*y+(1-E1*E2)*q",
+        "formal_statement": "POLY_IDENTITY: -E1*E2*q + E1*E2*y + q = -E1*E2*q + E1*E2*y + q",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "exact scalar affine synchronized reset identity"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795620628.860782,
+      "seq": 0,
+      "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "7a22fa9ae01262dd9984fe26b13b63c0294b0398b53c28a2d083d24777ddcb64"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "FLOW-COMPOSITION",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "8e941db490e7cc4a647ceac420f1d7b13329cbd7e106f5ef2a74a65a2bdb3466",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "E2*(E1*y+(1-E1)*q)+(1-E2)*q",
+            "rhs": "E1*E2*y+(1-E1*E2)*q"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: -E1*E2*q + E1*E2*y + q = -E1*E2*q + E1*E2*y + q",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-25T15:30:28Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795620628.8623483,
+      "seq": 1,
+      "prev_hash": "7a22fa9ae01262dd9984fe26b13b63c0294b0398b53c28a2d083d24777ddcb64",
+      "hash": "166891d37d7411832f3e731ef83d73f912dd6d7ce63b093d1ff0ad76f7cddf68"
+    },
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "SALTATION-SCALAR-CLEARED",
+      "payload": {
+        "claim_id": "SALTATION-SCALAR-CLEARED",
+        "statement": "m*f+v-m*f-d = v-d",
+        "formal_statement": "POLY_IDENTITY: -d + v = -d + v",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "exact scalar affine synchronized reset identity"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795620628.8626723,
+      "seq": 2,
+      "prev_hash": "166891d37d7411832f3e731ef83d73f912dd6d7ce63b093d1ff0ad76f7cddf68",
+      "hash": "b1823b2d014ba9b2ed3cb95a25525e7954aee2081280ad087f46e5a578d15ea2"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "SALTATION-SCALAR-CLEARED",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "77bf32b8c94aa7f5f8db18e430898189448b16da63be94d33a87da13920b760e",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "m*f+v-m*f-d",
+            "rhs": "v-d"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: -d + v = -d + v",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-25T15:30:28Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795620628.8633542,
+      "seq": 3,
+      "prev_hash": "b1823b2d014ba9b2ed3cb95a25525e7954aee2081280ad087f46e5a578d15ea2",
+      "hash": "9c4e6ea43e772c6f81a2b14b3e41388135ec3529837c28c6462e23902fc0da8c"
+    },
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "SYNC-DERIVATIVE-CLEARED",
+      "payload": {
+        "claim_id": "SYNC-DERIVATIVE-CLEARED",
+        "statement": "a^2*E*(m*q+c+d*t)+a*E*d-a*b*E = a*E*(d+a*(m*q+c+d*t)-b)",
+        "formal_statement": "POLY_IDENTITY: E*a^2*d*t + E*a^2*m*q + E*a^2*c - E*a*b + E*a*d = E*a^2*d*t + E*a^2*m*q + E*a^2*c - E*a*b + E*a*d",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "exact scalar affine synchronized reset identity"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795620628.8638585,
+      "seq": 4,
+      "prev_hash": "9c4e6ea43e772c6f81a2b14b3e41388135ec3529837c28c6462e23902fc0da8c",
+      "hash": "9b8bfe62d9eeff220848efd0fbd6df721944e2246f880a6c4e6d2c15ab91b8ca"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "SYNC-DERIVATIVE-CLEARED",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "86254249fdfcb96ff4e6d4bd8f40703e50f057eb3a0a2a5e51ff6c0b39794ae5",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "a^2*E*(m*q+c+d*t)+a*E*d-a*b*E",
+            "rhs": "a*E*(d+a*(m*q+c+d*t)-b)"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: E*a^2*d*t + E*a^2*m*q + E*a^2*c - E*a*b + E*a*d = E*a^2*d*t + E*a^2*m*q + E*a^2*c - E*a*b + E*a*d",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-25T15:30:28Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795620628.864919,
+      "seq": 5,
+      "prev_hash": "9b8bfe62d9eeff220848efd0fbd6df721944e2246f880a6c4e6d2c15ab91b8ca",
+      "hash": "50ad12d088148e4dcdcc7d7aa1608595a0f77cd10c8f10963d228901a8292376"
+    },
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "RESET-CLOCK-DIFFERENCE",
+      "payload": {
+        "claim_id": "RESET-CLOCK-DIFFERENCE",
+        "statement": "m*q+c+d*t-(m*q+c+d*s) = d*(t-s)",
+        "formal_statement": "POLY_IDENTITY: -d*s + d*t = -d*s + d*t",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "exact scalar affine synchronized reset identity"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795620628.8659675,
+      "seq": 6,
+      "prev_hash": "50ad12d088148e4dcdcc7d7aa1608595a0f77cd10c8f10963d228901a8292376",
+      "hash": "df2446f7d42425edb01a8bcd1f1c9ef37a8a25bcfe4b4299d867166f72089bf5"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "RESET-CLOCK-DIFFERENCE",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "d623e4636e9b779231765099bba86c5050a15ccff5e4a011924691aae0fe0bba",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "m*q+c+d*t-(m*q+c+d*s)",
+            "rhs": "d*(t-s)"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: -d*s + d*t = -d*s + d*t",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-25T15:30:28Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795620628.8668416,
+      "seq": 7,
+      "prev_hash": "df2446f7d42425edb01a8bcd1f1c9ef37a8a25bcfe4b4299d867166f72089bf5",
+      "hash": "e943a4a7bb5c5ad822077202339b112647637a953ffae7426217d1f9e5095720"
+    },
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "RESET-ANCHOR-CANCEL",
+      "payload": {
+        "claim_id": "RESET-ANCHOR-CANCEL",
+        "statement": "d+a*(m*q+c+d*s)-(d+a*(m*q+c+d*s)) = 0",
+        "formal_statement": "POLY_IDENTITY: 0 = 0",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "exact scalar affine synchronized reset identity"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795620628.8673708,
+      "seq": 8,
+      "prev_hash": "e943a4a7bb5c5ad822077202339b112647637a953ffae7426217d1f9e5095720",
+      "hash": "e608e8f780a5a7ffedcc631dd9160fe3a6ca333e02a584c9e41eddf0fa108d22"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "RESET-ANCHOR-CANCEL",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "0e836318023115b53c2eac54ae579007e23fe063507158b5967c8e47206ce758",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "d+a*(m*q+c+d*s)-(d+a*(m*q+c+d*s))",
+            "rhs": "0"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: 0 = 0",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-25T15:30:28Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795620628.868307,
+      "seq": 9,
+      "prev_hash": "e608e8f780a5a7ffedcc631dd9160fe3a6ca333e02a584c9e41eddf0fa108d22",
+      "hash": "9dca671a56b8e1295f0261e74d81eb0dad7610a1186e2b8b015aae7b7ced8453"
+    },
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "RESET-DERIVATIVE-DIFFERENCE",
+      "payload": {
+        "claim_id": "RESET-DERIVATIVE-DIFFERENCE",
+        "statement": "d+a*(m*q+c+d*t)-b-(d+a*(m*q+c+d*s)-b) = a*d*(t-s)",
+        "formal_statement": "POLY_IDENTITY: -a*d*s + a*d*t = -a*d*s + a*d*t",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "exact scalar affine synchronized reset identity"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795620628.8689086,
+      "seq": 10,
+      "prev_hash": "9dca671a56b8e1295f0261e74d81eb0dad7610a1186e2b8b015aae7b7ced8453",
+      "hash": "88cff5d8665ac3ddf24c200e5f2672ba004c45ff7d52e9d62bcfe767e03b55c1"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "RESET-DERIVATIVE-DIFFERENCE",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "240275f8414b2e592e75bf7cc63c75bd056765233dce912d996f4168cdeed5b2",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "d+a*(m*q+c+d*t)-b-(d+a*(m*q+c+d*s)-b)",
+            "rhs": "a*d*(t-s)"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: -a*d*s + a*d*t = -a*d*s + a*d*t",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-25T15:30:28Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795620628.8700206,
+      "seq": 11,
+      "prev_hash": "88cff5d8665ac3ddf24c200e5f2672ba004c45ff7d52e9d62bcfe767e03b55c1",
+      "hash": "0dfc1a6fd78123504776f1f92d25fea13fbe3cbe91a45851d5cf957cfa682445"
+    }
+  ],
+  "claims": {
+    "FLOW-COMPOSITION": {
+      "claim_id": "FLOW-COMPOSITION",
+      "statement": "E2*(E1*y+(1-E1)*q)+(1-E2)*q = E1*E2*y+(1-E1*E2)*q",
+      "formal_statement": "POLY_IDENTITY: -E1*E2*q + E1*E2*y + q = -E1*E2*q + E1*E2*y + q",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "exact scalar affine synchronized reset identity"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "8e941db490e7cc4a647ceac420f1d7b13329cbd7e106f5ef2a74a65a2bdb3466",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "E2*(E1*y+(1-E1)*q)+(1-E2)*q",
+              "rhs": "E1*E2*y+(1-E1*E2)*q"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: -E1*E2*q + E1*E2*y + q = -E1*E2*q + E1*E2*y + q",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-25T15:30:28Z"
+        }
+      ]
+    },
+    "SALTATION-SCALAR-CLEARED": {
+      "claim_id": "SALTATION-SCALAR-CLEARED",
+      "statement": "m*f+v-m*f-d = v-d",
+      "formal_statement": "POLY_IDENTITY: -d + v = -d + v",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "exact scalar affine synchronized reset identity"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "77bf32b8c94aa7f5f8db18e430898189448b16da63be94d33a87da13920b760e",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "m*f+v-m*f-d",
+              "rhs": "v-d"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: -d + v = -d + v",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-25T15:30:28Z"
+        }
+      ]
+    },
+    "SYNC-DERIVATIVE-CLEARED": {
+      "claim_id": "SYNC-DERIVATIVE-CLEARED",
+      "statement": "a^2*E*(m*q+c+d*t)+a*E*d-a*b*E = a*E*(d+a*(m*q+c+d*t)-b)",
+      "formal_statement": "POLY_IDENTITY: E*a^2*d*t + E*a^2*m*q + E*a^2*c - E*a*b + E*a*d = E*a^2*d*t + E*a^2*m*q + E*a^2*c - E*a*b + E*a*d",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "exact scalar affine synchronized reset identity"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "86254249fdfcb96ff4e6d4bd8f40703e50f057eb3a0a2a5e51ff6c0b39794ae5",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "a^2*E*(m*q+c+d*t)+a*E*d-a*b*E",
+              "rhs": "a*E*(d+a*(m*q+c+d*t)-b)"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: E*a^2*d*t + E*a^2*m*q + E*a^2*c - E*a*b + E*a*d = E*a^2*d*t + E*a^2*m*q + E*a^2*c - E*a*b + E*a*d",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-25T15:30:28Z"
+        }
+      ]
+    },
+    "RESET-CLOCK-DIFFERENCE": {
+      "claim_id": "RESET-CLOCK-DIFFERENCE",
+      "statement": "m*q+c+d*t-(m*q+c+d*s) = d*(t-s)",
+      "formal_statement": "POLY_IDENTITY: -d*s + d*t = -d*s + d*t",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "exact scalar affine synchronized reset identity"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "d623e4636e9b779231765099bba86c5050a15ccff5e4a011924691aae0fe0bba",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "m*q+c+d*t-(m*q+c+d*s)",
+              "rhs": "d*(t-s)"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: -d*s + d*t = -d*s + d*t",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-25T15:30:28Z"
+        }
+      ]
+    },
+    "RESET-ANCHOR-CANCEL": {
+      "claim_id": "RESET-ANCHOR-CANCEL",
+      "statement": "d+a*(m*q+c+d*s)-(d+a*(m*q+c+d*s)) = 0",
+      "formal_statement": "POLY_IDENTITY: 0 = 0",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "exact scalar affine synchronized reset identity"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "0e836318023115b53c2eac54ae579007e23fe063507158b5967c8e47206ce758",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "d+a*(m*q+c+d*s)-(d+a*(m*q+c+d*s))",
+              "rhs": "0"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: 0 = 0",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-25T15:30:28Z"
+        }
+      ]
+    },
+    "RESET-DERIVATIVE-DIFFERENCE": {
+      "claim_id": "RESET-DERIVATIVE-DIFFERENCE",
+      "statement": "d+a*(m*q+c+d*t)-b-(d+a*(m*q+c+d*s)-b) = a*d*(t-s)",
+      "formal_statement": "POLY_IDENTITY: -a*d*s + a*d*t = -a*d*s + a*d*t",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "exact scalar affine synchronized reset identity"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "240275f8414b2e592e75bf7cc63c75bd056765233dce912d996f4168cdeed5b2",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "d+a*(m*q+c+d*t)-b-(d+a*(m*q+c+d*s)-b)",
+              "rhs": "a*d*(t-s)"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: -a*d*s + a*d*t = -a*d*s + a*d*t",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-25T15:30:28Z"
+        }
+      ]
+    }
+  },
+  "head": "0dfc1a6fd78123504776f1f92d25fea13fbe3cbe91a45851d5cf957cfa682445",
+  "trust": [
+    "PROVED_EXACT_CERTIFICATE",
+    "PROVED_FORMAL_KERNEL"
+  ]
+}

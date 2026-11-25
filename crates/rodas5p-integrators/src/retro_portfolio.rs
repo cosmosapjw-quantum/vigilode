@@ -96,6 +96,18 @@ pub enum Route {
     PhysicalHint,
     #[cfg(feature = "polynomial-events")]
     PhysicalSource,
+    #[cfg(feature = "polynomial-events")]
+    ResetCarry,
+    #[cfg(feature = "polynomial-events")]
+    ResetLegacyFlow,
+    #[cfg(feature = "polynomial-events")]
+    ResetDictionaryFlow,
+    #[cfg(feature = "polynomial-events")]
+    ResetHinted,
+    #[cfg(feature = "polynomial-events")]
+    ResetTransport,
+    #[cfg(feature = "polynomial-events")]
+    ResetCombined,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
 pub enum AttemptStatus {

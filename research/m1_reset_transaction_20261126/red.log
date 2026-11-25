@@ -1,0 +1,22 @@
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/vigilode)
+    Finished `release` profile [optimized] target(s) in 12.91s
+     Running tests/hybrid_reset_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/hybrid_reset_contracts-d9cce1c5a9d6e28c)
+
+running 1 test
+test physical_terminal_requires_no_later_trials ... FAILED
+
+failures:
+
+---- physical_terminal_requires_no_later_trials stdout ----
+
+thread 'physical_terminal_requires_no_later_trials' (1401275) panicked at crates/vigilode/tests/hybrid_reset_contracts.rs:29:5:
+physical terminal path continued to full horizon
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    physical_terminal_requires_no_later_trials
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p vigilode --test hybrid_reset_contracts`

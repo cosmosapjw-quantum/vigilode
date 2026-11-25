@@ -1,0 +1,197 @@
+{
+  "catalog_mappings": [
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R001",
+      "checker_or_backend": "SOS/Bernstein/Sturm/interval checker",
+      "family": "real_analysis",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "uniform scalar inequality or convergence lemma",
+      "mapping": "interval state and reset enclosure",
+      "primary_obstruction": "endpoint, equality, quantifier uniformity",
+      "proof_effect": "NONE",
+      "route_id": "REAL_ANALYSIS-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "interval enclosure"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R008",
+      "checker_or_backend": "HOL Light/Lean/Coq after type inventory",
+      "family": "operator_theory",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "typed operator identity and domain contract",
+      "mapping": "interval Newton on source guard",
+      "primary_obstruction": "closedness, adjoints, range, noncommutativity",
+      "proof_effect": "NONE",
+      "route_id": "OPERATOR_THEORY-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "typed block-operator identity with domain audit"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R021",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "numerical_analysis",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: a posteriori residual bound",
+      "mapping": "affine residual certificate",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "NUMERICAL_ANALYSIS-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "a posteriori residual bound"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R042",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "numerical_linear_algebra",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: backward error and residual certificate",
+      "mapping": "original source and reset clock authority",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "NUMERICAL_LINEAR_ALGEBRA-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "backward error and residual certificate"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R045",
+      "checker_or_backend": "exact rational witness; no-witness is not proof",
+      "family": "counterexample",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "minimal countermodel for a weakened/strong claim",
+      "mapping": "duplicate-root/anti-Zeno counterexamples",
+      "primary_obstruction": "finite witness may not generalize to infinite dimension",
+      "proof_effect": "NONE",
+      "route_id": "COUNTEREXAMPLE-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "search boundary/degenerate cases"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R049",
+      "checker_or_backend": "SOS/Bernstein/Sturm/interval checker",
+      "family": "real_analysis",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "uniform scalar inequality or convergence lemma",
+      "mapping": "dictionary Green transport and root hints",
+      "primary_obstruction": "endpoint, equality, quantifier uniformity",
+      "proof_effect": "NONE",
+      "route_id": "REAL_ANALYSIS-02",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "Bernstein positivity with subdivision"
+    }
+  ],
+  "non_claim": "represented control excluded from physical selection; prepared RHS and WARP not required by scalar fresh epochs",
+  "routes": [
+    {
+      "contract": "represented-only",
+      "id": "Represented",
+      "modules": [
+        "retro_event_poly",
+        "native accepted control"
+      ]
+    },
+    {
+      "contract": "physical",
+      "id": "Carry",
+      "modules": [
+        "affine_event_certificate",
+        "retro_causal::flow",
+        "retro_physical_event::contract_root_once"
+      ]
+    },
+    {
+      "contract": "physical",
+      "id": "LegacyFlow",
+      "modules": [
+        "retro_green::RetroTable",
+        "retro_causal::flow/gain",
+        "retro_physical_event::contract_root_once"
+      ]
+    },
+    {
+      "contract": "physical",
+      "id": "DictionaryFlow",
+      "modules": [
+        "retro_dictionary",
+        "retro_green::RetroTable",
+        "retro_causal::flow/gain",
+        "retro_physical_event::contract_root_once"
+      ]
+    },
+    {
+      "contract": "physical",
+      "id": "Hinted",
+      "modules": [
+        "retro_dictionary",
+        "retro_causal::flow/gain",
+        "retro_event_poly",
+        "retro_physical_event::contract_root_once"
+      ]
+    },
+    {
+      "contract": "physical",
+      "id": "Transport",
+      "modules": [
+        "retro_dictionary",
+        "retro_causal::flow/gain",
+        "retro_green::RetroTable",
+        "correlated reset transport"
+      ]
+    },
+    {
+      "contract": "physical",
+      "id": "Combined",
+      "modules": [
+        "affine_event_certificate",
+        "retro_dictionary",
+        "retro_causal::flow/gain",
+        "retro_event_poly",
+        "retro_physical_event::contract_root_once",
+        "correlated reset transport"
+      ]
+    },
+    {
+      "contract": "physical",
+      "id": "Adaptive",
+      "modules": [
+        "retro_portfolio",
+        "same-contract full attempts charged"
+      ]
+    }
+  ]
+}
