@@ -1,0 +1,18 @@
+    Finished `release` profile [optimized] target(s) in 0.09s
+     Running tests/retro_nonlinear_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/retro_nonlinear_contracts-2ebaefa2aa64fabf)
+
+running 1 test
+test measure_native ... 
+thread 'measure_native' (811597) panicked at crates/rodas5p-integrators/tests/retro_nonlinear_contracts.rs:402:26:
+called `Result::unwrap()` on an `Err` value: InvalidInput("output schedule must start at t0 = 0e0 and end at tf = 5e-1 exactly (got 6.25e-2 .. 5e-1)")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    measure_native
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test retro_nonlinear_contracts`

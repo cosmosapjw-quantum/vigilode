@@ -691,3 +691,6 @@ pub mod retro_causal;
 
 /// Opt-in research: temporal CRT and ordered affine scan.
 pub mod retro_temporal;
+
+/// Opt-in research: nonlinear temporal residual jets.
+pub mod retro_nonlinear;
