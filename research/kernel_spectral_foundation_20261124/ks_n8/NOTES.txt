@@ -1,0 +1,106 @@
+KS-N8  Field-of-values replacement for advection (theory task, no Rust change)
+Worktree /home/cosmosapjw/worktrees/vigilode-stage-lattice-ksn8, branch research/stage-lattice-referee-20261124-ksn8,
+start commit 05b5e3e3. Started 2026-11-25 09:35 KST. Owner instruction 2026-11-25 09:21 KST: "남은 노드들을 이어서 마저 진행해.
+수정은 전부 승인할게."
+
+Environment noted at start: python3 3.12.3, numpy 1.26.4 (the task text says 2.4.2; 1.26.4 is what is installed here).
+
+0. PLAN (written before any computation; the verdict rules in section 4 are frozen here)
+
+Question (PLAN.json KS-N8, THEORY.md 8): for non-normal J (advection-diffusion with ring-constant velocity
+on the sphere grid of crates/vigilode/src/spatial.rs), what replaces the inertia certificate (THEORY 4.2),
+the contractivity bound (5.1) and the Gershgorin spectral/stiffness bound (5.2-5.3)?
+
+1. Operator (to be derived in THEORY.md 10.1; the code has no advection term, it is defined here on the
+   code's grid: same ring areas A_r, rates n_r, s_r, a_r, face lengths)
+   - Ring-constant (axisymmetric) velocity: zonal speed u_r at ring centres, meridional speed v_{r+1/2} on
+     the latitude faces. Flux form (conservative, the same finite-volume form as the diffusion).
+     Zonal face flux b_r = u_r R dtheta / A_r (rate units), meridional face flux f_{r+1/2} = v ell_{r+1/2}
+     with ell_{r+1/2} = R sin(theta_{r+1/2}) dphi (zero at the polar faces).
+   - Primary scheme: centred face values. Reasons: second order; for divergence-free flow it is
+     A-skew-adjoint, so the non-normality is undamped (the hard case for any certificate) and the
+     A-Hermitian part is exactly the diffusion operator of 4.2. Secondary: first-order upwind, which is
+     centred plus an A-self-adjoint negative semidefinite artificial diffusion (lemma to prove), so every
+     Hermitian-part bound of the centred scheme carries over.
+   - Lemma to prove: on this grid a ring-constant velocity field is discretely divergence-free iff all
+     meridional face fluxes vanish, i.e. divergence-free ring-constant flow is purely zonal.
+   - Mode blocks: B_m = L_m + cI + Z_m + V, Z_m = diag(-i b_r sin theta_m) (centred),
+     V = A^{-1} G (meridional, independent of m), tridiagonal, non-Hermitian.
+
+2. Certificate (to be proven, statuses D / I)
+   - Work in the area inner product <u,v>_A (the norm in which diffusion is self-adjoint); the DFT along
+     rings is unitary in it, so W_A(J) = conv(union_m W(Bt_m)), Bt_m = Ahat B_m Ahat^{-1}, Ahat = diag(sqrt A_r).
+   - mu_A(J) = max_m lambda_max(Ht_m), Ht_m = (Bt_m + Bt_m^*)/2 real symmetric tridiagonal.
+   - Hermitian-part inertia certificate: #{non-positive Thomas pivots of zI - Ht_m over modes (multiplicity 2
+     for 0 < m < np/2)} = #{eigenvalues of the A-Hermitian part of J at or above z} (Sylvester);
+     zero <=> z > mu_A(J). Reduces to 4.2 when the velocity is zero.
+   - z > mu_A(J) => W(z) invertible, ||W(z)^{-1}||_A <= 1/(z - mu_A(J)) (log-norm lemma); Euclidean variant
+     with mu_2 as in the task text; Thomas without pivoting on the complex blocks W_m is defined with
+     Re(pivot) > 0 (Schur complements of accretive matrices are accretive).
+   - Contractivity: ||exp(tJ)||_A <= exp(t mu_A) (Dahlquist); ||R(hJ)||_A <= sup_{Re w <= h mu_A} |R(w)|
+     for A-stable R whose poles lie right of h mu_A (von Neumann, Hairer-Wanner II Thm IV.11.2); for
+     RODAS5P the pole condition is z = 1/(h gamma) > mu_A, the same condition as the certificate.
+   - Zonal case: mu_A(J) = c exactly (centred and upwind). Divergent meridional flow:
+     mu_A <= c + max_r(-div_r)/2 (Weyl), exact value by bisection on the pivot count.
+   - Spectral/stiffness enclosure (Gershgorin replacement): spec J subset union_m P_m where P_m is the
+     polygon of K supporting half-planes Re(e^{-i phi_k} w) <= lambda_max(Herm(e^{-i phi_k} Bt_m)),
+     K = 64 (multiple of 4, so it contains the Bendixson box directions).
+
+3. Script research/kernel_spectral_foundation_20261124/scripts/verify_fov.py (python3 -I, numpy, dense,
+   exact eigen-decompositions), writes results/KS_N8_FOV.json, exit 0 only if every check holds.
+   Grids (3): G1 nt=6 np=10 R=1 kappa=0.05; G2 nt=9 np=16 R=1.3 kappa=0.7 (the F-check grid);
+   G3 nt=11 np=15 R=1 kappa=0.01 (odd nt, odd np, advection dominated).
+   Velocities: zero; solid-body rotation (A-normal case); differential rotation (zonal jet);
+   seeded random zonal; zonal jet plus divergent meridional (Hadley-like) flow; each at low and high
+   cell Peclet number; schemes centred and upwind. Linear rates c in {0, negative, positive}.
+   z values: above mu_A (several decades) and below it (certificate must refuse).
+   Checks:
+   (a) solvability and resolvent: Hermitian-part pivot count == eigenvalue count of the dense
+       grid-space A-Hermitian part; for z > mu_A: sigma_min(Ahat W Ahat^{-1}) >= (z - mu_A)(1 - 1e-10);
+       Euclidean: sigma_min(W) >= (z - mu_2)(1 - 1e-10); complex Thomas pivots have Re > 0 and the
+       Thomas solve matches the dense solve; contractivity ||exp(tJ)||_A <= exp(t mu_A)(1 + 1e-10) and
+       ||R(hJ)||_A <= sup |R| on the line Re w = h mu_A for RODAS5P (coefficients read from
+       crates/rodas5p-core/src/coefficients.rs if they can be parsed; else implicit Euler/trapezoid only,
+       recorded as such).
+   (b) every eigenvalue of the dense J (grid space) lies in union_m P_m and in the Gershgorin union,
+       within slack 1e-9 * max(1, rho_G); eigenvalues of each B_m lie in P_m.
+   (c) ratios against the THEORY 5.2 Gershgorin construction (row discs of the mode blocks B_m):
+       rho = max |w - c| over the enclosure (stiffness radius), alpha = max Re (abscissa),
+       iota = max |Im|, left = min Re. Diagnostics (not deciding): grid-space row Gershgorin (mu_inf),
+       area-weighted column log norm (mu_{1,A}), Varah infinity-norm resolvent bound.
+
+4. Verdict rules (frozen before the script runs)
+   D1 "bound holds on 3 grids": PASS iff every check of (a) and (b) holds on all 3 grids and all cases;
+      FAIL otherwise.
+   D2 "tighter than Gershgorin" (reference: the 5.2 construction, row Gershgorin discs of B_m):
+      PASS iff in every case rho_F <= rho_G (1 + 1e-12) and alpha_F <= alpha_G + 1e-12 scale, and in
+      every case with non-zero velocity rho_F < rho_G (1 - 1e-9) or alpha_F < alpha_G - 1e-9 scale;
+      FAIL iff some case has rho_F or alpha_F looser than Gershgorin beyond the tolerance;
+      KILL iff no case is strictly tighter in rho or alpha (then: separable route stays diffusion-only).
+      scale = max(1, rho_G).
+
+5. Honesty rules: numbers in KS_N8_FOV.json come from the script's executed run; failed or negative
+   checks are kept; what the script does not check is marked UNVERIFIED in THEORY.md 10.
+
+6. Amendments made before the script existed or ran (09:50 KST)
+   - Polygon directions K = 256 instead of 64 (still a multiple of 4), so that the polygon's
+     overestimate of the numerical range is negligible next to the Gershgorin margins.
+   - Exit code: 0 iff every validity check of (a) and (b) holds, the proven inequality
+     alpha_F <= alpha_G (DERIVATION P3 iv) holds in every case, and every (c) metric is finite.
+     The D2 verdict (PASS/FAIL/KILL) is a measurement and is reported in the JSON, not in the exit code.
+   - Derivation written to ks_n8/DERIVATION.txt before the script.
+
+7. Run record
+   - 09:52 KST smoke run of the committed-to-be script into the scratchpad (runtime errors only); it
+     printed D1 PASS, D2 FAIL. Numbers are identical to the official run (same seeds, deterministic).
+   - Descriptive summary fields added afterwards (looser-case list, per-family ratios, near-threshold
+     resolvent ratios); no rule, threshold, grid, velocity, z or c value changed (commit fa45a7d7).
+   - 09:54 official run at fa45a7d7, then wall time moved out of the JSON (e6345b14) and the official
+     run repeated at 09:55 (log ks_n8/logs/verify_fov.log). A repeat into the scratchpad gave a
+     byte-identical KS_N8_FOV.json (sha256 d59cadcefcd8da399c14e18b3f98e923d976a510d2075f49d54e1c1a58a204d2).
+   - Outcome: every validity check holds (D1 PASS). D2 FAIL under the frozen rule: rho_F > rho_G in 9 of
+     225 cases, all of them the upwind Hadley-plus-jet flow at cell Peclet 30 (all three c values on all
+     three grids): rho_F / rho_G = 1.104 (G1), 1.037 (G2), 1.033 (G3). Every case is strictly tighter in
+     rho or alpha (225 of 225), so KILL does not apply. The excess comes from the left end of the
+     Hermitian part (left_ratio max 1.104): the numerical range extends further left than the
+     Gershgorin discs of B_m, which enclose only the spectrum.
