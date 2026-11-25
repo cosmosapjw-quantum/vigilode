@@ -1,0 +1,1307 @@
+{
+ "schema": "vigilode.loop.predeclared.v1",
+ "node": "V30_ROUTER_BREAKEVEN_V27B, evaluation (phase 2) of the forward break-even pilots (FBP) Auto route on a fresh problem set",
+ "date_kst": "2026-11-25",
+ "status": "FROZEN by the commit that adds this file on origin: written in phase 1 by the builder, reviewed by the orchestrator (orchestrator_rulings below); no run of the deciding set (any arm on any case below) before that commit is on origin",
+ "owner_decision": "OD-L1-26 (2026-11-25 09:21 KST, verbatim '남은 노드들을 이어서 마저 진행해. 수정은 전부 승인할게.'): run V27b: fix the two conflicting sentences of the V27 pre-registration (E1 over undeclared cases only, E3 without the runs that owner decision D1 ends), diagnose E7 (P_scalar_fd) and correct the design if needed, and evaluate on a fresh problem set under a new pre-registration (node V30). Owner decisions D1 to D6 of OD-L1-22 stand.",
+ "basis": {
+  "v27_predeclared": {
+   "file": "research/production_loop_20261116/router_hyperparameter_free/PREDECLARED.json",
+   "sha256": "325c9d67bccae6e0fc403877e5a80f64c62e62aa7db6dbd63c150716624862ff"
+  },
+  "design": {
+   "file": "research/production_loop_20261116/router_hyperparameter_free/DESIGN_RECOMMENDED.md",
+   "sha256": "e7f811e50e12542dce2873d06808ff899aeda7b383b7edc99cab46a0d14f71bf"
+  },
+  "v27_results_and_review": [
+   "research/production_loop_20261116/router_hyperparameter_free/RESULTS.json",
+   "research/production_loop_20261116/router_hyperparameter_free/REVIEW.json"
+  ],
+  "e7_diagnosis": {
+   "file": "research/production_loop_20261116/router_breakeven_v27b/E7_DIAGNOSIS.json",
+   "sha256": "caa4da6d9a55dcd787865400cc64994f6cce3f1f0341c041b52a4d5c6407fdc8",
+   "route_defect": false,
+   "cause": "On P_scalar_fd the end error of every RODAS5P run is the local truncation error of its last step: earlier errors, the DOPRI5 prefix's included, are damped by R(z) ~ -12.4/z (|z| = 1e6 h >= 18 on every step of the route's leg and of R), and the local error of a step of length h on the slow manifold grows like h^3 (one-step grid: slopes 2.9607 to 3.027 for h >= 1e-2; finite-difference derivatives play no part). After its first steps the controller grows each step by its cap 5 because the estimate is far below tolerance, so the last step's length is set by where the ramp from h0 lands before t1, not by the tolerance (the h0 scans at A and L are identical). Rodas5p::solve from t0 with h0 = 1e-3 lands with a short last step (0.219): its error is 0.05692 times the median over h0. The FBP leg, a plain Rodas5p::solve from t_D + H with h0 = H, lands with last steps 0.7433171 (A) and 0.3261414 (L); the same happens without any handover (Rodas5p::solve from t0 with h0 = H: ratio 31.85 at A). E7 failed because its reference R is a lucky step sequence and the rule has no floor; the route has no defect here. Errors in the tolerance unit: N 0.004119489 (A), 2.874489e-07 (L)."
+  },
+  "definition_checks": {
+   "file": "research/production_loop_20261116/router_breakeven_v27b/logs/fresh_set_checks.json",
+   "sha256": "edce06296f1538489e5cf22d2370d1dee01e0f4edd4c5720198cca96afb6f1cd",
+   "note": "scipy and mpmath only (closed forms, well-posedness, a stiffness estimate, the stated derivative callbacks); no VigilODE driver ran"
+  }
+ },
+ "algorithm": "unchanged from V27 (PREDECLARED algorithm section, DESIGN_RECOMMENDED sections 3 and 4): the E7 diagnosis found no defect of the route, so no route code changes. Code: branch research/production-loop-20261116-w4-v30 = the V27 implementation (60d67729; crates/vigilode/src, the session pass-through and both contract test files byte-identical to it) merged with the loop head d4e2772f (merge 91e9e582); the output of git diff d4e2772f 91e9e582 -- crates is byte-identical to router_hyperparameter_free/fbp_implementation.patch (sha256 9e903fdcc30193cbc08e69e0399f8801dc3b0f1462933aa14fbc6e5a07d9a7b8, 13 files)",
+ "arms": {
+  "T": "today's Auto route, built from a read-only checkout of the loop-branch commit that N's branch merged last (now d4e2772f; its crates/vigilode/src equals that of V27's arm T, 1ffbda20); if the loop head is merged again before phase 2, T moves with it",
+  "N": "FBP, built from the head of research/production-loop-20261116-w4-v30 (commit recorded in RESULTS.json); before the first deciding run, git diff of crates/ between the T and N checkouts must list exactly the 13 files of the FBP change (router_hyperparameter_free/fbp_implementation.patch), else phase 2 stops",
+  "D": "Dopri5::solve with the same options",
+  "R": "Rodas5p::solve with the same options",
+  "sanity": "D and R built from both checkouts must agree bit for bit (final time and state bits, status, counters, attempts, closure entries by kind); a disagreement is reported and stops the evaluation",
+  "exploratory_without_rule": {
+   "R_H": "for every case whose run 1 of N hands over: Rodas5p::solve from t0 with h0 = H of the accepted pilot and otherwise the same options; its error and last-step length are reported next to E7 (the E7 diagnosis predicts that err(R_H) / err(R) is of the size of err(N) / err(R)); no rule reads it"
+  }
+ },
+ "problems": {
+  "note": "fresh: disjoint from the 36 problem ids of V27 (and from their families) and from every problem that the FBP route has run on (the fixtures of tests/unified_breakeven_contracts.rs, tests/unified_router_contracts.rs, tests/unified_production_solver_contracts.rs, examples/unified_production_solver.rs, the V27 runner's toy problems and the V30 E7 diagnosis of P_scalar_fd); no problem below has been run with the FBP route or with any arm before this file is on origin. Finite-difference Jacobian unless stated; 'autonomous' means the problem is declared autonomous (Problem::autonomous), otherwise the drivers take the central-difference time derivative unless a time-derivative callback is stated. Fatal errors are CallbackError::Fatal returned by the right-hand side.",
+  "stiff_or_late_stiff": [
+   {
+    "id": "pr_sin2t",
+    "n": 1,
+    "kind": "stiff from t0",
+    "autonomous": false,
+    "jacobian": "finite-difference",
+    "definition": "y' = -1e4 (y - sin(2 t)) + 2 cos(2 t)",
+    "y0": "[0]",
+    "span": [
+     0.0,
+     5.0
+    ],
+    "tolerance_pairs": [
+     "A",
+     "L",
+     "S"
+    ],
+    "reference": "closed form y(t) = sin(2 t)",
+    "reason": "Prothero-Robinson test: stiff relaxation (lambda = -1e4) onto a smooth forced slow manifold, non-autonomous with the drivers' finite-difference time derivative; the class of P_scalar_fd but with a closed form and DOPRI5 feasible (about 1.5e4 attempts); E9 instance"
+   },
+   {
+    "id": "kaps_1e6",
+    "n": 2,
+    "kind": "stiff from t0",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "y1' = -(1e6 + 2) y1 + 1e6 y2^2, y2' = y1 - y2 - y2^2",
+    "y0": "[1, 1]",
+    "span": [
+     0.0,
+     2.0
+    ],
+    "tolerance_pairs": [
+     "A"
+    ],
+    "reference": "closed form y1 = exp(-2 t), y2 = exp(-t)",
+    "reason": "Kaps' singular perturbation problem (epsilon = 1e-6): nonlinear, stiff from t0 on its slow manifold; DOPRI5 infeasible within max_steps (about 6e5 attempts at its stability limit)"
+   },
+   {
+    "id": "a3_linear4",
+    "n": 4,
+    "kind": "stiff from t0",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "y' = M y, M = [[-1e4, 100, -10, 1], [0, -1e3, 10, -10], [0, 0, -1, 10], [0, 0, 0, -0.1]] (rows)",
+    "y0": "[1, 1, 1, 1]",
+    "span": [
+     0.0,
+     20.0
+    ],
+    "tolerance_pairs": [
+     "A",
+     "L",
+     "S"
+    ],
+    "reference": "closed form expm(M t) y0 (mpmath, 50 digits)",
+    "reason": "linear stiff system with real eigenvalues over five decades and non-normal upper-triangular coupling (the form of Enright-Hull-Lindberg class A3); E9 instance"
+   },
+   {
+    "id": "b1_linear4",
+    "n": 4,
+    "kind": "stiff from t0",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "y1' = -y1 + y2, y2' = -100 y1 - y2, y3' = -100 y3 + y4, y4' = -1e4 y3 - 100 y4",
+    "y0": "[1, 0, 1, 0]",
+    "span": [
+     0.0,
+     20.0
+    ],
+    "tolerance_pairs": [
+     "A"
+    ],
+    "reference": "closed form expm(M t) y0 (mpmath, 50 digits)",
+    "reason": "complex eigenvalues -1 +- 10i (slowly damped oscillation) and -100 +- 100i (damped fast mode; the form of Enright-Hull-Lindberg class B): mild stiffness, the grey zone of the break-even rule"
+   },
+   {
+    "id": "chem_d4",
+    "n": 3,
+    "kind": "stiff from t0",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "y1' = -0.013 y1 - 1000 y1 y3, y2' = -2500 y2 y3, y3' = -0.013 y1 - 1000 y1 y3 - 2500 y2 y3",
+    "y0": "[1, 1, 0]",
+    "span": [
+     0.0,
+     50.0
+    ],
+    "tolerance_pairs": [
+     "A",
+     "L",
+     "S"
+    ],
+    "reference": "Rodas5p::solve at rtol 1e-12, atol 1e-14 (N build, default h0 and max_steps; once more with max_steps 10000000 if that run does not succeed), as in V27",
+    "reason": "nonlinear chemical kinetics stiff from t0 (Gear's problem, the form of Enright-Hull-Lindberg class D4); carries the declared-regime and budget variants"
+   },
+   {
+    "id": "c1_nonlinear4",
+    "n": 4,
+    "kind": "stiff from t0 (mild)",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "y1' = -y1 + y2^2 + y3^2 + y4^2, y2' = -10 y2 + 10 (y3^2 + y4^2), y3' = -40 y3 + 40 y4^2, y4' = -100 y4 + 2",
+    "y0": "[1, 1, 1, 1]",
+    "span": [
+     0.0,
+     5.0
+    ],
+    "tolerance_pairs": [
+     "A"
+    ],
+    "reference": "Rodas5p::solve at rtol 1e-12, atol 1e-14 (N build, default h0 and max_steps; once more with max_steps 10000000 if that run does not succeed), as in V27",
+    "reason": "nonlinear coupling with real eigenvalues -1 to -100 (the form of Enright-Hull-Lindberg class C): mild stiffness; the span ends while y1 still relaxes (exp(-5))"
+   },
+   {
+    "id": "lin20_dense",
+    "n": 20,
+    "kind": "stiff from t0",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "y' = M y, M = -Q diag(lambda_1..lambda_20) Q, lambda_i = 10^(4 (i - 1)/19), Q = I - 2 v v^T / (v^T v), v = (1, 2, ..., 20)",
+    "y0": "[1, 1, ..., 1] (20 ones)",
+    "span": [
+     0.0,
+     10.0
+    ],
+    "tolerance_pairs": [
+     "A"
+    ],
+    "reference": "closed form Q expm(-diag(lambda) t) Q y0 (mpmath, 50 digits)",
+    "reason": "dense symmetric linear stiff system, n = 20 (b = 15), eigenvalues 1 to 1e4 evenly spread in log scale; every finite-difference Jacobian costs 21 calls"
+   },
+   {
+    "id": "ac_100",
+    "n": 100,
+    "kind": "stiff from t0 (mild), late fast transition",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "Allen-Cahn: u_i' = 0.01 (u_{i-1} - 2 u_i + u_{i+1}) / dx^2 + u_i - u_i^3, i = 1..100, dx = 2/101, x_i = -1 + i dx, u_0 = -1, u_101 = 1",
+    "y0": "u_i(0) = 0.53 x_i + 0.47 sin(-1.5 pi x_i)",
+    "span": [
+     0.0,
+     40.0
+    ],
+    "tolerance_pairs": [
+     "A"
+    ],
+    "reference": "Rodas5p::solve at rtol 1e-12, atol 1e-14 (N build, default h0 and max_steps; once more with max_steps 10000000 if that run does not succeed), as in V27",
+    "reason": "large-n reaction-diffusion (after Trefethen, Spectral Methods in MATLAB, program 34, here by finite differences): metastable plateau, then a fast transition near t = 38 (three interfaces become one, checked with scipy); the span ends in the relaxation after it; b = 166"
+   },
+   {
+    "id": "burgers_80",
+    "n": 80,
+    "kind": "stiff from t0 (mild)",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "viscous Burgers by central differences: u_i' = -(u_{i+1}^2 - u_{i-1}^2)/(4 dx) + 0.02 (u_{i-1} - 2 u_i + u_{i+1}) / dx^2, i = 1..80, dx = 1/81, x_i = i dx, u_0 = u_81 = 0",
+    "y0": "u_i(0) = sin(2 pi x_i) + 0.5 sin(pi x_i)",
+    "span": [
+     0.0,
+     1.0
+    ],
+    "tolerance_pairs": [
+     "A"
+    ],
+    "reference": "Rodas5p::solve at rtol 1e-12, atol 1e-14 (N build, default h0 and max_steps; once more with max_steps 10000000 if that run does not succeed), as in V27",
+    "reason": "nonlinear advection-diffusion with a steepening front (cell Peclet number below 1), non-symmetric Jacobian, n = 80 (b = 113): pilots are expensive in operations"
+   },
+   {
+    "id": "pendulum_tracker",
+    "n": 3,
+    "kind": "stiff from t0 (very)",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "y1' = y2, y2' = -sin(y1), y3' = -1e6 (y3 - cos(y1))",
+    "y0": "[1, 0, cos(1)]",
+    "span": [
+     0.0,
+     10.0
+    ],
+    "tolerance_pairs": [
+     "A"
+    ],
+    "reference": "Rodas5p::solve at rtol 1e-12, atol 1e-14 (N build, default h0 and max_steps; once more with max_steps 10000000 if that run does not succeed), as in V27",
+    "reason": "a nonlinear pendulum with a very stiff component slaved to it: DOPRI5 infeasible (about 3e6 attempts at its stability limit), while RODAS5P's steps stay accuracy-limited by the pendulum up to t1"
+   },
+   {
+    "id": "late_linear4",
+    "n": 4,
+    "kind": "late stiff",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "y' = M y, M = Q B Q, B = [[-0.5, 5, 0, 0], [-5, -0.5, 0, 0], [0, 0, -2000, 0], [0, 0, 0, -500]] (rows), Q = I - 2 v v^T / (v^T v), v = (1, 2, 3, 4)",
+    "y0": "[1, 1, 1, 1]",
+    "span": [
+     0.0,
+     30.0
+    ],
+    "tolerance_pairs": [
+     "A",
+     "L",
+     "S"
+    ],
+    "reference": "closed form Q expm(B t) Q y0 (mpmath, 50 digits)",
+    "reason": "late stiffness without a chemistry: a slowly damped oscillation (-0.5 +- 5i) first limits DOPRI5 by accuracy; once it has decayed (amplitude exp(-0.5 t)) DOPRI5 is limited by the eigenvalue -2000; the onset time depends on the tolerance"
+   },
+   {
+    "id": "fhn_relax",
+    "n": 2,
+    "kind": "late stiff, alternating",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "FitzHugh-Nagumo relaxation oscillator: y1' = (y1 - y1^3/3 - y2 + 0.5) / 1e-3, y2' = y1 + 0.7 - 0.8 y2",
+    "y0": "[0, 0]",
+    "span": [
+     0.0,
+     19.5
+    ],
+    "tolerance_pairs": [
+     "A",
+     "L",
+     "S"
+    ],
+    "reference": "Rodas5p::solve at rtol 1e-12, atol 1e-14 (N build, default h0 and max_steps; once more with max_steps 10000000 if that run does not succeed), as in V27",
+    "reason": "relaxation oscillation (period about 2.02): stiffness appears on each slow branch and disappears at the jumps; starts off the slow manifold; t1 = 19.5 lies in the middle of a slow phase (jumps near 18.91 and 20.18, checked with scipy)"
+   },
+   {
+    "id": "pr_ramp",
+    "n": 1,
+    "kind": "late stiff (onset in time)",
+    "autonomous": false,
+    "jacobian": "finite-difference",
+    "definition": "y' = -k(t) (y - cos(3 t)) - 3 sin(3 t), k(t) = 2e4 t^2 / (1 + t^2)",
+    "y0": "[1]",
+    "span": [
+     0.0,
+     4.0
+    ],
+    "tolerance_pairs": [
+     "A"
+    ],
+    "reference": "closed form y(t) = cos(3 t)",
+    "reason": "stiffness that grows smoothly from k(0) = 0 to k(4) = 1.88e4 (property B2: one onset), closed form, non-autonomous with the finite-difference time derivative"
+   },
+   {
+    "id": "decay_chain6",
+    "n": 6,
+    "kind": "stiff from t0",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "y1' = -k1 y1, y_i' = k_{i-1} y_{i-1} - k_i y_i (i = 2..6), k = (1e4, 1e3, 100, 10, 1, 0.1)",
+    "y0": "[1, 0, 0, 0, 0, 0]",
+    "span": [
+     0.0,
+     20.0
+    ],
+    "tolerance_pairs": [
+     "A"
+    ],
+    "reference": "closed form expm(M t) y0 (mpmath, 50 digits)",
+    "reason": "linear decay chain (lower bidiagonal), stiff from t0, with a slow tail through the last members; n = 6 (b = 5)"
+   },
+   {
+    "id": "pre_equilibrium",
+    "n": 3,
+    "kind": "stiff from t0 (very)",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "y1' = -1e5 y1 + 2e5 y2, y2' = 1e5 y1 - 2e5 y2 - y2, y3' = y2",
+    "y0": "[1, 0, 0]",
+    "span": [
+     0.0,
+     10.0
+    ],
+    "tolerance_pairs": [
+     "A"
+    ],
+    "reference": "closed form expm(M t) y0 (mpmath, 50 digits)",
+    "reason": "fast reversible pre-equilibrium A <-> B followed by a slow drain B -> C: DOPRI5 infeasible (about 9e5 attempts at its stability limit); slow, non-trivial dynamics up to t1 (y1 + y2 about exp(-t/3))"
+   }
+  ],
+  "non_stiff": [
+   {
+    "id": "detest_a2",
+    "n": 1,
+    "kind": "non-stiff",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "y' = -y^3 / 2",
+    "y0": "[1]",
+    "span": [
+     0.0,
+     20.0
+    ],
+    "tolerance_pairs": [
+     "A",
+     "L",
+     "S"
+    ],
+    "reference": "closed form y = 1 / sqrt(1 + t)",
+    "reason": "scalar nonlinear decay, a short cheap run (DETEST A2): pilot overhead on short runs"
+   },
+   {
+    "id": "detest_a3",
+    "n": 1,
+    "kind": "non-stiff",
+    "autonomous": false,
+    "jacobian": "finite-difference",
+    "definition": "y' = y cos(t)",
+    "y0": "[1]",
+    "span": [
+     0.0,
+     20.0
+    ],
+    "tolerance_pairs": [
+     "A",
+     "L",
+     "S"
+    ],
+    "reference": "closed form y = exp(sin t)",
+    "reason": "non-autonomous non-stiff (DETEST A3): every pilot pays the finite-difference time derivative"
+   },
+   {
+    "id": "logistic",
+    "n": 1,
+    "kind": "non-stiff",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "y' = (y / 4) (1 - y / 20)",
+    "y0": "[1]",
+    "span": [
+     0.0,
+     20.0
+    ],
+    "tolerance_pairs": [
+     "A",
+     "L",
+     "S"
+    ],
+    "reference": "closed form y = 20 / (1 + 19 exp(-t/4))",
+    "reason": "smooth logistic growth (DETEST A4), an unstable start and a stable end"
+   },
+   {
+    "id": "detest_b3",
+    "n": 3,
+    "kind": "non-stiff",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "y1' = -y1, y2' = y1 - y2^2, y3' = y2^2",
+    "y0": "[1, 0, 0]",
+    "span": [
+     0.0,
+     20.0
+    ],
+    "tolerance_pairs": [
+     "A",
+     "L",
+     "S"
+    ],
+    "reference": "Rodas5p::solve at rtol 1e-12, atol 1e-14 (N build, default h0 and max_steps; once more with max_steps 10000000 if that run does not succeed), as in V27",
+    "reason": "nonlinear chain with a linear invariant y1 + y2 + y3 = 1 (DETEST B3)"
+   },
+   {
+    "id": "spiral_b4",
+    "n": 3,
+    "kind": "non-stiff",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "r = sqrt(y1^2 + y2^2); y1' = -y2 - y1 y3 / r, y2' = y1 - y2 y3 / r, y3' = y1 / r",
+    "y0": "[3, 0, 0]",
+    "span": [
+     0.0,
+     20.0
+    ],
+    "tolerance_pairs": [
+     "A",
+     "L",
+     "S"
+    ],
+    "reference": "closed form y1 = (2 + cos t) cos t, y2 = (2 + cos t) sin t, y3 = sin t",
+    "reason": "rotation with a radial modulation (DETEST B4); derived closed form (r = 2 + cos t, angle t)"
+   },
+   {
+    "id": "rigid_body",
+    "n": 3,
+    "kind": "non-stiff",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "Euler's rigid body: y1' = y2 y3, y2' = -y1 y3, y3' = -0.51 y1 y2",
+    "y0": "[0, 1, 1]",
+    "span": [
+     0.0,
+     20.0
+    ],
+    "tolerance_pairs": [
+     "A",
+     "L",
+     "S"
+    ],
+    "reference": "closed form (sn, cn, dn)(t | m = 0.51) (mpmath ellipfun)",
+    "reason": "conservative periodic motion (DETEST B5) with a closed form"
+   },
+   {
+    "id": "cascade10",
+    "n": 10,
+    "kind": "non-stiff",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "y1' = -y1, y_i' = y_{i-1} - y_i (i = 2..10)",
+    "y0": "[1, 0, ..., 0] (e_1, n = 10)",
+    "span": [
+     0.0,
+     20.0
+    ],
+    "tolerance_pairs": [
+     "A",
+     "L",
+     "S"
+    ],
+    "reference": "closed form y_i = t^(i-1) exp(-t) / (i-1)!",
+    "reason": "linear cascade, n = 10 (b = 8), a repeated eigenvalue (DETEST C1)"
+   },
+   {
+    "id": "kepler_e05",
+    "n": 4,
+    "kind": "non-stiff",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "two-body problem: r = sqrt(y1^2 + y2^2); y1' = y3, y2' = y4, y3' = -y1 / r^3, y4' = -y2 / r^3; eccentricity 0.5",
+    "y0": "[0.5, 0, 0, sqrt(3)]",
+    "span": [
+     0.0,
+     20.0
+    ],
+    "tolerance_pairs": [
+     "A",
+     "L",
+     "S"
+    ],
+    "reference": "closed form by Kepler's equation E - 0.5 sin E = t: y1 = cos E - 0.5, y2 = sqrt(0.75) sin E, y3 = -sin E / (1 - 0.5 cos E), y4 = sqrt(0.75) cos E / (1 - 0.5 cos E)",
+    "reason": "periodic orbit with a speed ratio 3 (DETEST D3); carries the declared-regime variants"
+   },
+   {
+    "id": "kepler_e09",
+    "n": 4,
+    "kind": "non-stiff",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "two-body problem as kepler_e05 with eccentricity 0.9",
+    "y0": "[0.1, 0, 0, sqrt(19)]",
+    "span": [
+     0.0,
+     20.0
+    ],
+    "tolerance_pairs": [
+     "A",
+     "L",
+     "S"
+    ],
+    "reference": "closed form by Kepler's equation E - 0.9 sin E = t: y1 = cos E - 0.9, y2 = sqrt(0.19) sin E, y3 = -sin E / (1 - 0.9 cos E), y4 = sqrt(0.19) cos E / (1 - 0.9 cos E)",
+    "reason": "highly eccentric orbit (DETEST D5): step sizes vary by a factor of about 19^(3/2) between pericentre and apocentre, a stress test for false handovers near apocentre"
+   },
+   {
+    "id": "henon_heiles",
+    "n": 4,
+    "kind": "non-stiff",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "y1' = y3, y2' = y4, y3' = -y1 - 2 y1 y2, y4' = -y2 - y1^2 + y2^2",
+    "y0": "[0, 0.1, 0.5, 0] (energy 0.1297 < 1/6, bounded)",
+    "span": [
+     0.0,
+     50.0
+    ],
+    "tolerance_pairs": [
+     "A",
+     "L",
+     "S"
+    ],
+    "reference": "Rodas5p::solve at rtol 1e-12, atol 1e-14 (N build, default h0 and max_steps; once more with max_steps 10000000 if that run does not succeed), as in V27",
+    "reason": "Hamiltonian with mixed regular and chaotic motion (Henon-Heiles)"
+   },
+   {
+    "id": "fput_30",
+    "n": 30,
+    "kind": "non-stiff",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "Fermi-Pasta-Ulam-Tsingou alpha chain, 15 masses, fixed ends: y = (q_1..q_15, p_1..p_15), q_i' = p_i, p_i' = (q_{i+1} - 2 q_i + q_{i-1}) + 0.25 ((q_{i+1} - q_i)^2 - (q_i - q_{i-1})^2), q_0 = q_16 = 0",
+    "y0": "q_i = sin(pi i / 16), p_i = 0",
+    "span": [
+     0.0,
+     100.0
+    ],
+    "tolerance_pairs": [
+     "A",
+     "L",
+     "S"
+    ],
+    "reference": "Rodas5p::solve at rtol 1e-12, atol 1e-14 (N build, default h0 and max_steps; once more with max_steps 10000000 if that run does not succeed), as in V27",
+    "reason": "large-n non-stiff oscillatory lattice, n = 30 (b = 25), purely imaginary linear spectrum up to 2i"
+   },
+   {
+    "id": "duffing_e3",
+    "n": 2,
+    "kind": "non-stiff",
+    "autonomous": false,
+    "jacobian": "finite-difference",
+    "definition": "forced Duffing: y1' = y2, y2' = y1 - y1^3 / 6 - 2 sin(2.78535 t)",
+    "y0": "[0, 0]",
+    "span": [
+     0.0,
+     20.0
+    ],
+    "tolerance_pairs": [
+     "A",
+     "L",
+     "S"
+    ],
+    "reference": "Rodas5p::solve at rtol 1e-12, atol 1e-14 (N build, default h0 and max_steps; once more with max_steps 10000000 if that run does not succeed), as in V27",
+    "reason": "forced nonlinear oscillator (DETEST E3), non-autonomous"
+   },
+   {
+    "id": "kuramoto_50",
+    "n": 50,
+    "kind": "non-stiff",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "Kuramoto oscillators: y_i' = w_i + (1/50) sum_j sin(y_j - y_i), w_i = -1 + 2 (i - 1)/49, i = 1..50",
+    "y0": "y_i = 2 pi (i - 1) / 50",
+    "span": [
+     0.0,
+     20.0
+    ],
+    "tolerance_pairs": [
+     "A",
+     "L",
+     "S"
+    ],
+    "reference": "Rodas5p::solve at rtol 1e-12, atol 1e-14 (N build, default h0 and max_steps; once more with max_steps 10000000 if that run does not succeed), as in V27",
+    "reason": "large-n non-stiff with a dense Jacobian (all-to-all coupling), n = 50 (b = 52)"
+   }
+  ],
+  "callback_budget_declared": [
+   {
+    "id": "cb_probe",
+    "n": 1,
+    "kind": "callback",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "y' = -y (1 + y^2); the right-hand side returns a fatal error whenever y > 1",
+    "y0": "[1]",
+    "span": [
+     0.0,
+     1.0
+    ],
+    "tolerance_pairs": [
+     "A"
+    ],
+    "reference": "closed form y = 1 / sqrt(2 exp(2 t) - 1)",
+    "reason": "the F2 property on a new problem: any call above y0 at t0 (an off-trajectory probe) fails fatally; the break-even route makes none (E8)"
+   },
+   {
+    "id": "cb_column",
+    "n": 2,
+    "kind": "callback",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "y1' = 0, y2' = -1500 (y2 - y1); fatal error whenever y1 > 2 (only a finite-difference column reaches it)",
+    "y0": "[2, 0]",
+    "span": [
+     0.0,
+     1.0
+    ],
+    "tolerance_pairs": [
+     "A"
+    ],
+    "reference": "closed form y1 = 2, y2 = 2 (1 - exp(-1500 t))",
+    "reason": "the N2 property on a new problem: owner decision D1 ends the solve at the first pilot (E8; the exact set excluded from E3)"
+   },
+   {
+    "id": "cb_time",
+    "n": 1,
+    "kind": "callback",
+    "autonomous": true,
+    "jacobian": "finite-difference",
+    "definition": "y' = 1 - y^2; the right-hand side returns a fatal error with the message 'logger offline' whenever t > 0.4 (declared autonomous: f does not depend on t)",
+    "y0": "[0]",
+    "span": [
+     0.0,
+     1.0
+    ],
+    "tolerance_pairs": [
+     "A"
+    ],
+    "reference": "none (no arm reaches t1)",
+    "reason": "the P_fatal property on a new problem: the typed stop CallbackFailed{Rhs, 'logger offline'} (E8)"
+   },
+   {
+    "id": "cb_blowup",
+    "n": 1,
+    "kind": "declared fact (derivative)",
+    "autonomous": true,
+    "jacobian": "dense callback: J = [2 y]",
+    "definition": "y' = 1 + y^2 (tan t, blows up at t = pi/2)",
+    "y0": "[0]",
+    "span": [
+     0.0,
+     2.0
+    ],
+    "tolerance_pairs": [
+     "A"
+    ],
+    "reference": "none (no arm reaches t1)",
+    "reason": "the P_blowup property on a new problem: a failure under a declared fact; N must equal T bit for bit (E3 b)"
+   },
+   {
+    "id": "cb_mass",
+    "n": 3,
+    "kind": "declared fact (mass matrix)",
+    "autonomous": true,
+    "jacobian": "dense callback: J = [[-1, 0, 2], [1, -3, 0], [1, 1, 1]]",
+    "definition": "mass matrix M = diag(1, 1, 0): y1' = -y1 + 2 y3, y2' = y1 - 3 y2, 0 = y1 + y2 + y3 - 1 (index 1, consistent y0)",
+    "y0": "[1, 0, 0]",
+    "span": [
+     0.0,
+     5.0
+    ],
+    "tolerance_pairs": [
+     "A"
+    ],
+    "reference": "closed form: z = (y1, y2) solves z' = [[-3, -2], [1, -3]] z + (2, 0), z = z* + expm(A t)(z0 - z*), z* = (6/11, 2/11); y3 = 1 - y1 - y2",
+    "reason": "the P_mass property on a new problem: a mass matrix decides the route (DOPRI5 not admitted)"
+   },
+   {
+    "id": "sr_chem_dense",
+    "n": 3,
+    "kind": "declared fact (start rule)",
+    "autonomous": true,
+    "jacobian": "dense callback: J = [[-0.013 - 1000 y3, 0, -1000 y1], [0, -2500 y3, -2500 y2], [-0.013 - 1000 y3, -2500 y3, -1000 y1 - 2500 y2]]",
+    "definition": "chem_d4 with its exact dense Jacobian",
+    "y0": "[1, 1, 0]",
+    "span": [
+     0.0,
+     50.0
+    ],
+    "tolerance_pairs": [
+     "A"
+    ],
+    "reference": "Rodas5p::solve at rtol 1e-12, atol 1e-14 (N build, default h0 and max_steps; once more with max_steps 10000000 if that run does not succeed), as in V27 (of chem_d4)",
+    "reason": "start rule D2 with a dense Jacobian"
+   },
+   {
+    "id": "sr_pr_dense_ft",
+    "n": 1,
+    "kind": "declared fact (start rule)",
+    "autonomous": false,
+    "jacobian": "dense callback J = [-1e4] and time derivative 2e4 cos(2 t) - 4 sin(2 t)",
+    "definition": "pr_sin2t with its exact Jacobian and time derivative",
+    "y0": "[0]",
+    "span": [
+     0.0,
+     5.0
+    ],
+    "tolerance_pairs": [
+     "A"
+    ],
+    "reference": "closed form y(t) = sin(2 t)",
+    "reason": "start rule D2 with a dense Jacobian and a time-derivative callback"
+   },
+   {
+    "id": "sr_ac_jvp",
+    "n": 100,
+    "kind": "declared fact (start rule)",
+    "autonomous": true,
+    "jacobian": "JVP callback: (J v)_i = 0.01 (v_{i-1} - 2 v_i + v_{i+1}) / dx^2 + (1 - 3 u_i^2) v_i, v_0 = v_101 = 0",
+    "definition": "ac_100 with an exact Jacobian-vector product",
+    "y0": "as ac_100",
+    "span": [
+     0.0,
+     40.0
+    ],
+    "tolerance_pairs": [
+     "A"
+    ],
+    "reference": "Rodas5p::solve at rtol 1e-12, atol 1e-14 (N build, default h0 and max_steps; once more with max_steps 10000000 if that run does not succeed), as in V27 (of ac_100)",
+    "reason": "start rule D2 with a JVP (the matrix-free RODAS5P driver)"
+   },
+   {
+    "id": "sr_ac_band",
+    "n": 100,
+    "kind": "declared fact (start rule)",
+    "autonomous": true,
+    "jacobian": "banded callback (lower 1, upper 1): diagonal -0.02 / dx^2 + 1 - 3 u_i^2, off-diagonals 0.01 / dx^2",
+    "definition": "ac_100 with its exact band Jacobian",
+    "y0": "as ac_100",
+    "span": [
+     0.0,
+     40.0
+    ],
+    "tolerance_pairs": [
+     "A"
+    ],
+    "reference": "Rodas5p::solve at rtol 1e-12, atol 1e-14 (N build, default h0 and max_steps; once more with max_steps 10000000 if that run does not succeed), as in V27 (of ac_100)",
+    "reason": "start rule D2 with a band Jacobian callback (the banded RODAS5P driver)"
+   }
+  ],
+  "declared_regime_variants": "chem_d4 and kepler_e05 at A, each with declared regime Stiff and with declared regime Nonstiff (VigilodeOptions::regime)",
+  "budget_variants": "chem_d4 at A with max_steps 500 and with max_steps 50",
+  "excluded_v27_ids": [
+   "F2",
+   "N2",
+   "P_blowup",
+   "P_fatal",
+   "P_heat_banded",
+   "P_heat_dense",
+   "P_heat_fd",
+   "P_heat_jvp",
+   "P_mass",
+   "P_scalar_dense",
+   "P_scalar_fd",
+   "arenstorf",
+   "brusselator_2",
+   "damped_osc",
+   "flame_1e-2",
+   "flame_1e-3",
+   "flame_1e-4",
+   "heat_64_fd",
+   "hires",
+   "kt_vanishing",
+   "lin_2000",
+   "lin_3200",
+   "lin_3400",
+   "lorenz",
+   "lorenz96_40",
+   "lotka_volterra",
+   "nonnormal",
+   "orego",
+   "osc_1",
+   "osc_10",
+   "osc_1000",
+   "pleiades",
+   "robertson_1e5",
+   "robertson_40",
+   "vdp_1",
+   "vdp_1000"
+  ]
+ },
+ "tolerances": {
+  "A": [
+   1e-06,
+   1e-09
+  ],
+  "L": [
+   0.001,
+   1e-06
+  ],
+  "S": [
+   1e-08,
+   1e-11
+  ],
+  "assignment": "A for every problem; L and S also for every non_stiff problem and for pr_sin2t, a3_linear4, chem_d4, late_linear4, fhn_relax (five stiff or late-stiff problems, as V27 had five); the declared-regime and budget variants at A only"
+ },
+ "options": "Options::default() (h0 1e-3, max_steps 100000, no dense output), strategy Auto, regime Unknown, unless a variant states otherwise (as V27)",
+ "cases": {
+  "count": 79,
+  "ids": [
+   "pr_sin2t|A|default",
+   "pr_sin2t|L|default",
+   "pr_sin2t|S|default",
+   "kaps_1e6|A|default",
+   "a3_linear4|A|default",
+   "a3_linear4|L|default",
+   "a3_linear4|S|default",
+   "b1_linear4|A|default",
+   "chem_d4|A|default",
+   "chem_d4|L|default",
+   "chem_d4|S|default",
+   "c1_nonlinear4|A|default",
+   "lin20_dense|A|default",
+   "ac_100|A|default",
+   "burgers_80|A|default",
+   "pendulum_tracker|A|default",
+   "late_linear4|A|default",
+   "late_linear4|L|default",
+   "late_linear4|S|default",
+   "fhn_relax|A|default",
+   "fhn_relax|L|default",
+   "fhn_relax|S|default",
+   "pr_ramp|A|default",
+   "decay_chain6|A|default",
+   "pre_equilibrium|A|default",
+   "detest_a2|A|default",
+   "detest_a2|L|default",
+   "detest_a2|S|default",
+   "detest_a3|A|default",
+   "detest_a3|L|default",
+   "detest_a3|S|default",
+   "logistic|A|default",
+   "logistic|L|default",
+   "logistic|S|default",
+   "detest_b3|A|default",
+   "detest_b3|L|default",
+   "detest_b3|S|default",
+   "spiral_b4|A|default",
+   "spiral_b4|L|default",
+   "spiral_b4|S|default",
+   "rigid_body|A|default",
+   "rigid_body|L|default",
+   "rigid_body|S|default",
+   "cascade10|A|default",
+   "cascade10|L|default",
+   "cascade10|S|default",
+   "kepler_e05|A|default",
+   "kepler_e05|L|default",
+   "kepler_e05|S|default",
+   "kepler_e09|A|default",
+   "kepler_e09|L|default",
+   "kepler_e09|S|default",
+   "henon_heiles|A|default",
+   "henon_heiles|L|default",
+   "henon_heiles|S|default",
+   "fput_30|A|default",
+   "fput_30|L|default",
+   "fput_30|S|default",
+   "duffing_e3|A|default",
+   "duffing_e3|L|default",
+   "duffing_e3|S|default",
+   "kuramoto_50|A|default",
+   "kuramoto_50|L|default",
+   "kuramoto_50|S|default",
+   "cb_probe|A|default",
+   "cb_column|A|default",
+   "cb_time|A|default",
+   "cb_blowup|A|default",
+   "cb_mass|A|default",
+   "sr_chem_dense|A|default",
+   "sr_pr_dense_ft|A|default",
+   "sr_ac_jvp|A|default",
+   "sr_ac_band|A|default",
+   "chem_d4|A|regime=stiff",
+   "chem_d4|A|regime=nonstiff",
+   "kepler_e05|A|regime=stiff",
+   "kepler_e05|A|regime=nonstiff",
+   "chem_d4|A|max_steps=500",
+   "chem_d4|A|max_steps=50"
+  ],
+  "declared": [
+   "sr_chem_dense|A|default",
+   "sr_pr_dense_ft|A|default",
+   "sr_ac_jvp|A|default",
+   "sr_ac_band|A|default",
+   "cb_blowup|A|default",
+   "cb_mass|A|default",
+   "chem_d4|A|regime=stiff",
+   "chem_d4|A|regime=nonstiff",
+   "kepler_e05|A|regime=stiff",
+   "kepler_e05|A|regime=nonstiff"
+  ],
+  "undeclared_count": 69,
+  "case_id_format": "<problem>|<A|L|S>|<default | regime=stiff | regime=nonstiff | max_steps=500 | max_steps=50>"
+ },
+ "measures": [
+  "charged callbacks by kind and callback entries counted inside the closures (stage, finite-difference column, time derivative), as V27",
+  "callbacks unit cb = rhs_calls + jvp_calls + ft_calls + charged Jacobian callbacks (counters.jacobian_builds where the problem has a Jacobian callback), as V27; reported as well without ft_calls where the problem has no time-derivative callback (V27 review R2), no rule reads that variant",
+  "operations by one formula for all arms: 52 n per DOPRI5 attempt, 128 n per RODAS5P attempt, 2 n^3/3 per factorization, 2 n^2 per solve pair and per finite-difference build",
+  "attempts; pilots (number, verdicts, H, window cost, pilot cost); handover time and DOPRI5 attempts before it; status and typed stop",
+  "error at t1 against the reference of the problem: closed form evaluated with mpmath at 50 digits and rounded to the nearest double, else Rodas5p::solve at rtol 1e-12, atol 1e-14; norm: weighted RMS with weights atol + rtol |y_ref_i| of the run's tolerances (V27)",
+  "the last accepted step of the RODAS5P part (length and start) of N, R and R_H, read by prefix replays as in E7_DIAGNOSIS.json (no rule)",
+  "final-state bits of three runs (two in one process, one in a fresh process) and the route digest"
+ ],
+ "discriminators": {
+  "E1_economy": "over all cases (problem x tolerance x options) where T and N succeed (no case is excluded): geometric mean of cost(N)/cost(T) < 1 in callbacks and in operations; and, over the undeclared cases among them, max of cost(N)/min(cost(D), cost(R)) < the same maximum for T, in each unit (min over those of D and R that succeed; a case where neither succeeds enters the geometric means but not the maxima). Undeclared case: neither the problem nor the options declare a fact that decides the route (regime Unknown, strategy Auto, no Jacobian, JVP, band or mass matrix supplied), i.e. every case of cases.ids that is not in cases.declared; for N its analysis basis is break-even (a mismatch is reported). CORRECTED from V27, where the maxima also ran over declared cases on which N and T are the same run",
+  "E2_no_new_failure": "no case where T succeeds and N does not, at the same max_steps (unchanged)",
+  "E3_neutrality": "(a) every N run without a handover, except the runs that owner decision D1 ends (see E3_excluded_runs), has the final-state bits and the DOPRI5 counters of D plus exactly the pilots' counters, and cost <= 2 cost(D) in each unit; (b) every run decided by a declared fact (cases.declared) equals T bit for bit. CORRECTED from V27, where (a) also required D's bits of the N2 run that D1 and E8 end at its first pilot",
+  "E3_excluded_runs": "exactly the N runs whose last pilot record has verdict 'fatal' and whose stop is CallbackFailed (owner decision D1). A priori members: the three N runs of cb_column|A|default (its right-hand side fails only at a finite-difference column, which every pilot builds); the three N runs of cb_time|A|default only if one of its pilots reaches t > 0.4 before DOPRI5 does. The only other problem with a fatal callback, cb_probe, fails above y0 = 1 while its solution decreases, so its pilots (from accepted states below 1, finite-difference shift 1.5e-8) are not expected to reach it; a run of it that D1 ends would be excluded by the same rule. The parser lists the members found; each is reported with its pilot record",
+  "E4_budget": "attempts over all legs and pilots <= max_steps; exhaustion reports MaxStepsReached{max_steps} (unchanged)",
+  "E5_callbacks": "no closure entry before DOPRI5's first stage; no entry with t = t0 except DOPRI5's stages; every entry that is not a stage is a finite-difference column or time-derivative call of a RODAS5P attempt that starts at an accepted state; uncharged entries = 0 (unchanged; readings below)",
+  "E6_determinism": "the three runs have equal digests, counters and bits (unchanged)",
+  "E7_accuracy": "err(N) <= 3 max(err(D), err(R)) over those of D and R that succeed, on every case with a reference where N succeeds (rule unchanged; V27 excluded kt_vanishing, this set has no report-only problem)",
+  "E8_callback_cases": "cb_probe succeeds under N; cb_time reports CallbackFailed{Rhs, 'logger offline'}; cb_column ends with CallbackFailed at its first pilot (D1): one pilot record, verdict fatal. Rule of V27 on the fresh analogues of F2, P_fatal and N2",
+  "E9_v03b_bounded_work": "pr_sin2t|A|default <= 9090 and a3_linear4|A|default <= 36363 charged right-hand-side calls, each with a recorded handover; the V03b bound W = floor(0.1 x 6 x rho x (t1 - t0) / 3.3) of unified_router_contracts.rs (rho = 1e4 for both) on the fresh analogues of P_scalar_fd and P_heat_fd (also reported at L and S without a rule)",
+  "E10_pilot_accounting": "pilots <= 1 + floor(log2(A_D / b)) and pilot spend <= DOPRI5 spend in each unit, on every run (unchanged; reading R6 below)"
+ },
+ "readings_fixed_before_any_run": [
+  "E3 (a) pilots' counters: the records' pilot_attempts, pilot_callbacks (charged rhs + ft) and pilot_operations; the DOPRI5 leg's counters field by field against D (V27 addendum 0b)",
+  "E5 (i) per kind: uncharged = max(0, entries - charged counter); a counter above its entries (ft_calls of finite-difference time derivatives and of mass-matrix problems) is reported, not a failure (V27 erratum E5-i, review R3, now fixed before any run)",
+  "E5 (ii)/(iii) apply to N runs that start with DOPRI5 (break-even route, declared Nonstiff) and are decided by the runner's replay split e5 (V27 addendum 0b); runs that start RODAS5P by a declared fact are covered by E3 (b)",
+  "E10 is evaluated on every N run with at least one pilot; runs without a pilot are listed as 'no pilot', and runs with A_D = 0 as 'count bound not evaluable' next to the verdict (V27 R6 and review R4)",
+  "E1 maxima only over cases where D or R succeeds; E7 only where N succeeds and has an error (a reference exists and N reached t1) (V27 R3, R4)",
+  "the also-tolerances apply to the listed problems with the default options only (V27 R5)",
+  "a run 'succeeds' iff run.success is true and the process exited 0 with its lines"
+ ],
+ "declared_expected_losses": "not failures: on problems stiff from t0 where T starts RODAS5P at t0 (today's screen fires: pr_sin2t, kaps_1e6, a3_linear4, chem_d4, decay_chain6, pre_equilibrium, pendulum_tracker; n > 10: lin20_dense), N pays a DOPRI5 prefix, the pilot and RODAS5P's ramp from h0 = H: up to about 2x T in callbacks (V27: P_scalar_fd 145 vs 74, P_heat_fd 945 vs 723, lin_3400 687 vs 436, heat_64_fd 3328 vs 2993); short non-stiff runs pay lost pilots (V27: +1.9 to +20 percent in callbacks, up to +43 percent in operations at L)",
+ "frozen_decision": "the Auto route becomes N (FBP) iff E1 to E10 all pass on this set; otherwise today's route stays and the FBP code stays on its builder branch (not merged). E3, E4, E5, E6 or E10 failing refutes the unconditional properties (design or implementation defect); E1 failing refutes the economic claim; E2 or E7 failing blocks adoption. The default path (Rodas5p::solve) and its golden files are not part of the decision and must stay unchanged",
+ "run_settings": "as V27: every cargo command under the host-wide build lock, taskset -c 0-5,12-17, cargo +1.94.1 --locked -j 4 --release, node-owned CARGO_TARGET_DIR (w4-v30 for N, w4-v30base for T); the evaluation runner is a standalone cargo package router_breakeven_v27b/runner: a copy of router_hyperparameter_free/runner (src/main.rs, its lock with the root package renamed) with the problems above added and an option --h0 (arm R only, for R_H); built once against each checkout; per case and arm one process with --repeat 2 and a fresh process with --repeat 1, entry log on, E5 replay split for N; D and R once more from the T build (sanity); one heavy process at a time; counters and bits only, no wall time; raw stdout, stderr and exit code of every process kept and indexed with UTC start times",
+ "order_of_work": [
+  "0 (before any deciding run): PHASE2_NOTES.txt with the computation rules; the runner built and checked on the V27 toy problems (toy, toy_stiff, toy_osc, toy_ft, toy_fatal), which are outside this set",
+  "1: references (closed forms by mpmath; the others by Rodas5p::solve at rtol 1e-12, atol 1e-14 from the N build)",
+  "2: every arm on every case (deciding runs), then R_H",
+  "3: RESULTS.json (strict JSON) and REPORT_KO.md from a parser that reads only raw runner output and the references",
+  "4: on the N head: unified_breakeven_contracts, unified_router_contracts, default_path_golden, the full facade suite with --no-fail-fast, clippy -D warnings, fmt; default-path golden files unchanged",
+  "5: independent review"
+ ],
+ "expectations_without_rule": {
+  "source": "no arm and no model ran on these problems; the values come from the definitions, the scipy stiffness estimate S of logs/fresh_set_checks.json (attempts DOPRI5 needs at its real stability limit; max_steps is 100000), today's screen rule (L (t1 - t0) > 3.3 min(1000, max_steps/2) at t0, n <= 10) and the V27 results",
+  "per_problem": [
+   {
+    "problem": "pr_sin2t",
+    "b": 3,
+    "dopri5_stability_attempts_S": 15151.52,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "screen at t0, then RODAS5P or the DOPRI5 trial of min(1000, max_steps/2) attempts",
+    "handover_expected": "yes",
+    "E7_risk": "low: DOPRI5 feasible, its stability-limited error enters the bar (0.1 to 0.7 tolerance units on the V27 stiff problems)"
+   },
+   {
+    "problem": "kaps_1e6",
+    "b": 4,
+    "dopri5_stability_attempts_S": 606062.3,
+    "dopri5_expected": "infeasible: MaxStepsReached",
+    "T_route_expected": "screen at t0, then RODAS5P or the DOPRI5 trial of min(1000, max_steps/2) attempts",
+    "handover_expected": "yes",
+    "E7_risk": "high: DOPRI5 infeasible, so the bar is 3 err(R) alone, and the end error of RODAS5P on a smooth slow manifold is the last step's truncation error (the P_scalar_fd mechanism of E7_DIAGNOSIS.json)"
+   },
+   {
+    "problem": "a3_linear4",
+    "b": 5,
+    "dopri5_stability_attempts_S": 60606.06,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "screen at t0, then RODAS5P or the DOPRI5 trial of min(1000, max_steps/2) attempts",
+    "handover_expected": "yes",
+    "E7_risk": "low: DOPRI5 feasible, its stability-limited error enters the bar (0.1 to 0.7 tolerance units on the V27 stiff problems)"
+   },
+   {
+    "problem": "b1_linear4",
+    "b": 5,
+    "dopri5_stability_attempts_S": 857.0991,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "screen at t0, then RODAS5P or the DOPRI5 trial of min(1000, max_steps/2) attempts",
+    "handover_expected": "uncertain (mild stiffness, grey zone B4)",
+    "E7_risk": "low: DOPRI5 feasible, its stability-limited error enters the bar (0.1 to 0.7 tolerance units on the V27 stiff problems)"
+   },
+   {
+    "problem": "chem_d4",
+    "b": 4,
+    "dopri5_stability_attempts_S": 57857.85,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "screen at t0, then RODAS5P or the DOPRI5 trial of min(1000, max_steps/2) attempts",
+    "handover_expected": "yes",
+    "E7_risk": "low: DOPRI5 feasible, its stability-limited error enters the bar (0.1 to 0.7 tolerance units on the V27 stiff problems)"
+   },
+   {
+    "problem": "c1_nonlinear4",
+    "b": 5,
+    "dopri5_stability_attempts_S": 151.5152,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "screen at t0, then RODAS5P or the DOPRI5 trial of min(1000, max_steps/2) attempts",
+    "handover_expected": "uncertain (mild stiffness, grey zone B4)",
+    "E7_risk": "low: DOPRI5 feasible, its stability-limited error enters the bar (0.1 to 0.7 tolerance units on the V27 stiff problems)"
+   },
+   {
+    "problem": "lin20_dense",
+    "b": 15,
+    "dopri5_stability_attempts_S": 30303.03,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "RODAS5P from t0 (dimension above the trial limit 10)",
+    "handover_expected": "yes",
+    "E7_risk": "low: DOPRI5 feasible, its stability-limited error enters the bar (0.1 to 0.7 tolerance units on the V27 stiff problems)"
+   },
+   {
+    "problem": "ac_100",
+    "b": 166,
+    "dopri5_stability_attempts_S": 1253.466,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "RODAS5P from t0 (dimension above the trial limit 10)",
+    "handover_expected": "uncertain (mild stiffness, grey zone B4)",
+    "E7_risk": "low: DOPRI5 feasible, its stability-limited error enters the bar (0.1 to 0.7 tolerance units on the V27 stiff problems)"
+   },
+   {
+    "problem": "burgers_80",
+    "b": 113,
+    "dopri5_stability_attempts_S": 158.9297,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "RODAS5P from t0 (dimension above the trial limit 10)",
+    "handover_expected": "uncertain (mild stiffness, grey zone B4)",
+    "E7_risk": "low: DOPRI5 feasible, its stability-limited error enters the bar (0.1 to 0.7 tolerance units on the V27 stiff problems)"
+   },
+   {
+    "problem": "pendulum_tracker",
+    "b": 4,
+    "dopri5_stability_attempts_S": 3030303.0,
+    "dopri5_expected": "infeasible: MaxStepsReached",
+    "T_route_expected": "screen at t0, then RODAS5P or the DOPRI5 trial of min(1000, max_steps/2) attempts",
+    "handover_expected": "yes",
+    "E7_risk": "moderate: DOPRI5 infeasible (bar 3 err(R)), but RODAS5P's steps stay accuracy-limited up to t1"
+   },
+   {
+    "problem": "late_linear4",
+    "b": 5,
+    "dopri5_stability_attempts_S": 18181.82,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "screen at t0, then RODAS5P or the DOPRI5 trial of min(1000, max_steps/2) attempts",
+    "handover_expected": "yes",
+    "E7_risk": "low: DOPRI5 feasible, its stability-limited error enters the bar (0.1 to 0.7 tolerance units on the V27 stiff problems)"
+   },
+   {
+    "problem": "fhn_relax",
+    "b": 4,
+    "dopri5_stability_attempts_S": 8612.245,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "screen at t0, then RODAS5P or the DOPRI5 trial of min(1000, max_steps/2) attempts",
+    "handover_expected": "yes",
+    "E7_risk": "low: DOPRI5 feasible, its stability-limited error enters the bar (0.1 to 0.7 tolerance units on the V27 stiff problems)"
+   },
+   {
+    "problem": "pr_ramp",
+    "b": 3,
+    "dopri5_stability_attempts_S": 16207.31,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "screen at t0, then RODAS5P or the DOPRI5 trial of min(1000, max_steps/2) attempts",
+    "handover_expected": "yes",
+    "E7_risk": "low: DOPRI5 feasible, its stability-limited error enters the bar (0.1 to 0.7 tolerance units on the V27 stiff problems)"
+   },
+   {
+    "problem": "decay_chain6",
+    "b": 5,
+    "dopri5_stability_attempts_S": 60606.06,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "screen at t0, then RODAS5P or the DOPRI5 trial of min(1000, max_steps/2) attempts",
+    "handover_expected": "yes",
+    "E7_risk": "low: DOPRI5 feasible, its stability-limited error enters the bar (0.1 to 0.7 tolerance units on the V27 stiff problems)"
+   },
+   {
+    "problem": "pre_equilibrium",
+    "b": 4,
+    "dopri5_stability_attempts_S": 909092.9,
+    "dopri5_expected": "infeasible: MaxStepsReached",
+    "T_route_expected": "screen at t0, then RODAS5P or the DOPRI5 trial of min(1000, max_steps/2) attempts",
+    "handover_expected": "yes",
+    "E7_risk": "high: DOPRI5 infeasible, so the bar is 3 err(R) alone, and the end error of RODAS5P on a smooth slow manifold is the last step's truncation error (the P_scalar_fd mechanism of E7_DIAGNOSIS.json)"
+   },
+   {
+    "problem": "detest_a2",
+    "b": 3,
+    "dopri5_stability_attempts_S": 1.393108,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "screen at t0, then RODAS5P or the DOPRI5 trial of min(1000, max_steps/2) attempts",
+    "handover_expected": "no (lost pilots only); N = Dopri5::solve plus pilots (E3 a)",
+    "E7_risk": "none while no handover (err(N) = err(D))"
+   },
+   {
+    "problem": "detest_a3",
+    "b": 3,
+    "dopri5_stability_attempts_S": 3.909313,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "screen at t0, then RODAS5P or the DOPRI5 trial of min(1000, max_steps/2) attempts",
+    "handover_expected": "no (lost pilots only); N = Dopri5::solve plus pilots (E3 a)",
+    "E7_risk": "none while no handover (err(N) = err(D))"
+   },
+   {
+    "problem": "logistic",
+    "b": 3,
+    "dopri5_stability_attempts_S": 0.7793758,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "screen at t0, then RODAS5P or the DOPRI5 trial of min(1000, max_steps/2) attempts",
+    "handover_expected": "no (lost pilots only); N = Dopri5::solve plus pilots (E3 a)",
+    "E7_risk": "none while no handover (err(N) = err(D))"
+   },
+   {
+    "problem": "detest_b3",
+    "b": 4,
+    "dopri5_stability_attempts_S": 6.066202,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "screen at t0, then RODAS5P or the DOPRI5 trial of min(1000, max_steps/2) attempts",
+    "handover_expected": "no (lost pilots only); N = Dopri5::solve plus pilots (E3 a)",
+    "E7_risk": "none while no handover (err(N) = err(D))"
+   },
+   {
+    "problem": "spiral_b4",
+    "b": 4,
+    "dopri5_stability_attempts_S": 6.632929,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "screen at t0, then RODAS5P or the DOPRI5 trial of min(1000, max_steps/2) attempts",
+    "handover_expected": "no (lost pilots only); N = Dopri5::solve plus pilots (E3 a)",
+    "E7_risk": "none while no handover (err(N) = err(D))"
+   },
+   {
+    "problem": "rigid_body",
+    "b": 4,
+    "dopri5_stability_attempts_S": 5.380561,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "screen at t0, then RODAS5P or the DOPRI5 trial of min(1000, max_steps/2) attempts",
+    "handover_expected": "no (lost pilots only); N = Dopri5::solve plus pilots (E3 a)",
+    "E7_risk": "none while no handover (err(N) = err(D))"
+   },
+   {
+    "problem": "cascade10",
+    "b": 8,
+    "dopri5_stability_attempts_S": 6.060606,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "screen at t0, then RODAS5P or the DOPRI5 trial of min(1000, max_steps/2) attempts",
+    "handover_expected": "no (lost pilots only); N = Dopri5::solve plus pilots (E3 a)",
+    "E7_risk": "none while no handover (err(N) = err(D))"
+   },
+   {
+    "problem": "kepler_e05",
+    "b": 5,
+    "dopri5_stability_attempts_S": 9.37691,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "screen at t0, then RODAS5P or the DOPRI5 trial of min(1000, max_steps/2) attempts",
+    "handover_expected": "no (lost pilots only); N = Dopri5::solve plus pilots (E3 a)",
+    "E7_risk": "none while no handover (err(N) = err(D))"
+   },
+   {
+    "problem": "kepler_e09",
+    "b": 5,
+    "dopri5_stability_attempts_S": 12.67392,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "screen at t0, then RODAS5P or the DOPRI5 trial of min(1000, max_steps/2) attempts",
+    "handover_expected": "no (lost pilots only); N = Dopri5::solve plus pilots (E3 a)",
+    "E7_risk": "none while no handover (err(N) = err(D))"
+   },
+   {
+    "problem": "henon_heiles",
+    "b": 5,
+    "dopri5_stability_attempts_S": 19.7567,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "screen at t0, then RODAS5P or the DOPRI5 trial of min(1000, max_steps/2) attempts",
+    "handover_expected": "no (lost pilots only); N = Dopri5::solve plus pilots (E3 a)",
+    "E7_risk": "none while no handover (err(N) = err(D))"
+   },
+   {
+    "problem": "fput_30",
+    "b": 25,
+    "dopri5_stability_attempts_S": 61.0667,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "RODAS5P from t0 (dimension above the trial limit 10)",
+    "handover_expected": "no (lost pilots only); N = Dopri5::solve plus pilots (E3 a)",
+    "E7_risk": "none while no handover (err(N) = err(D))"
+   },
+   {
+    "problem": "duffing_e3",
+    "b": 4,
+    "dopri5_stability_attempts_S": 8.767339,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "screen at t0, then RODAS5P or the DOPRI5 trial of min(1000, max_steps/2) attempts",
+    "handover_expected": "no (lost pilots only); N = Dopri5::solve plus pilots (E3 a)",
+    "E7_risk": "none while no handover (err(N) = err(D))"
+   },
+   {
+    "problem": "kuramoto_50",
+    "b": 52,
+    "dopri5_stability_attempts_S": 3.114789,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "RODAS5P from t0 (dimension above the trial limit 10)",
+    "handover_expected": "no (lost pilots only); N = Dopri5::solve plus pilots (E3 a)",
+    "E7_risk": "none while no handover (err(N) = err(D))"
+   },
+   {
+    "problem": "cb_probe",
+    "b": 3,
+    "dopri5_stability_attempts_S": 0.586431,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "screen at t0, then RODAS5P or the DOPRI5 trial of min(1000, max_steps/2) attempts",
+    "handover_expected": "possible; N succeeds (no off-trajectory call)",
+    "E7_risk": "none while no handover (N succeeds; T is expected to fail at t0)"
+   },
+   {
+    "problem": "cb_column",
+    "b": 4,
+    "dopri5_stability_attempts_S": 454.5455,
+    "dopri5_expected": "feasible",
+    "T_route_expected": "screen at t0, then RODAS5P or the DOPRI5 trial of min(1000, max_steps/2) attempts",
+    "handover_expected": "no: D1 ends the solve at the first pilot",
+    "E7_risk": "not evaluated: N ends by D1 (E7 needs N to reach t1)"
+   },
+   {
+    "problem": "cb_time",
+    "b": 3,
+    "dopri5_stability_attempts_S": null,
+    "dopri5_expected": null,
+    "T_route_expected": "screen at t0, then RODAS5P or the DOPRI5 trial of min(1000, max_steps/2) attempts",
+    "handover_expected": "no; the run stops on the fatal callback after t = 0.4",
+    "E7_risk": "not evaluated: no arm reaches t1 (no reference)"
+   },
+   {
+    "problem": "cb_blowup",
+    "b": 3,
+    "dopri5_stability_attempts_S": null,
+    "dopri5_expected": null,
+    "T_route_expected": "declared fact: RODAS5P from t0 (N equals T)",
+    "handover_expected": "not applicable (declared fact)",
+    "E7_risk": "not evaluated: no arm reaches t1 (no reference)"
+   },
+   {
+    "problem": "cb_mass",
+    "b": 4,
+    "dopri5_stability_attempts_S": null,
+    "dopri5_expected": null,
+    "T_route_expected": "declared fact: RODAS5P from t0 (N equals T)",
+    "handover_expected": "not applicable (declared fact)",
+    "E7_risk": "none: N is expected to equal T and R bit for bit (declared fact, the RODAS5P leg is the direct call)"
+   },
+   {
+    "problem": "sr_chem_dense",
+    "b": 4,
+    "dopri5_stability_attempts_S": null,
+    "dopri5_expected": null,
+    "T_route_expected": "declared fact: RODAS5P from t0 (N equals T)",
+    "handover_expected": "not applicable (declared fact)",
+    "E7_risk": "none: N is expected to equal T and R bit for bit (declared fact, the RODAS5P leg is the direct call)"
+   },
+   {
+    "problem": "sr_pr_dense_ft",
+    "b": 3,
+    "dopri5_stability_attempts_S": null,
+    "dopri5_expected": null,
+    "T_route_expected": "declared fact: RODAS5P from t0 (N equals T)",
+    "handover_expected": "not applicable (declared fact)",
+    "E7_risk": "none: N is expected to equal T and R bit for bit (declared fact, the RODAS5P leg is the direct call)"
+   },
+   {
+    "problem": "sr_ac_jvp",
+    "b": 166,
+    "dopri5_stability_attempts_S": null,
+    "dopri5_expected": null,
+    "T_route_expected": "declared fact: RODAS5P from t0 (N equals T)",
+    "handover_expected": "not applicable (declared fact)",
+    "E7_risk": "none: N is expected to equal T and R bit for bit (declared fact, the RODAS5P leg is the direct call)"
+   },
+   {
+    "problem": "sr_ac_band",
+    "b": 166,
+    "dopri5_stability_attempts_S": null,
+    "dopri5_expected": null,
+    "T_route_expected": "declared fact: RODAS5P from t0 (N equals T)",
+    "handover_expected": "not applicable (declared fact)",
+    "E7_risk": "none: N is expected to equal T and R bit for bit (declared fact, the RODAS5P leg is the direct call)"
+   }
+  ],
+  "E7": "V27 (raw lines of RESULTS.json): of the 23 cases with a handover and an E7 row, err(N)/err(R) exceeded 3 on 8; E7 failed only on 2 of the 7 of them where DOPRI5 failed (P_scalar_fd at A and L), because elsewhere DOPRI5's error (0.095 to 0.745 tolerance units on the 18 handover cases where it succeeded) set the bar. Here DOPRI5 is expected to fail on kaps_1e6, pendulum_tracker, pre_equilibrium and the two budget variants (A only); by the E7 diagnosis (h0 scan: 31 of 41 step sequences of Rodas5p::solve alone exceed 3 times the default's error on P_scalar_fd) an E7 failure on kaps_1e6 or pre_equilibrium is likely for a reason that is not a defect of the route; R_H is reported to show it",
+  "E1": "large gains expected where T runs RODAS5P on non-stiff or mildly stiff problems: fput_30 and kuramoto_50 (n > 10), kepler_e09 (today's screen fires at the pericentre start, L about 2000), b1_linear4 (a column norm 1e4 at t0 although the spectral radius is 141), pr_ramp (k(0) = 0: today's screen is silent and the DOPRI5 trial exhausts 1000 attempts); losses as declared above; the geometric means are expected below 1 and N's worst ratio to the better reference near 2 (V27: 1.98)",
+  "E2": "the budget case chem_d4|A|max_steps=50 is the one where N may fail while T succeeds (DOPRI5 prefix, pilot and RODAS5P ramp from h0 = H within 50 attempts)",
+  "E9": "pr_sin2t: a few hundred charged right-hand sides (V27 P_scalar_fd: 145 against 181818); a3_linear4: a handover during the initial transient"
+ },
+ "changes_from_v27": [
+  "E1: maxima over undeclared cases only (owner decision OD-L1-26)",
+  "E3: runs ended by owner decision D1 excluded from (a), with the exact rule and a priori members (OD-L1-26)",
+  "E8 and E9: rules unchanged, instantiated on fresh analogues (the V27 problems they named are not in a disjoint set; the V27 instances stay covered by the contract tests of step 4)",
+  "E5, E10: the computation readings that V27 fixed in addendum 0b, erratum E5-i and review R2 to R4 are fixed here before any run",
+  "fresh problem set (37 problems, 79 cases) replaces the 36 problems of V27",
+  "exploratory arm R_H and the last-step measures (no rule), from the E7 diagnosis",
+  "no route code change: the E7 diagnosis found no defect of the route"
+ ],
+ "orchestrator_rulings": [
+  "R1 E7 unchanged: the E7 diagnosis found no defect of the route, so 'correct the design if needed' (OD-L1-26) asks for no change. Changing the E7 rule itself (a floor in tolerance units, or R_H inside the reference) would change an acceptance criterion after V27 failed it; that is an owner decision and is not taken here. Cost if wrong: E7 may fail again on kaps_1e6 or pre_equilibrium for the diagnosed reason and block adoption; R_H and the last-step measures then show whether each failure is of that kind, and the report puts the E7 question to the owner",
+  "R2 fresh set as drawn: kaps_1e6 and pre_equilibrium keep their parameters although expectations_without_rule rates their E7 risk high; changing a problem of the deciding set after reading its expected E7 outcome would choose the set by its outcome. Cost if wrong: as R1",
+  "R3 T stays d4e2772f: the loop head (45d0da19 and later: V28, V29, V31, V32 and wave-4 work, none of it part of the FBP change) is not merged into the N branch before phase 2, so T is the read-only checkout of d4e2772f and N the head of research/production-loop-20261116-w4-v30 on base 91e9e582. An adoption would be merged and verified on the newer loop head separately (default-path golden files, contract tests, the full facade suite). Cost if wrong: an adoption needs that re-check",
+  "R4 E3 (a) reading for a run that stops on the shared budget: an N run without a handover that stops on max_steps after lost pilots cannot have the bits of D, which has the whole budget for DOPRI5 (the second latent conflict of the V27 R1 kind, NOTES entry 3 item 2; not expected on this set). Such a run is listed and E3 (a) compares it with one extra process of arm D at max_steps equal to the DOPRI5 attempts of that run (bits, DOPRI5 counters, cost bound unchanged); whether Dopri5::solve counts max_steps as the runner counts DOPRI5 attempts is checked on the toy problems in step 0 and written in PHASE2_NOTES.txt before any deciding run. Cost if wrong: one more E3 reading to review"
+ ]
+}

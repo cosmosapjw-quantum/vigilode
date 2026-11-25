@@ -1,0 +1,169 @@
+NOTES of node V30_ROUTER_BREAKEVEN_V27B (loop L1, wave 4 group B), PHASE 1 ONLY (owner decision OD-L1-26)
+worktree /home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v30
+branch research/production-loop-20261116-w4-v30, base 91e9e582 (= V27 FBP branch w3-v27 at 60d67729 merged with loop head d4e2772f)
+CARGO_TARGET_DIR /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v30
+All times KST. Newest entry last.
+
+== 2026-11-25 11:01, entry 1 (start; nothing edited outside this directory, nothing run) ==
+
+SCOPE OF PHASE 1 (OD-L1-26, TASK_CONTRACTS V30)
+- Diagnose E7 of V27: P_scalar_fd (y' = -1e6 (y - cos t)), error of the FBP route (arm N) 50.6 x (tol A)
+  and 3.53 x (tol L) the error of Rodas5p::solve (arm R). P_scalar_fd is not part of the new deciding set,
+  so runs on it are allowed in phase 1.
+- Draft router_breakeven_v27b/PREDECLARED.json (strict JSON): corrected E1 (maximum ratio over undeclared
+  cases only; geometric means as before), corrected E3 (without the runs that owner decision D1 ends; exact
+  set stated), E2 and E4-E10 unchanged unless the diagnosis requires a change, E7 rule unchanged
+  (err(N) <= 3 max(err(D), err(R))), a FRESH problem set (>= 30 problems) disjoint from the 35 problems of
+  V27, tolerances and options as V27, run settings, the frozen decision, expectations without rule.
+- NOT in phase 1: any run of the deciding set; any push; ledger rows; edits outside the allowlist.
+
+PLAN
+1. Read V27: DESIGN_RECOMMENDED.md, PREDECLARED.json (E1-E10), AMENDMENT_A8_2.json, RESULTS.json,
+   REVIEW.json (R1-R6), REPORT_KO.md (correction notice), PHASE2_NOTES.txt, run_phase2.py, references.py,
+   runner/, addendum A8 result paragraph of PREREGISTRATION.md; the FBP diff d4e2772f..HEAD -- crates.
+2. Reproduce 50.6 and 3.53 with the V27 runner (same binary recipe, this worktree).
+3. Hypotheses to isolate (one variable per variant): the handover starts RODAS5P with h0 = H (pilot
+   horizon); pilot state handed over (t, y after the pilots vs restart from t0); error norm / tolerance
+   handed over; dense output; controller history (first-step rule, rejected-step memory). Raw logs kept in
+   router_breakeven_v27b/logs/.
+4. If the cause is a defect of the route: minimal correction, failing-first test, re-run
+   unified_breakeven_contracts, unified_router_contracts, default_path_golden.
+5. Draft PREDECLARED.json with a fresh problem set; record its sha256 here.
+
+== 2026-11-25 11:22, entry 2 (E7 diagnosis done; no code of the route edited) ==
+
+TOOLS (all under this directory; nothing outside it changed)
+- e7_diag/: standalone cargo package (own [workspace], path dependency on this worktree's facade),
+  Cargo.lock = the V27 runner's lock with the root package renamed (the facade's dependency graph
+  is unchanged between 60d67729 and 91e9e582), built by e7_diag/build.sh: flock + taskset 0-5,12-17
+  + cargo +1.94.1 build --locked -j 4 --release, CARGO_TARGET_DIR .../w4-v30. No existing
+  Cargo.toml or Cargo.lock was edited (precedent: router_hyperparameter_free/runner).
+  Binary 1 sha256 01a78af8... (logs/e7/build.log), binary 2 95d0389c... (adds --tau; the --tol
+  output of both binaries is byte-identical, logs/e7/raw vs logs/e7/raw_95d0389c7a04).
+- run_e7.py: one process per tolerance pair A, L, S and one --tau process; raw stdout kept,
+  logs/e7/RUNS_INDEX.jsonl (UTC 02:14:51 run 1, 02:18:26 run 2). Counters and bits only.
+- analyze_e7.py -> E7_DIAGNOSIS.json (strict JSON; reads only raw output, V27 raw lines and the V27
+  reference; errors with mpmath at 50 digits against the closed form). sha256 caa4da6d...
+
+REPRODUCTION (P_scalar_fd, arms as V27; err = |y - y_ref| / (atol + rtol |y_ref|))
+  tol  err(N)       err(R)       ratio   E7    t_D = H          y_D - y(t_D)   D
+  A    4.119e-3     8.133e-5     50.65   FAIL  1.8192e-5        -7.25e-8       fails at max_steps (t 0.3228)
+  L    2.874e-7     8.133e-8     3.534   FAIL  4.0e-5           -2.24e-5       fails at max_steps (t 0.3171)
+  S    9.652e-5     3.065e-4     0.315   PASS  1.2562e-5        -1.14e-9       fails at max_steps (t 0.3228)
+  N, R and D final bits equal V27's raw lines; the handover replayed from the pilot record with the
+  public drivers (Dopri5::solve to t_D, pilot Rodas5p::solve h0 = H max_steps 1, leg Rodas5p::solve
+  h0 = H) equals N bit for bit at A, L, S.
+
+ISOLATING VARIANTS (ratio = err / err(R), fd problem; last step length)
+  exp              A ratio (last h)     L ratio (last h)     S ratio (last h)
+  NR = N           50.65  (0.7433)      3.534  (0.3261)      0.315  (0.0118)
+  R                1      (0.219)       1      (0.219)       1      (0.0771)
+  R_h0_H           31.85  (0.6447)      0.997  (0.2188)      152.4  (0.3796)   no handover at all
+  C_exact_state    31.84  (0.6447)      0.995  (0.2187)      152.3  (0.3796)   exact y(t_D)
+  C_cont           8.11   (0.4227)      21.59  (0.5720)      63.64  (0.2887)   no restart after pilot
+  C_rest_h0_user   0.999  (0.2190)      0.999  (0.2189)      0.999  (0.0770)   leg h0 = 1e-3 (R's ramp)
+  R_from_tD        8.14   (0.4232)      1.95   (0.2706)      20.65  (0.2021)
+  Derivatives: exact f_t (ft), exact J (jac), both (jac_ft): end states move by <= 1.3e-14; jac
+  and ft_fdclone (the drivers' central difference as a callback) are bit-identical to fd; f_t times
+  (1 +- 1e-8) moves the end state by ~2e-15. FD derivatives play no part.
+  One-step grid (--tau): local truncation error of one step of length h from the exact solution
+  grows like h^3 (log-log slopes 2.96 to 3.03 for h >= 1e-2 at ten start times); one step's
+  amplification of an initial deviation is R(z) ~ -12.4/z (|R| |z| median 12.44, 154 steps with
+  |z| >= 100): the DOPRI5 prefix error (-2.2e-5 at L) is below 1e-12 after five steps.
+  h0 scan of Rodas5p::solve alone (h0 = 10^(-6+j/8), j = 0..40): end error / err(R default) from
+  0.026 to 62.3 (median 17.6) at A and L (identical sequences: every step capped at x5), 0.018 to
+  296 (median 42) at S; 31 (A, L) and 34 (S) of 41 h0 values exceed the factor 3 of E7. log(end
+  error) vs log(last step): slope 2.43 (A, L, r^2 0.93), 2.86 (S).
+
+CAUSE (stated in E7_DIAGNOSIS.json "cause", numbers from the runs)
+  The end error of every RODAS5P run on P_scalar_fd is the local truncation error of its LAST step
+  (earlier errors are damped by R(z) ~ -12.4/z), and that error grows like h^3 with the last step's
+  length. With the estimate far below tolerance the controller grows each step by its cap 5, so
+  the last step's length is set by where the ramp from h0 lands before t1 (not by the tolerance).
+  R (h0 = 1e-3) ends with a short step 0.219 and is in the lucky tail (its error is 0.057 of the
+  scan median). The FBP leg is a plain Rodas5p::solve from t_D + H with h0 = H; it ends with 0.743
+  (A) and 0.326 (L). Rodas5p::solve with h0 = H and no handover gives the same magnitude (31.85 at
+  A). Hypotheses refuted: pilot state carried to t1 (damped; it acts only through the early step
+  proposals), controller history (C_cont fails too), FD time derivative, FD Jacobian, dense output
+  (not used; all 162 runs end exactly at t1 with the step's own state), error norm (one norm).
+  Verdict: the E7 failure is an inherent property of comparing two valid RODAS5P step sequences
+  on a problem whose error is far below tolerance (N: 0.0041 and 2.9e-7 of the tolerance unit),
+  with a rule without floor; NOT a defect of the route. No code change (steps 2's correction
+  clause does not apply); the V27 contract tests are therefore not re-run for a change.
+
+== 2026-11-25 11:52, entry 3 (draft PREDECLARED.json; sanity checks; nothing of the deciding set run) ==
+
+FRESH SET (fresh_set.py is the one source; draft_predeclared.py writes PREDECLARED.json)
+- 37 problems, 79 cases: stiff_or_late_stiff 15 (A; pr_sin2t, a3_linear4, chem_d4, late_linear4,
+  fhn_relax also at L and S), non_stiff 13 (A, L, S), callback_budget_declared 9 (A): cb_probe (F2
+  analogue), cb_column (N2 analogue), cb_time (P_fatal analogue, 'logger offline'), cb_blowup,
+  cb_mass (singular mass, index 1), start rule sr_chem_dense, sr_pr_dense_ft, sr_ac_jvp, sr_ac_band;
+  variants chem_d4 regime stiff/nonstiff, kepler_e05 regime stiff/nonstiff, chem_d4 max_steps 500/50.
+  10 declared cases, 69 undeclared. n from 1 to 100; FD, dense, band, JVP and time-derivative callbacks.
+- Disjoint from the 36 V27 ids and their families, and from every fixture the FBP route has run on
+  (grep of tests/unified_breakeven_contracts.rs, tests/unified_router_contracts.rs,
+  tests/unified_production_solver_contracts.rs, examples/unified_production_solver.rs, the V27
+  runner toys; this node ran FBP only on P_scalar_fd variants). No VigilODE driver ran on them.
+- Definition checks (check_fresh_set.py, scipy 1.11.4 / mpmath 1.2.1 only; logs/fresh_set_checks.json):
+  every closed form matches y0 and has residual <= 6e-11 (relative), scipy agrees with it at t1 to
+  <= 4e-9; every stated derivative callback matches forward differences (<= 5e-9 relative); the
+  singular-mass closed form satisfies the DAE to 3e-51. Spans chosen from scipy runs before freezing:
+  ac_100 ends at t = 40 (transition near t = 38, relaxation still running), fhn_relax at t = 19.5
+  (middle of a slow phase; jumps near 18.91 and 20.18). Stiffness estimate S (DOPRI5 attempts at its
+  stability limit): DOPRI5 infeasible only on kaps_1e6 (6.1e5), pendulum_tracker (3.0e6),
+  pre_equilibrium (9.1e5); a3_linear4 and decay_chain6 6.1e4, chem_d4 5.8e4.
+- Corrections: E1 maxima over undeclared cases only; E3 (a) excludes exactly the runs D1 ends
+  (pilot verdict fatal; a priori cb_column|A|default, cb_time|A|default only if a pilot crosses
+  t = 0.4). E2, E4, E5, E6, E7, E10 rules unchanged; E8 and E9 rules unchanged, instantiated on
+  fresh analogues (E9: pr_sin2t <= 9090, a3_linear4 <= 36363, W formula of the V03b contract);
+  V27's computation readings (addendum 0b, erratum E5-i, review R2-R4) fixed before any run;
+  exploratory R_H (Rodas5p::solve from t0 with h0 = H, no rule).
+- Arms: T at d4e2772f, N at this branch; git diff d4e2772f 91e9e582 -- crates is byte-identical
+  to fbp_implementation.patch (sha256 9e903fdc...).
+
+SANITY (not required: no code change)
+- V27 contract targets on the merged head 91e9e582 + node files (logs/contracts/
+  v27_contracts_on_merged_head.log, 02:48-02:50 UTC): default_path_golden 11 passed,
+  unified_breakeven_contracts 13 passed, unified_router_contracts 36 passed, exit 0.
+- Loop checker (logs/check_checkpoint.log): exit 1, first complaint verbatim "ValueError:
+  implementation changed; rerun affected tests/update checkpoint:
+  crates/vigilode/src/unified/analyzer.rs"; collecting all: 10 such pins, all files of the V27 FBP
+  change carried by the merge (unified/*.rs, unified_router_contracts.rs, the example); strict JSON,
+  protected blobs, evidence and allowlist checks raise nothing.
+
+DRAFT
+- PREDECLARED.json sha256 93d0d84e02c1fd75651f24f9c4f0d3821a94fd67d9942fb93850958e97ca1d12
+  (fresh_set.py 657f14c4..., check_fresh_set.py 582ddbba..., draft_predeclared.py ce7b937f...,
+  logs/fresh_set_checks.json edce0629..., E7_DIAGNOSIS.json caa4da6d...).
+
+FOR THE ORCHESTRATOR BEFORE PUSHING
+1. E7 risk: with E7 unchanged, kaps_1e6 and pre_equilibrium (DOPRI5 infeasible, smooth slow
+   manifold at t1) can fail E7 for the diagnosed non-defect reason (V27: 2 of 7 handover cases
+   decided by R alone failed; h0 scan 31/41). Options: keep (as drafted; R_H shows the mechanism),
+   make them DOPRI5-feasible (kaps epsilon 1e-4; pre-equilibrium rates 1e3/2e3), or an owner
+   decision on an E7 floor.
+2. E3 (a) has a second latent conflict of the same kind as D1 (V27 R1): a run that stops on the
+   shared budget after lost pilots (U2) cannot have D's bits. Not expected here (chem_d4 budget
+   variants should hand over), not changed in the draft; a possible text: compare such a run with
+   Dopri5::solve at max_steps = its DOPRI5 attempts.
+3. E8/E9 named V27 problems; the draft keeps the rules on fresh analogues (disjointness).
+4. E2 risk: chem_d4|A|max_steps=50.
+5. T moves with the loop head only if the V30 branch merges it again (N - T must stay the patch).
+6. e7_diag/ holds a new standalone Cargo.toml and Cargo.lock (own [workspace]; precedent V27
+   runner); no existing manifest or lock was edited.
+
+== 2026-11-25 12:05, entry 4 (orchestrator review of the draft; nothing of the deciding set run) ==
+
+The orchestrator session reviewed the draft (sha256 93d0d84e..., entry 3) and changed only the
+generator draft_predeclared.py: field status (frozen by the commit that adds the file on origin) and a
+new field orchestrator_rulings; every other field is byte-identical to the draft (checked by loading
+both files). New sha256 of PREDECLARED.json: ade69b2dba68968b96fe121a83bef8586932e7024bffabe12ec69eea85b7239b.
+Rulings (full text in the file):
+- R1 E7 unchanged (no route defect; a change of the rule itself is an owner decision).
+- R2 fresh set as drawn (kaps_1e6 and pre_equilibrium keep their parameters; no choice of the set by
+  its expected E7 outcome).
+- R3 T stays d4e2772f; the loop head is not merged into this branch before phase 2.
+- R4 E3 (a) reading for an N run without a handover that stops on the shared budget after lost
+  pilots (open issue 2 of entry 3): compared with arm D at max_steps = that run's DOPRI5 attempts;
+  the counting is checked on the toy problems in step 0 and written in PHASE2_NOTES.txt.
+Open issues 3 to 6 of entry 3 stand as written (no change needed).
