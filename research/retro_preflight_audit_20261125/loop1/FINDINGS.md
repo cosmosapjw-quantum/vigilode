@@ -1,0 +1,5 @@
+# Loop 1: API admission and failure atomicity
+1. Batch table queries write a prefix before discovering a later invalid argument. Sequential and Rayon failure semantics are inconsistent and leave potentially mistaken output buffers. Require all invalid argument inputs rejected before writes; after a runtime/arithmetic error output must still be discarded.
+2. Explicit Scaled mode admits x=0 before domain validation, despite declared [64,16384] range. Require consistent strict admission, Hybrid continues to include zero.
+3. PreparedRhs computes expensive inverse-gap traversal before size-cap validation. Move cheap cap/shape first; no matrix contents or allocations are inspected before refusal where possible.
+4. Dictionary OnceLock initialization is proof-producing because it constructs rational interval coefficients, yet direct core acquisition has no arithmetic probe. Reject unsupported arithmetic before initialization; share existing probe instead of duplicating. Existing direct methods retain per-thread arithmetic precondition; integrator batch workers probe locally.

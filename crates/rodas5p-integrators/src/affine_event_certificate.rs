@@ -15,8 +15,6 @@
 //! or changed. The thread must keep its arithmetic environment unchanged
 //! during each call. The crate's `forbid(unsafe_code)` is preserved.
 
-use std::hint::black_box;
-
 use rodas5p_core::{
     CoreError, CoreResult,
     directed::{Interval, add_up},
@@ -37,31 +35,7 @@ fn invalid(message: &str) -> CoreError {
 /// output products detect DAZ and FTZ. This is an arithmetic probe, not a
 /// measurement of MXCSR. It is repeated at every proof-producing call.
 pub fn check_affine_event_arithmetic() -> CoreResult<()> {
-    if !cfg!(target_arch = "x86_64") {
-        return Err(invalid("the arithmetic probe is qualified on x86_64 only"));
-    }
-    let one = black_box(1.0_f64);
-    let minus_one = black_box(-1.0_f64);
-    let three_quarters = black_box(0.75 * f64::EPSILON);
-    let half = black_box(0.5 * f64::EPSILON);
-    let nearest = black_box(one + three_quarters).to_bits() == 1.0_f64.next_up().to_bits()
-        && black_box(minus_one - three_quarters).to_bits() == (-1.0_f64).next_down().to_bits()
-        && black_box(one + half).to_bits() == 1.0_f64.to_bits()
-        && black_box(minus_one - half).to_bits() == (-1.0_f64).to_bits();
-    let tiny = black_box(f64::from_bits(1));
-    let normal = black_box(f64::MIN_POSITIVE);
-    let factor = black_box(0.5_f64);
-    let gradual = black_box(tiny * one).to_bits() == 1
-        && black_box((-tiny) * one).to_bits() == ((1_u64 << 63) | 1)
-        && black_box(normal * factor).to_bits() == 0x0008_0000_0000_0000
-        && black_box((-normal) * factor).to_bits() == 0x8008_0000_0000_0000;
-    if nearest && gradual {
-        Ok(())
-    } else {
-        Err(invalid(
-            "requires nearest/ties-even arithmetic and gradual input/output underflow",
-        ))
-    }
+    rodas5p_core::directed::check_binary64_environment().map_err(|e| invalid(&e.to_string()))
 }
 
 /// Immutable source and transaction assertions supplied by the caller.

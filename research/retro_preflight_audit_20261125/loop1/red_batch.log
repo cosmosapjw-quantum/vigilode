@@ -1,0 +1,24 @@
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-integrators)
+    Finished `release` profile [optimized] target(s) in 12.69s
+     Running tests/retro_foundation_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/retro_foundation_contracts-e0fac3a7dd0adf68)
+
+running 1 test
+test preflight_batch_invalid_input_leaves_buffers_unchanged ... FAILED
+
+failures:
+
+---- preflight_batch_invalid_input_leaves_buffers_unchanged stdout ----
+
+thread 'preflight_batch_invalid_input_leaves_buffers_unchanged' (1102901) panicked at crates/rodas5p-integrators/tests/retro_foundation_contracts.rs:454:9:
+assertion `left == right` failed
+  left: [[Interval { lo: 0.6065306597126284, hi: 0.6065306597126384 }, Interval { lo: 0.7869386805747284, hi: 0.7869386805747379 }, Interval { lo: 0.42612263885053137, hi: 0.42612263885053603 }, Interval { lo: 0.14775472229893183, hi: 0.14775472229893338 }, Interval { lo: 0.037823888735467916, hi: 0.037823888735468304 }, Interval { lo: 0.007685555862397072, hi: 0.00768555586239715 }, Interval { lo: 0.0012955549418724374, hi: 0.0012955549418724505 }, Interval { lo: 0.00018666789403288888, hi: 0.00018666789403289078 }, Interval { lo: 2.3489608759617058e-5, hi: 2.3489608759617295e-5 }], [Interval { lo: 0.3678794411714374, hi: 0.3678794411714473 }, Interval { lo: 0.6321205588285529, hi: 0.6321205588285624 }, Interval { lo: 0.36787944117144, hi: 0.36787944117144467 }, Interval { lo: 0.1321205588285569, hi: 0.13212055882855844 }, Interval { lo: 0.03454610783810879, hi: 0.03454610783810918 }, Interval { lo: 0.007120558828557639, hi: 0.007120558828557717 }, Interval { lo: 0.0012127745047756484, hi: 0.0012127745047756614 }, Interval { lo: 0.000176114384113233, hi: 0.0001761143841132349 }, Interval { lo: 2.2298314299464336e-5, hi: 2.2298314299464573e-5 }], [Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }]]
+ right: [[Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }], [Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }], [Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }, Interval { lo: 123.0, hi: 123.0 }]]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    preflight_batch_invalid_input_leaves_buffers_unchanged
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test retro_foundation_contracts`

@@ -107,10 +107,10 @@ impl PreparedRhs {
     pub fn new(a: DenseMatrix) -> CoreResult<Self> {
         crate::affine_event_certificate::check_affine_event_arithmetic()?;
         let start = Instant::now();
-        let gap = enclosing_gap(&a)?;
-        if a.nrows() > 2048 {
+        if a.nrows() > 2048 || a.ncols() > 2048 {
             return Err(bad("prepared dimension cap"));
         }
+        let gap = enclosing_gap(&a)?;
         let lu = LuFactorization::new(&a)?;
         let scratch = LuSolveWorkspace::new(a.nrows());
         Ok(Self {
@@ -881,6 +881,13 @@ fn dictionary_batch_into<const N: usize>(
 ) -> CoreResult<()> {
     if x.len() != out.len() {
         return Err(bad("dictionary batch shape"));
+    }
+    // Admit all arguments before touching caller-owned buffers. A runtime
+    // arithmetic error is still a failed batch; discard its outputs.
+    if x.iter()
+        .any(|v| !v.is_finite() || !(0. ..=16384.).contains(v))
+    {
+        return Err(bad("dictionary batch argument domain"));
     }
     if x.is_empty() {
         return Ok(());

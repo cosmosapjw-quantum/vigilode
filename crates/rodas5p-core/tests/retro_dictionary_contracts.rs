@@ -223,3 +223,12 @@ fn complex_actual_table_candidates() {
         }
     }
 }
+
+#[test]
+fn preflight_scaled_domain_is_uniform() {
+    let d = Dictionary::get().unwrap();
+    assert!(d.phi(pt(0.), 0, RealMode::Scaled).is_err());
+    assert!(d.moment(pt(0.), 0, 0, RealMode::Scaled).is_err());
+    assert!(d.phi(pt(0.), 0, RealMode::Hybrid).unwrap().contains(1.));
+    assert!(d.moment(pt(64.), 7, 3, RealMode::Scaled).is_ok());
+}

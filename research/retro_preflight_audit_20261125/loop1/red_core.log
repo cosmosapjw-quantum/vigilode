@@ -1,0 +1,22 @@
+   Compiling rodas5p-core v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-core)
+    Finished `release` profile [optimized] target(s) in 9.65s
+     Running tests/retro_dictionary_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/retro_dictionary_contracts-583c1264ca69b28f)
+
+running 1 test
+test preflight_scaled_domain_is_uniform ... FAILED
+
+failures:
+
+---- preflight_scaled_domain_is_uniform stdout ----
+
+thread 'preflight_scaled_domain_is_uniform' (1102038) panicked at crates/rodas5p-core/tests/retro_dictionary_contracts.rs:230:5:
+assertion failed: d.phi(pt(0.), 0, RealMode::Scaled).is_err()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    preflight_scaled_domain_is_uniform
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p rodas5p-core --test retro_dictionary_contracts`

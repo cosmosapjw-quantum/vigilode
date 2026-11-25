@@ -12,6 +12,41 @@
 
 use crate::{CoreError, CoreResult};
 
+/// Check the binary64 arithmetic assumptions required by outward intervals.
+/// This safe probe does not read or modify a floating-point control register.
+/// Caller must keep the thread's arithmetic environment unchanged during use.
+pub fn check_binary64_environment() -> CoreResult<()> {
+    if !cfg!(target_arch = "x86_64") {
+        return Err(CoreError::InvalidInput(
+            "the arithmetic probe is qualified on x86_64 only".into(),
+        ));
+    }
+    let one = std::hint::black_box(1.0_f64);
+    let minus_one = std::hint::black_box(-1.0_f64);
+    let three_quarters = std::hint::black_box(0.75 * f64::EPSILON);
+    let half = std::hint::black_box(0.5 * f64::EPSILON);
+    let nearest = std::hint::black_box(one + three_quarters).to_bits()
+        == 1.0_f64.next_up().to_bits()
+        && std::hint::black_box(minus_one - three_quarters).to_bits()
+            == (-1.0_f64).next_down().to_bits()
+        && std::hint::black_box(one + half).to_bits() == 1.0_f64.to_bits()
+        && std::hint::black_box(minus_one - half).to_bits() == (-1.0_f64).to_bits();
+    let tiny = std::hint::black_box(f64::from_bits(1));
+    let normal = std::hint::black_box(f64::MIN_POSITIVE);
+    let factor = std::hint::black_box(0.5_f64);
+    let gradual = std::hint::black_box(tiny * one).to_bits() == 1
+        && std::hint::black_box((-tiny) * one).to_bits() == ((1_u64 << 63) | 1)
+        && std::hint::black_box(normal * factor).to_bits() == 0x0008_0000_0000_0000
+        && std::hint::black_box((-normal) * factor).to_bits() == 0x8008_0000_0000_0000;
+    if nearest && gradual {
+        Ok(())
+    } else {
+        Err(CoreError::InvalidInput(
+            "requires nearest/ties-even arithmetic and gradual input/output underflow".into(),
+        ))
+    }
+}
+
 /// Below this magnitude an FMA error term may itself be rounded, so the
 /// outward step is taken unconditionally.
 const EXACT_FMA_FLOOR: f64 = 1.0e-289;

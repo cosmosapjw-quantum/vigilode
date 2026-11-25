@@ -438,3 +438,20 @@ fn measure_foundation() {
         );
     }
 }
+
+#[test]
+fn preflight_batch_invalid_input_leaves_buffers_unchanged() {
+    let x = [0.5, 1., -1.];
+    for execution in [
+        ParallelExecution::sequential(),
+        ParallelExecution::rayon(4).unwrap(),
+    ] {
+        let sentinel = Interval::point(123.).unwrap();
+        let mut phi = [[sentinel; 9]; 3];
+        let mut moments = [[sentinel; 36]; 3];
+        assert!(phi_batch_into(&x, &mut phi, &execution).is_err());
+        assert!(moment_batch_into(&x, &mut moments, &execution).is_err());
+        assert_eq!(phi, [[sentinel; 9]; 3]);
+        assert_eq!(moments, [[sentinel; 36]; 3]);
+    }
+}

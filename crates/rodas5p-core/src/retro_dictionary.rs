@@ -389,6 +389,7 @@ pub struct Dictionary {
 static DICT: OnceLock<Result<Dictionary, String>> = OnceLock::new();
 impl Dictionary {
     pub fn get() -> CoreResult<&'static Self> {
+        crate::directed::check_binary64_environment()?;
         DICT.get_or_init(|| Self::load().map_err(|e| e.to_string()))
             .as_ref()
             .map_err(|e| bad(e))
@@ -702,6 +703,9 @@ impl Dictionary {
     }
     fn point(&self, x: f64, j: usize, mode: RealMode) -> CoreResult<Iv> {
         let c = self.cell(x)?;
+        if mode == RealMode::Scaled && x < 64. {
+            return Err(bad("scaled domain"));
+        }
         if x == 0. {
             return if j < 9 {
                 pt(1.)?.div(pt(FACT[j])?)
