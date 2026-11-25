@@ -1,0 +1,204 @@
+{
+  "candidates": [
+    {
+      "id": "C01",
+      "max_step": null,
+      "root_method": "Illinois",
+      "subdivisions": 2
+    },
+    {
+      "id": "C02",
+      "max_step": 0.1,
+      "root_method": "Illinois",
+      "subdivisions": 2
+    },
+    {
+      "id": "C03",
+      "max_step": null,
+      "root_method": "Bisection",
+      "subdivisions": 2
+    },
+    {
+      "id": "C04",
+      "max_step": 0.1,
+      "root_method": "Bisection",
+      "subdivisions": 2
+    },
+    {
+      "id": "C05",
+      "max_step": null,
+      "root_method": "Illinois",
+      "subdivisions": 4
+    },
+    {
+      "id": "C06",
+      "max_step": 0.1,
+      "root_method": "Illinois",
+      "subdivisions": 4
+    },
+    {
+      "id": "C07",
+      "max_step": null,
+      "root_method": "Bisection",
+      "subdivisions": 4
+    },
+    {
+      "id": "C08",
+      "max_step": 0.1,
+      "root_method": "Bisection",
+      "subdivisions": 4
+    },
+    {
+      "id": "C09",
+      "max_step": null,
+      "root_method": "Illinois",
+      "subdivisions": 8
+    },
+    {
+      "id": "C10",
+      "max_step": 0.1,
+      "root_method": "Illinois",
+      "subdivisions": 8
+    },
+    {
+      "id": "C11",
+      "max_step": null,
+      "root_method": "Bisection",
+      "subdivisions": 8
+    },
+    {
+      "id": "C12",
+      "max_step": 0.1,
+      "root_method": "Bisection",
+      "subdivisions": 8
+    }
+  ],
+  "harness_routes": [
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R001",
+      "checker_or_backend": "SOS/Bernstein/Sturm/interval checker",
+      "family": "real_analysis",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "uniform scalar inequality or convergence lemma",
+      "mapping": {
+        "axis": "subdivisions",
+        "translation": "sampled subinterval coverage; not a certified interval enclosure",
+        "values": [
+          2,
+          4,
+          8
+        ]
+      },
+      "primary_obstruction": "endpoint, equality, quantifier uniformity",
+      "proof_effect": "NONE",
+      "route_id": "REAL_ANALYSIS-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "interval enclosure"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R004",
+      "checker_or_backend": "exact polynomial calculus + formal kernel",
+      "family": "calculus",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "explicit derivative/Jacobian identity",
+      "mapping": {
+        "axis": "root_method",
+        "translation": "sign-changing bracket refinement; monotonicity not inferred",
+        "values": [
+          "Illinois",
+          "Bisection"
+        ]
+      },
+      "primary_obstruction": "boundary terms, degeneracy, parameter dependence",
+      "proof_effect": "NONE",
+      "route_id": "CALCULUS-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "differentiate and identify monotonicity"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R045",
+      "checker_or_backend": "exact rational witness; no-witness is not proof",
+      "family": "counterexample",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "minimal countermodel for a weakened/strong claim",
+      "mapping": {
+        "axis": "max_step",
+        "translation": "probe hidden crossings and coarse proposal counterexamples",
+        "values": [
+          null,
+          0.1
+        ]
+      },
+      "primary_obstruction": "finite witness may not generalize to infinite dimension",
+      "proof_effect": "NONE",
+      "route_id": "COUNTEREXAMPLE-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "search boundary/degenerate cases"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R021",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "numerical_analysis",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: a posteriori residual bound",
+      "mapping": {
+        "axis": "acceptance",
+        "translation": "analytic time/state error and actual callback counts"
+      },
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "NUMERICAL_ANALYSIS-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "a posteriori residual bound"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R048",
+      "checker_or_backend": "proposition equivalence audit",
+      "family": "formulation",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "equivalent or weaker stable intermediate proposition",
+      "mapping": {
+        "axis": "scope",
+        "translation": "refuse unsupported mass/sequential paths; no arbitrary-root completeness"
+      },
+      "primary_obstruction": "loss of implication to original target",
+      "proof_effect": "NONE",
+      "route_id": "FORMULATION-02",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "strengthen hypotheses minimally and map implication lattice"
+    }
+  ],
+  "schema": "m1.event.candidates.v1",
+  "selection": "reject failed expected root/time/transaction contracts, minimize measured RHS+event calls on training, holdout untouched",
+  "status": "PROPOSAL_ONLY"
+}

@@ -1,0 +1,30 @@
+    Checking rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-integrators)
+error: this `if` statement can be collapsed
+   --> crates/rodas5p-integrators/src/rodas5p_fast_dense.rs:551:5
+    |
+551 | /     if let Some((band, kernel)) = band {
+552 | |         if band.lower >= problem.dimension
+553 | |             || band.upper >= problem.dimension
+554 | |             || !matches!(
+...   |
+563 | |     }
+    | |_____^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#collapsible_if
+    = note: `-D clippy::collapsible-if` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::collapsible_if)]`
+help: collapse nested if block
+    |
+551 ~     if let Some((band, kernel)) = band
+552 ~         && (band.lower >= problem.dimension
+553 |             || band.upper >= problem.dimension
+...
+556 |                 BandedKernel::Indexed | BandedKernel::Slices | BandedKernel::FixedWidth2
+557 ~             ))
+558 |         {
+...
+561 |             ));
+562 ~         }
+    |
+
+error: could not compile `rodas5p-integrators` (lib) due to 1 previous error

@@ -227,7 +227,9 @@ pub use capabilities::{Capabilities, FacadeRoute, OutputAccuracy};
 pub use causal_budget::*;
 pub use cofactor_chart::*;
 pub use error::{CallbackError, SolveError, Unsupported};
-pub use events::{Direction, EventRecord};
+pub use events::{
+    Direction, EventRecord, EventRootMethod, EventTransactionPolicy, EventTransactionRecord,
+};
 pub use fd::{
     JvpAccuracyRung, jvp_chebyshev4, jvp_chebyshev4_guarded, jvp_chebyshev4_guarded_with_delta,
 };

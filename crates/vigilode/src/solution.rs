@@ -485,12 +485,16 @@ pub struct Stats {
     pub driver_message: String,
     /// The terminal event that ended the outputs: an index into
     /// [`Solution::events`], not a declaration index. The integration itself
-    /// ran to its natural end, and the work after the event stays charged in
+    /// ran to its natural end under legacy postprocessing; the opt-in transaction
+    /// stops after the containing numerical proposal. All work stays charged in
     /// the counters above.
     pub terminal_event: Option<usize>,
     /// Event-function evaluations (the located events' post-processing; not
     /// part of [`Stats::counters`]).
     pub event_evaluations: u64,
+    /// Present only for the opt-in accepted-step event transaction.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub event_transaction: Option<crate::EventTransactionRecord>,
 }
 
 /// The solution of a run: output times, states, the run record and the
@@ -536,9 +540,9 @@ pub struct Solution {
     /// How the run ended.
     pub status: Status,
     /// The located events, in time order (see [`crate::Problem::event`]).
-    /// Only sign changes between the three samples of an accepted step are
-    /// seen: an even number of crossings in a half interval, and a tangent
-    /// touch, are missed.
+    /// Legacy location samples endpoints and midpoint; the opt-in transaction
+    /// uses its recorded subdivision policy. Both may miss hidden crossings
+    /// or tangent touches; neither certifies arbitrary opaque roots.
     pub events: Vec<EventRecord>,
     /// Splice corrections applied to dense output at route switches (WP-11).
     #[serde(default, skip_serializing_if = "Vec::is_empty")]

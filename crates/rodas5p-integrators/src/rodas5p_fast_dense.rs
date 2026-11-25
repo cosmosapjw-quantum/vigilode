@@ -44,8 +44,9 @@ use serde::Serialize;
 use crate::{
     AdaptiveStepConfig, OdeProblem, OutputSchedule,
     rodas5p_fast::{
-        BandedJacobian, BandedKernel, BandedWork, DriverPartial, Rodas5pFastOptions,
-        Rodas5pFastResult, StepSink, Workspace, integrate_fast, require_atol_vector,
+        AcceptControl, AcceptedStepView, BandedJacobian, BandedKernel, BandedWork, DriverPartial,
+        Rodas5pFastOptions, Rodas5pFastResult, StepSink, Workspace, integrate_fast,
+        require_atol_vector,
     },
 };
 
@@ -359,16 +360,19 @@ fn polynomial_component(y_old: f64, y_new: f64, [d0, d1, d2]: [f64; 3], theta: f
 }
 
 /// The step sink of the fast dense drivers.
-struct DenseSink {
+type DenseAcceptFn<'a> = dyn FnMut(&FastDenseSegments) -> AcceptControl + 'a;
+
+struct DenseSink<'a> {
     control: FastInteriorControl,
     segments: FastDenseSegments,
     interior: FastInteriorWork,
     /// The midpoint state and then `(h/2) d`, overwritten by the estimate
     /// (`2 n`, one allocation; empty under `Off`).
     scratch: Vec<f64>,
+    accept: Option<&'a mut DenseAcceptFn<'a>>,
 }
 
-impl DenseSink {
+impl DenseSink<'_> {
     fn new(control: FastInteriorControl, t0: f64, y0: &[f64]) -> CoreResult<Self> {
         let n = y0.len();
         let scratch = match control {
@@ -384,6 +388,7 @@ impl DenseSink {
             segments: FastDenseSegments::new(t0, y0, 2)?,
             interior: FastInteriorWork::default(),
             scratch,
+            accept: None,
         })
     }
 
@@ -443,7 +448,7 @@ impl DenseSink {
     }
 }
 
-impl StepSink for DenseSink {
+impl StepSink for DenseSink<'_> {
     fn after_attempt(
         &mut self,
         problem: &OdeProblem,
@@ -471,6 +476,13 @@ impl StepSink for DenseSink {
 
     fn accepted(&mut self, work: &Workspace, t_new: f64) {
         self.segments.push(t_new, &work.y_new, &work.u);
+    }
+
+    fn accept_control(&mut self, _view: &AcceptedStepView<'_>) -> AcceptControl {
+        match self.accept.as_mut() {
+            Some(f) => f(&self.segments),
+            None => AcceptControl::Continue,
+        }
     }
 }
 
@@ -505,6 +517,71 @@ fn run_dense(
     interior: FastInteriorControl,
     atol_vector: &[f64],
 ) -> CoreResult<Rodas5pFastDenseResult> {
+    run_dense_controlled(
+        problem,
+        band,
+        t_span,
+        y0,
+        adaptive,
+        interior,
+        atol_vector,
+        None,
+    )
+}
+
+/// Opt-in accepted-step control for the original fast dense and banded
+/// dense drivers. The full accepted numerical proposal and its work are
+/// retained; a client may stop before the next proposal and clip its own
+/// physical output using the last dense polynomial. No stage is re-run.
+/// Empty atol means scalar; otherwise the original vector contract applies.
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_rodas5p_fast_dense_with_control<'a>(
+    problem: &OdeProblem,
+    band: Option<(&BandedJacobian, BandedKernel)>,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    interior: FastInteriorControl,
+    atol_vector: &[f64],
+    control: &'a mut DenseAcceptFn<'a>,
+) -> CoreResult<Rodas5pFastDenseResult> {
+    if !atol_vector.is_empty() {
+        require_atol_vector(problem.dimension, atol_vector)?;
+    }
+    if let Some((band, kernel)) = band
+        && (band.lower >= problem.dimension
+            || band.upper >= problem.dimension
+            || !matches!(
+                kernel,
+                BandedKernel::Indexed | BandedKernel::Slices | BandedKernel::FixedWidth2
+            ))
+    {
+        return Err(CoreError::InvalidInput(
+            "dense control band contract".into(),
+        ));
+    }
+    run_dense_controlled(
+        problem,
+        band,
+        t_span,
+        y0,
+        adaptive,
+        interior,
+        atol_vector,
+        Some(control),
+    )
+}
+#[allow(clippy::too_many_arguments)]
+fn run_dense_controlled<'a>(
+    problem: &OdeProblem,
+    band: Option<(&BandedJacobian, BandedKernel)>,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    interior: FastInteriorControl,
+    atol_vector: &[f64],
+    accept: Option<&'a mut DenseAcceptFn<'a>>,
+) -> CoreResult<Rodas5pFastDenseResult> {
     if y0.len() != problem.dimension {
         return Err(CoreError::InvalidInput(
             "invalid RODAS5P fast integration input".into(),
@@ -512,6 +589,7 @@ fn run_dense(
     }
     let output = span_schedule(t_span)?;
     let mut sink = DenseSink::new(interior, t_span.0, y0)?;
+    sink.accept = accept;
     let (mut fast, banded, partial) = integrate_fast(
         problem,
         band,

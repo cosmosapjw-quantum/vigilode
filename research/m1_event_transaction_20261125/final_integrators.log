@@ -1,0 +1,55 @@
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/rodas5p-integrators)
+    Finished `release` profile [optimized] target(s) in 1m 03s
+     Running tests/accept_control_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/accept_control_contracts-d40bec8a5535de3f)
+
+running 9 tests
+test a_continuing_control_leaves_the_run_bit_identical ... ok
+test a_restart_from_the_stop_reaches_tf ... ok
+test a_restart_under_a_binding_max_step_is_admitted_and_bit_identical ... ok
+test a_stop_at_tf_is_a_success ... ok
+test a_stop_at_the_kth_accepted_step_returns_that_step ... ok
+test a_stop_on_the_last_budgeted_attempt_is_a_client_stop ... ok
+test the_client_stop_record_serializes ... ok
+test the_control_allocates_nothing ... ok
+test the_control_sees_every_accepted_step_once_in_order ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests/dense_wfiltered_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/dense_wfiltered_contracts-f35fecb482064aa3)
+
+running 11 tests
+test dp01_nonlinear_witness_off_enforce_wfiltered ... ok
+test lemma3_ratio_on_the_scalar_test_equation_with_constant_defect ... ok
+test prothero_robinson_wfiltered_enforce_interior_within_two_units ... ok
+test prothero_robinson_wfiltered_enforce_kill_gate ... ignored, kill gate FAIL: 2.143x the Off accepted-step count at rtol 1e-6 (gate 1.3x)
+test wfiltered_enforce_charges_its_work_to_the_run ... ok
+test wfiltered_enforce_interior_rejections_keep_the_counter_ledger ... ok
+test wfiltered_estimate_is_the_report_estimate_up_to_lemma3_on_linear_pr ... ok
+test wfiltered_modes_refuse_a_problem_without_an_explicit_jacobian ... ok
+test wfiltered_modes_refuse_sabr_instead_of_evaluating_a_new_jacobian ... ok
+test wfiltered_report_never_changes_the_run_and_reuses_the_step_factorization ... ok
+test wfiltered_without_a_step_factorization_factors_once_per_sample ... ok
+
+test result: ok. 10 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/fast_dense_allocations.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/fast_dense_allocations-59fda0805260a01f)
+
+running 1 test
+test fast_dense_allocations_after_setup ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/fast_dense_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/fast_dense_contracts-96659b8a6f957827)
+
+running 8 tests
+test empty_span_keeps_the_initial_state ... ok
+test fatal_rhs_partial_prefix ... ok
+test interior_rejection_counter_sum ... ok
+test midpoint_rhs_error_rejects_then_retries ... ok
+test off_matches_fast_driver_bitwise ... ok
+test segment_endpoints_are_stored_states ... ok
+test uniform_atol_vector_is_the_scalar_dense_run ... ok
+test wfiltered_pr_interior_within_two_units ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+

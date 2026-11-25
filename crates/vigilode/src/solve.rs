@@ -158,6 +158,7 @@ impl Rodas5p {
             driver_message: "progress bound unreachable".into(),
             terminal_event: None,
             event_evaluations: 0,
+            event_transaction: None,
         }
     }
 }
@@ -404,14 +405,56 @@ impl Rodas5p {
         banded_policy: BandedStagePolicy,
         separable: Option<&SeparableStages>,
     ) -> Result<Solution, SolveError> {
+        Self::solve_with_clients_and_events(
+            problem,
+            t_span,
+            y0,
+            opts,
+            interior,
+            work_ceiling,
+            stage_policy,
+            banded_policy,
+            separable,
+            None,
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn solve_with_clients_and_events(
+        problem: &Problem,
+        t_span: (f64, f64),
+        y0: &[f64],
+        opts: &Options,
+        interior: &[f64],
+        work_ceiling: Option<u64>,
+        stage_policy: crate::MfStageSolvePolicy,
+        banded_policy: BandedStagePolicy,
+        separable: Option<&SeparableStages>,
+        event_policy: Option<crate::EventTransactionPolicy>,
+    ) -> Result<Solution, SolveError> {
         let atol = validate(problem, t_span, y0, opts)?;
-        let adaptive = AdaptiveStepConfig {
+        let mut adaptive = AdaptiveStepConfig {
             rtol: opts.rtol,
             atol: atol.adaptive_atol(),
             initial_step: opts.h0,
             max_attempts: opts.max_steps,
             ..AdaptiveStepConfig::default()
         };
+        if let Some(p) = event_policy {
+            p.validate()?;
+            if problem.events.is_empty()
+                || !opts.dense_output
+                || sequential_route(problem, opts)
+                || !(t_span.1 - t_span.0).is_finite()
+            {
+                return Err(SolveError::InvalidInput("event transaction requires declared events, finite span and identity-mass fast dense output".into()));
+            }
+            if let Some(h) = p.max_step {
+                adaptive.max_step = h;
+                adaptive.initial_step = adaptive.initial_step.min(h);
+                adaptive.max_step_policy = rodas5p_integrators::MaxStepPolicy::StrictRepresentedCap;
+            }
+        }
         adaptive
             .validate()
             .map_err(|e| SolveError::InvalidInput(e.to_string()))?;
@@ -492,6 +535,34 @@ impl Rodas5p {
             guard.arm_ceiling(ceiling.saturating_add(verification));
         }
 
+        if event_policy.is_some() && !matches!(plan, Plan::FastDense { .. }) {
+            return Err(SolveError::InvalidInput(
+                "event transaction requires fast dense route".into(),
+            ));
+        }
+        let mut transaction =
+            event_policy.map(|p| crate::events::Transaction::new(&problem.events, p, t_span.0, y0));
+        if transaction.as_ref().is_some_and(|t| t.failure.is_some()) {
+            let mut stats = Self::empty_stats(problem, opts, t_span.0, y0);
+            stats.t_span = t_span;
+            stats.adaptive = (&adaptive).into();
+            stats.route.entry_point = "event-transaction-initial";
+            stats.driver_message = "initial event evaluation failed before integration".into();
+            let mut sol = Solution {
+                t: vec![t_span.0],
+                y: vec![y0.to_vec()],
+                stats,
+                status: Status::Success,
+                events: Vec::new(),
+                splices: Vec::new(),
+                extension: None,
+            };
+            transaction
+                .take()
+                .expect("initial transaction")
+                .finish(&mut sol);
+            return Ok(sol);
+        }
         let run = match plan {
             _ if separable.is_some() => {
                 let stages = separable.expect("the guard checked the separable request");
@@ -660,45 +731,69 @@ impl Rodas5p {
                         unreachable!("Enforce routes to the sequential driver")
                     }
                 };
-                let (entry_point, result) = match (&band, &atol) {
-                    (None, AtolSpec::Scalar(_)) => (
-                        ENTRY_FAST_DENSE,
-                        integrate_rodas5p_fast_dense_observed(&ode, t_span, y0, &adaptive, control),
-                    ),
-                    (None, AtolSpec::Vector(atol)) => (
-                        ENTRY_FAST_DENSE_ATOL,
-                        integrate_rodas5p_fast_dense_observed_with_atol(
-                            &ode, t_span, y0, &adaptive, control, atol,
+                let (entry_point, result) = if let Some(tx) = transaction.as_mut() {
+                    let mut accept =
+                        |segments: &rodas5p_integrators::FastDenseSegments| tx.inspect(segments);
+                    let av = match &atol {
+                        AtolSpec::Scalar(_) => &[][..],
+                        AtolSpec::Vector(v) => v.as_slice(),
+                    };
+                    (
+                        "integrate_rodas5p_fast_dense_with_control",
+                        rodas5p_integrators::integrate_rodas5p_fast_dense_with_control(
+                            &ode,
+                            band.as_ref().map(|b| (b, banded_kernel(b))),
+                            t_span,
+                            y0,
+                            &adaptive,
+                            control,
+                            av,
+                            &mut accept,
                         ),
-                    ),
-                    (Some(band), AtolSpec::Scalar(_)) => match banded_kernel(band) {
-                        BandedKernel::Indexed => (
-                            ENTRY_FAST_BANDED_DENSE,
-                            integrate_rodas5p_fast_banded_dense_observed(
-                                &ode, band, t_span, y0, &adaptive, control,
+                    )
+                } else {
+                    match (&band, &atol) {
+                        (None, AtolSpec::Scalar(_)) => (
+                            ENTRY_FAST_DENSE,
+                            integrate_rodas5p_fast_dense_observed(
+                                &ode, t_span, y0, &adaptive, control,
                             ),
                         ),
-                        kernel => (
-                            ENTRY_FAST_BANDED_DENSE_KERNEL,
-                            integrate_rodas5p_fast_banded_dense_observed_with_kernel(
-                                &ode, band, t_span, y0, &adaptive, control, kernel,
+                        (None, AtolSpec::Vector(atol)) => (
+                            ENTRY_FAST_DENSE_ATOL,
+                            integrate_rodas5p_fast_dense_observed_with_atol(
+                                &ode, t_span, y0, &adaptive, control, atol,
                             ),
                         ),
-                    },
-                    (Some(band), AtolSpec::Vector(atol)) => match banded_kernel(band) {
-                        BandedKernel::Indexed => (
-                            ENTRY_FAST_BANDED_DENSE_ATOL,
-                            integrate_rodas5p_fast_banded_dense_observed_with_atol(
-                                &ode, band, t_span, y0, &adaptive, control, atol,
+                        (Some(band), AtolSpec::Scalar(_)) => match banded_kernel(band) {
+                            BandedKernel::Indexed => (
+                                ENTRY_FAST_BANDED_DENSE,
+                                integrate_rodas5p_fast_banded_dense_observed(
+                                    &ode, band, t_span, y0, &adaptive, control,
+                                ),
                             ),
-                        ),
-                        kernel => (
-                            ENTRY_FAST_BANDED_DENSE_ATOL_KERNEL,
-                            integrate_rodas5p_fast_banded_dense_observed_with_atol_and_kernel(
-                                &ode, band, t_span, y0, &adaptive, control, atol, kernel,
+                            kernel => (
+                                ENTRY_FAST_BANDED_DENSE_KERNEL,
+                                integrate_rodas5p_fast_banded_dense_observed_with_kernel(
+                                    &ode, band, t_span, y0, &adaptive, control, kernel,
+                                ),
                             ),
-                        ),
-                    },
+                        },
+                        (Some(band), AtolSpec::Vector(atol)) => match banded_kernel(band) {
+                            BandedKernel::Indexed => (
+                                ENTRY_FAST_BANDED_DENSE_ATOL,
+                                integrate_rodas5p_fast_banded_dense_observed_with_atol(
+                                    &ode, band, t_span, y0, &adaptive, control, atol,
+                                ),
+                            ),
+                            kernel => (
+                                ENTRY_FAST_BANDED_DENSE_ATOL_KERNEL,
+                                integrate_rodas5p_fast_banded_dense_observed_with_atol_and_kernel(
+                                    &ode, band, t_span, y0, &adaptive, control, atol, kernel,
+                                ),
+                            ),
+                        },
+                    }
                 };
                 let result = result.map_err(|e| driver_error(e, &guard))?;
                 let fast = result.fast;
@@ -1048,6 +1143,7 @@ impl Rodas5p {
             driver_message: run.observed.message,
             terminal_event: None,
             event_evaluations: 0,
+            event_transaction: None,
         };
         let mut solution = Solution {
             t,
@@ -1058,6 +1154,12 @@ impl Rodas5p {
             splices: Vec::new(),
             extension: run.segments,
         };
+        // The transaction has already called event functions at each
+        // accepted proposal. Do not replay the legacy postprocessor.
+        if let Some(tx) = transaction {
+            tx.finish(&mut solution);
+            return Ok(solution);
+        }
         // Event callbacks are user code too: a fatal callback ends the run.
         let (evaluations, terminal) = if guard.fatal().is_some() || guard.ceiling_hit().is_some() {
             (0, None)
@@ -1533,5 +1635,33 @@ mod tests {
             reason(None, 1),
             FailureReason::StepSizeTooSmall { min_step }
         );
+    }
+}
+
+impl Rodas5p {
+    /// Opt-in fast-dense accepted-step event transaction. The full numerical
+    /// proposal containing a detected terminal root stays charged; no next
+    /// proposal is attempted. Opaque sign sampling cannot certify all roots.
+    /// The initial zero convention is unchanged. Mass/sequential routes
+    /// are refused rather than silently postprocessed.
+    pub fn solve_event_transaction(
+        problem: &Problem,
+        t_span: (f64, f64),
+        y0: &[f64],
+        opts: &Options,
+        policy: crate::EventTransactionPolicy,
+    ) -> Result<Solution, SolveError> {
+        Self::solve_with_clients_and_events(
+            problem,
+            t_span,
+            y0,
+            opts,
+            &[],
+            None,
+            crate::MfStageSolvePolicy::Shipped,
+            BandedStagePolicy::Shipped,
+            None,
+            Some(policy),
+        )
     }
 }

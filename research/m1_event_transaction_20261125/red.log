@@ -1,0 +1,59 @@
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-csas-20261125/crates/vigilode)
+warning: missing documentation for a variant
+   --> crates/vigilode/src/events.rs:413:5
+    |
+413 |     Illinois,
+    |     ^^^^^^^^
+    |
+note: the lint level is defined here
+   --> crates/vigilode/src/lib.rs:185:9
+    |
+185 | #![warn(missing_docs)]
+    |         ^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+   --> crates/vigilode/src/events.rs:414:5
+    |
+414 |     Bisection,
+    |     ^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> crates/vigilode/src/events.rs:419:5
+    |
+419 |     pub subdivisions: usize,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> crates/vigilode/src/events.rs:420:5
+    |
+420 |     pub root_method: EventRootMethod,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> crates/vigilode/src/events.rs:421:5
+    |
+421 |     pub max_step: Option<f64>,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `vigilode` (lib) generated 5 warnings
+    Finished `release` profile [optimized] target(s) in 33.85s
+     Running tests/event_transaction_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/event_transaction_contracts-9400f1262dfe08ff)
+
+running 1 test
+test terminal_stops_before_later_rhs_callback ... FAILED
+
+failures:
+
+---- terminal_stops_before_later_rhs_callback stdout ----
+
+thread 'terminal_stops_before_later_rhs_callback' (1209604) panicked at crates/vigilode/tests/event_transaction_contracts.rs:36:5:
+RHS continued after terminal trial
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    terminal_stops_before_later_rhs_callback
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p vigilode --test event_transaction_contracts`

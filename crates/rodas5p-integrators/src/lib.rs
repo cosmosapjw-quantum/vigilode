@@ -523,7 +523,7 @@ pub use rodas5p_fast_dense::{
     RODAS5P_FAST_DENSE_DRIVER_ID, Rodas5pFastDenseResult,
     integrate_rodas5p_fast_banded_dense_observed,
     integrate_rodas5p_fast_banded_dense_observed_with_atol, integrate_rodas5p_fast_dense_observed,
-    integrate_rodas5p_fast_dense_observed_with_atol,
+    integrate_rodas5p_fast_dense_observed_with_atol, integrate_rodas5p_fast_dense_with_control,
 };
 pub use rodas5p_fast_small::{
     RODAS5P_FAST_SMALL_DRIVER_ID, Rodas5pFastSmallOptions, Rodas5pFastSmallResult, SmallProblem,
