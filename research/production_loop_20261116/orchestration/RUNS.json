@@ -179,12 +179,37 @@
       "duration_ms": 3477532,
       "errors": [],
       "outputs": "V28: frozen verdict KEEP (K, V pass; T fails), review accept_with_corrections, merged 2f214eb1; V29: PASS (default MC on the coloured route, Sample(8) on the dense route), review accept_with_corrections, merged 2eb2aeed"
+    },
+    {
+      "run_id": "wf_88621c7a-4c1",
+      "script": "ks_n1_review.js",
+      "script_sha256": "4299530f0327111c728fe44f04118e03dd1379514d4b92b24564b24b89480895",
+      "what": "kernel/spectral PLAN task KS-N1 (branch research/stage-lattice-referee-20261124): two independent read-and-run reviews of the owner-host cells; launched 2026-11-25 07:2x KST",
+      "status": "completed",
+      "agent_count": 2,
+      "total_tokens": 416098,
+      "duration_ms": 873890,
+      "errors": [],
+      "outputs": "both confirm; records in research/kernel_spectral_foundation_20261124/owner_host/KS_N1_REVIEW.json on that branch"
+    },
+    {
+      "run_id": "wf_660859bd-2cd",
+      "script": "wave4_groupA.js",
+      "script_sha256": "8b70f40b76665ce0eb91567650de686830039cf88a198dc23322df2cf850b220",
+      "what": "wave 4 group A: L1 V31 (All on wide bands) and V32 (protected stage_batch probe); KS-N7 (two-for-one real FFT) and KS-N8 (field-of-values theory); each with an independent review; launched 2026-11-25 09:3x KST",
+      "status": "running or record not yet written",
+      "args_base": "d4e2772f (L1), 05b5e3e3 (KS)"
     }
   ],
   "staged": [
     {
       "script": "wave2_group4.js",
       "script_sha256": "1f49891f97873b9003fb230eddbcbe1fc0fb0dc27c9e4eff4a96fcb6c70496ae"
+    },
+    {
+      "script": "wave4_groupB.js",
+      "script_sha256": "9bb767f640796459f24521c007a2ee10589f7da60b7053a877f227b721d28353",
+      "what": "wave 4 group B: V33 with two reviewers, V23 then V34 with a reviewer, the review of V22, V30 phase 1; launches after group A"
     }
   ]
 }
