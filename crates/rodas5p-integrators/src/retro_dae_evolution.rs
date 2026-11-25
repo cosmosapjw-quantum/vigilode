@@ -811,7 +811,14 @@ impl<'a> GuardProof<'a> {
         } else {
             reduced[0].add(guard_dot(&reduced[1..], &f.v)?)?
         };
-        let reduced_lip = di::rows_norm(&[reduced[1..].to_vec()])?;
+        // The structural receipt owns a reduced L1 radius. Its dual
+        // norm is the maximum absolute reduced gradient component.
+        let structural = cert.conservation.is_some() && nx == 2 && nz == 1;
+        let reduced_lip = if structural {
+            reduced[1..].iter().map(|v| v.mag()).fold(0., f64::max)
+        } else {
+            di::rows_norm(&[reduced[1..].to_vec()])?
+        };
         // The straight segment between represented V and true Z(t,U)
         // lies in this hull; use it for the algebraic correction only.
         let mut hull = xb.clone();
@@ -821,7 +828,18 @@ impl<'a> GuardProof<'a> {
         let hh = di::evaluate(std::slice::from_ref(guard), time, &hull)?;
         let algebraic_guard_lip = di::rows_norm(&[hh.j[0][1 + nx..].to_vec()])?;
         let clock = [p(cert.times[0])?, p(cert.times[1])?.sub(p(cert.times[0])?)?];
-        let h_poly = compose(guard, &clock, y)?;
+        let (h_poly, algebraic_guard_lip) = if structural && value == GuardValueRoute::Transport {
+            // The source-owned Robertson constraint is exact affine
+            // elimination. The comparison polynomial lives on the same
+            // constraint manifold, so no separate algebraic defect term.
+            let lift = add(&[p(1.)?], &scale(&add(&y[0], &y[1])?, p(-1.)?)?)?;
+            (
+                compose(guard, &clock, &[y[0].clone(), y[1].clone(), lift])?,
+                0.,
+            )
+        } else {
+            (compose(guard, &clock, y)?, algebraic_guard_lip)
+        };
         let gp = src
             .g
             .iter()
@@ -1977,4 +1995,166 @@ pub fn conservation_query_full(
         .into_iter()
         .fold(0., f64::max);
     add_up(ideal, correction)
+}
+
+/// Exact nonnegative column-stochastic map on the original three-species
+/// simplex. A floating-point near-equality is not a conservation proof.
+#[derive(Clone, Debug, Serialize)]
+pub struct SimplexReset {
+    matrix: [[f64; 3]; 3],
+    operator_l1: f64,
+}
+impl SimplexReset {
+    pub fn new(matrix: [[f64; 3]; 3]) -> CoreResult<Self> {
+        crate::affine_event_certificate::check_affine_event_arithmetic()?;
+        if matrix
+            .iter()
+            .flatten()
+            .any(|v| !v.is_finite() || *v < 0. || *v > 1.)
+        {
+            return Err(bad("simplex reset nonnegative coefficients"));
+        }
+        for j in 0..3 {
+            let sum = (0..3).try_fold(zero(), |s, i| s.add(p(matrix[i][j])?))?;
+            if sum.lo != 1. || sum.hi != 1. {
+                return Err(bad("simplex reset exact column sum"));
+            }
+        }
+        let mut norm = 0_f64;
+        for j in 0..2 {
+            let mut sum = 0.;
+            for row in &matrix[..2] {
+                sum = add_up(sum, p(row[j])?.sub(p(row[2])?)?.mag())?;
+            }
+            norm = norm.max(sum);
+        }
+        Ok(Self {
+            matrix,
+            operator_l1: norm,
+        })
+    }
+    pub fn matrix(&self) -> &[[f64; 3]; 3] {
+        &self.matrix
+    }
+    pub fn operator_l1(&self) -> f64 {
+        self.operator_l1
+    }
+    pub fn polynomials(&self) -> CoreResult<Vec<DeclaredPolynomial>> {
+        use crate::retro_event_poly::{AffineFactor, EventTerm};
+        self.matrix[..2]
+            .iter()
+            .map(|row| {
+                DeclaredPolynomial::new(
+                    row.iter()
+                        .enumerate()
+                        .map(|(i, &c)| EventTerm {
+                            coefficient: c,
+                            factors: vec![AffineFactor::component(i, 0.)],
+                        })
+                        .collect(),
+                )
+            })
+            .collect()
+    }
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum SimplexSyncRoute {
+    BoxLift,
+    JointTransport,
+}
+#[derive(Clone, Debug, Serialize)]
+pub struct SimplexTransportCell {
+    pub times: [f64; 2],
+    pub native_times: [f64; 2],
+    pub old_l1: f64,
+    pub mapped_l1: f64,
+    pub reference_field: [f64; 2],
+    pub field_box: [[f64; 2]; 2],
+    pub signed_predictor: [[f64; 2]; 4],
+    pub predictor_l1: f64,
+    pub remainder_l1: f64,
+    pub joint_l1: f64,
+}
+/// The facade supplies actual source-bound pre slab and post Picard tube.
+/// Centered signed polynomial keeps the common clock and reduced L1
+/// correlation. It is independent of componentwise rectangle transport.
+pub fn simplex_transport_cell(
+    reset: &SimplexReset,
+    y: &[Poly],
+    cert: &SlabCertificate,
+    times: [f64; 2],
+    s: f64,
+    tube: &VectorTubeProof,
+    center: [f64; 2],
+) -> CoreResult<SimplexTransportCell> {
+    if y.len() != 3
+        || cert.conservation.is_none()
+        || !cert.global_qualified
+        || !(cert.times[0] <= times[0]
+            && times[0] <= times[1]
+            && times[1] <= cert.times[1]
+            && times[1] <= s)
+        || tube.field.len() != 2
+        || tube
+            .attempts
+            .last()
+            .is_none_or(|v| v.times != [times[0], s])
+    {
+        return Err(bad("simplex transport authority/domain"));
+    }
+    let old = cert.whole_x_error.ok_or_else(|| bad("missing L1 radius"))?;
+    let mapped = mul_up(reset.operator_l1, old)?;
+    let h = p(cert.times[1])?.sub(p(cert.times[0])?)?;
+    let clock = Iv::new(times[0], times[1])?;
+    let u = clock.sub(p(cert.times[0])?)?.div(h)?;
+    let u = Iv::new(u.lo.max(0.), u.hi.min(1.))?;
+    let dt = p(s)?.sub(clock)?;
+    let fields = iv_pairs(&tube.field)?;
+    let k = [di::mid(fields[0]), di::mid(fields[1])];
+    let lift = add(&[p(1.)?], &scale(&add(&y[0], &y[1])?, p(-1.)?)?)?;
+    let represented = [&y[0], &y[1], &lift];
+    let mut shifted = Vec::with_capacity(2);
+    for i in 0..2 {
+        let mut r = vec![zero()];
+        for (j, v) in represented.iter().enumerate() {
+            r = add(&r, &scale(v, p(reset.matrix[i][j])?)?)?;
+        }
+        r = add(
+            &r,
+            &[p(s)?.sub(p(cert.times[0])?)?.scale(k[i])?, h.scale(-k[i])?],
+        )?;
+        r[0] = r[0].sub(p(center[i])?)?;
+        shifted.push(r);
+    }
+    let mut signed = [[0.; 2]; 4];
+    let mut pred = 0_f64;
+    for (i, (a, b)) in [(1., 1.), (1., -1.), (-1., 1.), (-1., -1.)]
+        .into_iter()
+        .enumerate()
+    {
+        let q = add(&scale(&shifted[0], p(a)?)?, &scale(&shifted[1], p(b)?)?)?;
+        let v = reset_centered_eval(&q, u)?;
+        signed[i] = v.as_pair();
+        pred = pred.max(v.hi);
+    }
+    let remainder = mul_up(
+        dt.hi.max(0.),
+        add_up(
+            fields[0].sub(p(k[0])?)?.mag(),
+            fields[1].sub(p(k[1])?)?.mag(),
+        )?,
+    )?;
+    let joint = add_up(add_up(pred, mapped)?, remainder)?;
+    Ok(SimplexTransportCell {
+        times,
+        native_times: cert.times,
+        old_l1: old,
+        mapped_l1: mapped,
+        reference_field: k,
+        field_box: [tube.field[0], tube.field[1]],
+        signed_predictor: signed,
+        predictor_l1: pred,
+        remainder_l1: remainder,
+        joint_l1: joint,
+    })
 }

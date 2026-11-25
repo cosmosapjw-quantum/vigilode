@@ -3940,3 +3940,236 @@ pub fn evolve_robertson_clock_reset(
     }
     Ok(out)
 }
+
+pub use de::{SimplexReset, SimplexSyncRoute, SimplexTransportCell};
+#[derive(Clone, Debug, Serialize)]
+pub struct SimplexTransportReceipt {
+    pub route: SimplexSyncRoute,
+    pub operator_l1: f64,
+    pub center: [f64; 2],
+    pub box_l1: f64,
+    pub component_l1: f64,
+    pub joint_l1: Option<f64>,
+    pub selected_l1: f64,
+    pub cells: Vec<SimplexTransportCell>,
+}
+/// One genuinely asynchronous source-owned Robertson reset into a terminal
+/// conserved mode. Never interprets a generic infinity ball as L1.
+pub struct RobertsonAsyncRun {
+    pre: MultiGuardRun,
+    pub event_time: Option<[f64; 2]>,
+    pub preparation: Option<VectorRestartRun>,
+    pub transport: Option<SimplexTransportReceipt>,
+    pub incoming_l1: Option<f64>,
+    pub reason: Option<String>,
+    pub native_attempts: usize,
+    pub charged_native_attempts: usize,
+    post: Option<EvolutionRun>,
+}
+impl RobertsonAsyncRun {
+    pub fn pre(&self) -> &MultiGuardRun {
+        &self.pre
+    }
+    /// Original-mode numerical extension receipts, for audit only.
+    /// These slabs are not a physical trajectory after the first event.
+    pub fn original_slab_diagnostics(&self) -> &[SlabRecord] {
+        self.pre.runs.first().map_or(&[], |r| r.trial.slabs())
+    }
+    pub fn post(&self) -> Option<&EvolutionRun> {
+        if self.reason.is_none() {
+            self.post
+                .as_ref()
+                .filter(|r| r.global_qualified && r.branch_qualified && r.pointwise_qualified)
+        } else {
+            None
+        }
+    }
+    pub fn post_diagnostic(&self) -> Option<&EvolutionRun> {
+        self.post.as_ref()
+    }
+}
+#[allow(clippy::too_many_arguments)]
+pub fn evolve_robertson_async_reset(
+    rates: [f64; 2],
+    initial: RobertsonInitial,
+    times: [f64; 2],
+    guards: &[DeclaredPolynomial],
+    reset: &SimplexReset,
+    opts: &Options,
+    policy: EvolutionPolicy,
+    route: EvolutionRoute,
+    certificate: ConservationRoute,
+    mp: MultiGuardPolicy,
+    rp: VectorResetPolicy,
+    sync: SimplexSyncRoute,
+    grid: &[f64],
+) -> CoreResult<RobertsonAsyncRun> {
+    let target = RobertsonModel::new(rates[1])?;
+    let pre = evolve_robertson_to_first_guard(
+        rates[0],
+        initial,
+        times,
+        opts,
+        policy,
+        route,
+        certificate,
+        guards,
+        mp,
+    )?;
+    let mut out = RobertsonAsyncRun {
+        native_attempts: pre.work.attempts,
+        charged_native_attempts: pre.work.attempts,
+        pre,
+        event_time: None,
+        preparation: None,
+        transport: None,
+        incoming_l1: None,
+        reason: None,
+        post: None,
+    };
+    let Some(a) = out.pre.event_authority() else {
+        out.reason = Some("conserved asynchronous first event unresolved".into());
+        return Ok(out);
+    };
+    let root = a.root().expect("ordered root");
+    out.event_time = Some(root);
+    let reset_polys = reset.polynomials()?;
+    let prep = match a.prepare_vector_restart(
+        &reset_polys,
+        target.source(),
+        &[0.125],
+        &ROBERTSON_BRANCH,
+        times[1],
+        policy,
+        rp,
+        64,
+    ) {
+        Ok(v) => v,
+        Err(e) => {
+            out.reason = Some(e.to_string());
+            return Ok(out);
+        }
+    };
+    if let Some(reason) = prep.reason.clone() {
+        out.reason = Some(reason);
+        out.preparation = Some(prep);
+        return Ok(out);
+    }
+    let bp = prep.restart_branch.as_ref().expect("prepared branch");
+    let center = [bp.initial.x[0], bp.initial.x[1]];
+    let radius = prep.incoming_radius.expect("prepared radius");
+    let box_l1 = mul_up(2., radius)?;
+    let mut component_l1 = 0.;
+    for (b, &c) in prep
+        .synchronized_x
+        .as_ref()
+        .expect("prepared synchronization")
+        .iter()
+        .zip(&center)
+    {
+        component_l1 = add_up(component_l1, diameter(b[0], c)?.max(diameter(c, b[1])?))?;
+    }
+    let mut evidence = SimplexTransportReceipt {
+        route: sync,
+        operator_l1: reset.operator_l1(),
+        center,
+        box_l1,
+        component_l1,
+        joint_l1: None,
+        selected_l1: box_l1,
+        cells: vec![],
+    };
+    if sync == SimplexSyncRoute::JointTransport {
+        let result = (|| -> CoreResult<f64> {
+            let mut joint = 0_f64;
+            for cell in &prep.cells {
+                let slab = a
+                    .trial
+                    .slabs
+                    .iter()
+                    .find(|s| s.times[0] <= cell.times[0] && cell.times[1] <= s.times[1])
+                    .ok_or_else(|| bad("simplex transport native coverage"))?;
+                let c = slab
+                    .certificate
+                    .as_ref()
+                    .filter(|c| c.global_qualified && c.conservation.is_some())
+                    .ok_or_else(|| bad("simplex pre L1 authority"))?;
+                let y = slab
+                    .power
+                    .iter()
+                    .map(|row| {
+                        row.iter()
+                            .map(|v| Iv::new(v[0], v[1]))
+                            .collect::<CoreResult<Vec<_>>>()
+                    })
+                    .collect::<CoreResult<Vec<_>>>()?;
+                let v = de::simplex_transport_cell(
+                    reset,
+                    &y,
+                    c,
+                    cell.times,
+                    root[1],
+                    cell.tube.as_ref().expect("prepared tube"),
+                    center,
+                )?;
+                joint = joint.max(v.joint_l1);
+                evidence.cells.push(v);
+            }
+            Ok(joint)
+        })();
+        match result {
+            Ok(v) => {
+                evidence.joint_l1 = Some(v);
+                evidence.selected_l1 = box_l1.min(component_l1).min(v);
+            }
+            Err(e) => {
+                out.reason = Some(e.to_string());
+                out.preparation = Some(prep);
+                out.transport = Some(evidence);
+                return Ok(out);
+            }
+        }
+    }
+    let radius = evidence.selected_l1;
+    out.incoming_l1 = Some(radius);
+    out.transport = Some(evidence);
+    out.preparation = Some(prep);
+    // Every physical reset state lies in the exact simplex. The target
+    // original source preserves it during synchronization and postflow.
+    // The rounded center need not itself be physical; this constructor
+    // is private and requires the preceding source-bound proof.
+    let start = RobertsonInitial {
+        center,
+        l1_radius: radius,
+    };
+    let mut o = opts.clone();
+    o.max_steps = o.max_steps.saturating_sub(out.charged_native_attempts);
+    if o.max_steps == 0 {
+        out.reason = Some("conserved asynchronous native attempt budget".into());
+        return Ok(out);
+    }
+    match robertson_epoch(
+        &target,
+        start,
+        [root[1], times[1]],
+        &o,
+        policy,
+        route,
+        certificate,
+        grid,
+    ) {
+        Ok(r) => {
+            out.native_attempts += r.driver.stats.attempts;
+            out.charged_native_attempts += r.driver.stats.attempts;
+            if !r.global_qualified || !r.branch_qualified || !r.pointwise_qualified {
+                out.reason = Some("conserved asynchronous post physical proof unresolved".into());
+            }
+            out.post = Some(r);
+        }
+        Err(e) => {
+            out.charged_native_attempts += o.max_steps;
+            out.reason = Some(e.to_string());
+        }
+    }
+    Ok(out)
+}

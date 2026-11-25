@@ -1,0 +1,703 @@
+{
+  "harness_catalog_count": 64,
+  "manifest_files": 154,
+  "routes": [
+    {
+      "l1_route": "BoxLift",
+      "modules": [
+        "native mass RODAS",
+        "source-owned affine L1 residual",
+        "original reset interval",
+        "strict Picard tube",
+        "explicit infinity-to-L1 dimension factor",
+        "shared native accepted-step certificate",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Shared",
+      "solver": "Mass",
+      "sync": "BoxPicard"
+    },
+    {
+      "l1_route": "BoxLift",
+      "modules": [
+        "native mass RODAS",
+        "source-owned affine L1 residual",
+        "original reset interval",
+        "strict Picard tube",
+        "explicit infinity-to-L1 dimension factor",
+        "shared physical slab",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Correlated",
+      "solver": "Mass",
+      "sync": "BoxPicard"
+    },
+    {
+      "l1_route": "JointTransport",
+      "modules": [
+        "native mass RODAS",
+        "source-owned affine L1 residual",
+        "original reset interval",
+        "strict Picard tube",
+        "source-owned column-stochastic map",
+        "reduced L1 operator",
+        "four signed polynomial directions",
+        "centered physical field remainder",
+        "shared native accepted-step certificate",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Shared",
+      "solver": "Mass",
+      "sync": "BoxPicard"
+    },
+    {
+      "l1_route": "JointTransport",
+      "modules": [
+        "native mass RODAS",
+        "source-owned affine L1 residual",
+        "original reset interval",
+        "strict Picard tube",
+        "source-owned column-stochastic map",
+        "reduced L1 operator",
+        "four signed polynomial directions",
+        "centered physical field remainder",
+        "shared physical slab",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Correlated",
+      "solver": "Mass",
+      "sync": "BoxPicard"
+    },
+    {
+      "l1_route": "BoxLift",
+      "modules": [
+        "native mass RODAS",
+        "source-owned affine L1 residual",
+        "Schur reset transport",
+        "centered polynomial synchronization",
+        "explicit infinity-to-L1 dimension factor",
+        "shared native accepted-step certificate",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Shared",
+      "solver": "Mass",
+      "sync": "Centered"
+    },
+    {
+      "l1_route": "BoxLift",
+      "modules": [
+        "native mass RODAS",
+        "source-owned affine L1 residual",
+        "Schur reset transport",
+        "centered polynomial synchronization",
+        "explicit infinity-to-L1 dimension factor",
+        "shared physical slab",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Correlated",
+      "solver": "Mass",
+      "sync": "Centered"
+    },
+    {
+      "l1_route": "JointTransport",
+      "modules": [
+        "native mass RODAS",
+        "source-owned affine L1 residual",
+        "Schur reset transport",
+        "centered polynomial synchronization",
+        "source-owned column-stochastic map",
+        "reduced L1 operator",
+        "four signed polynomial directions",
+        "centered physical field remainder",
+        "shared native accepted-step certificate",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Shared",
+      "solver": "Mass",
+      "sync": "Centered"
+    },
+    {
+      "l1_route": "JointTransport",
+      "modules": [
+        "native mass RODAS",
+        "source-owned affine L1 residual",
+        "Schur reset transport",
+        "centered polynomial synchronization",
+        "source-owned column-stochastic map",
+        "reduced L1 operator",
+        "four signed polynomial directions",
+        "centered physical field remainder",
+        "shared physical slab",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Correlated",
+      "solver": "Mass",
+      "sync": "Centered"
+    },
+    {
+      "l1_route": "BoxLift",
+      "modules": [
+        "native mass RODAS",
+        "source-owned affine L1 residual",
+        "RETRO phi0/phi1",
+        "diagonal forcing remainder",
+        "Schur reset transport",
+        "explicit infinity-to-L1 dimension factor",
+        "shared native accepted-step certificate",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Shared",
+      "solver": "Mass",
+      "sync": "GreenMoment"
+    },
+    {
+      "l1_route": "BoxLift",
+      "modules": [
+        "native mass RODAS",
+        "source-owned affine L1 residual",
+        "RETRO phi0/phi1",
+        "diagonal forcing remainder",
+        "Schur reset transport",
+        "explicit infinity-to-L1 dimension factor",
+        "shared physical slab",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Correlated",
+      "solver": "Mass",
+      "sync": "GreenMoment"
+    },
+    {
+      "l1_route": "JointTransport",
+      "modules": [
+        "native mass RODAS",
+        "source-owned affine L1 residual",
+        "RETRO phi0/phi1",
+        "diagonal forcing remainder",
+        "Schur reset transport",
+        "source-owned column-stochastic map",
+        "reduced L1 operator",
+        "four signed polynomial directions",
+        "centered physical field remainder",
+        "shared native accepted-step certificate",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Shared",
+      "solver": "Mass",
+      "sync": "GreenMoment"
+    },
+    {
+      "l1_route": "JointTransport",
+      "modules": [
+        "native mass RODAS",
+        "source-owned affine L1 residual",
+        "RETRO phi0/phi1",
+        "diagonal forcing remainder",
+        "Schur reset transport",
+        "source-owned column-stochastic map",
+        "reduced L1 operator",
+        "four signed polynomial directions",
+        "centered physical field remainder",
+        "shared physical slab",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Correlated",
+      "solver": "Mass",
+      "sync": "GreenMoment"
+    },
+    {
+      "l1_route": "BoxLift",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "source-owned L1 residual",
+        "original reset interval",
+        "strict Picard tube",
+        "explicit infinity-to-L1 dimension factor",
+        "shared native accepted-step certificate",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Shared",
+      "solver": "Prepared5",
+      "sync": "BoxPicard"
+    },
+    {
+      "l1_route": "BoxLift",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "source-owned L1 residual",
+        "original reset interval",
+        "strict Picard tube",
+        "explicit infinity-to-L1 dimension factor",
+        "shared physical slab",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Correlated",
+      "solver": "Prepared5",
+      "sync": "BoxPicard"
+    },
+    {
+      "l1_route": "JointTransport",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "source-owned L1 residual",
+        "original reset interval",
+        "strict Picard tube",
+        "source-owned column-stochastic map",
+        "reduced L1 operator",
+        "four signed polynomial directions",
+        "centered physical field remainder",
+        "shared native accepted-step certificate",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Shared",
+      "solver": "Prepared5",
+      "sync": "BoxPicard"
+    },
+    {
+      "l1_route": "JointTransport",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "source-owned L1 residual",
+        "original reset interval",
+        "strict Picard tube",
+        "source-owned column-stochastic map",
+        "reduced L1 operator",
+        "four signed polynomial directions",
+        "centered physical field remainder",
+        "shared physical slab",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Correlated",
+      "solver": "Prepared5",
+      "sync": "BoxPicard"
+    },
+    {
+      "l1_route": "BoxLift",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "source-owned L1 residual",
+        "Schur reset transport",
+        "centered polynomial synchronization",
+        "explicit infinity-to-L1 dimension factor",
+        "shared native accepted-step certificate",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Shared",
+      "solver": "Prepared5",
+      "sync": "Centered"
+    },
+    {
+      "l1_route": "BoxLift",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "source-owned L1 residual",
+        "Schur reset transport",
+        "centered polynomial synchronization",
+        "explicit infinity-to-L1 dimension factor",
+        "shared physical slab",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Correlated",
+      "solver": "Prepared5",
+      "sync": "Centered"
+    },
+    {
+      "l1_route": "JointTransport",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "source-owned L1 residual",
+        "Schur reset transport",
+        "centered polynomial synchronization",
+        "source-owned column-stochastic map",
+        "reduced L1 operator",
+        "four signed polynomial directions",
+        "centered physical field remainder",
+        "shared native accepted-step certificate",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Shared",
+      "solver": "Prepared5",
+      "sync": "Centered"
+    },
+    {
+      "l1_route": "JointTransport",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "source-owned L1 residual",
+        "Schur reset transport",
+        "centered polynomial synchronization",
+        "source-owned column-stochastic map",
+        "reduced L1 operator",
+        "four signed polynomial directions",
+        "centered physical field remainder",
+        "shared physical slab",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Correlated",
+      "solver": "Prepared5",
+      "sync": "Centered"
+    },
+    {
+      "l1_route": "BoxLift",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "source-owned L1 residual",
+        "RETRO phi0/phi1",
+        "diagonal forcing remainder",
+        "Schur reset transport",
+        "explicit infinity-to-L1 dimension factor",
+        "shared native accepted-step certificate",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Shared",
+      "solver": "Prepared5",
+      "sync": "GreenMoment"
+    },
+    {
+      "l1_route": "BoxLift",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "source-owned L1 residual",
+        "RETRO phi0/phi1",
+        "diagonal forcing remainder",
+        "Schur reset transport",
+        "explicit infinity-to-L1 dimension factor",
+        "shared physical slab",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Correlated",
+      "solver": "Prepared5",
+      "sync": "GreenMoment"
+    },
+    {
+      "l1_route": "JointTransport",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "source-owned L1 residual",
+        "RETRO phi0/phi1",
+        "diagonal forcing remainder",
+        "Schur reset transport",
+        "source-owned column-stochastic map",
+        "reduced L1 operator",
+        "four signed polynomial directions",
+        "centered physical field remainder",
+        "shared native accepted-step certificate",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Shared",
+      "solver": "Prepared5",
+      "sync": "GreenMoment"
+    },
+    {
+      "l1_route": "JointTransport",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "source-owned L1 residual",
+        "RETRO phi0/phi1",
+        "diagonal forcing remainder",
+        "Schur reset transport",
+        "source-owned column-stochastic map",
+        "reduced L1 operator",
+        "four signed polynomial directions",
+        "centered physical field remainder",
+        "shared physical slab",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Correlated",
+      "solver": "Prepared5",
+      "sync": "GreenMoment"
+    },
+    {
+      "l1_route": "BoxLift",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "source-owned L1 residual",
+        "original reset interval",
+        "strict Picard tube",
+        "explicit infinity-to-L1 dimension factor",
+        "shared native accepted-step certificate",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Shared",
+      "solver": "Scalar5",
+      "sync": "BoxPicard"
+    },
+    {
+      "l1_route": "BoxLift",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "source-owned L1 residual",
+        "original reset interval",
+        "strict Picard tube",
+        "explicit infinity-to-L1 dimension factor",
+        "shared physical slab",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Correlated",
+      "solver": "Scalar5",
+      "sync": "BoxPicard"
+    },
+    {
+      "l1_route": "JointTransport",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "source-owned L1 residual",
+        "original reset interval",
+        "strict Picard tube",
+        "source-owned column-stochastic map",
+        "reduced L1 operator",
+        "four signed polynomial directions",
+        "centered physical field remainder",
+        "shared native accepted-step certificate",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Shared",
+      "solver": "Scalar5",
+      "sync": "BoxPicard"
+    },
+    {
+      "l1_route": "JointTransport",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "source-owned L1 residual",
+        "original reset interval",
+        "strict Picard tube",
+        "source-owned column-stochastic map",
+        "reduced L1 operator",
+        "four signed polynomial directions",
+        "centered physical field remainder",
+        "shared physical slab",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Correlated",
+      "solver": "Scalar5",
+      "sync": "BoxPicard"
+    },
+    {
+      "l1_route": "BoxLift",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "source-owned L1 residual",
+        "Schur reset transport",
+        "centered polynomial synchronization",
+        "explicit infinity-to-L1 dimension factor",
+        "shared native accepted-step certificate",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Shared",
+      "solver": "Scalar5",
+      "sync": "Centered"
+    },
+    {
+      "l1_route": "BoxLift",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "source-owned L1 residual",
+        "Schur reset transport",
+        "centered polynomial synchronization",
+        "explicit infinity-to-L1 dimension factor",
+        "shared physical slab",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Correlated",
+      "solver": "Scalar5",
+      "sync": "Centered"
+    },
+    {
+      "l1_route": "JointTransport",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "source-owned L1 residual",
+        "Schur reset transport",
+        "centered polynomial synchronization",
+        "source-owned column-stochastic map",
+        "reduced L1 operator",
+        "four signed polynomial directions",
+        "centered physical field remainder",
+        "shared native accepted-step certificate",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Shared",
+      "solver": "Scalar5",
+      "sync": "Centered"
+    },
+    {
+      "l1_route": "JointTransport",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "source-owned L1 residual",
+        "Schur reset transport",
+        "centered polynomial synchronization",
+        "source-owned column-stochastic map",
+        "reduced L1 operator",
+        "four signed polynomial directions",
+        "centered physical field remainder",
+        "shared physical slab",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Correlated",
+      "solver": "Scalar5",
+      "sync": "Centered"
+    },
+    {
+      "l1_route": "BoxLift",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "source-owned L1 residual",
+        "RETRO phi0/phi1",
+        "diagonal forcing remainder",
+        "Schur reset transport",
+        "explicit infinity-to-L1 dimension factor",
+        "shared native accepted-step certificate",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Shared",
+      "solver": "Scalar5",
+      "sync": "GreenMoment"
+    },
+    {
+      "l1_route": "BoxLift",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "source-owned L1 residual",
+        "RETRO phi0/phi1",
+        "diagonal forcing remainder",
+        "Schur reset transport",
+        "explicit infinity-to-L1 dimension factor",
+        "shared physical slab",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Correlated",
+      "solver": "Scalar5",
+      "sync": "GreenMoment"
+    },
+    {
+      "l1_route": "JointTransport",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "source-owned L1 residual",
+        "RETRO phi0/phi1",
+        "diagonal forcing remainder",
+        "Schur reset transport",
+        "source-owned column-stochastic map",
+        "reduced L1 operator",
+        "four signed polynomial directions",
+        "centered physical field remainder",
+        "shared native accepted-step certificate",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Shared",
+      "solver": "Scalar5",
+      "sync": "GreenMoment"
+    },
+    {
+      "l1_route": "JointTransport",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "source-owned L1 residual",
+        "RETRO phi0/phi1",
+        "diagonal forcing remainder",
+        "Schur reset transport",
+        "source-owned column-stochastic map",
+        "reduced L1 operator",
+        "four signed polynomial directions",
+        "centered physical field remainder",
+        "shared physical slab",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "directed interval Bernstein Integral4"
+      ],
+      "order": "Correlated",
+      "solver": "Scalar5",
+      "sync": "GreenMoment"
+    }
+  ],
+  "structural_negative_control": "WarpFolded constant pencil"
+}
