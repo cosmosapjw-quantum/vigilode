@@ -8,7 +8,8 @@
 //! spectra of real data Hermitian. So the sphere needs `floor(np/2) + 1` factorizations, and
 //! one complex FFT per pair of rings in each direction. The box transforms its real field as
 //! complex data by default; [`BoxTransform::PairedReal`] applies the same pairing to its x-rows
-//! and transforms only the Hermitian half along y and z (task KS-N7).
+//! and transforms only the Hermitian half along y and z (task KS-N7). A run records the box
+//! transform that ran in [`SeparableReport::box_transform`] (task KS-N7b).
 //!
 //! The derivations, with their claim status, are in
 //! `research/kernel_spectral_foundation_20261124/THEORY.md`:
@@ -30,7 +31,8 @@ use crate::SolveError;
 
 type Jvp = Arc<dyn Fn(f64, &[f64], &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>;
 
-/// Identifier of the separable stage client in [`crate::DriverWork::SeparableClient`].
+/// Identifier of the separable stage client in [`crate::DriverWork::SeparableClient`]. Both box
+/// transforms run under it; [`SeparableReport::box_transform`] records which one ran.
 pub const SEPARABLE_STAGE_CLIENT_ID: &str = "vigilode-separable-fourier-stages-v1";
 
 /// How the separable solver treats the problem's own Jacobian.
@@ -65,8 +67,10 @@ impl Default for SeparableMode {
 
 /// How the periodic box transforms its real fields (task KS-N7). Both variants are the same
 /// linear map in exact arithmetic. A sphere grid ignores the choice: its kernel always packs
-/// two real rings into one complex FFT (THEORY.md §2.3 (ii)).
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+/// two real rings into one complex FFT (THEORY.md §2.3 (ii)). A run records the transform in
+/// [`SeparableReport::box_transform`]; it serializes as its [`Self::name`].
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize)]
+#[serde(rename_all = "kebab-case")]
 #[non_exhaustive]
 pub enum BoxTransform {
     /// Full complex FFTs of the real field (imaginary part zero) along x, y and z, forward
@@ -125,7 +129,7 @@ pub struct SpectralBounds {
     pub explicit_step_bound: f64,
 }
 
-/// What the separable stage client did in one run.
+/// What the separable stage client did in one run, and the box transform it ran.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Serialize)]
 pub struct SeparableReport {
     /// Preparations of `W(z)` (one per attempt).
@@ -146,6 +150,10 @@ pub struct SeparableReport {
     pub max_backward_error: f64,
     /// Largest `|(z - c) M(x) - M(b)| / sum_i A_i |b_i|` over the solves.
     pub max_mass_defect: f64,
+    /// The transform of the periodic box's stage solves ([`SeparableStages::box_transform`]);
+    /// `None` on a sphere grid, whose kernel always pairs rings (task KS-N7b, finding F5 of the
+    /// KS-N7 review).
+    pub box_transform: Option<BoxTransform>,
 }
 
 /// The separable stage solver of one grid for a declared Jacobian `L + c I`.
@@ -286,7 +294,8 @@ impl SeparableStages {
         Kernel::new(&self.grid, self.box_transform).crossings(z, self.linear_rate)
     }
 
-    /// The stage client for the protected client driver; `report` collects its work.
+    /// The stage client for the protected client driver; `report` collects its work and
+    /// records the box transform of the kernel the client runs.
     pub(crate) fn client(&self, report: Arc<Mutex<SeparableReport>>) -> Box<dyn StageLinearSystem> {
         let n = self.dimension();
         let weights = match &*self.grid.geometry {
@@ -296,8 +305,14 @@ impl SeparableStages {
                 .collect(),
             Geometry::Cartesian { .. } => vec![1.0; n],
         };
+        let kernel = Kernel::new(&self.grid, self.box_transform);
+        // Read from the kernel that runs, so the record cannot drift from the arithmetic.
+        report
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .box_transform = kernel.box_transform();
         Box::new(SeparableClient {
-            kernel: Kernel::new(&self.grid, self.box_transform),
+            kernel,
             linear_rate: self.linear_rate,
             mode: self.mode,
             weights,
@@ -340,6 +355,14 @@ impl Kernel {
             Geometry::Cartesian { ny, nz, rates, .. } => {
                 Self::Box(BoxKernel::new([grid.width, *ny, *nz], *rates, transform))
             }
+        }
+    }
+
+    /// The box transform this kernel runs; `None` on a sphere grid.
+    fn box_transform(&self) -> Option<BoxTransform> {
+        match self {
+            Self::Sphere(_) => None,
+            Self::Box(k) => Some(k.transform),
         }
     }
 
