@@ -81,3 +81,38 @@ EXPECTED (stated before any run)
   pattern. Expected A = B in every field, check counters included (contract acceptance 1).
 - V29 recording meta field default_coloured uses SparsityPattern::banded(4, 1, 1): by hand count total_groups 4 =
   n (refinement construction), so it should change from MultiColouring to All in B (a meta field, not a case).
+
+== 2026-11-25 09:42, entry 2 (first list of the cases with total_groups >= n; nothing of the client edited) ==
+
+SOURCE OF THIS FIRST LIST
+- A small Python program over the committed V29 logs research/production_loop_20261116/assembly_default/logs/
+  corpus_B_*.log and identity_B_*.log: their records carry check_colourings (CheckColourings::of of the declared
+  pattern: total_groups, both totals, construction) for every coloured case and cell, written by the V29 binary
+  built at fc185e2a. git diff fc185e2a d4e2772f of crates/rodas5p-integrators/src/stage_clients/ changes rustdoc
+  lines of assembly.rs only (0b24be8c); multi.rs, pattern.rs, engine.rs, the V29 program and the problems file are
+  unchanged, so these are the numbers of today's code. They are recomputed by the new target's "groups" mode
+  (entry 3) and recorded again by commit A before the client is edited.
+
+V26 CORPUS (4846 cases, 4843 coloured): total_groups >= n in 6 cases, all correct patterns, all at equality
+  (band construction with the single modulus 2n - 1 >= n: every group is one column):
+  correct/ring-n12-true  n 12  total 12 (band 12, refinement 15)
+  correct/ring-n13-true  n 13  total 13 (band 13, refinement 17)
+  correct/ring-n14-true  n 14  total 14 (band 14, refinement 19)
+  correct/ring-n15-true  n 15  total 15 (band 15, refinement 15; tie, band construction)
+  correct/ring-n16-true  n 16  total 16 (band 16, refinement 17)
+  correct/ring-n32-true  n 32  total 32 (band 32, refinement 36)
+  No wrong declaration of the corpus has total_groups >= n; the closest below n: correct/ring-n34-true 33 < 34,
+  ring/n13-tridiagonal 12 < 13, ring/n14..16-tridiagonal 12, correct/ring-n33-true 30 < 33,
+  controls/impure16-tridiagonal 12 < 16. The 3 dense-route cases have no pattern (Sample(8) unchanged).
+  Consequence for the plan: on the corpus the rule changes the check of 6 correct patterns only, at equal cost (n
+  right-hand sides either way); the wrong declarations keep MultiColouring, so their decisions cannot change. The
+  supplement of plan item 1 (mode "wide" of the new target) is therefore needed to compare A and B on wrong
+  declarations where the rule picks All.
+V08 IDENTITY CELLS: total_groups < n everywhere, so the rule keeps MultiColouring and nothing should change:
+  bruss1d-n128-coloured (banded_tight) n 128, total 18 (band 18, refinement 50)
+  bruss1d-n131072 (banded_tight) n 131072, total 59 (band 59, refinement 205)
+  nlkpp-band-n4096-r24 (banded_tight and banded_protected) n 4096, total 150 (band 150, refinement 833)
+  nlkpp-dense-n400 and bruss1d-n128-dense: dense route, no pattern (Sample(8) unchanged).
+EXISTING TESTS THAT PIN THE DEFAULT ON A PATTERN WITH total_groups >= n (first search, to be completed)
+- tests/stage_clients_assembly_default.rs:153 AssemblyOptions::coloured(ring_pattern(16)) asserted MultiColouring
+  at :155; ring_pattern(16) has total_groups 16 = n (list above), so the rule picks All there.
