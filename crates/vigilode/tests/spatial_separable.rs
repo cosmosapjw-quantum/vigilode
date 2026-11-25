@@ -686,3 +686,436 @@ fn measure_separable_against_preconditioned_gmres_stage_solves() {
         }
     }
 }
+
+// KS-N7: the two-for-one real FFT of the periodic box (`BoxTransform::PairedReal`), against
+// the full complex transform (`BoxTransform::Complex`, the default). `BoxTransform` is selected
+// by name (`FromStr`), so these tests do not depend on its re-export path.
+// Notes: research/kernel_spectral_foundation_20261124/ks_n7/NOTES.txt.
+
+/// The `(z, c)` range of `separable_stage_solves_are_exact_and_mass_consistent`.
+const KS_N7_SHIFTS: [(f64, f64); 5] = [
+    (0.5, 0.0),
+    (10.0, -1.0),
+    (3.0, 1.0),
+    (1.0e4, 0.0),
+    (1.0e-3, 0.0),
+];
+
+fn ks_n7_box<const D: usize>(
+    cells: [usize; D],
+    lengths: [f64; D],
+    kappa: [f64; D],
+) -> DiffusionGrid {
+    DiffusionGrid::periodic_box(cells, lengths, kappa).unwrap()
+}
+
+/// Every box grid of the tests above (T1/T2: 8x6, 5x7, 4x6x5; T4: 4x5; T3: 12x10), then even
+/// and odd sizes: the minimum axis length 2, odd `nx`, odd row counts (`ny nz` odd: the last
+/// row is packed alone), prime `nx` beyond rustfft's butterflies, 3-D boxes, and a larger
+/// grid. The third entry of each tuple is `nx`.
+fn ks_n7_box_grids() -> Vec<(&'static str, DiffusionGrid, usize)> {
+    vec![
+        ("box-8x6", ks_n7_box([8, 6], [1.0, 0.7], [0.3, 1.1]), 8),
+        ("box-5x7", ks_n7_box([5, 7], [2.0, 1.0], [1.0, 0.4]), 5),
+        (
+            "box-4x6x5",
+            ks_n7_box([4, 6, 5], [1.0, 1.0, 2.0], [0.5, 0.2, 1.5]),
+            4,
+        ),
+        ("box-4x5", ks_n7_box([4, 5], [1.0, 1.0], [0.6, 0.9]), 4),
+        (
+            "box-12x10",
+            ks_n7_box([12, 10], [1.0, 1.0], [0.02, 0.05]),
+            12,
+        ),
+        ("box-2x2", ks_n7_box([2, 2], [1.0, 1.0], [0.8, 0.3]), 2),
+        ("box-7x4", ks_n7_box([7, 4], [1.3, 0.9], [0.4, 0.7]), 7),
+        ("box-6x9", ks_n7_box([6, 9], [1.0, 2.0], [1.2, 0.5]), 6),
+        ("box-37x6", ks_n7_box([37, 6], [1.0, 0.5], [0.02, 0.3]), 37),
+        (
+            "box-3x3x3",
+            ks_n7_box([3, 3, 3], [1.0, 1.0, 1.0], [0.3, 0.6, 0.9]),
+            3,
+        ),
+        (
+            "box-5x3x7",
+            ks_n7_box([5, 3, 7], [1.0, 0.5, 1.5], [0.7, 0.2, 0.4]),
+            5,
+        ),
+        (
+            "box-2x5x3",
+            ks_n7_box([2, 5, 3], [0.4, 1.0, 1.0], [0.1, 0.9, 0.5]),
+            2,
+        ),
+        (
+            "box-9x2x2",
+            ks_n7_box([9, 2, 2], [1.0, 0.3, 0.3], [0.5, 0.05, 0.08]),
+            9,
+        ),
+        (
+            "box-16x12x4",
+            ks_n7_box([16, 12, 4], [1.0, 1.0, 0.5], [0.3, 0.3, 0.1]),
+            16,
+        ),
+        (
+            "box-33x17",
+            ks_n7_box([33, 17], [1.0, 1.0], [0.05, 0.05]),
+            33,
+        ),
+        (
+            "box-64x48",
+            ks_n7_box([64, 48], [1.0, 0.75], [0.01, 0.02]),
+            64,
+        ),
+    ]
+}
+
+/// Right-hand sides: the three noise seeds of the T1/T2 test, and one whose rows alternate
+/// in scale by 1e8 (the two rows of a pair share one complex FFT).
+fn ks_n7_right_hand_sides(n: usize, nx: usize) -> Vec<(&'static str, Vec<f64>)> {
+    let mut sides: Vec<(&'static str, Vec<f64>)> = ["seed17", "seed18", "seed19"]
+        .into_iter()
+        .zip(17u64..)
+        .map(|(name, seed)| (name, noise(n, seed)))
+        .collect();
+    let mut scaled = noise(n, 23);
+    for (row, chunk) in scaled.chunks_mut(nx).enumerate() {
+        if row % 2 == 1 {
+            chunk.iter_mut().for_each(|v| *v *= 1.0e-8);
+        }
+    }
+    sides.push(("rows-1e8-apart", scaled));
+    sides
+}
+
+/// The transform named `name`, parsed into the setter's parameter type.
+fn ks_n7_parse(stages: &SeparableStages, name: &str) -> Result<SeparableStages, SolveError> {
+    Ok(stages.clone().with_box_transform(name.parse()?))
+}
+
+fn ks_n7_with(stages: SeparableStages, transform: &str) -> SeparableStages {
+    ks_n7_parse(&stages, transform).unwrap()
+}
+
+/// KS-N7 agreement: `PairedReal` returns the `Complex` solution to round-off on every box
+/// grid, shift and right-hand side. Stated bound: on the box `W = (z - c) I - L` is an
+/// M-matrix with `W 1 = (z - c) 1`, so `||W^{-1}||_inf = 1/(z - c)`; two solves whose
+/// residuals meet the T1 bound `1e-13 S`, `S = ((z - c) + rho_bar) ||x||_inf + ||b||_inf`,
+/// differ by at most `2e-13 S / (z - c)`. Asserted: `||x_p - x_c||_inf <= 1e-13 S / (z - c)`.
+#[test]
+fn paired_real_box_transform_agrees_with_the_complex_transform() {
+    let (mut worst_relative, mut worst_normalized) = (0.0f64, 0.0f64);
+    let (mut cases, mut differing) = (0usize, 0usize);
+    let mut worst_case = String::new();
+    for (name, grid, nx) in ks_n7_box_grids() {
+        for (z, c) in KS_N7_SHIFTS {
+            let complex = grid.separable_stages(c).unwrap();
+            assert_eq!(complex.box_transform().to_string(), "complex", "{name}");
+            let paired = ks_n7_with(complex.clone(), "paired-real");
+            assert_eq!(paired.box_transform().to_string(), "paired-real", "{name}");
+            let rho_bar = complex.spectral_bounds().radius_bound;
+            for (side, b) in ks_n7_right_hand_sides(grid.dimension(), nx) {
+                let (mut xc, mut xp) = (b.clone(), b.clone());
+                complex.solve_stage(z, &mut xc).unwrap();
+                paired.solve_stage(z, &mut xp).unwrap();
+                let diff = max_diff(&xp, &xc);
+                let scale = ((z - c).abs() + rho_bar) * max_abs(&xc) + max_abs(&b);
+                let bound = 1.0e-13 * scale / (z - c);
+                assert!(
+                    diff <= bound,
+                    "{name} z={z} c={c} {side}: |x_p - x_c| {diff:.2e} above {bound:.2e}"
+                );
+                let relative = diff / max_abs(&xc);
+                if relative > worst_relative {
+                    worst_relative = relative;
+                    worst_case = format!("{name} z={z} c={c} {side}");
+                }
+                worst_normalized = worst_normalized.max(diff * (z - c) / scale);
+                cases += 1;
+                differing += usize::from(diff > 0.0);
+            }
+        }
+    }
+    // The paired arm is a different computation: some of its roundings must differ.
+    assert!(
+        differing > 0,
+        "PairedReal returned the Complex bits on every case"
+    );
+    println!(
+        "\nKS_N7_AGREEMENT {{\"cases\":{cases},\"differing_cases\":{differing},\"max_relative_difference\":{worst_relative:.3e},\"max_normalized_difference\":{worst_normalized:.3e},\"bound_normalized\":1e-13,\"worst_case\":\"{worst_case}\"}}"
+    );
+}
+
+/// KS-N7: the T1 backward-error bound and the T2 stage mass identity hold for `PairedReal`
+/// with the scales of `separable_stage_solves_are_exact_and_mass_consistent`, on every box
+/// grid, shift and right-hand side; the `Complex` arm is measured on the same cases.
+#[test]
+fn paired_real_box_solves_meet_the_t1_t2_bounds() {
+    for transform in ["paired-real", "complex"] {
+        let (mut worst_backward, mut worst_mass) = (0.0f64, 0.0f64);
+        let mut solves = 0usize;
+        for (name, grid, nx) in ks_n7_box_grids() {
+            let total_measure: f64 = (0..grid.dimension())
+                .map(|i| grid.cell_measure(i).unwrap())
+                .sum();
+            for (z, c) in KS_N7_SHIFTS {
+                let stages = ks_n7_with(grid.separable_stages(c).unwrap(), transform);
+                let bounds = stages.spectral_bounds();
+                for (side, b) in ks_n7_right_hand_sides(grid.dimension(), nx) {
+                    let mut x = b.clone();
+                    stages.solve_stage(z, &mut x).unwrap();
+                    let residual = max_diff(&b, &apply_w(&grid, z, c, &x));
+                    let scale = ((z - c).abs() + bounds.radius_bound) * max_abs(&x) + max_abs(&b);
+                    let backward = residual / scale;
+                    let defect = ((z - c) * mass(&grid, &x) - mass(&grid, &b)).abs()
+                        / (total_measure * scale);
+                    assert!(
+                        backward <= 1.0e-13,
+                        "{transform} {name} z={z} c={c} {side}: backward {backward:.2e}"
+                    );
+                    assert!(
+                        defect <= 1.0e-13,
+                        "{transform} {name} z={z} c={c} {side}: mass defect {defect:.2e}"
+                    );
+                    worst_backward = worst_backward.max(backward);
+                    worst_mass = worst_mass.max(defect);
+                    solves += 1;
+                }
+            }
+        }
+        println!(
+            "\nKS_N7_T1T2 {{\"transform\":\"{transform}\",\"solves\":{solves},\"max_backward_error\":{worst_backward:.3e},\"max_mass_defect\":{worst_mass:.3e},\"bound\":1e-13}}"
+        );
+    }
+}
+
+/// KS-N7 client wiring: whole IVPs on the separable route with `PairedReal` (T3 cases of the
+/// box: the 12x10 box of T3 and the 3-D box of T1/T2) match the dense matrix-exponential
+/// reference within the T3 envelope, keep the stage mass identity, and agree with the
+/// `Complex` route within the same envelope.
+#[test]
+fn paired_real_box_route_matches_the_reference_and_the_complex_route() {
+    let cases = [
+        (
+            "box-12x10",
+            ks_n7_box([12, 10], [1.0, 1.0], [0.02, 0.05]),
+            12,
+            -0.5,
+        ),
+        (
+            "box-4x6x5",
+            ks_n7_box([4, 6, 5], [1.0, 1.0, 2.0], [0.5, 0.2, 1.5]),
+            4,
+            -0.5,
+        ),
+    ];
+    for (name, grid, width, c) in cases {
+        let n = grid.dimension();
+        let y0 = smooth_field(&grid, width);
+        let span = (0.0, 1.0);
+        let zeros = vec![0.0; n];
+        let reference = expm_apply(&dense_jacobian(&grid, c, &zeros), n, span.1, &y0);
+        let scale = max_abs(&reference);
+        let opts = options(1.0e-8, 1.0e-10);
+        let p = problem(&grid, c, zeros, Arc::new(AtomicUsize::new(0)));
+        for mode in [SeparableMode::Trusted, SeparableMode::default()] {
+            let mut finals = Vec::new();
+            for transform in ["complex", "paired-real"] {
+                let stages = ks_n7_with(
+                    grid.separable_stages(c).unwrap().with_mode(mode).unwrap(),
+                    transform,
+                );
+                let solution = VigilODE::solve_separable(&p, span, &y0, &opts, &stages).unwrap();
+                assert!(solution.is_success(), "{name} {mode:?} {transform}");
+                let y = solution.final_state().unwrap();
+                let error = max_diff(y, &reference);
+                assert!(
+                    error <= 1.0e-6 * scale,
+                    "{name} {mode:?} {transform}: error {error:.2e}"
+                );
+                let r = report(&solution);
+                assert_eq!(r.refused_preparations, 0, "{name} {transform}");
+                assert!(r.max_mass_defect <= 1.0e-12, "{name} {transform}: {r:?}");
+                if let SeparableMode::Verified { .. } = mode {
+                    assert_eq!(
+                        r.corrections, 0,
+                        "{name} {transform}: the declared J is exact"
+                    );
+                    assert!(r.max_backward_error <= 1.0e-12, "{name} {transform}: {r:?}");
+                }
+                println!(
+                    "\nKS_N7_T3 {{\"case\":\"{name}\",\"mode\":\"{mode:?}\",\"transform\":\"{transform}\",\"error\":{error:.3e},\"attempts\":{},\"solves\":{},\"max_mass_defect\":{:.3e},\"max_backward_error\":{:.3e}}}",
+                    solution.stats.attempts, r.solves, r.max_mass_defect, r.max_backward_error
+                );
+                finals.push(y.to_vec());
+            }
+            let between = max_diff(&finals[0], &finals[1]);
+            assert!(
+                between <= 1.0e-6 * scale,
+                "{name} {mode:?}: routes differ by {between:.2e}"
+            );
+            println!(
+                "\nKS_N7_T3_ROUTES {{\"case\":\"{name}\",\"mode\":\"{mode:?}\",\"max_difference\":{between:.3e},\"relative_difference\":{:.3e}}}",
+                between / scale
+            );
+        }
+    }
+}
+
+/// KS-N7 selection: `Complex` is the default; names parse and print; a sphere ignores the
+/// setting (identical bits); `stage_solver` reuses its plans and buffers without carrying
+/// state from one solve to the next (identical bits to fresh `solve_stage` calls).
+#[test]
+fn box_transform_selection_defaults_parses_and_reuses_prepared_solvers() {
+    let box_grid = ks_n7_box([7, 5, 3], [1.0, 1.0, 1.0], [0.4, 0.5, 0.6]);
+    let stages = box_grid.separable_stages(0.0).unwrap();
+    assert_eq!(stages.box_transform().to_string(), "complex");
+    for (name, canonical) in [
+        ("complex", "complex"),
+        ("paired-real", "paired-real"),
+        ("paired", "paired-real"),
+    ] {
+        let s = ks_n7_with(stages.clone(), name);
+        assert_eq!(s.box_transform().to_string(), canonical);
+        assert_eq!(s.box_transform().name(), canonical);
+    }
+    assert!(matches!(
+        ks_n7_parse(&stages, "real"),
+        Err(SolveError::InvalidInput(_))
+    ));
+    // The sphere ignores the box transform.
+    let ball = sphere(7, 12, 0.7);
+    let b = noise(ball.dimension(), 3);
+    let mut solutions = Vec::new();
+    for transform in ["complex", "paired-real"] {
+        let s = ks_n7_with(ball.separable_stages(-0.3).unwrap(), transform);
+        let mut x = b.clone();
+        s.solve_stage(2.5, &mut x).unwrap();
+        solutions.push(x);
+    }
+    assert_eq!(
+        solutions[0], solutions[1],
+        "the sphere must ignore the box transform"
+    );
+    // A prepared solver gives the bits of fresh solves, solve after solve, on both arms and the
+    // sphere; it refuses a wrong length and a shift beyond the stage pencil like solve_stage.
+    for (name, grid) in [
+        ("box-7x5x3", box_grid.clone()),
+        ("sphere-7x12", ball.clone()),
+    ] {
+        for transform in ["complex", "paired-real"] {
+            let s = ks_n7_with(grid.separable_stages(0.0).unwrap(), transform);
+            let mut solve = s.stage_solver(4.0).unwrap();
+            for seed in 0..3 {
+                let rhs = noise(grid.dimension(), 40 + seed);
+                let (mut reused, mut fresh) = (rhs.clone(), rhs.clone());
+                solve(&mut reused).unwrap();
+                s.solve_stage(4.0, &mut fresh).unwrap();
+                assert_eq!(reused, fresh, "{name} {transform} seed {seed}");
+            }
+            let mut short = vec![0.0; grid.dimension() - 1];
+            assert!(matches!(
+                solve(&mut short),
+                Err(SolveError::InvalidInput(_))
+            ));
+            assert!(s.stage_solver(0.0).is_err(), "{name} {transform}");
+            assert!(
+                grid.separable_stages(5.0)
+                    .unwrap()
+                    .with_box_transform(transform.parse().unwrap())
+                    .stage_solver(4.0)
+                    .is_err(),
+                "{name} {transform}: c > z must be refused"
+            );
+        }
+    }
+}
+
+/// KS-N7 measurement, ONE arm per process so that `perf stat` counts one arm:
+/// `KS_N7_ARM` = `complex` | `paired` (or `paired-real`), `KS_N7_GRID` = `256x256` |
+/// `128x128x64` (two or three axes), `KS_N7_SOLVES` (default 200), `KS_N7_SCOPE` =
+/// `prepared` (default: `stage_solver`, plans and buffers built once and reused, as in the
+/// driver) | `solve_stage` (kernel built per call). Prints one line
+/// `KS_N7_MEASURE {json}`: median, minimum and maximum seconds per stage solve, the largest
+/// backward error (first and last solve), the preparation seconds.
+#[test]
+#[ignore = "timing measurement; one arm per process, see KS_N7_ARM/KS_N7_GRID/KS_N7_SOLVES"]
+fn measure_box_transform_one_arm() {
+    use std::time::Instant;
+    let env = |key: &str, default: &str| std::env::var(key).unwrap_or_else(|_| default.into());
+    let arm = env("KS_N7_ARM", "complex");
+    let grid_name = env("KS_N7_GRID", "256x256");
+    let scope = env("KS_N7_SCOPE", "prepared");
+    let solves: usize = env("KS_N7_SOLVES", "200")
+        .parse()
+        .expect("KS_N7_SOLVES must be a positive integer");
+    assert!(solves > 0, "KS_N7_SOLVES must be positive");
+    let cells: Vec<usize> = grid_name
+        .split('x')
+        .map(|s| s.parse().expect("KS_N7_GRID: axes like 256x256"))
+        .collect();
+    let grid = match cells[..] {
+        [nx, ny] => ks_n7_box([nx, ny], [1.0, 1.0], [1.0e-2, 1.0e-2]),
+        [nx, ny, nz] => ks_n7_box([nx, ny, nz], [1.0; 3], [1.0e-2; 3]),
+        _ => panic!("KS_N7_GRID needs two or three axes, e.g. 256x256 or 128x128x64"),
+    };
+    let stages = grid
+        .separable_stages(0.0)
+        .unwrap()
+        .with_mode(SeparableMode::Trusted)
+        .unwrap()
+        .with_box_transform(arm.parse().expect("KS_N7_ARM: complex or paired"));
+    // A RODAS5P stage shift: h = 1e-2, gamma = 0.2119...
+    let (z, c) = (1.0 / (1.0e-2 * 0.211_937_563_194_290_14), 0.0);
+    let n = grid.dimension();
+    let b = noise(n, 5);
+    let rho_bar = stages.spectral_bounds().radius_bound;
+    let backward = |x: &[f64]| {
+        max_diff(&b, &apply_w(&grid, z, c, x))
+            / (((z - c).abs() + rho_bar) * max_abs(x) + max_abs(&b))
+    };
+    let mut x = vec![0.0; n];
+    let mut times = Vec::with_capacity(solves);
+    let mut worst = 0.0f64;
+    let mut prepare_s = 0.0;
+    match scope.as_str() {
+        "prepared" => {
+            let start = Instant::now();
+            let mut solve = stages.stage_solver(z).unwrap();
+            prepare_s = start.elapsed().as_secs_f64();
+            for i in 0..solves {
+                x.copy_from_slice(&b);
+                let start = Instant::now();
+                solve(&mut x).unwrap();
+                times.push(start.elapsed().as_secs_f64());
+                if i == 0 || i + 1 == solves {
+                    worst = worst.max(backward(&x));
+                }
+            }
+        }
+        "solve_stage" => {
+            for i in 0..solves {
+                x.copy_from_slice(&b);
+                let start = Instant::now();
+                stages.solve_stage(z, &mut x).unwrap();
+                times.push(start.elapsed().as_secs_f64());
+                if i == 0 || i + 1 == solves {
+                    worst = worst.max(backward(&x));
+                }
+            }
+        }
+        other => panic!("KS_N7_SCOPE must be prepared or solve_stage, not {other}"),
+    }
+    times.sort_by(f64::total_cmp);
+    let median = if solves % 2 == 1 {
+        times[solves / 2]
+    } else {
+        0.5 * (times[solves / 2 - 1] + times[solves / 2])
+    };
+    println!(
+        "\nKS_N7_MEASURE {{\"ks_n7\":\"box_stage_solve\",\"arm\":\"{arm}\",\"transform\":\"{}\",\"grid\":\"{grid_name}\",\"n\":{n},\"solves\":{solves},\"scope\":\"{scope}\",\"median_s\":{median:.9},\"min_s\":{:.9},\"max_s\":{:.9},\"prepare_s\":{prepare_s:.9},\"max_backward_error\":{worst:.3e},\"z\":{z:.6e}}}",
+        stages.box_transform(),
+        times[0],
+        times[solves - 1],
+    );
+}

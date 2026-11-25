@@ -6,7 +6,9 @@
 //! system per longitude mode on the sphere, one scalar per wave vector on the box.
 //! Reflection makes the blocks of modes `m` and `np - m` equal. Complex conjugation makes the
 //! spectra of real data Hermitian. So the sphere needs `floor(np/2) + 1` factorizations, and
-//! one complex FFT per pair of rings in each direction.
+//! one complex FFT per pair of rings in each direction. The box transforms its real field as
+//! complex data by default; [`BoxTransform::PairedReal`] applies the same pairing to its x-rows
+//! and transforms only the Hermitian half along y and z (task KS-N7).
 //!
 //! The derivations, with their claim status, are in
 //! `research/kernel_spectral_foundation_20261124/THEORY.md`:
@@ -61,6 +63,55 @@ impl Default for SeparableMode {
     }
 }
 
+/// How the periodic box transforms its real fields (task KS-N7). Both variants are the same
+/// linear map in exact arithmetic. A sphere grid ignores the choice: its kernel always packs
+/// two real rings into one complex FFT (THEORY.md §2.3 (ii)).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+#[non_exhaustive]
+pub enum BoxTransform {
+    /// Full complex FFTs of the real field (imaginary part zero) along x, y and z, forward
+    /// and inverse; the real part of the result is kept. The default.
+    #[default]
+    Complex,
+    /// Two-for-one real FFT: rows `2q` and `2q + 1` are packed as `u + i v` along x and
+    /// separated by the involution `R Z(m) = conj Z(nx - m)`; only the Hermitian half
+    /// `k <= nx/2` of the x-spectra is transformed along y and z. About half the FFTs and half
+    /// the buffer memory of [`Self::Complex`].
+    PairedReal,
+}
+
+impl BoxTransform {
+    /// The name read by [`std::str::FromStr`] and written by [`std::fmt::Display`]:
+    /// `complex` or `paired-real`.
+    pub fn name(self) -> &'static str {
+        match self {
+            Self::Complex => "complex",
+            Self::PairedReal => "paired-real",
+        }
+    }
+}
+
+impl std::fmt::Display for BoxTransform {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.name())
+    }
+}
+
+impl std::str::FromStr for BoxTransform {
+    type Err = SolveError;
+
+    /// `complex`, or `paired-real` (alias `paired`).
+    fn from_str(name: &str) -> Result<Self, SolveError> {
+        match name {
+            "complex" => Ok(Self::Complex),
+            "paired-real" | "paired" => Ok(Self::PairedReal),
+            other => Err(SolveError::InvalidInput(format!(
+                "unknown box transform `{other}`: expected `complex` or `paired-real`"
+            ))),
+        }
+    }
+}
+
 /// Spectral facts of the declared Jacobian `J = L + c I` (THEORY.md §5).
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 pub struct SpectralBounds {
@@ -103,6 +154,7 @@ pub struct SeparableStages {
     grid: DiffusionGrid,
     linear_rate: f64,
     mode: SeparableMode,
+    box_transform: BoxTransform,
 }
 
 impl DiffusionGrid {
@@ -118,6 +170,7 @@ impl DiffusionGrid {
             grid: self.clone(),
             linear_rate,
             mode: SeparableMode::default(),
+            box_transform: BoxTransform::default(),
         })
     }
 }
@@ -139,6 +192,18 @@ impl SeparableStages {
     /// The mode of every stage solve.
     pub fn mode(&self) -> SeparableMode {
         self.mode
+    }
+
+    /// The same solver with the periodic box's transform `transform` (default
+    /// [`BoxTransform::Complex`]). A sphere grid ignores it.
+    pub fn with_box_transform(mut self, transform: BoxTransform) -> Self {
+        self.box_transform = transform;
+        self
+    }
+
+    /// The transform of the periodic box's stage solves.
+    pub fn box_transform(&self) -> BoxTransform {
+        self.box_transform
     }
 
     /// The declared linear rate `c` of `J = L + c I`.
@@ -181,7 +246,7 @@ impl SeparableStages {
                 "separable stage solve: right-hand side length mismatch",
             ));
         }
-        let mut kernel = Kernel::new(&self.grid);
+        let mut kernel = Kernel::new(&self.grid, self.box_transform);
         kernel
             .prepare(z, self.linear_rate)
             .map_err(|e| SolveError::InvalidInput(e.to_string()))?;
@@ -189,11 +254,36 @@ impl SeparableStages {
         Ok(())
     }
 
+    /// A stage solver prepared once for `z`: the FFT plans, the buffers and (on the sphere)
+    /// the Thomas factors are built here and reused by every call, as the protected driver
+    /// reuses one preparation for the eight stage solves of an attempt. Each call solves
+    /// `(z I - L - c I) x = b` in place with the same arithmetic as [`Self::solve_stage`].
+    /// The preparation is refused like that of [`Self::solve_stage`].
+    pub fn stage_solver(
+        &self,
+        z: f64,
+    ) -> Result<impl FnMut(&mut [f64]) -> Result<(), SolveError> + Send + use<>, SolveError> {
+        let mut kernel = Kernel::new(&self.grid, self.box_transform);
+        kernel
+            .prepare(z, self.linear_rate)
+            .map_err(|e| SolveError::InvalidInput(e.to_string()))?;
+        let n = self.dimension();
+        Ok(move |b: &mut [f64]| {
+            if b.len() != n {
+                return Err(invalid(
+                    "separable stage solve: right-hand side length mismatch",
+                ));
+            }
+            kernel.solve(b);
+            Ok(())
+        })
+    }
+
     /// The number of eigenvalues of the declared `J = L + c I` at or above `z`, with
     /// multiplicity, read from the signs of the Thomas pivots of the mode systems
     /// (Sylvester's law of inertia, THEORY.md §4.2).
     pub fn inertia(&self, z: f64) -> usize {
-        Kernel::new(&self.grid).crossings(z, self.linear_rate)
+        Kernel::new(&self.grid, self.box_transform).crossings(z, self.linear_rate)
     }
 
     /// The stage client for the protected client driver; `report` collects its work.
@@ -207,7 +297,7 @@ impl SeparableStages {
             Geometry::Cartesian { .. } => vec![1.0; n],
         };
         Box::new(SeparableClient {
-            kernel: Kernel::new(&self.grid),
+            kernel: Kernel::new(&self.grid, self.box_transform),
             linear_rate: self.linear_rate,
             mode: self.mode,
             weights,
@@ -244,11 +334,11 @@ enum Kernel {
 }
 
 impl Kernel {
-    fn new(grid: &DiffusionGrid) -> Self {
+    fn new(grid: &DiffusionGrid, transform: BoxTransform) -> Self {
         match &*grid.geometry {
             Geometry::Sphere(rings) => Self::Sphere(SphereKernel::new(rings, grid.width)),
             Geometry::Cartesian { ny, nz, rates, .. } => {
-                Self::Box(BoxKernel::new([grid.width, *ny, *nz], *rates))
+                Self::Box(BoxKernel::new([grid.width, *ny, *nz], *rates, transform))
             }
         }
     }
@@ -463,19 +553,30 @@ impl SphereKernel {
     }
 }
 
+/// Complex values per batch of packed x-lines of [`BoxTransform::PairedReal`] (64 KiB).
+const PAIRED_LINE_BATCH: usize = 4096;
+
 /// Diagonal of the box's stage matrix in Fourier space: `z - c + e_x + e_y + e_z`.
+/// Rows are the x-lines, `r = y + ny z`.
 struct BoxKernel {
     cells: [usize; 3],
     symbols: [Vec<f64>; 3],
     shift: f64,
     plans: Vec<FftPair>,
+    transform: BoxTransform,
+    /// `Complex`: the whole field, x fastest. `PairedReal`: the Hermitian half spectra of the
+    /// rows, x-mode-major: `buffer[k * rows + r]` is x-mode `k <= nx/2` of row `r`, so the
+    /// y-lines are contiguous and the two rows of a pair are adjacent.
     buffer: Vec<Complex64>,
+    /// `PairedReal`: one batch of packed lines, two real rows per complex line of length `nx`
+    /// (empty for `Complex`).
+    lines: Vec<Complex64>,
     line: Vec<Complex64>,
     scratch: Vec<Complex64>,
 }
 
 impl BoxKernel {
-    fn new(cells: [usize; 3], rates: [f64; 3]) -> Self {
+    fn new(cells: [usize; 3], rates: [f64; 3], transform: BoxTransform) -> Self {
         let symbols = std::array::from_fn(|axis| {
             (0..cells[axis])
                 .map(|k| rates[axis] * symbol(k, cells[axis]))
@@ -487,14 +588,25 @@ impl BoxKernel {
             .flat_map(|(f, i)| [f.get_inplace_scratch_len(), i.get_inplace_scratch_len()])
             .max()
             .unwrap_or(0);
-        let n = cells.iter().product();
+        let [nx, ny, nz] = cells;
+        let (buffer, lines) = match transform {
+            BoxTransform::Complex => (cells.iter().product(), 0),
+            BoxTransform::PairedReal => {
+                let rows = ny * nz;
+                let packed = rows.div_ceil(2);
+                let batch = (PAIRED_LINE_BATCH / nx).max(1).min(packed);
+                ((nx / 2 + 1) * rows, batch * nx)
+            }
+        };
         Self {
             cells,
             symbols,
             shift: f64::NAN,
             plans,
-            buffer: vec![Complex64::default(); n],
-            line: vec![Complex64::default(); cells[1].max(cells[2])],
+            transform,
+            buffer: vec![Complex64::default(); buffer],
+            lines: vec![Complex64::default(); lines],
+            line: vec![Complex64::default(); ny.max(nz)],
             scratch: vec![Complex64::default(); scratch],
         }
     }
@@ -553,6 +665,138 @@ impl BoxKernel {
     }
 
     fn solve(&mut self, b: &mut [f64]) {
+        match self.transform {
+            BoxTransform::Complex => self.solve_complex(b),
+            BoxTransform::PairedReal => self.solve_paired(b),
+        }
+    }
+
+    /// [`BoxTransform::PairedReal`] (THEORY.md §2.3 (ii) applied to the box's rows; the
+    /// algebra is in `research/kernel_spectral_foundation_20261124/ks_n7/NOTES.txt`).
+    fn solve_paired(&mut self, b: &mut [f64]) {
+        let [nx, ny, nz] = self.cells;
+        let rows = ny * nz;
+        let half = nx / 2 + 1;
+        let packed = rows.div_ceil(2);
+        let batch = self.lines.len() / nx;
+        let forward_x = Arc::clone(&self.plans[0].0);
+        let inverse_x = Arc::clone(&self.plans[0].1);
+        // x: pack rows 2q and 2q + 1 as u + i v, transform, separate the Hermitian halves by
+        // R Z(m) = conj Z(nx - m): U = (Z + R Z) / 2, V = (Z - R Z) / (2i). A last odd row is
+        // packed alone (v = 0) and projected the same way.
+        for first in (0..packed).step_by(batch) {
+            let count = batch.min(packed - first);
+            let (start, end) = (2 * first, (2 * (first + count)).min(rows));
+            let lines = &mut self.lines[..count * nx];
+            for (row, line) in (start..end).step_by(2).zip(lines.chunks_exact_mut(nx)) {
+                let u = &b[row * nx..(row + 1) * nx];
+                if row + 1 < rows {
+                    let v = &b[(row + 1) * nx..(row + 2) * nx];
+                    for ((dst, &re), &im) in line.iter_mut().zip(u).zip(v) {
+                        *dst = Complex64::new(re, im);
+                    }
+                } else {
+                    for (dst, &re) in line.iter_mut().zip(u) {
+                        *dst = Complex64::new(re, 0.0);
+                    }
+                }
+            }
+            forward_x.process_with_scratch(lines, &mut self.scratch);
+            for k in 0..half {
+                let partner = if k == 0 { 0 } else { nx - k };
+                let column = &mut self.buffer[k * rows + start..k * rows + end];
+                for (pair, line) in column.chunks_mut(2).zip(lines.chunks_exact(nx)) {
+                    let zm = line[k];
+                    let zr = line[partner].conj();
+                    pair[0] = (zm + zr) * 0.5;
+                    if let Some(v) = pair.get_mut(1) {
+                        // (Z - R Z) / (2i) = (d.im - i d.re) / 2, two exact halvings.
+                        let d = zm - zr;
+                        *v = Complex64::new(0.5 * d.im, -0.5 * d.re);
+                    }
+                }
+            }
+        }
+        // y: contiguous lines of the x-mode-major half, one batched call; z: gathered inside
+        // each x-mode block.
+        let forward_y = Arc::clone(&self.plans[1].0);
+        forward_y.process_with_scratch(&mut self.buffer, &mut self.scratch);
+        self.transform_half_z(false);
+        // Same association as the complex transform: ((z - c + e_x) + e_y) + e_z.
+        let shift = self.shift;
+        let [sx, sy, sz] = &self.symbols;
+        for (block, &ex) in self.buffer.chunks_exact_mut(rows).zip(sx) {
+            let base = shift + ex;
+            for (plane, &ez) in block.chunks_exact_mut(ny).zip(sz) {
+                for (value, &ey) in plane.iter_mut().zip(sy) {
+                    *value /= base + ey + ez;
+                }
+            }
+        }
+        self.transform_half_z(true);
+        let inverse_y = Arc::clone(&self.plans[1].1);
+        inverse_y.process_with_scratch(&mut self.buffer, &mut self.scratch);
+        // Rebuild Z = X_{2q} + i X_{2q+1} from the half spectra (the DC and Nyquist values
+        // projected to their real parts), invert along x, split real and imaginary parts.
+        let scale = 1.0 / (nx * rows) as f64;
+        for first in (0..packed).step_by(batch) {
+            let count = batch.min(packed - first);
+            let (start, end) = (2 * first, (2 * (first + count)).min(rows));
+            let lines = &mut self.lines[..count * nx];
+            for k in 0..half {
+                let column = &self.buffer[k * rows + start..k * rows + end];
+                for (pair, line) in column.chunks(2).zip(lines.chunks_exact_mut(nx)) {
+                    let u = pair[0];
+                    let v = pair.get(1).copied().unwrap_or_default();
+                    if k == 0 || 2 * k == nx {
+                        line[k] = Complex64::new(u.re, v.re);
+                    } else {
+                        line[k] = Complex64::new(u.re - v.im, u.im + v.re);
+                        line[nx - k] = Complex64::new(u.re + v.im, v.re - u.im);
+                    }
+                }
+            }
+            inverse_x.process_with_scratch(lines, &mut self.scratch);
+            for (row, line) in (start..end).step_by(2).zip(lines.chunks_exact(nx)) {
+                for (dst, z) in b[row * nx..(row + 1) * nx].iter_mut().zip(line) {
+                    *dst = z.re * scale;
+                }
+                if row + 1 < rows {
+                    for (dst, z) in b[(row + 1) * nx..(row + 2) * nx].iter_mut().zip(line) {
+                        *dst = z.im * scale;
+                    }
+                }
+            }
+        }
+    }
+
+    /// Transform the x-mode-major half spectra along z (3-D boxes): inside each x-mode block
+    /// `[k * rows, (k + 1) * rows)` the z-lines have stride `ny`.
+    fn transform_half_z(&mut self, inverse: bool) {
+        let [_, ny, nz] = self.cells;
+        if nz == 1 {
+            return;
+        }
+        let fft = Arc::clone(if inverse {
+            &self.plans[2].1
+        } else {
+            &self.plans[2].0
+        });
+        let line = &mut self.line[..nz];
+        for block in self.buffer.chunks_exact_mut(ny * nz) {
+            for y in 0..ny {
+                for (z, dst) in line.iter_mut().enumerate() {
+                    *dst = block[z * ny + y];
+                }
+                fft.process_with_scratch(line, &mut self.scratch);
+                for (z, src) in line.iter().enumerate() {
+                    block[z * ny + y] = *src;
+                }
+            }
+        }
+    }
+
+    fn solve_complex(&mut self, b: &mut [f64]) {
         let [nx, ny, _] = self.cells;
         for (dst, &v) in self.buffer.iter_mut().zip(b.iter()) {
             *dst = Complex64::new(v, 0.0);
