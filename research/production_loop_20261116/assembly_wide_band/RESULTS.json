@@ -1,0 +1,4447 @@
+{
+ "schema": "vigilode.loop-l1.v31-results.v1",
+ "node": "V31_ASSEMBLY_DEFAULT_WIDE_BAND",
+ "authority": "owner decision OD-L1-27 (2026-11-25 09:21 KST, '남은 노드들을 이어서 마저 진행해. 수정은 전부 승인할게.'): the default first-use check of the coloured route takes CheckColumns::All where CheckColourings::total_groups >= n, MultiColouring otherwise; the dense route keeps Sample(8). Ruling of the orchestrator: '>= n'",
+ "contract": "docs/agent/production_solver_program_20261112/TASK_CONTRACTS.json, id V31_ASSEMBLY_DEFAULT_WIDE_BAND",
+ "base_commit": "d4e2772fb6341f6fc262748326a7918bbc8fac9b",
+ "head_at_parse": "06485d8683005c2183c0f48aa16229bcc6811a4a",
+ "protocol": {
+  "note": "Implementation of an owner decision, no experiment and no numerical threshold; the discriminators are equalities between recordings A (before the change, the V29 default) and B (after it) made by the same programs with the same commands, and the suites. No wall time decides anything; wall times in the logs are diagnostic.",
+  "decision_paths": "first_use = the first linearize of a fresh client of the default options (what a driver run does); verify = AssemblyStageClient::verify(t0, y0, options.first_use_check) on a fresh client of the default options",
+  "wrong_declaration": "a case that is not a correct pattern: an omitted entry, a band too narrow, or the impure right-hand side of control 3",
+  "cost": "check_rhs_passing = verification_rhs_calls of the first-use path summed over the passing cases of a class (a failing check stops early, so its count is not a cost of the check); rhs_calls = all right-hand sides of the first-use path",
+  "preregistration": "the plan, the list of the cases with total_groups >= n and the programs were committed before commit A (NOTES.txt entries 1 to 3); the supplement was widened after a smoke run before commit A (entry 3); no PROTOCOL.json file"
+ },
+ "recordings": {
+  "provenance": {
+   "A": [
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/identity_A_nlkpp-dense-n400.log",
+     "git_head": "1952c87c9e4206dfed00ce3c2eb1f90dbbecd1d6",
+     "tracked_changes": "0",
+     "client_sources_sha256": "1bd9a99b6853139a159ae506ac0591052bb19a4837e603a45ab2267971ac8359",
+     "program": "stage_clients_assembly_default_record",
+     "program_source_sha256": "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3",
+     "binary_sha256": "cead5cf5821151037bfb1ffb308a9445173871e66549c73fb620d436332da12a",
+     "loadavg_at_start": "23.87 17.20 14.53 31/6038 2724045",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    },
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/identity_A_bruss1d-n128-dense.log",
+     "git_head": "1952c87c9e4206dfed00ce3c2eb1f90dbbecd1d6",
+     "tracked_changes": "0",
+     "client_sources_sha256": "1bd9a99b6853139a159ae506ac0591052bb19a4837e603a45ab2267971ac8359",
+     "program": "stage_clients_assembly_default_record",
+     "program_source_sha256": "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3",
+     "binary_sha256": "cead5cf5821151037bfb1ffb308a9445173871e66549c73fb620d436332da12a",
+     "loadavg_at_start": "26.67 18.29 14.94 38/6035 2725216",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    },
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/identity_A_nlkpp-band-n4096-r24.log",
+     "git_head": "1952c87c9e4206dfed00ce3c2eb1f90dbbecd1d6",
+     "tracked_changes": "0",
+     "client_sources_sha256": "1bd9a99b6853139a159ae506ac0591052bb19a4837e603a45ab2267971ac8359",
+     "program": "stage_clients_assembly_default_record",
+     "program_source_sha256": "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3",
+     "binary_sha256": "cead5cf5821151037bfb1ffb308a9445173871e66549c73fb620d436332da12a",
+     "loadavg_at_start": "24.52 17.45 14.62 34/6033 2724319",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    },
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/identity_A_bruss1d-n131072.log",
+     "git_head": "1952c87c9e4206dfed00ce3c2eb1f90dbbecd1d6",
+     "tracked_changes": "0",
+     "client_sources_sha256": "1bd9a99b6853139a159ae506ac0591052bb19a4837e603a45ab2267971ac8359",
+     "program": "stage_clients_assembly_default_record",
+     "program_source_sha256": "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3",
+     "binary_sha256": "cead5cf5821151037bfb1ffb308a9445173871e66549c73fb620d436332da12a",
+     "loadavg_at_start": "26.16 17.90 14.78 29/6021 2724867",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    },
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/identity_A_bruss1d-n128-coloured.log",
+     "git_head": "1952c87c9e4206dfed00ce3c2eb1f90dbbecd1d6",
+     "tracked_changes": "0",
+     "client_sources_sha256": "1bd9a99b6853139a159ae506ac0591052bb19a4837e603a45ab2267971ac8359",
+     "program": "stage_clients_assembly_default_record",
+     "program_source_sha256": "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3",
+     "binary_sha256": "cead5cf5821151037bfb1ffb308a9445173871e66549c73fb620d436332da12a",
+     "loadavg_at_start": "26.67 18.29 14.94 31/6023 2725291",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    },
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/corpus_A_controls.log",
+     "git_head": "1952c87c9e4206dfed00ce3c2eb1f90dbbecd1d6",
+     "tracked_changes": "0",
+     "client_sources_sha256": "1bd9a99b6853139a159ae506ac0591052bb19a4837e603a45ab2267971ac8359",
+     "program": "stage_clients_assembly_default_record",
+     "program_source_sha256": "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3",
+     "binary_sha256": "cead5cf5821151037bfb1ffb308a9445173871e66549c73fb620d436332da12a",
+     "loadavg_at_start": "26.67 18.29 14.94 32/6023 2725366",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    },
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/corpus_A_ring.log",
+     "git_head": "1952c87c9e4206dfed00ce3c2eb1f90dbbecd1d6",
+     "tracked_changes": "0",
+     "client_sources_sha256": "1bd9a99b6853139a159ae506ac0591052bb19a4837e603a45ab2267971ac8359",
+     "program": "stage_clients_assembly_default_record",
+     "program_source_sha256": "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3",
+     "binary_sha256": "cead5cf5821151037bfb1ffb308a9445173871e66549c73fb620d436332da12a",
+     "loadavg_at_start": "26.67 18.29 14.94 31/6023 2725500",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    },
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/corpus_A_omit128.log",
+     "git_head": "1952c87c9e4206dfed00ce3c2eb1f90dbbecd1d6",
+     "tracked_changes": "0",
+     "client_sources_sha256": "1bd9a99b6853139a159ae506ac0591052bb19a4837e603a45ab2267971ac8359",
+     "program": "stage_clients_assembly_default_record",
+     "program_source_sha256": "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3",
+     "binary_sha256": "cead5cf5821151037bfb1ffb308a9445173871e66549c73fb620d436332da12a",
+     "loadavg_at_start": "26.67 18.29 14.94 35/6023 2725718",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    },
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/corpus_A_omit1024.log",
+     "git_head": "1952c87c9e4206dfed00ce3c2eb1f90dbbecd1d6",
+     "tracked_changes": "0",
+     "client_sources_sha256": "1bd9a99b6853139a159ae506ac0591052bb19a4837e603a45ab2267971ac8359",
+     "program": "stage_clients_assembly_default_record",
+     "program_source_sha256": "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3",
+     "binary_sha256": "cead5cf5821151037bfb1ffb308a9445173871e66549c73fb620d436332da12a",
+     "loadavg_at_start": "26.67 18.29 14.94 35/6023 2731883",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    },
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/corpus_A_omit131072.log",
+     "git_head": "1952c87c9e4206dfed00ce3c2eb1f90dbbecd1d6",
+     "tracked_changes": "0",
+     "client_sources_sha256": "1bd9a99b6853139a159ae506ac0591052bb19a4837e603a45ab2267971ac8359",
+     "program": "stage_clients_assembly_default_record",
+     "program_source_sha256": "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3",
+     "binary_sha256": "cead5cf5821151037bfb1ffb308a9445173871e66549c73fb620d436332da12a",
+     "loadavg_at_start": "27.26 18.69 15.11 29/6028 2781367",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    },
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/corpus_A_narrow.log",
+     "git_head": "1952c87c9e4206dfed00ce3c2eb1f90dbbecd1d6",
+     "tracked_changes": "0",
+     "client_sources_sha256": "1bd9a99b6853139a159ae506ac0591052bb19a4837e603a45ab2267971ac8359",
+     "program": "stage_clients_assembly_default_record",
+     "program_source_sha256": "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3",
+     "binary_sha256": "cead5cf5821151037bfb1ffb308a9445173871e66549c73fb620d436332da12a",
+     "loadavg_at_start": "31.55 21.75 16.43 39/6056 2787458",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    },
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/corpus_A_correct.log",
+     "git_head": "1952c87c9e4206dfed00ce3c2eb1f90dbbecd1d6",
+     "tracked_changes": "0",
+     "client_sources_sha256": "1bd9a99b6853139a159ae506ac0591052bb19a4837e603a45ab2267971ac8359",
+     "program": "stage_clients_assembly_default_record",
+     "program_source_sha256": "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3",
+     "binary_sha256": "cead5cf5821151037bfb1ffb308a9445173871e66549c73fb620d436332da12a",
+     "loadavg_at_start": "31.55 21.75 16.43 34/6035 2787624",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    },
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/survey_A.log",
+     "git_head": "1952c87c9e4206dfed00ce3c2eb1f90dbbecd1d6",
+     "tracked_changes": "0",
+     "client_sources_sha256": "1bd9a99b6853139a159ae506ac0591052bb19a4837e603a45ab2267971ac8359",
+     "program": "stage_clients_assembly_wide_band_record",
+     "program_source_sha256": "b23d7296771e96a09daee54545273e896460ad0c151887e9e80bbcfb754d8695",
+     "binary_sha256": "dff81c2da66ba35f4529f081651e105271ff93e3afa36d41b968c8e578478f29",
+     "loadavg_at_start": "31.55 21.75 16.43 33/6032 2788246",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    },
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/wide_A_random.log",
+     "git_head": "1952c87c9e4206dfed00ce3c2eb1f90dbbecd1d6",
+     "tracked_changes": "0",
+     "client_sources_sha256": "1bd9a99b6853139a159ae506ac0591052bb19a4837e603a45ab2267971ac8359",
+     "program": "stage_clients_assembly_wide_band_record",
+     "program_source_sha256": "b23d7296771e96a09daee54545273e896460ad0c151887e9e80bbcfb754d8695",
+     "binary_sha256": "dff81c2da66ba35f4529f081651e105271ff93e3afa36d41b968c8e578478f29",
+     "loadavg_at_start": "31.55 21.75 16.43 35/6033 2788343",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    }
+   ],
+   "B": [
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/identity_B_nlkpp-dense-n400.log",
+     "git_head": "63170db9aee60e9a983cc45535500d5beff3d287",
+     "tracked_changes": "0",
+     "client_sources_sha256": "6c0242cefb233968711321aa110c38f45218333265e01b4f462d2d43ef48c2bc",
+     "program": "stage_clients_assembly_default_record",
+     "program_source_sha256": "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3",
+     "binary_sha256": "f1d464a1b11ccf960750ff0fe4e431fa249de3fdf7633d7857ca7cbf93616400",
+     "loadavg_at_start": "7.55 17.40 18.55 2/6027 2849863",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    },
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/identity_B_bruss1d-n128-dense.log",
+     "git_head": "63170db9aee60e9a983cc45535500d5beff3d287",
+     "tracked_changes": "0",
+     "client_sources_sha256": "6c0242cefb233968711321aa110c38f45218333265e01b4f462d2d43ef48c2bc",
+     "program": "stage_clients_assembly_default_record",
+     "program_source_sha256": "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3",
+     "binary_sha256": "f1d464a1b11ccf960750ff0fe4e431fa249de3fdf7633d7857ca7cbf93616400",
+     "loadavg_at_start": "7.62 16.78 18.32 7/6037 2851381",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    },
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/identity_B_nlkpp-band-n4096-r24.log",
+     "git_head": "63170db9aee60e9a983cc45535500d5beff3d287",
+     "tracked_changes": "0",
+     "client_sources_sha256": "6c0242cefb233968711321aa110c38f45218333265e01b4f462d2d43ef48c2bc",
+     "program": "stage_clients_assembly_default_record",
+     "program_source_sha256": "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3",
+     "binary_sha256": "f1d464a1b11ccf960750ff0fe4e431fa249de3fdf7633d7857ca7cbf93616400",
+     "loadavg_at_start": "7.43 17.21 18.48 3/6024 2850257",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    },
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/identity_B_bruss1d-n131072.log",
+     "git_head": "63170db9aee60e9a983cc45535500d5beff3d287",
+     "tracked_changes": "0",
+     "client_sources_sha256": "6c0242cefb233968711321aa110c38f45218333265e01b4f462d2d43ef48c2bc",
+     "program": "stage_clients_assembly_default_record",
+     "program_source_sha256": "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3",
+     "binary_sha256": "f1d464a1b11ccf960750ff0fe4e431fa249de3fdf7633d7857ca7cbf93616400",
+     "loadavg_at_start": "7.63 17.09 18.43 4/6026 2850480",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    },
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/identity_B_bruss1d-n128-coloured.log",
+     "git_head": "63170db9aee60e9a983cc45535500d5beff3d287",
+     "tracked_changes": "0",
+     "client_sources_sha256": "6c0242cefb233968711321aa110c38f45218333265e01b4f462d2d43ef48c2bc",
+     "program": "stage_clients_assembly_default_record",
+     "program_source_sha256": "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3",
+     "binary_sha256": "f1d464a1b11ccf960750ff0fe4e431fa249de3fdf7633d7857ca7cbf93616400",
+     "loadavg_at_start": "7.62 16.78 18.32 9/6036 2851456",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    },
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/corpus_B_controls.log",
+     "git_head": "63170db9aee60e9a983cc45535500d5beff3d287",
+     "tracked_changes": "0",
+     "client_sources_sha256": "6c0242cefb233968711321aa110c38f45218333265e01b4f462d2d43ef48c2bc",
+     "program": "stage_clients_assembly_default_record",
+     "program_source_sha256": "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3",
+     "binary_sha256": "f1d464a1b11ccf960750ff0fe4e431fa249de3fdf7633d7857ca7cbf93616400",
+     "loadavg_at_start": "7.62 16.78 18.32 18/6036 2851565",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    },
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/corpus_B_ring.log",
+     "git_head": "63170db9aee60e9a983cc45535500d5beff3d287",
+     "tracked_changes": "0",
+     "client_sources_sha256": "6c0242cefb233968711321aa110c38f45218333265e01b4f462d2d43ef48c2bc",
+     "program": "stage_clients_assembly_default_record",
+     "program_source_sha256": "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3",
+     "binary_sha256": "f1d464a1b11ccf960750ff0fe4e431fa249de3fdf7633d7857ca7cbf93616400",
+     "loadavg_at_start": "7.62 16.78 18.32 12/6036 2851699",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    },
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/corpus_B_omit128.log",
+     "git_head": "63170db9aee60e9a983cc45535500d5beff3d287",
+     "tracked_changes": "0",
+     "client_sources_sha256": "6c0242cefb233968711321aa110c38f45218333265e01b4f462d2d43ef48c2bc",
+     "program": "stage_clients_assembly_default_record",
+     "program_source_sha256": "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3",
+     "binary_sha256": "f1d464a1b11ccf960750ff0fe4e431fa249de3fdf7633d7857ca7cbf93616400",
+     "loadavg_at_start": "7.62 16.78 18.32 7/6036 2851917",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    },
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/corpus_B_omit1024.log",
+     "git_head": "63170db9aee60e9a983cc45535500d5beff3d287",
+     "tracked_changes": "0",
+     "client_sources_sha256": "6c0242cefb233968711321aa110c38f45218333265e01b4f462d2d43ef48c2bc",
+     "program": "stage_clients_assembly_default_record",
+     "program_source_sha256": "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3",
+     "binary_sha256": "f1d464a1b11ccf960750ff0fe4e431fa249de3fdf7633d7857ca7cbf93616400",
+     "loadavg_at_start": "7.62 16.78 18.32 5/6037 2858076",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    },
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/corpus_B_omit131072.log",
+     "git_head": "63170db9aee60e9a983cc45535500d5beff3d287",
+     "tracked_changes": "0",
+     "client_sources_sha256": "6c0242cefb233968711321aa110c38f45218333265e01b4f462d2d43ef48c2bc",
+     "program": "stage_clients_assembly_default_record",
+     "program_source_sha256": "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3",
+     "binary_sha256": "f1d464a1b11ccf960750ff0fe4e431fa249de3fdf7633d7857ca7cbf93616400",
+     "loadavg_at_start": "7.73 16.50 18.21 5/6071 2907854",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    },
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/corpus_B_narrow.log",
+     "git_head": "63170db9aee60e9a983cc45535500d5beff3d287",
+     "tracked_changes": "0",
+     "client_sources_sha256": "6c0242cefb233968711321aa110c38f45218333265e01b4f462d2d43ef48c2bc",
+     "program": "stage_clients_assembly_default_record",
+     "program_source_sha256": "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3",
+     "binary_sha256": "f1d464a1b11ccf960750ff0fe4e431fa249de3fdf7633d7857ca7cbf93616400",
+     "loadavg_at_start": "7.96 14.75 17.47 5/6079 2913276",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    },
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/corpus_B_correct.log",
+     "git_head": "63170db9aee60e9a983cc45535500d5beff3d287",
+     "tracked_changes": "0",
+     "client_sources_sha256": "6c0242cefb233968711321aa110c38f45218333265e01b4f462d2d43ef48c2bc",
+     "program": "stage_clients_assembly_default_record",
+     "program_source_sha256": "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3",
+     "binary_sha256": "f1d464a1b11ccf960750ff0fe4e431fa249de3fdf7633d7857ca7cbf93616400",
+     "loadavg_at_start": "7.96 14.75 17.47 6/6079 2913410",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    },
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/survey_B.log",
+     "git_head": "63170db9aee60e9a983cc45535500d5beff3d287",
+     "tracked_changes": "0",
+     "client_sources_sha256": "6c0242cefb233968711321aa110c38f45218333265e01b4f462d2d43ef48c2bc",
+     "program": "stage_clients_assembly_wide_band_record",
+     "program_source_sha256": "b23d7296771e96a09daee54545273e896460ad0c151887e9e80bbcfb754d8695",
+     "binary_sha256": "e4155aa8edc4340f4c9a31612be03382efa7f53a9784ef8f790a23c683fdb353",
+     "loadavg_at_start": "7.80 14.60 17.41 5/6078 2913831",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    },
+    {
+     "log": "research/production_loop_20261116/assembly_wide_band/logs/wide_B_random.log",
+     "git_head": "63170db9aee60e9a983cc45535500d5beff3d287",
+     "tracked_changes": "0",
+     "client_sources_sha256": "6c0242cefb233968711321aa110c38f45218333265e01b4f462d2d43ef48c2bc",
+     "program": "stage_clients_assembly_wide_band_record",
+     "program_source_sha256": "b23d7296771e96a09daee54545273e896460ad0c151887e9e80bbcfb754d8695",
+     "binary_sha256": "e4155aa8edc4340f4c9a31612be03382efa7f53a9784ef8f790a23c683fdb353",
+     "loadavg_at_start": "7.80 14.60 17.41 5/6078 2913913",
+     "exit_codes": [
+      0
+     ],
+     "test_result_ok": true
+    }
+   ]
+  },
+  "checks": {
+   "logs_per_recording": {
+    "A": 14,
+    "B": 14
+   },
+   "programs": {
+    "stage_clients_assembly_default_record": {
+     "A": [
+      "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3"
+     ],
+     "B": [
+      "43f68080084b78601fd5e0d0f864a0fb9c8e5af49fe2b89b1bd28fb5484d31a3"
+     ]
+    },
+    "stage_clients_assembly_wide_band_record": {
+     "A": [
+      "b23d7296771e96a09daee54545273e896460ad0c151887e9e80bbcfb754d8695"
+     ],
+     "B": [
+      "b23d7296771e96a09daee54545273e896460ad0c151887e9e80bbcfb754d8695"
+     ]
+    }
+   },
+   "same_program_source_A_B": true,
+   "clean_trees": true,
+   "exit_codes_zero": true,
+   "A_built_at": [
+    "1952c87c9e4206dfed00ce3c2eb1f90dbbecd1d6"
+   ],
+   "B_built_at": [
+    "63170db9aee60e9a983cc45535500d5beff3d287"
+   ],
+   "A_at_expected_commit": true,
+   "B_at_expected_commit": true,
+   "client_sources_A": [
+    "1bd9a99b6853139a159ae506ac0591052bb19a4837e603a45ab2267971ac8359"
+   ],
+   "client_sources_B": [
+    "6c0242cefb233968711321aa110c38f45218333265e01b4f462d2d43ef48c2bc"
+   ],
+   "client_changed_between_A_and_B": true,
+   "binaries_differ_A_B": true
+  }
+ },
+ "identity": {
+  "runs": [
+   {
+    "cell": "nlkpp-dense-n400",
+    "backend": "dense_lu(faer)",
+    "arm": "prot",
+    "n": 400,
+    "route": "protected dense driver, reference finite differences",
+    "all_fields_equal_A_B": true,
+    "jacobian_fingerprint": "194829b4db8581e9",
+    "state_fingerprint": "f4dfb79dc9fc594f",
+    "final_fingerprint": "3420708b661a5d39",
+    "t_end_bits": "4024000000000000",
+    "attempts": 34,
+    "builds": 34
+   },
+   {
+    "cell": "nlkpp-dense-n400",
+    "backend": "dense_lu(faer)",
+    "arm": "seq",
+    "n": 400,
+    "route": "dense",
+    "all_fields_equal_A_B": true,
+    "total_groups": null,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "Sample(8)"
+    },
+    "verifications": {
+     "A": 0,
+     "B": 0
+    },
+    "verified_columns": {
+     "A": 0,
+     "B": 0
+    },
+    "verification_rhs_calls": {
+     "A": 0,
+     "B": 0
+    },
+    "rhs_calls": {
+     "A": 13906,
+     "B": 13906
+    },
+    "jacobian_fingerprint": "194829b4db8581e9",
+    "state_fingerprint": "f4dfb79dc9fc594f",
+    "final_fingerprint": "3420708b661a5d39",
+    "output_fingerprint": "24d2a951ce94148e",
+    "t_end_bits": "4024000000000000",
+    "attempts": 34,
+    "accepted_steps": 34,
+    "rejected_steps": 0
+   },
+   {
+    "cell": "nlkpp-dense-n400",
+    "backend": "dense_lu(faer)",
+    "arm": "t1",
+    "n": 400,
+    "route": "dense",
+    "all_fields_equal_A_B": true,
+    "total_groups": null,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "Sample(8)"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 8
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 9
+    },
+    "rhs_calls": {
+     "A": 13915,
+     "B": 13915
+    },
+    "jacobian_fingerprint": "194829b4db8581e9",
+    "state_fingerprint": "f4dfb79dc9fc594f",
+    "final_fingerprint": "3420708b661a5d39",
+    "output_fingerprint": "24d2a951ce94148e",
+    "t_end_bits": "4024000000000000",
+    "attempts": 34,
+    "accepted_steps": 34,
+    "rejected_steps": 0
+   },
+   {
+    "cell": "nlkpp-dense-n400",
+    "backend": "dense_lu(faer)",
+    "arm": "t2",
+    "n": 400,
+    "route": "dense",
+    "all_fields_equal_A_B": true,
+    "total_groups": null,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "Sample(8)"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 8
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 9
+    },
+    "rhs_calls": {
+     "A": 13915,
+     "B": 13915
+    },
+    "jacobian_fingerprint": "194829b4db8581e9",
+    "state_fingerprint": "f4dfb79dc9fc594f",
+    "final_fingerprint": "3420708b661a5d39",
+    "output_fingerprint": "24d2a951ce94148e",
+    "t_end_bits": "4024000000000000",
+    "attempts": 34,
+    "accepted_steps": 34,
+    "rejected_steps": 0
+   },
+   {
+    "cell": "nlkpp-dense-n400",
+    "backend": "dense_lu(faer)",
+    "arm": "t4",
+    "n": 400,
+    "route": "dense",
+    "all_fields_equal_A_B": true,
+    "total_groups": null,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "Sample(8)"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 8
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 9
+    },
+    "rhs_calls": {
+     "A": 13915,
+     "B": 13915
+    },
+    "jacobian_fingerprint": "194829b4db8581e9",
+    "state_fingerprint": "f4dfb79dc9fc594f",
+    "final_fingerprint": "3420708b661a5d39",
+    "output_fingerprint": "24d2a951ce94148e",
+    "t_end_bits": "4024000000000000",
+    "attempts": 34,
+    "accepted_steps": 34,
+    "rejected_steps": 0
+   },
+   {
+    "cell": "nlkpp-dense-n400",
+    "backend": "dense_lu(faer)",
+    "arm": "t6",
+    "n": 400,
+    "route": "dense",
+    "all_fields_equal_A_B": true,
+    "total_groups": null,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "Sample(8)"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 8
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 9
+    },
+    "rhs_calls": {
+     "A": 13915,
+     "B": 13915
+    },
+    "jacobian_fingerprint": "194829b4db8581e9",
+    "state_fingerprint": "f4dfb79dc9fc594f",
+    "final_fingerprint": "3420708b661a5d39",
+    "output_fingerprint": "24d2a951ce94148e",
+    "t_end_bits": "4024000000000000",
+    "attempts": 34,
+    "accepted_steps": 34,
+    "rejected_steps": 0
+   },
+   {
+    "cell": "bruss1d-n128-dense",
+    "backend": "dense_lu(in-place)",
+    "arm": "prot",
+    "n": 128,
+    "route": "protected dense driver, reference finite differences",
+    "all_fields_equal_A_B": true,
+    "jacobian_fingerprint": "1bdfd9898cbad42b",
+    "state_fingerprint": "ff714a10d67b2066",
+    "final_fingerprint": "f56aca057fe92bc6",
+    "t_end_bits": "4014bca640f5b905",
+    "attempts": 48,
+    "builds": 48
+   },
+   {
+    "cell": "bruss1d-n128-dense",
+    "backend": "dense_lu(in-place)",
+    "arm": "seq",
+    "n": 128,
+    "route": "dense",
+    "all_fields_equal_A_B": true,
+    "total_groups": null,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "Sample(8)"
+    },
+    "verifications": {
+     "A": 0,
+     "B": 0
+    },
+    "verified_columns": {
+     "A": 0,
+     "B": 0
+    },
+    "verification_rhs_calls": {
+     "A": 0,
+     "B": 0
+    },
+    "rhs_calls": {
+     "A": 6576,
+     "B": 6576
+    },
+    "jacobian_fingerprint": "1bdfd9898cbad42b",
+    "state_fingerprint": "ff714a10d67b2066",
+    "final_fingerprint": "f56aca057fe92bc6",
+    "output_fingerprint": "640d886fe4d80815",
+    "t_end_bits": "4014bca640f5b905",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "rejected_steps": 0
+   },
+   {
+    "cell": "bruss1d-n128-dense",
+    "backend": "dense_lu(in-place)",
+    "arm": "t1",
+    "n": 128,
+    "route": "dense",
+    "all_fields_equal_A_B": true,
+    "total_groups": null,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "Sample(8)"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 8
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 9
+    },
+    "rhs_calls": {
+     "A": 6585,
+     "B": 6585
+    },
+    "jacobian_fingerprint": "1bdfd9898cbad42b",
+    "state_fingerprint": "ff714a10d67b2066",
+    "final_fingerprint": "f56aca057fe92bc6",
+    "output_fingerprint": "640d886fe4d80815",
+    "t_end_bits": "4014bca640f5b905",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "rejected_steps": 0
+   },
+   {
+    "cell": "bruss1d-n128-dense",
+    "backend": "dense_lu(in-place)",
+    "arm": "t2",
+    "n": 128,
+    "route": "dense",
+    "all_fields_equal_A_B": true,
+    "total_groups": null,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "Sample(8)"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 8
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 9
+    },
+    "rhs_calls": {
+     "A": 6585,
+     "B": 6585
+    },
+    "jacobian_fingerprint": "1bdfd9898cbad42b",
+    "state_fingerprint": "ff714a10d67b2066",
+    "final_fingerprint": "f56aca057fe92bc6",
+    "output_fingerprint": "640d886fe4d80815",
+    "t_end_bits": "4014bca640f5b905",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "rejected_steps": 0
+   },
+   {
+    "cell": "bruss1d-n128-dense",
+    "backend": "dense_lu(in-place)",
+    "arm": "t4",
+    "n": 128,
+    "route": "dense",
+    "all_fields_equal_A_B": true,
+    "total_groups": null,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "Sample(8)"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 8
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 9
+    },
+    "rhs_calls": {
+     "A": 6585,
+     "B": 6585
+    },
+    "jacobian_fingerprint": "1bdfd9898cbad42b",
+    "state_fingerprint": "ff714a10d67b2066",
+    "final_fingerprint": "f56aca057fe92bc6",
+    "output_fingerprint": "640d886fe4d80815",
+    "t_end_bits": "4014bca640f5b905",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "rejected_steps": 0
+   },
+   {
+    "cell": "bruss1d-n128-dense",
+    "backend": "dense_lu(in-place)",
+    "arm": "t6",
+    "n": 128,
+    "route": "dense",
+    "all_fields_equal_A_B": true,
+    "total_groups": null,
+    "first_use_check": {
+     "A": "Sample(8)",
+     "B": "Sample(8)"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 8,
+     "B": 8
+    },
+    "verification_rhs_calls": {
+     "A": 9,
+     "B": 9
+    },
+    "rhs_calls": {
+     "A": 6585,
+     "B": 6585
+    },
+    "jacobian_fingerprint": "1bdfd9898cbad42b",
+    "state_fingerprint": "ff714a10d67b2066",
+    "final_fingerprint": "f56aca057fe92bc6",
+    "output_fingerprint": "640d886fe4d80815",
+    "t_end_bits": "4014bca640f5b905",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "rejected_steps": 0
+   },
+   {
+    "cell": "nlkpp-band-n4096-r24",
+    "backend": "banded_protected",
+    "arm": "prot",
+    "n": 4096,
+    "route": "protected banded driver, reference finite differences",
+    "all_fields_equal_A_B": true,
+    "jacobian_fingerprint": "ac7e0be050e14f1b",
+    "state_fingerprint": "ebdbb655ea4f9a47",
+    "final_fingerprint": "6db303b1d8c4fa03",
+    "t_end_bits": "4024000000000000",
+    "attempts": 38,
+    "builds": 37
+   },
+   {
+    "cell": "nlkpp-band-n4096-r24",
+    "backend": "banded_protected",
+    "arm": "seq",
+    "n": 4096,
+    "route": "coloured",
+    "all_fields_equal_A_B": true,
+    "total_groups": 150,
+    "first_use_check": {
+     "A": "MultiColouring",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 4096,
+     "B": 4096
+    },
+    "verification_rhs_calls": {
+     "A": 150,
+     "B": 150
+    },
+    "rhs_calls": {
+     "A": 2303,
+     "B": 2303
+    },
+    "jacobian_fingerprint": "ac7e0be050e14f1b",
+    "state_fingerprint": "ebdbb655ea4f9a47",
+    "final_fingerprint": "6db303b1d8c4fa03",
+    "output_fingerprint": "aeea70047d47e9ae",
+    "t_end_bits": "4024000000000000",
+    "attempts": 38,
+    "accepted_steps": 37,
+    "rejected_steps": 1
+   },
+   {
+    "cell": "nlkpp-band-n4096-r24",
+    "backend": "banded_protected",
+    "arm": "t1",
+    "n": 4096,
+    "route": "coloured",
+    "all_fields_equal_A_B": true,
+    "total_groups": 150,
+    "first_use_check": {
+     "A": "MultiColouring",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 4096,
+     "B": 4096
+    },
+    "verification_rhs_calls": {
+     "A": 151,
+     "B": 151
+    },
+    "rhs_calls": {
+     "A": 2304,
+     "B": 2304
+    },
+    "jacobian_fingerprint": "ac7e0be050e14f1b",
+    "state_fingerprint": "ebdbb655ea4f9a47",
+    "final_fingerprint": "6db303b1d8c4fa03",
+    "output_fingerprint": "aeea70047d47e9ae",
+    "t_end_bits": "4024000000000000",
+    "attempts": 38,
+    "accepted_steps": 37,
+    "rejected_steps": 1
+   },
+   {
+    "cell": "nlkpp-band-n4096-r24",
+    "backend": "banded_protected",
+    "arm": "t2",
+    "n": 4096,
+    "route": "coloured",
+    "all_fields_equal_A_B": true,
+    "total_groups": 150,
+    "first_use_check": {
+     "A": "MultiColouring",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 4096,
+     "B": 4096
+    },
+    "verification_rhs_calls": {
+     "A": 151,
+     "B": 151
+    },
+    "rhs_calls": {
+     "A": 2304,
+     "B": 2304
+    },
+    "jacobian_fingerprint": "ac7e0be050e14f1b",
+    "state_fingerprint": "ebdbb655ea4f9a47",
+    "final_fingerprint": "6db303b1d8c4fa03",
+    "output_fingerprint": "aeea70047d47e9ae",
+    "t_end_bits": "4024000000000000",
+    "attempts": 38,
+    "accepted_steps": 37,
+    "rejected_steps": 1
+   },
+   {
+    "cell": "nlkpp-band-n4096-r24",
+    "backend": "banded_protected",
+    "arm": "t4",
+    "n": 4096,
+    "route": "coloured",
+    "all_fields_equal_A_B": true,
+    "total_groups": 150,
+    "first_use_check": {
+     "A": "MultiColouring",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 4096,
+     "B": 4096
+    },
+    "verification_rhs_calls": {
+     "A": 151,
+     "B": 151
+    },
+    "rhs_calls": {
+     "A": 2304,
+     "B": 2304
+    },
+    "jacobian_fingerprint": "ac7e0be050e14f1b",
+    "state_fingerprint": "ebdbb655ea4f9a47",
+    "final_fingerprint": "6db303b1d8c4fa03",
+    "output_fingerprint": "aeea70047d47e9ae",
+    "t_end_bits": "4024000000000000",
+    "attempts": 38,
+    "accepted_steps": 37,
+    "rejected_steps": 1
+   },
+   {
+    "cell": "nlkpp-band-n4096-r24",
+    "backend": "banded_protected",
+    "arm": "t6",
+    "n": 4096,
+    "route": "coloured",
+    "all_fields_equal_A_B": true,
+    "total_groups": 150,
+    "first_use_check": {
+     "A": "MultiColouring",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 4096,
+     "B": 4096
+    },
+    "verification_rhs_calls": {
+     "A": 151,
+     "B": 151
+    },
+    "rhs_calls": {
+     "A": 2304,
+     "B": 2304
+    },
+    "jacobian_fingerprint": "ac7e0be050e14f1b",
+    "state_fingerprint": "ebdbb655ea4f9a47",
+    "final_fingerprint": "6db303b1d8c4fa03",
+    "output_fingerprint": "aeea70047d47e9ae",
+    "t_end_bits": "4024000000000000",
+    "attempts": 38,
+    "accepted_steps": 37,
+    "rejected_steps": 1
+   },
+   {
+    "cell": "nlkpp-band-n4096-r24",
+    "backend": "banded_tight",
+    "arm": "prot",
+    "n": 4096,
+    "route": "protected banded driver, reference finite differences",
+    "all_fields_equal_A_B": true,
+    "jacobian_fingerprint": "ac7e0be050e14f1b",
+    "state_fingerprint": "ebdbb655ea4f9a47",
+    "final_fingerprint": "6db303b1d8c4fa03",
+    "t_end_bits": "4024000000000000",
+    "attempts": 38,
+    "builds": 37
+   },
+   {
+    "cell": "nlkpp-band-n4096-r24",
+    "backend": "banded_tight",
+    "arm": "seq",
+    "n": 4096,
+    "route": "coloured",
+    "all_fields_equal_A_B": true,
+    "total_groups": 150,
+    "first_use_check": {
+     "A": "MultiColouring",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 4096,
+     "B": 4096
+    },
+    "verification_rhs_calls": {
+     "A": 150,
+     "B": 150
+    },
+    "rhs_calls": {
+     "A": 2303,
+     "B": 2303
+    },
+    "jacobian_fingerprint": "ac7e0be050e14f1b",
+    "state_fingerprint": "ebdbb655ea4f9a47",
+    "final_fingerprint": "6db303b1d8c4fa03",
+    "output_fingerprint": "aeea70047d47e9ae",
+    "t_end_bits": "4024000000000000",
+    "attempts": 38,
+    "accepted_steps": 37,
+    "rejected_steps": 1
+   },
+   {
+    "cell": "nlkpp-band-n4096-r24",
+    "backend": "banded_tight",
+    "arm": "t1",
+    "n": 4096,
+    "route": "coloured",
+    "all_fields_equal_A_B": true,
+    "total_groups": 150,
+    "first_use_check": {
+     "A": "MultiColouring",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 4096,
+     "B": 4096
+    },
+    "verification_rhs_calls": {
+     "A": 151,
+     "B": 151
+    },
+    "rhs_calls": {
+     "A": 2304,
+     "B": 2304
+    },
+    "jacobian_fingerprint": "ac7e0be050e14f1b",
+    "state_fingerprint": "ebdbb655ea4f9a47",
+    "final_fingerprint": "6db303b1d8c4fa03",
+    "output_fingerprint": "aeea70047d47e9ae",
+    "t_end_bits": "4024000000000000",
+    "attempts": 38,
+    "accepted_steps": 37,
+    "rejected_steps": 1
+   },
+   {
+    "cell": "nlkpp-band-n4096-r24",
+    "backend": "banded_tight",
+    "arm": "t2",
+    "n": 4096,
+    "route": "coloured",
+    "all_fields_equal_A_B": true,
+    "total_groups": 150,
+    "first_use_check": {
+     "A": "MultiColouring",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 4096,
+     "B": 4096
+    },
+    "verification_rhs_calls": {
+     "A": 151,
+     "B": 151
+    },
+    "rhs_calls": {
+     "A": 2304,
+     "B": 2304
+    },
+    "jacobian_fingerprint": "ac7e0be050e14f1b",
+    "state_fingerprint": "ebdbb655ea4f9a47",
+    "final_fingerprint": "6db303b1d8c4fa03",
+    "output_fingerprint": "aeea70047d47e9ae",
+    "t_end_bits": "4024000000000000",
+    "attempts": 38,
+    "accepted_steps": 37,
+    "rejected_steps": 1
+   },
+   {
+    "cell": "nlkpp-band-n4096-r24",
+    "backend": "banded_tight",
+    "arm": "t4",
+    "n": 4096,
+    "route": "coloured",
+    "all_fields_equal_A_B": true,
+    "total_groups": 150,
+    "first_use_check": {
+     "A": "MultiColouring",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 4096,
+     "B": 4096
+    },
+    "verification_rhs_calls": {
+     "A": 151,
+     "B": 151
+    },
+    "rhs_calls": {
+     "A": 2304,
+     "B": 2304
+    },
+    "jacobian_fingerprint": "ac7e0be050e14f1b",
+    "state_fingerprint": "ebdbb655ea4f9a47",
+    "final_fingerprint": "6db303b1d8c4fa03",
+    "output_fingerprint": "aeea70047d47e9ae",
+    "t_end_bits": "4024000000000000",
+    "attempts": 38,
+    "accepted_steps": 37,
+    "rejected_steps": 1
+   },
+   {
+    "cell": "nlkpp-band-n4096-r24",
+    "backend": "banded_tight",
+    "arm": "t6",
+    "n": 4096,
+    "route": "coloured",
+    "all_fields_equal_A_B": true,
+    "total_groups": 150,
+    "first_use_check": {
+     "A": "MultiColouring",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 4096,
+     "B": 4096
+    },
+    "verification_rhs_calls": {
+     "A": 151,
+     "B": 151
+    },
+    "rhs_calls": {
+     "A": 2304,
+     "B": 2304
+    },
+    "jacobian_fingerprint": "ac7e0be050e14f1b",
+    "state_fingerprint": "ebdbb655ea4f9a47",
+    "final_fingerprint": "6db303b1d8c4fa03",
+    "output_fingerprint": "aeea70047d47e9ae",
+    "t_end_bits": "4024000000000000",
+    "attempts": 38,
+    "accepted_steps": 37,
+    "rejected_steps": 1
+   },
+   {
+    "cell": "bruss1d-n131072",
+    "backend": "banded_tight",
+    "arm": "prot",
+    "n": 131072,
+    "route": "protected banded driver, reference finite differences",
+    "all_fields_equal_A_B": true,
+    "jacobian_fingerprint": "054538965049b1a2",
+    "state_fingerprint": "80d1533b1bac2129",
+    "final_fingerprint": "57ec697f9e76eac6",
+    "t_end_bits": "4014a44d0e86bc5d",
+    "attempts": 48,
+    "builds": 48
+   },
+   {
+    "cell": "bruss1d-n131072",
+    "backend": "banded_tight",
+    "arm": "seq",
+    "n": 131072,
+    "route": "coloured",
+    "all_fields_equal_A_B": true,
+    "total_groups": 59,
+    "first_use_check": {
+     "A": "MultiColouring",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 131072,
+     "B": 131072
+    },
+    "verification_rhs_calls": {
+     "A": 59,
+     "B": 59
+    },
+    "rhs_calls": {
+     "A": 731,
+     "B": 731
+    },
+    "jacobian_fingerprint": "054538965049b1a2",
+    "state_fingerprint": "80d1533b1bac2129",
+    "final_fingerprint": "57ec697f9e76eac6",
+    "output_fingerprint": "1132e9fc2989d7ca",
+    "t_end_bits": "4014a44d0e86bc5d",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "rejected_steps": 0
+   },
+   {
+    "cell": "bruss1d-n131072",
+    "backend": "banded_tight",
+    "arm": "t1",
+    "n": 131072,
+    "route": "coloured",
+    "all_fields_equal_A_B": true,
+    "total_groups": 59,
+    "first_use_check": {
+     "A": "MultiColouring",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 131072,
+     "B": 131072
+    },
+    "verification_rhs_calls": {
+     "A": 60,
+     "B": 60
+    },
+    "rhs_calls": {
+     "A": 732,
+     "B": 732
+    },
+    "jacobian_fingerprint": "054538965049b1a2",
+    "state_fingerprint": "80d1533b1bac2129",
+    "final_fingerprint": "57ec697f9e76eac6",
+    "output_fingerprint": "1132e9fc2989d7ca",
+    "t_end_bits": "4014a44d0e86bc5d",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "rejected_steps": 0
+   },
+   {
+    "cell": "bruss1d-n131072",
+    "backend": "banded_tight",
+    "arm": "t2",
+    "n": 131072,
+    "route": "coloured",
+    "all_fields_equal_A_B": true,
+    "total_groups": 59,
+    "first_use_check": {
+     "A": "MultiColouring",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 131072,
+     "B": 131072
+    },
+    "verification_rhs_calls": {
+     "A": 60,
+     "B": 60
+    },
+    "rhs_calls": {
+     "A": 732,
+     "B": 732
+    },
+    "jacobian_fingerprint": "054538965049b1a2",
+    "state_fingerprint": "80d1533b1bac2129",
+    "final_fingerprint": "57ec697f9e76eac6",
+    "output_fingerprint": "1132e9fc2989d7ca",
+    "t_end_bits": "4014a44d0e86bc5d",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "rejected_steps": 0
+   },
+   {
+    "cell": "bruss1d-n131072",
+    "backend": "banded_tight",
+    "arm": "t4",
+    "n": 131072,
+    "route": "coloured",
+    "all_fields_equal_A_B": true,
+    "total_groups": 59,
+    "first_use_check": {
+     "A": "MultiColouring",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 131072,
+     "B": 131072
+    },
+    "verification_rhs_calls": {
+     "A": 60,
+     "B": 60
+    },
+    "rhs_calls": {
+     "A": 732,
+     "B": 732
+    },
+    "jacobian_fingerprint": "054538965049b1a2",
+    "state_fingerprint": "80d1533b1bac2129",
+    "final_fingerprint": "57ec697f9e76eac6",
+    "output_fingerprint": "1132e9fc2989d7ca",
+    "t_end_bits": "4014a44d0e86bc5d",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "rejected_steps": 0
+   },
+   {
+    "cell": "bruss1d-n131072",
+    "backend": "banded_tight",
+    "arm": "t6",
+    "n": 131072,
+    "route": "coloured",
+    "all_fields_equal_A_B": true,
+    "total_groups": 59,
+    "first_use_check": {
+     "A": "MultiColouring",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 131072,
+     "B": 131072
+    },
+    "verification_rhs_calls": {
+     "A": 60,
+     "B": 60
+    },
+    "rhs_calls": {
+     "A": 732,
+     "B": 732
+    },
+    "jacobian_fingerprint": "054538965049b1a2",
+    "state_fingerprint": "80d1533b1bac2129",
+    "final_fingerprint": "57ec697f9e76eac6",
+    "output_fingerprint": "1132e9fc2989d7ca",
+    "t_end_bits": "4014a44d0e86bc5d",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "rejected_steps": 0
+   },
+   {
+    "cell": "bruss1d-n128-coloured",
+    "backend": "banded_tight",
+    "arm": "prot",
+    "n": 128,
+    "route": "protected banded driver, reference finite differences",
+    "all_fields_equal_A_B": true,
+    "jacobian_fingerprint": "798ab0df41f545fb",
+    "state_fingerprint": "ff714a10d67b2066",
+    "final_fingerprint": "f56aca057fe92bc6",
+    "t_end_bits": "4014bca640f5b905",
+    "attempts": 48,
+    "builds": 48
+   },
+   {
+    "cell": "bruss1d-n128-coloured",
+    "backend": "banded_tight",
+    "arm": "seq",
+    "n": 128,
+    "route": "coloured",
+    "all_fields_equal_A_B": true,
+    "total_groups": 18,
+    "first_use_check": {
+     "A": "MultiColouring",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 128,
+     "B": 128
+    },
+    "verification_rhs_calls": {
+     "A": 18,
+     "B": 18
+    },
+    "rhs_calls": {
+     "A": 690,
+     "B": 690
+    },
+    "jacobian_fingerprint": "798ab0df41f545fb",
+    "state_fingerprint": "ff714a10d67b2066",
+    "final_fingerprint": "f56aca057fe92bc6",
+    "output_fingerprint": "640d886fe4d80815",
+    "t_end_bits": "4014bca640f5b905",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "rejected_steps": 0
+   },
+   {
+    "cell": "bruss1d-n128-coloured",
+    "backend": "banded_tight",
+    "arm": "t1",
+    "n": 128,
+    "route": "coloured",
+    "all_fields_equal_A_B": true,
+    "total_groups": 18,
+    "first_use_check": {
+     "A": "MultiColouring",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 128,
+     "B": 128
+    },
+    "verification_rhs_calls": {
+     "A": 19,
+     "B": 19
+    },
+    "rhs_calls": {
+     "A": 691,
+     "B": 691
+    },
+    "jacobian_fingerprint": "798ab0df41f545fb",
+    "state_fingerprint": "ff714a10d67b2066",
+    "final_fingerprint": "f56aca057fe92bc6",
+    "output_fingerprint": "640d886fe4d80815",
+    "t_end_bits": "4014bca640f5b905",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "rejected_steps": 0
+   },
+   {
+    "cell": "bruss1d-n128-coloured",
+    "backend": "banded_tight",
+    "arm": "t2",
+    "n": 128,
+    "route": "coloured",
+    "all_fields_equal_A_B": true,
+    "total_groups": 18,
+    "first_use_check": {
+     "A": "MultiColouring",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 128,
+     "B": 128
+    },
+    "verification_rhs_calls": {
+     "A": 19,
+     "B": 19
+    },
+    "rhs_calls": {
+     "A": 691,
+     "B": 691
+    },
+    "jacobian_fingerprint": "798ab0df41f545fb",
+    "state_fingerprint": "ff714a10d67b2066",
+    "final_fingerprint": "f56aca057fe92bc6",
+    "output_fingerprint": "640d886fe4d80815",
+    "t_end_bits": "4014bca640f5b905",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "rejected_steps": 0
+   },
+   {
+    "cell": "bruss1d-n128-coloured",
+    "backend": "banded_tight",
+    "arm": "t4",
+    "n": 128,
+    "route": "coloured",
+    "all_fields_equal_A_B": true,
+    "total_groups": 18,
+    "first_use_check": {
+     "A": "MultiColouring",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 128,
+     "B": 128
+    },
+    "verification_rhs_calls": {
+     "A": 19,
+     "B": 19
+    },
+    "rhs_calls": {
+     "A": 691,
+     "B": 691
+    },
+    "jacobian_fingerprint": "798ab0df41f545fb",
+    "state_fingerprint": "ff714a10d67b2066",
+    "final_fingerprint": "f56aca057fe92bc6",
+    "output_fingerprint": "640d886fe4d80815",
+    "t_end_bits": "4014bca640f5b905",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "rejected_steps": 0
+   },
+   {
+    "cell": "bruss1d-n128-coloured",
+    "backend": "banded_tight",
+    "arm": "t6",
+    "n": 128,
+    "route": "coloured",
+    "all_fields_equal_A_B": true,
+    "total_groups": 18,
+    "first_use_check": {
+     "A": "MultiColouring",
+     "B": "MultiColouring"
+    },
+    "verifications": {
+     "A": 1,
+     "B": 1
+    },
+    "verified_columns": {
+     "A": 128,
+     "B": 128
+    },
+    "verification_rhs_calls": {
+     "A": 19,
+     "B": 19
+    },
+    "rhs_calls": {
+     "A": 691,
+     "B": 691
+    },
+    "jacobian_fingerprint": "798ab0df41f545fb",
+    "state_fingerprint": "ff714a10d67b2066",
+    "final_fingerprint": "f56aca057fe92bc6",
+    "output_fingerprint": "640d886fe4d80815",
+    "t_end_bits": "4014bca640f5b905",
+    "attempts": 48,
+    "accepted_steps": 48,
+    "rejected_steps": 0
+   }
+  ],
+  "run_count": 36,
+  "cells": [
+   {
+    "cell": "nlkpp-dense-n400",
+    "backend": "dense_lu(faer)",
+    "n": 400,
+    "route": "dense",
+    "total_groups": null,
+    "rule_picks_all": false,
+    "default_checks_A": [
+     "Sample(8)"
+    ],
+    "default_checks_B": [
+     "Sample(8)"
+    ]
+   },
+   {
+    "cell": "bruss1d-n128-dense",
+    "backend": "dense_lu(in-place)",
+    "n": 128,
+    "route": "dense",
+    "total_groups": null,
+    "rule_picks_all": false,
+    "default_checks_A": [
+     "Sample(8)"
+    ],
+    "default_checks_B": [
+     "Sample(8)"
+    ]
+   },
+   {
+    "cell": "nlkpp-band-n4096-r24",
+    "backend": "banded_tight",
+    "n": 4096,
+    "route": "coloured",
+    "total_groups": 150,
+    "rule_picks_all": false,
+    "default_checks_A": [
+     "MultiColouring"
+    ],
+    "default_checks_B": [
+     "MultiColouring"
+    ]
+   },
+   {
+    "cell": "nlkpp-band-n4096-r24",
+    "backend": "banded_protected",
+    "n": 4096,
+    "route": "coloured",
+    "total_groups": 150,
+    "rule_picks_all": false,
+    "default_checks_A": [
+     "MultiColouring"
+    ],
+    "default_checks_B": [
+     "MultiColouring"
+    ]
+   },
+   {
+    "cell": "bruss1d-n131072",
+    "backend": "banded_tight",
+    "n": 131072,
+    "route": "coloured",
+    "total_groups": 59,
+    "rule_picks_all": false,
+    "default_checks_A": [
+     "MultiColouring"
+    ],
+    "default_checks_B": [
+     "MultiColouring"
+    ]
+   },
+   {
+    "cell": "bruss1d-n128-coloured",
+    "backend": "banded_tight",
+    "n": 128,
+    "route": "coloured",
+    "total_groups": 18,
+    "rule_picks_all": false,
+    "default_checks_A": [
+     "MultiColouring"
+    ],
+    "default_checks_B": [
+     "MultiColouring"
+    ]
+   }
+  ],
+  "mismatches_A_B": [],
+  "cell_record_mismatches_A_B": [],
+  "rule_mismatches": [],
+  "commit_A_against_v29_B": {
+   "runs_compared": 36,
+   "runs_v29": 36,
+   "mismatches": [],
+   "cell_records_equal": true
+  },
+  "meta_probe": {
+   "A_default_coloured_probe_banded_4_1_1": [
+    "MultiColouring"
+   ],
+   "B_default_coloured_probe_banded_4_1_1": [
+    "All"
+   ],
+   "A_default_dense": [
+    "Sample(8)"
+   ],
+   "B_default_dense": [
+    "Sample(8)"
+   ]
+  }
+ },
+ "corpus": {
+  "case_set": {
+   "cases_A": 4846,
+   "cases_B": 4846,
+   "cases_v29_B": 4846,
+   "same_case_ids": true,
+   "coloured_cases_without_total_groups_in_A": []
+  },
+  "decisions_per_path": 9696,
+  "rule_picks_all_cases": [
+   "correct/ring-n12-true",
+   "correct/ring-n13-true",
+   "correct/ring-n14-true",
+   "correct/ring-n15-true",
+   "correct/ring-n16-true",
+   "correct/ring-n32-true"
+  ],
+  "rule_cases": [
+   {
+    "case": "correct/ring-n12-true",
+    "n": 12,
+    "total_groups": 12,
+    "correct": true,
+    "fields_that_differ_A_B": [
+     ".check_colourings",
+     ".executions.seq.first_use_check",
+     ".executions.t6.first_use_check"
+    ],
+    "executions": {
+     "seq": {
+      "check": {
+       "A": "MultiColouring",
+       "B": "All"
+      },
+      "first_use": {
+       "A": [
+        "pass",
+        12
+       ],
+       "B": [
+        "pass",
+        12
+       ]
+      },
+      "verify": {
+       "A": [
+        "pass",
+        12
+       ],
+       "B": [
+        "pass",
+        12
+       ]
+      },
+      "check_rhs_first_use": {
+       "A": 12,
+       "B": 12
+      }
+     },
+     "t6": {
+      "check": {
+       "A": "MultiColouring",
+       "B": "All"
+      },
+      "first_use": {
+       "A": [
+        "pass",
+        12
+       ],
+       "B": [
+        "pass",
+        12
+       ]
+      },
+      "verify": {
+       "A": [
+        "pass",
+        12
+       ],
+       "B": [
+        "pass",
+        12
+       ]
+      },
+      "check_rhs_first_use": {
+       "A": 13,
+       "B": 13
+      }
+     }
+    }
+   },
+   {
+    "case": "correct/ring-n13-true",
+    "n": 13,
+    "total_groups": 13,
+    "correct": true,
+    "fields_that_differ_A_B": [
+     ".check_colourings",
+     ".executions.seq.first_use_check",
+     ".executions.t6.first_use_check"
+    ],
+    "executions": {
+     "seq": {
+      "check": {
+       "A": "MultiColouring",
+       "B": "All"
+      },
+      "first_use": {
+       "A": [
+        "pass",
+        13
+       ],
+       "B": [
+        "pass",
+        13
+       ]
+      },
+      "verify": {
+       "A": [
+        "pass",
+        13
+       ],
+       "B": [
+        "pass",
+        13
+       ]
+      },
+      "check_rhs_first_use": {
+       "A": 13,
+       "B": 13
+      }
+     },
+     "t6": {
+      "check": {
+       "A": "MultiColouring",
+       "B": "All"
+      },
+      "first_use": {
+       "A": [
+        "pass",
+        13
+       ],
+       "B": [
+        "pass",
+        13
+       ]
+      },
+      "verify": {
+       "A": [
+        "pass",
+        13
+       ],
+       "B": [
+        "pass",
+        13
+       ]
+      },
+      "check_rhs_first_use": {
+       "A": 14,
+       "B": 14
+      }
+     }
+    }
+   },
+   {
+    "case": "correct/ring-n14-true",
+    "n": 14,
+    "total_groups": 14,
+    "correct": true,
+    "fields_that_differ_A_B": [
+     ".check_colourings",
+     ".executions.seq.first_use_check",
+     ".executions.t6.first_use_check"
+    ],
+    "executions": {
+     "seq": {
+      "check": {
+       "A": "MultiColouring",
+       "B": "All"
+      },
+      "first_use": {
+       "A": [
+        "pass",
+        14
+       ],
+       "B": [
+        "pass",
+        14
+       ]
+      },
+      "verify": {
+       "A": [
+        "pass",
+        14
+       ],
+       "B": [
+        "pass",
+        14
+       ]
+      },
+      "check_rhs_first_use": {
+       "A": 14,
+       "B": 14
+      }
+     },
+     "t6": {
+      "check": {
+       "A": "MultiColouring",
+       "B": "All"
+      },
+      "first_use": {
+       "A": [
+        "pass",
+        14
+       ],
+       "B": [
+        "pass",
+        14
+       ]
+      },
+      "verify": {
+       "A": [
+        "pass",
+        14
+       ],
+       "B": [
+        "pass",
+        14
+       ]
+      },
+      "check_rhs_first_use": {
+       "A": 15,
+       "B": 15
+      }
+     }
+    }
+   },
+   {
+    "case": "correct/ring-n15-true",
+    "n": 15,
+    "total_groups": 15,
+    "correct": true,
+    "fields_that_differ_A_B": [
+     ".check_colourings",
+     ".executions.seq.first_use_check",
+     ".executions.t6.first_use_check"
+    ],
+    "executions": {
+     "seq": {
+      "check": {
+       "A": "MultiColouring",
+       "B": "All"
+      },
+      "first_use": {
+       "A": [
+        "pass",
+        15
+       ],
+       "B": [
+        "pass",
+        15
+       ]
+      },
+      "verify": {
+       "A": [
+        "pass",
+        15
+       ],
+       "B": [
+        "pass",
+        15
+       ]
+      },
+      "check_rhs_first_use": {
+       "A": 15,
+       "B": 15
+      }
+     },
+     "t6": {
+      "check": {
+       "A": "MultiColouring",
+       "B": "All"
+      },
+      "first_use": {
+       "A": [
+        "pass",
+        15
+       ],
+       "B": [
+        "pass",
+        15
+       ]
+      },
+      "verify": {
+       "A": [
+        "pass",
+        15
+       ],
+       "B": [
+        "pass",
+        15
+       ]
+      },
+      "check_rhs_first_use": {
+       "A": 16,
+       "B": 16
+      }
+     }
+    }
+   },
+   {
+    "case": "correct/ring-n16-true",
+    "n": 16,
+    "total_groups": 16,
+    "correct": true,
+    "fields_that_differ_A_B": [
+     ".check_colourings",
+     ".executions.seq.first_use_check",
+     ".executions.t6.first_use_check"
+    ],
+    "executions": {
+     "seq": {
+      "check": {
+       "A": "MultiColouring",
+       "B": "All"
+      },
+      "first_use": {
+       "A": [
+        "pass",
+        16
+       ],
+       "B": [
+        "pass",
+        16
+       ]
+      },
+      "verify": {
+       "A": [
+        "pass",
+        16
+       ],
+       "B": [
+        "pass",
+        16
+       ]
+      },
+      "check_rhs_first_use": {
+       "A": 16,
+       "B": 16
+      }
+     },
+     "t6": {
+      "check": {
+       "A": "MultiColouring",
+       "B": "All"
+      },
+      "first_use": {
+       "A": [
+        "pass",
+        16
+       ],
+       "B": [
+        "pass",
+        16
+       ]
+      },
+      "verify": {
+       "A": [
+        "pass",
+        16
+       ],
+       "B": [
+        "pass",
+        16
+       ]
+      },
+      "check_rhs_first_use": {
+       "A": 17,
+       "B": 17
+      }
+     }
+    }
+   },
+   {
+    "case": "correct/ring-n32-true",
+    "n": 32,
+    "total_groups": 32,
+    "correct": true,
+    "fields_that_differ_A_B": [
+     ".check_colourings",
+     ".executions.seq.first_use_check",
+     ".executions.t6.first_use_check"
+    ],
+    "executions": {
+     "seq": {
+      "check": {
+       "A": "MultiColouring",
+       "B": "All"
+      },
+      "first_use": {
+       "A": [
+        "pass",
+        32
+       ],
+       "B": [
+        "pass",
+        32
+       ]
+      },
+      "verify": {
+       "A": [
+        "pass",
+        32
+       ],
+       "B": [
+        "pass",
+        32
+       ]
+      },
+      "check_rhs_first_use": {
+       "A": 32,
+       "B": 32
+      }
+     },
+     "t6": {
+      "check": {
+       "A": "MultiColouring",
+       "B": "All"
+      },
+      "first_use": {
+       "A": [
+        "pass",
+        32
+       ],
+       "B": [
+        "pass",
+        32
+       ]
+      },
+      "verify": {
+       "A": [
+        "pass",
+        32
+       ],
+       "B": [
+        "pass",
+        32
+       ]
+      },
+      "check_rhs_first_use": {
+       "A": 33,
+       "B": 33
+      }
+     }
+    }
+   }
+  ],
+  "rule_mismatches": [],
+  "other_cases_A_B_mismatches": [],
+  "other_cases_identical_A_B": 4840,
+  "commit_A_against_v29_B": {
+   "cases_compared": 4846,
+   "mismatching_cases": []
+  },
+  "detected_by_A_not_by_B": [],
+  "misses_A": {
+   "count": 5,
+   "list": [
+    {
+     "case": "controls/impure16-dense",
+     "execution": "seq",
+     "path": "first_use",
+     "check": "Sample(8)"
+    },
+    {
+     "case": "omit1024/e3072-r768-c769",
+     "execution": "seq",
+     "path": "first_use",
+     "check": "MultiColouring"
+    },
+    {
+     "case": "omit1024/e3072-r768-c769",
+     "execution": "seq",
+     "path": "verify",
+     "check": "MultiColouring"
+    },
+    {
+     "case": "omit1024/e3072-r768-c769",
+     "execution": "t6",
+     "path": "first_use",
+     "check": "MultiColouring"
+    },
+    {
+     "case": "omit1024/e3072-r768-c769",
+     "execution": "t6",
+     "path": "verify",
+     "check": "MultiColouring"
+    }
+   ]
+  },
+  "misses_B": {
+   "count": 5,
+   "list": [
+    {
+     "case": "controls/impure16-dense",
+     "execution": "seq",
+     "path": "first_use",
+     "check": "Sample(8)",
+     "rounding_limited": null
+    },
+    {
+     "case": "omit1024/e3072-r768-c769",
+     "execution": "seq",
+     "path": "first_use",
+     "check": "MultiColouring",
+     "rounding_limited": true
+    },
+    {
+     "case": "omit1024/e3072-r768-c769",
+     "execution": "seq",
+     "path": "verify",
+     "check": "MultiColouring",
+     "rounding_limited": true
+    },
+    {
+     "case": "omit1024/e3072-r768-c769",
+     "execution": "t6",
+     "path": "first_use",
+     "check": "MultiColouring",
+     "rounding_limited": true
+    },
+    {
+     "case": "omit1024/e3072-r768-c769",
+     "execution": "t6",
+     "path": "verify",
+     "check": "MultiColouring",
+     "rounding_limited": true
+    }
+   ]
+  },
+  "misses_equal_A_B": true,
+  "correct_rejected": {
+   "A": [],
+   "B": []
+  },
+  "first_use_cost_per_class": [
+   {
+    "class": "controls / coloured",
+    "execution": "seq",
+    "cases": 3,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 11,
+    "rhs_calls_B": 11,
+    "checks_A": {
+     "MultiColouring": 3
+    },
+    "checks_B": {
+     "MultiColouring": 3
+    }
+   },
+   {
+    "class": "controls / coloured",
+    "execution": "t3",
+    "cases": 3,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 15,
+    "rhs_calls_B": 15,
+    "checks_A": {
+     "MultiColouring": 3
+    },
+    "checks_B": {
+     "MultiColouring": 3
+    }
+   },
+   {
+    "class": "controls / coloured",
+    "execution": "t6",
+    "cases": 3,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 15,
+    "rhs_calls_B": 15,
+    "checks_A": {
+     "MultiColouring": 3
+    },
+    "checks_B": {
+     "MultiColouring": 3
+    }
+   },
+   {
+    "class": "controls / dense",
+    "execution": "seq",
+    "cases": 1,
+    "passing_A": 1,
+    "passing_B": 1,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 17,
+    "rhs_calls_B": 17,
+    "checks_A": {
+     "Sample(8)": 1
+    },
+    "checks_B": {
+     "Sample(8)": 1
+    }
+   },
+   {
+    "class": "controls / dense",
+    "execution": "t3",
+    "cases": 1,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 18,
+    "rhs_calls_B": 18,
+    "checks_A": {
+     "Sample(8)": 1
+    },
+    "checks_B": {
+     "Sample(8)": 1
+    }
+   },
+   {
+    "class": "controls / dense",
+    "execution": "t6",
+    "cases": 1,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 18,
+    "rhs_calls_B": 18,
+    "checks_A": {
+     "Sample(8)": 1
+    },
+    "checks_B": {
+     "Sample(8)": 1
+    }
+   },
+   {
+    "class": "correct / coloured",
+    "execution": "seq",
+    "cases": 21,
+    "passing_A": 21,
+    "passing_B": 21,
+    "check_rhs_passing_A": 830,
+    "check_rhs_passing_B": 830,
+    "rhs_calls_A": 982,
+    "rhs_calls_B": 982,
+    "checks_A": {
+     "MultiColouring": 21
+    },
+    "checks_B": {
+     "All": 6,
+     "MultiColouring": 15
+    }
+   },
+   {
+    "class": "correct / coloured",
+    "execution": "t6",
+    "cases": 21,
+    "passing_A": 21,
+    "passing_B": 21,
+    "check_rhs_passing_A": 851,
+    "check_rhs_passing_B": 851,
+    "rhs_calls_A": 1003,
+    "rhs_calls_B": 1003,
+    "checks_A": {
+     "MultiColouring": 21
+    },
+    "checks_B": {
+     "All": 6,
+     "MultiColouring": 15
+    }
+   },
+   {
+    "class": "correct / dense",
+    "execution": "seq",
+    "cases": 2,
+    "passing_A": 2,
+    "passing_B": 2,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 530,
+    "rhs_calls_B": 530,
+    "checks_A": {
+     "Sample(8)": 2
+    },
+    "checks_B": {
+     "Sample(8)": 2
+    }
+   },
+   {
+    "class": "correct / dense",
+    "execution": "t6",
+    "cases": 2,
+    "passing_A": 2,
+    "passing_B": 2,
+    "check_rhs_passing_A": 18,
+    "check_rhs_passing_B": 18,
+    "rhs_calls_A": 548,
+    "rhs_calls_B": 548,
+    "checks_A": {
+     "Sample(8)": 2
+    },
+    "checks_B": {
+     "Sample(8)": 2
+    }
+   },
+   {
+    "class": "narrow / coloured",
+    "execution": "seq",
+    "cases": 6,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 56,
+    "rhs_calls_B": 56,
+    "checks_A": {
+     "MultiColouring": 6
+    },
+    "checks_B": {
+     "MultiColouring": 6
+    }
+   },
+   {
+    "class": "narrow / coloured",
+    "execution": "t6",
+    "cases": 6,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 118,
+    "rhs_calls_B": 118,
+    "checks_A": {
+     "MultiColouring": 6
+    },
+    "checks_B": {
+     "MultiColouring": 6
+    }
+   },
+   {
+    "class": "omit1024 / coloured",
+    "execution": "seq",
+    "cases": 4092,
+    "passing_A": 1,
+    "passing_B": 1,
+    "check_rhs_passing_A": 29,
+    "check_rhs_passing_B": 29,
+    "rhs_calls_A": 16755,
+    "rhs_calls_B": 16755,
+    "checks_A": {
+     "MultiColouring": 4092
+    },
+    "checks_B": {
+     "MultiColouring": 4092
+    }
+   },
+   {
+    "class": "omit1024 / coloured",
+    "execution": "t6",
+    "cases": 4092,
+    "passing_A": 1,
+    "passing_B": 1,
+    "check_rhs_passing_A": 30,
+    "check_rhs_passing_B": 30,
+    "rhs_calls_A": 22636,
+    "rhs_calls_B": 22636,
+    "checks_A": {
+     "MultiColouring": 4092
+    },
+    "checks_B": {
+     "MultiColouring": 4092
+    }
+   },
+   {
+    "class": "omit128 / coloured",
+    "execution": "seq",
+    "cases": 508,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 2076,
+    "rhs_calls_B": 2076,
+    "checks_A": {
+     "MultiColouring": 508
+    },
+    "checks_B": {
+     "MultiColouring": 508
+    }
+   },
+   {
+    "class": "omit128 / coloured",
+    "execution": "t6",
+    "cases": 508,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 2806,
+    "rhs_calls_B": 2806,
+    "checks_A": {
+     "MultiColouring": 508
+    },
+    "checks_B": {
+     "MultiColouring": 508
+    }
+   },
+   {
+    "class": "omit131072 / coloured",
+    "execution": "seq",
+    "cases": 200,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 816,
+    "rhs_calls_B": 816,
+    "checks_A": {
+     "MultiColouring": 200
+    },
+    "checks_B": {
+     "MultiColouring": 200
+    }
+   },
+   {
+    "class": "omit131072 / coloured",
+    "execution": "t6",
+    "cases": 200,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 1108,
+    "rhs_calls_B": 1108,
+    "checks_A": {
+     "MultiColouring": 200
+    },
+    "checks_B": {
+     "MultiColouring": 200
+    }
+   },
+   {
+    "class": "ring / coloured",
+    "execution": "seq",
+    "cases": 13,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 94,
+    "rhs_calls_B": 94,
+    "checks_A": {
+     "MultiColouring": 13
+    },
+    "checks_B": {
+     "MultiColouring": 13
+    }
+   },
+   {
+    "class": "ring / coloured",
+    "execution": "t6",
+    "cases": 13,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 110,
+    "rhs_calls_B": 110,
+    "checks_A": {
+     "MultiColouring": 13
+    },
+    "checks_B": {
+     "MultiColouring": 13
+    }
+   }
+  ],
+  "wall_s_diagnostic": {
+   "A": {
+    "controls": 0.002255188,
+    "ring": 0.034028205,
+    "omit128": 0.261750375,
+    "omit1024": 8.642419186,
+    "omit131072": 69.605630379,
+    "narrow": 0.228398813,
+    "correct": 1.950969656
+   },
+   "B": {
+    "controls": 0.002843475,
+    "ring": 0.044430924,
+    "omit128": 0.290007382,
+    "omit1024": 9.475302559,
+    "omit131072": 71.71184024,
+    "narrow": 0.193072412,
+    "correct": 1.993374065
+   }
+  }
+ },
+ "survey": {
+  "patterns": 378,
+  "patterns_B": 378,
+  "done_records": {
+   "A": [
+    {
+     "patterns": 378,
+     "wall_s_diagnostic": 0.550676417
+    }
+   ],
+   "B": [
+    {
+     "patterns": 378,
+     "wall_s_diagnostic": 0.86823522
+    }
+   ]
+  },
+  "mismatches_A_B_other_than_the_default": [],
+  "rule_mismatches": [],
+  "rule_picks_all": 184,
+  "total_groups_greater_than_n": 133,
+  "total_groups_equal_n": 51,
+  "default_check_rhs_sum": {
+   "A": 70871,
+   "B": 62792,
+   "n_sum": 80892
+  },
+  "worst_total_groups_over_n": {
+   "pattern": [
+    60,
+    0.45,
+    0.1,
+    1
+   ],
+   "n": 60,
+   "half_width": 27,
+   "bandwidth": [
+    27,
+    27
+   ],
+   "total_groups": 111,
+   "ratio": 1.85,
+   "construction": "Band { lower: 27, upper: 27, moduli: [55, 56] }"
+  },
+  "review_like_subset": {
+   "definition": "density 0.1, half-width fraction 0.2 to 0.45 (the setting of review finding F4 of node V29)",
+   "patterns": 72,
+   "total_groups_greater_than_n": 60
+  },
+  "full_bands": [
+   {
+    "n": 60,
+    "half_width": 3,
+    "total_groups": 24,
+    "default_B": "MultiColouring"
+   },
+   {
+    "n": 60,
+    "half_width": 6,
+    "total_groups": 27,
+    "default_B": "MultiColouring"
+   },
+   {
+    "n": 60,
+    "half_width": 9,
+    "total_groups": 39,
+    "default_B": "MultiColouring"
+   },
+   {
+    "n": 60,
+    "half_width": 12,
+    "total_groups": 51,
+    "default_B": "MultiColouring"
+   },
+   {
+    "n": 60,
+    "half_width": 15,
+    "total_groups": 60,
+    "default_B": "All"
+   },
+   {
+    "n": 60,
+    "half_width": 18,
+    "total_groups": 60,
+    "default_B": "All"
+   },
+   {
+    "n": 60,
+    "half_width": 21,
+    "total_groups": 60,
+    "default_B": "All"
+   },
+   {
+    "n": 60,
+    "half_width": 24,
+    "total_groups": 60,
+    "default_B": "All"
+   },
+   {
+    "n": 60,
+    "half_width": 27,
+    "total_groups": 60,
+    "default_B": "All"
+   },
+   {
+    "n": 96,
+    "half_width": 5,
+    "total_groups": 23,
+    "default_B": "MultiColouring"
+   },
+   {
+    "n": 96,
+    "half_width": 10,
+    "total_groups": 43,
+    "default_B": "MultiColouring"
+   },
+   {
+    "n": 96,
+    "half_width": 14,
+    "total_groups": 59,
+    "default_B": "MultiColouring"
+   },
+   {
+    "n": 96,
+    "half_width": 19,
+    "total_groups": 79,
+    "default_B": "MultiColouring"
+   },
+   {
+    "n": 96,
+    "half_width": 24,
+    "total_groups": 96,
+    "default_B": "All"
+   },
+   {
+    "n": 96,
+    "half_width": 29,
+    "total_groups": 96,
+    "default_B": "All"
+   },
+   {
+    "n": 96,
+    "half_width": 34,
+    "total_groups": 96,
+    "default_B": "All"
+   },
+   {
+    "n": 96,
+    "half_width": 38,
+    "total_groups": 96,
+    "default_B": "All"
+   },
+   {
+    "n": 96,
+    "half_width": 43,
+    "total_groups": 96,
+    "default_B": "All"
+   },
+   {
+    "n": 128,
+    "half_width": 6,
+    "total_groups": 27,
+    "default_B": "MultiColouring"
+   },
+   {
+    "n": 128,
+    "half_width": 13,
+    "total_groups": 55,
+    "default_B": "MultiColouring"
+   },
+   {
+    "n": 128,
+    "half_width": 19,
+    "total_groups": 79,
+    "default_B": "MultiColouring"
+   },
+   {
+    "n": 128,
+    "half_width": 26,
+    "total_groups": 107,
+    "default_B": "MultiColouring"
+   },
+   {
+    "n": 128,
+    "half_width": 32,
+    "total_groups": 128,
+    "default_B": "All"
+   },
+   {
+    "n": 128,
+    "half_width": 38,
+    "total_groups": 128,
+    "default_B": "All"
+   },
+   {
+    "n": 128,
+    "half_width": 45,
+    "total_groups": 128,
+    "default_B": "All"
+   },
+   {
+    "n": 128,
+    "half_width": 51,
+    "total_groups": 128,
+    "default_B": "All"
+   },
+   {
+    "n": 128,
+    "half_width": 58,
+    "total_groups": 128,
+    "default_B": "All"
+   },
+   {
+    "n": 200,
+    "half_width": 10,
+    "total_groups": 43,
+    "default_B": "MultiColouring"
+   },
+   {
+    "n": 200,
+    "half_width": 20,
+    "total_groups": 83,
+    "default_B": "MultiColouring"
+   },
+   {
+    "n": 200,
+    "half_width": 30,
+    "total_groups": 123,
+    "default_B": "MultiColouring"
+   },
+   {
+    "n": 200,
+    "half_width": 40,
+    "total_groups": 163,
+    "default_B": "MultiColouring"
+   },
+   {
+    "n": 200,
+    "half_width": 50,
+    "total_groups": 200,
+    "default_B": "All"
+   },
+   {
+    "n": 200,
+    "half_width": 60,
+    "total_groups": 200,
+    "default_B": "All"
+   },
+   {
+    "n": 200,
+    "half_width": 70,
+    "total_groups": 200,
+    "default_B": "All"
+   },
+   {
+    "n": 200,
+    "half_width": 80,
+    "total_groups": 200,
+    "default_B": "All"
+   },
+   {
+    "n": 200,
+    "half_width": 90,
+    "total_groups": 200,
+    "default_B": "All"
+   },
+   {
+    "n": 300,
+    "half_width": 15,
+    "total_groups": 63,
+    "default_B": "MultiColouring"
+   },
+   {
+    "n": 300,
+    "half_width": 30,
+    "total_groups": 123,
+    "default_B": "MultiColouring"
+   },
+   {
+    "n": 300,
+    "half_width": 45,
+    "total_groups": 183,
+    "default_B": "MultiColouring"
+   },
+   {
+    "n": 300,
+    "half_width": 60,
+    "total_groups": 243,
+    "default_B": "MultiColouring"
+   },
+   {
+    "n": 300,
+    "half_width": 75,
+    "total_groups": 300,
+    "default_B": "All"
+   },
+   {
+    "n": 300,
+    "half_width": 90,
+    "total_groups": 300,
+    "default_B": "All"
+   },
+   {
+    "n": 300,
+    "half_width": 105,
+    "total_groups": 300,
+    "default_B": "All"
+   },
+   {
+    "n": 300,
+    "half_width": 120,
+    "total_groups": 300,
+    "default_B": "All"
+   },
+   {
+    "n": 300,
+    "half_width": 135,
+    "total_groups": 300,
+    "default_B": "All"
+   },
+   {
+    "n": 500,
+    "half_width": 25,
+    "total_groups": 103,
+    "default_B": "MultiColouring"
+   },
+   {
+    "n": 500,
+    "half_width": 50,
+    "total_groups": 203,
+    "default_B": "MultiColouring"
+   },
+   {
+    "n": 500,
+    "half_width": 75,
+    "total_groups": 303,
+    "default_B": "MultiColouring"
+   },
+   {
+    "n": 500,
+    "half_width": 100,
+    "total_groups": 403,
+    "default_B": "MultiColouring"
+   },
+   {
+    "n": 500,
+    "half_width": 125,
+    "total_groups": 500,
+    "default_B": "All"
+   },
+   {
+    "n": 500,
+    "half_width": 150,
+    "total_groups": 500,
+    "default_B": "All"
+   },
+   {
+    "n": 500,
+    "half_width": 175,
+    "total_groups": 500,
+    "default_B": "All"
+   },
+   {
+    "n": 500,
+    "half_width": 200,
+    "total_groups": 500,
+    "default_B": "All"
+   },
+   {
+    "n": 500,
+    "half_width": 225,
+    "total_groups": 500,
+    "default_B": "All"
+   }
+  ],
+  "by_half_width_fraction": [
+   {
+    "fraction": 0.05,
+    "patterns": 42,
+    "rule_all": 0,
+    "greater": 0,
+    "equal": 0,
+    "rhs_A": 1981,
+    "rhs_B": 1981,
+    "n_sum": 8988
+   },
+   {
+    "fraction": 0.1,
+    "patterns": 42,
+    "rule_all": 0,
+    "greater": 0,
+    "equal": 0,
+    "rhs_A": 3736,
+    "rhs_B": 3736,
+    "n_sum": 8988
+   },
+   {
+    "fraction": 0.15,
+    "patterns": 42,
+    "rule_all": 0,
+    "greater": 0,
+    "equal": 0,
+    "rhs_A": 5500,
+    "rhs_B": 5500,
+    "n_sum": 8988
+   },
+   {
+    "fraction": 0.2,
+    "patterns": 42,
+    "rule_all": 0,
+    "greater": 0,
+    "equal": 0,
+    "rhs_A": 7322,
+    "rhs_B": 7322,
+    "n_sum": 8988
+   },
+   {
+    "fraction": 0.25,
+    "patterns": 42,
+    "rule_all": 33,
+    "greater": 27,
+    "equal": 6,
+    "rhs_A": 8645,
+    "rhs_B": 8565,
+    "n_sum": 8988
+   },
+   {
+    "fraction": 0.3,
+    "patterns": 42,
+    "rule_all": 34,
+    "greater": 25,
+    "equal": 9,
+    "rhs_A": 9749,
+    "rhs_B": 8815,
+    "n_sum": 8988
+   },
+   {
+    "fraction": 0.35,
+    "patterns": 42,
+    "rule_all": 38,
+    "greater": 27,
+    "equal": 11,
+    "rhs_A": 10566,
+    "rhs_B": 8922,
+    "n_sum": 8988
+   },
+   {
+    "fraction": 0.4,
+    "patterns": 42,
+    "rule_all": 39,
+    "greater": 27,
+    "equal": 12,
+    "rhs_A": 11293,
+    "rhs_B": 8970,
+    "n_sum": 8988
+   },
+   {
+    "fraction": 0.45,
+    "patterns": 42,
+    "rule_all": 40,
+    "greater": 27,
+    "equal": 13,
+    "rhs_A": 12079,
+    "rhs_B": 8981,
+    "n_sum": 8988
+   }
+  ]
+ },
+ "supplement": {
+  "cases": {
+   "A": 799,
+   "B": 799,
+   "same_case_ids": true
+  },
+  "families": {
+   "A": [
+    {
+     "cases": 432,
+     "executions": [
+      "seq",
+      "t6"
+     ],
+     "family": "random",
+     "passes": {
+      "seq:explicit_all": 48,
+      "seq:explicit_multi_colouring": 48,
+      "seq:first_use": 48,
+      "seq:verify": 48,
+      "t6:explicit_all": 48,
+      "t6:explicit_multi_colouring": 48,
+      "t6:first_use": 48,
+      "t6:verify": 48
+     },
+     "wall_s_diagnostic": 1.917947885
+    },
+    {
+     "cases": 24,
+     "executions": [
+      "seq",
+      "t6"
+     ],
+     "family": "band",
+     "passes": {
+      "seq:explicit_all": 8,
+      "seq:explicit_multi_colouring": 8,
+      "seq:first_use": 8,
+      "seq:verify": 8,
+      "t6:explicit_all": 8,
+      "t6:explicit_multi_colouring": 8,
+      "t6:first_use": 8,
+      "t6:verify": 8
+     },
+     "wall_s_diagnostic": 0.219803864
+    },
+    {
+     "cases": 306,
+     "executions": [
+      "seq",
+      "t6"
+     ],
+     "family": "ring",
+     "passes": {},
+     "wall_s_diagnostic": 0.255537321
+    },
+    {
+     "cases": 37,
+     "executions": [
+      "seq",
+      "t6"
+     ],
+     "family": "narrow",
+     "passes": {
+      "seq:explicit_all": 3,
+      "seq:explicit_multi_colouring": 3,
+      "seq:first_use": 3,
+      "seq:verify": 3,
+      "t6:explicit_all": 3,
+      "t6:explicit_multi_colouring": 3,
+      "t6:first_use": 3,
+      "t6:verify": 3
+     },
+     "wall_s_diagnostic": 0.072913927
+    }
+   ],
+   "B": [
+    {
+     "cases": 432,
+     "executions": [
+      "seq",
+      "t6"
+     ],
+     "family": "random",
+     "passes": {
+      "seq:explicit_all": 48,
+      "seq:explicit_multi_colouring": 48,
+      "seq:first_use": 48,
+      "seq:verify": 48,
+      "t6:explicit_all": 48,
+      "t6:explicit_multi_colouring": 48,
+      "t6:first_use": 48,
+      "t6:verify": 48
+     },
+     "wall_s_diagnostic": 1.560784503
+    },
+    {
+     "cases": 24,
+     "executions": [
+      "seq",
+      "t6"
+     ],
+     "family": "band",
+     "passes": {
+      "seq:explicit_all": 8,
+      "seq:explicit_multi_colouring": 8,
+      "seq:first_use": 8,
+      "seq:verify": 8,
+      "t6:explicit_all": 8,
+      "t6:explicit_multi_colouring": 8,
+      "t6:first_use": 8,
+      "t6:verify": 8
+     },
+     "wall_s_diagnostic": 0.228892149
+    },
+    {
+     "cases": 306,
+     "executions": [
+      "seq",
+      "t6"
+     ],
+     "family": "ring",
+     "passes": {},
+     "wall_s_diagnostic": 0.251699475
+    },
+    {
+     "cases": 37,
+     "executions": [
+      "seq",
+      "t6"
+     ],
+     "family": "narrow",
+     "passes": {
+      "seq:explicit_all": 3,
+      "seq:explicit_multi_colouring": 3,
+      "seq:first_use": 3,
+      "seq:verify": 3,
+      "t6:explicit_all": 3,
+      "t6:explicit_multi_colouring": 3,
+      "t6:first_use": 3,
+      "t6:verify": 3
+     },
+     "wall_s_diagnostic": 0.065208915
+    }
+   ]
+  },
+  "meta_probes": {
+   "A": [
+    {
+     "default_check": "MultiColouring",
+     "n": 4,
+     "pattern": "banded(4, 1, 1)",
+     "total_groups": 4
+    },
+    {
+     "default_check": "MultiColouring",
+     "n": 16,
+     "pattern": "banded(16, 2, 2)",
+     "total_groups": 11
+    },
+    {
+     "default_check": "MultiColouring",
+     "n": 60,
+     "pattern": "banded(60, 27, 27)",
+     "total_groups": 60
+    }
+   ],
+   "B": [
+    {
+     "default_check": "All",
+     "n": 4,
+     "pattern": "banded(4, 1, 1)",
+     "total_groups": 4
+    },
+    {
+     "default_check": "MultiColouring",
+     "n": 16,
+     "pattern": "banded(16, 2, 2)",
+     "total_groups": 11
+    },
+    {
+     "default_check": "All",
+     "n": 60,
+     "pattern": "banded(60, 27, 27)",
+     "total_groups": 60
+    }
+   ]
+  },
+  "cases_per_family_and_rule_side": [
+   {
+    "family": "band",
+    "side": "rule keeps MultiColouring",
+    "cases": 6
+   },
+   {
+    "family": "band",
+    "side": "rule picks All",
+    "cases": 18
+   },
+   {
+    "family": "narrow",
+    "side": "rule keeps MultiColouring",
+    "cases": 37
+   },
+   {
+    "family": "random",
+    "side": "rule keeps MultiColouring",
+    "cases": 144
+   },
+   {
+    "family": "random",
+    "side": "rule picks All",
+    "cases": 288
+   },
+   {
+    "family": "ring",
+    "side": "rule picks All",
+    "cases": 306
+   }
+  ],
+  "rule_picks_all_cases": 612,
+  "rule_picks_all_wrong_cases": 574,
+  "colourings_or_rule_flag_mismatches": [],
+  "explicit_check_mismatches_A_B": [],
+  "rule_mismatches": [],
+  "rule_keeps_multi_colouring_cases_A_B_mismatches": [],
+  "detected_by_A_not_by_B": [],
+  "misses_A": [],
+  "misses_B": [],
+  "correct_rejected": {
+   "A": [],
+   "B": []
+  },
+  "error_kinds_where_the_rule_picks_all": [
+   {
+    "execution": "seq",
+    "A": "MultiColouringEntryDiffers",
+    "B": "AliasedEntry",
+    "count": 58
+   },
+   {
+    "execution": "seq",
+    "A": "MultiColouringEntryDiffers",
+    "B": "UndeclaredEntry",
+    "count": 9
+   },
+   {
+    "execution": "seq",
+    "A": "MultiColouringUncoveredRow",
+    "B": "AliasedEntry",
+    "count": 6
+   },
+   {
+    "execution": "seq",
+    "A": "MultiColouringUncoveredRow",
+    "B": "UndeclaredEntry",
+    "count": 65
+   },
+   {
+    "execution": "seq",
+    "A": "UncoveredRowChanged",
+    "B": "UncoveredRowChanged",
+    "count": 436
+   },
+   {
+    "execution": "t6",
+    "A": "MultiColouringEntryDiffers",
+    "B": "AliasedEntry",
+    "count": 58
+   },
+   {
+    "execution": "t6",
+    "A": "MultiColouringEntryDiffers",
+    "B": "UndeclaredEntry",
+    "count": 9
+   },
+   {
+    "execution": "t6",
+    "A": "MultiColouringUncoveredRow",
+    "B": "AliasedEntry",
+    "count": 6
+   },
+   {
+    "execution": "t6",
+    "A": "MultiColouringUncoveredRow",
+    "B": "UndeclaredEntry",
+    "count": 65
+   },
+   {
+    "execution": "t6",
+    "A": "UncoveredRowChanged",
+    "B": "UncoveredRowChanged",
+    "count": 436
+   }
+  ],
+  "wrong_rule_all_found_by": [
+   {
+    "execution": "seq",
+    "found_by": "build (UncoveredRowChanged)",
+    "count": 436
+   },
+   {
+    "execution": "seq",
+    "found_by": "the check",
+    "count": 138
+   },
+   {
+    "execution": "t6",
+    "found_by": "build (UncoveredRowChanged)",
+    "count": 436
+   },
+   {
+    "execution": "t6",
+    "found_by": "the check",
+    "count": 138
+   }
+  ],
+  "first_use_cost_per_class": [
+   {
+    "class": "band / band one too narrow / total_groups < n",
+    "execution": "seq",
+    "cases": 4,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 194,
+    "rhs_calls_B": 194,
+    "checks_A": {
+     "MultiColouring": 4
+    },
+    "checks_B": {
+     "MultiColouring": 4
+    }
+   },
+   {
+    "class": "band / band one too narrow / total_groups < n",
+    "execution": "t6",
+    "cases": 4,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 380,
+    "rhs_calls_B": 380,
+    "checks_A": {
+     "MultiColouring": 4
+    },
+    "checks_B": {
+     "MultiColouring": 4
+    }
+   },
+   {
+    "class": "band / band one too narrow / total_groups = n",
+    "execution": "seq",
+    "cases": 12,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 230,
+    "rhs_calls_B": 230,
+    "checks_A": {
+     "MultiColouring": 12
+    },
+    "checks_B": {
+     "All": 12
+    }
+   },
+   {
+    "class": "band / band one too narrow / total_groups = n",
+    "execution": "t6",
+    "cases": 12,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 764,
+    "rhs_calls_B": 764,
+    "checks_A": {
+     "MultiColouring": 12
+    },
+    "checks_B": {
+     "All": 12
+    }
+   },
+   {
+    "class": "band / correct / total_groups < n",
+    "execution": "seq",
+    "cases": 2,
+    "passing_A": 2,
+    "passing_B": 2,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 190,
+    "rhs_calls_B": 190,
+    "checks_A": {
+     "MultiColouring": 2
+    },
+    "checks_B": {
+     "MultiColouring": 2
+    }
+   },
+   {
+    "class": "band / correct / total_groups < n",
+    "execution": "t6",
+    "cases": 2,
+    "passing_A": 2,
+    "passing_B": 2,
+    "check_rhs_passing_A": 2,
+    "check_rhs_passing_B": 2,
+    "rhs_calls_A": 192,
+    "rhs_calls_B": 192,
+    "checks_A": {
+     "MultiColouring": 2
+    },
+    "checks_B": {
+     "MultiColouring": 2
+    }
+   },
+   {
+    "class": "band / correct / total_groups = n",
+    "execution": "seq",
+    "cases": 6,
+    "passing_A": 6,
+    "passing_B": 6,
+    "check_rhs_passing_A": 564,
+    "check_rhs_passing_B": 564,
+    "rhs_calls_A": 952,
+    "rhs_calls_B": 952,
+    "checks_A": {
+     "MultiColouring": 6
+    },
+    "checks_B": {
+     "All": 6
+    }
+   },
+   {
+    "class": "band / correct / total_groups = n",
+    "execution": "t6",
+    "cases": 6,
+    "passing_A": 6,
+    "passing_B": 6,
+    "check_rhs_passing_A": 570,
+    "check_rhs_passing_B": 570,
+    "rhs_calls_A": 958,
+    "rhs_calls_B": 958,
+    "checks_A": {
+     "MultiColouring": 6
+    },
+    "checks_B": {
+     "All": 6
+    }
+   },
+   {
+    "class": "narrow / band one too narrow / total_groups < n",
+    "execution": "seq",
+    "cases": 2,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 12,
+    "rhs_calls_B": 12,
+    "checks_A": {
+     "MultiColouring": 2
+    },
+    "checks_B": {
+     "MultiColouring": 2
+    }
+   },
+   {
+    "class": "narrow / band one too narrow / total_groups < n",
+    "execution": "t6",
+    "cases": 2,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 34,
+    "rhs_calls_B": 34,
+    "checks_A": {
+     "MultiColouring": 2
+    },
+    "checks_B": {
+     "MultiColouring": 2
+    }
+   },
+   {
+    "class": "narrow / correct / total_groups < n",
+    "execution": "seq",
+    "cases": 3,
+    "passing_A": 3,
+    "passing_B": 3,
+    "check_rhs_passing_A": 101,
+    "check_rhs_passing_B": 101,
+    "rhs_calls_A": 144,
+    "rhs_calls_B": 144,
+    "checks_A": {
+     "MultiColouring": 3
+    },
+    "checks_B": {
+     "MultiColouring": 3
+    }
+   },
+   {
+    "class": "narrow / correct / total_groups < n",
+    "execution": "t6",
+    "cases": 3,
+    "passing_A": 3,
+    "passing_B": 3,
+    "check_rhs_passing_A": 104,
+    "check_rhs_passing_B": 104,
+    "rhs_calls_A": 147,
+    "rhs_calls_B": 147,
+    "checks_A": {
+     "MultiColouring": 3
+    },
+    "checks_B": {
+     "MultiColouring": 3
+    }
+   },
+   {
+    "class": "narrow / omission / total_groups < n",
+    "execution": "seq",
+    "cases": 32,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 344,
+    "rhs_calls_B": 344,
+    "checks_A": {
+     "MultiColouring": 32
+    },
+    "checks_B": {
+     "MultiColouring": 32
+    }
+   },
+   {
+    "class": "narrow / omission / total_groups < n",
+    "execution": "t6",
+    "cases": 32,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 468,
+    "rhs_calls_B": 468,
+    "checks_A": {
+     "MultiColouring": 32
+    },
+    "checks_B": {
+     "MultiColouring": 32
+    }
+   },
+   {
+    "class": "random / correct / total_groups < n",
+    "execution": "seq",
+    "cases": 8,
+    "passing_A": 8,
+    "passing_B": 8,
+    "check_rhs_passing_A": 800,
+    "check_rhs_passing_B": 800,
+    "rhs_calls_A": 1026,
+    "rhs_calls_B": 1026,
+    "checks_A": {
+     "MultiColouring": 8
+    },
+    "checks_B": {
+     "MultiColouring": 8
+    }
+   },
+   {
+    "class": "random / correct / total_groups < n",
+    "execution": "t6",
+    "cases": 8,
+    "passing_A": 8,
+    "passing_B": 8,
+    "check_rhs_passing_A": 808,
+    "check_rhs_passing_B": 808,
+    "rhs_calls_A": 1034,
+    "rhs_calls_B": 1034,
+    "checks_A": {
+     "MultiColouring": 8
+    },
+    "checks_B": {
+     "MultiColouring": 8
+    }
+   },
+   {
+    "class": "random / correct / total_groups = n",
+    "execution": "seq",
+    "cases": 2,
+    "passing_A": 2,
+    "passing_B": 2,
+    "check_rhs_passing_A": 328,
+    "check_rhs_passing_B": 328,
+    "rhs_calls_A": 589,
+    "rhs_calls_B": 589,
+    "checks_A": {
+     "MultiColouring": 2
+    },
+    "checks_B": {
+     "All": 2
+    }
+   },
+   {
+    "class": "random / correct / total_groups = n",
+    "execution": "t6",
+    "cases": 2,
+    "passing_A": 2,
+    "passing_B": 2,
+    "check_rhs_passing_A": 330,
+    "check_rhs_passing_B": 330,
+    "rhs_calls_A": 591,
+    "rhs_calls_B": 591,
+    "checks_A": {
+     "MultiColouring": 2
+    },
+    "checks_B": {
+     "All": 2
+    }
+   },
+   {
+    "class": "random / correct / total_groups > n",
+    "execution": "seq",
+    "cases": 14,
+    "passing_A": 14,
+    "passing_B": 14,
+    "check_rhs_passing_A": 2354,
+    "check_rhs_passing_B": 1608,
+    "rhs_calls_A": 2945,
+    "rhs_calls_B": 2199,
+    "checks_A": {
+     "MultiColouring": 14
+    },
+    "checks_B": {
+     "All": 14
+    }
+   },
+   {
+    "class": "random / correct / total_groups > n",
+    "execution": "t6",
+    "cases": 14,
+    "passing_A": 14,
+    "passing_B": 14,
+    "check_rhs_passing_A": 2368,
+    "check_rhs_passing_B": 1622,
+    "rhs_calls_A": 2959,
+    "rhs_calls_B": 2213,
+    "checks_A": {
+     "MultiColouring": 14
+    },
+    "checks_B": {
+     "All": 14
+    }
+   },
+   {
+    "class": "random / correct superset / total_groups < n",
+    "execution": "seq",
+    "cases": 8,
+    "passing_A": 8,
+    "passing_B": 8,
+    "check_rhs_passing_A": 800,
+    "check_rhs_passing_B": 800,
+    "rhs_calls_A": 1204,
+    "rhs_calls_B": 1204,
+    "checks_A": {
+     "MultiColouring": 8
+    },
+    "checks_B": {
+     "MultiColouring": 8
+    }
+   },
+   {
+    "class": "random / correct superset / total_groups < n",
+    "execution": "t6",
+    "cases": 8,
+    "passing_A": 8,
+    "passing_B": 8,
+    "check_rhs_passing_A": 808,
+    "check_rhs_passing_B": 808,
+    "rhs_calls_A": 1212,
+    "rhs_calls_B": 1212,
+    "checks_A": {
+     "MultiColouring": 8
+    },
+    "checks_B": {
+     "MultiColouring": 8
+    }
+   },
+   {
+    "class": "random / correct superset / total_groups = n",
+    "execution": "seq",
+    "cases": 16,
+    "passing_A": 16,
+    "passing_B": 16,
+    "check_rhs_passing_A": 1936,
+    "check_rhs_passing_B": 1936,
+    "rhs_calls_A": 3420,
+    "rhs_calls_B": 3420,
+    "checks_A": {
+     "MultiColouring": 16
+    },
+    "checks_B": {
+     "All": 16
+    }
+   },
+   {
+    "class": "random / correct superset / total_groups = n",
+    "execution": "t6",
+    "cases": 16,
+    "passing_A": 16,
+    "passing_B": 16,
+    "check_rhs_passing_A": 1952,
+    "check_rhs_passing_B": 1952,
+    "rhs_calls_A": 3436,
+    "rhs_calls_B": 3436,
+    "checks_A": {
+     "MultiColouring": 16
+    },
+    "checks_B": {
+     "All": 16
+    }
+   },
+   {
+    "class": "random / omission / total_groups < n",
+    "execution": "seq",
+    "cases": 128,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 2668,
+    "rhs_calls_B": 2668,
+    "checks_A": {
+     "MultiColouring": 128
+    },
+    "checks_B": {
+     "MultiColouring": 128
+    }
+   },
+   {
+    "class": "random / omission / total_groups < n",
+    "execution": "t6",
+    "cases": 128,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 4185,
+    "rhs_calls_B": 4185,
+    "checks_A": {
+     "MultiColouring": 128
+    },
+    "checks_B": {
+     "MultiColouring": 128
+    }
+   },
+   {
+    "class": "random / omission / total_groups = n",
+    "execution": "seq",
+    "cases": 32,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 2219,
+    "rhs_calls_B": 2184,
+    "checks_A": {
+     "MultiColouring": 32
+    },
+    "checks_B": {
+     "All": 32
+    }
+   },
+   {
+    "class": "random / omission / total_groups = n",
+    "execution": "t6",
+    "cases": 32,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 4252,
+    "rhs_calls_B": 4217,
+    "checks_A": {
+     "MultiColouring": 32
+    },
+    "checks_B": {
+     "All": 32
+    }
+   },
+   {
+    "class": "random / omission / total_groups > n",
+    "execution": "seq",
+    "cases": 224,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 6823,
+    "rhs_calls_B": 7782,
+    "checks_A": {
+     "MultiColouring": 224
+    },
+    "checks_B": {
+     "All": 224
+    }
+   },
+   {
+    "class": "random / omission / total_groups > n",
+    "execution": "t6",
+    "cases": 224,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 10924,
+    "rhs_calls_B": 11883,
+    "checks_A": {
+     "MultiColouring": 224
+    },
+    "checks_B": {
+     "All": 224
+    }
+   },
+   {
+    "class": "ring / omission / total_groups = n",
+    "execution": "seq",
+    "cases": 306,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 1730,
+    "rhs_calls_B": 1730,
+    "checks_A": {
+     "MultiColouring": 306
+    },
+    "checks_B": {
+     "All": 306
+    }
+   },
+   {
+    "class": "ring / omission / total_groups = n",
+    "execution": "t6",
+    "cases": 306,
+    "passing_A": 0,
+    "passing_B": 0,
+    "check_rhs_passing_A": 0,
+    "check_rhs_passing_B": 0,
+    "rhs_calls_A": 2275,
+    "rhs_calls_B": 2275,
+    "checks_A": {
+     "MultiColouring": 306
+    },
+    "checks_B": {
+     "All": 306
+    }
+   }
+  ]
+ },
+ "unit_tests_of_this_node": {
+  "git_head": "cc875d682b062f57a0d096358868a352820f0bbc",
+  "tracked_changes": "0",
+  "command": "flock -w 14400 /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/locks/cargo_a.lock taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --no-fail-fast --test stage_clients_assembly_wide_band --test stage_clients_assembly_wide_band_alloc --test stage_clients_assembly_default --test stage_clients_assembly_default_alloc -- --nocapture",
+  "exit_codes": [
+   0
+  ],
+  "tests": [
+   {
+    "name": "the_limits_stated_for_the_default_are_real",
+    "result": "ok"
+   },
+   {
+    "name": "the_default_first_use_check_follows_the_route",
+    "result": "ok"
+   },
+   {
+    "name": "the_default_check_runs_once_at_the_first_linearization_on_every_route",
+    "result": "ok"
+   },
+   {
+    "name": "a_run_with_the_default_check_keeps_every_bit",
+    "result": "ok"
+   },
+   {
+    "name": "the_default_decides_as_the_multi_colouring_check_on_part_of_the_v26_corpus",
+    "result": "ok"
+   },
+   {
+    "name": "the_default_check_allocates_nothing_at_the_first_linearization",
+    "result": "ok"
+   },
+   {
+    "name": "every_check_stays_selectable_on_a_wide_pattern",
+    "result": "ok"
+   },
+   {
+    "name": "a_client_whose_default_became_the_full_check_runs_it_once",
+    "result": "ok"
+   },
+   {
+    "name": "the_full_default_detects_every_omission_of_a_wide_pattern",
+    "result": "ok"
+   },
+   {
+    "name": "the_default_of_the_coloured_route_follows_total_groups",
+    "result": "ok"
+   },
+   {
+    "name": "a_full_default_check_allocates_nothing_at_the_first_linearization",
+    "result": "ok"
+   }
+  ],
+  "binaries": 4,
+  "passed": 11,
+  "failed": 0,
+  "allocation_wide_band": [
+   {
+    "allocations_default_check": [
+     0,
+     0,
+     0
+    ],
+    "allocations_requested_multi_colouring": [
+     12,
+     0,
+     0
+    ],
+    "allocations_without_check": [
+     0,
+     0,
+     0
+    ],
+    "case": "wide-n60",
+    "client": "wide random band (total_groups 111 > 60), dense LU",
+    "default_check": "All",
+    "n": 60,
+    "total_groups": 111
+   },
+   {
+    "allocations_default_check": [
+     0,
+     0,
+     0
+    ],
+    "allocations_requested_multi_colouring": [
+     12,
+     0,
+     0
+    ],
+    "allocations_without_check": [
+     0,
+     0,
+     0
+    ],
+    "case": "ring-n30",
+    "client": "ring 30 (total_groups 30 = n), dense LU",
+    "default_check": "All",
+    "n": 30,
+    "total_groups": 30
+   },
+   {
+    "allocations_default_check": [
+     0,
+     0,
+     0
+    ],
+    "allocations_requested_multi_colouring": [
+     14,
+     0,
+     0
+    ],
+    "allocations_without_check": [
+     0,
+     0,
+     0
+    ],
+    "case": "nlkpp-band-n60-r15",
+    "client": "band (15, 15) of order 60 (total_groups 60 = n), tight kernel",
+    "default_check": "All",
+    "n": 60,
+    "total_groups": 60
+   },
+   {
+    "allocations_default_check": [
+     0,
+     0,
+     0
+    ],
+    "allocations_requested_multi_colouring": [
+     14,
+     0,
+     0
+    ],
+    "allocations_without_check": [
+     0,
+     0,
+     0
+    ],
+    "case": "nlkpp-band-n60-r15",
+    "client": "band (15, 15) of order 60 (total_groups 60 = n), protected kernel",
+    "default_check": "All",
+    "n": 60,
+    "total_groups": 60
+   },
+   {
+    "allocations_default_check": [
+     0,
+     0,
+     0
+    ],
+    "allocations_requested_multi_colouring": [
+     0,
+     0,
+     0
+    ],
+    "allocations_without_check": [
+     0,
+     0,
+     0
+    ],
+    "case": "ring-n34",
+    "client": "control: ring 34 (total_groups 33 < n), dense LU",
+    "default_check": "MultiColouring",
+    "n": 34,
+    "total_groups": 33
+   }
+  ],
+  "allocation_v29": [
+   {
+    "case": "ring-n30",
+    "client": "ring pattern, dense LU",
+    "first_linearization_allocations_default_check": 0,
+    "first_linearization_allocations_requested_multi_colouring": 12,
+    "first_linearization_allocations_without_check": 0
+   },
+   {
+    "case": "bruss1d-n32",
+    "client": "band (2, 2), dense LU",
+    "first_linearization_allocations_default_check": 0,
+    "first_linearization_allocations_requested_multi_colouring": 12,
+    "first_linearization_allocations_without_check": 0
+   },
+   {
+    "case": "bruss1d-n32",
+    "client": "band (2, 2), protected kernel",
+    "first_linearization_allocations_default_check": 0,
+    "first_linearization_allocations_requested_multi_colouring": 12,
+    "first_linearization_allocations_without_check": 0
+   },
+   {
+    "case": "nlkpp-band-n96-r4",
+    "client": "band (4, 4), tight kernel",
+    "first_linearization_allocations_default_check": 0,
+    "first_linearization_allocations_requested_multi_colouring": 12,
+    "first_linearization_allocations_without_check": 0
+   }
+  ],
+  "wide_band_counts": [
+   {
+    "full_check_default": 252,
+    "full_check_default_found_by_the_check_not_the_build": 102,
+    "omissions": 252,
+    "test": "the_full_default_detects_every_omission_of_a_wide_pattern"
+   },
+   {
+    "random_patterns_full_check": 97,
+    "random_patterns_multi_colouring": 71,
+    "test": "the_default_of_the_coloured_route_follows_total_groups"
+   }
+  ]
+ },
+ "tests": {
+  "changed_paths_since_base": [
+   "crates/rodas5p-integrators/src/stage_clients/assembly.rs",
+   "crates/rodas5p-integrators/src/stage_clients/assembly/multi.rs",
+   "crates/rodas5p-integrators/tests/stage_clients_assembly_default.rs",
+   "crates/rodas5p-integrators/tests/stage_clients_assembly_default_alloc.rs",
+   "crates/rodas5p-integrators/tests/stage_clients_assembly_wide_band.rs",
+   "crates/rodas5p-integrators/tests/stage_clients_assembly_wide_band_alloc.rs",
+   "crates/rodas5p-integrators/tests/stage_clients_assembly_wide_band_record.rs",
+   "research/production_loop_20261116/assembly_wide_band/NOTES.txt",
+   "research/production_loop_20261116/assembly_wide_band/REPORT_KO.md",
+   "research/production_loop_20261116/assembly_wide_band/RESULTS.json",
+   "research/production_loop_20261116/assembly_wide_band/checker_all.py",
+   "research/production_loop_20261116/assembly_wide_band/logs/checker_all.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/checks.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/corpus_A_controls.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/corpus_A_correct.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/corpus_A_narrow.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/corpus_A_omit1024.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/corpus_A_omit128.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/corpus_A_omit131072.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/corpus_A_ring.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/corpus_B_controls.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/corpus_B_correct.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/corpus_B_narrow.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/corpus_B_omit1024.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/corpus_B_omit128.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/corpus_B_omit131072.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/corpus_B_ring.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/doc.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/identity_A_bruss1d-n128-coloured.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/identity_A_bruss1d-n128-dense.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/identity_A_bruss1d-n131072.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/identity_A_nlkpp-band-n4096-r24.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/identity_A_nlkpp-dense-n400.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/identity_B_bruss1d-n128-coloured.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/identity_B_bruss1d-n128-dense.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/identity_B_bruss1d-n131072.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/identity_B_nlkpp-band-n4096-r24.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/identity_B_nlkpp-dense-n400.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/survey_A.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/survey_B.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/unit.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/wide_A_random.log",
+   "research/production_loop_20261116/assembly_wide_band/logs/wide_B_random.log",
+   "research/production_loop_20261116/assembly_wide_band/parse_results.py",
+   "research/production_loop_20261116/assembly_wide_band/run.sh"
+  ],
+  "paths_outside_the_write_allowlist": [],
+  "edited_lines_of_existing_tests": [
+   {
+    "path": "crates/rodas5p-integrators/tests/stage_clients_assembly_default.rs",
+    "old_lines": [
+     153,
+     153
+    ],
+    "new_lines": [
+     153,
+     153
+    ],
+    "reason": "pin of the default of the coloured route: the loop asserts MultiColouring for AssemblyOptions::coloured(ring_pattern(16)); ring_pattern(16) has total_groups 16 = n, so the rule of OD-L1-27 picks All there (pinned by stage_clients_assembly_wide_band.rs). Replaced by ring_pattern(34) (total_groups 33 < 34, the boundary n - 1), which keeps the multi-colouring default the loop pins, with a non-banded pattern as before",
+    "reason_ko": "채색 경로 기본값의 고정(pin). 이 루프는 AssemblyOptions::coloured(ring_pattern(16))에 MultiColouring을 단언했다. ring_pattern(16)은 total_groups 16 = n이므로 OD-L1-27 규칙은 All을 고른다(새 테스트 stage_clients_assembly_wide_band.rs가 고정). total_groups 33 < 34(경계 n - 1)인 ring_pattern(34)로 바꿔, 루프가 고정하는 다중 채색 기본값을 띠가 아닌 패턴으로 그대로 검사한다"
+   },
+   {
+    "path": "crates/rodas5p-integrators/tests/stage_clients_assembly_default_alloc.rs",
+    "old_lines": [
+     114,
+     114
+    ],
+    "new_lines": [
+     114,
+     122
+    ],
+    "reason": "pin of the default of the coloured route: the assertion expected MultiColouring for every case, among them ring_pattern(30), whose total_groups 30 = n makes the default All; the assertion now expects All for that case and MultiColouring for the three bands (one statement; rustfmt spreads it over 9 lines). The allocation assertions of the test are unchanged and hold for the full check too",
+    "reason_ko": "채색 경로 기본값의 고정(pin). 모든 경우에 MultiColouring을 기대했는데, 그중 ring_pattern(30)은 total_groups 30 = n이라 기본값이 All이 된다. 이 경우는 All을, 세 띠 경우는 MultiColouring을 기대하도록 바꿨다(한 문장, rustfmt가 9줄로 나눔). 할당 단언은 그대로이며 전체 검사에도 성립한다"
+   }
+  ],
+  "edited_lines_without_reason": [],
+  "examined_and_unchanged": [
+   {
+    "path": "crates/rodas5p-integrators/tests/stage_clients_assembly_default.rs",
+    "lines": "309-317",
+    "reason": "expected check counts of the coloured route are total_groups + repeated base; its only route whose default becomes All, ring_pattern(30), has total_groups 30 = n, so All spends the same count (n, and one more with threads) and verified_columns stays n"
+   },
+   {
+    "path": "crates/rodas5p-integrators/tests/stage_clients_assembly_default.rs",
+    "lines": "573-576",
+    "reason": "reference check MultiColouring for the coloured cases: the one case whose default becomes All (ring 30, true pattern) passes with 30 columns under both checks, so the asserted equality of the decisions still holds"
+   },
+   {
+    "path": "crates/rodas5p-integrators/tests/stage_clients_assembly_identity.rs",
+    "lines": "1034-1060",
+    "reason": "default options in refused configurations and one accepted band (1, 1) of order 8 (total_groups 7 < 8); the refusals do not depend on the check"
+   }
+  ],
+  "new_test_files": {
+   "crates/rodas5p-integrators/tests/stage_clients_assembly_wide_band.rs": {
+    "tests": [
+     "the_default_of_the_coloured_route_follows_total_groups",
+     "a_client_whose_default_became_the_full_check_runs_it_once",
+     "the_full_default_detects_every_omission_of_a_wide_pattern",
+     "every_check_stays_selectable_on_a_wide_pattern"
+    ],
+    "ignored": []
+   },
+   "crates/rodas5p-integrators/tests/stage_clients_assembly_wide_band_alloc.rs": {
+    "tests": [
+     "a_full_default_check_allocates_nothing_at_the_first_linearization"
+    ],
+    "ignored": []
+   },
+   "crates/rodas5p-integrators/tests/stage_clients_assembly_wide_band_record.rs": {
+    "tests": [
+     "v31_record"
+    ],
+    "ignored": [
+     "v31_record"
+    ]
+   }
+  }
+ },
+ "checks": {
+  "present": true,
+  "git_head": "cc875d682b062f57a0d096358868a352820f0bbc",
+  "tracked_changes": "0",
+  "checks": [
+   {
+    "binaries": 34,
+    "command": "flock -w 14400 /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/locks/cargo_a.lock taskset -c 0-5,12-17 cargo +1.94.1 test --locked -j 4 --release -p rodas5p-integrators --no-fail-fast --test stage_clients_* --test ppsw1_6b_contracts --test ptsw2b_contracts",
+    "exit_code": 0,
+    "failed": 0,
+    "ignored": 15,
+    "last_line": "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+    "name": "stage client tests and sentinels",
+    "passed": 157
+   },
+   {
+    "command": "flock -w 14400 /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/locks/cargo_a.lock taskset -c 0-5,12-17 cargo +1.94.1 clippy --locked -j 4 --release -p rodas5p-integrators --lib --test stage_clients_assembly_alloc --test stage_clients_assembly_check_corpus --test stage_clients_assembly_check_mc --test stage_clients_assembly_check_measure --test stage_clients_assembly_default_alloc --test stage_clients_assembly_default_record --test stage_clients_assembly_default --test stage_clients_assembly_identity --test stage_clients_assembly_measure --test stage_clients_assembly_problems --test stage_clients_assembly_wide_band_alloc --test stage_clients_assembly_wide_band_record --test stage_clients_assembly_wide_band --no-deps -- -D warnings",
+    "exit_code": 0,
+    "last_line": "Finished `release` profile [optimized] target(s) in 19.80s",
+    "name": "clippy"
+   },
+   {
+    "command": "cargo +1.94.1 fmt -p rodas5p-integrators -- --check",
+    "exit_code": 0,
+    "last_line": "",
+    "name": "fmt"
+   },
+   {
+    "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
+    "exit_code": 1,
+    "last_line": "ValueError: implementation changed; rerun affected tests/update checkpoint: crates/rodas5p-integrators/src/stage_clients/assembly.rs",
+    "name": "loop checker"
+   }
+  ]
+ },
+ "rustdoc": {
+  "present": true,
+  "git_head": "7f1a12492352921d881f7e89ad9a6bb78bef61e2",
+  "tracked_changes": "0",
+  "command": "flock -w 14400 /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/locks/cargo_a.lock taskset -c 0-5,12-17 cargo +1.94.1 doc --locked -j 4 -p rodas5p-integrators --no-deps",
+  "exit_codes": [
+   0
+  ],
+  "warnings_generated": 23,
+  "warning_files": {
+   "crates/rodas5p-integrators/src/actual_k_homotopy.rs": 1,
+   "crates/rodas5p-integrators/src/collective_model.rs": 1,
+   "crates/rodas5p-integrators/src/fixed_point_continuation.rs": 1,
+   "crates/rodas5p-integrators/src/n01_mass_action_client.rs": 1,
+   "crates/rodas5p-integrators/src/nonlinear_homotopy.rs": 1,
+   "crates/rodas5p-integrators/src/output.rs": 2,
+   "crates/rodas5p-integrators/src/polynomial_resolvent.rs": 3,
+   "crates/rodas5p-integrators/src/rodas5p_fast.rs": 4,
+   "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs": 3,
+   "crates/rodas5p-integrators/src/stage_target.rs": 1,
+   "crates/rodas5p-integrators/src/stage_target_policy.rs": 1
+  },
+  "warnings_in_assembly_files": []
+ },
+ "loop_checker": {
+  "command": "python3 -I research/production_loop_20261116/check_checkpoint.py",
+  "exit_code": 1,
+  "last_line": "ValueError: implementation changed; rerun affected tests/update checkpoint: crates/rodas5p-integrators/src/stage_clients/assembly.rs",
+  "name": "loop checker"
+ },
+ "loop_checker_every_complaint": {
+  "present": true,
+  "git_head": "7f1a12492352921d881f7e89ad9a6bb78bef61e2",
+  "tracked_changes": "0",
+  "exit_codes": [
+   0
+  ],
+  "complaints": [
+   "implementation changed; rerun affected tests/update checkpoint: crates/rodas5p-integrators/src/stage_clients/assembly.rs"
+  ],
+  "pinned_files_this_node_changed": [
+   "crates/rodas5p-integrators/src/stage_clients/assembly.rs"
+  ],
+  "only_pinned_files_this_node_changes": true
+ },
+ "discriminators": [
+  {
+   "name": "identity unchanged",
+   "criterion": "every V08 identity run (5 cells, both band back ends of nlkpp-band-n4096-r24, arms prot, seq, t1, t2, t4, t6) and every cell record equal between A and B in every recorded field: Jacobian, linearization-point, output and final-state fingerprints, steps and every counter, the check counters included",
+   "measured": "36 runs; field mismatches A/B: 0; cell record mismatches: 0; total_groups of the coloured cells: [18, 59, 150]",
+   "verdict": "PASS"
+  },
+  {
+   "name": "rule per route implemented",
+   "criterion": "B: coloured route All where total_groups >= n and MultiColouring otherwise, dense route Sample(8), on every identity run, corpus decision, survey pattern and supplement decision; A: the V29 default everywhere; the node's unit tests pass",
+   "measured": "rule mismatches: identity 0, corpus 0, survey 0, supplement 0; unit tests passed 11, failed 0",
+   "verdict": "PASS"
+  },
+  {
+   "name": "corpus detection not worse than A",
+   "criterion": "every wrong declaration of the V26 corpus (and of the supplement) detected by the A default on a path and execution is detected by the B default there; no correct pattern rejected by B",
+   "measured": "corpus: detected by A not by B 0, misses A 5, B 5, correct rejected by B 0; supplement: detected by A not by B 0, misses B 0, correct rejected by B 0",
+   "verdict": "PASS"
+  },
+  {
+   "name": "suites",
+   "criterion": "stage_clients_* and the sentinels (no-fail-fast) exit 0 with 0 failed; clippy -D warnings exit 0; fmt --check exit 0; the loop checker complains only about pinned files this node is allowed to change",
+   "measured": "stage client tests and sentinels: exit 0, 157 passed, 0 failed in 34 binaries; clippy: exit 0; fmt: exit 0; loop checker: exit 1; loop checker complaints: ['implementation changed; rerun affected tests/update checkpoint: crates/rodas5p-integrators/src/stage_clients/assembly.rs']",
+   "verdict": "PASS"
+  }
+ ]
+}

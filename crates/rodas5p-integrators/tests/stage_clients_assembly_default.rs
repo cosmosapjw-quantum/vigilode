@@ -150,7 +150,7 @@ fn the_default_first_use_check_follows_the_route() {
         AssemblyOptions::coloured(band.clone()),
         AssemblyOptions::coloured(band.clone()).threaded(3, purity),
         AssemblyOptions::coloured(band.clone()).with_fingerprints(),
-        AssemblyOptions::coloured(ring_pattern(16)),
+        AssemblyOptions::coloured(ring_pattern(34)),
     ] {
         assert_eq!(options.first_use_check, CheckColumns::MultiColouring);
     }

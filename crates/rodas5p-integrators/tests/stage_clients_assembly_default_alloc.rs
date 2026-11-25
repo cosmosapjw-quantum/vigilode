@@ -111,7 +111,15 @@ fn the_default_check_allocates_nothing_at_the_first_linearization() {
     ];
     for (fd, pattern, backend, name) in &cases {
         let default = AssemblyOptions::coloured(pattern.clone());
-        assert_eq!(default.first_use_check, CheckColumns::MultiColouring);
+        assert_eq!(
+            default.first_use_check,
+            if pattern == &ring_pattern(30) {
+                CheckColumns::All
+            } else {
+                CheckColumns::MultiColouring
+            },
+            "{name}"
+        );
         let unchecked = default.clone().with_first_use_check(CheckColumns::None);
         // Warm the lazy statics of the back end and of the driver code.
         first_linearization(fd, *backend, default.clone(), None);

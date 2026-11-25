@@ -1,0 +1,275 @@
+# node V31 log
+# date: 2026-11-25T10:07:20+09:00
+# git head: 7f1a12492352921d881f7e89ad9a6bb78bef61e2
+# git status (tracked changes): 0
+# command: flock -w 14400 /tmp/claude-1000/-home-cosmosapjw-vigilode/d057eb25-bf20-49ac-a1df-6dd2adc8a0a4/scratchpad/locks/cargo_a.lock taskset -c 0-5,12-17 cargo +1.94.1 doc --locked -j 4 -p rodas5p-integrators --no-deps
+   Compiling version_check v0.9.5
+   Compiling proc-macro2 v1.0.107
+   Compiling autocfg v1.5.1
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.47
+    Checking bytemuck v1.25.2
+   Compiling nano-gemm-codegen v0.2.1
+   Compiling num-traits v0.2.19
+   Compiling paste v1.0.15
+    Checking bitflags v2.13.1
+   Compiling libm v0.2.16
+    Checking raw-cpuid v11.6.0
+   Compiling pulp v0.22.3
+    Checking num-complex v0.4.6
+    Checking cfg-if v1.0.4
+    Checking reborrow v0.5.5
+    Checking pulp-wasm-simd-flag v0.1.1
+   Compiling dyn-stack-macros v0.1.3
+    Checking dyn-stack v0.13.2
+    Checking once_cell v1.21.4
+   Compiling seq-macro v0.3.6
+   Compiling syn v1.0.109
+   Compiling generic-array v0.14.7
+    Checking nano-gemm-core v0.2.1
+   Compiling libc v0.2.189
+    Checking typenum v1.20.1
+   Compiling syn v2.0.119
+   Compiling syn v3.0.3
+    Checking gemm-common v0.19.0
+   Compiling nano-gemm-f64 v0.2.1
+   Compiling nano-gemm-c64 v0.2.1
+   Compiling nano-gemm-f32 v0.2.1
+   Compiling nano-gemm-c32 v0.2.1
+   Compiling interpol v0.2.1
+   Compiling defer v0.2.1
+   Compiling crossbeam-utils v0.8.22
+   Compiling serde_core v1.0.229
+   Compiling private-gemm-x86 v0.1.20
+   Compiling crossbeam-epoch v0.9.20
+   Compiling equator-macro v0.2.1
+   Compiling zmij v1.0.23
+    Checking equator v0.2.2
+    Checking num_cpus v1.17.0
+    Checking gemm-f32 v0.19.0
+    Checking gemm-f64 v0.19.0
+    Checking gemm-c32 v0.19.0
+    Checking gemm-c64 v0.19.0
+    Checking qd v0.8.0
+    Checking crypto-common v0.1.7
+    Checking block-buffer v0.10.4
+   Compiling serde_json v1.0.151
+   Compiling thiserror v2.0.19
+   Compiling serde v1.0.229
+   Compiling equator-macro v0.6.0
+    Checking generativity v1.2.1
+   Compiling crossbeam-deque v0.8.7
+    Checking faer-traits v0.24.0
+    Checking equator v0.6.0
+    Checking gemm v0.19.0
+    Checking digest v0.10.7
+   Compiling serde_derive v1.0.229
+   Compiling thiserror-impl v2.0.19
+    Checking itoa v1.0.18
+    Checking cpufeatures v0.2.17
+   Compiling rayon-core v1.13.0
+    Checking memchr v2.8.3
+    Checking sha2 v0.10.9
+    Checking hex v0.4.3
+    Checking nano-gemm v0.2.2
+    Checking faer v0.24.4
+    Checking either v1.17.0
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v31/crates/rodas5p-integrators)
+    Checking rayon v1.12.0
+    Checking rodas5p-core v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v31/crates/rodas5p-core)
+    Checking rodas5p-krylov v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v31/crates/rodas5p-krylov)
+ Documenting rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-prod-loop-20261116-w4-v31/crates/rodas5p-integrators)
+warning: unresolved link to `2j`
+  --> crates/rodas5p-integrators/src/collective_model.rs:10:23
+   |
+10 | //!   y \in R^{2N}, y[2j] = Re(a_j) = u_j, y[2j + 1] = Im(a_j) = v_j.
+   |                       ^^ no item named `2j` in scope
+   |
+   = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+   = note: `#[warn(rustdoc::broken_intra_doc_links)]` on by default
+
+warning: unresolved link to `0,1`
+   --> crates/rodas5p-integrators/src/fixed_point_continuation.rs:135:39
+    |
+135 | /// Ordered patches covering exactly [0,1], with immutable branch identity.
+    |                                       ^^^ no item named `0,1` in scope
+    |
+    = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: public documentation for `PRODUCTION_CLOCK_POLICY` links to private item `represent`
+ --> crates/rodas5p-integrators/src/output.rs:5:8
+  |
+5 | /// ([`represent`]), fixed-step drivers step on the indexed grid
+  |        ^^^^^^^^^ this item is private
+  |
+  = note: this link will resolve properly if you pass `--document-private-items`
+  = note: `#[warn(rustdoc::private_intra_doc_links)]` on by default
+
+warning: public documentation for `PRODUCTION_CLOCK_POLICY` links to private item `FixedGrid`
+ --> crates/rodas5p-integrators/src/output.rs:6:19
+  |
+6 | /// `t0 + k h` ([`FixedGrid`]), and the end is reached by exact comparison.
+  |                   ^^^^^^^^^ this item is private
+  |
+  = note: this link will resolve properly if you pass `--document-private-items`
+
+warning: unresolved link to `k`
+   --> crates/rodas5p-integrators/src/polynomial_resolvent.rs:769:48
+    |
+769 |     /// Solve `(I-B)x=b` by x0=p(B)b, x[k+1]=x[k]+p(B)r[k].
+    |                                                ^ no item named `k` in scope
+    |
+    = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: unresolved link to `k`
+   --> crates/rodas5p-integrators/src/polynomial_resolvent.rs:769:57
+    |
+769 |     /// Solve `(I-B)x=b` by x0=p(B)b, x[k+1]=x[k]+p(B)r[k].
+    |                                                         ^ no item named `k` in scope
+    |
+    = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: unresolved link to `k`
+   --> crates/rodas5p-integrators/src/polynomial_resolvent.rs:770:42
+    |
+770 |     /// In exact arithmetic r[k+1]=q(B)r[k]/q(1), hence eta<1 gives geometric
+    |                                          ^ no item named `k` in scope
+    |
+    = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: unresolved link to `super::solve_stages`
+  |
+  = note: the link appears in this line:
+          
+          ([`super::solve_stages`]).  [`LinearBackend::MatrixFree`] never forms `J` or `W`:
+            ^^^^^^^^^^^^^^^^^^^^^
+  = note: no item named `solve_stages` in module `rodas5p_integrators`
+
+warning: unresolved link to `super::start`
+  |
+  = note: the link appears in this line:
+          
+          starter ([`super::start`]) still factors a dense `5n x 5n` Newton matrix and runs simplified
+                    ^^^^^^^^^^^^^^
+  = note: no item named `start` in module `rodas5p_integrators`
+
+warning: unresolved link to `super::jacobian_norm_bound`
+  |
+  = note: the link appears in this line:
+          
+          Newton, and [`super::jacobian_norm_bound`] builds a dense Jacobian; [`start_with_policy`]
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  = note: no item named `jacobian_norm_bound` in module `rodas5p_integrators`
+
+warning: unresolved link to `start_with_policy`
+  |
+  = note: the link appears in this line:
+          
+          Newton, and [`super::jacobian_norm_bound`] builds a dense Jacobian; [`start_with_policy`]
+                                                                               ^^^^^^^^^^^^^^^^^^^
+  = note: no item named `start_with_policy` in scope
+  = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: public documentation for `zero_skipping` links to private item `super::lu_in_place`
+    --> crates/rodas5p-integrators/src/rodas5p_fast.rs:1509:20
+     |
+1509 |     /// v2's LU ([`super::lu_in_place`]).
+     |                    ^^^^^^^^^^^^^^^^^^ this item is private
+     |
+     = note: this link will resolve properly if you pass `--document-private-items`
+
+warning: public documentation for `column_extents` links to private item `super::lu_in_place_col_extents`
+    --> crates/rodas5p-integrators/src/rodas5p_fast.rs:1520:33
+     |
+1520 |     /// The column-extent LU ([`super::lu_in_place_col_extents`]).
+     |                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ this item is private
+     |
+     = note: this link will resolve properly if you pass `--document-private-items`
+
+warning: public documentation for `extents_of` links to private item `super::extents_of`
+    --> crates/rodas5p-integrators/src/rodas5p_fast.rs:1532:47
+     |
+1532 |     /// The extents of an assembled matrix ([`super::extents_of`]).
+     |                                               ^^^^^^^^^^^^^^^^^ this item is private
+     |
+     = note: this link will resolve properly if you pass `--document-private-items`
+
+warning: public documentation for `solve` links to private item `super::lu_solve_in_place`
+    --> crates/rodas5p-integrators/src/rodas5p_fast.rs:1543:52
+     |
+1543 |     /// The solve with either variant's factors ([`super::lu_solve_in_place`]).
+     |                                                    ^^^^^^^^^^^^^^^^^^^^^^^^ this item is private
+     |
+     = note: this link will resolve properly if you pass `--document-private-items`
+
+warning: unresolved link to `0,1`
+  --> crates/rodas5p-integrators/src/stage_target_policy.rs:29:76
+   |
+29 |     /// contained in (-infinity, 0]; Bernstein convex-hull bounds on R in [0,1].
+   |                                                                            ^^^ no item named `0,1` in scope
+   |
+   = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: public documentation for `start_policy` links to private item `KrylovStartPolicy::id`
+    --> crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:1349:11
+     |
+1349 |     /// [`KrylovStartPolicy::id`] of the run (research node SP04).
+     |           ^^^^^^^^^^^^^^^^^^^^^ this item is private
+     |
+     = note: this link will resolve properly if you pass `--document-private-items`
+
+warning: public documentation for `recycle_scope` links to private item `RecycleScope::id`
+    --> crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:1351:11
+     |
+1351 |     /// [`RecycleScope::id`] of the run (research node SP04).
+     |           ^^^^^^^^^^^^^^^^ this item is private
+     |
+     = note: this link will resolve properly if you pass `--document-private-items`
+
+warning: unresolved link to `set_start_telemetry_enabled`
+    --> crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:2711:21
+     |
+2711 |     /// Alias for [`set_start_telemetry_enabled`].
+     |                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^ no item named `set_start_telemetry_enabled` in scope
+     |
+     = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: unresolved link to `j<i`
+   --> crates/rodas5p-integrators/src/stage_target.rs:222:64
+    |
+222 | /// Upper bounds `(D, U)` with `D_ij >= |beta_ij - alpha_ij - [j<i] Gamma_ij
+    |                                                                ^^^ unbalanced angle brackets
+
+warning: unresolved link to `0,1`
+  --> crates/rodas5p-integrators/src/nonlinear_homotopy.rs:39:40
+   |
+39 |     /// Strictly increasing values in [0,1], ending at exactly 1.0.
+   |                                        ^^^ no item named `0,1` in scope
+   |
+   = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: unresolved link to `0,1`
+   --> crates/rodas5p-integrators/src/actual_k_homotopy.rs:212:38
+    |
+212 | /// common tube for every lambda in [0,1]. The finite-precision candidate is
+    |                                      ^^^ no item named `0,1` in scope
+    |
+    = help: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+
+warning: unclosed HTML tag `owner`
+ --> crates/rodas5p-integrators/src/n01_mass_action_client.rs:3:71
+  |
+3 | //! Every RHS, Jacobian and JVP callback captures the *same* Arc<Mutex<owner>>.
+  |                                                                       ^^^^^^^
+  |
+  = note: `#[warn(rustdoc::invalid_html_tags)]` on by default
+help: try marking as source code
+  |
+3 | //! Every RHS, Jacobian and JVP callback captures the *same* `Arc<Mutex<owner>>`.
+  |                                                              +                 +
+
+warning: `rodas5p-integrators` (lib doc) generated 23 warnings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 56.48s
+   Generated /home/cosmosapjw/.cargo-targets/vigilode-loop-20261116/w4-v31/doc/rodas5p_integrators/index.html
+# exit code: 0
+# date at end: 2026-11-25T10:08:17+09:00
