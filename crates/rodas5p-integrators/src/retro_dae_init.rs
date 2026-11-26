@@ -490,6 +490,77 @@ pub struct InitWork {
     pub dictionary_uses: usize,
     pub conditioned_horner_uses: usize,
 }
+/// Boundary calls, not arithmetic inside failed kernels. A returned
+/// call may still be physically unqualified.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+pub struct AttemptCount {
+    pub started: usize,
+    pub returned: usize,
+}
+impl AttemptCount {
+    pub fn record(&mut self, success: bool) {
+        self.started += 1;
+        self.returned += usize::from(success);
+    }
+    pub fn merge(&mut self, b: Self) {
+        self.started += b.started;
+        self.returned += b.returned;
+    }
+}
+/// Retained on Err. Linear RHS requests are not completed solves.
+#[derive(Clone, Debug, Default, Serialize)]
+pub struct InitAttemptWork {
+    pub admitted: bool,
+    pub evaluations: AttemptCount,
+    pub frozen: AttemptCount,
+    pub roots: AttemptCount,
+    pub linear: AttemptCount,
+    pub rhs_requested: usize,
+    pub rhs_returned: usize,
+    pub legacy: InitWork,
+}
+#[derive(Clone, Debug, Default, Serialize)]
+pub struct ProjectionAttemptWork {
+    pub calls: AttemptCount,
+    pub admitted: usize,
+    pub evaluations: AttemptCount,
+    pub frozen: AttemptCount,
+    pub roots: AttemptCount,
+    pub linear: AttemptCount,
+    pub rhs_requested: usize,
+    pub rhs_returned: usize,
+    pub successful_rhs_requested: usize,
+    pub refused_rhs_requested: usize,
+}
+impl ProjectionAttemptWork {
+    pub fn record(&mut self, w: &InitAttemptWork, success: bool) {
+        self.calls.record(success);
+        self.admitted += usize::from(w.admitted);
+        self.evaluations.merge(w.evaluations);
+        self.frozen.merge(w.frozen);
+        self.roots.merge(w.roots);
+        self.linear.merge(w.linear);
+        self.rhs_requested += w.rhs_requested;
+        self.rhs_returned += w.rhs_returned;
+        if success {
+            self.successful_rhs_requested += w.rhs_requested;
+        } else {
+            self.refused_rhs_requested += w.rhs_requested;
+        }
+    }
+    pub fn merge(&mut self, w: &Self) {
+        self.calls.merge(w.calls);
+        self.admitted += w.admitted;
+        self.evaluations.merge(w.evaluations);
+        self.frozen.merge(w.frozen);
+        self.roots.merge(w.roots);
+        self.linear.merge(w.linear);
+        self.rhs_requested += w.rhs_requested;
+        self.rhs_returned += w.rhs_returned;
+        self.successful_rhs_requested += w.successful_rhs_requested;
+        self.refused_rhs_requested += w.refused_rhs_requested;
+    }
+}
 #[derive(Clone, Debug, Serialize)]
 pub struct InitReport {
     pub route: InitRoute,
@@ -722,6 +793,72 @@ impl DaeSource {
         route: InitRoute,
         scratch: &mut ProjectionWorkspace,
     ) -> CoreResult<InitReport> {
+        self.initialize_recorded(
+            t,
+            x,
+            z0,
+            branch,
+            policy,
+            route,
+            scratch,
+            &mut InitAttemptWork::default(),
+        )
+    }
+    /// Original initialization plus boundary-work evidence on success or refusal.
+    #[allow(clippy::too_many_arguments)]
+    pub fn initialize_audited(
+        &self,
+        t: f64,
+        x: &[f64],
+        z0: &[f64],
+        branch: &[[f64; 2]],
+        policy: InitPolicy,
+        route: InitRoute,
+    ) -> (CoreResult<InitReport>, InitAttemptWork) {
+        let mut a = InitAttemptWork::default();
+        let r = self.initialize_recorded(
+            t,
+            x,
+            z0,
+            branch,
+            policy,
+            route,
+            &mut ProjectionWorkspace::new(),
+            &mut a,
+        );
+        (r, a)
+    }
+    #[allow(clippy::too_many_arguments)]
+    fn initialize_recorded(
+        &self,
+        t: f64,
+        x: &[f64],
+        z0: &[f64],
+        branch: &[[f64; 2]],
+        policy: InitPolicy,
+        route: InitRoute,
+        scratch: &mut ProjectionWorkspace,
+        attempt: &mut InitAttemptWork,
+    ) -> CoreResult<InitReport> {
+        macro_rules! observed {
+            ($field:ident,$e:expr) => {{
+                let r = (|| $e)();
+                attempt.$field.record(r.is_ok());
+                r
+            }};
+        }
+        macro_rules! linear {
+            ($n:expr,$e:expr) => {{
+                let n = $n;
+                attempt.rhs_requested += n;
+                let r = (|| $e)();
+                attempt.linear.record(r.is_ok());
+                if r.is_ok() {
+                    attempt.rhs_returned += n;
+                }
+                r
+            }};
+        }
         crate::affine_event_certificate::check_affine_event_arithmetic()?;
         let nx = self.nx();
         let nz = self.nz();
@@ -755,13 +892,14 @@ impl DaeSource {
         if matches!(route, InitRoute::ScalarRoot | InitRoute::AffineExact) && nz != 1 {
             return Err(bad("scalar root route requires nz=1"));
         }
+        attempt.admitted = true;
         let exec = if route == InitRoute::PreparedRayon {
             ParallelExecution::rayon(4)?
         } else {
             ParallelExecution::sequential()
         };
-        let mut w = InitWork::default();
-        let (_, g0) = self.eval_point(t, x, z0)?;
+        let w = &mut attempt.legacy;
+        let (_, g0) = observed!(evaluations, self.eval_point(t, x, z0))?;
         w.evaluations += 1;
         let original_residual_upper = norm(&g0.v);
         if policy.mode == InitMode::Strict && original_residual_upper > policy.residual_tol {
@@ -772,23 +910,28 @@ impl DaeSource {
         let mut affine_root = None;
         if matches!(route, InitRoute::ScalarRoot | InitRoute::AffineExact) {
             for v in [b[0].lo, b[0].hi] {
-                let (_, g) = self.eval(t, x, &[p(v)?])?;
+                let (_, g) = observed!(evaluations, self.eval(t, x, &[p(v)?]))?;
                 w.evaluations += 1;
                 if g.v[0].contains_zero() {
                     return Err(bad("scalar branch boundary root/unknown"));
                 }
             }
-            let poly = RepresentedPolynomial::frozen_scalar(&self.g[0], t, x, branch[0])?;
+            let poly = observed!(
+                frozen,
+                RepresentedPolynomial::frozen_scalar(&self.g[0], t, x, branch[0])
+            )?;
             let [l, h] = if route == InitRoute::AffineExact {
-                let r = poly
-                    .isolate_affine_exact(2f64.powi(-48))?
+                let r = observed!(roots, poly.isolate_affine_exact(2f64.powi(-48)))?
                     .ok_or_else(|| bad("affine branch not exactly one interior root"))?;
                 w.root_calls += 1;
                 let time = r.time;
                 affine_root = Some(r);
                 time
             } else {
-                let roots = poly.isolate(RootRoute::DictionaryCompanion, 2f64.powi(-48))?;
+                let roots = observed!(
+                    roots,
+                    poly.isolate(RootRoute::DictionaryCompanion, 2f64.powi(-48))
+                )?;
                 w.root_calls += 1;
                 w.dictionary_uses += roots.work.dictionary_uses;
                 w.conditioned_horner_uses += roots.work.conditioned_horner_uses;
@@ -805,13 +948,13 @@ impl DaeSource {
                 center[0] = mid(q);
                 // Polish the numerical center, not the exact isolation
                 // certificate. Only admit an improving point in the box.
-                let (_, v) = self.eval(t, x, &[p(center[0])?])?;
+                let (_, v) = observed!(evaluations, self.eval(t, x, &[p(center[0])?]))?;
                 w.evaluations += 1;
                 let d = mid(v.j[0][1 + nx]);
                 if d != 0. {
                     let trial = center[0] - mid(v.v[0]) / d;
                     if q.contains(trial) {
-                        let (_, g) = self.eval(t, x, &[p(trial)?])?;
+                        let (_, g) = observed!(evaluations, self.eval(t, x, &[p(trial)?]))?;
                         w.evaluations += 1;
                         if norm(&g.v) < norm(&v.v) {
                             center[0] = trial;
@@ -825,7 +968,7 @@ impl DaeSource {
             // Newton is a proposal mechanism. Neither a small rounded
             // correction nor a successful factorization authorizes a root.
             for _ in 0..policy.max_newton {
-                let (_, g) = self.eval_point(t, x, &center)?;
+                let (_, g) = observed!(evaluations, self.eval_point(t, x, &center))?;
                 w.evaluations += 1;
                 let r = norm(&g.v);
                 if r == 0. {
@@ -833,7 +976,7 @@ impl DaeSource {
                 }
                 let a = center_matrix(&self.jac_z(&g))?;
                 let rhs = g.v.iter().copied().map(|v| -mid(v)).collect::<Vec<_>>();
-                let d = batch(&a, &[rhs], route, &exec, &mut w)?.remove(0);
+                let d = linear!(1, batch(&a, &[rhs], route, &exec, w))?.remove(0);
                 let mut accepted = false;
                 for j in 0..16 {
                     let s = 2f64.powi(-j);
@@ -846,7 +989,7 @@ impl DaeSource {
                     if !subset(&trial_box[..nz], &b) {
                         continue;
                     }
-                    let (_, v) = self.eval(t, x, &trial_box[..nz])?;
+                    let (_, v) = observed!(evaluations, self.eval(t, x, &trial_box[..nz]))?;
                     w.evaluations += 1;
                     if norm(&v.v) < r {
                         center.copy_from_slice(&trial[..nz]);
@@ -860,14 +1003,14 @@ impl DaeSource {
                 }
             }
         }
-        let (fc, gc) = self.eval_point(t, x, &center)?;
+        let (fc, gc) = observed!(evaluations, self.eval_point(t, x, &center))?;
         w.evaluations += 1;
         let residual_upper = norm(&gc.v);
         if residual_upper > policy.residual_tol {
             return Err(bad("original constraint residual exceeds tolerance"));
         }
         let a = center_matrix(&self.jac_z(&gc))?;
-        let c = preconditioner(&a, route, &exec, &mut w)?;
+        let c = linear!(nz, preconditioner(&a, route, &exec, w))?;
         let (root, branch_defect_upper, authority) = if let Some(r) = scalar_box {
             let label = if affine_root.is_some() {
                 "exact affine scalar root"
@@ -876,7 +1019,7 @@ impl DaeSource {
             };
             (r, None, label.to_string())
         } else {
-            let (_, g) = self.eval(t, x, &b)?;
+            let (_, g) = observed!(evaluations, self.eval(t, x, &b))?;
             w.evaluations += 1;
             let (r, q) = verified_root_box(&c, &gc.v, &self.jac_z(&g), &center, &b, scratch)?;
             (
@@ -891,7 +1034,7 @@ impl DaeSource {
         if state_error_upper > policy.state_tol {
             return Err(bad("certified root distance exceeds tolerance"));
         }
-        let (fr, gr) = self.eval(t, x, &root)?;
+        let (fr, gr) = observed!(evaluations, self.eval(t, x, &root))?;
         w.evaluations += 1;
         let j = self.jac_z(&gr);
         let q = rows_norm(&defect(&c, &j)?)?;
@@ -945,7 +1088,7 @@ impl DaeSource {
                 })
                 .collect::<CoreResult<Vec<_>>>()?,
         );
-        let sol = batch(&a, &br, route, &exec, &mut w)?;
+        let sol = linear!(br.len(), batch(&a, &br, route, &exec, w))?;
         let enc = &mut scratch.enclosures[..len];
         let points = &mut scratch.a[..nz];
         let av = &mut scratch.b[..nz];
@@ -1031,7 +1174,7 @@ impl DaeSource {
             reduced_jacobian,
             derivative_error_upper,
             tangent_residual_upper,
-            work: w,
+            work: w.clone(),
             qualified: true,
         })
     }

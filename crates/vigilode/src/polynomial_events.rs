@@ -259,6 +259,12 @@ pub fn initialize_mass_problem(
     let report = source
         .initialize(t, x, z, branch, policy, route)
         .map_err(|e| crate::SolveError::InvalidInput(e.to_string()))?;
+    Ok(mass_problem_from_report(source, report))
+}
+pub(crate) fn mass_problem_from_report(
+    source: &retro_dae_init::DaeSource,
+    report: retro_dae_init::InitReport,
+) -> InitializedDae {
     let nx = source.nx();
     let n = nx + source.nz();
     let mut m = vec![0.; n * n];
@@ -283,9 +289,9 @@ pub fn initialize_mass_problem(
     .mass(m);
     let mut initial_state = report.x.clone();
     initial_state.extend_from_slice(&report.z);
-    Ok(InitializedDae {
+    InitializedDae {
         problem,
         initial_state,
         report,
-    })
+    }
 }

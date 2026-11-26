@@ -12,7 +12,9 @@ use rodas5p_core::{
 };
 use rodas5p_integrators::{
     retro_dae_evolution::{self as de, DenseBasis, SlabCertificate, WarpSeed},
-    retro_dae_init::{DaeSource, InitPolicy, InitReport, InitRoute, InitWork},
+    retro_dae_init::{
+        AttemptCount, DaeSource, InitPolicy, InitReport, InitRoute, InitWork, ProjectionAttemptWork,
+    },
     retro_foundation::QuotientMode,
     retro_portfolio::{Portfolio, Route, Selection},
 };
@@ -98,6 +100,59 @@ impl ProjectionWork {
         self.warp_predictions += usize::from(warp);
     }
 }
+/// Diagnostic boundary receipt, never an event or trajectory authority.
+/// No returned Stats after driver entry means unknown native work, not zero.
+#[derive(Clone, Debug, Default, Serialize)]
+pub struct NativeResourceAudit {
+    pub initialization: ProjectionAttemptWork,
+    pub point_projection: ProjectionAttemptWork,
+    pub scan_nodes: ProjectionAttemptWork,
+    pub replay_nodes: ProjectionAttemptWork,
+    pub scan_reconstruction: AttemptCount,
+    pub replay_reconstruction: AttemptCount,
+    pub scan_certificate: AttemptCount,
+    pub replay_certificate: AttemptCount,
+    pub scan_global_certificates: usize,
+    pub replay_global_certificates: usize,
+    pub guard_build: AttemptCount,
+    pub warp_setup: AttemptCount,
+    pub driver_invoked: bool,
+    pub stats: Option<crate::Stats>,
+}
+impl NativeResourceAudit {
+    /// A missing returned driver report after entry cannot be inferred.
+    pub fn measured_attempts(&self) -> Option<usize> {
+        if !self.driver_invoked {
+            Some(0)
+        } else {
+            self.stats.as_ref().map(|v| v.attempts)
+        }
+    }
+}
+type AuditHandle = Arc<Mutex<NativeResourceAudit>>;
+fn update_audit(a: &Option<AuditHandle>, f: impl FnOnce(&mut NativeResourceAudit)) {
+    if let Some(a) = a {
+        f(&mut a.lock().expect("native audit lock"));
+    }
+}
+fn audited_init(
+    src: &DaeSource,
+    t: f64,
+    x: &[f64],
+    z: &[f64],
+    branch: &[[f64; 2]],
+    policy: InitPolicy,
+    route: InitRoute,
+    audit: &Option<AuditHandle>,
+) -> CoreResult<InitReport> {
+    if audit.is_some() {
+        let (r, w) = src.initialize_audited(t, x, z, branch, policy, route);
+        update_audit(audit, |a| a.initialization.record(&w, r.is_ok()));
+        r
+    } else {
+        src.initialize(t, x, z, branch, policy, route)
+    }
+}
 #[derive(Clone)]
 struct Engine {
     src: DaeSource,
@@ -108,6 +163,7 @@ struct Engine {
     warp: Option<WarpSeed>,
     work: Arc<Mutex<ProjectionWork>>,
     conservation: Option<(de::RobertsonModel, de::ConservationRoute)>,
+    audit: Option<AuditHandle>,
 }
 impl Engine {
     fn certify(
@@ -115,8 +171,9 @@ impl Engine {
         times: [f64; 2],
         power: &[Vec<Iv>],
         incoming: Option<f64>,
+        scan: bool,
     ) -> CoreResult<SlabCertificate> {
-        if let Some((model, route)) = &self.conservation {
+        let r = if let Some((model, route)) = &self.conservation {
             model.certify(
                 times,
                 power,
@@ -137,19 +194,86 @@ impl Engine {
                 self.policy.green,
                 self.policy.init.condition_cap,
             )
+        };
+        update_audit(&self.audit, |a| {
+            let (c, q) = if scan {
+                (&mut a.scan_certificate, &mut a.scan_global_certificates)
+            } else {
+                (&mut a.replay_certificate, &mut a.replay_global_certificates)
+            };
+            c.record(r.is_ok());
+            *q += usize::from(r.as_ref().is_ok_and(|v| v.global_qualified));
+        });
+        r
+    }
+    fn reconstruct(
+        &self,
+        times: [f64; 2],
+        power: &[Vec<Iv>],
+        scan: bool,
+    ) -> CoreResult<(Vec<Vec<Iv>>, Vec<InitWork>)> {
+        if self.audit.is_some() {
+            let (r, w) = de::reconstruct_audited(
+                &self.src,
+                times,
+                power,
+                &self.seed,
+                &self.branch,
+                self.policy.init,
+                self.route.init(),
+                self.warp.as_ref(),
+                self.route.nodes(),
+            );
+            update_audit(&self.audit, |a| {
+                let (c, n) = if scan {
+                    (&mut a.scan_reconstruction, &mut a.scan_nodes)
+                } else {
+                    (&mut a.replay_reconstruction, &mut a.replay_nodes)
+                };
+                c.record(r.is_ok());
+                n.merge(&w);
+            });
+            r
+        } else {
+            de::reconstruct(
+                &self.src,
+                times,
+                power,
+                &self.seed,
+                &self.branch,
+                self.policy.init,
+                self.route.init(),
+                self.warp.as_ref(),
+                self.route.nodes(),
+            )
         }
     }
     fn project(&self, t: f64, x: &[f64], seed: &[f64]) -> CoreResult<InitReport> {
-        let r = de::project(
-            &self.src,
-            t,
-            x,
-            seed,
-            &self.branch,
-            self.policy.init,
-            self.route.init(),
-            self.warp.as_ref(),
-        );
+        let r = if self.audit.is_some() {
+            let (r, w) = de::project_audited(
+                &self.src,
+                t,
+                x,
+                seed,
+                &self.branch,
+                self.policy.init,
+                self.route.init(),
+                self.warp.as_ref(),
+            );
+            update_audit(&self.audit, |a| a.point_projection.record(&w, r.is_ok()));
+            r
+        } else {
+            de::project(
+                &self.src,
+                t,
+                x,
+                seed,
+                &self.branch,
+                self.policy.init,
+                self.route.init(),
+                self.warp.as_ref(),
+            )
+        };
         let mut w = self.work.lock().map_err(|_| bad("work lock"))?;
         if let Ok(v) = &r {
             w.add(&v.work, self.warp.is_some());
@@ -388,6 +512,38 @@ pub fn evolve_epoch(
 ) -> CoreResult<EvolutionRun> {
     evolve_epoch_impl(src, x, z, branch, epoch, opts, policy, route, grid, None)
 }
+/// Opt-in diagnostic snapshot of the executed epoch, even on Err.
+/// Future queries are not included in this returned snapshot.
+#[allow(clippy::too_many_arguments)]
+pub fn evolve_epoch_audited(
+    src: &DaeSource,
+    x: &[f64],
+    z: &[f64],
+    branch: &[[f64; 2]],
+    epoch: EvolutionEpoch,
+    opts: &Options,
+    policy: EvolutionPolicy,
+    route: EvolutionRoute,
+    grid: &[f64],
+) -> (CoreResult<EvolutionRun>, NativeResourceAudit) {
+    let a = Arc::new(Mutex::new(NativeResourceAudit::default()));
+    let r = evolve_epoch_authority(
+        src,
+        x,
+        z,
+        branch,
+        epoch,
+        opts,
+        policy,
+        route,
+        grid,
+        None,
+        None,
+        Some(a.clone()),
+    );
+    let receipt = a.lock().expect("native audit lock").clone();
+    (r, receipt)
+}
 #[allow(clippy::too_many_arguments)]
 fn evolve_epoch_impl(
     src: &DaeSource,
@@ -402,7 +558,7 @@ fn evolve_epoch_impl(
     scan: Option<&mut dyn EpochObserver>,
 ) -> CoreResult<EvolutionRun> {
     evolve_epoch_authority(
-        src, x, z, branch, epoch, opts, policy, route, grid, scan, None,
+        src, x, z, branch, epoch, opts, policy, route, grid, scan, None, None,
     )
 }
 #[allow(clippy::too_many_arguments)]
@@ -418,6 +574,7 @@ fn evolve_epoch_authority(
     grid: &[f64],
     mut scan: Option<&mut dyn EpochObserver>,
     conservation: Option<(de::RobertsonModel, de::ConservationRoute)>,
+    audit: Option<AuditHandle>,
 ) -> CoreResult<EvolutionRun> {
     let EvolutionEpoch {
         start,
@@ -444,16 +601,17 @@ fn evolve_epoch_authority(
         return Err(bad("input/clock/dense scalar tolerance contract"));
     }
     let nx = src.nx();
-    let initial = src.initialize(start, x, z, branch, policy.init, route.init())?;
+    let initial = audited_init(src, start, x, z, branch, policy.init, route.init(), &audit)?;
     let warp = match route {
-        EvolutionRoute::WarpDirect => Some(WarpSeed::new_window(
-            src,
-            start,
-            end,
-            QuotientMode::DirectBlock,
-        )?),
-        EvolutionRoute::WarpFolded => {
-            Some(WarpSeed::new_window(src, start, end, QuotientMode::Folded)?)
+        EvolutionRoute::WarpDirect | EvolutionRoute::WarpFolded => {
+            let mode = if route == EvolutionRoute::WarpDirect {
+                QuotientMode::DirectBlock
+            } else {
+                QuotientMode::Folded
+            };
+            let r = WarpSeed::new_window(src, start, end, mode);
+            update_audit(&audit, |a| a.warp_setup.record(r.is_ok()));
+            Some(r?)
         }
         _ => None,
     };
@@ -466,10 +624,17 @@ fn evolve_epoch_authority(
         warp: warp.clone(),
         work: Arc::new(Mutex::new(ProjectionWork::default())),
         conservation,
+        audit: audit.clone(),
     };
     let (p, y) = if route == EvolutionRoute::Mass {
-        let a = initialize_mass_problem(src, start, x, z, branch, policy.init, route.init())
-            .map_err(bad)?;
+        let a = if audit.is_some() {
+            let report = audited_init(src, start, x, z, branch, policy.init, route.init(), &audit)
+                .map_err(|e| bad(crate::SolveError::InvalidInput(e.to_string())))?;
+            crate::polynomial_events::mass_problem_from_report(src, report)
+        } else {
+            initialize_mass_problem(src, start, x, z, branch, policy.init, route.init())
+                .map_err(bad)?
+        };
         (a.problem, a.initial_state)
     } else {
         let a = e.clone();
@@ -509,12 +674,14 @@ fn evolve_epoch_authority(
         });
         (p, x.to_vec())
     };
+    update_audit(&audit, |a| a.driver_invoked = true);
     let driver = if let Some(scan) = scan.as_deref_mut() {
         let mut inspect = |proposal: crate::solve::DenseProposal<'_>| scan.inspect(&e, proposal);
         Rodas5p::solve_dense_controlled(&p, (start, end), &y, opts, &mut inspect).map_err(bad)?
     } else {
         Rodas5p::solve(&p, (start, end), &y, opts).map_err(bad)?
     };
+    update_audit(&audit, |a| a.stats = Some(driver.stats.clone()));
     let expected_stop = scan
         .as_ref()
         .is_some_and(|v| v.stopped_at().is_some_and(|t| driver.t.last() == Some(&t)));
@@ -557,17 +724,7 @@ fn evolve_epoch_authority(
         let native = packet(&out.driver, k)?;
         let mut p = native.power()?;
         if route != EvolutionRoute::Mass {
-            let (a, w) = match de::reconstruct(
-                src,
-                times,
-                &p,
-                &e.seed,
-                branch,
-                policy.init,
-                route.init(),
-                e.warp.as_ref(),
-                route.nodes(),
-            ) {
+            let (a, w) = match e.reconstruct(times, &p, false) {
                 Ok(v) => v,
                 Err(err) => {
                     out.slabs.push(SlabRecord {
@@ -593,7 +750,7 @@ fn evolve_epoch_authority(
             .iter()
             .map(|a| a.iter().map(|v| v.as_pair()).collect())
             .collect();
-        let r = e.certify(times, &p, incoming);
+        let r = e.certify(times, &p, incoming, false);
         let (certificate, reason) = match r {
             Ok(c) => {
                 incoming = if c.global_qualified { c.outgoing } else { None };
@@ -1025,23 +1182,13 @@ fn certify_native_packet(
 ) -> CoreResult<(Vec<Vec<Iv>>, SlabCertificate)> {
     let mut p = native.power()?;
     if e.route != EvolutionRoute::Mass {
-        let (z, w) = de::reconstruct(
-            &e.src,
-            times,
-            &p,
-            &e.seed,
-            &e.branch,
-            e.policy.init,
-            e.route.init(),
-            e.warp.as_ref(),
-            e.route.nodes(),
-        )?;
+        let (z, w) = e.reconstruct(times, &p, true)?;
         for q in &w {
             work.add(q, e.warp.is_some());
         }
         p.extend(z);
     }
-    let c = e.certify(times, &p, incoming)?;
+    let c = e.certify(times, &p, incoming, true)?;
     if !c.global_qualified
         || c.whole_z_error.is_none_or(|v| v > e.policy.global_tol)
         || c.whole_x_error.is_none_or(|v| v > e.policy.global_tol)
@@ -1067,7 +1214,11 @@ impl ThresholdScan {
         let proof = self
             .guard
             .as_ref()
-            .map(|g| de::GuardProof::new(&e.src, &g.source, p, c, g.derivative, g.value))
+            .map(|g| {
+                let r = de::GuardProof::new(&e.src, &g.source, p, c, g.derivative, g.value);
+                update_audit(&e.audit, |a| a.guard_build.record(r.is_ok()));
+                r
+            })
             .transpose()?;
         let velocity = if let Some(proof) = &proof {
             let v = proof.evidence.velocity;
@@ -2534,6 +2685,11 @@ impl MultiGuardRun {
     pub fn reason(&self) -> Option<&str> {
         self.reason.as_deref()
     }
+    /// Diagnostic native Stats for every actual returned run, even
+    /// without a winning guard. This confers no event authority.
+    pub fn native_stats(&self) -> impl Iterator<Item = &crate::Stats> {
+        self.runs.iter().map(ThresholdRun::stats)
+    }
     pub fn event_authority(&self) -> Option<&ThresholdRun> {
         let j = self.winner?;
         self.runs
@@ -2897,7 +3053,7 @@ pub fn evolve_to_first_guard(
     mp: MultiGuardPolicy,
 ) -> CoreResult<MultiGuardRun> {
     evolve_to_first_guard_authority(
-        src, x, z, branch, epoch, opts, policy, route, guards, mp, None,
+        src, x, z, branch, epoch, opts, policy, route, guards, mp, None, None,
     )
 }
 #[allow(clippy::too_many_arguments)]
@@ -2913,6 +3069,7 @@ fn evolve_to_first_guard_authority(
     guards: &[DeclaredPolynomial],
     mp: MultiGuardPolicy,
     conservation: Option<(de::RobertsonModel, de::ConservationRoute)>,
+    audit: Option<AuditHandle>,
 ) -> CoreResult<MultiGuardRun> {
     if conservation.is_some() && mp.method == MultiGuardRoute::Independent {
         return Err(bad("conservation shared observer required"));
@@ -3030,6 +3187,7 @@ fn evolve_to_first_guard_authority(
         &[],
         Some(&mut multi),
         conservation,
+        audit,
     )?;
     let qualified = trial.global_qualified && trial.pointwise_qualified && trial.branch_qualified;
     let initial = qualified && multi.scans.iter().all(initial_proved);
@@ -3720,6 +3878,7 @@ fn robertson_epoch(
         grid,
         None,
         Some((model.clone(), certificate)),
+        None,
     )?;
     if r.initial.x != initial.center || r.driver.y.first().is_none_or(|v| v[..2] != initial.center)
     {
@@ -3761,6 +3920,62 @@ pub fn evolve_robertson_to_first_guard(
     guards: &[DeclaredPolynomial],
     mp: MultiGuardPolicy,
 ) -> CoreResult<MultiGuardRun> {
+    robertson_first_guard_recorded(
+        rate,
+        initial,
+        times,
+        opts,
+        policy,
+        route,
+        certificate,
+        guards,
+        mp,
+        None,
+    )
+}
+/// Native shared/correlated guard call and diagnostic resource snapshot.
+/// No event authority is granted by the resource receipt.
+#[allow(clippy::too_many_arguments)]
+pub fn evolve_robertson_to_first_guard_audited(
+    rate: f64,
+    initial: RobertsonInitial,
+    times: [f64; 2],
+    opts: &Options,
+    policy: EvolutionPolicy,
+    route: EvolutionRoute,
+    certificate: ConservationRoute,
+    guards: &[DeclaredPolynomial],
+    mp: MultiGuardPolicy,
+) -> (CoreResult<MultiGuardRun>, NativeResourceAudit) {
+    let a = Arc::new(Mutex::new(NativeResourceAudit::default()));
+    let r = robertson_first_guard_recorded(
+        rate,
+        initial,
+        times,
+        opts,
+        policy,
+        route,
+        certificate,
+        guards,
+        mp,
+        Some(a.clone()),
+    );
+    let receipt = a.lock().expect("native audit lock").clone();
+    (r, receipt)
+}
+#[allow(clippy::too_many_arguments)]
+fn robertson_first_guard_recorded(
+    rate: f64,
+    initial: RobertsonInitial,
+    times: [f64; 2],
+    opts: &Options,
+    policy: EvolutionPolicy,
+    route: EvolutionRoute,
+    certificate: ConservationRoute,
+    guards: &[DeclaredPolynomial],
+    mp: MultiGuardPolicy,
+    audit: Option<AuditHandle>,
+) -> CoreResult<MultiGuardRun> {
     robertson_policy(policy)?;
     let model = RobertsonModel::new(rate)?;
     evolve_to_first_guard_authority(
@@ -3779,6 +3994,7 @@ pub fn evolve_robertson_to_first_guard(
         guards,
         mp,
         Some((model.clone(), certificate)),
+        audit,
     )
 }
 /// Exact clock declarations and canonical positive mass-preserving reset.
@@ -5277,6 +5493,84 @@ pub fn evolve_robertson_phase_atlas(
     budget: PhaseAtlasBudget,
     reuse: PhaseReuseRoute,
 ) -> CoreResult<PhaseAtlasRun> {
+    atlas_recorded(
+        modes,
+        initial_mode,
+        initial,
+        times,
+        opts,
+        policy,
+        mp,
+        budget,
+        reuse,
+        None,
+    )
+}
+#[derive(Clone, Debug, Serialize)]
+pub struct AtlasNativeAudit {
+    pub mode: usize,
+    pub clock: [f64; 2],
+    pub center: [f64; 2],
+    pub route: EvolutionRoute,
+    pub native_quota: usize,
+    pub slab_quota: usize,
+    pub returned: bool,
+    pub charged_native_attempts: usize,
+    pub charged_scan_slabs: usize,
+    pub measured_attempts: Option<usize>,
+    pub native: NativeResourceAudit,
+}
+#[derive(Clone, Debug, Default, Serialize)]
+pub struct AtlasResourceAudit {
+    pub admitted: bool,
+    pub native: Vec<AtlasNativeAudit>,
+    pub cache_hits: usize,
+    pub reset_guards: AttemptCount,
+    pub negative_reset_guards: usize,
+    pub committed: usize,
+}
+/// Audited finite atlas. Diagnostic receipts are not used for decisions,
+/// do not change quota debits, and survive even a refused native run.
+#[allow(clippy::too_many_arguments)]
+pub fn evolve_robertson_phase_atlas_audited(
+    modes: &[ConservedMode],
+    initial_mode: usize,
+    initial: RobertsonInitial,
+    times: [f64; 2],
+    opts: &Options,
+    policy: EvolutionPolicy,
+    mp: MultiGuardPolicy,
+    budget: PhaseAtlasBudget,
+    reuse: PhaseReuseRoute,
+) -> (CoreResult<PhaseAtlasRun>, AtlasResourceAudit) {
+    let mut a = AtlasResourceAudit::default();
+    let r = atlas_recorded(
+        modes,
+        initial_mode,
+        initial,
+        times,
+        opts,
+        policy,
+        mp,
+        budget,
+        reuse,
+        Some(&mut a),
+    );
+    (r, a)
+}
+#[allow(clippy::too_many_arguments)]
+fn atlas_recorded(
+    modes: &[ConservedMode],
+    initial_mode: usize,
+    initial: RobertsonInitial,
+    times: [f64; 2],
+    opts: &Options,
+    policy: EvolutionPolicy,
+    mp: MultiGuardPolicy,
+    budget: PhaseAtlasBudget,
+    reuse: PhaseReuseRoute,
+    mut audit: Option<&mut AtlasResourceAudit>,
+) -> CoreResult<PhaseAtlasRun> {
     robertson_policy(policy)?;
     let b = budget.limits;
     if modes.is_empty()
@@ -5330,6 +5624,9 @@ pub fn evolve_robertson_phase_atlas(
         centers.push(c);
     }
     let span = Iv::point(times[1])?.sub(Iv::point(times[0])?)?.hi;
+    if let Some(a) = audit.as_deref_mut() {
+        a.admitted = true;
+    }
     let total = b.native_attempts.min(opts.max_steps);
     let mut out = PhaseAtlasRun {
         phases: Vec::with_capacity(b.transitions + 1),
@@ -5368,6 +5665,9 @@ pub fn evolve_robertson_phase_atlas(
         };
         let idx = if let Some(i) = hit {
             out.work.phase.cache_hits += 1;
+            if let Some(a) = audit.as_deref_mut() {
+                a.cache_hits += 1;
+            }
             i
         } else {
             let remaining = total.saturating_sub(out.work.phase.charged_native_attempts);
@@ -5384,7 +5684,10 @@ pub fn evolve_robertson_phase_atlas(
             o.max_steps = remaining;
             let mut q = mp;
             q.max_slabs = q.max_slabs.min(slabs);
-            let r = match evolve_robertson_to_first_guard(
+            let h = audit
+                .as_ref()
+                .map(|_| Arc::new(Mutex::new(NativeResourceAudit::default())));
+            let result = robertson_first_guard_recorded(
                 m.rate,
                 family,
                 [0., span],
@@ -5394,7 +5697,34 @@ pub fn evolve_robertson_phase_atlas(
                 m.certificate,
                 &m.guards,
                 q,
-            ) {
+                h.clone(),
+            );
+            if let (Some(a), Some(h)) = (audit.as_deref_mut(), h) {
+                let native = h.lock().expect("native audit lock").clone();
+                let (charged, slabs) = match &result {
+                    Ok(v) => (
+                        v.work.attempts,
+                        v.runs
+                            .first()
+                            .map_or(v.work.physical_certificates, |r| r.stats().accepted_steps),
+                    ),
+                    Err(_) => (remaining, q.max_slabs),
+                };
+                a.native.push(AtlasNativeAudit {
+                    mode,
+                    clock: clock.as_pair(),
+                    center: family.center,
+                    route: m.route,
+                    native_quota: remaining,
+                    slab_quota: q.max_slabs,
+                    returned: result.is_ok(),
+                    charged_native_attempts: charged,
+                    charged_scan_slabs: slabs,
+                    measured_attempts: native.measured_attempts(),
+                    native,
+                });
+            }
+            let r = match result {
                 Ok(v) => v,
                 Err(e) => {
                     out.work.phase.charged_native_attempts += remaining;
@@ -5535,16 +5865,20 @@ pub fn evolve_robertson_phase_atlas(
                     ));
                 }
                 out.work.phase.reset_checks += 1;
-                let e = models[target]
-                    .simplex_gap_enclosure(
-                        g,
-                        [0., 0.],
-                        [[0.; 2]; 2],
-                        next.center,
-                        Some(0.),
-                        SimplexGapRoute::AffineDual,
-                    )
-                    .map_err(|e| (PhaseAtlasStop::ResetRefused, e.to_string()))?;
+                let result = models[target].simplex_gap_enclosure(
+                    g,
+                    [0., 0.],
+                    [[0.; 2]; 2],
+                    next.center,
+                    Some(0.),
+                    SimplexGapRoute::AffineDual,
+                );
+                if let Some(a) = audit.as_deref_mut() {
+                    a.reset_guards.record(result.is_ok());
+                    a.negative_reset_guards +=
+                        usize::from(result.as_ref().is_ok_and(|e| e.enclosure[1] < 0.));
+                }
+                let e = result.map_err(|e| (PhaseAtlasStop::ResetRefused, e.to_string()))?;
                 let good = e.enclosure[1] < 0.;
                 ev.reset_guards.push(e);
                 if !good {
@@ -5564,6 +5898,9 @@ pub fn evolve_robertson_phase_atlas(
         ev.event.committed = true;
         out.events.push(ev);
         out.work.phase.committed += 1;
+        if let Some(a) = audit.as_deref_mut() {
+            a.committed += 1;
+        }
         clock = absolute;
         family = next;
         mode = target;

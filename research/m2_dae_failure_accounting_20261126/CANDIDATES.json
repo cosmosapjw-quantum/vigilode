@@ -1,0 +1,1319 @@
+{
+  "audit_candidates": [
+    "legacy receipts",
+    "explicit audited atlas"
+  ],
+  "harness_catalog_count": 64,
+  "local_scope": "96 actual AtlasFresh/Reuse cases, separate audit coverage and overhead; joint reset subkernel remains unmeasured",
+  "manifest_files": 154,
+  "objectives": [
+    "native attempts",
+    "driver RHS calls",
+    "reported projection RHS",
+    "allocation requests",
+    "requested bytes",
+    "physical width"
+  ],
+  "query_routes": [
+    "Horner",
+    "Centered"
+  ],
+  "routes": [
+    {
+      "cert": "Max",
+      "method": "JointCentered",
+      "modules": [
+        "native mass RODAS",
+        "source-owned L1 residual",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "centered signed JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Mass"
+    },
+    {
+      "cert": "Max",
+      "method": "JointGreen",
+      "modules": [
+        "native mass RODAS",
+        "source-owned L1 residual",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "RETRO GreenMoment",
+        "JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Mass"
+    },
+    {
+      "cert": "Max",
+      "method": "AtlasFresh",
+      "modules": [
+        "native mass RODAS",
+        "source-owned L1 residual",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "fresh relative native phase",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Mass"
+    },
+    {
+      "cert": "Max",
+      "method": "AtlasReuse",
+      "modules": [
+        "native mass RODAS",
+        "source-owned L1 residual",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "per-invocation mode and exact reset-center keyed atlas",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Mass"
+    },
+    {
+      "cert": "Max",
+      "method": "JointCentered",
+      "modules": [
+        "native mass RODAS",
+        "source-owned L1 residual",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "centered signed JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Mass"
+    },
+    {
+      "cert": "Max",
+      "method": "JointGreen",
+      "modules": [
+        "native mass RODAS",
+        "source-owned L1 residual",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "RETRO GreenMoment",
+        "JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Mass"
+    },
+    {
+      "cert": "Max",
+      "method": "AtlasFresh",
+      "modules": [
+        "native mass RODAS",
+        "source-owned L1 residual",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "fresh relative native phase",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Mass"
+    },
+    {
+      "cert": "Max",
+      "method": "AtlasReuse",
+      "modules": [
+        "native mass RODAS",
+        "source-owned L1 residual",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "per-invocation mode and exact reset-center keyed atlas",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Mass"
+    },
+    {
+      "cert": "Integral4",
+      "method": "JointCentered",
+      "modules": [
+        "native mass RODAS",
+        "source-owned L1 residual",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "centered signed JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Mass"
+    },
+    {
+      "cert": "Integral4",
+      "method": "JointGreen",
+      "modules": [
+        "native mass RODAS",
+        "source-owned L1 residual",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "RETRO GreenMoment",
+        "JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Mass"
+    },
+    {
+      "cert": "Integral4",
+      "method": "AtlasFresh",
+      "modules": [
+        "native mass RODAS",
+        "source-owned L1 residual",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "fresh relative native phase",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Mass"
+    },
+    {
+      "cert": "Integral4",
+      "method": "AtlasReuse",
+      "modules": [
+        "native mass RODAS",
+        "source-owned L1 residual",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "per-invocation mode and exact reset-center keyed atlas",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Mass"
+    },
+    {
+      "cert": "Integral4",
+      "method": "JointCentered",
+      "modules": [
+        "native mass RODAS",
+        "source-owned L1 residual",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "centered signed JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Mass"
+    },
+    {
+      "cert": "Integral4",
+      "method": "JointGreen",
+      "modules": [
+        "native mass RODAS",
+        "source-owned L1 residual",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "RETRO GreenMoment",
+        "JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Mass"
+    },
+    {
+      "cert": "Integral4",
+      "method": "AtlasFresh",
+      "modules": [
+        "native mass RODAS",
+        "source-owned L1 residual",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "fresh relative native phase",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Mass"
+    },
+    {
+      "cert": "Integral4",
+      "method": "AtlasReuse",
+      "modules": [
+        "native mass RODAS",
+        "source-owned L1 residual",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "per-invocation mode and exact reset-center keyed atlas",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Mass"
+    },
+    {
+      "cert": "Max",
+      "method": "JointCentered",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "centered signed JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Prepared5"
+    },
+    {
+      "cert": "Max",
+      "method": "JointGreen",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "RETRO GreenMoment",
+        "JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Prepared5"
+    },
+    {
+      "cert": "Max",
+      "method": "AtlasFresh",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "fresh relative native phase",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Prepared5"
+    },
+    {
+      "cert": "Max",
+      "method": "AtlasReuse",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "per-invocation mode and exact reset-center keyed atlas",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Prepared5"
+    },
+    {
+      "cert": "Max",
+      "method": "JointCentered",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "centered signed JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Prepared5"
+    },
+    {
+      "cert": "Max",
+      "method": "JointGreen",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "RETRO GreenMoment",
+        "JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Prepared5"
+    },
+    {
+      "cert": "Max",
+      "method": "AtlasFresh",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "fresh relative native phase",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Prepared5"
+    },
+    {
+      "cert": "Max",
+      "method": "AtlasReuse",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "per-invocation mode and exact reset-center keyed atlas",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Prepared5"
+    },
+    {
+      "cert": "Integral4",
+      "method": "JointCentered",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "centered signed JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Prepared5"
+    },
+    {
+      "cert": "Integral4",
+      "method": "JointGreen",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "RETRO GreenMoment",
+        "JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Prepared5"
+    },
+    {
+      "cert": "Integral4",
+      "method": "AtlasFresh",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "fresh relative native phase",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Prepared5"
+    },
+    {
+      "cert": "Integral4",
+      "method": "AtlasReuse",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "per-invocation mode and exact reset-center keyed atlas",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Prepared5"
+    },
+    {
+      "cert": "Integral4",
+      "method": "JointCentered",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "centered signed JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Prepared5"
+    },
+    {
+      "cert": "Integral4",
+      "method": "JointGreen",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "RETRO GreenMoment",
+        "JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Prepared5"
+    },
+    {
+      "cert": "Integral4",
+      "method": "AtlasFresh",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "fresh relative native phase",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Prepared5"
+    },
+    {
+      "cert": "Integral4",
+      "method": "AtlasReuse",
+      "modules": [
+        "PreparedRhs",
+        "Schur",
+        "RETRO Lagrange5",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "per-invocation mode and exact reset-center keyed atlas",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Prepared5"
+    },
+    {
+      "cert": "Max",
+      "method": "JointCentered",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "centered signed JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Scalar5"
+    },
+    {
+      "cert": "Max",
+      "method": "JointGreen",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "RETRO GreenMoment",
+        "JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Scalar5"
+    },
+    {
+      "cert": "Max",
+      "method": "AtlasFresh",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "fresh relative native phase",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Scalar5"
+    },
+    {
+      "cert": "Max",
+      "method": "AtlasReuse",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "per-invocation mode and exact reset-center keyed atlas",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Scalar5"
+    },
+    {
+      "cert": "Max",
+      "method": "JointCentered",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "centered signed JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Scalar5"
+    },
+    {
+      "cert": "Max",
+      "method": "JointGreen",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "RETRO GreenMoment",
+        "JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Scalar5"
+    },
+    {
+      "cert": "Max",
+      "method": "AtlasFresh",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "fresh relative native phase",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Scalar5"
+    },
+    {
+      "cert": "Max",
+      "method": "AtlasReuse",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "per-invocation mode and exact reset-center keyed atlas",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Scalar5"
+    },
+    {
+      "cert": "Integral4",
+      "method": "JointCentered",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "centered signed JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Scalar5"
+    },
+    {
+      "cert": "Integral4",
+      "method": "JointGreen",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "RETRO GreenMoment",
+        "JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Scalar5"
+    },
+    {
+      "cert": "Integral4",
+      "method": "AtlasFresh",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "fresh relative native phase",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Scalar5"
+    },
+    {
+      "cert": "Integral4",
+      "method": "AtlasReuse",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "per-invocation mode and exact reset-center keyed atlas",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Scalar5"
+    },
+    {
+      "cert": "Integral4",
+      "method": "JointCentered",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "centered signed JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Scalar5"
+    },
+    {
+      "cert": "Integral4",
+      "method": "JointGreen",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "RETRO GreenMoment",
+        "JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Scalar5"
+    },
+    {
+      "cert": "Integral4",
+      "method": "AtlasFresh",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "fresh relative native phase",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Scalar5"
+    },
+    {
+      "cert": "Integral4",
+      "method": "AtlasReuse",
+      "modules": [
+        "DictionaryCompanion",
+        "RETRO Lagrange5",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "per-invocation mode and exact reset-center keyed atlas",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Scalar5"
+    },
+    {
+      "cert": "Max",
+      "method": "JointCentered",
+      "modules": [
+        "exact frozen affine singleton",
+        "original-source rank/Schur proof",
+        "RETRO Lagrange5",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "centered signed JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Affine5"
+    },
+    {
+      "cert": "Max",
+      "method": "JointGreen",
+      "modules": [
+        "exact frozen affine singleton",
+        "original-source rank/Schur proof",
+        "RETRO Lagrange5",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "RETRO GreenMoment",
+        "JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Affine5"
+    },
+    {
+      "cert": "Max",
+      "method": "AtlasFresh",
+      "modules": [
+        "exact frozen affine singleton",
+        "original-source rank/Schur proof",
+        "RETRO Lagrange5",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "fresh relative native phase",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Affine5"
+    },
+    {
+      "cert": "Max",
+      "method": "AtlasReuse",
+      "modules": [
+        "exact frozen affine singleton",
+        "original-source rank/Schur proof",
+        "RETRO Lagrange5",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "per-invocation mode and exact reset-center keyed atlas",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Affine5"
+    },
+    {
+      "cert": "Max",
+      "method": "JointCentered",
+      "modules": [
+        "exact frozen affine singleton",
+        "original-source rank/Schur proof",
+        "RETRO Lagrange5",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "centered signed JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Affine5"
+    },
+    {
+      "cert": "Max",
+      "method": "JointGreen",
+      "modules": [
+        "exact frozen affine singleton",
+        "original-source rank/Schur proof",
+        "RETRO Lagrange5",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "RETRO GreenMoment",
+        "JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Affine5"
+    },
+    {
+      "cert": "Max",
+      "method": "AtlasFresh",
+      "modules": [
+        "exact frozen affine singleton",
+        "original-source rank/Schur proof",
+        "RETRO Lagrange5",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "fresh relative native phase",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Affine5"
+    },
+    {
+      "cert": "Max",
+      "method": "AtlasReuse",
+      "modules": [
+        "exact frozen affine singleton",
+        "original-source rank/Schur proof",
+        "RETRO Lagrange5",
+        "whole-slab Bernstein supremum",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "per-invocation mode and exact reset-center keyed atlas",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Affine5"
+    },
+    {
+      "cert": "Integral4",
+      "method": "JointCentered",
+      "modules": [
+        "exact frozen affine singleton",
+        "original-source rank/Schur proof",
+        "RETRO Lagrange5",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "centered signed JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Affine5"
+    },
+    {
+      "cert": "Integral4",
+      "method": "JointGreen",
+      "modules": [
+        "exact frozen affine singleton",
+        "original-source rank/Schur proof",
+        "RETRO Lagrange5",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "RETRO GreenMoment",
+        "JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Affine5"
+    },
+    {
+      "cert": "Integral4",
+      "method": "AtlasFresh",
+      "modules": [
+        "exact frozen affine singleton",
+        "original-source rank/Schur proof",
+        "RETRO Lagrange5",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "fresh relative native phase",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Affine5"
+    },
+    {
+      "cert": "Integral4",
+      "method": "AtlasReuse",
+      "modules": [
+        "exact frozen affine singleton",
+        "original-source rank/Schur proof",
+        "RETRO Lagrange5",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "per-invocation mode and exact reset-center keyed atlas",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Shared",
+      "solver": "Affine5"
+    },
+    {
+      "cert": "Integral4",
+      "method": "JointCentered",
+      "modules": [
+        "exact frozen affine singleton",
+        "original-source rank/Schur proof",
+        "RETRO Lagrange5",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "centered signed JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Affine5"
+    },
+    {
+      "cert": "Integral4",
+      "method": "JointGreen",
+      "modules": [
+        "exact frozen affine singleton",
+        "original-source rank/Schur proof",
+        "RETRO Lagrange5",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "strict Picard tube",
+        "RETRO GreenMoment",
+        "JointTransport",
+        "AffineDual gap",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Affine5"
+    },
+    {
+      "cert": "Integral4",
+      "method": "AtlasFresh",
+      "modules": [
+        "exact frozen affine singleton",
+        "original-source rank/Schur proof",
+        "RETRO Lagrange5",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "fresh relative native phase",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Affine5"
+    },
+    {
+      "cert": "Integral4",
+      "method": "AtlasReuse",
+      "modules": [
+        "exact frozen affine singleton",
+        "original-source rank/Schur proof",
+        "RETRO Lagrange5",
+        "directed four-cell Bernstein integral",
+        "shared native causal scan",
+        "Schur guard difference",
+        "DictionaryHint/PiecewiseProbe",
+        "ConservedSchur",
+        "exact stochastic reset",
+        "per-invocation mode and exact reset-center keyed atlas",
+        "directed clock sum",
+        "RETRO centered dense query",
+        "directed L1 residual",
+        "bounded projection interval scratch"
+      ],
+      "order": "Correlated",
+      "solver": "Affine5"
+    }
+  ]
+}

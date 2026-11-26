@@ -413,6 +413,36 @@ pub fn project(
     route: InitRoute,
     warp: Option<&WarpSeed>,
 ) -> CoreResult<InitReport> {
+    project_recorded(src, t, x, seed, branch, policy, route, warp, None)
+}
+/// A projection boundary result with initialization work even on refusal.
+#[allow(clippy::too_many_arguments)]
+pub fn project_audited(
+    src: &DaeSource,
+    t: f64,
+    x: &[f64],
+    seed: &[f64],
+    branch: &[[f64; 2]],
+    policy: InitPolicy,
+    route: InitRoute,
+    warp: Option<&WarpSeed>,
+) -> (CoreResult<InitReport>, di::InitAttemptWork) {
+    let mut a = di::InitAttemptWork::default();
+    let r = project_recorded(src, t, x, seed, branch, policy, route, warp, Some(&mut a));
+    (r, a)
+}
+#[allow(clippy::too_many_arguments)]
+fn project_recorded(
+    src: &DaeSource,
+    t: f64,
+    x: &[f64],
+    seed: &[f64],
+    branch: &[[f64; 2]],
+    policy: InitPolicy,
+    route: InitRoute,
+    warp: Option<&WarpSeed>,
+    audit: Option<&mut di::InitAttemptWork>,
+) -> CoreResult<InitReport> {
     if branch
         .iter()
         .any(|b| !b[0].is_finite() || !b[1].is_finite() || b[0] >= b[1])
@@ -437,17 +467,17 @@ pub fn project(
     for (v, b) in seed.iter_mut().zip(branch) {
         *v = v.clamp(b[0], b[1]);
     }
-    src.initialize(
-        t,
-        x,
-        seed,
-        branch,
-        InitPolicy {
-            mode: InitMode::ProjectAlgebraic,
-            ..policy
-        },
-        route,
-    )
+    let policy = InitPolicy {
+        mode: InitMode::ProjectAlgebraic,
+        ..policy
+    };
+    if let Some(a) = audit {
+        let (r, w) = src.initialize_audited(t, x, seed, branch, policy, route);
+        *a = w;
+        r
+    } else {
+        src.initialize(t, x, seed, branch, policy, route)
+    }
 }
 /// Reconstruct algebraic polynomial using actual dictionary nodes and
 /// monomial basis. Rounded coefficient centers define a candidate only.
@@ -464,6 +494,54 @@ pub fn reconstruct(
     warp: Option<&WarpSeed>,
     nodes: usize,
 ) -> CoreResult<(Vec<Poly>, Vec<InitWork>)> {
+    reconstruct_recorded(
+        src, times, x, seed, branch, policy, route, warp, nodes, None,
+    )
+}
+/// Actual completed and failed node projections are retained on Err.
+#[allow(clippy::too_many_arguments)]
+pub fn reconstruct_audited(
+    src: &DaeSource,
+    times: [f64; 2],
+    x: &[Poly],
+    seed: &[f64],
+    branch: &[[f64; 2]],
+    policy: InitPolicy,
+    route: InitRoute,
+    warp: Option<&WarpSeed>,
+    nodes: usize,
+) -> (
+    CoreResult<(Vec<Poly>, Vec<InitWork>)>,
+    di::ProjectionAttemptWork,
+) {
+    let mut w = di::ProjectionAttemptWork::default();
+    let r = reconstruct_recorded(
+        src,
+        times,
+        x,
+        seed,
+        branch,
+        policy,
+        route,
+        warp,
+        nodes,
+        Some(&mut w),
+    );
+    (r, w)
+}
+#[allow(clippy::too_many_arguments)]
+fn reconstruct_recorded(
+    src: &DaeSource,
+    times: [f64; 2],
+    x: &[Poly],
+    seed: &[f64],
+    branch: &[[f64; 2]],
+    policy: InitPolicy,
+    route: InitRoute,
+    warp: Option<&WarpSeed>,
+    nodes: usize,
+    mut audit: Option<&mut di::ProjectionAttemptWork>,
+) -> CoreResult<(Vec<Poly>, Vec<InitWork>)> {
     let b = Dictionary::get()?.basis(nodes)?;
     let h = p(times[1])?.sub(p(times[0])?)?;
     let mut out = vec![vec![zero(); nodes]; src.nz()];
@@ -477,7 +555,13 @@ pub fn reconstruct(
         for (v, a) in v[..x.len()].iter_mut().zip(x) {
             *v = di::mid(eval(a, p(node.value)?)?);
         }
-        let r = project(src, t, &v[..x.len()], seed, branch, policy, route, warp)?;
+        let r = if let Some(a) = audit.as_deref_mut() {
+            let (r, w) = project_audited(src, t, &v[..x.len()], seed, branch, policy, route, warp);
+            a.record(&w, r.is_ok());
+            r
+        } else {
+            project(src, t, &v[..x.len()], seed, branch, policy, route, warp)
+        }?;
         work.push(r.work);
         for (i, &z) in r.z.iter().enumerate() {
             for (k, a) in out[i].iter_mut().enumerate() {
