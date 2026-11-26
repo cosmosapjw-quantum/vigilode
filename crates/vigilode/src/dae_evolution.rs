@@ -292,6 +292,81 @@ impl Engine {
             .map_err(|e| CallbackError::Fatal(e.to_string()))
     }
 }
+fn reduced_problem(e: &Engine) -> Problem {
+    let nx = e.src.nx();
+    let a = e.clone();
+    let b = e.clone();
+    let c = e.clone();
+    Problem::new(nx, move |t, x, out| {
+        out.copy_from_slice(&a.fixed(t, x)?.xdot);
+        Ok(())
+    })
+    .jacobian(Jacobian::dense(move |t, x, out| {
+        let r = b.fixed(t, x)?;
+        for (i, row) in r.reduced_jacobian.iter().enumerate() {
+            out[i * nx..(i + 1) * nx].copy_from_slice(row);
+        }
+        Ok(())
+    }))
+    .time_derivative(move |t, x, out| {
+        let r = c.fixed(t, x)?;
+        let mut y = x.to_vec();
+        y.extend_from_slice(&r.z);
+        let j = c
+            .src
+            .jacobian_values(t, &y)
+            .map_err(|e| CallbackError::Fatal(e.to_string()))?;
+        let ft = c
+            .src
+            .time_values(t, &y)
+            .map_err(|e| CallbackError::Fatal(e.to_string()))?;
+        let n = y.len();
+        for i in 0..nx {
+            out[i] =
+                r.zt.iter()
+                    .enumerate()
+                    .fold(ft[i], |s, (k, &v)| j[i * n + nx + k].mul_add(v, s));
+        }
+        Ok(())
+    })
+}
+/// Prepare the same reduced callbacks used by evolve_epoch, from an
+/// original-source certified initialization. WARP setup needs an epoch
+/// window and is not supported by this direct client constructor.
+#[allow(clippy::too_many_arguments)]
+pub fn initialize_reduced_problem(
+    src: &DaeSource,
+    t: f64,
+    x: &[f64],
+    z: &[f64],
+    branch: &[[f64; 2]],
+    policy: EvolutionPolicy,
+    route: EvolutionRoute,
+) -> CoreResult<crate::polynomial_events::InitializedDae> {
+    if matches!(
+        route,
+        EvolutionRoute::Mass | EvolutionRoute::WarpDirect | EvolutionRoute::WarpFolded
+    ) {
+        return Err(bad("direct reduced client route"));
+    }
+    let report = src.initialize(t, x, z, branch, policy.init, route.init())?;
+    let e = Engine {
+        src: src.clone(),
+        branch: branch.to_vec(),
+        seed: report.z.clone(),
+        policy,
+        route,
+        warp: None,
+        work: Arc::new(Mutex::new(ProjectionWork::default())),
+        conservation: None,
+        audit: None,
+    };
+    Ok(crate::polynomial_events::InitializedDae {
+        problem: reduced_problem(&e),
+        initial_state: x.to_vec(),
+        report,
+    })
+}
 #[derive(Clone, Debug, Serialize)]
 pub struct Query {
     pub t: f64,
@@ -641,41 +716,7 @@ fn evolve_epoch_authority(
         };
         (a.problem, a.initial_state)
     } else {
-        let a = e.clone();
-        let b = e.clone();
-        let c = e.clone();
-        let p = Problem::new(nx, move |t, x, out| {
-            out.copy_from_slice(&a.fixed(t, x)?.xdot);
-            Ok(())
-        })
-        .jacobian(Jacobian::dense(move |t, x, out| {
-            let r = b.fixed(t, x)?;
-            for (i, row) in r.reduced_jacobian.iter().enumerate() {
-                out[i * nx..(i + 1) * nx].copy_from_slice(row);
-            }
-            Ok(())
-        }))
-        .time_derivative(move |t, x, out| {
-            let r = c.fixed(t, x)?;
-            let mut y = x.to_vec();
-            y.extend_from_slice(&r.z);
-            let j = c
-                .src
-                .jacobian_values(t, &y)
-                .map_err(|e| CallbackError::Fatal(e.to_string()))?;
-            let ft = c
-                .src
-                .time_values(t, &y)
-                .map_err(|e| CallbackError::Fatal(e.to_string()))?;
-            let n = y.len();
-            for i in 0..nx {
-                out[i] =
-                    r.zt.iter()
-                        .enumerate()
-                        .fold(ft[i], |s, (k, &v)| j[i * n + nx + k].mul_add(v, s));
-            }
-            Ok(())
-        });
+        let p = reduced_problem(&e);
         (p, x.to_vec())
     };
     update_audit(&audit, |a| a.driver_invoked = true);
