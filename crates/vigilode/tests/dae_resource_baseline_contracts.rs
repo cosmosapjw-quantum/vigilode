@@ -2578,3 +2578,69 @@ fn bounded_guard_inverse_workspace_contract() {
     assert!(ws.invert(3, &a, &mut out).is_err());
     assert_eq!(out, sentinel);
 }
+
+#[test]
+fn scalar_reuse_reconstruct_allocation_contract() {
+    warm();
+    const BRANCH: [[f64; 2]; 1] = [[-0.25, 1.25]];
+    let modes = graph(
+        "alternating",
+        EvolutionRoute::Reduced5,
+        ConservationRoute::Integral4,
+    );
+    let run = evolve_robertson_phase_atlas(
+        &modes,
+        0,
+        initial(2f64.powi(-26)),
+        [0., 0.002],
+        &opts(),
+        policy(),
+        pm(MultiGuardRoute::Correlated),
+        atlas_budget(),
+        PhaseReuseRoute::Reuse,
+    )
+    .unwrap();
+    assert_eq!(run.stop(), PhaseAtlasStop::Horizon);
+    let phase = &run.phases()[0];
+    let model = RobertsonModel::new(modes[phase.mode].rate).unwrap();
+    let s = &phase.original_slab_diagnostics()[0];
+    let src = model.source();
+    let init = src
+        .initialize(
+            0.,
+            &phase.initial.center(),
+            &[0.125],
+            &BRANCH,
+            policy().init,
+            InitRoute::Reuse,
+        )
+        .unwrap();
+    let power =
+        de::dense_power(&s.native.y0, &s.native.y1, &s.native.stages, s.native.basis).unwrap();
+    let (r, a) = measure(|| {
+        de::reconstruct(
+            src,
+            s.times,
+            &power,
+            &init.z,
+            &BRANCH,
+            policy().init,
+            InitRoute::Reuse,
+            None,
+            5,
+        )
+    });
+    let (z, _) = r.unwrap();
+    same(
+        &z.iter()
+            .map(|r| r.iter().map(|v| v.as_pair()).collect::<Vec<_>>())
+            .collect::<Vec<_>>(),
+        &s.power[power.len()..],
+    );
+    println!("RECONSTRUCT_REUSE_ALLOC {:?}", a);
+    assert!(
+        a.requests() <= 3,
+        "scalar reuse reconstruct owns {} allocations",
+        a.requests()
+    );
+}
