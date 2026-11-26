@@ -50,6 +50,7 @@ pub enum EvolutionRoute {
     BoundedVectorRefined5,
     Reduced5NormalLs,
     Reduced5BoundedLs,
+    BoundedSturm5,
 }
 impl EvolutionRoute {
     fn init(self) -> InitRoute {
@@ -60,7 +61,7 @@ impl EvolutionRoute {
             Self::BoundedPrepared5 | Self::BoundedPreparedLegendre5 => {
                 InitRoute::BoundedPreparedScalar
             }
-            Self::Scalar5 => InitRoute::ScalarRoot,
+            Self::Scalar5 | Self::BoundedSturm5 => InitRoute::ScalarRoot,
             Self::Affine5 => InitRoute::AffineExact,
             Self::BoundedAffine5 | Self::BoundedAffinePicard5 => InitRoute::BoundedAffineScalar,
             _ => InitRoute::Reuse,

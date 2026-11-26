@@ -4615,3 +4615,79 @@ fn source_linear_ls_portfolio() {
     );
     assert!(r.is_err());
 }
+
+fn nonlinear_scalar_fixture() -> DaeSource {
+    let x = || F::component(0, 0.);
+    let z = || F::component(1, 0.);
+    DaeSource::new(
+        vec![p(vec![tr(0.125, vec![]), tr(0.125, vec![z()])])],
+        vec![p(vec![
+            tr(1., vec![z(), z()]),
+            tr(-1., vec![x()]),
+            tr(-0.25, vec![]),
+        ])],
+    )
+    .unwrap()
+}
+#[test]
+fn bounded_sturm_actual_callbacks_noalloc() {
+    warm();
+    let src = nonlinear_scalar_fixture();
+    let branch = [[0.25, 1.25]];
+    let candidate = initialize_reduced_problem(
+        &src,
+        0.,
+        &[0.],
+        &[0.5],
+        &branch,
+        policy(),
+        EvolutionRoute::BoundedSturm5,
+    )
+    .unwrap();
+    let old = initialize_reduced_problem(
+        &src,
+        0.,
+        &[0.],
+        &[0.5],
+        &branch,
+        policy(),
+        EvolutionRoute::Scalar5,
+    )
+    .unwrap();
+    let t = 0.0625;
+    let x = [0.0625];
+    let mut values = [0.; 3];
+    let mut alloc = [Counts::default(); 3];
+    let mut expected = [0.; 3];
+    let vigilode::Jacobian::Dense(j) = candidate.problem.jacobian_provider() else {
+        panic!("dense")
+    };
+    let (r, a) = measure(|| (candidate.problem.rhs_fn())(t, &x, &mut values[..1]));
+    r.unwrap();
+    alloc[0] = a;
+    let (r, a) = measure(|| j(t, &x, &mut values[1..2]));
+    r.unwrap();
+    alloc[1] = a;
+    let (r, a) =
+        measure(|| candidate.problem.time_derivative_fn().unwrap()(t, &x, &mut values[2..]));
+    r.unwrap();
+    alloc[2] = a;
+    let vigilode::Jacobian::Dense(j) = old.problem.jacobian_provider() else {
+        panic!("dense")
+    };
+    (old.problem.rhs_fn())(t, &x, &mut expected[..1]).unwrap();
+    j(t, &x, &mut expected[1..2]).unwrap();
+    old.problem.time_derivative_fn().unwrap()(t, &x, &mut expected[2..]).unwrap();
+    for (v, e) in values.into_iter().zip(expected) {
+        assert!((v - e).abs() <= 1e-12);
+    }
+    println!(
+        "STURM_RED_GREEN {}",
+        serde_json::json!({"values":values,"reference":expected,"allocation":alloc})
+    );
+    assert_eq!(
+        alloc.map(|a| a.requests()),
+        [0; 3],
+        "actual nonlinear root-count callback allocations"
+    );
+}
