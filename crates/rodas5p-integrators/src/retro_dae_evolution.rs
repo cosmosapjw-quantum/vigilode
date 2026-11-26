@@ -1064,6 +1064,289 @@ fn reconstruct_recorded(
     }
     Ok((out, work))
 }
+/// Endpoint-only source linear transport: no replacement for the physical tube.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum PicardEndpointRoute {
+    OrderedWords,
+    Polynomial3,
+    Polynomial5,
+    Polynomial7,
+    Adaptive7,
+}
+#[derive(Clone, Copy, Debug, Serialize)]
+pub struct PicardEndpointBounds {
+    pub route: PicardEndpointRoute,
+    pub candidate_error: f64,
+    pub majorant: f64,
+    pub tail_upper: f64,
+    pub coefficient_perturbation: f64,
+    pub initial_error: f64,
+    pub iterations: usize,
+    pub matrix_actions: usize,
+    pub scalar_products: usize,
+}
+// Extract exactly the original declared differential source, with normalized
+// clock and augmented constant component. Reject nonlinear state dependence,
+// z dependence, and unsupported clock degree (no numerical fitting).
+fn linear_source_matrices(
+    src: &DaeSource,
+    times: [f64; 2],
+) -> CoreResult<([[Iv; 32 * 32]; 3], usize)> {
+    let nx = src.nx();
+    let n = nx + 1;
+    let h = p(times[1])?.sub(p(times[0])?)?;
+    if h.lo <= 0. {
+        return Err(bad("Picard clock"));
+    }
+    let mut a = [[zero(); 32 * 32]; 3];
+    for (i, eq) in src.f.iter().enumerate() {
+        for term in eq.terms() {
+            let mut poly = ScratchPoly::new(&[p(term.coefficient)?])?;
+            let mut state_factor = None;
+            for f in &term.factors {
+                if f.state.iter().any(|&(k, w)| k >= nx && w != 0.) {
+                    return Err(bad("Picard source depends on algebraic variable"));
+                }
+                if f.state.iter().any(|&(_, w)| w != 0.) {
+                    if state_factor.is_some() {
+                        return Err(bad("Picard nonlinear state product"));
+                    }
+                    state_factor = Some(f);
+                } else {
+                    let factor = [
+                        p(f.constant)?.add(p(times[0])?.scale(f.time)?)?,
+                        h.scale(f.time)?,
+                    ];
+                    poly = poly.mul(&factor)?;
+                }
+            }
+            for j in 0..n {
+                let v = if let Some(f) = state_factor {
+                    if j == nx {
+                        poly.mul(&[
+                            p(f.constant)?.add(p(times[0])?.scale(f.time)?)?,
+                            h.scale(f.time)?,
+                        ])?
+                    } else {
+                        let c = f
+                            .state
+                            .iter()
+                            .filter(|&&(k, _)| k == j)
+                            .try_fold(zero(), |s, &(_, w)| s.add(p(w)?))?;
+                        poly.scale(c)?
+                    }
+                } else if j == nx {
+                    poly
+                } else {
+                    continue;
+                };
+                if v.slice().iter().skip(3).any(|v| v.lo != 0. || v.hi != 0.) {
+                    return Err(bad("Picard normalized clock degree exceeds two"));
+                }
+                for (k, &v) in v.slice().iter().take(3).enumerate() {
+                    a[k][i * n + j] = a[k][i * n + j].add(v.mul(h)?)?;
+                }
+            }
+        }
+    }
+    Ok((a, n))
+}
+fn picard_majorant(a: &[[Iv; 32 * 32]; 3], n: usize) -> CoreResult<f64> {
+    let mut m = 0.;
+    for (k, ak) in a.iter().enumerate() {
+        let mut r = 0_f64;
+        for row in ak[..n * n].chunks_exact(n) {
+            r = r.max(row.iter().try_fold(0., |s, v| add_up(s, v.mag()))?);
+        }
+        m = add_up(m, div_up(r, (k + 1) as f64)?)?;
+    }
+    Ok(m)
+}
+fn picard_tail(norm: f64, m: f64, order: usize, gain: f64) -> CoreResult<f64> {
+    let mut t = norm;
+    for k in 1..=order + 1 {
+        t = div_up(mul_up(t, m)?, k as f64)?;
+    }
+    mul_up(t, gain)
+}
+/// Independent endpoint enclosure from the original linear differential
+/// source. The caller still needs the original branch and tube certificate.
+/// Successful polynomial variants use fixed storage, not a heap word tree.
+pub fn source_picard_endpoint(
+    src: &DaeSource,
+    times: [f64; 2],
+    y: &[Poly],
+    incoming: f64,
+    route: PicardEndpointRoute,
+) -> CoreResult<PicardEndpointBounds> {
+    crate::affine_event_certificate::check_affine_event_arithmetic()?;
+    let nx = src.nx();
+    if y.len() != nx + src.nz()
+        || y.iter().any(|v| v.is_empty() || v.len() > 5)
+        || !incoming.is_finite()
+        || incoming < 0.
+    {
+        return Err(bad("Picard endpoint shape"));
+    }
+    for v in y.iter().flatten() {
+        Iv::new(v.lo, v.hi)?;
+    }
+    let (a, n) = linear_source_matrices(src, times)?;
+    let m = picard_majorant(&a, n)?;
+    if m > 8. {
+        return Err(bad("Picard majorant too large"));
+    }
+    let gain = exp_interval(m)?.hi;
+    let mut initial = [0.; 32];
+    initial[nx] = 1.;
+    let mut left_error = 0_f64;
+    for (i, v) in y[..nx].iter().enumerate() {
+        initial[i] = di::mid(v[0]);
+        left_error = left_error.max(v[0].sub(p(initial[i])?)?.mag());
+    }
+    let norm = initial[..n].iter().fold(0_f64, |s, v| s.max(v.abs()));
+    let initial_error = mul_up(gain, add_up(incoming, left_error)?)?;
+    let mut out = PicardEndpointBounds {
+        route,
+        candidate_error: 0.,
+        majorant: m,
+        tail_upper: 0.,
+        coefficient_perturbation: 0.,
+        initial_error,
+        iterations: 0,
+        matrix_actions: 0,
+        scalar_products: 0,
+    };
+    let mut end = [zero(); 32];
+    let mut residual_radius = 0.;
+    if route == PicardEndpointRoute::OrderedWords {
+        let point = a
+            .each_ref()
+            .map(|a| DenseMatrix::new(n, n, a[..n * n].iter().copied().map(di::mid).collect()));
+        let [a0, a1, a2] = point;
+        let matrices = [a0?, a1?, a2?];
+        let mut delta = 0.;
+        for (k, ak) in a.iter().enumerate() {
+            let mut r = 0_f64;
+            for i in 0..n {
+                let mut s = 0.;
+                for j in 0..n {
+                    s = add_up(s, ak[i * n + j].sub(p(matrices[k][(i, j)])?)?.mag())?;
+                }
+                r = r.max(s);
+            }
+            delta = add_up(delta, div_up(r, (k + 1) as f64)?)?;
+        }
+        // Both exact and midpoint generators share the same pointwise
+        // majorant sum ||A_k|| u^k. Duhamel: exp(M)*||Y0||*int||Delta A||.
+        out.coefficient_perturbation = mul_up(gain, mul_up(norm, delta)?)?;
+        let r = crate::retro_foundation::ordered_picard(&matrices, &initial[..n])?;
+        out.iterations = 5;
+        out.matrix_actions = r.words;
+        out.scalar_products = r.words * n * n;
+        out.tail_upper = r.tail_upper;
+        residual_radius = add_up(r.error_upper, out.coefficient_perturbation)?;
+        for (v, &x) in end[..n].iter_mut().zip(&r.values) {
+            *v = p(x)?;
+        }
+    } else {
+        let cap = match route {
+            PicardEndpointRoute::Polynomial3 => 3,
+            PicardEndpointRoute::Polynomial5 => 5,
+            _ => 7,
+        };
+        let mut prev = [[zero(); 32]; 22];
+        let mut next = [[zero(); 32]; 22];
+        for i in 0..n {
+            prev[0][i] = p(initial[i])?;
+            end[i] = prev[0][i];
+        }
+        let mut degree = 0;
+        let mut terminated = false;
+        for order in 1..=cap {
+            let nd = degree + 3;
+            next[..=nd].fill([zero(); 32]);
+            for (k, v) in prev[..=degree].iter().enumerate() {
+                if v[..n].iter().all(|x| x.lo == 0. && x.hi == 0.) {
+                    continue;
+                }
+                for (j, aj) in a.iter().enumerate() {
+                    if aj[..n * n].iter().all(|x| x.lo == 0. && x.hi == 0.) {
+                        continue;
+                    }
+                    out.matrix_actions += 1;
+                    for i in 0..n {
+                        let mut s = zero();
+                        for l in 0..n {
+                            let c = aj[i * n + l];
+                            let x = v[l];
+                            if (c.lo == 0. && c.hi == 0.) || (x.lo == 0. && x.hi == 0.) {
+                                continue;
+                            }
+                            s = s.add(c.mul(x)?)?;
+                            out.scalar_products += 1;
+                        }
+                        next[k + j + 1][i] = next[k + j + 1][i].add(s)?;
+                    }
+                }
+            }
+            for (k, v) in next[..=nd].iter_mut().enumerate().skip(1) {
+                for i in 0..n {
+                    v[i] = v[i].div(p(k as f64)?)?;
+                    end[i] = end[i].add(v[i])?;
+                }
+            }
+            out.iterations = order;
+            if route == PicardEndpointRoute::Adaptive7
+                && next[..=nd]
+                    .iter()
+                    .all(|v| v[..n].iter().all(|x| x.lo == 0. && x.hi == 0.))
+            {
+                terminated = true;
+                break;
+            }
+            std::mem::swap(&mut prev, &mut next);
+            degree = nd;
+        }
+        out.tail_upper = if terminated {
+            0.
+        } else {
+            picard_tail(norm, m, cap, gain)?
+        };
+        residual_radius = out.tail_upper;
+    }
+    for (v, row) in end[..nx].iter().zip(&y[..nx]) {
+        out.candidate_error = out.candidate_error.max(v.sub(eval(row, p(1.)?)?)?.mag());
+    }
+    out.candidate_error = add_up(out.candidate_error, add_up(initial_error, residual_radius)?)?;
+    Ok(out)
+}
+/// Re-certify the original slab, then tighten ONLY the endpoint transport
+/// radius. Full tube and algebraic certificates remain untouched.
+#[allow(clippy::too_many_arguments)]
+pub fn certify_slab_with_picard(
+    src: &DaeSource,
+    times: [f64; 2],
+    y: &[Poly],
+    branch: &[[f64; 2]],
+    tube: f64,
+    incoming: Option<f64>,
+    green: bool,
+    condition_cap: f64,
+    route: PicardEndpointRoute,
+) -> CoreResult<SlabCertificate> {
+    let mut c = certify_slab(src, times, y, branch, tube, incoming, green, condition_cap)?;
+    if c.global_qualified {
+        let r = source_picard_endpoint(src, times, y, c.incoming, route)?;
+        c.outgoing = Some(
+            c.outgoing
+                .ok_or_else(|| bad("Picard original outgoing"))?
+                .min(r.candidate_error),
+        );
+        c.picard_endpoint = Some(r);
+    }
+    Ok(c)
+}
 #[derive(Clone, Debug, Serialize)]
 pub struct SlabCertificate {
     pub times: [f64; 2],
@@ -1079,6 +1362,8 @@ pub struct SlabCertificate {
     pub original_g_upper: f64,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub residual_variant: Option<SlabResidualBounds>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub picard_endpoint: Option<PicardEndpointBounds>,
     pub algebraic_defect: f64,
     pub differential_defect: f64,
     pub normalized_reduced_defect: f64,
@@ -1322,6 +1607,7 @@ pub fn certify_slab_with_residual(
         condition_upper,
         original_g_upper,
         residual_variant,
+        picard_endpoint: None,
         algebraic_defect: az,
         differential_defect: dx,
         normalized_reduced_defect: rnorm,

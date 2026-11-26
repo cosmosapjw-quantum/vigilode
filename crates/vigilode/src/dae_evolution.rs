@@ -42,6 +42,10 @@ pub enum EvolutionRoute {
     Reduced5Legendre,
     BoundedPreparedLegendre5,
     BoundedAffine5,
+    /// Source-bound endpoint variants; original full slab proof retained.
+    Reduced5OrderedPicard,
+    Reduced5PolynomialPicard,
+    BoundedAffinePicard5,
 }
 impl EvolutionRoute {
     fn init(self) -> InitRoute {
@@ -52,7 +56,7 @@ impl EvolutionRoute {
             }
             Self::Scalar5 => InitRoute::ScalarRoot,
             Self::Affine5 => InitRoute::AffineExact,
-            Self::BoundedAffine5 => InitRoute::BoundedAffineScalar,
+            Self::BoundedAffine5 | Self::BoundedAffinePicard5 => InitRoute::BoundedAffineScalar,
             _ => InitRoute::Reuse,
         }
     }
@@ -61,6 +65,15 @@ impl EvolutionRoute {
             self,
             Self::Reduced5Legendre | Self::BoundedPreparedLegendre5
         )
+    }
+    fn picard(self) -> Option<de::PicardEndpointRoute> {
+        match self {
+            Self::Reduced5OrderedPicard => Some(de::PicardEndpointRoute::OrderedWords),
+            Self::Reduced5PolynomialPicard | Self::BoundedAffinePicard5 => {
+                Some(de::PicardEndpointRoute::Adaptive7)
+            }
+            _ => None,
+        }
     }
     fn nodes(self) -> usize {
         if self == Self::Reduced3 { 3 } else { 5 }
@@ -222,6 +235,18 @@ impl Engine {
                 self.policy.init.condition_cap,
                 *route,
             )
+        } else if let Some(route) = self.route.picard() {
+            de::certify_slab_with_picard(
+                &self.src,
+                times,
+                power,
+                &self.branch,
+                self.policy.tube_radius,
+                incoming,
+                self.policy.green,
+                self.policy.init.condition_cap,
+                route,
+            )
         } else if self.route.spectral() {
             de::certify_slab_with_residual(
                 &self.src,
@@ -343,6 +368,9 @@ impl Engine {
                 | EvolutionRoute::Reduced5Legendre
                 | EvolutionRoute::BoundedPreparedLegendre5
                 | EvolutionRoute::BoundedAffine5
+                | EvolutionRoute::Reduced5OrderedPicard
+                | EvolutionRoute::Reduced5PolynomialPicard
+                | EvolutionRoute::BoundedAffinePicard5
         ) && self.src.nz() == 1
             && self.warp.is_none()
     }
@@ -352,7 +380,10 @@ impl Engine {
         let mut policy = self.policy.init;
         policy.mode = rodas5p_integrators::retro_dae_init::InitMode::ProjectAlgebraic;
         let seed = [self.seed[0].clamp(self.branch[0][0], self.branch[0][1])];
-        let (r, receipt) = if self.route == EvolutionRoute::BoundedAffine5 {
+        let (r, receipt) = if matches!(
+            self.route,
+            EvolutionRoute::BoundedAffine5 | EvolutionRoute::BoundedAffinePicard5
+        ) {
             self.src
                 .initialize_scalar_bounded_affine_audited(t, x, &seed, &self.branch, policy)
         } else if matches!(
@@ -799,7 +830,7 @@ fn evolve_epoch_authority(
     {
         return Err(bad("input/clock/dense scalar tolerance contract"));
     }
-    if conservation.is_some() && route.spectral() {
+    if conservation.is_some() && (route.spectral() || route.picard().is_some()) {
         return Err(bad("spectral route requires general slab authority"));
     }
     let initial = audited_init(src, start, x, z, branch, policy.init, route.init(), &audit)?;
