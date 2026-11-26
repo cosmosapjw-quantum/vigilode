@@ -686,3 +686,83 @@ fn affine_graph_degree_four_exact_and_tiny_defect_refusal() {
         }
     }
 }
+
+#[test]
+fn coupled_driver_diagnosis() {
+    let source = DaeSource::new(
+        vec![p(vec![c(1.)])],
+        vec![
+            p(vec![
+                l(1, 1.),
+                l(0, -1.),
+                tr(2., vec![t(), y(2)]),
+                tr(-4., vec![t(), y(0)]),
+            ]),
+            p(vec![
+                l(2, 1.),
+                l(0, -2.),
+                tr(-1., vec![t(), y(1)]),
+                tr(1., vec![t(), y(0)]),
+            ]),
+        ],
+    )
+    .unwrap();
+    let branch = [[-1., 1.], [-1., 1.]];
+    let epoch = EvolutionEpoch {
+        start: 0.,
+        end: 0.125,
+        incoming_x_error: Some(0.),
+    };
+    for solver in [
+        EvolutionRoute::Mass,
+        EvolutionRoute::Reduced5,
+        EvolutionRoute::Prepared5,
+    ] {
+        let (r, a) = evolve_epoch_audited(
+            &source,
+            &[0.],
+            &[0., 0.],
+            &branch,
+            epoch,
+            &opts(),
+            policy(),
+            solver,
+            &[],
+        );
+        match r {
+            Ok(r) => println!(
+                "DRIVER_DIAG {}",
+                serde_json::json!({"solver":solver,"status":format!("{:?}",r.driver().status),"last":r.driver().t.last(),"reason":r.reason,"stats":r.driver().stats,"audit":a})
+            ),
+            Err(e) => println!(
+                "DRIVER_DIAG {}",
+                serde_json::json!({"solver":solver,"error":e.to_string(),"audit":a})
+            ),
+        }
+    }
+    let prepared = initialize_reduced_problem(
+        &source,
+        0.,
+        &[0.],
+        &[0., 0.],
+        &branch,
+        policy(),
+        EvolutionRoute::Reduced5,
+    )
+    .unwrap();
+    for time in [0., 1e-8, 1e-6, 1e-5, 0.001, 0.01, 0.05, 0.125] {
+        let mut rhs = [0.];
+        let mut jac = [0.];
+        let mut ft = [0.];
+        let a = (prepared.problem.rhs_fn())(time, &[time], &mut rhs);
+        let vigilode::Jacobian::Dense(j) = prepared.problem.jacobian_provider() else {
+            panic!("dense")
+        };
+        let b = j(time, &[time], &mut jac);
+        let c = prepared.problem.time_derivative_fn().unwrap()(time, &[time], &mut ft);
+        println!(
+            "CALLBACK_DIAG {}",
+            serde_json::json!({"time":time,"rhs":format!("{a:?}"),"jac":format!("{b:?}"),"ft":format!("{c:?}"),"values":[rhs,jac,ft]})
+        );
+    }
+}
