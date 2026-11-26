@@ -1068,6 +1068,9 @@ pub enum GuardDerivativeRoute {
     BoundedPreparedSchur,
     BoundedPreparedDualCenteredGs2,
     ConservedSchurDualCentered,
+    /// Exact affine constraint graph candidate, admitted only by identity and branch proof.
+    SchurAffineGraph,
+    ConservedSchurAffineGraph,
 }
 /// Conditional interval linear refinement; never an independent slab certificate.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -1133,6 +1136,13 @@ impl GuardDerivativeRoute {
                 | Self::ConservedSchurGsAdaptive2
                 | Self::ConservedSchurCenteredGs2
                 | Self::ConservedSchurDualCentered
+                | Self::ConservedSchurAffineGraph
+        )
+    }
+    fn affine_graph(self) -> bool {
+        matches!(
+            self,
+            Self::SchurAffineGraph | Self::ConservedSchurAffineGraph
         )
     }
     fn bounded_prepared(self) -> bool {
@@ -1892,6 +1902,177 @@ fn guard_dual_direction(
     }
     Ok(sum)
 }
+// Bounded sparse multivariate polynomial identity proof. Index 0 denotes
+// no variable, 1 denotes clock, 2..nx+1 denote differential coordinates.
+// Each key is the sorted multiset of at most four variable indices.
+// Interval coefficients are outward; only exact [0,0] is deleted.
+#[derive(Clone, Copy)]
+struct AffineMonomial {
+    key: [u8; 4],
+    coefficient: Iv,
+}
+const AFFINE_MONOMIAL_CAP: usize = 256;
+const EMPTY_MONOMIAL: AffineMonomial = AffineMonomial {
+    key: [0; 4],
+    coefficient: Iv { lo: 0., hi: 0. },
+};
+fn affine_monomial_add(
+    out: &mut [AffineMonomial; AFFINE_MONOMIAL_CAP],
+    len: &mut usize,
+    key: [u8; 4],
+    v: Iv,
+) -> CoreResult<()> {
+    if v.lo == 0. && v.hi == 0. {
+        return Ok(());
+    }
+    if let Some(i) = out[..*len].iter().position(|e| e.key == key) {
+        let w = out[i].coefficient.add(v)?;
+        if w.lo == 0. && w.hi == 0. {
+            *len -= 1;
+            out[i] = out[*len];
+        } else {
+            out[i].coefficient = w;
+        }
+    } else {
+        if *len == out.len() {
+            return Err(bad("affine graph monomial capacity"));
+        }
+        out[*len] = AffineMonomial {
+            key,
+            coefficient: v,
+        };
+        *len += 1;
+    }
+    Ok(())
+}
+struct GuardAffineGraph {
+    coefficients: [[f64; 34]; 32],
+}
+impl GuardAffineGraph {
+    fn identity(&self, src: &DaeSource) -> CoreResult<()> {
+        let nx = src.nx();
+        for eq in &src.g {
+            let mut sum = [EMPTY_MONOMIAL; AFFINE_MONOMIAL_CAP];
+            let mut sl = 0;
+            let mut term = [EMPTY_MONOMIAL; AFFINE_MONOMIAL_CAP];
+            let mut next = [EMPTY_MONOMIAL; AFFINE_MONOMIAL_CAP];
+            for t in eq.terms() {
+                let mut tl = 0;
+                affine_monomial_add(&mut term, &mut tl, [0; 4], p(t.coefficient)?)?;
+                for f in &t.factors {
+                    let mut a = [zero(); 34];
+                    a[0] = p(f.constant)?;
+                    a[1] = p(f.time)?;
+                    for &(j, w) in &f.state {
+                        if j < nx {
+                            a[j + 2] = a[j + 2].add(p(w)?)?;
+                        } else {
+                            for (v, &c) in a[..nx + 2]
+                                .iter_mut()
+                                .zip(&self.coefficients[j - nx][..nx + 2])
+                            {
+                                *v = v.add(p(c)?.scale(w)?)?;
+                            }
+                        }
+                    }
+                    let mut nl = 0;
+                    for e in &term[..tl] {
+                        for (k, &v) in a[..nx + 2].iter().enumerate() {
+                            if v.lo == 0. && v.hi == 0. {
+                                continue;
+                            }
+                            let mut key = e.key;
+                            if k != 0 {
+                                let i = key
+                                    .iter()
+                                    .position(|&x| x == 0)
+                                    .ok_or_else(|| bad("affine graph degree cap"))?;
+                                key[i] = k as u8;
+                                key.sort_unstable();
+                            }
+                            affine_monomial_add(&mut next, &mut nl, key, e.coefficient.mul(v)?)?;
+                        }
+                    }
+                    std::mem::swap(&mut term, &mut next);
+                    tl = nl;
+                }
+                for e in &term[..tl] {
+                    affine_monomial_add(&mut sum, &mut sl, e.key, e.coefficient)?;
+                }
+            }
+            if sl != 0 {
+                return Err(bad("affine graph identity not proved"));
+            }
+        }
+        Ok(())
+    }
+    fn prove(src: &DaeSource, cert: &SlabCertificate) -> CoreResult<Self> {
+        let nx = src.nx();
+        let nz = src.nz();
+        let n = nx + nz;
+        if !cert.global_qualified
+            || cert.x_range.len() != nx
+            || cert.self_map_box.len() != nz
+            || !cert.branch_defect.is_finite()
+            || cert.branch_defect < 0.
+            || cert.branch_defect >= 1.
+        {
+            return Err(bad("affine graph original branch certificate"));
+        }
+        // An origin jet is only a numerical proposal. It need not be a
+        // physical point, and it does not confer source or root authority.
+        let mut values = [zero(); 32];
+        let mut jac = [[zero(); 33]; 32];
+        guard_source_rows(
+            &src.g,
+            zero(),
+            &[zero(); 32][..n],
+            &mut values[..nz],
+            &mut jac[..nz],
+        )?;
+        let mut center = [0.; 32 * 32];
+        for i in 0..nz {
+            for j in 0..nz {
+                center[i * nz + j] = di::mid(jac[i][1 + nx + j]);
+            }
+        }
+        let mut inv = [0.; 32 * 32];
+        GuardInverseWorkspace::new().invert(nz, &center[..nz * nz], &mut inv[..nz * nz])?;
+        let mut out = Self {
+            coefficients: [[0.; 34]; 32],
+        };
+        for i in 0..nz {
+            for k in 0..nx + 2 {
+                let mut v = 0.;
+                for j in 0..nz {
+                    let b = if k == 0 { values[j] } else { jac[j][k - 1] };
+                    v -= inv[i * nz + j] * di::mid(b);
+                }
+                if !v.is_finite() {
+                    return Err(bad("affine graph nonfinite proposal"));
+                }
+                out.coefficients[i][k] = v;
+            }
+        }
+        out.identity(src)?;
+        // The polynomial identity holds globally. The original slab's
+        // whole-branch uniqueness selects this root only if the whole graph
+        // is inside its certified self-map box, for ALL t,x in the tube.
+        let t = Iv::new(cert.times[0], cert.times[1])?;
+        for (i, b) in cert.self_map_box.iter().enumerate() {
+            let a = &out.coefficients[i];
+            let mut v = p(a[0])?.add(t.scale(a[1])?)?;
+            for (x, &k) in cert.x_range.iter().zip(&a[2..nx + 2]) {
+                v = v.add(Iv::new(x[0], x[1])?.scale(k)?)?;
+            }
+            let box_ = Iv::new(b[0], b[1])?;
+            if v.lo < box_.lo || v.hi > box_.hi {
+                return Err(bad("affine graph leaves certified branch self-map"));
+            }
+        }
+        Ok(out)
+    }
+}
 fn guard_centered_column(
     src: &DaeSource,
     time: Iv,
@@ -2233,6 +2414,15 @@ impl<'a> GuardProofCore<'a> {
             Ok(())
         };
         let hz = &h[1 + nx..];
+        let graph = if derivative.affine_graph() {
+            Some(observed_reset!(
+                audit,
+                affine_graph_proofs,
+                GuardAffineGraph::prove(src, cert)
+            )?)
+        } else {
+            None
+        };
         let dual = derivative.dual();
         let mut lambda = [0.; 32];
         let mut rz = [zero(); 32];
@@ -2273,6 +2463,19 @@ impl<'a> GuardProofCore<'a> {
             }
             solve(rhs, solved, Some(k), audit)?;
             reduced[k] = hk.add(guard_dot(hz, solved)?)?;
+            if let Some(graph) = &graph {
+                let mut slope = [0.; 32];
+                for (i, v) in slope[..nz].iter_mut().enumerate() {
+                    *v = graph.coefficients[i][k + 1];
+                }
+                // r=-D H, evaluated on the same full certified physical box.
+                let r = observed_reset!(
+                    audit,
+                    affine_graph_directions,
+                    guard_directional_residual(guard, time, physical, nx, k, &slope[..nz], true)
+                )?;
+                reduced[k] = intersect(reduced[k], -r)?;
+            }
             if let Some(centered) = dual {
                 direction.fill(0.);
                 direction[k] = 1.;
@@ -2763,6 +2966,10 @@ pub struct GuardKernelAudit {
     pub dual_source_evals: di::AttemptCount,
     #[serde(skip_serializing_if = "guard_attempt_empty")]
     pub dual_intersections: di::AttemptCount,
+    #[serde(skip_serializing_if = "guard_attempt_empty")]
+    pub affine_graph_proofs: di::AttemptCount,
+    #[serde(skip_serializing_if = "guard_attempt_empty")]
+    pub affine_graph_directions: di::AttemptCount,
 }
 fn guard_usize_zero(v: &usize) -> bool {
     *v == 0
@@ -2785,6 +2992,9 @@ impl GuardKernelAudit {
         self.bounded_residual_terms += b.bounded_residual_terms;
         self.dual_source_evals.merge(b.dual_source_evals);
         self.dual_intersections.merge(b.dual_intersections);
+        self.affine_graph_proofs.merge(b.affine_graph_proofs);
+        self.affine_graph_directions
+            .merge(b.affine_graph_directions);
     }
 }
 /// Retained separately from an owning vector certificate, even on Err.
