@@ -1,0 +1,332 @@
+{
+  "checks": [
+    "expected RED101 and GREEN0",
+    "360 native/168 vector actual builds, 400 nonprepared core noalloc and owned/core report equivalence",
+    "380 prior receipts and360 component receipts canonical nonallocation content unchanged",
+    "88 actual event roots including32 new centered",
+    "15 regression passed/3 ignored;3 safe unit passed",
+    "5508 dyadic samples and17584 polynomial bit checks",
+    "allocator positive/zero controls",
+    "historical input git blob hash verification; production prefix identity; unit source, format/diff checks"
+  ],
+  "claim_id": "M2-03d.5b.4",
+  "cleanup": {
+    "duplicate_log_payloads": 0,
+    "raw_bytes_removed": 1061817,
+    "unique_compressed_bytes": 30058
+  },
+  "command": [
+    "cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "--release",
+    "-p",
+    "vigilode",
+    "--features",
+    "polynomial-events",
+    "--test",
+    "dae_resource_baseline_contracts",
+    "guard_centered_native_portfolio",
+    "--",
+    "--ignored",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "declared_results": [
+    "SELECTION.json",
+    "COMPONENT_COMPARE.json",
+    "NATIVE_EVENT_COMPARE.json",
+    "SCAN_RECEIPTS.json"
+  ],
+  "environment": {
+    "hardware": "AMD Ryzen 9 5900X x86_64 (12C/24T; previously measured on same remote host)",
+    "software": [
+      {
+        "name": "rustc",
+        "version": "rustc 1.94.1 (e408947bf 2026-03-25)"
+      },
+      {
+        "name": "cargo",
+        "version": "cargo 1.94.1 (29ea6fb6a 2026-03-24)"
+      },
+      {
+        "name": "MathHarness General",
+        "version": "3.1.0; verified archive and 154 manifest entries"
+      }
+    ]
+  },
+  "input_artifacts": [
+    {
+      "current_sha256": "5a96ed349f8dae88440addbe9ba55198f82c47c4f18846a6b0a43e08a73e1718",
+      "path": "crates/rodas5p-integrators/src/retro_dae_evolution.rs",
+      "sha256": "c840830e3ad28366440b543aae83abbe17756ae5d45aebfc999b3a1fde5d0057",
+      "source_commit": "e1e5a72c3bb7ffdfab304ebb745ba4083a64180a",
+      "verified_git_blob_sha256": "c840830e3ad28366440b543aae83abbe17756ae5d45aebfc999b3a1fde5d0057"
+    },
+    {
+      "current_sha256": "dc5efb2bceb64fcb627d211a24a7252cb39ce3da8f212a0e1552f98b6ef9a006",
+      "path": "crates/vigilode/src/dae_evolution.rs",
+      "sha256": "dc5efb2bceb64fcb627d211a24a7252cb39ce3da8f212a0e1552f98b6ef9a006",
+      "source_commit": "e1e5a72c3bb7ffdfab304ebb745ba4083a64180a",
+      "verified_git_blob_sha256": "dc5efb2bceb64fcb627d211a24a7252cb39ce3da8f212a0e1552f98b6ef9a006"
+    },
+    {
+      "current_sha256": "554ec1d2faa204896b598fddb2ab46f6355824ce9652348479492c1b57af4ceb",
+      "path": "crates/vigilode/tests/dae_resource_baseline_contracts.rs",
+      "sha256": "554ec1d2faa204896b598fddb2ab46f6355824ce9652348479492c1b57af4ceb",
+      "source_commit": "e1e5a72c3bb7ffdfab304ebb745ba4083a64180a",
+      "verified_git_blob_sha256": "554ec1d2faa204896b598fddb2ab46f6355824ce9652348479492c1b57af4ceb"
+    },
+    {
+      "current_sha256": "89fe766680eb467d0aba2d7b467ed465ee33994b55921653cb4cc69006875ccc",
+      "path": "crates/vigilode/tests/dae_general_guard_contracts.rs",
+      "sha256": "89fe766680eb467d0aba2d7b467ed465ee33994b55921653cb4cc69006875ccc",
+      "source_commit": "e1e5a72c3bb7ffdfab304ebb745ba4083a64180a",
+      "verified_git_blob_sha256": "89fe766680eb467d0aba2d7b467ed465ee33994b55921653cb4cc69006875ccc"
+    },
+    {
+      "current_sha256": "b8c199f9f5d20fad9b189be880d94079e278c5838b2d6432edd334040e50ca14",
+      "path": "research/m2_dae_guard_centered_core_20261126/PREREGISTRATION.md",
+      "sha256": "b8c199f9f5d20fad9b189be880d94079e278c5838b2d6432edd334040e50ca14",
+      "source_commit": "e1e5a72c3bb7ffdfab304ebb745ba4083a64180a",
+      "verified_git_blob_sha256": "b8c199f9f5d20fad9b189be880d94079e278c5838b2d6432edd334040e50ca14"
+    },
+    {
+      "current_sha256": "69d8ff544b179ec3617ec0a6465c0704414777c17cbe9da11314782c764d3357",
+      "path": "research/m2_dae_guard_centered_core_20261126/guide.py",
+      "sha256": "69d8ff544b179ec3617ec0a6465c0704414777c17cbe9da11314782c764d3357",
+      "source_commit": "e1e5a72c3bb7ffdfab304ebb745ba4083a64180a",
+      "verified_git_blob_sha256": "69d8ff544b179ec3617ec0a6465c0704414777c17cbe9da11314782c764d3357"
+    },
+    {
+      "current_sha256": "66aa7b2c37f70da61232a9ac42a4efef5851636eb26bc2635471c2a91948b43e",
+      "path": "research/m2_dae_guard_centered_core_20261126/CANDIDATES.json",
+      "sha256": "66aa7b2c37f70da61232a9ac42a4efef5851636eb26bc2635471c2a91948b43e",
+      "source_commit": "e1e5a72c3bb7ffdfab304ebb745ba4083a64180a",
+      "verified_git_blob_sha256": "66aa7b2c37f70da61232a9ac42a4efef5851636eb26bc2635471c2a91948b43e"
+    },
+    {
+      "current_sha256": "d1b6b24738967c52e0954c20873c619f39b5693478b51cc9693a7432ea2bfe59",
+      "path": "research/m2_dae_guard_centered_core_20261126/HARNESS_ROUTES.json",
+      "sha256": "d1b6b24738967c52e0954c20873c619f39b5693478b51cc9693a7432ea2bfe59",
+      "source_commit": "e1e5a72c3bb7ffdfab304ebb745ba4083a64180a",
+      "verified_git_blob_sha256": "d1b6b24738967c52e0954c20873c619f39b5693478b51cc9693a7432ea2bfe59"
+    },
+    {
+      "current_sha256": "62cc8d9e66a0e288061d8c37e1bd84564e22046c142dab099bad9379b4c7ed17",
+      "path": "research/m2_dae_guard_centered_core_20261126/LITERATURE.md",
+      "sha256": "62cc8d9e66a0e288061d8c37e1bd84564e22046c142dab099bad9379b4c7ed17",
+      "source_commit": "e1e5a72c3bb7ffdfab304ebb745ba4083a64180a",
+      "verified_git_blob_sha256": "62cc8d9e66a0e288061d8c37e1bd84564e22046c142dab099bad9379b4c7ed17"
+    },
+    {
+      "current_sha256": "5a96ed349f8dae88440addbe9ba55198f82c47c4f18846a6b0a43e08a73e1718",
+      "path": "crates/rodas5p-integrators/src/retro_dae_evolution.rs",
+      "sha256": "5a96ed349f8dae88440addbe9ba55198f82c47c4f18846a6b0a43e08a73e1718",
+      "source_commit": "7b39db5be992a9663d8a8ab3f2d9f4771abb4f05",
+      "verified_git_blob_sha256": "5a96ed349f8dae88440addbe9ba55198f82c47c4f18846a6b0a43e08a73e1718"
+    }
+  ],
+  "mathematics": {
+    "assertion_tested": "400 nonprepared core builds plus 3 value queries zero heap; 260 prior native +120 prior vector canonical nonallocation receipts unchanged;100 native and48 vector new mutation parent containment/work;32 new actual event roots;5508 degree-four dyadic comparisons",
+    "bounds": {
+      "correction_sweep_cap": 2,
+      "native_rows": 360,
+      "source_factor_cap": 4,
+      "source_term_cap": 16,
+      "state_dimension_max": 32,
+      "vector_rows": 168
+    },
+    "coefficient_domain": "binary64 directed interval arithmetic; bounded native polynomial degree16, source degree<=4, state dimension<=32",
+    "conventions": "same certified full box, q<1, source directional residual with grouped original factors, correction enclosure intersected with baseline",
+    "inputs": [
+      "PREREGISTRATION.md",
+      "CANDIDATES.json",
+      "prior native/vector/component receipts"
+    ],
+    "non_claims": [
+      "full VG1",
+      "independent holdout",
+      "universal centered dominance",
+      "peak stack or timing advantage",
+      "default promotion"
+    ]
+  },
+  "outputs": [
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/BINARY.sha256",
+      "sha256": "b2a12fdaf6482891396d6191d31fd302a417a5c3b17c092897d9584456a1c1e7"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/COMPONENT_COMPARE.json",
+      "sha256": "e512bf6b591f93fc0c54fcbf292a12d19add9d98892d363366ac728460fd055f"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/NATIVE_EVENT_COMPARE.json",
+      "sha256": "a04ddb3f06a70b4fd420549d2277beb0900f8fc7652c26e23d0f8fa6cc146098"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/RAW_LOG_CLEANUP.json",
+      "sha256": "cbbfeb031d8ffdf22200c7d0d972a67736f9d3acf6024a044cf4b6af00551626"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/SCAN_RECEIPTS.json",
+      "sha256": "b2f84d99ced9a548a57fd7e7a2174c3fc5df628088d012143d033ad747c82b0d"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/SELECTION.json",
+      "sha256": "b2b0002f7535913710109d1e67c648eb8c5f7d2ae702cfd8b8d306e666b674d2"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/allocator.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/allocator.log.gz",
+      "sha256": "aea90ac0fe7715137f583609212775020a396c1ea5034b6b4aa4bc7e8ed3052d"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/components.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/components.log.gz",
+      "sha256": "b5492757eca33a25d7f43ab8d88cb863fad67fd7c9881608c7cfe092d60c9dc2"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/green.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/green.log.gz",
+      "sha256": "bcfaa2b6cae292364b2c80a6197a618aa3f5c53ef89325a2587df5c8ecad9297"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/green_final.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/green_final.log.gz",
+      "sha256": "7bdd4bfb0a0676987f6b09287f4487096bc401026873bdc592caa52347eb7022"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/harness.log.gz",
+      "sha256": "9260a0bb13533230e9af4edb27e502f41e3a97656ca5bd724753b173902568ec"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/native.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/native.log.gz",
+      "sha256": "8c62c9b0ef49f59a39bd32e623f6438c323725899df1ead412f5653b8933cded"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/red.exit",
+      "sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/red.log.gz",
+      "sha256": "e28d70b14031813352647e5a4096c88da37ed8b763c8e48b2213c33ba540c8e7"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/regression.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/regression.log.gz",
+      "sha256": "a5c5b68069a4f2f8efc86a547530f54aae2b7c42a990f624cb187f7f294d484b"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/selection.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/selection.log.gz",
+      "sha256": "8a74c858a0dda0e60d3f2214aa5aeeddf11ddbbfb5b66195e9568f49d5d3ab5b"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/unit.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/unit.log.gz",
+      "sha256": "733ab098ca427c8c2123a013f2e3b88ca5d26372dccf58c090b4a649b738b955"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/vector.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_centered_core_20261126/vector.log.gz",
+      "sha256": "ceef1ba66c37492df982677862b4d95970f194cd7fb86d77fa81692c6a9cdea9"
+    }
+  ],
+  "randomness": {
+    "additional_seeds": [
+      271828,
+      123407
+    ],
+    "generator": "Python random.Random for UCT/Bandit measured-table replay",
+    "seed": 1729,
+    "used": true
+  },
+  "repository": {
+    "commit": "e1e5a72c3bb7ffdfab304ebb745ba4083a64180a",
+    "dirty": true,
+    "tracked_dirty": false,
+    "unit_only_commit": "7b39db5be992a9663d8a8ab3f2d9f4771abb4f05",
+    "untracked_evidence": true
+  },
+  "residual_risks": [
+    "prepared inverse and owning report allocations",
+    "actual phase atlas/driver allocations remain",
+    "strong cancellation transversality unresolved",
+    "peak stack unmeasured",
+    "no independent reviewer or holdout"
+  ],
+  "result": "implementation-verified finite scope; nonprepared bounded guard core zero heap; full VG1 OPEN",
+  "run": {
+    "exit_status": 0,
+    "resource_limits": {
+      "cpu_seconds": null,
+      "max_cores": null,
+      "max_threads": 1,
+      "memory_bytes": null
+    },
+    "runtime_seconds": null,
+    "started_at": "",
+    "status": "completed",
+    "timing_note": "aggregate runtime not captured; per-test logs retain elapsed time"
+  },
+  "schema_version": 2
+}
