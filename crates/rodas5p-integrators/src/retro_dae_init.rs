@@ -329,12 +329,24 @@ impl DaeSource {
         if values.len() != n || jacobian.len() != n * stride {
             return Err(bad("interval source output shape"));
         }
+        self.fill_interval_workspace(t, y, work)?;
+        values.copy_from_slice(&work.values[..n]);
+        jacobian.copy_from_slice(&work.jacobian[..n * stride]);
+        Ok(())
+    }
+    // Shared staging kernel; no cached source authority. All rows overwritten.
+    fn fill_interval_workspace(
+        &self,
+        t: Iv,
+        y: &[Iv],
+        work: &mut IntervalEvalWorkspace,
+    ) -> CoreResult<()> {
+        self.interval_inputs(t, y)?;
+        let stride = y.len() + 1;
         for (i, eq) in self.f.iter().chain(&self.g).enumerate() {
             work.values[i] =
                 evaluate_row_bounded(eq, t, y, &mut work.jacobian[i * stride..(i + 1) * stride])?;
         }
-        values.copy_from_slice(&work.values[..n]);
-        jacobian.copy_from_slice(&work.jacobian[..n * stride]);
         Ok(())
     }
     /// Rounded original-source output, written atomically only after all
@@ -1234,30 +1246,21 @@ impl DaeSource {
 // Fixed-width scalar Reuse projection. Each call recomputes all source
 // evaluations and certificates; no cached state, factor, or authority.
 // The one-row faer 0.24.4 triangular base case is b * recip(a).
-struct ScalarEval {
-    values: [Iv; 32],
-    jac: [[Iv; 33]; 32],
-}
-impl ScalarEval {
-    fn new() -> Self {
-        Self {
-            values: [z(); 32],
-            jac: [[z(); 33]; 32],
-        }
+// Reuse the existing transactional interval evaluator workspace instead of
+// keeping a separate scalar-only Jacobian implementation.
+impl IntervalEvalWorkspace {
+    fn scalar_row(&self, i: usize, nx: usize) -> &[Iv] {
+        let stride = nx + 2;
+        &self.jacobian[i * stride..(i + 1) * stride]
     }
-    fn eval(&mut self, src: &DaeSource, t: f64, x: &[f64], a: Iv) -> CoreResult<()> {
+    fn scalar_eval(&mut self, src: &DaeSource, t: f64, x: &[f64], a: Iv) -> CoreResult<()> {
         let nx = src.nx();
         let mut y = [z(); 32];
         for (v, &x) in y[..nx].iter_mut().zip(x) {
             *v = p(x)?;
         }
         y[nx] = a;
-        let time = p(t)?;
-        for (i, eq) in src.f.iter().chain(&src.g).enumerate() {
-            self.values[i] =
-                evaluate_row_bounded(eq, time, &y[..nx + 1], &mut self.jac[i][..nx + 2])?;
-        }
-        Ok(())
+        src.fill_interval_workspace(p(t)?, &y[..nx + 1], self)
     }
 }
 /// Fixed-size, fully checked scalar Reuse projection result. It is not a
@@ -1426,11 +1429,11 @@ impl DaeSource {
         }
         w.admitted = true;
         let zi = nx + 1;
-        let mut work = ScalarEval::new();
-        let mut point = ScalarEval::new();
+        let mut work = IntervalEvalWorkspace::new();
+        let mut point = IntervalEvalWorkspace::new();
         macro_rules! eval {
             ($a:expr,$v:expr) => {{
-                let r = (|| $a.eval(self, t, x, $v))();
+                let r = (|| $a.scalar_eval(self, t, x, $v))();
                 w.evaluations.record(r.is_ok());
                 r?;
                 w.legacy.evaluations += 1;
@@ -1449,7 +1452,7 @@ impl DaeSource {
                 if r == 0. {
                     break;
                 }
-                let a = mid(work.jac[nx][zi]);
+                let a = mid(work.scalar_row(nx, nx)[zi]);
                 let mut d = [-mid(work.values[nx])];
                 scalar_batch(a, &mut d, w)?;
                 let mut accepted = false;
@@ -1477,12 +1480,12 @@ impl DaeSource {
         if residual > policy.residual_tol {
             return Err(bad("original constraint residual exceeds tolerance"));
         }
-        let a = mid(point.jac[nx][zi]);
+        let a = mid(point.scalar_row(nx, nx)[zi]);
         let mut c = [1.];
         scalar_batch(a, &mut c, w)?;
         let c = c[0];
         eval!(work, b);
-        let defect = scalar_defect(c, work.jac[nx][zi])?;
+        let defect = scalar_defect(c, work.scalar_row(nx, nx)[zi])?;
         let branch_defect = add_up(0., defect.mag())?;
         let gap = sub_down(1., branch_defect)?;
         if gap <= 0. {
@@ -1505,7 +1508,7 @@ impl DaeSource {
             return Err(bad("certified root distance exceeds tolerance"));
         }
         eval!(work, root);
-        let j = work.jac[nx][zi];
+        let j = work.scalar_row(nx, nx)[zi];
         let local_defect = add_up(0., scalar_defect(c, j)?.mag())?;
         let gap = sub_down(1., local_defect)?;
         if gap <= 0. {
@@ -1516,8 +1519,8 @@ impl DaeSource {
         if condition > policy.condition_cap {
             return Err(bad("certified condition exceeds cap"));
         }
-        let gc = &point.jac[nx];
-        let gr = &work.jac[nx];
+        let gc = point.scalar_row(nx, nx);
+        let gr = work.scalar_row(nx, nx);
         let mut rhs = [z(); 33];
         for k in 0..=nx {
             rhs[k] = -gr[k];
@@ -1555,8 +1558,10 @@ impl DaeSource {
         let mut reduced = [0.; 31 * 31];
         for i in 0..nx {
             for k in 0..nx {
-                let v = point.jac[i][k + 1].add(point.jac[i][zi].scale(sol[k + 1])?)?;
-                let exact = work.jac[i][k + 1].add(work.jac[i][zi].mul(enc[k + 1])?)?;
+                let v = point.scalar_row(i, nx)[k + 1]
+                    .add(point.scalar_row(i, nx)[zi].scale(sol[k + 1])?)?;
+                let exact = work.scalar_row(i, nx)[k + 1]
+                    .add(work.scalar_row(i, nx)[zi].mul(enc[k + 1])?)?;
                 let m = mid(v);
                 reduced[i * nx + k] = m;
                 derivative_error = derivative_error.max(distance(exact, m)?);

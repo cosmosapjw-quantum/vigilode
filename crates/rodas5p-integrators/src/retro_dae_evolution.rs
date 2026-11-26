@@ -537,6 +537,134 @@ pub fn reconstruct_audited(
     );
     (r, w)
 }
+/// Seed choices for the exact same scalar Reuse projection at dictionary nodes.
+/// Continuation is opt-in; a failed node is never silently retried.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum ReconstructionSeedRoute {
+    Fixed,
+    PreviousNode,
+}
+pub struct ScalarReconstructionWorkspace {
+    power: [Iv; 7],
+    work: [InitWork; 7],
+}
+impl ScalarReconstructionWorkspace {
+    pub fn new() -> Self {
+        Self {
+            power: [zero(); 7],
+            work: std::array::from_fn(|_| InitWork::default()),
+        }
+    }
+}
+impl Default for ScalarReconstructionWorkspace {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+#[allow(clippy::too_many_arguments)]
+fn reconstruct_scalar_inner(
+    src: &DaeSource,
+    times: [f64; 2],
+    x: &[Poly],
+    seed: &[f64],
+    branch: &[[f64; 2]],
+    policy: InitPolicy,
+    nodes: usize,
+    seed_route: ReconstructionSeedRoute,
+    mut audit: Option<&mut di::ProjectionAttemptWork>,
+    scratch: &mut ScalarReconstructionWorkspace,
+) -> CoreResult<()> {
+    let b = Dictionary::get()?.basis(nodes)?;
+    let h = p(times[1])?.sub(p(times[0])?)?;
+    if x.len() != src.nx() || src.nz() != 1 {
+        return Err(bad("reconstruction differential shape"));
+    }
+    let mut v = [0.; 32];
+    scratch.power[..nodes].fill(zero());
+    let mut last = None;
+    for (j, node) in b.nodes.iter().enumerate() {
+        let t = di::mid(p(times[0])?.add(h.scale(node.value)?)?);
+        for (v, a) in v[..x.len()].iter_mut().zip(x) {
+            *v = di::mid(eval(a, p(node.value)?)?);
+        }
+        let (r, w) = if branch.len() != 1
+            || !branch[0][0].is_finite()
+            || !branch[0][1].is_finite()
+            || branch[0][0] >= branch[0][1]
+        {
+            (Err(bad("branch shape")), di::InitAttemptWork::default())
+        } else if seed.len() != 1 {
+            (Err(bad("seed shape")), di::InitAttemptWork::default())
+        } else {
+            let z = if seed_route == ReconstructionSeedRoute::PreviousNode {
+                last.unwrap_or(seed[0])
+            } else {
+                seed[0]
+            };
+            let guess = [z.clamp(branch[0][0], branch[0][1])];
+            src.initialize_scalar_reuse_audited(
+                t,
+                &v[..x.len()],
+                &guess,
+                branch,
+                InitPolicy {
+                    mode: InitMode::ProjectAlgebraic,
+                    ..policy
+                },
+            )
+        };
+        if let Some(a) = audit.as_deref_mut() {
+            a.record(&w, r.is_ok());
+        }
+        let r = r?;
+        scratch.work[j] = r.work().clone();
+        last = Some(r.z());
+        for (k, a) in scratch.power[..nodes].iter_mut().enumerate() {
+            *a = a.add(b.monomial[j][k].enclosure.scale(r.z())?)?;
+        }
+    }
+    for v in &mut scratch.power[..nodes] {
+        *v = p(di::mid(*v))?;
+    }
+    Ok(())
+}
+/// Caller output committed only after every original-source node projection
+/// and coefficient operation succeeds. Audit keeps failed work. Native
+/// bounded scalar Reuse only; this is a candidate, not a slab certificate.
+#[allow(clippy::too_many_arguments)]
+pub fn reconstruct_scalar_reuse_into(
+    src: &DaeSource,
+    times: [f64; 2],
+    x: &[Poly],
+    seed: &[f64],
+    branch: &[[f64; 2]],
+    policy: InitPolicy,
+    seed_route: ReconstructionSeedRoute,
+    out: &mut [Iv],
+    work: &mut [InitWork],
+    audit: &mut di::ProjectionAttemptWork,
+    scratch: &mut ScalarReconstructionWorkspace,
+) -> CoreResult<()> {
+    if out.len() != work.len() {
+        return Err(bad("scalar reconstruction output shape"));
+    }
+    let nodes = out.len();
+    reconstruct_scalar_inner(
+        src,
+        times,
+        x,
+        seed,
+        branch,
+        policy,
+        nodes,
+        seed_route,
+        Some(audit),
+        scratch,
+    )?;
+    out.copy_from_slice(&scratch.power[..nodes]);
+    work.clone_from_slice(&scratch.work[..nodes]);
+    Ok(())
+}
 #[allow(clippy::too_many_arguments)]
 fn reconstruct_recorded(
     src: &DaeSource,
@@ -550,6 +678,25 @@ fn reconstruct_recorded(
     nodes: usize,
     mut audit: Option<&mut di::ProjectionAttemptWork>,
 ) -> CoreResult<(Vec<Poly>, Vec<InitWork>)> {
+    if src.nz() == 1 && route == InitRoute::Reuse && warp.is_none() {
+        let mut scratch = ScalarReconstructionWorkspace::new();
+        reconstruct_scalar_inner(
+            src,
+            times,
+            x,
+            seed,
+            branch,
+            policy,
+            nodes,
+            ReconstructionSeedRoute::Fixed,
+            audit,
+            &mut scratch,
+        )?;
+        return Ok((
+            vec![scratch.power[..nodes].to_vec()],
+            scratch.work[..nodes].to_vec(),
+        ));
+    }
     let b = Dictionary::get()?.basis(nodes)?;
     let h = p(times[1])?.sub(p(times[0])?)?;
     let mut out = vec![vec![zero(); nodes]; src.nz()];
