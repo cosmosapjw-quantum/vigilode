@@ -196,6 +196,244 @@ fn compose_owned(e: &DeclaredPolynomial, t: &[Iv], y: &[Poly]) -> CoreResult<Pol
     }
     Ok(out)
 }
+/// The residual basis changes the enclosure algorithm, never source or branch authority.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum SlabResidualRoute {
+    Bernstein,
+    LegendreInterval,
+    LegendreCentered,
+    HybridInterval,
+    HybridCentered,
+}
+#[derive(Clone, Copy, Debug, Serialize)]
+pub struct SlabResidualBounds {
+    pub route: SlabResidualRoute,
+    pub original_g_upper: f64,
+    pub preconditioned_g_upper: f64,
+    pub differential_defect: f64,
+    pub spectral_products: usize,
+    pub dictionary_center_products: usize,
+    pub linearization_entries: usize,
+}
+impl SlabResidualBounds {
+    fn new(route: SlabResidualRoute) -> Self {
+        Self {
+            route,
+            original_g_upper: 0.,
+            preconditioned_g_upper: 0.,
+            differential_defect: 0.,
+            spectral_products: 0,
+            dictionary_center_products: 0,
+            linearization_entries: 0,
+        }
+    }
+}
+// Shifted Legendre basis L_j(u)=P_j(2u-1). Exact coefficients of u^k:
+// c_k0=1/(k+1), c_k,j+1/c_kj=(2j+3)(k-j)/[(2j+1)(k+j+2)].
+// No rounded coefficient is silently treated as exact.
+fn power_legendre(a: &[Iv]) -> CoreResult<ScratchPoly> {
+    let mut out = ScratchPoly::new(a)?;
+    out.a.fill(zero());
+    for (k, &v) in a.iter().enumerate() {
+        let mut c = p(1.)?.div(p((k + 1) as f64)?)?;
+        for j in 0..=k {
+            out.a[j] = out.a[j].add(c.mul(v)?)?;
+            if j < k {
+                c = c
+                    .scale(((2 * j + 3) * (k - j)) as f64)?
+                    .div(p(((2 * j + 1) * (k + j + 2)) as f64)?)?;
+            }
+        }
+    }
+    Ok(out)
+}
+fn legendre_norm(a: &ScratchPoly) -> CoreResult<f64> {
+    a.slice().iter().try_fold(0., |s, v| add_up(s, v.mag()))
+}
+fn legendre_mul(
+    a: &ScratchPoly,
+    b: &ScratchPoly,
+    d: &Dictionary,
+    centered: bool,
+    w: &mut SlabResidualBounds,
+) -> CoreResult<ScratchPoly> {
+    if a.len == 0 || b.len == 0 || a.len > 9 || b.len > 9 {
+        return Err(bad("Legendre product operand degree"));
+    }
+    let len = a.len + b.len - 1;
+    let mut out = ScratchPoly::new(&[zero(); 17][..len])?;
+    let mut ac = [0.; 9];
+    let mut bc = [0.; 9];
+    let mut da = [zero(); 9];
+    let mut db = [zero(); 9];
+    w.spectral_products += 1;
+    if centered {
+        for i in 0..a.len {
+            ac[i] = di::mid(a.a[i]);
+            da[i] = a.a[i].sub(p(ac[i])?)?;
+        }
+        for j in 0..b.len {
+            bc[j] = di::mid(b.a[j]);
+            db[j] = b.a[j].sub(p(bc[j])?)?;
+        }
+        out.a = d.legendre_product(&ac[..a.len], &bc[..b.len])?;
+        w.dictionary_center_products += 1;
+    }
+    for t in d.products() {
+        if t.i >= a.len || t.j >= b.len {
+            continue;
+        }
+        let (i, j, k) = (t.i, t.j, t.k);
+        if k >= len {
+            return Err(bad("Legendre dictionary product degree"));
+        }
+        w.linearization_entries += if centered { 2 } else { 1 };
+        let term = if centered {
+            da[i]
+                .scale(bc[j])?
+                .add(db[j].scale(ac[i])?)?
+                .add(da[i].mul(db[j])?)?
+        } else {
+            a.a[i].mul(b.a[j])?
+        };
+        out.a[k] = out.a[k].add(t.coefficient.enclosure.mul(term)?)?;
+    }
+    Ok(out)
+}
+fn compose_legendre(
+    e: &DeclaredPolynomial,
+    t: &[Iv],
+    y: &[Poly],
+    d: &Dictionary,
+    centered: bool,
+    w: &mut SlabResidualBounds,
+) -> CoreResult<ScratchPoly> {
+    let mut out = ScratchPoly::new(&[zero()])?;
+    for term in e.terms() {
+        let mut factors = [ScratchPoly::new(&[p(1.)?])?; 4];
+        for (slot, f) in factors.iter_mut().zip(&term.factors) {
+            let mut power = ScratchPoly::new(&[p(f.constant)?])?
+                .add(ScratchPoly::new(t)?.scale(p(f.time)?)?.slice())?;
+            for &(i, c) in &f.state {
+                power = power.add(ScratchPoly::new(&y[i])?.scale(p(c)?)?.slice())?;
+            }
+            *slot = power_legendre(power.slice())?;
+        }
+        let v = match term.factors.len() {
+            0 => ScratchPoly::new(&[p(1.)?])?,
+            1 => factors[0],
+            2 => legendre_mul(&factors[0], &factors[1], d, centered, w)?,
+            3 => {
+                let a = legendre_mul(&factors[0], &factors[1], d, centered, w)?;
+                legendre_mul(&a, &factors[2], d, centered, w)?
+            }
+            4 => {
+                let a = legendre_mul(&factors[0], &factors[1], d, centered, w)?;
+                let b = legendre_mul(&factors[2], &factors[3], d, centered, w)?;
+                legendre_mul(&a, &b, d, centered, w)?
+            }
+            _ => return Err(bad("Legendre source degree")),
+        };
+        out = out.add(v.scale(p(term.coefficient)?)?.slice())?;
+    }
+    Ok(out)
+}
+/// Full normalized-slab original polynomial residual bounds, including
+/// original C*g and x_u - h*f. Only bounded native degree<=4 input.
+/// Success has no heap requests once the shared dictionary is initialized.
+/// A residual bound is not a complete physical slab certificate.
+pub fn slab_residual_bounds(
+    src: &DaeSource,
+    times: [f64; 2],
+    y: &[Poly],
+    c: &[f64],
+    route: SlabResidualRoute,
+) -> CoreResult<SlabResidualBounds> {
+    crate::affine_event_certificate::check_affine_event_arithmetic()?;
+    let nx = src.nx();
+    let nz = src.nz();
+    if y.len() != nx + nz
+        || y.iter().any(|r| r.is_empty() || r.len() > 5)
+        || c.len() != nz * nz
+        || !c.iter().all(|x| x.is_finite())
+    {
+        return Err(bad("bounded slab residual shape"));
+    }
+    for v in y.iter().flatten() {
+        Iv::new(v.lo, v.hi)?;
+    }
+    let h = p(times[1])?.sub(p(times[0])?)?;
+    if h.lo <= 0. {
+        return Err(bad("clock"));
+    }
+    let clock = [p(times[0])?, h];
+    let hybrid = matches!(
+        route,
+        SlabResidualRoute::HybridCentered | SlabResidualRoute::HybridInterval
+    );
+    let spectral = route != SlabResidualRoute::Bernstein;
+    let centered = matches!(
+        route,
+        SlabResidualRoute::LegendreCentered | SlabResidualRoute::HybridCentered
+    );
+    let mut w = SlabResidualBounds::new(route);
+    let modes = if hybrid { 2 } else { 1 };
+    for k in 0..modes {
+        let leg = spectral && k == 0;
+        let d = if leg { Some(Dictionary::get()?) } else { None };
+        let mut g = [ScratchPoly::new(&[zero()])?; 32];
+        let mut gu = 0_f64;
+        let mut cgu = 0_f64;
+        let mut dx = 0_f64;
+        let norm = |a: &ScratchPoly| {
+            if leg {
+                legendre_norm(a)
+            } else {
+                range(a.slice()).map(|v| v.mag())
+            }
+        };
+        for (o, eq) in g[..nz].iter_mut().zip(&src.g) {
+            *o = if let Some(d) = d {
+                compose_legendre(eq, &clock, y, d, centered, &mut w)?
+            } else {
+                compose_bounded(eq, &clock, y)?
+            };
+            gu = gu.max(norm(o)?);
+        }
+        for i in 0..nz {
+            let mut v = ScratchPoly::new(&[zero()])?;
+            for (a, row) in c[i * nz..(i + 1) * nz].iter().zip(&g[..nz]) {
+                v = v.add(row.scale(p(*a)?)?.slice())?;
+            }
+            cgu = cgu.max(norm(&v)?);
+        }
+        for (i, eq) in src.f.iter().enumerate() {
+            let mut du = ScratchPoly::new(&[])?;
+            du.len = y[i].len() - 1;
+            for (j, &v) in y[i].iter().enumerate().skip(1) {
+                du.a[j - 1] = v.scale(j as f64)?;
+            }
+            let f = if let Some(d) = d {
+                du = power_legendre(du.slice())?;
+                compose_legendre(eq, &clock, y, d, centered, &mut w)?
+            } else {
+                compose_bounded(eq, &clock, y)?
+            };
+            let r = du.add(f.scale(-h)?.slice())?;
+            dx = dx.max(norm(&r)?);
+        }
+        if k == 0 {
+            w.original_g_upper = gu;
+            w.preconditioned_g_upper = cgu;
+            w.differential_defect = dx;
+        } else {
+            w.original_g_upper = w.original_g_upper.min(gu);
+            w.preconditioned_g_upper = w.preconditioned_g_upper.min(cgu);
+            w.differential_defect = w.differential_defect.min(dx);
+        }
+    }
+    Ok(w)
+}
 fn pol_norm(p: &[Poly]) -> CoreResult<f64> {
     p.iter()
         .map(|r| range(r).map(|v| v.mag()))
@@ -792,6 +1030,8 @@ pub struct SlabCertificate {
     pub branch_defect: f64,
     pub condition_upper: f64,
     pub original_g_upper: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub residual_variant: Option<SlabResidualBounds>,
     pub algebraic_defect: f64,
     pub differential_defect: f64,
     pub normalized_reduced_defect: f64,
@@ -820,6 +1060,30 @@ pub fn certify_slab(
     incoming: Option<f64>,
     green: bool,
     condition_cap: f64,
+) -> CoreResult<SlabCertificate> {
+    certify_slab_with_residual(
+        src,
+        times,
+        y,
+        branch,
+        tube,
+        incoming,
+        green,
+        condition_cap,
+        SlabResidualRoute::Bernstein,
+    )
+}
+#[allow(clippy::too_many_arguments)]
+pub fn certify_slab_with_residual(
+    src: &DaeSource,
+    times: [f64; 2],
+    y: &[Poly],
+    branch: &[[f64; 2]],
+    tube: f64,
+    incoming: Option<f64>,
+    green: bool,
+    condition_cap: f64,
+    residual_route: SlabResidualRoute,
 ) -> CoreResult<SlabCertificate> {
     crate::affine_event_certificate::check_affine_event_arithmetic()?;
     let nx = src.nx();
@@ -935,30 +1199,42 @@ pub fn certify_slab(
     }
     // Original polynomial residuals. Preconditioned g is bounded on the
     // entire normalized slab, not from point residual samples.
-    let gp = src
-        .g
-        .iter()
-        .map(|g| compose(g, &clock, y))
-        .collect::<CoreResult<Vec<_>>>()?;
-    let original_g_upper = pol_norm(&gp)?;
-    let az = div_up(pol_norm(&c_polys(&c, &gp)?)?, gap)?;
-    let fp = src
-        .f
-        .iter()
-        .map(|f| compose(f, &clock, y))
-        .collect::<CoreResult<Vec<_>>>()?;
-    let residual = (0..nx)
-        .map(|i| {
-            let d = y[i]
+    let (original_g_upper, az, dx, residual_variant) =
+        if residual_route == SlabResidualRoute::Bernstein {
+            let gp = src
+                .g
                 .iter()
-                .enumerate()
-                .skip(1)
-                .map(|(k, v)| v.scale(k as f64))
+                .map(|g| compose(g, &clock, y))
                 .collect::<CoreResult<Vec<_>>>()?;
-            add(&d, &scale(&fp[i], -h)?)
-        })
-        .collect::<CoreResult<Vec<_>>>()?;
-    let dx = pol_norm(&residual)?;
+            let original_g_upper = pol_norm(&gp)?;
+            let az = div_up(pol_norm(&c_polys(&c, &gp)?)?, gap)?;
+            let fp = src
+                .f
+                .iter()
+                .map(|f| compose(f, &clock, y))
+                .collect::<CoreResult<Vec<_>>>()?;
+            let residual = (0..nx)
+                .map(|i| {
+                    let d = y[i]
+                        .iter()
+                        .enumerate()
+                        .skip(1)
+                        .map(|(k, v)| v.scale(k as f64))
+                        .collect::<CoreResult<Vec<_>>>()?;
+                    add(&d, &scale(&fp[i], -h)?)
+                })
+                .collect::<CoreResult<Vec<_>>>()?;
+            let dx = pol_norm(&residual)?;
+            (original_g_upper, az, dx, None)
+        } else {
+            let r = slab_residual_bounds(src, times, y, c.as_slice(), residual_route)?;
+            (
+                r.original_g_upper,
+                div_up(r.preconditioned_g_upper, gap)?,
+                r.differential_defect,
+                Some(r),
+            )
+        };
     // Include the approximate algebraic polynomial AND true root in f_z
     // bounds: all already lie in B. J_red computed over this safe box.
     let f = di::evaluate(&src.f, t, &all)?;
@@ -998,6 +1274,7 @@ pub fn certify_slab(
         branch_defect: q,
         condition_upper,
         original_g_upper,
+        residual_variant,
         algebraic_defect: az,
         differential_defect: dx,
         normalized_reduced_defect: rnorm,

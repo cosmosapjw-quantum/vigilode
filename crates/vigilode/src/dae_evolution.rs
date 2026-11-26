@@ -38,16 +38,27 @@ pub enum EvolutionRoute {
     Affine5,
     /// Explicit bounded prepared scalar projection candidate.
     BoundedPrepared5,
+    /// General (non-conserved) original-source hybrid spectral slab residual.
+    Reduced5Legendre,
+    BoundedPreparedLegendre5,
 }
 impl EvolutionRoute {
     fn init(self) -> InitRoute {
         match self {
             Self::Prepared5 => InitRoute::PreparedBatch,
-            Self::BoundedPrepared5 => InitRoute::BoundedPreparedScalar,
+            Self::BoundedPrepared5 | Self::BoundedPreparedLegendre5 => {
+                InitRoute::BoundedPreparedScalar
+            }
             Self::Scalar5 => InitRoute::ScalarRoot,
             Self::Affine5 => InitRoute::AffineExact,
             _ => InitRoute::Reuse,
         }
+    }
+    fn spectral(self) -> bool {
+        matches!(
+            self,
+            Self::Reduced5Legendre | Self::BoundedPreparedLegendre5
+        )
     }
     fn nodes(self) -> usize {
         if self == Self::Reduced3 { 3 } else { 5 }
@@ -209,6 +220,18 @@ impl Engine {
                 self.policy.init.condition_cap,
                 *route,
             )
+        } else if self.route.spectral() {
+            de::certify_slab_with_residual(
+                &self.src,
+                times,
+                power,
+                &self.branch,
+                self.policy.tube_radius,
+                incoming,
+                self.policy.green,
+                self.policy.init.condition_cap,
+                de::SlabResidualRoute::HybridCentered,
+            )
         } else {
             de::certify_slab(
                 &self.src,
@@ -312,7 +335,11 @@ impl Engine {
     fn scalar_callback(&self) -> bool {
         matches!(
             self.route,
-            EvolutionRoute::Reduced3 | EvolutionRoute::Reduced5 | EvolutionRoute::BoundedPrepared5
+            EvolutionRoute::Reduced3
+                | EvolutionRoute::Reduced5
+                | EvolutionRoute::BoundedPrepared5
+                | EvolutionRoute::Reduced5Legendre
+                | EvolutionRoute::BoundedPreparedLegendre5
         ) && self.src.nz() == 1
             && self.warp.is_none()
     }
@@ -322,7 +349,10 @@ impl Engine {
         let mut policy = self.policy.init;
         policy.mode = rodas5p_integrators::retro_dae_init::InitMode::ProjectAlgebraic;
         let seed = [self.seed[0].clamp(self.branch[0][0], self.branch[0][1])];
-        let (r, receipt) = if self.route == EvolutionRoute::BoundedPrepared5 {
+        let (r, receipt) = if matches!(
+            self.route,
+            EvolutionRoute::BoundedPrepared5 | EvolutionRoute::BoundedPreparedLegendre5
+        ) {
             self.src
                 .initialize_scalar_bounded_prepared_audited(t, x, &seed, &self.branch, policy)
         } else {
@@ -762,6 +792,9 @@ fn evolve_epoch_authority(
         || grid.windows(2).any(|v| v[0] >= v[1])
     {
         return Err(bad("input/clock/dense scalar tolerance contract"));
+    }
+    if conservation.is_some() && route.spectral() {
+        return Err(bad("spectral route requires general slab authority"));
     }
     let initial = audited_init(src, start, x, z, branch, policy.init, route.init(), &audit)?;
     let warp = match route {
