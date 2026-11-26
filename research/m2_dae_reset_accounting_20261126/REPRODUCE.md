@@ -1,0 +1,7 @@
+Branch research/m2-dae-reset-accounting-20261126. EXEC_SHA.txt, INPUT_SHA256SUMS and binary hashes bind execution.
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_reset_accounting_contracts -- --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_reset_accounting_contracts audited_training -- --ignored --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_reset_accounting_contracts training -- --ignored --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts component_replay -- --ignored --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts refusals -- --ignored --exact --nocapture --test-threads=1
+Restore raw focused, audited_training, training, components, refusals logs from gzip into scratch; audit.py uses prior sibling m2_dae_failure_accounting_20261126 logs/AUDIT.json. guide.py select consumes measured rows. guide.py generate verifies MathHarness archive and fresh exact ledger. RED_GREEN_TEST.rs is preimplementation test snapshot (expected compile failure at base: missing API). Compare keyed CELL bytes, not walltime. No holdout.
