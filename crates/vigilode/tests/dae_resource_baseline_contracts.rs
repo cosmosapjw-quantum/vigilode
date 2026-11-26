@@ -1882,3 +1882,327 @@ fn guard_borrowed_c_allocation_contract() {
         );
     }
 }
+
+#[test]
+#[ignore = "borrowed core and centered residual native portfolio"]
+fn guard_centered_native_portfolio() {
+    warm();
+    for solver in [
+        EvolutionRoute::Mass,
+        EvolutionRoute::Reduced5,
+        EvolutionRoute::Prepared5,
+        EvolutionRoute::Scalar5,
+        EvolutionRoute::Affine5,
+    ] {
+        for cert in [ConservationRoute::Max, ConservationRoute::Integral4] {
+            let modes = graph("alternating", solver, cert);
+            let (run, scan_alloc) = measure(|| {
+                evolve_robertson_phase_atlas(
+                    &modes,
+                    0,
+                    initial(2f64.powi(-26)),
+                    [0., 0.002],
+                    &opts(),
+                    policy(),
+                    pm(MultiGuardRoute::Correlated),
+                    atlas_budget(),
+                    PhaseReuseRoute::Reuse,
+                )
+            });
+            let run = run.unwrap();
+            assert_eq!(run.stop(), PhaseAtlasStop::Horizon);
+            println!(
+                "SCAN {}",
+                serde_json::json!({"solver":solver,"cert":cert,"allocation":scan_alloc,"stop":run.stop()})
+            );
+            let phase = &run.phases()[0];
+            let model = RobertsonModel::new(modes[phase.mode].rate).unwrap();
+            let s = &phase.original_slab_diagnostics()[0];
+            let c = s.certificate.as_ref().unwrap();
+            assert!(c.global_qualified);
+            let power: Vec<Vec<Iv>> = s
+                .power
+                .iter()
+                .map(|row| row.iter().map(|v| Iv::new(v[0], v[1]).unwrap()).collect())
+                .collect();
+            let guard = &modes[phase.mode].guards[0];
+            for derivative in [
+                GuardDerivativeRoute::Tangent,
+                GuardDerivativeRoute::Schur,
+                GuardDerivativeRoute::PreparedSchur,
+                GuardDerivativeRoute::ConservedSchur,
+                GuardDerivativeRoute::SchurRefine1,
+                GuardDerivativeRoute::SchurRefine2,
+                GuardDerivativeRoute::PreparedSchurRefine2,
+                GuardDerivativeRoute::ConservedSchurRefine2,
+                GuardDerivativeRoute::SchurGs1,
+                GuardDerivativeRoute::SchurGs2,
+                GuardDerivativeRoute::SchurGsAdaptive2,
+                GuardDerivativeRoute::PreparedSchurGs2,
+                GuardDerivativeRoute::ConservedSchurGsAdaptive2,
+                GuardDerivativeRoute::SchurCentered,
+                GuardDerivativeRoute::SchurCenteredGrouped,
+                GuardDerivativeRoute::SchurCenteredGs2,
+                GuardDerivativeRoute::PreparedSchurCenteredGs2,
+                GuardDerivativeRoute::ConservedSchurCenteredGs2,
+            ] {
+                for value in [GuardValueRoute::Box, GuardValueRoute::Transport] {
+                    let mut audit = de::GuardKernelAudit::default();
+                    let (r, a) = measure(|| {
+                        de::GuardProof::new_recorded(
+                            model.source(),
+                            guard,
+                            &power,
+                            c,
+                            derivative,
+                            value,
+                            &mut audit,
+                        )
+                    });
+                    let result = match r {
+                        Ok(g) => {
+                            let mut caudit = de::GuardKernelAudit::default();
+                            let ((core, queries), core_alloc) = measure(|| {
+                                let core = de::GuardProofCore::new_recorded(
+                                    model.source(),
+                                    guard,
+                                    &power,
+                                    c,
+                                    derivative,
+                                    value,
+                                    &mut caudit,
+                                )
+                                .unwrap();
+                                let mid = c.times[0] + (c.times[1] - c.times[0]) * 0.5;
+                                let queries = [c.times[0], mid, c.times[1]].map(|t| {
+                                    core.value_at(t, c.whole_x_error.unwrap())
+                                        .unwrap()
+                                        .as_pair()
+                                });
+                                (core, queries)
+                            });
+                            let (report, report_alloc) = measure(|| core.owned_evidence());
+                            assert_eq!(
+                                serde_json::to_value(&report).unwrap(),
+                                serde_json::to_value(&g.evidence).unwrap()
+                            );
+                            assert_eq!(
+                                serde_json::to_value(&caudit).unwrap(),
+                                serde_json::to_value(&audit).unwrap()
+                            );
+                            if !matches!(
+                                derivative,
+                                GuardDerivativeRoute::PreparedSchur
+                                    | GuardDerivativeRoute::PreparedSchurRefine2
+                                    | GuardDerivativeRoute::PreparedSchurGs2
+                                    | GuardDerivativeRoute::PreparedSchurCenteredGs2
+                            ) {
+                                assert_eq!(core_alloc.requests(), 0);
+                                assert_eq!(core_alloc.requested_bytes, 0);
+                            }
+                            println!(
+                                "CORE {}",
+                                serde_json::json!({"solver":solver,"cert":cert,"derivative":derivative,"value":value,"core":core_alloc,"report":report_alloc,"queries":queries})
+                            );
+                            let t = c.times[0] + (c.times[1] - c.times[0]) * 0.5;
+                            let v = g.value_at(t, c.whole_x_error.unwrap()).unwrap();
+                            let left = g.value_at(c.times[0], c.whole_x_error.unwrap()).unwrap();
+                            let right = g.value_at(c.times[1], c.whole_x_error.unwrap()).unwrap();
+                            assert_eq!(queries, [left.as_pair(), v.as_pair(), right.as_pair()]);
+                            serde_json::json!({"evidence":g.evidence,"mid_value":v.as_pair(),"left_value":left.as_pair(),"right_value":right.as_pair()})
+                        }
+                        Err(e) => serde_json::json!({"error":e.to_string()}),
+                    };
+                    println!(
+                        "GUARD {}",
+                        serde_json::json!({"solver":solver,"cert":cert,"derivative":derivative,"value":value,"allocation":a,"audit":audit,"result":result})
+                    );
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn guard_centered_vector_portfolio() {
+    warm();
+    let iv = |v: f64| Iv::point(v).unwrap();
+    let lin = |k: usize, w: f64| tr(w, vec![F::component(k, 0.)]);
+    let clock = |w: f64| tr(w, vec![F::clock(0.)]);
+    let cross = |k: usize, w: f64| tr(w, vec![F::clock(0.), F::component(k, 0.)]);
+    let covers = |v: [f64; 2], x: f64| v[0] <= x && x <= v[1];
+    for (case, a, b, step) in [
+        ("weak", 0.5, 0.25, 0.125),
+        ("moderate", 1., 0.5, 0.125),
+        ("coupled", 2., -1., 0.125),
+    ] {
+        let src = DaeSource::new(
+            vec![p(vec![tr(1., vec![])])],
+            vec![
+                p(vec![
+                    lin(1, 1.),
+                    lin(0, -1.),
+                    cross(2, a),
+                    cross(0, -2. * a),
+                ]),
+                p(vec![lin(2, 1.), lin(0, -2.), cross(1, b), cross(0, -b)]),
+            ],
+        )
+        .unwrap();
+        let power = vec![
+            vec![iv(0.), iv(step)],
+            vec![iv(0.), iv(step)],
+            vec![iv(0.), iv(2. * step)],
+        ];
+        let cert = de::certify_slab(
+            &src,
+            [0., step],
+            &power,
+            &[[-1., 1.], [-1., 1.]],
+            0.01,
+            Some(0.),
+            true,
+            1e6,
+        )
+        .unwrap();
+        assert!(cert.global_qualified, "{}", case);
+        for (name, guard, dx, dt) in [
+            (
+                "algebraic",
+                p(vec![lin(1, 1.), lin(2, 0.25), tr(-0.0625, vec![])]),
+                1.5,
+                0.,
+            ),
+            (
+                "cancellation",
+                p(vec![
+                    lin(2, 1.),
+                    lin(0, -2.),
+                    clock(0.25),
+                    tr(-0.015625, vec![]),
+                ]),
+                0.,
+                0.25,
+            ),
+        ] {
+            for route in [
+                GuardDerivativeRoute::Tangent,
+                GuardDerivativeRoute::Schur,
+                GuardDerivativeRoute::PreparedSchur,
+                GuardDerivativeRoute::SchurRefine1,
+                GuardDerivativeRoute::SchurRefine2,
+                GuardDerivativeRoute::PreparedSchurRefine2,
+                GuardDerivativeRoute::SchurGs1,
+                GuardDerivativeRoute::SchurGs2,
+                GuardDerivativeRoute::SchurGsAdaptive2,
+                GuardDerivativeRoute::PreparedSchurGs2,
+                GuardDerivativeRoute::SchurCentered,
+                GuardDerivativeRoute::SchurCenteredGrouped,
+                GuardDerivativeRoute::SchurCenteredGs2,
+                GuardDerivativeRoute::PreparedSchurCenteredGs2,
+            ] {
+                for value in [GuardValueRoute::Box, GuardValueRoute::Transport] {
+                    let mut audit = de::GuardKernelAudit::default();
+                    let (r, allocation) = measure(|| {
+                        de::GuardProof::new_recorded(
+                            &src, &guard, &power, &cert, route, value, &mut audit,
+                        )
+                    });
+                    let r = r.unwrap();
+                    let mut caudit = de::GuardKernelAudit::default();
+                    let ((core, queries), core_alloc) = measure(|| {
+                        let core = de::GuardProofCore::new_recorded(
+                            &src,
+                            &guard,
+                            &power,
+                            &cert,
+                            route,
+                            value,
+                            &mut caudit,
+                        )
+                        .unwrap();
+                        let queries = [0., step / 2., step].map(|t| {
+                            core.value_at(t, cert.whole_x_error.unwrap())
+                                .unwrap()
+                                .as_pair()
+                        });
+                        (core, queries)
+                    });
+                    let (report, report_alloc) = measure(|| core.owned_evidence());
+                    assert_eq!(
+                        serde_json::to_value(&report).unwrap(),
+                        serde_json::to_value(&r.evidence).unwrap()
+                    );
+                    assert_eq!(
+                        serde_json::to_value(&caudit).unwrap(),
+                        serde_json::to_value(&audit).unwrap()
+                    );
+                    if !matches!(
+                        route,
+                        GuardDerivativeRoute::PreparedSchur
+                            | GuardDerivativeRoute::PreparedSchurRefine2
+                            | GuardDerivativeRoute::PreparedSchurGs2
+                            | GuardDerivativeRoute::PreparedSchurCenteredGs2
+                    ) {
+                        assert_eq!(core_alloc.requests(), 0);
+                        assert_eq!(core_alloc.requested_bytes, 0);
+                    }
+                    println!(
+                        "VECTOR_CORE {}",
+                        serde_json::json!({"case":case,"guard":name,"derivative":route,"value":value,"core":core_alloc,"report":report_alloc,"queries":queries})
+                    );
+                    assert!(
+                        covers(r.evidence.reduced_gradient[0], dx),
+                        "{case} {route:?} gradient"
+                    );
+                    assert!(
+                        covers(r.evidence.reduced_clock, dt),
+                        "{case} {route:?} clock"
+                    );
+                    assert!(
+                        covers(r.evidence.velocity, dx + dt),
+                        "{case} {route:?} velocity"
+                    );
+                    let mut values = Vec::new();
+                    for t in [0., step / 2., step] {
+                        let v = r
+                            .value_at(t, cert.whole_x_error.unwrap())
+                            .unwrap()
+                            .as_pair();
+                        let exact = if name == "algebraic" {
+                            1.5 * t - 0.0625
+                        } else {
+                            0.25 * t - 0.015625
+                        };
+                        assert!(
+                            covers(v, exact),
+                            "{case} {name} {route:?} {value:?} time {t}"
+                        );
+                        values.push(v);
+                    }
+                    assert_eq!(values, queries);
+                    println!(
+                        "VECTOR {}",
+                        serde_json::json!({"case":case,"guard":name,"derivative":route,"value":value,"allocation":allocation,"audit":audit,"evidence":r.evidence,"values":values,"branch_defect":cert.branch_defect})
+                    );
+                }
+            }
+            let mut audit = de::GuardKernelAudit::default();
+            let fail = de::GuardProof::new_recorded(
+                &src,
+                &guard,
+                &power,
+                &cert,
+                GuardDerivativeRoute::ConservedSchurCenteredGs2,
+                GuardValueRoute::Box,
+                &mut audit,
+            );
+            assert!(
+                fail.is_err()
+                    && audit.builds.started == 1
+                    && audit.builds.returned == 0
+                    && audit.refinement_sweeps.started == 0
+            );
+        }
+    }
+}

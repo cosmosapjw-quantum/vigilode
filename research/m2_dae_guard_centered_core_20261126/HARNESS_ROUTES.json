@@ -1,0 +1,1211 @@
+{
+  "domain_hint": "numerical_analysis",
+  "families": [
+    "algebra",
+    "algebraic_geometry",
+    "analysis",
+    "calculus",
+    "calculus_of_variations",
+    "category_theory",
+    "combinatorics",
+    "commutative_algebra",
+    "computability",
+    "convex_geometry",
+    "counterexample",
+    "differential_equations",
+    "differential_topology",
+    "discrete_geometry",
+    "dynamical_systems",
+    "enumerative_combinatorics",
+    "formulation",
+    "functional_analysis",
+    "geometric_measure_theory",
+    "geometry",
+    "harmonic_analysis",
+    "homological_algebra",
+    "information_theory",
+    "linear_algebra",
+    "logic",
+    "mathematical_physics",
+    "measure_theory",
+    "model_theory",
+    "number_theory",
+    "numerical_analysis",
+    "numerical_linear_algebra",
+    "operator_semigroups",
+    "operator_theory",
+    "optimization",
+    "partial_differential_equations",
+    "probability",
+    "proof_complexity",
+    "real_analysis",
+    "representation_theory",
+    "scattering_theory",
+    "set_theory",
+    "spectral_graph_theory",
+    "spectral_theory",
+    "symplectic_geometry",
+    "topology",
+    "type_theory"
+  ],
+  "family_count": 46,
+  "route_count": 64,
+  "routes": [
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R001",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "numerical_analysis",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: a posteriori residual bound",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "NUMERICAL_ANALYSIS-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "a posteriori residual bound"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R002",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "algebra",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: normal-form / Groebner reduction",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "ALGEBRA-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "normal-form / Groebner reduction"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R003",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "analysis",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: epsilon-delta proof with explicit quantifier ledger",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "ANALYSIS-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "epsilon-delta proof with explicit quantifier ledger"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R004",
+      "checker_or_backend": "SOS/Bernstein/Sturm/interval checker",
+      "family": "real_analysis",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "uniform scalar inequality or convergence lemma",
+      "primary_obstruction": "endpoint, equality, quantifier uniformity",
+      "proof_effect": "NONE",
+      "route_id": "REAL_ANALYSIS-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "interval enclosure"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R005",
+      "checker_or_backend": "exact polynomial calculus + formal kernel",
+      "family": "calculus",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "explicit derivative/Jacobian identity",
+      "primary_obstruction": "boundary terms, degeneracy, parameter dependence",
+      "proof_effect": "NONE",
+      "route_id": "CALCULUS-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "differentiate and identify monotonicity"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R006",
+      "checker_or_backend": "HOL Light/Lean/Coq after type inventory",
+      "family": "operator_theory",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "typed operator identity and domain contract",
+      "primary_obstruction": "closedness, adjoints, range, noncommutativity",
+      "proof_effect": "NONE",
+      "route_id": "OPERATOR_THEORY-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "typed block-operator identity with domain audit"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R007",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "number_theory",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: congruence and local obstruction",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "NUMBER_THEORY-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "congruence and local obstruction"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R008",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "logic",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: formalize definitions and binder scopes",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "LOGIC-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "formalize definitions and binder scopes"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R009",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "numerical_linear_algebra",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: backward error and residual certificate",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "NUMERICAL_LINEAR_ALGEBRA-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "backward error and residual certificate"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R010",
+      "checker_or_backend": "exact rational matrix checker",
+      "family": "linear_algebra",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "exact finite-dimensional block identity",
+      "primary_obstruction": "dimension mismatch, rank defect, noncommutation",
+      "proof_effect": "NONE",
+      "route_id": "LINEAR_ALGEBRA-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "rank-nullity and invariant subspaces"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R011",
+      "checker_or_backend": "HOL Light/Lean",
+      "family": "functional_analysis",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "range/graph-norm/duality lemma",
+      "primary_obstruction": "surjectivity, domain mismatch, weak limits",
+      "proof_effect": "NONE",
+      "route_id": "FUNCTIONAL_ANALYSIS-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "closed graph / uniform boundedness"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R012",
+      "checker_or_backend": "HOL Light/Mathlib plus analytic proof",
+      "family": "spectral_theory",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "resolvent or spectral-measure representation",
+      "primary_obstruction": "atoms, continuous spectrum, endpoint limits",
+      "proof_effect": "NONE",
+      "route_id": "SPECTRAL_THEORY-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "Weyl criterion and approximate eigenvectors"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R013",
+      "checker_or_backend": "Mathlib/Lean or paper proof",
+      "family": "measure_theory",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "positive measure or disintegration lemma",
+      "primary_obstruction": "sigma-finiteness, null sets, uniform integrability",
+      "proof_effect": "NONE",
+      "route_id": "MEASURE_THEORY-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "Tonelli/Fubini with sigma-finiteness ledger"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R014",
+      "checker_or_backend": "interval/Fourier library plus external proof",
+      "family": "harmonic_analysis",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "Fourier or oscillatory-integral estimate",
+      "primary_obstruction": "endpoint loss, frequency tails, normalization",
+      "proof_effect": "NONE",
+      "route_id": "HARMONIC_ANALYSIS-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "Fourier multiplier and Plancherel"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R015",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "differential_equations",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: energy estimate and Gronwall",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "DIFFERENTIAL_EQUATIONS-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "energy estimate and Gronwall"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R016",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "partial_differential_equations",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: weak formulation and test-function density",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "PARTIAL_DIFFERENTIAL_EQUATIONS-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "weak formulation and test-function density"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R017",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "probability",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: conditioning and tower property",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "PROBABILITY-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "conditioning and tower property"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R018",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "combinatorics",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: double counting / incidence matrix",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "COMBINATORICS-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "double counting / incidence matrix"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R019",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "geometry",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: coordinate-free invariant reduction",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "GEOMETRY-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "coordinate-free invariant reduction"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R020",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "topology",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: open-cover / compactness argument",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "TOPOLOGY-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "open-cover / compactness argument"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R021",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "optimization",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: convex duality / separating hyperplane",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "OPTIMIZATION-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "convex duality / separating hyperplane"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R022",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "mathematical_physics",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: symmetry reduction and conserved quantities",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "MATHEMATICAL_PHYSICS-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "symmetry reduction and conserved quantities"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R023",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "algebraic_geometry",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: elimination ideal and projection",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "ALGEBRAIC_GEOMETRY-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "elimination ideal and projection"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R024",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "dynamical_systems",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: Lyapunov function and invariant set",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "DYNAMICAL_SYSTEMS-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "Lyapunov function and invariant set"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R025",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "category_theory",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: universal-property characterization",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "CATEGORY_THEORY-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "universal-property characterization"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R026",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "information_theory",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: relative entropy positivity and equality case",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "INFORMATION_THEORY-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "relative entropy positivity and equality case"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R027",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "model_theory",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: construct a model or countermodel",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "MODEL_THEORY-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "construct a model or countermodel"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R028",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "type_theory",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: dependent-type statement elaboration",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "TYPE_THEORY-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "dependent-type statement elaboration"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R029",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "set_theory",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: well-ordering / transfinite induction",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "SET_THEORY-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "well-ordering / transfinite induction"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R030",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "representation_theory",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: decompose into invariant subspaces and irreducibles",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "REPRESENTATION_THEORY-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "decompose into invariant subspaces and irreducibles"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R031",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "commutative_algebra",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: primary decomposition and associated primes",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "COMMUTATIVE_ALGEBRA-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "primary decomposition and associated primes"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R032",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "homological_algebra",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: chain-map and homotopy construction",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "HOMOLOGICAL_ALGEBRA-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "chain-map and homotopy construction"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R033",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "calculus_of_variations",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: first variation and Euler-Lagrange equation",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "CALCULUS_OF_VARIATIONS-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "first variation and Euler-Lagrange equation"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R034",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "operator_semigroups",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: Hille-Yosida resolvent criterion",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "OPERATOR_SEMIGROUPS-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "Hille-Yosida resolvent criterion"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R035",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "scattering_theory",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: Cook criterion and time-integrability",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "SCATTERING_THEORY-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "Cook criterion and time-integrability"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R036",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "geometric_measure_theory",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: area/coarea formula with approximate differential",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "GEOMETRIC_MEASURE_THEORY-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "area/coarea formula with approximate differential"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R037",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "discrete_geometry",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: polyhedral decomposition and incidence counting",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "DISCRETE_GEOMETRY-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "polyhedral decomposition and incidence counting"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R038",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "spectral_graph_theory",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: Rayleigh quotient and interlacing",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "SPECTRAL_GRAPH_THEORY-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "Rayleigh quotient and interlacing"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R039",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "enumerative_combinatorics",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: generating-function extraction",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "ENUMERATIVE_COMBINATORICS-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "generating-function extraction"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R040",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "symplectic_geometry",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: Darboux chart and nondegeneracy",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "SYMPLECTIC_GEOMETRY-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "Darboux chart and nondegeneracy"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R041",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "differential_topology",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: regular value theorem and transversality",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "DIFFERENTIAL_TOPOLOGY-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "regular value theorem and transversality"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R042",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "convex_geometry",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: support function and separation theorem",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "CONVEX_GEOMETRY-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "support function and separation theorem"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R043",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "computability",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: explicit reduction between decision problems",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "COMPUTABILITY-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "explicit reduction between decision problems"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R044",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "proof_complexity",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: proof-system simulation and size bound",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "PROOF_COMPLEXITY-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "proof-system simulation and size bound"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R045",
+      "checker_or_backend": "exact rational witness; no-witness is not proof",
+      "family": "counterexample",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "minimal countermodel for a weakened/strong claim",
+      "primary_obstruction": "finite witness may not generalize to infinite dimension",
+      "proof_effect": "NONE",
+      "route_id": "COUNTEREXAMPLE-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "search boundary/degenerate cases"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R046",
+      "checker_or_backend": "exact rational witness; no-witness is not proof",
+      "family": "counterexample",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "minimal countermodel for a weakened/strong claim",
+      "primary_obstruction": "finite witness may not generalize to infinite dimension",
+      "proof_effect": "NONE",
+      "route_id": "COUNTEREXAMPLE-02",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "test scaling and dimensional consistency"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R047",
+      "checker_or_backend": "proposition equivalence audit",
+      "family": "formulation",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "equivalent or weaker stable intermediate proposition",
+      "primary_obstruction": "loss of implication to original target",
+      "proof_effect": "NONE",
+      "route_id": "FORMULATION-01",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "weaken conclusion to a stable intermediate estimate"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R048",
+      "checker_or_backend": "proposition equivalence audit",
+      "family": "formulation",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "equivalent or weaker stable intermediate proposition",
+      "primary_obstruction": "loss of implication to original target",
+      "proof_effect": "NONE",
+      "route_id": "FORMULATION-02",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "strengthen hypotheses minimally and map implication lattice"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R049",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "numerical_analysis",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: interval arithmetic enclosure",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "NUMERICAL_ANALYSIS-02",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "interval arithmetic enclosure"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R050",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "algebra",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: ideal-membership certificate",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "ALGEBRA-02",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "ideal-membership certificate"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R051",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "analysis",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: compactness + subsequence contradiction",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "ANALYSIS-02",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "compactness + subsequence contradiction"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R052",
+      "checker_or_backend": "SOS/Bernstein/Sturm/interval checker",
+      "family": "real_analysis",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "uniform scalar inequality or convergence lemma",
+      "primary_obstruction": "endpoint, equality, quantifier uniformity",
+      "proof_effect": "NONE",
+      "route_id": "REAL_ANALYSIS-02",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "Bernstein positivity with subdivision"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R053",
+      "checker_or_backend": "exact polynomial calculus + formal kernel",
+      "family": "calculus",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "explicit derivative/Jacobian identity",
+      "primary_obstruction": "boundary terms, degeneracy, parameter dependence",
+      "proof_effect": "NONE",
+      "route_id": "CALCULUS-02",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "Taylor expansion with explicit remainder"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R054",
+      "checker_or_backend": "HOL Light/Lean/Coq after type inventory",
+      "family": "operator_theory",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "typed operator identity and domain contract",
+      "primary_obstruction": "closedness, adjoints, range, noncommutativity",
+      "proof_effect": "NONE",
+      "route_id": "OPERATOR_THEORY-02",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "Schur complement / Feshbach map"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R055",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "number_theory",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: p-adic valuation descent",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "NUMBER_THEORY-02",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "p-adic valuation descent"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R056",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "logic",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: prove equivalence of formulations",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "LOGIC-02",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "prove equivalence of formulations"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R057",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "numerical_linear_algebra",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: condition number and perturbation theorem",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "NUMERICAL_LINEAR_ALGEBRA-02",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "condition number and perturbation theorem"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R058",
+      "checker_or_backend": "exact rational matrix checker",
+      "family": "linear_algebra",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "exact finite-dimensional block identity",
+      "primary_obstruction": "dimension mismatch, rank defect, noncommutation",
+      "proof_effect": "NONE",
+      "route_id": "LINEAR_ALGEBRA-02",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "Schur complement / block Gaussian elimination"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R059",
+      "checker_or_backend": "HOL Light/Lean",
+      "family": "functional_analysis",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "range/graph-norm/duality lemma",
+      "primary_obstruction": "surjectivity, domain mismatch, weak limits",
+      "proof_effect": "NONE",
+      "route_id": "FUNCTIONAL_ANALYSIS-02",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "weak compactness and lower semicontinuity"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R060",
+      "checker_or_backend": "HOL Light/Mathlib plus analytic proof",
+      "family": "spectral_theory",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "resolvent or spectral-measure representation",
+      "primary_obstruction": "atoms, continuous spectrum, endpoint limits",
+      "proof_effect": "NONE",
+      "route_id": "SPECTRAL_THEORY-02",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "min-max / variational characterization"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R061",
+      "checker_or_backend": "Mathlib/Lean or paper proof",
+      "family": "measure_theory",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "positive measure or disintegration lemma",
+      "primary_obstruction": "sigma-finiteness, null sets, uniform integrability",
+      "proof_effect": "NONE",
+      "route_id": "MEASURE_THEORY-02",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "Radon-Nikodym decomposition"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R062",
+      "checker_or_backend": "interval/Fourier library plus external proof",
+      "family": "harmonic_analysis",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "Fourier or oscillatory-integral estimate",
+      "primary_obstruction": "endpoint loss, frequency tails, normalization",
+      "proof_effect": "NONE",
+      "route_id": "HARMONIC_ANALYSIS-02",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "Littlewood-Paley square function"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R063",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "differential_equations",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: barrier / comparison principle",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "DIFFERENTIAL_EQUATIONS-02",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "barrier / comparison principle"
+    },
+    {
+      "acceptance_test": "write exact proposition and all hypotheses; prove no weakening; record source and dependency hashes; run a sound checker or explicit proof replay",
+      "candidate_id": "R064",
+      "checker_or_backend": "human derivation and/or independently audited formal backend",
+      "family": "partial_differential_equations",
+      "hypotheses_to_extract": [
+        "ambient spaces and scalar fields",
+        "quantifier order and parameter dependence",
+        "regularity/domain/boundary assumptions",
+        "uniform constants and their allowed dependencies"
+      ],
+      "intermediate_lemma": "derive a family-specific intermediate lemma for: coercive bilinear form / Lax-Milgram",
+      "primary_obstruction": "verify all assumptions, domains, boundary conditions and uniform parameters",
+      "proof_effect": "NONE",
+      "route_id": "PARTIAL_DIFFERENTIAL_EQUATIONS-02",
+      "status": "PROPOSAL_ONLY",
+      "strategy": "coercive bilinear form / Lax-Milgram"
+    }
+  ],
+  "schema_version": "2.1.0",
+  "statement": "Source-centered residual of implicit DAE guard derivative on full certified physical box, grouping identical remaining affine factors and collecting affine coefficients before directed interval evaluation, zero heap borrowed preconditioner and inline guard proof, centered correction with or without GS, compare Jacobi, original Schur, PreparedRhs, conservation-based Schur, RETRO polynomial transport. Preserve exact physical admission.",
+  "status": "PROPOSALS_ONLY",
+  "warning": "Routes are heuristic proposals, not proofs. No route changes claim status."
+}
