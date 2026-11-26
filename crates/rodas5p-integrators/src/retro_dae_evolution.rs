@@ -1504,6 +1504,261 @@ pub fn certify_slab_with_picard(
     }
     Ok(c)
 }
+/// Linear scalar homogeneous IVP proposal, independently checked against
+/// the original dissipative source. Archived quadrature is proposal only.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum LinearLsEndpointRoute {
+    NormalEquations,
+    BoundedNormal,
+    QrProposal,
+    RationalResponse,
+}
+#[derive(Clone, Copy, Debug, Serialize)]
+pub struct LinearLsEndpointBounds {
+    pub route: LinearLsEndpointRoute,
+    pub order: usize,
+    pub rate: [f64; 2],
+    pub candidate_error: f64,
+    pub response: [f64; 2],
+    pub ivp_residual: Option<f64>,
+    pub normal_residual: Option<f64>,
+    pub coefficient_error: Option<f64>,
+    pub dictionary_gap: Option<f64>,
+    pub initial_error: f64,
+    pub analytic_error: Option<f64>,
+}
+fn bounded_ls_normal(
+    l: &rodas5p_core::retro_dictionary::Legendre,
+    z: f64,
+    n: usize,
+) -> CoreResult<[f64; 6]> {
+    let mut a = [[0.; 6]; 6];
+    let mut b = [0.; 6];
+    for i in 0..n {
+        b[i] = z * l.d[i].value - z * z * l.v[i].value;
+        for j in 0..n {
+            a[i][j] =
+                l.g[i][j].value - z * (l.c[i][j].value + l.c[j][i].value) + z * z * l.m[i][j].value;
+        }
+    }
+    // Pivoted elimination only proposes coefficients. No stability claim
+    // from the normal equations; the independent residual decides validity.
+    for k in 0..n {
+        let mut pivot = k;
+        for i in k + 1..n {
+            if a[i][k].abs() > a[pivot][k].abs() {
+                pivot = i;
+            }
+        }
+        a.swap(k, pivot);
+        b.swap(k, pivot);
+        let d = a[k][k];
+        if d == 0. || !d.is_finite() {
+            return Err(bad("bounded normal pivot"));
+        }
+        for i in k + 1..n {
+            let q = a[i][k] / d;
+            for j in k + 1..n {
+                a[i][j] -= q * a[k][j];
+            }
+            b[i] -= q * b[k];
+        }
+    }
+    for i in (0..n).rev() {
+        for j in i + 1..n {
+            b[i] -= a[i][j] * b[j];
+        }
+        b[i] /= a[i][i];
+    }
+    if b[..n].iter().any(|v| !v.is_finite()) {
+        return Err(bad("bounded normal nonfinite"));
+    }
+    Ok(b)
+}
+/// The LS polynomial q(0)=1 is constructed from dictionary integrals.
+/// Normal residual certifies distance to the exact LS minimizer, NOT
+/// distance to the IVP. A second, original ODE residual certifies the IVP.
+pub fn source_linear_ls_endpoint(
+    src: &DaeSource,
+    times: [f64; 2],
+    y: &[Poly],
+    incoming: f64,
+    order: usize,
+    route: LinearLsEndpointRoute,
+) -> CoreResult<LinearLsEndpointBounds> {
+    crate::affine_event_certificate::check_affine_event_arithmetic()?;
+    if src.nx() != 1
+        || y.len() != 1 + src.nz()
+        || y.iter().any(|v| v.is_empty() || v.len() > 5)
+        || !incoming.is_finite()
+        || incoming < 0.
+    {
+        return Err(bad("linear LS shape"));
+    }
+    for v in y.iter().flatten() {
+        Iv::new(v.lo, v.hi)?;
+    }
+    let (a, n) = linear_source_matrices(src, times)?;
+    if n != 2
+        || a[0][0].hi > 0.
+        || a[0][1..4]
+            .iter()
+            .chain(&a[1][..4])
+            .chain(&a[2][..4])
+            .any(|v| v.lo != 0. || v.hi != 0.)
+    {
+        return Err(bad(
+            "linear LS requires homogeneous constant nonpositive rate",
+        ));
+    }
+    let rate = a[0][0];
+    let zm = di::mid(rate);
+    let d = Dictionary::get()?;
+    let l = d.legendre(order)?;
+    let exact_response = l.endpoint_response(zm)?;
+    let initial = di::mid(y[0][0]);
+    let gain = exp_interval(rate.hi)?.hi;
+    let initial_error = mul_up(gain, add_up(incoming, y[0][0].sub(p(initial)?)?.mag())?)?;
+    let right = eval(&y[0], p(1.)?)?;
+    let mut out = LinearLsEndpointBounds {
+        route,
+        order,
+        rate: rate.as_pair(),
+        candidate_error: 0.,
+        response: exact_response.as_pair(),
+        ivp_residual: None,
+        normal_residual: None,
+        coefficient_error: None,
+        dictionary_gap: None,
+        initial_error,
+        analytic_error: None,
+    };
+    if route == LinearLsEndpointRoute::RationalResponse {
+        // Independent exact scalar flow comparator. The dictionary rational
+        // response is an LS approximation, not the true exponential.
+        let exact = Iv::new(exp_interval(rate.lo)?.lo, gain)?;
+        let e = exact_response.sub(exact)?.mag();
+        out.analytic_error = Some(e);
+        out.candidate_error = add_up(
+            exact_response.scale(initial)?.sub(right)?.mag(),
+            add_up(mul_up(initial.abs(), e)?, initial_error)?,
+        )?;
+        return Ok(out);
+    }
+    let mut coeff = [0.; 6];
+    match route {
+        LinearLsEndpointRoute::NormalEquations => {
+            let (a, b) = l.normal_equations(zm)?;
+            let x = rodas5p_core::direct_solve(&a, &b)?;
+            coeff[..order].copy_from_slice(&x);
+        }
+        LinearLsEndpointRoute::BoundedNormal => coeff = bounded_ls_normal(l, zm, order)?,
+        LinearLsEndpointRoute::QrProposal => {
+            let m = l.gauss_nodes.len();
+            let mut a = DenseMatrix::zeros(m, order);
+            let mut b = vec![0.; m];
+            for (i, (&u, &weight)) in l.gauss_nodes.iter().zip(&l.gauss_weights).enumerate() {
+                let w = weight.sqrt();
+                b[i] = w * zm;
+                for j in 0..order {
+                    let value = |v: &[rodas5p_core::retro_dictionary::Rational]| {
+                        v.iter().rev().fold(0_f64, |s, c| s.mul_add(u, c.value))
+                    };
+                    a[(i, j)] = w * (value(&l.l[j]) - zm * value(&l.integral[j]));
+                }
+            }
+            coeff[..order].copy_from_slice(&rodas5p_krylov::least_squares(&a, &b)?);
+        }
+        _ => unreachable!(),
+    }
+    let zz = p(zm)?;
+    let z2 = zz.mul(zz)?;
+    let mut residual = 0_f64;
+    for i in 0..order {
+        let b = zz.mul(l.d[i].enclosure)?.sub(z2.mul(l.v[i].enclosure)?)?;
+        let mut v = b;
+        for j in 0..order {
+            let a = l.g[i][j]
+                .enclosure
+                .sub(zz.mul(l.c[i][j].enclosure.add(l.c[j][i].enclosure)?)?)?
+                .add(z2.mul(l.m[i][j].enclosure)?)?;
+            v = v.sub(a.scale(coeff[j])?)?;
+        }
+        residual = residual.max(v.mag());
+    }
+    // ||q'-z q||² >= ||q'||² for z<=0 and q(0)=0.
+    // lambda_min >=1/(2p-1), use sqrt(p)<=p conservatively.
+    let ce = mul_up((order * (2 * order - 1)) as f64, residual)?;
+    out.normal_residual = Some(residual);
+    out.coefficient_error = Some(ce);
+    let mut q = [zero(); 7];
+    let mut dq = [zero(); 7];
+    q[0] = p(1.)?;
+    for j in 0..order {
+        for (v, c) in q.iter_mut().zip(&l.integral[j]) {
+            *v = v.add(c.enclosure.scale(coeff[j])?)?;
+        }
+        for (v, c) in dq.iter_mut().zip(&l.l[j]) {
+            *v = v.add(c.enclosure.scale(coeff[j])?)?;
+        }
+    }
+    let endpoint = eval(&q[..=order], p(1.)?)?;
+    let mut end_ls = p(1.)?;
+    let mut ell_norm = 0.;
+    for j in 0..order {
+        end_ls = end_ls.add(l.ell[j].enclosure.scale(coeff[j])?)?;
+        ell_norm = add_up(ell_norm, l.ell[j].enclosure.mag())?;
+    }
+    let ee = mul_up(ce, ell_norm)?;
+    let candidate = end_ls.add(Iv::new(-ee, ee)?)?;
+    // The rational table is an independent representation of this LS
+    // minimizer. Refuse disagreement, not a substitution for the IVP proof.
+    if candidate.lo > exact_response.hi || candidate.hi < exact_response.lo {
+        return Err(bad("normal residual disagrees with rational LS table"));
+    }
+    out.dictionary_gap = Some(end_ls.sub(exact_response)?.mag());
+    for j in 0..=order {
+        dq[j] = dq[j].sub(rate.mul(q[j])?)?;
+    }
+    let r = range(&dq[..=order])?.mag();
+    let damp = if rate.hi < 0. {
+        1_f64.min(div_up(1., -rate.hi)?)
+    } else {
+        1.
+    };
+    out.ivp_residual = Some(r);
+    out.response = endpoint.as_pair();
+    out.candidate_error = add_up(
+        endpoint.scale(initial)?.sub(right)?.mag(),
+        add_up(mul_up(initial.abs(), mul_up(damp, r)?)?, initial_error)?,
+    )?;
+    Ok(out)
+}
+#[allow(clippy::too_many_arguments)]
+pub fn certify_slab_with_linear_ls(
+    src: &DaeSource,
+    times: [f64; 2],
+    y: &[Poly],
+    branch: &[[f64; 2]],
+    tube: f64,
+    incoming: Option<f64>,
+    green: bool,
+    condition_cap: f64,
+    order: usize,
+    route: LinearLsEndpointRoute,
+) -> CoreResult<SlabCertificate> {
+    let mut c = certify_slab(src, times, y, branch, tube, incoming, green, condition_cap)?;
+    if c.global_qualified {
+        let r = source_linear_ls_endpoint(src, times, y, c.incoming, order, route)?;
+        c.outgoing = Some(
+            c.outgoing
+                .ok_or_else(|| bad("linear LS original outgoing"))?
+                .min(r.candidate_error),
+        );
+        c.linear_ls_endpoint = Some(r);
+    }
+    Ok(c)
+}
 #[derive(Clone, Debug, Serialize)]
 pub struct SlabCertificate {
     pub times: [f64; 2],
@@ -1521,6 +1776,8 @@ pub struct SlabCertificate {
     pub residual_variant: Option<SlabResidualBounds>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub picard_endpoint: Option<PicardEndpointBounds>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub linear_ls_endpoint: Option<LinearLsEndpointBounds>,
     pub algebraic_defect: f64,
     pub differential_defect: f64,
     pub normalized_reduced_defect: f64,
@@ -1765,6 +2022,7 @@ pub fn certify_slab_with_residual(
         original_g_upper,
         residual_variant,
         picard_endpoint: None,
+        linear_ls_endpoint: None,
         algebraic_defect: az,
         differential_defect: dx,
         normalized_reduced_defect: rnorm,

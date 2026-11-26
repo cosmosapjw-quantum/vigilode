@@ -48,6 +48,8 @@ pub enum EvolutionRoute {
     BoundedAffinePicard5,
     BoundedVector5,
     BoundedVectorRefined5,
+    Reduced5NormalLs,
+    Reduced5BoundedLs,
 }
 impl EvolutionRoute {
     fn init(self) -> InitRoute {
@@ -76,6 +78,13 @@ impl EvolutionRoute {
             Self::Reduced5PolynomialPicard | Self::BoundedAffinePicard5 => {
                 Some(de::PicardEndpointRoute::Adaptive7)
             }
+            _ => None,
+        }
+    }
+    fn linear_ls(self) -> Option<de::LinearLsEndpointRoute> {
+        match self {
+            Self::Reduced5NormalLs => Some(de::LinearLsEndpointRoute::NormalEquations),
+            Self::Reduced5BoundedLs => Some(de::LinearLsEndpointRoute::BoundedNormal),
             _ => None,
         }
     }
@@ -242,6 +251,19 @@ impl Engine {
                 self.policy.init.condition_cap,
                 *route,
             )
+        } else if let Some(route) = self.route.linear_ls() {
+            de::certify_slab_with_linear_ls(
+                &self.src,
+                times,
+                power,
+                &self.branch,
+                self.policy.tube_radius,
+                incoming,
+                self.policy.green,
+                self.policy.init.condition_cap,
+                6,
+                route,
+            )
         } else if let Some(route) = self.route.picard() {
             de::certify_slab_with_picard(
                 &self.src,
@@ -378,6 +400,8 @@ impl Engine {
                 | EvolutionRoute::Reduced5OrderedPicard
                 | EvolutionRoute::Reduced5PolynomialPicard
                 | EvolutionRoute::BoundedAffinePicard5
+                | EvolutionRoute::Reduced5NormalLs
+                | EvolutionRoute::Reduced5BoundedLs
         ) && self.src.nz() == 1
             && self.warp.is_none()
     }
@@ -886,7 +910,9 @@ fn evolve_epoch_authority(
     {
         return Err(bad("input/clock/dense scalar tolerance contract"));
     }
-    if conservation.is_some() && (route.spectral() || route.picard().is_some()) {
+    if conservation.is_some()
+        && (route.spectral() || route.picard().is_some() || route.linear_ls().is_some())
+    {
         return Err(bad("spectral route requires general slab authority"));
     }
     let initial = audited_init(src, start, x, z, branch, policy.init, route.init(), &audit)?;
