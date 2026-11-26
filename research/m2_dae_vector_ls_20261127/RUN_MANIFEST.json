@@ -1,0 +1,345 @@
+{
+  "checks": [
+    "RED101 and GREEN0",
+    "18 vector points and36 reconstruction candidates noheap",
+    "36 LS bounded/rational kernel cases noheap",
+    "12 vector/6 scalar epochs all qualified",
+    "324 root/derivative +216 LS+224 native independent assertions",
+    "32 regression pass5 ignored",
+    "1120 prior complete receipts exact",
+    "source hashes/rustfmt/diff check"
+  ],
+  "claim_id": "M2-03d.5b.9",
+  "cleanup": {
+    "duplicate_log_payloads": 0,
+    "raw_bytes_removed": 3677293,
+    "unique_compressed_bytes": 131673
+  },
+  "command": [
+    "cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "--release",
+    "-p",
+    "vigilode",
+    "--features",
+    "polynomial-events",
+    "--test",
+    "dae_resource_baseline_contracts",
+    "bounded_vector_portfolio",
+    "--",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "declared_results": [
+    "SELECTION.json",
+    "INDEPENDENT_CHECKS.json",
+    "REPLAY_COMPARE.json",
+    "RESOURCE_COMPARE.json",
+    "MODULE_ACTIVATION_LEDGER.json"
+  ],
+  "environment": {
+    "hardware": "AMD Ryzen9 5900X x86_64 remote host",
+    "software": [
+      {
+        "name": "rustc",
+        "version": "rustc 1.94.1 (e408947bf 2026-03-25)"
+      },
+      {
+        "name": "cargo",
+        "version": "cargo 1.94.1 (29ea6fb6a 2026-03-24)"
+      },
+      {
+        "name": "MathHarness General",
+        "version": "3.1.0 verified154 files"
+      }
+    ]
+  },
+  "input_artifacts": [
+    {
+      "current_sha256": "6ee2ea8d21414fb71995ee7899243253d46cf66e1afa209e450027b31b8c504d",
+      "path": "crates/rodas5p-integrators/src/retro_dae_init.rs",
+      "sha256": "6ee2ea8d21414fb71995ee7899243253d46cf66e1afa209e450027b31b8c504d",
+      "source_commit": "6083357f888bf3d9b0b1ed098808811fddf328c4",
+      "verified_git_blob_sha256": "6ee2ea8d21414fb71995ee7899243253d46cf66e1afa209e450027b31b8c504d"
+    },
+    {
+      "current_sha256": "3aca58c73b8a6e35ecd8d5dc02c67cb88b44ec1edb9100464a27d8d9b6d2b9cf",
+      "path": "crates/rodas5p-integrators/src/retro_dae_evolution.rs",
+      "sha256": "3aca58c73b8a6e35ecd8d5dc02c67cb88b44ec1edb9100464a27d8d9b6d2b9cf",
+      "source_commit": "6083357f888bf3d9b0b1ed098808811fddf328c4",
+      "verified_git_blob_sha256": "3aca58c73b8a6e35ecd8d5dc02c67cb88b44ec1edb9100464a27d8d9b6d2b9cf"
+    },
+    {
+      "current_sha256": "af58fe7ed0f42935ab61d453e84dd36739b2477fbc0bed96f8f420f3dd77a954",
+      "path": "crates/vigilode/src/dae_evolution.rs",
+      "sha256": "af58fe7ed0f42935ab61d453e84dd36739b2477fbc0bed96f8f420f3dd77a954",
+      "source_commit": "6083357f888bf3d9b0b1ed098808811fddf328c4",
+      "verified_git_blob_sha256": "af58fe7ed0f42935ab61d453e84dd36739b2477fbc0bed96f8f420f3dd77a954"
+    },
+    {
+      "current_sha256": "806b97df52d898b364f4281216879fec8131c4757e45bf07102d81496a4b03d9",
+      "path": "crates/vigilode/tests/dae_resource_baseline_contracts.rs",
+      "sha256": "806b97df52d898b364f4281216879fec8131c4757e45bf07102d81496a4b03d9",
+      "source_commit": "6083357f888bf3d9b0b1ed098808811fddf328c4",
+      "verified_git_blob_sha256": "806b97df52d898b364f4281216879fec8131c4757e45bf07102d81496a4b03d9"
+    },
+    {
+      "current_sha256": "d279cf1b7e11b7a65aa1ba70600e3a9b033909ffc21c07329a8e80315374772e",
+      "path": "research/m2_dae_vector_ls_20261127/PREREGISTRATION.md",
+      "sha256": "d279cf1b7e11b7a65aa1ba70600e3a9b033909ffc21c07329a8e80315374772e",
+      "source_commit": "6083357f888bf3d9b0b1ed098808811fddf328c4",
+      "verified_git_blob_sha256": "d279cf1b7e11b7a65aa1ba70600e3a9b033909ffc21c07329a8e80315374772e"
+    },
+    {
+      "current_sha256": "5c1c87b29256882a48ed54111d96de565e2e7c82735738bf2a6348bea9cce860",
+      "path": "research/m2_dae_vector_ls_20261127/guide.py",
+      "sha256": "5c1c87b29256882a48ed54111d96de565e2e7c82735738bf2a6348bea9cce860",
+      "source_commit": "d1f448b883e87297f3732c629cb70fae7dc2ec1f",
+      "verified_git_blob_sha256": "5c1c87b29256882a48ed54111d96de565e2e7c82735738bf2a6348bea9cce860"
+    },
+    {
+      "current_sha256": "f09b3a3afa790c1e84325472a5e20f3267a2d5cd71897a94190cb7105c590472",
+      "path": "research/m2_dae_vector_ls_20261127/CANDIDATES.json",
+      "sha256": "f09b3a3afa790c1e84325472a5e20f3267a2d5cd71897a94190cb7105c590472",
+      "source_commit": "d1f448b883e87297f3732c629cb70fae7dc2ec1f",
+      "verified_git_blob_sha256": "f09b3a3afa790c1e84325472a5e20f3267a2d5cd71897a94190cb7105c590472"
+    },
+    {
+      "current_sha256": "4d94d909b7a1a789c83f5978f98278f78521b25862fe3338aca625f72a6eab08",
+      "path": "research/m2_dae_vector_ls_20261127/HARNESS_ROUTES.json",
+      "sha256": "4d94d909b7a1a789c83f5978f98278f78521b25862fe3338aca625f72a6eab08",
+      "source_commit": "d1f448b883e87297f3732c629cb70fae7dc2ec1f",
+      "verified_git_blob_sha256": "4d94d909b7a1a789c83f5978f98278f78521b25862fe3338aca625f72a6eab08"
+    },
+    {
+      "current_sha256": "da921996cf8e1baf8de2c71c311c2cf5590daa1550fd98407ea1b9af0b6d4576",
+      "path": "research/m2_dae_vector_ls_20261127/LITERATURE.md",
+      "sha256": "da921996cf8e1baf8de2c71c311c2cf5590daa1550fd98407ea1b9af0b6d4576",
+      "source_commit": "d1f448b883e87297f3732c629cb70fae7dc2ec1f",
+      "verified_git_blob_sha256": "da921996cf8e1baf8de2c71c311c2cf5590daa1550fd98407ea1b9af0b6d4576"
+    }
+  ],
+  "mathematics": {
+    "assertion_tested": "actual vector RED128/128/170->GREEN0;27 point/45 reconstruction/12 vector epoch;72 LS endpoint and6 LS epoch;324+216+224 exact independent checks;162 finite candidates and70 Pareto; prior1120 guard/component exact",
+    "bounds": {
+      "ls_endpoint": 72,
+      "ls_epoch": 6,
+      "ls_native_slabs": 28,
+      "ls_order_max": 6,
+      "reconstruction": 45,
+      "tested_vector_nz": 2,
+      "vector_epochs": 12,
+      "vector_points": 27
+    },
+    "coefficient_domain": "directed binary64; exact Fraction independent graph, Gram and rational exponential brackets",
+    "conventions": "original source branch, full self-map and derivative residual; homogeneous dissipative constant scalar LS; original slab before endpoint min",
+    "non_claims": [
+      "all vector systems/dimensions",
+      "full VG1",
+      "nonlinear scalar root count",
+      "default promotion",
+      "speed/stack",
+      "holdout",
+      "all prior modules activated"
+    ]
+  },
+  "outputs": [
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/BINARY.sha256",
+      "sha256": "75d17e702eff8783153816a9a04efe19db565937f25b3af8774e6bcb1e3e8eee"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/INDEPENDENT_CHECKS.json",
+      "sha256": "2eaa91ee5d0ad257597e7e8e5a59c0cf6365c4d5177c72cdc06b550f3fd4b3ca"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/MODULE_ACTIVATION_LEDGER.json",
+      "sha256": "e1d7db6f6d6499d7a8f1f93d00908f8519d276e7adbc5ab3255ba620b06d4796"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/RAW_LOG_CLEANUP.json",
+      "sha256": "6e4e59d9c73ff04074d5e4871e4f5d5fc667cd5b07a2ad8b6745572faaa90fd1"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/REPLAY_COMPARE.json",
+      "sha256": "ab60072c2a43e308edbbb86818a15cd0ab59099754f8b487228341c37861ab13"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/RESOURCE_COMPARE.json",
+      "sha256": "8f4bd22308b76666ca5a8eb9203344fa3b9efc9632b2e52d0eecfc933af4c557"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/SELECTION.json",
+      "sha256": "1ec583728064b8f351be3b34a449e080c4c8cfbe0ce3f1aa7db56866c7b696b2"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/allocator.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/allocator.log.gz",
+      "sha256": "3d59d3f12107f6b2d96a5ec662c46f8de5679fba078aa045850729d58f3abd0c"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/components.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/components.log.gz",
+      "sha256": "362a51f86366c3e1fd7d69b44d3faeb54f070314c5a14495a09a3e86b797cc70"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/green.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/green.log.gz",
+      "sha256": "c4452c29c96946db6c8c51fb24ccafe4fb33d2c08ddbe02d988e950c1006b572"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/green_final.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/green_final.log.gz",
+      "sha256": "945d651beb7cbd19c2e84db928f0269fdcd1659aa4e23b39b54c9f5e253f6f8c"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/harness.log.gz",
+      "sha256": "85481331dd2de20a0b1a625b65c4174852c50ae1995fabd724d1bca7dd80cbab"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/ls.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/ls.log.gz",
+      "sha256": "a764be63bd6d240a67c7e4b3d84e8ecd29ea61abd8dbe4aefced351a51836be6"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/native.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/native.log.gz",
+      "sha256": "74c211388946e7444438b6af7ab8523abe46d733753484dbe4717c0383a71d7c"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/red.exit",
+      "sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/red.log.gz",
+      "sha256": "56e2dbb4bac6cff54a694624f4002cc316ea714bce43c9b5bbc6efbac4fed2c5"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/regression.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/regression.log.gz",
+      "sha256": "7ab3da6fe3f2605f107f1c1d038d9ea1d6c37a74d45512471e585afafcec9be5"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/selection.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/selection.log.gz",
+      "sha256": "2b0d94d2575858f13e3129d34493ccee670964edf03333256822a72b32561df8"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/vector.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/vector.log.gz",
+      "sha256": "aebde7219dc82398b48f8e257726739c1eb1fddc1d2d04fced127a2dc5367d20"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/vector_new.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/vector_new.log.gz",
+      "sha256": "4c1852ad441f80b698acc5be592f2db16431f5a31f847f4f64eb2cbc21a93322"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/verify.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/verify.log.gz",
+      "sha256": "169dde43a6382338884a034913c8c76d1734b2f10a5e080050cf4906a43ea12e"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_vector_ls_20261127/verify.py",
+      "sha256": "a35271d1f304ebb97010865174347a870ef3c66afb18c418e6e6ee45e499bdc0"
+    }
+  ],
+  "randomness": {
+    "generator": "Python random.Random finite measured replay",
+    "seeds": [
+      1729,
+      97531
+    ],
+    "used": true
+  },
+  "repository": {
+    "commit": "6083357f888bf3d9b0b1ed098808811fddf328c4",
+    "guide_commit": "d1f448b883e87297f3732c629cb70fae7dc2ec1f",
+    "tracked_dirty": false,
+    "untracked_evidence": true
+  },
+  "residual_risks": [
+    "strict dominance and limited fixture domain",
+    "remaining nonlinear scalar root ownership",
+    "heap in overall driver/owning reports",
+    "stack/timing/holdout",
+    "focused module inventory"
+  ],
+  "result": "implementation-verified scoped; formal M2/full VG1 OPEN",
+  "run": {
+    "exit_status": 0,
+    "runtime_seconds": null,
+    "status": "completed",
+    "timing_note": "per-test logs retain elapsed time; aggregate not measured"
+  },
+  "schema_version": 2
+}
