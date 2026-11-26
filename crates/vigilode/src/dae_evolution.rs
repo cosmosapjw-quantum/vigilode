@@ -41,6 +41,7 @@ pub enum EvolutionRoute {
     /// General (non-conserved) original-source hybrid spectral slab residual.
     Reduced5Legendre,
     BoundedPreparedLegendre5,
+    BoundedAffine5,
 }
 impl EvolutionRoute {
     fn init(self) -> InitRoute {
@@ -50,7 +51,7 @@ impl EvolutionRoute {
                 InitRoute::BoundedPreparedScalar
             }
             Self::Scalar5 => InitRoute::ScalarRoot,
-            Self::Affine5 => InitRoute::AffineExact,
+            Self::Affine5 | Self::BoundedAffine5 => InitRoute::AffineExact,
             _ => InitRoute::Reuse,
         }
     }

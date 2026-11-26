@@ -3600,3 +3600,66 @@ fn legendre_residual_portfolio() {
         }
     }
 }
+
+#[test]
+fn bounded_affine_actual_callbacks_noalloc() {
+    warm();
+    let src = RobertsonModel::new(3e7).unwrap();
+    let x = [1. - 1. / 8192., 1. / 8192.];
+    let branch = [[-0.25, 1.25]];
+    let client = initialize_reduced_problem(
+        src.source(),
+        0.,
+        &x,
+        &[0.],
+        &branch,
+        policy(),
+        EvolutionRoute::BoundedAffine5,
+    )
+    .unwrap();
+    let old = initialize_reduced_problem(
+        src.source(),
+        0.,
+        &x,
+        &[0.],
+        &branch,
+        policy(),
+        EvolutionRoute::Affine5,
+    )
+    .unwrap();
+    let t = 0.0005;
+    let y = [0.9998658289383162, 6.457305003072096e-5];
+    let mut rhs = [0.; 2];
+    let mut jac = [0.; 4];
+    let mut ft = [0.; 2];
+    let mut orhs = [0.; 2];
+    let mut ojac = [0.; 4];
+    let mut oft = [0.; 2];
+    (old.problem.rhs_fn())(t, &y, &mut orhs).unwrap();
+    let vigilode::Jacobian::Dense(j) = old.problem.jacobian_provider() else {
+        panic!("dense")
+    };
+    j(t, &y, &mut ojac).unwrap();
+    old.problem.time_derivative_fn().unwrap()(t, &y, &mut oft).unwrap();
+    let (r, a) = measure(|| (client.problem.rhs_fn())(t, &y, &mut rhs));
+    r.unwrap();
+    let vigilode::Jacobian::Dense(j) = client.problem.jacobian_provider() else {
+        panic!("dense")
+    };
+    let (r, b) = measure(|| j(t, &y, &mut jac));
+    r.unwrap();
+    let (r, c) = measure(|| client.problem.time_derivative_fn().unwrap()(t, &y, &mut ft));
+    r.unwrap();
+    assert_eq!(rhs.map(f64::to_bits), orhs.map(f64::to_bits));
+    assert_eq!(jac.map(f64::to_bits), ojac.map(f64::to_bits));
+    assert_eq!(ft.map(f64::to_bits), oft.map(f64::to_bits));
+    println!(
+        "AFFINE_RED_GREEN {}",
+        serde_json::json!({"rhs":rhs,"jac":jac,"time":ft,"allocations":[a,b,c]})
+    );
+    assert_eq!(
+        [a.requests(), b.requests(), c.requests()],
+        [0; 3],
+        "actual bounded affine callback allocations"
+    );
+}
