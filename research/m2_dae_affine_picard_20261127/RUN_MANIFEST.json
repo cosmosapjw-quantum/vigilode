@@ -1,0 +1,365 @@
+{
+  "checks": [
+    "RED/first interval failure/final GREEN actual",
+    "24/24 paired13 fields exact",
+    "240 rational root and1920 rational endpoint assertions",
+    "all278 measured qualified and160 Pareto covered",
+    "760 exact guard and360 logical/count component records",
+    "32 regression pass5 ignored",
+    "original source hashes and rustfmt/diff check"
+  ],
+  "claim_id": "M2-03d.5b.8",
+  "cleanup": {
+    "duplicate_log_payloads": 0,
+    "raw_bytes_removed": 3967472,
+    "unique_compressed_bytes": 143088
+  },
+  "command": [
+    "cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "--release",
+    "-p",
+    "vigilode",
+    "--features",
+    "polynomial-events",
+    "--test",
+    "dae_resource_baseline_contracts",
+    "source_picard_endpoint_portfolio",
+    "--",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "declared_results": [
+    "SELECTION.json",
+    "INDEPENDENT_CHECKS.json",
+    "REPLAY_COMPARE.json",
+    "RESOURCE_COMPARE.json",
+    "MODULE_ACTIVATION_LEDGER.json"
+  ],
+  "environment": {
+    "hardware": "AMD Ryzen9 5900X x86_64 remote host",
+    "software": [
+      {
+        "name": "rustc",
+        "version": "rustc 1.94.1 (e408947bf 2026-03-25)"
+      },
+      {
+        "name": "cargo",
+        "version": "cargo 1.94.1 (29ea6fb6a 2026-03-24)"
+      },
+      {
+        "name": "MathHarness General",
+        "version": "3.1.0 verified154 files"
+      }
+    ]
+  },
+  "input_artifacts": [
+    {
+      "current_sha256": "1f0305acbf0db7ec99bd699048c77970e07109c869a4dbb8023395fa3c2bd102",
+      "path": "crates/rodas5p-integrators/src/retro_dae_init.rs",
+      "sha256": "1f0305acbf0db7ec99bd699048c77970e07109c869a4dbb8023395fa3c2bd102",
+      "source_commit": "b6441aa74134c85052addfade1e286c0e40dc9ce",
+      "verified_git_blob_sha256": "1f0305acbf0db7ec99bd699048c77970e07109c869a4dbb8023395fa3c2bd102"
+    },
+    {
+      "current_sha256": "70e7cbf11f09ae241b972bde1b352031c16df327fb27fa054f8b4ff38a06215f",
+      "path": "crates/rodas5p-integrators/src/retro_dae_evolution.rs",
+      "sha256": "70e7cbf11f09ae241b972bde1b352031c16df327fb27fa054f8b4ff38a06215f",
+      "source_commit": "b6441aa74134c85052addfade1e286c0e40dc9ce",
+      "verified_git_blob_sha256": "70e7cbf11f09ae241b972bde1b352031c16df327fb27fa054f8b4ff38a06215f"
+    },
+    {
+      "current_sha256": "7368baf1060364aadea31bdec7c82f8e75b5bd1936fee9965fa06c2e47e1dbe8",
+      "path": "crates/vigilode/src/dae_evolution.rs",
+      "sha256": "7368baf1060364aadea31bdec7c82f8e75b5bd1936fee9965fa06c2e47e1dbe8",
+      "source_commit": "b6441aa74134c85052addfade1e286c0e40dc9ce",
+      "verified_git_blob_sha256": "7368baf1060364aadea31bdec7c82f8e75b5bd1936fee9965fa06c2e47e1dbe8"
+    },
+    {
+      "current_sha256": "657013e29fbb269b6fc13e9ffb116b229804125dbef144c64f473ab4043f1355",
+      "path": "crates/vigilode/tests/dae_resource_baseline_contracts.rs",
+      "sha256": "657013e29fbb269b6fc13e9ffb116b229804125dbef144c64f473ab4043f1355",
+      "source_commit": "b6441aa74134c85052addfade1e286c0e40dc9ce",
+      "verified_git_blob_sha256": "657013e29fbb269b6fc13e9ffb116b229804125dbef144c64f473ab4043f1355"
+    },
+    {
+      "current_sha256": "e373c253a4a60a25b38badbadcf540d8914eddb594d4d88d22171567611aefb8",
+      "path": "research/m2_dae_affine_picard_20261127/PREREGISTRATION.md",
+      "sha256": "e373c253a4a60a25b38badbadcf540d8914eddb594d4d88d22171567611aefb8",
+      "source_commit": "b6441aa74134c85052addfade1e286c0e40dc9ce",
+      "verified_git_blob_sha256": "e373c253a4a60a25b38badbadcf540d8914eddb594d4d88d22171567611aefb8"
+    },
+    {
+      "current_sha256": "63a0f332c13eeaab6fcfbf8180098ae47687916c7cffd773a0a122c6e1a1059a",
+      "path": "research/m2_dae_affine_picard_20261127/guide.py",
+      "sha256": "63a0f332c13eeaab6fcfbf8180098ae47687916c7cffd773a0a122c6e1a1059a",
+      "source_commit": "754108a28098a4692d80cf91bb55a73349980865",
+      "verified_git_blob_sha256": "63a0f332c13eeaab6fcfbf8180098ae47687916c7cffd773a0a122c6e1a1059a"
+    },
+    {
+      "current_sha256": "3189af47385c276b8183d4a7ce40b70a3fb419f460c0c2216ef5a5d353ee31fa",
+      "path": "research/m2_dae_affine_picard_20261127/CANDIDATES.json",
+      "sha256": "3189af47385c276b8183d4a7ce40b70a3fb419f460c0c2216ef5a5d353ee31fa",
+      "source_commit": "754108a28098a4692d80cf91bb55a73349980865",
+      "verified_git_blob_sha256": "3189af47385c276b8183d4a7ce40b70a3fb419f460c0c2216ef5a5d353ee31fa"
+    },
+    {
+      "current_sha256": "a054002ae00e8bb83134acff495831bb9a49ed5bd610326aec244938ac4093dd",
+      "path": "research/m2_dae_affine_picard_20261127/HARNESS_ROUTES.json",
+      "sha256": "a054002ae00e8bb83134acff495831bb9a49ed5bd610326aec244938ac4093dd",
+      "source_commit": "754108a28098a4692d80cf91bb55a73349980865",
+      "verified_git_blob_sha256": "a054002ae00e8bb83134acff495831bb9a49ed5bd610326aec244938ac4093dd"
+    },
+    {
+      "current_sha256": "8bbf9adfabae5a04b80bb3314af39eb031b3749567915274258e71c9f9984cdb",
+      "path": "research/m2_dae_affine_picard_20261127/LITERATURE.md",
+      "sha256": "8bbf9adfabae5a04b80bb3314af39eb031b3749567915274258e71c9f9984cdb",
+      "source_commit": "754108a28098a4692d80cf91bb55a73349980865",
+      "verified_git_blob_sha256": "8bbf9adfabae5a04b80bb3314af39eb031b3749567915274258e71c9f9984cdb"
+    }
+  ],
+  "mathematics": {
+    "assertion_tested": "actual affine callback RED101->interval first GREEN101->dyadic GREEN0; 120 point comparisons and240 exact root assertions;24 bounded core zero heap;72 reconstruction cases48 zeroheap;70 Picard bounds56 polynomial zeroheap;1920 exact endpoint assertions;278 measured candidates and prior760 guard/360 component logical replay",
+    "bounds": {
+      "affine_points": 120,
+      "atlas": 8,
+      "epoch": 8,
+      "matrix_dimension_max": 32,
+      "order_max": 7,
+      "picard_endpoint": 70,
+      "reconstruction": 72,
+      "time_degree_max": 2
+    },
+    "coefficient_domain": "directed binary64 and checked bounded i128 dyadic; exact Fraction independent root/linear IVP comparator",
+    "conventions": "unchanged physical branch/root tolerance; full slab proof before endpoint min; ordered polynomial-time affine in differential coordinates only",
+    "non_claims": [
+      "full VG1",
+      "generic nonlinear root noalloc",
+      "default promotion",
+      "dyadic fallback coverage",
+      "speed",
+      "peak stack",
+      "all modules activated",
+      "holdout"
+    ]
+  },
+  "outputs": [
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/BINARY.sha256",
+      "sha256": "ed98abc7e50b41efdd7fe273758322db3bff8d12b48afe9bcef8c201532e1450"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/INDEPENDENT_CHECKS.json",
+      "sha256": "76802c4ae77db2e00107412e83b3098be8e71ea611121febbfa9522dbbef6e39"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/MODULE_ACTIVATION_LEDGER.json",
+      "sha256": "d84c1561de37f19dbad97abcf87bbd55894f357ffbeb66d134952377ba823f68"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/RAW_LOG_CLEANUP.json",
+      "sha256": "5d7e5b6edfde7bb348b10200180d801ec254122baf03f1e44f6c8dc8c29bca85"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/REPLAY_COMPARE.json",
+      "sha256": "1c90dcdcec99a71718b89860a88cd30a1301425c5dde98c9be3a1dd88a7f2fd8"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/RESOURCE_COMPARE.json",
+      "sha256": "b272ba054d874d71e603b02ef3e9c36c59272ba4790e7ac61a3aae16a63bf9a1"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/SELECTION.json",
+      "sha256": "fb5e23f49d52d85bcae345092176b6cbfdb83ef8d7d64ee4ced04a026a2de318"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/affine.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/affine.log.gz",
+      "sha256": "e409bd5d31e59e8067b6b09139d078683e578370ec4dd76ad876e6d0ec62d143"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/affine_green.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/affine_green.log.gz",
+      "sha256": "26f0e8bb6155fdadb06503620d96d54652a6d5204db9b89e4bfc480f6dd86389"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/affine_refusals.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/affine_refusals.log.gz",
+      "sha256": "956cf0b556dc0f22d5961857c8a73abbdc803e50e32e82741ff4471a2d3911ba"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/allocator.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/allocator.log.gz",
+      "sha256": "94e88e4de444fef256339a62c307092287c4f9916cf85d6ab83981db6fbff1ee"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/components.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/components.log.gz",
+      "sha256": "426920d9e43f74c3753e7e8b8dc056253e659705aad2321b86f1c46aa19c1ffd"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/green.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/green.log.gz",
+      "sha256": "7d5fdf15add4bf0bcb93aa466ba249321c57a88e2cc1e14118d30d67db108d80"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/green_first.exit",
+      "sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/green_first.log.gz",
+      "sha256": "23f1ad2747cc4b99d6c7b677069a978bbe0d4c28b3bf6af0bc15488e5a672df3"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/harness.log.gz",
+      "sha256": "9868eea0604cae7b9a8ac752b70147500ec265c925d76f3002c529b5d70f81be"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/native.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/native.log.gz",
+      "sha256": "ee0dad8249871585d9e809db56ba6ac83aceb8eb999fc4dca0845b7161b1cce2"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/picard.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/picard.log.gz",
+      "sha256": "4ffeed9e6242c296674442fa78d4091a9633a126ef9bd6d60dbc495ac9732b18"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/red.exit",
+      "sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/red.log.gz",
+      "sha256": "6722827f3f95e235643ea80697176e9681554faeb1581d1134c89f80aed40396"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/regression.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/regression.log.gz",
+      "sha256": "9cdd258df939d57b429ec97fe1c326c73e6fa822c8b071a30e8af58f39a742fe"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/selection.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/selection.log.gz",
+      "sha256": "a893ef43ae3aefbb4c7b549ca24e1bd2d10a8c4a0839f5b5026f181c50c2b8c0"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/vector.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/vector.log.gz",
+      "sha256": "0dece30d74c980d180245d24e5df7bc4d8cd0e7b7cfe0dcb6b7a1e4fd679895d"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/verify.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/verify.log.gz",
+      "sha256": "85bc8a38f8b27a4088259bd07a2fe4d4b31da407bd6e25316a6e68d0ef97f1bf"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_affine_picard_20261127/verify.py",
+      "sha256": "84f01372a1e5f454b1c4a589345ad11991fa63dd15ea2176b835222264b60154"
+    }
+  ],
+  "randomness": {
+    "generator": "Python random.Random in finite measured UCT/bandit replay",
+    "seeds": [
+      1729,
+      97531
+    ],
+    "used": true
+  },
+  "repository": {
+    "commit": "b6441aa74134c85052addfade1e286c0e40dc9ce",
+    "guide_commit": "754108a28098a4692d80cf91bb55a73349980865",
+    "tracked_dirty": false,
+    "untracked_evidence": true
+  },
+  "residual_risks": [
+    "vector/scalar nonlinear owning paths",
+    "increased receipt bytes",
+    "dyadic cap fallback unexercised",
+    "stack/timing/holdout",
+    "focused module inventory"
+  ],
+  "result": "implementation-verified scoped; full M2/VG1 OPEN",
+  "run": {
+    "exit_status": 0,
+    "runtime_seconds": null,
+    "status": "completed",
+    "timing_note": "per-test logs retain elapsed time; aggregate not measured"
+  },
+  "schema_version": 2
+}
