@@ -3663,3 +3663,516 @@ fn bounded_affine_actual_callbacks_noalloc() {
         "actual bounded affine callback allocations"
     );
 }
+
+#[test]
+#[ignore = "actual affine root and reconstruction measured portfolio"]
+fn bounded_affine_root_portfolio() {
+    use de::ReconstructionSeedRoute as S;
+    use rodas5p_integrators::retro_dae_init::{InitWork, ProjectionAttemptWork};
+    warm();
+    const BRANCH: [[f64; 2]; 1] = [[-0.25, 1.25]];
+    let model = RobertsonModel::new(3e7).unwrap();
+    let src = model.source();
+    for solver in [
+        EvolutionRoute::Affine5,
+        EvolutionRoute::Scalar5,
+        EvolutionRoute::BoundedPrepared5,
+        EvolutionRoute::BoundedAffine5,
+    ] {
+        for cert in [ConservationRoute::Max, ConservationRoute::Integral4] {
+            let modes = graph("alternating", solver, cert);
+            let (run, a) = measure(|| {
+                evolve_robertson_phase_atlas(
+                    &modes,
+                    0,
+                    initial(2f64.powi(-26)),
+                    [0., 0.002],
+                    &opts(),
+                    policy(),
+                    pm(MultiGuardRoute::Correlated),
+                    atlas_budget(),
+                    PhaseReuseRoute::Reuse,
+                )
+            });
+            let run = run.unwrap();
+            assert_eq!(run.stop(), PhaseAtlasStop::Horizon);
+            let phase = &run.phases()[0];
+            let src_model = RobertsonModel::new(modes[phase.mode].rate).unwrap();
+            let src = src_model.source();
+            let seed = src
+                .initialize(
+                    0.,
+                    &phase.initial.center(),
+                    &[0.125],
+                    &BRANCH,
+                    policy().init,
+                    InitRoute::Reuse,
+                )
+                .unwrap()
+                .z;
+            println!(
+                "AFFINE_ATLAS {}",
+                serde_json::json!({"solver":solver,"cert":cert,"allocation":a,"stop":run.stop(),"phases":run.phases().len(),"slabs":run.phases().iter().map(|p|p.original_slab_diagnostics().len()).sum::<usize>()})
+            );
+            let client = initialize_reduced_problem(
+                src,
+                0.,
+                &phase.initial.center(),
+                &[0.125],
+                &BRANCH,
+                policy(),
+                solver,
+            )
+            .unwrap();
+            let slabs = phase.original_slab_diagnostics();
+            for (position, k) in [
+                ("first", 0),
+                ("middle", slabs.len() / 2),
+                ("last", slabs.len() - 1),
+            ] {
+                let s = &slabs[k];
+                let time = s.times[0];
+                let x = &s.native.y0;
+                let c = s.certificate.as_ref().unwrap();
+                let mut rhs = [0.; 2];
+                let mut jac = [0.; 4];
+                let mut ft = [0.; 2];
+                let (r, ar) = measure(|| (client.problem.rhs_fn())(time, x, &mut rhs));
+                r.unwrap();
+                let vigilode::Jacobian::Dense(j) = client.problem.jacobian_provider() else {
+                    panic!("dense")
+                };
+                let (r, aj) = measure(|| j(time, x, &mut jac));
+                r.unwrap();
+                let (r, at) =
+                    measure(|| client.problem.time_derivative_fn().unwrap()(time, x, &mut ft));
+                r.unwrap();
+                if matches!(
+                    solver,
+                    EvolutionRoute::BoundedAffine5 | EvolutionRoute::BoundedPrepared5
+                ) {
+                    for a in [ar, aj, at] {
+                        assert_eq!(a.requests(), 0);
+                    }
+                }
+                println!(
+                    "AFFINE_CALLBACK {}",
+                    serde_json::json!({"solver":solver,"cert":cert,"position":position,"rhs":rhs,"jac":jac,"time":ft,"allocations":[ar,aj,at]})
+                );
+                for route in [
+                    InitRoute::AffineExact,
+                    InitRoute::ScalarRoot,
+                    InitRoute::BoundedAffineIntervalScalar,
+                    InitRoute::BoundedAffineScalar,
+                    InitRoute::BoundedPreparedScalar,
+                ] {
+                    let ((r, w), alloc) = measure(|| {
+                        src.initialize_audited(time, x, &seed, &BRANCH, policy().init, route)
+                    });
+                    let r = r.unwrap();
+                    assert!(
+                        r.qualified
+                            && r.residual_upper <= policy().init.residual_tol
+                            && r.state_error_upper <= policy().init.state_tol
+                    );
+                    println!(
+                        "AFFINE_POINT {}",
+                        serde_json::json!({"solver":solver,"cert":cert,"position":position,"route":route,"x":x,"report":r,"audit":w,"allocation":alloc})
+                    );
+                }
+                let ((r, w), alloc) = measure(|| {
+                    src.initialize_scalar_bounded_affine_audited(
+                        time,
+                        x,
+                        &seed,
+                        &BRANCH,
+                        policy().init,
+                    )
+                });
+                let r = r.unwrap();
+                assert_eq!(alloc.requests(), 0);
+                assert_eq!(w.legacy.affine_dyadic_success, 1);
+                println!(
+                    "AFFINE_CORE {}",
+                    serde_json::json!({"solver":solver,"cert":cert,"position":position,"allocation":alloc,"z":r.z(),"work":w})
+                );
+                let xp =
+                    de::dense_power(&s.native.y0, &s.native.y1, &s.native.stages, s.native.basis)
+                        .unwrap();
+                let ir = match solver {
+                    EvolutionRoute::Affine5 => InitRoute::AffineExact,
+                    EvolutionRoute::Scalar5 => InitRoute::ScalarRoot,
+                    EvolutionRoute::BoundedAffine5 => InitRoute::BoundedAffineScalar,
+                    _ => InitRoute::BoundedPreparedScalar,
+                };
+                let ((old, ow), alloc) = measure(|| {
+                    de::reconstruct_audited(
+                        src,
+                        s.times,
+                        &xp,
+                        &seed,
+                        &BRANCH,
+                        policy().init,
+                        ir,
+                        None,
+                        5,
+                    )
+                });
+                let (old, oldw) = old.unwrap();
+                let emit = |candidate: &str,
+                            z: &[Iv],
+                            work: &[InitWork],
+                            audit: &ProjectionAttemptWork,
+                            allocation: Counts| {
+                    let mut full = xp.clone();
+                    full.push(z.to_vec());
+                    let r = src_model
+                        .certify(
+                            s.times,
+                            &full,
+                            &BRANCH,
+                            policy().tube_radius,
+                            Some(c.incoming),
+                            policy().init.condition_cap,
+                            cert,
+                        )
+                        .unwrap();
+                    assert!(
+                        r.global_qualified
+                            && r.whole_x_error.unwrap() <= policy().global_tol
+                            && r.whole_z_error.unwrap() <= policy().global_tol
+                    );
+                    println!(
+                        "AFFINE_RECON {}",
+                        serde_json::json!({"solver":solver,"cert":cert,"position":position,"candidate":candidate,"allocation":allocation,"work":work,"audit":audit,"whole_x":r.whole_x_error,"whole_z":r.whole_z_error,"original_g":r.original_g_upper,"power":z.iter().map(|v|v.as_pair()).collect::<Vec<_>>(),"qualified":r.global_qualified})
+                    );
+                };
+                emit("existing", &old[0], &oldw, &ow, alloc);
+                let mut scratch = de::ScalarReconstructionWorkspace::new();
+                let mut out = [Iv::point(123.).unwrap(); 5];
+                let mut work: [InitWork; 5] = std::array::from_fn(|_| InitWork::default());
+                for (candidate, seed_route) in [
+                    ("bounded_fixed", S::Fixed),
+                    ("bounded_previous", S::PreviousNode),
+                ] {
+                    let mut audit = ProjectionAttemptWork::default();
+                    let (r, alloc) = measure(|| {
+                        de::reconstruct_scalar_bounded_affine_into(
+                            src,
+                            s.times,
+                            &xp,
+                            &seed,
+                            &BRANCH,
+                            policy().init,
+                            seed_route,
+                            &mut out,
+                            &mut work,
+                            &mut audit,
+                            &mut scratch,
+                        )
+                    });
+                    r.unwrap();
+                    assert_eq!(alloc.requests(), 0);
+                    assert_eq!((audit.calls.started, audit.calls.returned), (5, 5));
+                    emit(candidate, &out, &work, &audit, alloc);
+                }
+            }
+        }
+    }
+    black_box(src);
+}
+
+#[test]
+fn bounded_affine_source_refusals_and_cancellation() {
+    let z = || F::component(1, 0.);
+    let x = || F::component(0, 0.);
+    let mk = |terms| DaeSource::new(vec![p(vec![tr(1., vec![])])], vec![p(terms)]).unwrap();
+    let cases = [
+        (
+            "affine",
+            mk(vec![tr(3., vec![z()]), tr(-1., vec![x()])]),
+            true,
+        ),
+        (
+            "cancelled_degree4",
+            mk(vec![
+                tr(1., vec![z(), z(), z(), z()]),
+                tr(-1., vec![z(), z(), z(), z()]),
+                tr(1., vec![z()]),
+                tr(-1., vec![x()]),
+            ]),
+            true,
+        ),
+        (
+            "nonlinear",
+            mk(vec![
+                tr(1., vec![z()]),
+                tr(-1., vec![x()]),
+                tr(2f64.powi(-40), vec![z(), z()]),
+            ]),
+            false,
+        ),
+        ("zero_slope", mk(vec![tr(1., vec![x()])]), false),
+        (
+            "outside",
+            mk(vec![tr(1., vec![z()]), tr(-2., vec![])]),
+            false,
+        ),
+        (
+            "boundary",
+            mk(vec![tr(1., vec![z()]), tr(-1., vec![])]),
+            false,
+        ),
+    ];
+    for (case, src, ok) in cases {
+        let (r, w) = src.initialize_scalar_bounded_affine_audited(
+            0.,
+            &[0.125],
+            &[0.],
+            &[[-1., 1.]],
+            policy().init,
+        );
+        assert_eq!(r.is_ok(), ok, "{case} {:?}", r.as_ref().err());
+        if let Ok(r) = r {
+            let report = r.to_owned_report();
+            assert!(report.affine_root.is_none() && report.branch_defect_upper.is_none());
+            let value = if case == "affine" { 0.125 / 3. } else { 0.125 };
+            assert!(report.root_box[0][0] <= value && value <= report.root_box[0][1]);
+        }
+        println!(
+            "AFFINE_REFUSAL {}",
+            serde_json::json!({"case":case,"accepted":ok,"audit":w})
+        );
+    }
+}
+
+#[test]
+fn source_picard_endpoint_portfolio() {
+    use de::PicardEndpointRoute as R;
+    warm();
+    let iv = |x| Iv::point(x).unwrap();
+    let y = |k| F::component(k, 0.);
+    let t = || F::clock(0.);
+    let source = |case: &str| {
+        DaeSource::new(
+            if case == "noncommuting" {
+                vec![
+                    p(vec![tr(3., vec![y(1)]), tr(3., vec![t(), t()])]),
+                    p(vec![tr(2., vec![t()])]),
+                ]
+            } else {
+                vec![
+                    p(vec![tr(-0.5, vec![y(0)]), tr(0.125, vec![t(), t()])]),
+                    p(vec![tr(-0.25, vec![y(1)])]),
+                ]
+            },
+            vec![p(vec![
+                tr(1., vec![y(2)]),
+                tr(-1., vec![y(0)]),
+                tr(-1., vec![y(1)]),
+            ])],
+        )
+        .unwrap()
+    };
+    let routes = [
+        R::OrderedWords,
+        R::Polynomial3,
+        R::Polynomial5,
+        R::Polynomial7,
+        R::Adaptive7,
+    ];
+    let src = source("noncommuting");
+    // Exact represented solution x0=2*t^3, x1=t^2; perturb with
+    // epsilon*u*(1-u) to create nonzero residual but exact endpoint.
+    for (case, h) in [("short", 0.125), ("long", 0.5)] {
+        let eps = 2f64.powi(-20);
+        let q = 2. * h * h * h;
+        let r = h * h;
+        let power = vec![
+            vec![iv(0.), iv(eps), iv(-eps), iv(q)],
+            vec![iv(0.), iv(0.), iv(r)],
+            vec![iv(0.), iv(eps), iv(r - eps), iv(q)],
+        ];
+        let c = de::certify_slab(
+            &src,
+            [0., h],
+            &power,
+            &[[-2., 2.]],
+            0.01,
+            Some(0.),
+            true,
+            1e6,
+        )
+        .unwrap();
+        assert!(c.global_qualified);
+        for route in routes {
+            let (v, a) = measure(|| de::source_picard_endpoint(&src, [0., h], &power, 0., route));
+            let v = v.unwrap();
+            if route != R::OrderedWords {
+                assert_eq!(a.requests(), 0);
+            }
+            let cc = de::certify_slab_with_picard(
+                &src,
+                [0., h],
+                &power,
+                &[[-2., 2.]],
+                0.01,
+                Some(0.),
+                true,
+                1e6,
+                route,
+            )
+            .unwrap();
+            assert_eq!(cc.whole_x_error, c.whole_x_error);
+            assert_eq!(cc.whole_z_error, c.whole_z_error);
+            assert!(cc.outgoing.unwrap() <= c.outgoing.unwrap());
+            if route == R::Adaptive7 {
+                assert_eq!(v.tail_upper, 0.);
+                assert_eq!(v.candidate_error, 0.);
+            }
+            println!(
+                "PICARD_BOUND {}",
+                serde_json::json!({"case":case,"solver":"manufactured","position":"one","route":route,"allocation":a,"bounds":v,"original_outgoing":c.outgoing,"outgoing":cc.outgoing,"whole_x":cc.whole_x_error,"qualified":cc.global_qualified})
+            );
+        }
+    }
+    for case in ["noncommuting", "stable"] {
+        let src = source(case);
+        let x = if case == "stable" {
+            [0.25, -0.125]
+        } else {
+            [0., 0.]
+        };
+        let z = [x[0] + x[1]];
+        let branch = [[-2., 2.]];
+        let epoch = EvolutionEpoch {
+            start: 0.,
+            end: 0.125,
+            incoming_x_error: Some(0.),
+        };
+        for solver in [EvolutionRoute::Mass, EvolutionRoute::Reduced5] {
+            let run =
+                evolve_epoch(&src, &x, &z, &branch, epoch, &opts(), policy(), solver, &[]).unwrap();
+            assert!(run.global_qualified, "{case} {solver:?} {:?}", run.reason);
+            let slabs = run.slabs();
+            for (position, k) in [
+                ("first", 0),
+                ("middle", slabs.len() / 2),
+                ("last", slabs.len() - 1),
+            ] {
+                let s = &slabs[k];
+                let c = s.certificate.as_ref().unwrap();
+                let power = power(s);
+                for route in routes {
+                    let (v, a) = measure(|| {
+                        de::source_picard_endpoint(&src, s.times, &power, c.incoming, route)
+                    });
+                    let v = v.unwrap();
+                    if route != R::OrderedWords {
+                        assert_eq!(a.requests(), 0);
+                    }
+                    let cc = de::certify_slab_with_picard(
+                        &src,
+                        s.times,
+                        &power,
+                        &branch,
+                        policy().tube_radius,
+                        Some(c.incoming),
+                        policy().green,
+                        policy().init.condition_cap,
+                        route,
+                    )
+                    .unwrap();
+                    assert!(cc.global_qualified && cc.outgoing.unwrap() <= c.outgoing.unwrap());
+                    assert_eq!(cc.whole_x_error, c.whole_x_error);
+                    assert_eq!(cc.whole_z_error, c.whole_z_error);
+                    println!(
+                        "PICARD_BOUND {}",
+                        serde_json::json!({"case":case,"solver":solver,"position":position,"route":route,"allocation":a,"bounds":v,"original_outgoing":c.outgoing,"outgoing":cc.outgoing,"whole_x":cc.whole_x_error,"qualified":cc.global_qualified,"times":s.times,"power":s.power,"incoming":c.incoming})
+                    );
+                }
+            }
+        }
+        for solver in [
+            EvolutionRoute::Reduced5,
+            EvolutionRoute::Reduced5OrderedPicard,
+            EvolutionRoute::Reduced5PolynomialPicard,
+            EvolutionRoute::BoundedAffinePicard5,
+        ] {
+            let ((run, a), alloc) = measure(|| {
+                evolve_epoch_audited(&src, &x, &z, &branch, epoch, &opts(), policy(), solver, &[])
+            });
+            let run = run.unwrap();
+            assert!(run.global_qualified, "{case} {solver:?} {:?}", run.reason);
+            let mut words = 0;
+            let mut actions = 0;
+            let mut tightened = 0;
+            let mut receipts = 0;
+            for s in run.slabs() {
+                let c = s.certificate.as_ref().unwrap();
+                if let Some(r) = c.picard_endpoint {
+                    receipts += 1;
+                    actions += r.matrix_actions;
+                    if r.route == R::OrderedWords {
+                        words += r.matrix_actions;
+                    }
+                    let b = de::certify_slab(
+                        &src,
+                        s.times,
+                        &power(s),
+                        &branch,
+                        policy().tube_radius,
+                        Some(c.incoming),
+                        policy().green,
+                        policy().init.condition_cap,
+                    )
+                    .unwrap();
+                    tightened += usize::from(c.outgoing.unwrap() < b.outgoing.unwrap());
+                }
+            }
+            if solver == EvolutionRoute::Reduced5OrderedPicard {
+                assert!(words > 0);
+            }
+            if solver != EvolutionRoute::Reduced5 {
+                assert_eq!(receipts, run.slabs().len());
+            }
+            println!(
+                "PICARD_EPOCH {}",
+                serde_json::json!({"case":case,"solver":solver,"allocation":alloc,"slabs":run.slabs().len(),"qualified":run.global_qualified,"max_physical_error":run.max_physical_error,"outgoing":run.slabs().last().unwrap().certificate.as_ref().unwrap().outgoing,"receipts":receipts,"ordered_words":words,"matrix_actions":actions,"tightened":tightened,"audit":a})
+            );
+        }
+    }
+    let nonlinear = DaeSource::new(
+        vec![p(vec![tr(1., vec![y(0), y(0)])])],
+        vec![p(vec![tr(1., vec![y(1)])])],
+    )
+    .unwrap();
+    let algebraic = DaeSource::new(
+        vec![p(vec![tr(1., vec![y(1)])])],
+        vec![p(vec![tr(1., vec![y(1)])])],
+    )
+    .unwrap();
+    let highclock = DaeSource::new(
+        vec![p(vec![tr(1., vec![t(), t(), t()])])],
+        vec![p(vec![tr(1., vec![y(1)])])],
+    )
+    .unwrap();
+    for (case, src) in [
+        ("nonlinear", nonlinear),
+        ("algebraic", algebraic),
+        ("high_clock", highclock),
+    ] {
+        let r = de::source_picard_endpoint(
+            &src,
+            [0., 0.125],
+            &[vec![iv(0.)], vec![iv(0.)]],
+            0.,
+            R::Adaptive7,
+        );
+        assert!(r.is_err());
+        println!(
+            "PICARD_REFUSAL {}",
+            serde_json::json!({"case":case,"error":r.err().unwrap().to_string()})
+        );
+    }
+}
