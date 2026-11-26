@@ -1,0 +1,3363 @@
+{
+  "abstract_routes": 64,
+  "designs": {
+    "affine_atlas": {
+      "fields": [
+        "cert",
+        "solver"
+      ],
+      "fixed_design": [
+        {
+          "cert": "Max",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "solver": "BoundedAffine5"
+        }
+      ],
+      "uct_proposals": [
+        {
+          "cert": "Max",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "solver": "BoundedAffine5"
+        }
+      ]
+    },
+    "affine_point": {
+      "fields": [
+        "solver",
+        "cert",
+        "position",
+        "route"
+      ],
+      "fixed_design": [
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "AffineExact",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "ScalarRoot",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "BoundedAffineScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "BoundedPreparedScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "AffineExact",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "ScalarRoot",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "BoundedAffineScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "BoundedPreparedScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "AffineExact",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "ScalarRoot",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "BoundedAffineScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "BoundedPreparedScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "AffineExact",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "ScalarRoot",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "BoundedAffineScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "BoundedPreparedScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "AffineExact",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "ScalarRoot",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "BoundedAffineScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "BoundedPreparedScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "AffineExact",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "ScalarRoot",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "BoundedAffineScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "BoundedPreparedScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "AffineExact",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "ScalarRoot",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "BoundedAffineScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "BoundedPreparedScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "AffineExact",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "ScalarRoot",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "BoundedAffineScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "BoundedPreparedScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "AffineExact",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "ScalarRoot",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "BoundedAffineScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "BoundedPreparedScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "AffineExact",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "ScalarRoot",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "BoundedAffineScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "BoundedPreparedScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "AffineExact",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "ScalarRoot",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "BoundedAffineScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "BoundedPreparedScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "AffineExact",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "ScalarRoot",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "BoundedAffineScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "BoundedPreparedScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "AffineExact",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "ScalarRoot",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "BoundedAffineScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "BoundedPreparedScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "AffineExact",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "ScalarRoot",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "BoundedAffineScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "BoundedPreparedScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "AffineExact",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "ScalarRoot",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "BoundedAffineScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "BoundedPreparedScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "AffineExact",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "ScalarRoot",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "BoundedAffineScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "BoundedPreparedScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "AffineExact",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "ScalarRoot",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "BoundedAffineScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "BoundedPreparedScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "AffineExact",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "ScalarRoot",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "BoundedAffineScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "BoundedPreparedScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "AffineExact",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "ScalarRoot",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "BoundedAffineScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "BoundedPreparedScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "AffineExact",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "ScalarRoot",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "BoundedAffineScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "BoundedPreparedScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "AffineExact",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "ScalarRoot",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "BoundedAffineScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "BoundedPreparedScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "AffineExact",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "ScalarRoot",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "BoundedAffineScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "BoundedPreparedScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "AffineExact",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "ScalarRoot",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "BoundedAffineScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "BoundedPreparedScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "AffineExact",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "ScalarRoot",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "BoundedAffineScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "BoundedPreparedScalar",
+          "solver": "BoundedAffine5"
+        }
+      ],
+      "uct_proposals": [
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "BoundedPreparedScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "BoundedAffineScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "AffineExact",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "BoundedAffineScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "AffineExact",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "BoundedAffineScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "BoundedAffineScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "BoundedAffineScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "AffineExact",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "BoundedPreparedScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "ScalarRoot",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "BoundedPreparedScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "ScalarRoot",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "BoundedAffineScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "BoundedAffineScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "ScalarRoot",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "BoundedPreparedScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "BoundedPreparedScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "AffineExact",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "AffineExact",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "BoundedPreparedScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "BoundedPreparedScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "BoundedAffineScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "BoundedPreparedScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "BoundedAffineScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "AffineExact",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "BoundedPreparedScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "ScalarRoot",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "ScalarRoot",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "ScalarRoot",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "BoundedAffineScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "BoundedAffineScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "AffineExact",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "AffineExact",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "AffineExact",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "BoundedAffineScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "ScalarRoot",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "AffineExact",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "BoundedPreparedScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "BoundedPreparedScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "ScalarRoot",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "BoundedAffineScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "BoundedAffineScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "BoundedPreparedScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "ScalarRoot",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "AffineExact",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "AffineExact",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "ScalarRoot",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "ScalarRoot",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "AffineExact",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "BoundedPreparedScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "BoundedPreparedScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "BoundedPreparedScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "BoundedPreparedScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "BoundedPreparedScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "BoundedPreparedScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "ScalarRoot",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "AffineExact",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "ScalarRoot",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "AffineExact",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "BoundedAffineScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "BoundedAffineScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "BoundedAffineScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "AffineExact",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "BoundedAffineScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "ScalarRoot",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "ScalarRoot",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "BoundedAffineScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "AffineExact",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "BoundedPreparedScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "AffineExact",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "ScalarRoot",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "AffineExact",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "ScalarRoot",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "ScalarRoot",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "BoundedAffineScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "BoundedPreparedScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "AffineExact",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "AffineExact",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "ScalarRoot",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "BoundedAffineScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "AffineExact",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "AffineExact",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "BoundedPreparedScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "ScalarRoot",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "BoundedAffineScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "first",
+          "route": "ScalarRoot",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "first",
+          "route": "BoundedPreparedScalar",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "BoundedAffineScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "ScalarRoot",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "middle",
+          "route": "BoundedAffineScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "ScalarRoot",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "BoundedPreparedScalar",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "ScalarRoot",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "cert": "Integral4",
+          "position": "last",
+          "route": "BoundedAffineIntervalScalar",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "position": "last",
+          "route": "BoundedPreparedScalar",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "position": "middle",
+          "route": "AffineExact",
+          "solver": "Affine5"
+        }
+      ]
+    },
+    "affine_recon": {
+      "fields": [
+        "solver",
+        "cert",
+        "position",
+        "candidate"
+      ],
+      "fixed_design": [
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "first",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "first",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "first",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "last",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "last",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "last",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "first",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "first",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "first",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "last",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "last",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "last",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "BoundedAffine5"
+        }
+      ],
+      "uct_proposals": [
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "last",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "last",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "first",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "first",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "last",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "last",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "first",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "first",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "first",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "first",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "last",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "last",
+          "solver": "BoundedAffine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "BoundedPrepared5"
+        }
+      ]
+    },
+    "picard_epoch": {
+      "fields": [
+        "case",
+        "solver"
+      ],
+      "fixed_design": [
+        {
+          "case": "noncommuting",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "solver": "Reduced5OrderedPicard"
+        },
+        {
+          "case": "noncommuting",
+          "solver": "Reduced5PolynomialPicard"
+        },
+        {
+          "case": "noncommuting",
+          "solver": "BoundedAffinePicard5"
+        },
+        {
+          "case": "stable",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "solver": "Reduced5OrderedPicard"
+        },
+        {
+          "case": "stable",
+          "solver": "Reduced5PolynomialPicard"
+        },
+        {
+          "case": "stable",
+          "solver": "BoundedAffinePicard5"
+        }
+      ],
+      "uct_proposals": [
+        {
+          "case": "noncommuting",
+          "solver": "BoundedAffinePicard5"
+        },
+        {
+          "case": "stable",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "solver": "Reduced5OrderedPicard"
+        },
+        {
+          "case": "noncommuting",
+          "solver": "Reduced5OrderedPicard"
+        },
+        {
+          "case": "stable",
+          "solver": "Reduced5PolynomialPicard"
+        },
+        {
+          "case": "noncommuting",
+          "solver": "Reduced5PolynomialPicard"
+        },
+        {
+          "case": "noncommuting",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "solver": "BoundedAffinePicard5"
+        }
+      ]
+    },
+    "picard_manufactured": {
+      "fields": [
+        "case",
+        "solver",
+        "position",
+        "route"
+      ],
+      "fixed_design": [
+        {
+          "case": "short",
+          "position": "one",
+          "route": "OrderedWords",
+          "solver": "manufactured"
+        },
+        {
+          "case": "short",
+          "position": "one",
+          "route": "Polynomial3",
+          "solver": "manufactured"
+        },
+        {
+          "case": "short",
+          "position": "one",
+          "route": "Polynomial5",
+          "solver": "manufactured"
+        },
+        {
+          "case": "short",
+          "position": "one",
+          "route": "Polynomial7",
+          "solver": "manufactured"
+        },
+        {
+          "case": "short",
+          "position": "one",
+          "route": "Adaptive7",
+          "solver": "manufactured"
+        },
+        {
+          "case": "long",
+          "position": "one",
+          "route": "OrderedWords",
+          "solver": "manufactured"
+        },
+        {
+          "case": "long",
+          "position": "one",
+          "route": "Polynomial3",
+          "solver": "manufactured"
+        },
+        {
+          "case": "long",
+          "position": "one",
+          "route": "Polynomial5",
+          "solver": "manufactured"
+        },
+        {
+          "case": "long",
+          "position": "one",
+          "route": "Polynomial7",
+          "solver": "manufactured"
+        },
+        {
+          "case": "long",
+          "position": "one",
+          "route": "Adaptive7",
+          "solver": "manufactured"
+        }
+      ],
+      "uct_proposals": [
+        {
+          "case": "short",
+          "position": "one",
+          "route": "Polynomial3",
+          "solver": "manufactured"
+        },
+        {
+          "case": "long",
+          "position": "one",
+          "route": "Polynomial5",
+          "solver": "manufactured"
+        },
+        {
+          "case": "long",
+          "position": "one",
+          "route": "Adaptive7",
+          "solver": "manufactured"
+        },
+        {
+          "case": "short",
+          "position": "one",
+          "route": "Adaptive7",
+          "solver": "manufactured"
+        },
+        {
+          "case": "short",
+          "position": "one",
+          "route": "Polynomial7",
+          "solver": "manufactured"
+        },
+        {
+          "case": "long",
+          "position": "one",
+          "route": "OrderedWords",
+          "solver": "manufactured"
+        },
+        {
+          "case": "long",
+          "position": "one",
+          "route": "Polynomial3",
+          "solver": "manufactured"
+        },
+        {
+          "case": "short",
+          "position": "one",
+          "route": "OrderedWords",
+          "solver": "manufactured"
+        },
+        {
+          "case": "long",
+          "position": "one",
+          "route": "Polynomial7",
+          "solver": "manufactured"
+        },
+        {
+          "case": "short",
+          "position": "one",
+          "route": "Polynomial5",
+          "solver": "manufactured"
+        }
+      ]
+    },
+    "picard_native": {
+      "fields": [
+        "case",
+        "solver",
+        "position",
+        "route"
+      ],
+      "fixed_design": [
+        {
+          "case": "noncommuting",
+          "position": "first",
+          "route": "OrderedWords",
+          "solver": "Mass"
+        },
+        {
+          "case": "noncommuting",
+          "position": "first",
+          "route": "Polynomial3",
+          "solver": "Mass"
+        },
+        {
+          "case": "noncommuting",
+          "position": "first",
+          "route": "Polynomial5",
+          "solver": "Mass"
+        },
+        {
+          "case": "noncommuting",
+          "position": "first",
+          "route": "Polynomial7",
+          "solver": "Mass"
+        },
+        {
+          "case": "noncommuting",
+          "position": "first",
+          "route": "Adaptive7",
+          "solver": "Mass"
+        },
+        {
+          "case": "noncommuting",
+          "position": "middle",
+          "route": "OrderedWords",
+          "solver": "Mass"
+        },
+        {
+          "case": "noncommuting",
+          "position": "middle",
+          "route": "Polynomial3",
+          "solver": "Mass"
+        },
+        {
+          "case": "noncommuting",
+          "position": "middle",
+          "route": "Polynomial5",
+          "solver": "Mass"
+        },
+        {
+          "case": "noncommuting",
+          "position": "middle",
+          "route": "Polynomial7",
+          "solver": "Mass"
+        },
+        {
+          "case": "noncommuting",
+          "position": "middle",
+          "route": "Adaptive7",
+          "solver": "Mass"
+        },
+        {
+          "case": "noncommuting",
+          "position": "last",
+          "route": "OrderedWords",
+          "solver": "Mass"
+        },
+        {
+          "case": "noncommuting",
+          "position": "last",
+          "route": "Polynomial3",
+          "solver": "Mass"
+        },
+        {
+          "case": "noncommuting",
+          "position": "last",
+          "route": "Polynomial5",
+          "solver": "Mass"
+        },
+        {
+          "case": "noncommuting",
+          "position": "last",
+          "route": "Polynomial7",
+          "solver": "Mass"
+        },
+        {
+          "case": "noncommuting",
+          "position": "last",
+          "route": "Adaptive7",
+          "solver": "Mass"
+        },
+        {
+          "case": "noncommuting",
+          "position": "first",
+          "route": "OrderedWords",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "first",
+          "route": "Polynomial3",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "first",
+          "route": "Polynomial5",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "first",
+          "route": "Polynomial7",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "first",
+          "route": "Adaptive7",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "middle",
+          "route": "OrderedWords",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "middle",
+          "route": "Polynomial3",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "middle",
+          "route": "Polynomial5",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "middle",
+          "route": "Polynomial7",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "middle",
+          "route": "Adaptive7",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "last",
+          "route": "OrderedWords",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "last",
+          "route": "Polynomial3",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "last",
+          "route": "Polynomial5",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "last",
+          "route": "Polynomial7",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "last",
+          "route": "Adaptive7",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "position": "first",
+          "route": "OrderedWords",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "first",
+          "route": "Polynomial3",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "first",
+          "route": "Polynomial5",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "first",
+          "route": "Polynomial7",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "first",
+          "route": "Adaptive7",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "middle",
+          "route": "OrderedWords",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "middle",
+          "route": "Polynomial3",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "middle",
+          "route": "Polynomial5",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "middle",
+          "route": "Polynomial7",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "middle",
+          "route": "Adaptive7",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "last",
+          "route": "OrderedWords",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "last",
+          "route": "Polynomial3",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "last",
+          "route": "Polynomial5",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "last",
+          "route": "Polynomial7",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "last",
+          "route": "Adaptive7",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "first",
+          "route": "OrderedWords",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "position": "first",
+          "route": "Polynomial3",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "position": "first",
+          "route": "Polynomial5",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "position": "first",
+          "route": "Polynomial7",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "position": "first",
+          "route": "Adaptive7",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "position": "middle",
+          "route": "OrderedWords",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "position": "middle",
+          "route": "Polynomial3",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "position": "middle",
+          "route": "Polynomial5",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "position": "middle",
+          "route": "Polynomial7",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "position": "middle",
+          "route": "Adaptive7",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "position": "last",
+          "route": "OrderedWords",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "position": "last",
+          "route": "Polynomial3",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "position": "last",
+          "route": "Polynomial5",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "position": "last",
+          "route": "Polynomial7",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "position": "last",
+          "route": "Adaptive7",
+          "solver": "Reduced5"
+        }
+      ],
+      "uct_proposals": [
+        {
+          "case": "noncommuting",
+          "position": "last",
+          "route": "Polynomial7",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "position": "last",
+          "route": "Polynomial5",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "last",
+          "route": "Adaptive7",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "last",
+          "route": "Polynomial7",
+          "solver": "Mass"
+        },
+        {
+          "case": "noncommuting",
+          "position": "middle",
+          "route": "Adaptive7",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "middle",
+          "route": "OrderedWords",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "first",
+          "route": "Polynomial3",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "middle",
+          "route": "Polynomial7",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "first",
+          "route": "OrderedWords",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "position": "first",
+          "route": "Adaptive7",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "middle",
+          "route": "Adaptive7",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "first",
+          "route": "Polynomial5",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "first",
+          "route": "OrderedWords",
+          "solver": "Mass"
+        },
+        {
+          "case": "noncommuting",
+          "position": "middle",
+          "route": "Polynomial5",
+          "solver": "Mass"
+        },
+        {
+          "case": "noncommuting",
+          "position": "middle",
+          "route": "OrderedWords",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "position": "middle",
+          "route": "Polynomial5",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "position": "middle",
+          "route": "Adaptive7",
+          "solver": "Mass"
+        },
+        {
+          "case": "noncommuting",
+          "position": "last",
+          "route": "Adaptive7",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "position": "last",
+          "route": "OrderedWords",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "last",
+          "route": "Polynomial7",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "first",
+          "route": "Adaptive7",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "first",
+          "route": "Adaptive7",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "last",
+          "route": "OrderedWords",
+          "solver": "Mass"
+        },
+        {
+          "case": "noncommuting",
+          "position": "first",
+          "route": "Polynomial3",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "middle",
+          "route": "Polynomial5",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "position": "last",
+          "route": "Adaptive7",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "first",
+          "route": "Polynomial5",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "last",
+          "route": "OrderedWords",
+          "solver": "Mass"
+        },
+        {
+          "case": "noncommuting",
+          "position": "last",
+          "route": "Polynomial5",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "position": "middle",
+          "route": "Polynomial3",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "middle",
+          "route": "OrderedWords",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "middle",
+          "route": "Polynomial7",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "first",
+          "route": "Polynomial7",
+          "solver": "Mass"
+        },
+        {
+          "case": "noncommuting",
+          "position": "first",
+          "route": "Polynomial7",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "position": "last",
+          "route": "Polynomial7",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "first",
+          "route": "Polynomial3",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "first",
+          "route": "OrderedWords",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "first",
+          "route": "Polynomial5",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "first",
+          "route": "Polynomial7",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "middle",
+          "route": "Polynomial3",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "last",
+          "route": "Polynomial3",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "middle",
+          "route": "Polynomial3",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "middle",
+          "route": "Polynomial3",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "last",
+          "route": "Polynomial5",
+          "solver": "Mass"
+        },
+        {
+          "case": "noncommuting",
+          "position": "last",
+          "route": "Polynomial5",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "middle",
+          "route": "OrderedWords",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "position": "first",
+          "route": "Polynomial5",
+          "solver": "Mass"
+        },
+        {
+          "case": "noncommuting",
+          "position": "last",
+          "route": "Polynomial3",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "position": "first",
+          "route": "Polynomial7",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "last",
+          "route": "Polynomial3",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "middle",
+          "route": "Polynomial5",
+          "solver": "Mass"
+        },
+        {
+          "case": "noncommuting",
+          "position": "last",
+          "route": "OrderedWords",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "stable",
+          "position": "last",
+          "route": "Adaptive7",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "middle",
+          "route": "Adaptive7",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "first",
+          "route": "OrderedWords",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "last",
+          "route": "Polynomial3",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "middle",
+          "route": "Polynomial7",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "noncommuting",
+          "position": "middle",
+          "route": "Polynomial7",
+          "solver": "Mass"
+        },
+        {
+          "case": "stable",
+          "position": "first",
+          "route": "Polynomial3",
+          "solver": "Mass"
+        },
+        {
+          "case": "noncommuting",
+          "position": "first",
+          "route": "Adaptive7",
+          "solver": "Reduced5"
+        }
+      ]
+    }
+  },
+  "manifest_files": 154,
+  "mutation_edges": {
+    "Adaptive7": "Polynomial7",
+    "BoundedAffine5": "Affine5",
+    "BoundedAffineIntervalScalar": "AffineExact",
+    "BoundedAffinePicard5": "Reduced5PolynomialPicard",
+    "BoundedAffineScalar": "BoundedAffineIntervalScalar",
+    "Polynomial3": "OrderedWords",
+    "Polynomial5": "Polynomial3",
+    "Polynomial7": "Polynomial5",
+    "Reduced5OrderedPicard": "Reduced5",
+    "Reduced5PolynomialPicard": "Reduced5OrderedPicard"
+  },
+  "revived_modules": [
+    "ordered_picard",
+    "Dictionary::picard_words"
+  ],
+  "scope": "actual measured finite candidates"
+}
