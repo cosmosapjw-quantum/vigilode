@@ -890,6 +890,27 @@ pub enum GuardDerivativeRoute {
     PreparedSchur,
     /// Opt-in tighter physical derivative box from the actual L1 receipt.
     ConservedSchur,
+    /// Opt-in interval fixed-point intersection, one synchronous sweep.
+    SchurRefine1,
+    /// Opt-in interval fixed-point intersection, two synchronous sweeps.
+    SchurRefine2,
+    PreparedSchurRefine2,
+    ConservedSchurRefine2,
+}
+impl GuardDerivativeRoute {
+    fn refinement_sweeps(self) -> usize {
+        match self {
+            Self::SchurRefine1 => 1,
+            Self::SchurRefine2 | Self::PreparedSchurRefine2 | Self::ConservedSchurRefine2 => 2,
+            _ => 0,
+        }
+    }
+    fn prepared(self) -> bool {
+        matches!(self, Self::PreparedSchur | Self::PreparedSchurRefine2)
+    }
+    fn conserved(self) -> bool {
+        matches!(self, Self::ConservedSchur | Self::ConservedSchurRefine2)
+    }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub enum GuardValueRoute {
@@ -955,6 +976,52 @@ macro_rules! observed_reset {
         r
     }};
 }
+// The source dimension and factor caps are already validated by DaeSource.
+// All rows (including unused derivatives) are evaluated, preserving errors.
+fn guard_source_rows(
+    polys: &[DeclaredPolynomial],
+    time: Iv,
+    state: &[Iv],
+    values: &mut [Iv],
+    jac: &mut [[Iv; 33]],
+) -> CoreResult<()> {
+    for ((eq, v), row) in polys.iter().zip(values).zip(jac) {
+        *v = di::evaluate_row_bounded(eq, time, state, &mut row[..=state.len()])?;
+    }
+    Ok(())
+}
+fn guard_defect_into(
+    c: &DenseMatrix,
+    g: &[[Iv; 33]],
+    nx: usize,
+    defect: &mut [Iv],
+) -> CoreResult<f64> {
+    let n = c.nrows();
+    for i in 0..n {
+        for k in 0..n {
+            defect[i * n + k] = (0..n).try_fold(p(if i == k { 1. } else { 0. })?, |s, l| {
+                s.sub(g[l][1 + nx + k].scale(c[(i, l)])?)
+            })?;
+        }
+    }
+    // Evaluate the complete defect before the row norm, as in the old route.
+    defect
+        .chunks_exact(n)
+        .map(guard_row_norm)
+        .try_fold(0.0_f64, |s, v| Ok(s.max(v?)))
+}
+// X contains every admissible solution and W contains Cb. Since x=Cb+Ex,
+// intersecting X with W+E X preserves inclusion. Jacobi (not Gauss-Seidel)
+// means every next component reads the same previous box.
+fn guard_refine(w: &[Iv], defect: &[Iv], out: &mut [Iv], next: &mut [Iv]) -> CoreResult<()> {
+    let n = out.len();
+    for i in 0..n {
+        let ex = guard_dot(&defect[i * n..(i + 1) * n], out)?;
+        next[i] = intersect(out[i], w[i].add(ex)?)?;
+    }
+    out.copy_from_slice(next);
+    Ok(())
+}
 // Same row-major dot and defect-product rounding as di::matvec followed
 // by product_bound. Output is local scratch, not accepted physical state.
 fn guard_solve_into(
@@ -963,6 +1030,9 @@ fn guard_solve_into(
     q: f64,
     gap: f64,
     out: &mut [Iv],
+    defect: &[Iv],
+    sweeps: usize,
+    sweep_work: &mut di::AttemptCount,
 ) -> CoreResult<()> {
     for (i, o) in out.iter_mut().enumerate() {
         *o = c
@@ -971,9 +1041,22 @@ fn guard_solve_into(
             .zip(rhs)
             .try_fold(zero(), |s, (&a, &v)| s.add(v.scale(a)?))?;
     }
+    let mut w = [zero(); 32];
+    let n = out.len();
+    if sweeps != 0 {
+        w[..n].copy_from_slice(out);
+    }
     let e = div_up(mul_up(q, di::norm(out))?, gap)?;
-    for v in out {
+    for v in out.iter_mut() {
         *v = v.add(Iv::new(-e, e)?)?;
+    }
+    if sweeps != 0 {
+        let mut next = [zero(); 32];
+        for _ in 0..sweeps {
+            let r = guard_refine(&w[..n], defect, out, &mut next[..n]);
+            sweep_work.record(r.is_ok());
+            r?;
+        }
     }
     Ok(())
 }
@@ -1039,7 +1122,7 @@ impl<'a> GuardProof<'a> {
         let zb = iv_pairs(&cert.z_range)?;
         let mut rb = iv_pairs(&cert.branch_root_box)?;
         let structural = cert.conservation.is_some() && nx == 2 && nz == 1;
-        let tight = derivative == GuardDerivativeRoute::ConservedSchur;
+        let tight = derivative.conserved();
         if tight {
             if !structural {
                 return Err(bad(
@@ -1057,22 +1140,46 @@ impl<'a> GuardProof<'a> {
             // Exact affine lift: |delta z| <= ||delta x||_1, not 2r.
             rb[0] = intersect(rb[0], range(&lift)?.add(err)?)?;
         }
-        let mut physical = xb.clone();
-        physical.extend_from_slice(&rb);
-        let f = observed_reset!(audit, evaluations, di::evaluate(&src.f, time, &physical))?;
-        let g = observed_reset!(audit, evaluations, di::evaluate(&src.g, time, &physical))?;
-        let hg = observed_reset!(
+        let mut physical_storage = [zero(); 32];
+        let physical = &mut physical_storage[..nx + nz];
+        physical[..nx].copy_from_slice(&xb);
+        physical[nx..].copy_from_slice(&rb);
+        let mut fv_storage = [zero(); 32];
+        let fv = &mut fv_storage[..nx];
+        let mut unused_row = [zero(); 33];
+        // f derivatives are checked but need not be retained.
+        observed_reset!(audit, evaluations, {
+            for (eq, v) in src.f.iter().zip(fv.iter_mut()) {
+                *v = di::evaluate_row_bounded(eq, time, physical, &mut unused_row[..=nx + nz])?;
+            }
+            Ok::<(), CoreError>(())
+        })?;
+        let mut gj_storage = [[zero(); 33]; 32];
+        let gj = &mut gj_storage[..nz];
+        let mut gv = [zero(); 32];
+        observed_reset!(
             audit,
             evaluations,
-            di::evaluate(std::slice::from_ref(guard), time, &physical)
+            guard_source_rows(&src.g, time, physical, &mut gv[..nz], gj)
         )?;
-        let h = &hg.j[0];
-        let j = jz(&g, nx);
+        let mut h_storage = [zero(); 33];
+        let h = &mut h_storage[..=nx + nz];
+        observed_reset!(
+            audit,
+            evaluations,
+            di::evaluate_row_bounded(guard, time, physical, h)
+        )?;
         let original = DenseMatrix::new(nz, nz, cert.preconditioner.clone())?;
         let mut work = InitWork::default();
         let prepared;
-        let c = if derivative == GuardDerivativeRoute::PreparedSchur {
-            let center = di::center_matrix(&j)?;
+        let c = if derivative.prepared() {
+            let center = DenseMatrix::new(
+                nz,
+                nz,
+                gj.iter()
+                    .flat_map(|r| r[1 + nx..=nx + nz].iter().copied().map(di::mid))
+                    .collect(),
+            )?;
             audit.rhs_requested += nz;
             let r = di::preconditioner(
                 &center,
@@ -1089,7 +1196,9 @@ impl<'a> GuardProof<'a> {
         } else {
             &original
         };
-        let q = di::rows_norm(&di::defect(c, &j)?)?;
+        let mut defect_storage = [zero(); 32 * 32];
+        let defect = &mut defect_storage[..nz * nz];
+        let q = guard_defect_into(c, gj, nx, defect)?;
         let gap = sub_down(1., q)?;
         if gap <= 0. {
             return Err(bad("guard inverse defect"));
@@ -1107,26 +1216,35 @@ impl<'a> GuardProof<'a> {
             observed_reset!(
                 audit,
                 reduced_columns,
-                guard_solve_into(c, rhs, q, gap, out)
+                guard_solve_into(
+                    c,
+                    rhs,
+                    q,
+                    gap,
+                    out,
+                    defect,
+                    derivative.refinement_sweeps(),
+                    &mut audit.refinement_sweeps
+                )
             )
         };
         let hz = &h[1 + nx..];
         for (k, &hk) in h[..=nx].iter().enumerate() {
-            for (v, r) in rhs.iter_mut().zip(&g.j) {
+            for (v, r) in rhs.iter_mut().zip(gj.iter()) {
                 *v = -r[k];
             }
             solve(rhs, solved)?;
             reduced[k] = hk.add(guard_dot(hz, solved)?)?;
         }
         let velocity = if derivative == GuardDerivativeRoute::Tangent {
-            for (v, r) in rhs.iter_mut().zip(&g.j) {
-                *v = -r[0].add(guard_dot(&r[1..1 + nx], &f.v)?)?;
+            for (v, r) in rhs.iter_mut().zip(gj.iter()) {
+                *v = -r[0].add(guard_dot(&r[1..1 + nx], fv)?)?;
             }
-            let partial = h[0].add(guard_dot(&h[1..1 + nx], &f.v)?)?;
+            let partial = h[0].add(guard_dot(&h[1..1 + nx], fv)?)?;
             solve(rhs, solved)?;
             partial.add(guard_dot(hz, solved)?)?
         } else {
-            reduced[0].add(guard_dot(&reduced[1..], &f.v)?)?
+            reduced[0].add(guard_dot(&reduced[1..], fv)?)?
         };
         // The structural receipt owns a reduced L1 radius. Its dual
         // norm is the maximum absolute reduced gradient component.
@@ -1137,16 +1255,19 @@ impl<'a> GuardProof<'a> {
         };
         // The straight segment between represented V and true Z(t,U)
         // lies in this hull; use it for the algebraic correction only.
-        let mut hull = xb.clone();
-        for (&v, &r) in zb.iter().zip(&rb) {
-            hull.push(Iv::new(v.lo.min(r.lo), v.hi.max(r.hi))?);
+        let mut hull_storage = [zero(); 32];
+        let hull = &mut hull_storage[..nx + nz];
+        hull[..nx].copy_from_slice(&xb);
+        for (o, (&v, &r)) in hull[nx..].iter_mut().zip(zb.iter().zip(&rb)) {
+            *o = Iv::new(v.lo.min(r.lo), v.hi.max(r.hi))?;
         }
-        let hh = observed_reset!(
+        let mut hh = [zero(); 33];
+        observed_reset!(
             audit,
             evaluations,
-            di::evaluate(std::slice::from_ref(guard), time, &hull)
+            di::evaluate_row_bounded(guard, time, hull, &mut hh[..=nx + nz])
         )?;
-        let algebraic_guard_lip = guard_row_norm(&hh.j[0][1 + nx..])?;
+        let algebraic_guard_lip = guard_row_norm(&hh[1 + nx..=nx + nz])?;
         let clock = [p(cert.times[0])?, p(cert.times[1])?.sub(p(cert.times[0])?)?];
         let (h_poly, algebraic_guard_lip) = if structural && value == GuardValueRoute::Transport {
             // The source-owned Robertson constraint is exact affine
@@ -1537,6 +1658,11 @@ pub struct GuardKernelAudit {
     pub rhs_requested: usize,
     pub rhs_returned: usize,
     pub reduced_columns: di::AttemptCount,
+    #[serde(skip_serializing_if = "guard_attempt_empty")]
+    pub refinement_sweeps: di::AttemptCount,
+}
+fn guard_attempt_empty(w: &di::AttemptCount) -> bool {
+    w.started == 0 && w.returned == 0
 }
 impl GuardKernelAudit {
     pub fn merge(&mut self, b: &Self) {
@@ -1546,6 +1672,7 @@ impl GuardKernelAudit {
         self.rhs_requested += b.rhs_requested;
         self.rhs_returned += b.rhs_returned;
         self.reduced_columns.merge(b.reduced_columns);
+        self.refinement_sweeps.merge(b.refinement_sweeps);
     }
 }
 /// Retained separately from an owning vector certificate, even on Err.
