@@ -5134,3 +5134,80 @@ fn source_complex_phi_portfolio() {
         .is_err()
     );
 }
+
+fn nondominant_vector_fixture(n: usize, nonlinear: bool) -> DaeSource {
+    let lin = |i, w| tr(w, vec![F::component(i, 0.)]);
+    // Cyclic permutation of equations of a unit triangular constraint,
+    // hence nonsingular but every diagonal position has a zero or small entry.
+    let mut g = Vec::new();
+    for i in 0..n {
+        let j = (i + 1) % n;
+        let mut terms = vec![lin(j + 1, 1.), lin(0, -((j + 1) as f64))];
+        if j + 1 < n {
+            terms.push(lin(j + 2, 0.25));
+            terms.push(lin(0, -0.25 * ((j + 2) as f64)));
+        }
+        if nonlinear {
+            let d = F {
+                constant: 0.,
+                time: 0.,
+                state: vec![(j + 1, 1.), (0, -((j + 1) as f64))],
+            };
+            terms.push(tr(1. / 256., vec![d.clone(), d]));
+        }
+        g.push(p(terms));
+    }
+    DaeSource::new(vec![p(vec![tr(0.125, vec![]), lin(1, 0.125)])], g).unwrap()
+}
+#[test]
+fn nondominant_vector_actual_callbacks_noalloc() {
+    warm();
+    let src = nondominant_vector_fixture(4, false);
+    let branch = [[-1., 1.]; 4];
+    let legacy = initialize_reduced_problem(
+        &src,
+        0.,
+        &[0.],
+        &[0.; 4],
+        &branch,
+        policy(),
+        EvolutionRoute::Reduced5,
+    )
+    .unwrap();
+    let candidate = initialize_reduced_problem(
+        &src,
+        0.,
+        &[0.],
+        &[0.; 4],
+        &branch,
+        policy(),
+        EvolutionRoute::BoundedVectorPivot5,
+    )
+    .expect("nondominant midpoint should be accepted by pivoted route");
+    let t = 0.0625;
+    let x = [0.03125];
+    let mut v = [0.; 3];
+    let mut e = [0.; 3];
+    let vigilode::Jacobian::Dense(j) = candidate.problem.jacobian_provider() else {
+        panic!("dense")
+    };
+    let (r, a) = measure(|| (candidate.problem.rhs_fn())(t, &x, &mut v[..1]));
+    r.unwrap();
+    let (r, b) = measure(|| j(t, &x, &mut v[1..2]));
+    r.unwrap();
+    let (r, c) = measure(|| candidate.problem.time_derivative_fn().unwrap()(t, &x, &mut v[2..]));
+    r.unwrap();
+    let vigilode::Jacobian::Dense(j) = legacy.problem.jacobian_provider() else {
+        panic!("dense")
+    };
+    (legacy.problem.rhs_fn())(t, &x, &mut e[..1]).unwrap();
+    j(t, &x, &mut e[1..2]).unwrap();
+    legacy.problem.time_derivative_fn().unwrap()(t, &x, &mut e[2..]).unwrap();
+    assert_eq!(v, e);
+    assert_eq!(v, [0.12890625, 0.125, 0.]);
+    println!(
+        "PIVOT_RED_GREEN {}",
+        serde_json::json!({"values":v,"reference":e,"allocation":[a,b,c]})
+    );
+    assert_eq!([a.requests(), b.requests(), c.requests()], [0; 3]);
+}

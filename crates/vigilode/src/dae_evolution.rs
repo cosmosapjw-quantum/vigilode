@@ -48,6 +48,7 @@ pub enum EvolutionRoute {
     BoundedAffinePicard5,
     BoundedVector5,
     BoundedVectorRefined5,
+    BoundedVectorPivot5,
     Reduced5NormalLs,
     Reduced5BoundedLs,
     BoundedSturm5,
@@ -59,7 +60,7 @@ impl EvolutionRoute {
     fn init(self) -> InitRoute {
         match self {
             Self::Prepared5 => InitRoute::PreparedBatch,
-            Self::BoundedVector5 => InitRoute::BoundedVector,
+            Self::BoundedVector5 | Self::BoundedVectorPivot5 => InitRoute::BoundedVector,
             Self::BoundedVectorRefined5 => InitRoute::BoundedVectorRefined,
             Self::BoundedPrepared5 | Self::BoundedPreparedLegendre5 => {
                 InitRoute::BoundedPreparedScalar
