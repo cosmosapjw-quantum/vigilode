@@ -3151,3 +3151,452 @@ fn scalar_reconstruction_portfolio() {
         }
     }
 }
+
+#[test]
+#[ignore = "bounded prepared scalar actual callback/reconstruction/atlas candidates"]
+fn bounded_prepared_scalar_portfolio() {
+    use de::ReconstructionSeedRoute as S;
+    use rodas5p_integrators::retro_dae_init::{InitWork, ProjectionAttemptWork};
+    warm();
+    const BRANCH: [[f64; 2]; 1] = [[-0.25, 1.25]];
+    for solver in [
+        EvolutionRoute::Reduced5,
+        EvolutionRoute::Prepared5,
+        EvolutionRoute::BoundedPrepared5,
+        EvolutionRoute::Scalar5,
+        EvolutionRoute::Affine5,
+    ] {
+        for cert in [ConservationRoute::Max, ConservationRoute::Integral4] {
+            let modes = graph("alternating", solver, cert);
+            let (run, allocation) = measure(|| {
+                evolve_robertson_phase_atlas(
+                    &modes,
+                    0,
+                    initial(2f64.powi(-26)),
+                    [0., 0.002],
+                    &opts(),
+                    policy(),
+                    pm(MultiGuardRoute::Correlated),
+                    atlas_budget(),
+                    PhaseReuseRoute::Reuse,
+                )
+            });
+            let run = run.unwrap();
+            assert_eq!(run.stop(), PhaseAtlasStop::Horizon);
+            let phase = &run.phases()[0];
+            let model = RobertsonModel::new(modes[phase.mode].rate).unwrap();
+            let src = model.source();
+            let init = src
+                .initialize(
+                    0.,
+                    &phase.initial.center(),
+                    &[0.125],
+                    &BRANCH,
+                    policy().init,
+                    InitRoute::Reuse,
+                )
+                .unwrap();
+            println!(
+                "PREPARED_ATLAS {}",
+                serde_json::json!({"solver":solver,"cert":cert,"allocation":allocation,"stop":run.stop(),"phases":run.phases().len(),"slabs":run.phases().iter().map(|p|p.original_slab_diagnostics().len()).sum::<usize>()})
+            );
+            let prepared = initialize_reduced_problem(
+                src,
+                0.,
+                &phase.initial.center(),
+                &[0.125],
+                &BRANCH,
+                policy(),
+                solver,
+            )
+            .unwrap();
+            let slabs = phase.original_slab_diagnostics();
+            let ir = match solver {
+                EvolutionRoute::Prepared5 => InitRoute::PreparedBatch,
+                EvolutionRoute::BoundedPrepared5 => InitRoute::BoundedPreparedScalar,
+                EvolutionRoute::Scalar5 => InitRoute::ScalarRoot,
+                EvolutionRoute::Affine5 => InitRoute::AffineExact,
+                _ => InitRoute::Reuse,
+            };
+            for (position, k) in [
+                ("first", 0),
+                ("middle", slabs.len() / 2),
+                ("last", slabs.len() - 1),
+            ] {
+                let s = &slabs[k];
+                let time = s.times[0];
+                let x = &s.native.y0;
+                let mut rhs = [0.; 2];
+                let mut jac = [0.; 4];
+                let mut ft = [0.; 2];
+                let (r, ar) = measure(|| (prepared.problem.rhs_fn())(time, x, &mut rhs));
+                r.unwrap();
+                let vigilode::Jacobian::Dense(j) = prepared.problem.jacobian_provider() else {
+                    panic!("dense")
+                };
+                let (r, aj) = measure(|| j(time, x, &mut jac));
+                r.unwrap();
+                let (r, at) =
+                    measure(|| prepared.problem.time_derivative_fn().unwrap()(time, x, &mut ft));
+                r.unwrap();
+                if solver == EvolutionRoute::BoundedPrepared5 {
+                    for a in [ar, aj, at] {
+                        assert_eq!(a.requests(), 0);
+                    }
+                }
+                println!(
+                    "PREPARED_CALLBACK {}",
+                    serde_json::json!({"solver":solver,"cert":cert,"position":position,"rhs":rhs,"jac":jac,"ft":ft,"allocations":[ar,aj,at]})
+                );
+                let (old, ow) = src.initialize_audited(
+                    time,
+                    x,
+                    &init.z,
+                    &BRANCH,
+                    policy().init,
+                    InitRoute::PreparedBatch,
+                );
+                let old = old.unwrap();
+                let ((r, w), a) = measure(|| {
+                    src.initialize_scalar_bounded_prepared_audited(
+                        time,
+                        x,
+                        &init.z,
+                        &BRANCH,
+                        policy().init,
+                    )
+                });
+                let r = r.unwrap();
+                assert_eq!(a.requests(), 0);
+                let owned = r.to_owned_report();
+                assert_eq!(owned.route, InitRoute::BoundedPreparedScalar);
+                let mut u = serde_json::to_value(&old).unwrap();
+                let mut v = serde_json::to_value(&owned).unwrap();
+                for field in ["route", "work"] {
+                    u.as_object_mut().unwrap().remove(field);
+                    v.as_object_mut().unwrap().remove(field);
+                }
+                assert_eq!(u, v);
+                assert_eq!(ow.rhs_requested, w.rhs_requested);
+                assert_eq!(w.legacy.bounded_prepared_batches, w.legacy.linear_batches);
+                assert_eq!(w.legacy.bounded_residual_terms, w.rhs_returned);
+                println!(
+                    "PREPARED_POINT {}",
+                    serde_json::json!({"solver":solver,"cert":cert,"position":position,"allocation":a,"legacy_work":ow,"bounded_work":w})
+                );
+                let power =
+                    de::dense_power(&s.native.y0, &s.native.y1, &s.native.stages, s.native.basis)
+                        .unwrap();
+                let c = s.certificate.as_ref().unwrap();
+                let ((r, wa), aa) = measure(|| {
+                    de::reconstruct_audited(
+                        src,
+                        s.times,
+                        &power,
+                        &init.z,
+                        &BRANCH,
+                        policy().init,
+                        ir,
+                        None,
+                        5,
+                    )
+                });
+                let (r, ww) = r.unwrap();
+                let emit = |candidate: &str,
+                            poly: &[Iv],
+                            work: &[InitWork],
+                            audit: &ProjectionAttemptWork,
+                            alloc: Counts| {
+                    let mut full = power.clone();
+                    full.push(poly.to_vec());
+                    let cert = model
+                        .certify(
+                            s.times,
+                            &full,
+                            &BRANCH,
+                            policy().tube_radius,
+                            Some(c.incoming),
+                            policy().init.condition_cap,
+                            cert,
+                        )
+                        .unwrap();
+                    assert!(cert.global_qualified);
+                    println!(
+                        "PREPARED_RECON {}",
+                        serde_json::json!({"solver":solver,"cert":c.conservation.as_ref().unwrap().route,"position":position,"candidate":candidate,"allocation":alloc,"work":work,"audit":audit,"qualified":cert.global_qualified,"whole_x":cert.whole_x_error,"whole_z":cert.whole_z_error,"original_g":cert.original_g_upper,"power":poly.iter().map(|v|v.as_pair()).collect::<Vec<_>>()})
+                    );
+                };
+                emit("existing", &r[0], &ww, &wa, aa);
+                let mut scratch = de::ScalarReconstructionWorkspace::new();
+                let mut out = [Iv::point(123.).unwrap(); 5];
+                let mut work: [InitWork; 5] = std::array::from_fn(|_| InitWork::default());
+                for (candidate, route) in [
+                    ("bounded_fixed", S::Fixed),
+                    ("bounded_previous", S::PreviousNode),
+                ] {
+                    let mut audit = ProjectionAttemptWork::default();
+                    let (res, alloc) = measure(|| {
+                        de::reconstruct_scalar_bounded_prepared_into(
+                            src,
+                            s.times,
+                            &power,
+                            &init.z,
+                            &BRANCH,
+                            policy().init,
+                            route,
+                            &mut out,
+                            &mut work,
+                            &mut audit,
+                            &mut scratch,
+                        )
+                    });
+                    res.unwrap();
+                    assert_eq!(alloc.requests(), 0);
+                    assert_eq!((audit.calls.started, audit.calls.returned), (5, 5));
+                    assert_eq!(audit.bounded_residual_terms, audit.rhs_returned);
+                    if matches!(
+                        ir,
+                        InitRoute::PreparedBatch
+                            | InitRoute::BoundedPreparedScalar
+                            | InitRoute::Reuse
+                    ) {
+                        same(
+                            &out.map(|v| v.as_pair()),
+                            &r[0].iter().map(|v| v.as_pair()).collect::<Vec<_>>(),
+                        );
+                    }
+                    emit(candidate, &out, &work, &audit, alloc);
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn legendre_residual_portfolio() {
+    use de::SlabResidualRoute as R;
+    warm();
+    let iv = |x| Iv::point(x).unwrap();
+    let lin = |k, w| tr(w, vec![F::component(k, 0.)]);
+    let clk = || F::clock(0.);
+    let y = |k| F::component(k, 0.);
+    let source = |quartic: bool| {
+        DaeSource::new(
+            vec![p(vec![
+                tr(1., vec![]),
+                tr(
+                    0.0625,
+                    if quartic {
+                        vec![y(0); 4]
+                    } else {
+                        vec![y(0); 2]
+                    },
+                ),
+            ])],
+            vec![p(if quartic {
+                vec![
+                    lin(1, 1.),
+                    lin(0, -1.),
+                    tr(1., vec![clk(), clk(), clk(), y(1)]),
+                    tr(-1., vec![clk(), clk(), clk(), y(0)]),
+                ]
+            } else {
+                vec![
+                    lin(1, 1.),
+                    lin(0, -1.),
+                    tr(0.125, vec![clk(), y(1)]),
+                    tr(-0.125, vec![clk(), y(0)]),
+                ]
+            })],
+        )
+        .unwrap()
+    };
+    let routes = [
+        R::Bernstein,
+        R::LegendreInterval,
+        R::LegendreCentered,
+        R::HybridInterval,
+        R::HybridCentered,
+    ];
+    // Oscillatory represented residual, full source still re-certified. A
+    // point coefficient in the Legendre basis is not assumed exact.
+    let src = source(true);
+    let eps = 2f64.powi(-20);
+    let x = vec![iv(0.), iv(0.125), iv(0.), iv(0.), iv(0.)];
+    let z = vec![
+        iv(eps),
+        iv(0.125 - 20. * eps),
+        iv(90. * eps),
+        iv(-140. * eps),
+        iv(70. * eps),
+    ];
+    let poly = vec![x, z];
+    let c = de::certify_slab(
+        &src,
+        [0., 0.125],
+        &poly,
+        &[[-1., 1.]],
+        0.01,
+        Some(0.),
+        true,
+        1e6,
+    )
+    .unwrap();
+    assert!(c.global_qualified);
+    for route in routes {
+        let (r, alloc) = measure(|| {
+            de::slab_residual_bounds(&src, [0., 0.125], &poly, &c.preconditioner, route)
+        });
+        let r = r.unwrap();
+        assert_eq!(alloc.requests(), 0);
+        if matches!(route, R::LegendreCentered | R::HybridCentered) {
+            assert!(r.dictionary_center_products > 0);
+        }
+        let cert = de::certify_slab_with_residual(
+            &src,
+            [0., 0.125],
+            &poly,
+            &[[-1., 1.]],
+            0.01,
+            Some(0.),
+            true,
+            1e6,
+            route,
+        )
+        .unwrap();
+        assert!(cert.global_qualified);
+        for k in 0..=64 {
+            let u = k as f64 / 64.;
+            let t = u * 0.125;
+            let g = (1. + t * t * t)
+                * eps
+                * (70. * u.powi(4) - 140. * u.powi(3) + 90. * u * u - 20. * u + 1.);
+            let dx = 0.125 - (0.125 * (1. + t.powi(4) * 0.0625));
+            assert!(g.abs() <= r.original_g_upper && dx.abs() <= r.differential_defect);
+        }
+        println!(
+            "LEGENDRE {}",
+            serde_json::json!({"case":"oscillatory","solver":"manufactured","position":"one","route":route,"allocation":alloc,"bounds":r,"qualified":cert.global_qualified,"whole_x":cert.whole_x_error,"whole_z":cert.whole_z_error})
+        );
+    }
+    for (case, quartic) in [("quadratic", false), ("quartic", true)] {
+        let src = source(quartic);
+        for solver in [
+            EvolutionRoute::Mass,
+            EvolutionRoute::Reduced5,
+            EvolutionRoute::Prepared5,
+        ] {
+            let (run, a) = evolve_epoch_audited(
+                &src,
+                &[0.],
+                &[0.],
+                &[[-1., 1.]],
+                EvolutionEpoch {
+                    start: 0.,
+                    end: 0.125,
+                    incoming_x_error: Some(0.),
+                },
+                &opts(),
+                policy(),
+                solver,
+                &[],
+            );
+            let run = run.unwrap();
+            assert!(run.global_qualified, "{case} {solver:?} {:?}", run.reason);
+            let slabs = run.slabs();
+            for (position, k) in [
+                ("first", 0),
+                ("middle", slabs.len() / 2),
+                ("last", slabs.len() - 1),
+            ] {
+                let s = &slabs[k];
+                let c = s.certificate.as_ref().unwrap();
+                let power = power(s);
+                for route in routes {
+                    let (r, alloc) = measure(|| {
+                        de::slab_residual_bounds(&src, s.times, &power, &c.preconditioner, route)
+                    });
+                    let r = r.unwrap();
+                    assert_eq!(alloc.requests(), 0);
+                    if matches!(route, R::LegendreCentered | R::HybridCentered) {
+                        assert!(r.dictionary_center_products > 0);
+                    }
+                    let v = de::certify_slab_with_residual(
+                        &src,
+                        s.times,
+                        &power,
+                        &[[-1., 1.]],
+                        policy().tube_radius,
+                        Some(c.incoming),
+                        policy().green,
+                        policy().init.condition_cap,
+                        route,
+                    )
+                    .unwrap();
+                    if route == R::Bernstein {
+                        same(&v, c);
+                        assert_eq!(r.original_g_upper, c.original_g_upper);
+                        assert_eq!(r.differential_defect, c.differential_defect);
+                    } else {
+                        assert!(v.residual_variant.is_some());
+                    }
+                    if matches!(route, R::HybridCentered | R::HybridInterval) {
+                        assert!(
+                            v.original_g_upper <= c.original_g_upper
+                                && v.algebraic_defect <= c.algebraic_defect
+                                && v.differential_defect <= c.differential_defect
+                        );
+                    }
+                    println!(
+                        "LEGENDRE {}",
+                        serde_json::json!({"case":case,"solver":solver,"position":position,"route":route,"allocation":alloc,"bounds":r,"qualified":v.global_qualified,"whole_x":v.whole_x_error,"whole_z":v.whole_z_error})
+                    );
+                }
+            }
+            black_box(a);
+        }
+        for solver in [
+            EvolutionRoute::Reduced5,
+            EvolutionRoute::Prepared5,
+            EvolutionRoute::BoundedPrepared5,
+            EvolutionRoute::Reduced5Legendre,
+            EvolutionRoute::BoundedPreparedLegendre5,
+        ] {
+            let ((run, a), alloc) = measure(|| {
+                evolve_epoch_audited(
+                    &src,
+                    &[0.],
+                    &[0.],
+                    &[[-1., 1.]],
+                    EvolutionEpoch {
+                        start: 0.,
+                        end: 0.125,
+                        incoming_x_error: Some(0.),
+                    },
+                    &opts(),
+                    policy(),
+                    solver,
+                    &[],
+                )
+            });
+            let run = run.unwrap();
+            assert!(run.global_qualified, "{case} {solver:?} {:?}", run.reason);
+            let mut products = 0;
+            for s in run.slabs() {
+                if let Some(r) = s.certificate.as_ref().unwrap().residual_variant {
+                    products += r.dictionary_center_products;
+                }
+            }
+            if matches!(
+                solver,
+                EvolutionRoute::Reduced5Legendre | EvolutionRoute::BoundedPreparedLegendre5
+            ) {
+                assert!(products > 0);
+            }
+            println!(
+                "SPECTRAL_EPOCH {}",
+                serde_json::json!({"case":case,"solver":solver,"allocation":alloc,"qualified":run.global_qualified,"max_physical_error":run.max_physical_error,"slabs":run.slabs().len(),"dictionary_center_products":products,"audit":a})
+            );
+        }
+    }
+}
