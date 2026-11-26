@@ -1,0 +1,6 @@
+Branch research/m2-dae-resource-baseline-20261126. EXEC_SHA.txt, INPUT_SHA256SUMS, BINARY.sha256 bind source, inputs and measured binary. Production source frozen at 793424fb. Rust locked offline; run:
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts allocator_positive_and_zero_control -- --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts component_replay -- --ignored --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts refusals -- --ignored --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts training -- --ignored --exact --nocapture --test-threads=1
+Capture training.log twice as training.log and replay.log, components.log and refusals.log; restore gzip logs in scratch. audit_corrected.py compares prior ../m2_dae_phase_atlas_20261126/training.log.gz and AUDIT.json, requires 144 exact physical receipts and records repeat resource differences. Then guide.py select. Original audit.py retained for provenance, not canonical aggregation. No holdout.

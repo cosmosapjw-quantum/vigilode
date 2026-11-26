@@ -1,0 +1,9 @@
+{
+  "reason": "Stats.accepted_steps/rejected_steps also present in counters; initial audit accumulated both, double-counting these two fields only",
+  "affected_rows": 120,
+  "exact_checks": "for each recorded native run assert Stats and counters agree, sum once; attempts=accepted+rejected",
+  "other_fields_identical": true,
+  "selection_byte_identical": true,
+  "original_script_sha256": "03e97f239a833ad0ba67109a8edd766765e30865e589f495093766aa2349f4fb",
+  "corrected_script_sha256": "0484735eefe6d20cd74c22bfe834655959bf6a8e4b33ece13ce51664af16c577"
+}
