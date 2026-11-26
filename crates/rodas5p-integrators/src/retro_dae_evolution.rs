@@ -60,6 +60,7 @@ fn choose(n: usize, k: usize) -> usize {
 // Degree <= 16 for four affine factors composed with native quartics.
 // Preserve trailing zeros and exactly the old arithmetic order. No trimming.
 const POLY_SCRATCH: usize = 17;
+#[derive(Clone, Copy)]
 struct ScratchPoly {
     a: [Iv; POLY_SCRATCH],
     len: usize,
@@ -158,6 +159,13 @@ fn compose(e: &DeclaredPolynomial, t: &[Iv], y: &[Poly]) -> CoreResult<Poly> {
     if t.len() > 5 || y.iter().any(|v| v.len() > 5) {
         return compose_owned(e, t, y);
     }
+    Ok(compose_bounded(e, t, y)?.slice().to_vec())
+}
+fn compose_bounded<T: AsRef<[Iv]>>(
+    e: &DeclaredPolynomial,
+    t: &[Iv],
+    y: &[T],
+) -> CoreResult<ScratchPoly> {
     let mut out = ScratchPoly::new(&[zero()])?;
     for term in e.terms() {
         let mut v = ScratchPoly::new(&[p(term.coefficient)?])?;
@@ -165,13 +173,13 @@ fn compose(e: &DeclaredPolynomial, t: &[Iv], y: &[Poly]) -> CoreResult<Poly> {
             let mut a = ScratchPoly::new(&[p(f.constant)?])?
                 .add(ScratchPoly::new(t)?.scale(p(f.time)?)?.slice())?;
             for &(i, w) in &f.state {
-                a = a.add(ScratchPoly::new(&y[i])?.scale(p(w)?)?.slice())?;
+                a = a.add(ScratchPoly::new(y[i].as_ref())?.scale(p(w)?)?.slice())?;
             }
             v = v.mul(a.slice())?;
         }
         out = out.add(v.slice())?;
     }
-    Ok(out.slice().to_vec())
+    Ok(out)
 }
 fn compose_owned(e: &DeclaredPolynomial, t: &[Iv], y: &[Poly]) -> CoreResult<Poly> {
     let mut out = vec![zero()];
@@ -896,20 +904,71 @@ pub enum GuardDerivativeRoute {
     SchurRefine2,
     PreparedSchurRefine2,
     ConservedSchurRefine2,
+    /// Directed diagonal isolation with one forward interval sweep.
+    SchurGs1,
+    SchurGs2,
+    SchurGsAdaptive2,
+    PreparedSchurGs2,
+    ConservedSchurGsAdaptive2,
+}
+/// Conditional interval linear refinement; never an independent slab certificate.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum GuardColumnRefinement {
+    None,
+    Jacobi1,
+    Jacobi2,
+    GaussSeidel1,
+    GaussSeidel2,
+    AdaptiveGaussSeidel2,
+}
+impl GuardColumnRefinement {
+    fn jacobi(sweeps: usize) -> CoreResult<Self> {
+        match sweeps {
+            0 => Ok(Self::None),
+            1 => Ok(Self::Jacobi1),
+            2 => Ok(Self::Jacobi2),
+            _ => Err(bad("guard column workspace shape")),
+        }
+    }
+    fn budget(self) -> usize {
+        match self {
+            Self::None => 0,
+            Self::Jacobi1 | Self::GaussSeidel1 => 1,
+            _ => 2,
+        }
+    }
+    fn gs(self) -> bool {
+        matches!(
+            self,
+            Self::GaussSeidel1 | Self::GaussSeidel2 | Self::AdaptiveGaussSeidel2
+        )
+    }
 }
 impl GuardDerivativeRoute {
-    fn refinement_sweeps(self) -> usize {
+    fn refinement(self) -> GuardColumnRefinement {
+        use GuardColumnRefinement as R;
         match self {
-            Self::SchurRefine1 => 1,
-            Self::SchurRefine2 | Self::PreparedSchurRefine2 | Self::ConservedSchurRefine2 => 2,
-            _ => 0,
+            Self::SchurRefine1 => R::Jacobi1,
+            Self::SchurRefine2 | Self::PreparedSchurRefine2 | Self::ConservedSchurRefine2 => {
+                R::Jacobi2
+            }
+            Self::SchurGs1 => R::GaussSeidel1,
+            Self::SchurGs2 | Self::PreparedSchurGs2 => R::GaussSeidel2,
+            Self::SchurGsAdaptive2 | Self::ConservedSchurGsAdaptive2 => R::AdaptiveGaussSeidel2,
+            _ => R::None,
         }
     }
     fn prepared(self) -> bool {
-        matches!(self, Self::PreparedSchur | Self::PreparedSchurRefine2)
+        matches!(
+            self,
+            Self::PreparedSchur | Self::PreparedSchurRefine2 | Self::PreparedSchurGs2
+        )
     }
     fn conserved(self) -> bool {
-        matches!(self, Self::ConservedSchur | Self::ConservedSchurRefine2)
+        matches!(
+            self,
+            Self::ConservedSchur | Self::ConservedSchurRefine2 | Self::ConservedSchurGsAdaptive2
+        )
     }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -941,6 +1000,117 @@ pub struct GuardSlabEvidence {
     pub conserved_derivative_box: Option<Vec<[f64; 2]>>,
 }
 
+// Bounded native guard storage. Long low-level power rows keep the old
+// owned arithmetic and representation; no implicit degree truncation.
+enum GuardPoly {
+    Bounded(ScratchPoly),
+    Owned(Poly),
+}
+impl std::ops::Deref for GuardPoly {
+    type Target = [Iv];
+    fn deref(&self) -> &[Iv] {
+        match self {
+            Self::Bounded(v) => v.slice(),
+            Self::Owned(v) => v,
+        }
+    }
+}
+enum GuardCg {
+    Bounded { rows: [ScratchPoly; 32], len: usize },
+    Owned(Vec<Poly>),
+}
+impl GuardCg {
+    fn norm_at(&self, u: Iv) -> CoreResult<f64> {
+        match self {
+            Self::Bounded { rows, len } => rows[..*len]
+                .iter()
+                .try_fold(0_f64, |s, v| Ok(s.max(eval(v.slice(), u)?.mag()))),
+            Self::Owned(rows) => rows
+                .iter()
+                .try_fold(0_f64, |s, v| Ok(s.max(eval(v, u)?.mag()))),
+        }
+    }
+}
+fn guard_lift(y: &[Poly]) -> CoreResult<GuardPoly> {
+    if y[0].len() <= 5 && y[1].len() <= 5 {
+        Ok(GuardPoly::Bounded(ScratchPoly::new(&[p(1.)?])?.add(
+            ScratchPoly::new(&y[0])?.add(&y[1])?.scale(p(-1.)?)?.slice(),
+        )?))
+    } else {
+        Ok(GuardPoly::Owned(add(
+            &[p(1.)?],
+            &scale(&add(&y[0], &y[1])?, p(-1.)?)?,
+        )?))
+    }
+}
+fn guard_polynomial(
+    guard: &DeclaredPolynomial,
+    clock: &[Iv],
+    y: &[Poly],
+    lifted: bool,
+) -> CoreResult<GuardPoly> {
+    if lifted {
+        let lift = guard_lift(y)?;
+        if y[0].len() <= 5 && y[1].len() <= 5 {
+            Ok(GuardPoly::Bounded(compose_bounded(
+                guard,
+                clock,
+                &[y[0].as_slice(), y[1].as_slice(), &*lift],
+            )?))
+        } else {
+            Ok(GuardPoly::Owned(compose(
+                guard,
+                clock,
+                &[y[0].clone(), y[1].clone(), lift.to_vec()],
+            )?))
+        }
+    } else if y.iter().all(|v| v.len() <= 5) {
+        Ok(GuardPoly::Bounded(compose_bounded(guard, clock, y)?))
+    } else {
+        Ok(GuardPoly::Owned(compose(guard, clock, y)?))
+    }
+}
+fn guard_cg(
+    src: &DaeSource,
+    clock: &[Iv],
+    y: &[Poly],
+    original: &DenseMatrix,
+) -> CoreResult<GuardCg> {
+    if y.iter().all(|v| v.len() <= 5) {
+        let empty = ScratchPoly::new(&[])?;
+        let mut gp = [empty; 32];
+        let n = src.nz();
+        for (o, g) in gp[..n].iter_mut().zip(&src.g) {
+            *o = compose_bounded(g, clock, y)?;
+        }
+        let mut rows = [empty; 32];
+        for (i, o) in rows[..n].iter_mut().enumerate() {
+            let mut acc = ScratchPoly::new(&[zero()])?;
+            for (&a, r) in original.row(i).iter().zip(&gp[..n]) {
+                acc = acc.add(r.scale(p(a)?)?.slice())?;
+            }
+            *o = acc;
+        }
+        Ok(GuardCg::Bounded { rows, len: n })
+    } else {
+        let gp = src
+            .g
+            .iter()
+            .map(|g| compose(g, clock, y))
+            .collect::<CoreResult<Vec<_>>>()?;
+        Ok(GuardCg::Owned(c_polys(original, &gp)?))
+    }
+}
+fn guard_pairs(v: &[[f64; 2]]) -> CoreResult<[Iv; 32]> {
+    let mut out = [zero(); 32];
+    if v.len() > out.len() {
+        return Err(bad("guard scratch shape"));
+    }
+    for (o, a) in out.iter_mut().zip(v) {
+        *o = Iv::new(a[0], a[1])?;
+    }
+    Ok(out)
+}
 /// Conditional on an authentic certificate for the same original source,
 /// polynomial and slab. Only the facade constructs event authority.
 pub struct GuardProof<'a> {
@@ -948,11 +1118,11 @@ pub struct GuardProof<'a> {
     y: &'a [Poly],
     nx: usize,
     times: [f64; 2],
-    x_range: Vec<Iv>,
-    z_range: Vec<Iv>,
-    root_box: Vec<Iv>,
-    h_poly: Poly,
-    cg_poly: Vec<Poly>,
+    x_range: [Iv; 32],
+    z_range: [Iv; 32],
+    root_box: [Iv; 32],
+    h_poly: GuardPoly,
+    cg_poly: GuardCg,
     gap: f64,
     zx_lip: f64,
     whole_x: f64,
@@ -1022,6 +1192,27 @@ fn guard_refine(w: &[Iv], defect: &[Iv], out: &mut [Iv], next: &mut [Iv]) -> Cor
     out.copy_from_slice(next);
     Ok(())
 }
+// The exact fixed point obeys (1-E_ii)v_i=w_i+sum_{j!=i}E_ij v_j.
+// The certified q<1 implies positive denominator. Each component is
+// intersected before using it for the next row; inclusion is inductive.
+fn guard_gs_refine(w: &[Iv], defect: &[Iv], out: &mut [Iv]) -> CoreResult<()> {
+    let n = out.len();
+    for i in 0..n {
+        let row = &defect[i * n..(i + 1) * n];
+        let mut sum = zero();
+        for (j, (&e, &v)) in row.iter().zip(out.iter()).enumerate() {
+            if i != j {
+                sum = sum.add(e.mul(v)?)?;
+            }
+        }
+        let diag = p(1.)?.sub(row[i])?;
+        if diag.lo <= 0. {
+            return Err(bad("guard GS diagonal"));
+        }
+        out[i] = intersect(out[i], w[i].add(sum)?.div(diag)?)?;
+    }
+    Ok(())
+}
 // Same row-major dot and defect-product rounding as di::matvec followed
 // by product_bound. Output is local scratch, not accepted physical state.
 fn guard_solve_into(
@@ -1031,9 +1222,10 @@ fn guard_solve_into(
     gap: f64,
     out: &mut [Iv],
     defect: &[Iv],
-    sweeps: usize,
+    refinement: GuardColumnRefinement,
     sweep_work: &mut di::AttemptCount,
 ) -> CoreResult<()> {
+    let sweeps = refinement.budget();
     for (i, o) in out.iter_mut().enumerate() {
         *o = c
             .row(i)
@@ -1050,12 +1242,27 @@ fn guard_solve_into(
     for v in out.iter_mut() {
         *v = v.add(Iv::new(-e, e)?)?;
     }
-    if sweeps != 0 {
+    let adaptive = refinement == GuardColumnRefinement::AdaptiveGaussSeidel2;
+    if sweeps != 0 && !(adaptive && q == 0.) {
         let mut next = [zero(); 32];
         for _ in 0..sweeps {
-            let r = guard_refine(&w[..n], defect, out, &mut next[..n]);
+            if adaptive {
+                next[..n].copy_from_slice(out);
+            }
+            let r = if refinement.gs() {
+                guard_gs_refine(&w[..n], defect, out)
+            } else {
+                guard_refine(&w[..n], defect, out, &mut next[..n])
+            };
             sweep_work.record(r.is_ok());
             r?;
+            if adaptive
+                && out.iter().zip(&next[..n]).all(|(a, b)| {
+                    a.lo.to_bits() == b.lo.to_bits() && a.hi.to_bits() == b.hi.to_bits()
+                })
+            {
+                break;
+            }
         }
     }
     Ok(())
@@ -1096,6 +1303,30 @@ impl GuardColumnWorkspace {
         out: &mut [Iv],
         work: &mut di::AttemptCount,
     ) -> CoreResult<f64> {
+        self.enclose_refined(
+            src,
+            time,
+            state,
+            c,
+            rhs,
+            GuardColumnRefinement::jacobi(sweeps)?,
+            out,
+            work,
+        )
+    }
+    /// Same conditional source-bound linear kernel with a typed refinement policy.
+    #[allow(clippy::too_many_arguments)]
+    pub fn enclose_refined(
+        &mut self,
+        src: &DaeSource,
+        time: Iv,
+        state: &[Iv],
+        c: &DenseMatrix,
+        rhs: &[Iv],
+        refinement: GuardColumnRefinement,
+        out: &mut [Iv],
+        work: &mut di::AttemptCount,
+    ) -> CoreResult<f64> {
         let nx = src.nx();
         let nz = src.nz();
         if state.len() != nx + nz
@@ -1103,7 +1334,6 @@ impl GuardColumnWorkspace {
             || c.ncols() != nz
             || rhs.len() != nz
             || out.len() != nz
-            || sweeps > 2
         {
             return Err(bad("guard column workspace shape"));
         }
@@ -1122,7 +1352,7 @@ impl GuardColumnWorkspace {
             return Err(bad("guard inverse defect"));
         }
         let mut staged = [zero(); 32];
-        guard_solve_into(c, rhs, q, gap, &mut staged[..nz], defect, sweeps, work)?;
+        guard_solve_into(c, rhs, q, gap, &mut staged[..nz], defect, refinement, work)?;
         out.copy_from_slice(&staged[..nz]);
         Ok(q)
     }
@@ -1187,9 +1417,9 @@ impl<'a> GuardProof<'a> {
             return Err(bad("guard source/slab shape"));
         }
         let time = Iv::new(cert.times[0], cert.times[1])?;
-        let mut xb = iv_pairs(&cert.x_range)?;
-        let zb = iv_pairs(&cert.z_range)?;
-        let mut rb = iv_pairs(&cert.branch_root_box)?;
+        let mut xb = guard_pairs(&cert.x_range)?;
+        let zb = guard_pairs(&cert.z_range)?;
+        let mut rb = guard_pairs(&cert.branch_root_box)?;
         let structural = cert.conservation.is_some() && nx == 2 && nz == 1;
         let tight = derivative.conserved();
         if tight {
@@ -1205,14 +1435,14 @@ impl<'a> GuardProof<'a> {
             for i in 0..2 {
                 xb[i] = intersect(xb[i], range(&y[i])?.add(err)?)?;
             }
-            let lift = add(&[p(1.)?], &scale(&add(&y[0], &y[1])?, p(-1.)?)?)?;
+            let lift = guard_lift(y)?;
             // Exact affine lift: |delta z| <= ||delta x||_1, not 2r.
             rb[0] = intersect(rb[0], range(&lift)?.add(err)?)?;
         }
         let mut physical_storage = [zero(); 32];
         let physical = &mut physical_storage[..nx + nz];
-        physical[..nx].copy_from_slice(&xb);
-        physical[nx..].copy_from_slice(&rb);
+        physical[..nx].copy_from_slice(&xb[..nx]);
+        physical[nx..].copy_from_slice(&rb[..nz]);
         let mut fv_storage = [zero(); 32];
         let fv = &mut fv_storage[..nx];
         let mut unused_row = [zero(); 33];
@@ -1290,7 +1520,7 @@ impl<'a> GuardProof<'a> {
                     gap,
                     out,
                     defect,
-                    derivative.refinement_sweeps(),
+                    derivative.refinement(),
                     &mut audit.refinement_sweeps
                 )
             )
@@ -1324,7 +1554,7 @@ impl<'a> GuardProof<'a> {
         // lies in this hull; use it for the algebraic correction only.
         let mut hull_storage = [zero(); 32];
         let hull = &mut hull_storage[..nx + nz];
-        hull[..nx].copy_from_slice(&xb);
+        hull[..nx].copy_from_slice(&xb[..nx]);
         for (o, (&v, &r)) in hull[nx..].iter_mut().zip(zb.iter().zip(&rb)) {
             *o = Iv::new(v.lo.min(r.lo), v.hi.max(r.hi))?;
         }
@@ -1340,20 +1570,14 @@ impl<'a> GuardProof<'a> {
             // The source-owned Robertson constraint is exact affine
             // elimination. The comparison polynomial lives on the same
             // constraint manifold, so no separate algebraic defect term.
-            let lift = add(&[p(1.)?], &scale(&add(&y[0], &y[1])?, p(-1.)?)?)?;
-            (
-                compose(guard, &clock, &[y[0].clone(), y[1].clone(), lift])?,
-                0.,
-            )
+            (guard_polynomial(guard, &clock, y, true)?, 0.)
         } else {
-            (compose(guard, &clock, y)?, algebraic_guard_lip)
+            (
+                guard_polynomial(guard, &clock, y, false)?,
+                algebraic_guard_lip,
+            )
         };
-        let gp = src
-            .g
-            .iter()
-            .map(|g| compose(g, &clock, y))
-            .collect::<CoreResult<Vec<_>>>()?;
-        let cg_poly = c_polys(&original, &gp)?;
+        let cg_poly = guard_cg(src, &clock, y, &original)?;
         let original_gap = sub_down(1., cert.branch_defect)?;
         if original_gap <= 0. {
             return Err(bad("guard original branch defect"));
@@ -1392,10 +1616,7 @@ impl<'a> GuardProof<'a> {
         })
     }
     fn algebraic_radius(&self, u: Iv) -> CoreResult<f64> {
-        let n = self
-            .cg_poly
-            .iter()
-            .try_fold(0_f64, |s, v| Ok::<f64, CoreError>(s.max(eval(v, u)?.mag())))?;
+        let n = self.cg_poly.norm_at(u)?;
         div_up(n, self.gap)
     }
     fn box_value(&self, u: Iv, clock: Iv, error: f64, az: f64) -> CoreResult<Iv> {
@@ -1545,7 +1766,7 @@ pub fn reset_slab(
         if d.is_empty() {
             d.push(zero());
         }
-        let mut shifted = proof.h_poly.clone();
+        let mut shifted = proof.h_poly.to_vec();
         shifted[0] = shifted[0].sub(eq)?;
         let q = add(&d, &scale(&shifted, rate)?)?;
         let derivative = eval(&q, u)?;
@@ -1854,7 +2075,7 @@ fn vector_reset_component_inner(
         transport_error: er,
         reduced_lip: proof.evidence.reduced_lip,
         prepared_work: proof.evidence.prepared_work,
-        power: proof.h_poly,
+        power: proof.h_poly.to_vec(),
         native_times: c.times,
     })
 }
@@ -3244,7 +3465,17 @@ mod guard_defect_scratch_contracts {
             let q = guard_defect_into(&c, &jac, 1, &mut e).unwrap();
             let gap = sub_down(1., q).unwrap();
             for (sweeps, out) in [(0, &mut base), (1, &mut one), (2, &mut two)] {
-                guard_solve_into(&c, &rhs, q, gap, out, &e, sweeps, &mut audit[sweeps]).unwrap();
+                guard_solve_into(
+                    &c,
+                    &rhs,
+                    q,
+                    gap,
+                    out,
+                    &e,
+                    GuardColumnRefinement::jacobi(sweeps).unwrap(),
+                    &mut audit[sweeps],
+                )
+                .unwrap();
             }
             q
         };
