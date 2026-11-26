@@ -49,6 +49,7 @@ pub enum EvolutionRoute {
     BoundedVector5,
     BoundedVectorRefined5,
     BoundedVectorPivot5,
+    BoundedVectorEquilibrated5,
     Reduced5NormalLs,
     Reduced5BoundedLs,
     BoundedSturm5,
@@ -60,7 +61,9 @@ impl EvolutionRoute {
     fn init(self) -> InitRoute {
         match self {
             Self::Prepared5 => InitRoute::PreparedBatch,
-            Self::BoundedVector5 | Self::BoundedVectorPivot5 => InitRoute::BoundedVector,
+            Self::BoundedVector5 => InitRoute::BoundedVector,
+            Self::BoundedVectorPivot5 => InitRoute::BoundedVectorPivot,
+            Self::BoundedVectorEquilibrated5 => InitRoute::BoundedVectorEquilibrated,
             Self::BoundedVectorRefined5 => InitRoute::BoundedVectorRefined,
             Self::BoundedPrepared5 | Self::BoundedPreparedLegendre5 => {
                 InitRoute::BoundedPreparedScalar
@@ -496,7 +499,10 @@ impl Engine {
     fn vector_callback(&self) -> bool {
         matches!(
             self.route,
-            EvolutionRoute::BoundedVector5 | EvolutionRoute::BoundedVectorRefined5
+            EvolutionRoute::BoundedVector5
+                | EvolutionRoute::BoundedVectorRefined5
+                | EvolutionRoute::BoundedVectorPivot5
+                | EvolutionRoute::BoundedVectorEquilibrated5
         )
     }
     fn fixed_vector(
@@ -510,15 +516,31 @@ impl Engine {
         }
         let mut policy = self.policy.init;
         policy.mode = rodas5p_integrators::retro_dae_init::InitMode::ProjectAlgebraic;
-        let (r, receipt) = self.src.initialize_bounded_vector_audited(
-            t,
-            x,
-            &seed[..self.seed.len()],
-            &self.branch,
-            policy,
-            self.route == EvolutionRoute::BoundedVectorRefined5,
-            &mut rodas5p_integrators::retro_dae_init::VectorProjectionWorkspace::new(),
-        );
+        let mut workspace = rodas5p_integrators::retro_dae_init::VectorProjectionWorkspace::new();
+        let (r, receipt) = if matches!(
+            self.route,
+            EvolutionRoute::BoundedVectorPivot5 | EvolutionRoute::BoundedVectorEquilibrated5
+        ) {
+            self.src.initialize_pivoted_vector_audited(
+                t,
+                x,
+                &seed[..self.seed.len()],
+                &self.branch,
+                policy,
+                self.route == EvolutionRoute::BoundedVectorEquilibrated5,
+                &mut workspace,
+            )
+        } else {
+            self.src.initialize_bounded_vector_audited(
+                t,
+                x,
+                &seed[..self.seed.len()],
+                &self.branch,
+                policy,
+                self.route == EvolutionRoute::BoundedVectorRefined5,
+                &mut workspace,
+            )
+        };
         update_audit(&self.audit, |a| {
             a.point_projection.record(&receipt, r.is_ok())
         });

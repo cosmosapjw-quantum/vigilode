@@ -1074,7 +1074,7 @@ fn reconstruct_vector_inner(
     branch: &[[f64; 2]],
     policy: InitPolicy,
     nodes: usize,
-    refine: bool,
+    route: InitRoute,
     seed_route: ReconstructionSeedRoute,
     mut audit: Option<&mut di::ProjectionAttemptWork>,
     w: &mut VectorReconstructionWorkspace,
@@ -1103,18 +1103,34 @@ fn reconstruct_vector_inner(
         for (v, a) in v[..nx].iter_mut().zip(x) {
             *v = di::mid(eval(a, p(node.value)?)?);
         }
-        let (r, receipt) = src.initialize_bounded_vector_audited(
-            t,
-            &v[..nx],
-            &guess[..nz],
-            branch,
-            InitPolicy {
-                mode: InitMode::ProjectAlgebraic,
-                ..policy
-            },
-            refine,
-            &mut w.projection,
-        );
+        let policy = InitPolicy {
+            mode: InitMode::ProjectAlgebraic,
+            ..policy
+        };
+        let (r, receipt) = if matches!(
+            route,
+            InitRoute::BoundedVectorPivot | InitRoute::BoundedVectorEquilibrated
+        ) {
+            src.initialize_pivoted_vector_audited(
+                t,
+                &v[..nx],
+                &guess[..nz],
+                branch,
+                policy,
+                route == InitRoute::BoundedVectorEquilibrated,
+                &mut w.projection,
+            )
+        } else {
+            src.initialize_bounded_vector_audited(
+                t,
+                &v[..nx],
+                &guess[..nz],
+                branch,
+                policy,
+                route == InitRoute::BoundedVectorRefined,
+                &mut w.projection,
+            )
+        };
         if let Some(a) = audit.as_deref_mut() {
             a.record(&receipt, r.is_ok());
         }
@@ -1163,7 +1179,54 @@ pub fn reconstruct_bounded_vector_into(
         branch,
         policy,
         nodes,
-        refine,
+        if refine {
+            InitRoute::BoundedVectorRefined
+        } else {
+            InitRoute::BoundedVector
+        },
+        seed_route,
+        Some(audit),
+        w,
+    )?;
+    for (o, v) in out.chunks_exact_mut(nodes).zip(&w.power[..src.nz()]) {
+        o.copy_from_slice(&v[..nodes]);
+    }
+    work.clone_from_slice(&w.work[..nodes]);
+    Ok(())
+}
+/// Caller-owned nondominant vector dictionary reconstruction.
+#[allow(clippy::too_many_arguments)]
+pub fn reconstruct_pivoted_vector_into(
+    src: &DaeSource,
+    times: [f64; 2],
+    x: &[Poly],
+    seed: &[f64],
+    branch: &[[f64; 2]],
+    policy: InitPolicy,
+    equilibrate: bool,
+    seed_route: ReconstructionSeedRoute,
+    out: &mut [Iv],
+    work: &mut [InitWork],
+    audit: &mut di::ProjectionAttemptWork,
+    w: &mut VectorReconstructionWorkspace,
+) -> CoreResult<()> {
+    let nodes = work.len();
+    if out.len() != src.nz() * nodes {
+        return Err(bad("vector reconstruction output shape"));
+    }
+    reconstruct_vector_inner(
+        src,
+        times,
+        x,
+        seed,
+        branch,
+        policy,
+        nodes,
+        if equilibrate {
+            InitRoute::BoundedVectorEquilibrated
+        } else {
+            InitRoute::BoundedVectorPivot
+        },
         seed_route,
         Some(audit),
         w,
@@ -1189,7 +1252,10 @@ fn reconstruct_recorded(
 ) -> CoreResult<(Vec<Poly>, Vec<InitWork>)> {
     if matches!(
         route,
-        InitRoute::BoundedVector | InitRoute::BoundedVectorRefined
+        InitRoute::BoundedVector
+            | InitRoute::BoundedVectorRefined
+            | InitRoute::BoundedVectorPivot
+            | InitRoute::BoundedVectorEquilibrated
     ) && warp.is_none()
     {
         let mut w = VectorReconstructionWorkspace::new();
@@ -1201,7 +1267,7 @@ fn reconstruct_recorded(
             branch,
             policy,
             nodes,
-            route == InitRoute::BoundedVectorRefined,
+            route,
             ReconstructionSeedRoute::Fixed,
             audit,
             &mut w,
@@ -2681,6 +2747,29 @@ impl GuardInverseWorkspace {
     /// followed by caller's mandatory full interval defect check.
     /// Output untouched on any failure.
     pub fn invert(&mut self, n: usize, center: &[f64], out: &mut [f64]) -> CoreResult<f64> {
+        self.invert_impl(n, center, out, false, false)
+    }
+    /// Bounded pivoted approximate inverse, optionally row-equilibrated.
+    /// The candidate is certified against the unscaled original midpoint
+    /// by ||I-C A||_inf<1. Returns a bound on ||A^-1-C||_inf.
+    /// Full source interval branch/local tests remain mandatory.
+    pub fn invert_pivoted(
+        &mut self,
+        n: usize,
+        center: &[f64],
+        out: &mut [f64],
+        equilibrate: bool,
+    ) -> CoreResult<f64> {
+        self.invert_impl(n, center, out, true, equilibrate)
+    }
+    fn invert_impl(
+        &mut self,
+        n: usize,
+        center: &[f64],
+        out: &mut [f64],
+        pivoted: bool,
+        equilibrate: bool,
+    ) -> CoreResult<f64> {
         crate::affine_event_certificate::check_affine_event_arithmetic()?;
         if n == 0 || n > 32 || out.len() != n * n {
             return Err(bad("bounded inverse shape"));
@@ -2696,7 +2785,7 @@ impl GuardInverseWorkspace {
             }
             gap = gap.min(g);
         }
-        if gap <= 0. || !gap.is_finite() {
+        if !pivoted && (gap <= 0. || !gap.is_finite()) {
             return Err(bad("bounded inverse row dominance"));
         }
         let m = n * n;
@@ -2704,6 +2793,23 @@ impl GuardInverseWorkspace {
         self.inverse[..m].fill(0.);
         for i in 0..n {
             self.inverse[i * n + i] = 1.;
+        }
+        if equilibrate {
+            for i in 0..n {
+                let scale = center[i * n..(i + 1) * n]
+                    .iter()
+                    .fold(0_f64, |m, v| m.max(v.abs()));
+                if scale == 0. || !scale.is_finite() {
+                    return Err(bad("bounded inverse zero row"));
+                }
+                for j in 0..n {
+                    self.a[i * n + j] /= scale;
+                }
+                self.inverse[i * n + i] = 1. / scale;
+                if !self.inverse[i * n + i].is_finite() {
+                    return Err(bad("bounded inverse row scale"));
+                }
+            }
         }
         // One point Gauss-Jordan factor/elimination, all identity RHS.
         for k in 0..n {
@@ -2744,6 +2850,31 @@ impl GuardInverseWorkspace {
             {
                 return Err(bad("bounded inverse nonfinite"));
             }
+        }
+        if pivoted {
+            let mut q = 0_f64;
+            let mut cnorm = 0_f64;
+            for i in 0..n {
+                let mut row = 0.;
+                let mut cr = 0.;
+                for k in 0..n {
+                    let mut r = p(if i == k { 1. } else { 0. })?;
+                    for j in 0..n {
+                        r = r.sub(p(center[j * n + k])?.scale(self.inverse[i * n + j])?)?;
+                    }
+                    row = add_up(row, r.mag())?;
+                    cr = add_up(cr, self.inverse[i * n + k].abs())?;
+                }
+                q = q.max(row);
+                cnorm = cnorm.max(cr);
+            }
+            let gap = sub_down(1., q)?;
+            if gap <= 0. {
+                return Err(bad("bounded pivot inverse defect not proved"));
+            }
+            let e = div_up(mul_up(q, cnorm)?, gap)?;
+            out.copy_from_slice(&self.inverse[..m]);
+            return Ok(e);
         }
         // Check every original midpoint residual (same row/column order).
         // Skip only exact zero support when old PreparedRhs would select it.

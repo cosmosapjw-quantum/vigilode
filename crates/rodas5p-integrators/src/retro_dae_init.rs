@@ -475,6 +475,8 @@ pub enum InitRoute {
     BoundedSturmNewtonScalar,
     BoundedVector,
     BoundedVectorRefined,
+    BoundedVectorPivot,
+    BoundedVectorEquilibrated,
 }
 #[derive(Clone, Copy, Debug, Serialize)]
 pub struct InitPolicy {
@@ -964,7 +966,10 @@ impl DaeSource {
     ) -> CoreResult<InitReport> {
         if matches!(
             route,
-            InitRoute::BoundedVector | InitRoute::BoundedVectorRefined
+            InitRoute::BoundedVector
+                | InitRoute::BoundedVectorRefined
+                | InitRoute::BoundedVectorPivot
+                | InitRoute::BoundedVectorEquilibrated
         ) {
             return self
                 .bounded_vector_recorded(
@@ -973,7 +978,7 @@ impl DaeSource {
                     z0,
                     branch,
                     policy,
-                    route == InitRoute::BoundedVectorRefined,
+                    route,
                     &mut VectorProjectionWorkspace::new(),
                     attempt,
                 )
@@ -2478,6 +2483,7 @@ fn vector_inverse(
     w: &mut VectorProjectionWorkspace,
     nx: usize,
     nz: usize,
+    route: InitRoute,
     receipt: &mut InitAttemptWork,
 ) -> CoreResult<()> {
     let n = nx + nz;
@@ -2486,7 +2492,20 @@ fn vector_inverse(
             w.a[i * nz + j] = mid(vector_row(&w.point, n, nx + i)[nx + 1 + j]);
         }
     }
-    let r = w.inverse.invert(nz, &w.a[..nz * nz], &mut w.c[..nz * nz]);
+    let pivoted = matches!(
+        route,
+        InitRoute::BoundedVectorPivot | InitRoute::BoundedVectorEquilibrated
+    );
+    let r = if pivoted {
+        w.inverse.invert_pivoted(
+            nz,
+            &w.a[..nz * nz],
+            &mut w.c[..nz * nz],
+            route == InitRoute::BoundedVectorEquilibrated,
+        )
+    } else {
+        w.inverse.invert(nz, &w.a[..nz * nz], &mut w.c[..nz * nz])
+    };
     receipt.legacy.linear_batches += 1;
     receipt.legacy.rhs_count += nz;
     receipt.rhs_requested += nz;
@@ -2495,8 +2514,12 @@ fn vector_inverse(
     if r.is_ok() {
         receipt.rhs_returned += nz;
         let nnz = w.a[..nz * nz].iter().filter(|&&v| v != 0.).count();
-        receipt.legacy.bounded_residual_terms +=
-            nz * if nnz <= nz * nz / 2 { nnz } else { nz * nz };
+        receipt.legacy.bounded_residual_terms += nz
+            * if !pivoted && nnz <= nz * nz / 2 {
+                nnz
+            } else {
+                nz * nz
+            };
     }
     r.map(|_| ())
 }
@@ -2583,8 +2606,34 @@ impl DaeSource {
         scratch: &mut VectorProjectionWorkspace,
     ) -> (CoreResult<BoundedVectorProjection>, InitAttemptWork) {
         let mut receipt = InitAttemptWork::default();
+        let route = if refine {
+            InitRoute::BoundedVectorRefined
+        } else {
+            InitRoute::BoundedVector
+        };
         let r =
-            self.bounded_vector_recorded(t, x, seed, branch, policy, refine, scratch, &mut receipt);
+            self.bounded_vector_recorded(t, x, seed, branch, policy, route, scratch, &mut receipt);
+        (r, receipt)
+    }
+    /// Separate nondominant candidate; original source proof is unchanged.
+    pub fn initialize_pivoted_vector_audited(
+        &self,
+        t: f64,
+        x: &[f64],
+        seed: &[f64],
+        branch: &[[f64; 2]],
+        policy: InitPolicy,
+        equilibrate: bool,
+        scratch: &mut VectorProjectionWorkspace,
+    ) -> (CoreResult<BoundedVectorProjection>, InitAttemptWork) {
+        let mut receipt = InitAttemptWork::default();
+        let route = if equilibrate {
+            InitRoute::BoundedVectorEquilibrated
+        } else {
+            InitRoute::BoundedVectorPivot
+        };
+        let r =
+            self.bounded_vector_recorded(t, x, seed, branch, policy, route, scratch, &mut receipt);
         (r, receipt)
     }
     fn bounded_vector_recorded(
@@ -2594,10 +2643,11 @@ impl DaeSource {
         seed: &[f64],
         branch: &[[f64; 2]],
         policy: InitPolicy,
-        refine: bool,
+        route: InitRoute,
         w: &mut VectorProjectionWorkspace,
         receipt: &mut InitAttemptWork,
     ) -> CoreResult<BoundedVectorProjection> {
+        let refine = route == InitRoute::BoundedVectorRefined;
         crate::affine_event_certificate::check_affine_event_arithmetic()?;
         let nx = self.nx();
         let nz = self.nz();
@@ -2646,7 +2696,7 @@ impl DaeSource {
                 if r == 0. {
                     break;
                 }
-                vector_inverse(w, nx, nz, receipt)?;
+                vector_inverse(w, nx, nz, route, receipt)?;
                 let mut rhs = [0.; 32];
                 for i in 0..nz {
                     rhs[i] = -mid(w.point.values[nx + i]);
@@ -2684,7 +2734,7 @@ impl DaeSource {
         if residual > policy.residual_tol {
             return Err(bad("original constraint residual exceeds tolerance"));
         }
-        vector_inverse(w, nx, nz, receipt)?;
+        vector_inverse(w, nx, nz, route, receipt)?;
         vector_eval(self, t, x, &b[..nz], &mut w.eval, receipt)?;
         let branch_defect = vector_defect(&w.c, &w.eval, nx, nz, &mut w.e)?;
         let gap = sub_down(1., branch_defect)?;
@@ -2880,11 +2930,7 @@ impl DaeSource {
         Ok(BoundedVectorProjection {
             nx,
             nz,
-            route: if refine {
-                InitRoute::BoundedVectorRefined
-            } else {
-                InitRoute::BoundedVector
-            },
+            route,
             mode: policy.mode,
             t,
             x: xx,
