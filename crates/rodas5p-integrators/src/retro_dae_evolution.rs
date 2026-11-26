@@ -1063,6 +1063,75 @@ fn guard_solve_into(
 fn guard_row_norm(row: &[Iv]) -> CoreResult<f64> {
     Ok(0.0_f64.max(row.iter().try_fold(0., |s, v| add_up(s, v.mag()))?))
 }
+/// Bounded storage for the original-source interval linear kernel.
+/// This is a conditional linear enclosure, not a source-bound slab certificate.
+/// It does not retain a cached preconditioner or confer physical event authority.
+pub struct GuardColumnWorkspace {
+    values: [Iv; 32],
+    jacobian: [[Iv; 33]; 32],
+    defect: [Iv; 32 * 32],
+}
+impl GuardColumnWorkspace {
+    pub const fn new() -> Self {
+        const ZERO: Iv = Iv { lo: 0., hi: 0. };
+        Self {
+            values: [ZERO; 32],
+            jacobian: [[ZERO; 33]; 32],
+            defect: [ZERO; 32 * 32],
+        }
+    }
+    /// Re-evaluate the declared constraint source on the supplied box and
+    /// certify the supplied RHS for every admissible g_z. The entire output
+    /// slice is committed only on success. Up to two optional refinements.
+    /// The caller is responsible for any physical interpretation of this box.
+    #[allow(clippy::too_many_arguments)]
+    pub fn enclose(
+        &mut self,
+        src: &DaeSource,
+        time: Iv,
+        state: &[Iv],
+        c: &DenseMatrix,
+        rhs: &[Iv],
+        sweeps: usize,
+        out: &mut [Iv],
+        work: &mut di::AttemptCount,
+    ) -> CoreResult<f64> {
+        let nx = src.nx();
+        let nz = src.nz();
+        if state.len() != nx + nz
+            || c.nrows() != nz
+            || c.ncols() != nz
+            || rhs.len() != nz
+            || out.len() != nz
+            || sweeps > 2
+        {
+            return Err(bad("guard column workspace shape"));
+        }
+        for v in state.iter().chain(rhs).chain(std::iter::once(&time)) {
+            Iv::new(v.lo, v.hi)?;
+        }
+        if !c.as_slice().iter().all(|v| v.is_finite()) {
+            return Err(bad("guard column preconditioner nonfinite"));
+        }
+        let gj = &mut self.jacobian[..nz];
+        guard_source_rows(&src.g, time, state, &mut self.values[..nz], gj)?;
+        let defect = &mut self.defect[..nz * nz];
+        let q = guard_defect_into(c, gj, nx, defect)?;
+        let gap = sub_down(1., q)?;
+        if gap <= 0. {
+            return Err(bad("guard inverse defect"));
+        }
+        let mut staged = [zero(); 32];
+        guard_solve_into(c, rhs, q, gap, &mut staged[..nz], defect, sweeps, work)?;
+        out.copy_from_slice(&staged[..nz]);
+        Ok(q)
+    }
+}
+impl Default for GuardColumnWorkspace {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 impl<'a> GuardProof<'a> {
     pub fn new(
         src: &DaeSource,
@@ -1154,13 +1223,12 @@ impl<'a> GuardProof<'a> {
             }
             Ok::<(), CoreError>(())
         })?;
-        let mut gj_storage = [[zero(); 33]; 32];
-        let gj = &mut gj_storage[..nz];
-        let mut gv = [zero(); 32];
+        let mut linear = GuardColumnWorkspace::new();
+        let gj = &mut linear.jacobian[..nz];
         observed_reset!(
             audit,
             evaluations,
-            guard_source_rows(&src.g, time, physical, &mut gv[..nz], gj)
+            guard_source_rows(&src.g, time, physical, &mut linear.values[..nz], gj)
         )?;
         let mut h_storage = [zero(); 33];
         let h = &mut h_storage[..=nx + nz];
@@ -1196,8 +1264,7 @@ impl<'a> GuardProof<'a> {
         } else {
             &original
         };
-        let mut defect_storage = [zero(); 32 * 32];
-        let defect = &mut defect_storage[..nz * nz];
+        let defect = &mut linear.defect[..nz * nz];
         let q = guard_defect_into(c, gj, nx, defect)?;
         let gap = sub_down(1., q)?;
         if gap <= 0. {
@@ -3124,55 +3191,6 @@ mod bounded_polynomial_scratch_tests {
 mod guard_defect_scratch_contracts {
     use super::*;
     use crate::retro_event_poly::{AffineFactor as F, EventTerm as T};
-    use std::{
-        alloc::{GlobalAlloc, Layout, System},
-        cell::Cell,
-        hint::black_box,
-    };
-    thread_local! {
-        static TRACK: Cell<bool> = const { Cell::new(false) };
-        static REQUESTS: Cell<usize> = const { Cell::new(0) };
-    }
-    struct Counter;
-    fn request() {
-        if TRACK.try_with(Cell::get).unwrap_or(false) {
-            let _ = REQUESTS.try_with(|v| v.set(v.get() + 1));
-        }
-    }
-    unsafe impl GlobalAlloc for Counter {
-        unsafe fn alloc(&self, l: Layout) -> *mut u8 {
-            request();
-            unsafe { System.alloc(l) }
-        }
-        unsafe fn alloc_zeroed(&self, l: Layout) -> *mut u8 {
-            request();
-            unsafe { System.alloc_zeroed(l) }
-        }
-        unsafe fn realloc(&self, p: *mut u8, l: Layout, n: usize) -> *mut u8 {
-            request();
-            unsafe { System.realloc(p, l, n) }
-        }
-        unsafe fn dealloc(&self, p: *mut u8, l: Layout) {
-            unsafe { System.dealloc(p, l) }
-        }
-    }
-    #[global_allocator]
-    static ALLOC: Counter = Counter;
-    struct Reset;
-    impl Drop for Reset {
-        fn drop(&mut self) {
-            TRACK.with(|v| v.set(false));
-        }
-    }
-    fn measured<T>(f: impl FnOnce() -> T) -> (T, usize) {
-        assert!(!TRACK.with(Cell::get));
-        REQUESTS.with(|v| v.set(0));
-        TRACK.with(|v| v.set(true));
-        let reset = Reset;
-        let r = f();
-        drop(reset);
-        (r, REQUESTS.with(Cell::get))
-    }
     fn same(a: Iv, b: Iv) {
         assert_eq!(
             (a.lo.to_bits(), a.hi.to_bits()),
@@ -3180,18 +3198,7 @@ mod guard_defect_scratch_contracts {
         );
     }
     #[test]
-    fn actual_directed_source_defect_and_refinement_are_noalloc() {
-        // Positive control using the allocator directly to avoid optimized-away allocations.
-        let (_, positive) = measured(|| unsafe {
-            let l = Layout::from_size_align(32, 8).unwrap();
-            let ptr = std::alloc::alloc(l);
-            assert!(!ptr.is_null());
-            black_box(ptr);
-            ptr.write(7);
-            assert_eq!(ptr.read(), 7);
-            std::alloc::dealloc(ptr, l);
-        });
-        assert_eq!(positive, 1);
+    fn directed_source_defect_refinement_equivalence() {
         let t = Iv::new(0., 0.25).unwrap();
         let y = [Iv::new(-0.25, 0.25).unwrap(); 3];
         let tr = |coefficient, factors| T {
@@ -3232,7 +3239,7 @@ mod guard_defect_scratch_contracts {
         let mut one = [zero(); 2];
         let mut two = [zero(); 2];
         let mut audit = [di::AttemptCount::default(); 3];
-        let (q, requests) = measured(|| {
+        let q = {
             guard_source_rows(&g, t, &y, &mut v, &mut jac).unwrap();
             let q = guard_defect_into(&c, &jac, 1, &mut e).unwrap();
             let gap = sub_down(1., q).unwrap();
@@ -3240,8 +3247,7 @@ mod guard_defect_scratch_contracts {
                 guard_solve_into(&c, &rhs, q, gap, out, &e, sweeps, &mut audit[sweeps]).unwrap();
             }
             q
-        });
-        assert_eq!(requests, 0);
+        };
         assert_eq!(q.to_bits(), q0.to_bits());
         for i in 0..2 {
             same(v[i], old.v[i]);
@@ -3274,7 +3280,7 @@ mod guard_defect_scratch_contracts {
             assert_eq!((a.started, a.returned), (k, k));
         }
         println!(
-            "GUARD_KERNEL positive_requests={positive} requests={requests} q={q} base={:?} one={:?} two={:?}",
+            "GUARD_KERNEL_EQUIVALENCE q={q} base={:?} one={:?} two={:?}",
             base, one, two
         );
     }

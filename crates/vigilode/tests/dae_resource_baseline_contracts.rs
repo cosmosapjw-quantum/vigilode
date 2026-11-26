@@ -1340,3 +1340,94 @@ fn guard_defect_vector_mutations() {
         }
     }
 }
+
+// The library remains forbid(unsafe_code); allocation accounting lives only
+// in this existing integration test executable.
+#[test]
+fn guard_column_workspace_noalloc_and_transactional() {
+    warm();
+    use rodas5p_core::DenseMatrix;
+    let iv = |v| Iv::point(v).unwrap();
+    let src = DaeSource::new(
+        vec![p(vec![tr(1., vec![])])],
+        vec![
+            p(vec![
+                tr(1., vec![F::component(1, 0.)]),
+                tr(1., vec![F::clock(0.), F::component(2, 0.)]),
+            ]),
+            p(vec![
+                tr(1., vec![F::component(2, 0.)]),
+                tr(-0.5, vec![F::clock(0.), F::component(1, 0.)]),
+            ]),
+        ],
+    )
+    .unwrap();
+    let t = Iv::new(0., 0.25).unwrap();
+    let state = [Iv::new(-0.25, 0.25).unwrap(); 3];
+    let c = DenseMatrix::identity(2);
+    let rhs = [iv(1.), iv(2.)];
+    let mut workspace = de::GuardColumnWorkspace::new();
+    let mut outputs = [[iv(0.); 2]; 3];
+    for (k, out) in outputs.iter_mut().enumerate() {
+        let mut work = AttemptCount::default();
+        let (q, a) = measure(|| workspace.enclose(&src, t, &state, &c, &rhs, k, out, &mut work));
+        assert_eq!(a.requests(), 0);
+        assert_eq!((work.started, work.returned), (k, k));
+        assert!(q.unwrap() < 1.);
+        println!(
+            "KERNEL_NOALLOC depth={k} requests={} bytes={} enclosure={:?}",
+            a.requests(),
+            a.requested_bytes,
+            out
+        );
+        for j in 0..=64 {
+            let t = j as f64 / 256.;
+            let exact = [
+                (1. - 2. * t) / (1. + 0.5 * t * t),
+                (2. + 0.5 * t) / (1. + 0.5 * t * t),
+            ];
+            for i in 0..2 {
+                assert!(out[i].lo <= exact[i] && exact[i] <= out[i].hi);
+            }
+        }
+    }
+    for i in 0..2 {
+        for k in 1..=2 {
+            assert!(
+                outputs[k - 1][i].lo <= outputs[k][i].lo
+                    && outputs[k][i].hi <= outputs[k - 1][i].hi
+            );
+        }
+    }
+    assert!(
+        outputs[2]
+            .iter()
+            .zip(outputs[0])
+            .any(|(a, b)| a.lo > b.lo || a.hi < b.hi)
+    );
+    let sentinel = [iv(123.); 2];
+    let mut out = sentinel;
+    let mut work = AttemptCount::default();
+    assert!(
+        workspace
+            .enclose(
+                &src,
+                t,
+                &state,
+                &DenseMatrix::zeros(2, 2),
+                &rhs,
+                2,
+                &mut out,
+                &mut work
+            )
+            .is_err()
+    );
+    assert_eq!(out.map(|x| x.as_pair()), sentinel.map(|x| x.as_pair()));
+    assert_eq!((work.started, work.returned), (0, 0));
+    assert!(
+        workspace
+            .enclose(&src, t, &state, &c, &rhs, 3, &mut out, &mut work)
+            .is_err()
+    );
+    assert_eq!(out.map(|x| x.as_pair()), sentinel.map(|x| x.as_pair()));
+}
