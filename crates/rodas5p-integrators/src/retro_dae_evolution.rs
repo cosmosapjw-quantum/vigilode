@@ -915,6 +915,12 @@ pub enum GuardDerivativeRoute {
     SchurCenteredGs2,
     PreparedSchurCenteredGs2,
     ConservedSchurCenteredGs2,
+    SchurDualGrouped,
+    SchurDualCentered,
+    SchurDualCenteredGs2,
+    BoundedPreparedSchur,
+    BoundedPreparedDualCenteredGs2,
+    ConservedSchurDualCentered,
 }
 /// Conditional interval linear refinement; never an independent slab certificate.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -979,7 +985,24 @@ impl GuardDerivativeRoute {
                 | Self::ConservedSchurRefine2
                 | Self::ConservedSchurGsAdaptive2
                 | Self::ConservedSchurCenteredGs2
+                | Self::ConservedSchurDualCentered
         )
+    }
+    fn bounded_prepared(self) -> bool {
+        matches!(
+            self,
+            Self::BoundedPreparedSchur | Self::BoundedPreparedDualCenteredGs2
+        )
+    }
+    fn dual(self) -> Option<bool> {
+        match self {
+            Self::SchurDualGrouped => Some(false),
+            Self::SchurDualCentered
+            | Self::SchurDualCenteredGs2
+            | Self::BoundedPreparedDualCenteredGs2
+            | Self::ConservedSchurDualCentered => Some(true),
+            _ => None,
+        }
     }
     fn centered(self) -> Option<(bool, GuardColumnRefinement)> {
         use GuardColumnRefinement as R;
@@ -988,7 +1011,9 @@ impl GuardDerivativeRoute {
             Self::SchurCenteredGrouped => Some((true, R::None)),
             Self::SchurCenteredGs2
             | Self::PreparedSchurCenteredGs2
-            | Self::ConservedSchurCenteredGs2 => Some((true, R::GaussSeidel2)),
+            | Self::ConservedSchurCenteredGs2
+            | Self::SchurDualCenteredGs2
+            | Self::BoundedPreparedDualCenteredGs2 => Some((true, R::GaussSeidel2)),
             _ => None,
         }
     }
@@ -1112,6 +1137,114 @@ impl<'a> GuardMatrix<'a> {
     }
     fn row(self, i: usize) -> &'a [f64] {
         &self.data[i * self.n..(i + 1) * self.n]
+    }
+}
+/// Fixed-size scratch for an opt-in midpoint inverse candidate. It retains
+/// no matrix identity or accepted physical certificate. Every call starts
+/// afresh and returns a candidate only after a directed residual check.
+pub struct GuardInverseWorkspace {
+    a: [f64; 32 * 32],
+    inverse: [f64; 32 * 32],
+}
+impl GuardInverseWorkspace {
+    pub const fn new() -> Self {
+        Self {
+            a: [0.; 32 * 32],
+            inverse: [0.; 32 * 32],
+        }
+    }
+    /// Original midpoint strict row dominance and residual verification,
+    /// followed by caller's mandatory full interval defect check.
+    /// Output untouched on any failure.
+    pub fn invert(&mut self, n: usize, center: &[f64], out: &mut [f64]) -> CoreResult<f64> {
+        crate::affine_event_certificate::check_affine_event_arithmetic()?;
+        if n == 0 || n > 32 || out.len() != n * n {
+            return Err(bad("bounded inverse shape"));
+        }
+        let a = GuardMatrix::new(n, center)?;
+        let mut gap = f64::INFINITY;
+        for i in 0..n {
+            let mut g = a.row(i)[i].abs();
+            for j in 0..n {
+                if i != j {
+                    g = sub_down(g, a.row(i)[j].abs())?;
+                }
+            }
+            gap = gap.min(g);
+        }
+        if gap <= 0. || !gap.is_finite() {
+            return Err(bad("bounded inverse row dominance"));
+        }
+        let m = n * n;
+        self.a[..m].copy_from_slice(center);
+        self.inverse[..m].fill(0.);
+        for i in 0..n {
+            self.inverse[i * n + i] = 1.;
+        }
+        // One point Gauss-Jordan factor/elimination, all identity RHS.
+        for k in 0..n {
+            let mut pivot = k;
+            for i in k + 1..n {
+                if self.a[i * n + k].abs() > self.a[pivot * n + k].abs() {
+                    pivot = i;
+                }
+            }
+            let d = self.a[pivot * n + k];
+            if d == 0. || !d.is_finite() {
+                return Err(bad("bounded inverse pivot"));
+            }
+            if pivot != k {
+                for j in 0..n {
+                    self.a.swap(k * n + j, pivot * n + j);
+                    self.inverse.swap(k * n + j, pivot * n + j);
+                }
+            }
+            for j in 0..n {
+                self.a[k * n + j] /= d;
+                self.inverse[k * n + j] /= d;
+            }
+            for i in 0..n {
+                if i == k {
+                    continue;
+                }
+                let r = self.a[i * n + k];
+                for j in 0..n {
+                    self.a[i * n + j] -= r * self.a[k * n + j];
+                    self.inverse[i * n + j] -= r * self.inverse[k * n + j];
+                }
+            }
+            if !self.a[..m]
+                .iter()
+                .chain(&self.inverse[..m])
+                .all(|x| x.is_finite())
+            {
+                return Err(bad("bounded inverse nonfinite"));
+            }
+        }
+        // Check every original midpoint residual (same row/column order).
+        // Skip only exact zero support when old PreparedRhs would select it.
+        let sparse = center.iter().filter(|&&v| v != 0.).count() <= m / 2;
+        let mut residual = 0_f64;
+        for k in 0..n {
+            for i in 0..n {
+                let mut r = p(if i == k { 1. } else { 0. })?;
+                for j in 0..n {
+                    let v = a.row(i)[j];
+                    if !sparse || v != 0. {
+                        r = r.sub(p(v)?.scale(self.inverse[j * n + k])?)?;
+                    }
+                }
+                residual = residual.max(r.mag());
+            }
+        }
+        let error = div_up(residual, gap)?;
+        out.copy_from_slice(&self.inverse[..m]);
+        Ok(error)
+    }
+}
+impl Default for GuardInverseWorkspace {
+    fn default() -> Self {
+        Self::new()
     }
 }
 fn guard_cg(
@@ -1512,6 +1645,106 @@ fn guard_directional_residual(
     }
     Ok(sum)
 }
+// One exact weighted directional derivative of the original source
+// expression H - lambda^T g. Group before interval evaluation across rows,
+// including identical ordered remaining factors of higher-degree terms.
+fn guard_dual_direction(
+    src: &DaeSource,
+    guard: &DeclaredPolynomial,
+    lambda: &[f64],
+    time: Iv,
+    state: &[Iv],
+    direction: &[f64],
+) -> CoreResult<Iv> {
+    use crate::retro_event_poly::{AffineFactor, EventTerm};
+    fn same(a: &AffineFactor, b: &AffineFactor) -> bool {
+        a.constant == b.constant && a.time == b.time && a.state == b.state
+    }
+    fn factor(f: &AffineFactor, time: Iv, state: &[Iv]) -> CoreResult<Iv> {
+        f.state
+            .iter()
+            .try_fold(p(f.constant)?.add(time.scale(f.time)?)?, |s, &(i, a)| {
+                s.add(state[i].scale(a)?)
+            })
+    }
+    // nx+nz<=32, nx>=1 => at most 32 polynomials of 16 terms*4 factors.
+    let mut groups: [Option<(&EventTerm, usize, Iv)>; 2048] = [None; 2048];
+    let mut count = 0;
+    let mut affine = [zero(); 34];
+    for (eq, weight) in
+        std::iter::once((guard, 1.)).chain(src.g.iter().zip(lambda).map(|(g, &l)| (g, -l)))
+    {
+        for term in eq.terms() {
+            let c = p(term.coefficient)?.scale(weight)?;
+            for (fi, f) in term.factors.iter().enumerate() {
+                let mut df = p(direction[0])?.scale(f.time)?;
+                for &(j, a) in &f.state {
+                    df = df.add(p(direction[1 + j])?.scale(a)?)?;
+                }
+                let coef = c.mul(df)?;
+                if coef.lo == 0. && coef.hi == 0. {
+                    continue;
+                }
+                let rest = term
+                    .factors
+                    .iter()
+                    .enumerate()
+                    .filter(|(i, _)| *i != fi)
+                    .map(|(_, f)| f);
+                if term.factors.len() <= 2 {
+                    if let Some(f) = rest.clone().next() {
+                        affine[0] = affine[0].add(coef.scale(f.constant)?)?;
+                        affine[1] = affine[1].add(coef.scale(f.time)?)?;
+                        for &(j, a) in &f.state {
+                            affine[2 + j] = affine[2 + j].add(coef.scale(a)?)?;
+                        }
+                    } else {
+                        affine[0] = affine[0].add(coef)?;
+                    }
+                } else {
+                    let prior = groups[..count].iter().position(|entry| {
+                        let (t, of, _) = entry.unwrap();
+                        t.factors.len() == term.factors.len()
+                            && rest
+                                .clone()
+                                .zip(
+                                    t.factors
+                                        .iter()
+                                        .enumerate()
+                                        .filter(|(i, _)| *i != of)
+                                        .map(|(_, f)| f),
+                                )
+                                .all(|(a, b)| same(a, b))
+                    });
+                    if let Some(i) = prior {
+                        let (t, of, old) = groups[i].unwrap();
+                        groups[i] = Some((t, of, old.add(coef)?));
+                    } else {
+                        if count == groups.len() {
+                            return Err(bad("guard dual factor capacity"));
+                        }
+                        groups[count] = Some((term, fi, coef));
+                        count += 1;
+                    }
+                }
+            }
+        }
+    }
+    let mut sum = affine[0].add(affine[1].mul(time)?)?;
+    for (&a, &v) in affine[2..].iter().zip(state) {
+        sum = sum.add(a.mul(v)?)?;
+    }
+    for entry in &groups[..count] {
+        let (term, fi, mut v) = entry.unwrap();
+        for (j, f) in term.factors.iter().enumerate() {
+            if j != fi {
+                v = v.mul(factor(f, time, state)?)?;
+            }
+        }
+        sum = sum.add(v)?;
+    }
+    Ok(sum)
+}
 fn guard_centered_column(
     src: &DaeSource,
     time: Iv,
@@ -1762,7 +1995,32 @@ impl<'a> GuardProofCore<'a> {
         let original = GuardMatrix::new(nz, &cert.preconditioner)?;
         let mut work = InitWork::default();
         let prepared;
-        let c = if derivative.prepared() {
+        let mut bounded_inverse = [0.; 32 * 32];
+        let c = if derivative.bounded_prepared() {
+            let mut center = [0.; 32 * 32];
+            for (i, row) in gj.iter().enumerate() {
+                for j in 0..nz {
+                    center[i * nz + j] = di::mid(row[1 + nx + j]);
+                }
+            }
+            audit.rhs_requested += nz;
+            work.linear_batches += 1;
+            work.rhs_count += nz;
+            let r = GuardInverseWorkspace::new().invert(
+                nz,
+                &center[..nz * nz],
+                &mut bounded_inverse[..nz * nz],
+            );
+            audit.preconditioners.record(r.is_ok());
+            audit.bounded_inverse.record(r.is_ok());
+            if r.is_ok() {
+                audit.rhs_returned += nz;
+                let nnz = center[..nz * nz].iter().filter(|&&x| x != 0.).count();
+                audit.bounded_residual_terms += nz * if nnz <= nz * nz / 2 { nnz } else { nz * nz };
+            }
+            r?;
+            GuardMatrix::new(nz, &bounded_inverse[..nz * nz])?
+        } else if derivative.prepared() {
             let center = DenseMatrix::new(
                 nz,
                 nz,
@@ -1828,12 +2086,73 @@ impl<'a> GuardProofCore<'a> {
             Ok(())
         };
         let hz = &h[1 + nx..];
+        let dual = derivative.dual();
+        let mut lambda = [0.; 32];
+        let mut rz = [zero(); 32];
+        let mut direction = [0.; 33];
+        if dual.is_some() {
+            // lambda is only a finite point candidate; it need not be a
+            // certified adjoint solution. Exact identity holds for any lambda.
+            for j in 0..nz {
+                let mut v = 0.;
+                for i in 0..nz {
+                    v += c.row(i)[j] * di::mid(hz[i]);
+                }
+                if !v.is_finite() {
+                    return Err(bad("guard dual center nonfinite"));
+                }
+                lambda[j] = v;
+            }
+            for j in 0..nz {
+                direction[1 + nx + j] = 1.;
+                rz[j] = observed_reset!(
+                    audit,
+                    dual_source_evals,
+                    guard_dual_direction(
+                        src,
+                        guard,
+                        &lambda[..nz],
+                        time,
+                        physical,
+                        &direction[..=nx + nz]
+                    )
+                )?;
+                direction[1 + nx + j] = 0.;
+            }
+        }
         for (k, &hk) in h[..=nx].iter().enumerate() {
             for (v, r) in rhs.iter_mut().zip(gj.iter()) {
                 *v = -r[k];
             }
             solve(rhs, solved, Some(k), audit)?;
             reduced[k] = hk.add(guard_dot(hz, solved)?)?;
+            if let Some(centered) = dual {
+                direction.fill(0.);
+                direction[k] = 1.;
+                let mut delta = [zero(); 32];
+                for j in 0..nz {
+                    let m = if centered { di::mid(solved[j]) } else { 0. };
+                    direction[1 + nx + j] = m;
+                    delta[j] = solved[j].sub(p(m)?)?;
+                }
+                let r = observed_reset!(
+                    audit,
+                    dual_source_evals,
+                    guard_dual_direction(
+                        src,
+                        guard,
+                        &lambda[..nz],
+                        time,
+                        physical,
+                        &direction[..=nx + nz]
+                    )
+                )?;
+                reduced[k] = observed_reset!(
+                    audit,
+                    dual_intersections,
+                    intersect(reduced[k], r.add(guard_dot(&rz[..nz], &delta[..nz])?)?)
+                )?;
+            }
         }
         let velocity = if derivative == GuardDerivativeRoute::Tangent {
             for (v, r) in rhs.iter_mut().zip(gj.iter()) {
@@ -2289,6 +2608,17 @@ pub struct GuardKernelAudit {
     pub centered_residuals: di::AttemptCount,
     #[serde(skip_serializing_if = "guard_attempt_empty")]
     pub centered_corrections: di::AttemptCount,
+    #[serde(skip_serializing_if = "guard_attempt_empty")]
+    pub bounded_inverse: di::AttemptCount,
+    #[serde(skip_serializing_if = "guard_usize_zero")]
+    pub bounded_residual_terms: usize,
+    #[serde(skip_serializing_if = "guard_attempt_empty")]
+    pub dual_source_evals: di::AttemptCount,
+    #[serde(skip_serializing_if = "guard_attempt_empty")]
+    pub dual_intersections: di::AttemptCount,
+}
+fn guard_usize_zero(v: &usize) -> bool {
+    *v == 0
 }
 fn guard_attempt_empty(w: &di::AttemptCount) -> bool {
     w.started == 0 && w.returned == 0
@@ -2304,6 +2634,10 @@ impl GuardKernelAudit {
         self.refinement_sweeps.merge(b.refinement_sweeps);
         self.centered_residuals.merge(b.centered_residuals);
         self.centered_corrections.merge(b.centered_corrections);
+        self.bounded_inverse.merge(b.bounded_inverse);
+        self.bounded_residual_terms += b.bounded_residual_terms;
+        self.dual_source_evals.merge(b.dual_source_evals);
+        self.dual_intersections.merge(b.dual_intersections);
     }
 }
 /// Retained separately from an owning vector certificate, even on Err.
