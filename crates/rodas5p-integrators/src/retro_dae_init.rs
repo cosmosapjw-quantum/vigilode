@@ -467,6 +467,8 @@ pub enum InitRoute {
     AffineExact,
     /// Scalar-only bounded prepared solve with original midpoint residual.
     BoundedPreparedScalar,
+    /// Directed frozen affine coefficient proof, no rational string metadata.
+    BoundedAffineScalar,
 }
 #[derive(Clone, Copy, Debug, Serialize)]
 pub struct InitPolicy {
@@ -930,7 +932,10 @@ impl DaeSource {
         scratch: &mut ProjectionWorkspace,
         attempt: &mut InitAttemptWork,
     ) -> CoreResult<InitReport> {
-        if route == InitRoute::BoundedPreparedScalar {
+        if matches!(
+            route,
+            InitRoute::BoundedPreparedScalar | InitRoute::BoundedAffineScalar
+        ) {
             return self
                 .scalar_reuse_recorded(t, x, z0, branch, policy, route, attempt)
                 .map(|r| r.to_owned_report());
@@ -1363,7 +1368,7 @@ pub struct ScalarReuseProjection {
     original_residual: f64,
     residual: f64,
     state_error: f64,
-    branch_defect: f64,
+    branch_defect: Option<f64>,
     local_defect: f64,
     inverse_norm: f64,
     condition: f64,
@@ -1401,13 +1406,18 @@ impl ScalarReuseProjection {
             correction_upper: self.correction,
             branch: vec![self.branch],
             root_box: vec![self.root.as_pair()],
-            branch_authority: "whole-branch contraction + local self-map".to_string(),
+            branch_authority: if self.route == InitRoute::BoundedAffineScalar {
+                "directed frozen affine root enclosure"
+            } else {
+                "whole-branch contraction + local self-map"
+            }
+            .to_string(),
             affine_root: None,
             original_residual_upper: self.original_residual,
             residual_upper: self.residual,
             state_error_upper: self.state_error,
             exact_center_consistency: self.residual == 0.,
-            branch_defect_upper: Some(self.branch_defect),
+            branch_defect_upper: self.branch_defect,
             local_defect_upper: self.local_defect,
             inverse_norm_upper: self.inverse_norm,
             condition_upper: self.condition,
@@ -1481,6 +1491,41 @@ fn scalar_batch(
     }
     result
 }
+// Exact frozen source polynomial enclosed coefficientwise in physical z.
+// Higher coefficients must be exactly zero; no approximate affine admission.
+fn frozen_affine_coefficients(eq: &DeclaredPolynomial, t: f64, x: &[f64]) -> CoreResult<[Iv; 5]> {
+    let mut sum = [z(); 5];
+    for term in eq.terms() {
+        let mut poly = [z(); 5];
+        poly[0] = p(term.coefficient)?;
+        let mut degree = 0;
+        for f in &term.factors {
+            let mut c = p(f.constant)?.add(p(t)?.scale(f.time)?)?;
+            let mut a = z();
+            for &(i, w) in &f.state {
+                if i == x.len() {
+                    a = a.add(p(w)?)?;
+                } else {
+                    c = c.add(p(x[i])?.scale(w)?)?;
+                }
+            }
+            let mut next = [z(); 5];
+            for k in 0..=degree {
+                next[k] = next[k].add(poly[k].mul(c)?)?;
+                next[k + 1] = next[k + 1].add(poly[k].mul(a)?)?;
+            }
+            degree += 1;
+            poly = next;
+        }
+        for (a, b) in sum.iter_mut().zip(poly) {
+            *a = a.add(b)?;
+        }
+    }
+    if sum[2..].iter().any(|v| v.lo != 0. || v.hi != 0.) || sum[1].contains_zero() {
+        return Err(bad("bounded frozen affine degree or slope not proved"));
+    }
+    Ok(sum)
+}
 fn scalar_defect(c: f64, j: Iv) -> CoreResult<Iv> {
     p(1.)?.sub(j.scale(c)?)
 }
@@ -1519,6 +1564,28 @@ impl DaeSource {
             branch,
             policy,
             InitRoute::BoundedPreparedScalar,
+            &mut w,
+        );
+        (r, w)
+    }
+    /// Fixed-size affine source proof plus the original residual/derivative
+    /// tests. Refuses unproved affine structure; no fallback to root count.
+    pub fn initialize_scalar_bounded_affine_audited(
+        &self,
+        t: f64,
+        x: &[f64],
+        seed: &[f64],
+        branch: &[[f64; 2]],
+        policy: InitPolicy,
+    ) -> (CoreResult<ScalarReuseProjection>, InitAttemptWork) {
+        let mut w = InitAttemptWork::default();
+        let r = self.scalar_reuse_recorded(
+            t,
+            x,
+            seed,
+            branch,
+            policy,
+            InitRoute::BoundedAffineScalar,
             &mut w,
         );
         (r, w)
@@ -1577,7 +1644,45 @@ impl DaeSource {
             return Err(bad("strict initial residual exceeds tolerance"));
         }
         let mut center = seed[0];
-        if policy.mode == InitMode::ProjectAlgebraic {
+        let mut affine_box = None;
+        if route == InitRoute::BoundedAffineScalar {
+            for v in [b.lo, b.hi] {
+                eval!(work, p(v)?);
+                if work.values[nx].contains_zero() {
+                    return Err(bad("scalar branch boundary root/unknown"));
+                }
+            }
+            let coeff = frozen_affine_coefficients(&self.g[0], t, x);
+            w.frozen.record(coeff.is_ok());
+            let coeff = coeff?;
+            let q = (|| {
+                let root = (-coeff[0]).div(coeff[1])?;
+                if root.lo <= b.lo || root.hi >= b.hi {
+                    return Err(bad("bounded affine interior root not proved"));
+                }
+                Ok(root)
+            })();
+            w.roots.record(q.is_ok());
+            let q = q?;
+            w.legacy.root_calls += 1;
+            if policy.mode == InitMode::ProjectAlgebraic {
+                center = mid(q);
+                eval!(work, p(center)?);
+                let r = work.values[nx].mag();
+                let d = mid(work.scalar_row(nx, nx)[zi]);
+                if d != 0. {
+                    let trial = center - mid(work.values[nx]) / d;
+                    if q.contains(trial) {
+                        eval!(work, p(trial)?);
+                        if work.values[nx].mag() < r {
+                            center = trial;
+                            w.legacy.newton_steps += 1;
+                        }
+                    }
+                }
+            }
+            affine_box = Some(q);
+        } else if policy.mode == InitMode::ProjectAlgebraic {
             for _ in 0..policy.max_newton {
                 eval!(work, p(center)?);
                 let r = work.values[nx].mag();
@@ -1616,57 +1721,62 @@ impl DaeSource {
         let mut c = [1.];
         scalar_batch(a, &mut c, route, w)?;
         let c = c[0];
-        eval!(work, b);
-        let defect = scalar_defect(c, work.scalar_row(nx, nx)[zi])?;
-        let branch_defect = add_up(0., defect.mag())?;
-        let gap = sub_down(1., branch_defect)?;
-        if gap <= 0. {
-            return Err(bad("whole branch contraction not proved"));
-        }
-        let cg = z().add(point.values[nx].scale(c)?)?;
-        let rad = mul_up(2., div_up(cg.mag(), gap)?)?;
-        let mut root = p(center)?.add(Iv::new(-rad, rad)?)?;
-        if root.lo < b.lo || root.hi > b.hi {
-            return Err(bad("existence box leaves declared branch"));
-        }
-        let ed = z().add(defect.mul(root.sub(p(center)?)?)?)?;
-        let mapped = p(center)?.sub(cg)?.add(ed)?;
-        if mapped.lo < root.lo || mapped.hi > root.hi {
-            let mut radius = rad;
-            let mut admitted = false;
-            for retry in 0..=8 {
-                if retry > 0 {
-                    radius = if retry == 1 {
-                        let spacing = p(center.next_up())?
-                            .sub(p(center)?)?
-                            .mag()
-                            .max(p(center)?.sub(p(center.next_down())?)?.mag());
-                        radius.max(spacing)
-                    } else {
-                        mul_up(radius, 2.)?
-                    };
-                    root = p(center)?.add(Iv::new(-radius, radius)?)?;
-                    if root.lo < b.lo || root.hi > b.hi {
+        let (root, branch_defect) = if let Some(root) = affine_box {
+            (root, None)
+        } else {
+            eval!(work, b);
+            let defect = scalar_defect(c, work.scalar_row(nx, nx)[zi])?;
+            let branch_defect = add_up(0., defect.mag())?;
+            let gap = sub_down(1., branch_defect)?;
+            if gap <= 0. {
+                return Err(bad("whole branch contraction not proved"));
+            }
+            let cg = z().add(point.values[nx].scale(c)?)?;
+            let rad = mul_up(2., div_up(cg.mag(), gap)?)?;
+            let mut root = p(center)?.add(Iv::new(-rad, rad)?)?;
+            if root.lo < b.lo || root.hi > b.hi {
+                return Err(bad("existence box leaves declared branch"));
+            }
+            let ed = z().add(defect.mul(root.sub(p(center)?)?)?)?;
+            let mapped = p(center)?.sub(cg)?.add(ed)?;
+            if mapped.lo < root.lo || mapped.hi > root.hi {
+                let mut radius = rad;
+                let mut admitted = false;
+                for retry in 0..=8 {
+                    if retry > 0 {
+                        radius = if retry == 1 {
+                            let spacing = p(center.next_up())?
+                                .sub(p(center)?)?
+                                .mag()
+                                .max(p(center)?.sub(p(center.next_down())?)?.mag());
+                            radius.max(spacing)
+                        } else {
+                            mul_up(radius, 2.)?
+                        };
+                        root = p(center)?.add(Iv::new(-radius, radius)?)?;
+                        if root.lo < b.lo || root.hi > b.hi {
+                            break;
+                        }
+                    }
+                    let ed = z().add(defect.mul(root.sub(p(center)?)?)?)?;
+                    w.legacy.root_map_rechecks += 1;
+                    let image = p(center)?.add(ed.sub(cg)?)?;
+                    if image.lo >= root.lo && image.hi <= root.hi {
+                        if retry == 0 {
+                            w.legacy.root_map_regrouped += 1;
+                        } else {
+                            w.legacy.root_map_expanded += 1;
+                        }
+                        admitted = true;
                         break;
                     }
                 }
-                let ed = z().add(defect.mul(root.sub(p(center)?)?)?)?;
-                w.legacy.root_map_rechecks += 1;
-                let image = p(center)?.add(ed.sub(cg)?)?;
-                if image.lo >= root.lo && image.hi <= root.hi {
-                    if retry == 0 {
-                        w.legacy.root_map_regrouped += 1;
-                    } else {
-                        w.legacy.root_map_expanded += 1;
-                    }
-                    admitted = true;
-                    break;
+                if !admitted {
+                    return Err(bad("local self-map inclusion not proved"));
                 }
             }
-            if !admitted {
-                return Err(bad("local self-map inclusion not proved"));
-            }
-        }
+            (root, Some(branch_defect))
+        };
         let state_error = distance(root, center)?;
         if state_error > policy.state_tol {
             return Err(bad("certified root distance exceeds tolerance"));

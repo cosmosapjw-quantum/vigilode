@@ -51,7 +51,8 @@ impl EvolutionRoute {
                 InitRoute::BoundedPreparedScalar
             }
             Self::Scalar5 => InitRoute::ScalarRoot,
-            Self::Affine5 | Self::BoundedAffine5 => InitRoute::AffineExact,
+            Self::Affine5 => InitRoute::AffineExact,
+            Self::BoundedAffine5 => InitRoute::BoundedAffineScalar,
             _ => InitRoute::Reuse,
         }
     }
@@ -341,6 +342,7 @@ impl Engine {
                 | EvolutionRoute::BoundedPrepared5
                 | EvolutionRoute::Reduced5Legendre
                 | EvolutionRoute::BoundedPreparedLegendre5
+                | EvolutionRoute::BoundedAffine5
         ) && self.src.nz() == 1
             && self.warp.is_none()
     }
@@ -350,7 +352,10 @@ impl Engine {
         let mut policy = self.policy.init;
         policy.mode = rodas5p_integrators::retro_dae_init::InitMode::ProjectAlgebraic;
         let seed = [self.seed[0].clamp(self.branch[0][0], self.branch[0][1])];
-        let (r, receipt) = if matches!(
+        let (r, receipt) = if self.route == EvolutionRoute::BoundedAffine5 {
+            self.src
+                .initialize_scalar_bounded_affine_audited(t, x, &seed, &self.branch, policy)
+        } else if matches!(
             self.route,
             EvolutionRoute::BoundedPrepared5 | EvolutionRoute::BoundedPreparedLegendre5
         ) {

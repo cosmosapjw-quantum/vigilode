@@ -845,7 +845,15 @@ fn reconstruct_scalar_inner(
                 mode: InitMode::ProjectAlgebraic,
                 ..policy
             };
-            if route == InitRoute::BoundedPreparedScalar {
+            if route == InitRoute::BoundedAffineScalar {
+                src.initialize_scalar_bounded_affine_audited(
+                    t,
+                    &v[..x.len()],
+                    &guess,
+                    branch,
+                    policy,
+                )
+            } else if route == InitRoute::BoundedPreparedScalar {
                 src.initialize_scalar_bounded_prepared_audited(
                     t,
                     &v[..x.len()],
@@ -947,6 +955,42 @@ pub fn reconstruct_scalar_bounded_prepared_into(
     work.clone_from_slice(&scratch.work[..nodes]);
     Ok(())
 }
+/// Caller-owned bounded affine reconstruction, with no hidden root fallback.
+#[allow(clippy::too_many_arguments)]
+pub fn reconstruct_scalar_bounded_affine_into(
+    src: &DaeSource,
+    times: [f64; 2],
+    x: &[Poly],
+    seed: &[f64],
+    branch: &[[f64; 2]],
+    policy: InitPolicy,
+    seed_route: ReconstructionSeedRoute,
+    out: &mut [Iv],
+    work: &mut [InitWork],
+    audit: &mut di::ProjectionAttemptWork,
+    scratch: &mut ScalarReconstructionWorkspace,
+) -> CoreResult<()> {
+    if out.len() != work.len() {
+        return Err(bad("scalar reconstruction output shape"));
+    }
+    let nodes = out.len();
+    reconstruct_scalar_inner(
+        src,
+        times,
+        x,
+        seed,
+        branch,
+        policy,
+        nodes,
+        seed_route,
+        InitRoute::BoundedAffineScalar,
+        Some(audit),
+        scratch,
+    )?;
+    out.copy_from_slice(&scratch.power[..nodes]);
+    work.clone_from_slice(&scratch.work[..nodes]);
+    Ok(())
+}
 #[allow(clippy::too_many_arguments)]
 fn reconstruct_recorded(
     src: &DaeSource,
@@ -961,7 +1005,10 @@ fn reconstruct_recorded(
     mut audit: Option<&mut di::ProjectionAttemptWork>,
 ) -> CoreResult<(Vec<Poly>, Vec<InitWork>)> {
     if src.nz() == 1
-        && matches!(route, InitRoute::Reuse | InitRoute::BoundedPreparedScalar)
+        && matches!(
+            route,
+            InitRoute::Reuse | InitRoute::BoundedPreparedScalar | InitRoute::BoundedAffineScalar
+        )
         && warp.is_none()
     {
         let mut scratch = ScalarReconstructionWorkspace::new();
