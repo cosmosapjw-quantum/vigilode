@@ -4691,3 +4691,446 @@ fn bounded_sturm_actual_callbacks_noalloc() {
         "actual nonlinear root-count callback allocations"
     );
 }
+
+fn nonlinear_power_fixture(degree: usize) -> DaeSource {
+    let x = || F::component(0, 0.);
+    let z = || F::component(1, 0.);
+    DaeSource::new(
+        vec![p(vec![tr(0.125, vec![]), tr(0.125, vec![z()])])],
+        vec![p(vec![
+            tr(1., vec![z(); degree]),
+            tr(-1., vec![x()]),
+            tr(-2f64.powi(-(degree as i32)), vec![]),
+        ])],
+    )
+    .unwrap()
+}
+#[test]
+fn bounded_sturm_portfolio() {
+    use de::ReconstructionSeedRoute as S;
+    warm();
+    let branch = [[0.4375, 0.59375]];
+    let epoch = EvolutionEpoch {
+        start: 0.,
+        end: 0.125,
+        incoming_x_error: Some(0.),
+    };
+    for degree in 2..=4 {
+        let src = nonlinear_power_fixture(degree);
+        let baseline = evolve_epoch(
+            &src,
+            &[0.],
+            &[0.5],
+            &branch,
+            epoch,
+            &opts(),
+            policy(),
+            EvolutionRoute::Scalar5,
+            &[],
+        )
+        .unwrap();
+        assert!(baseline.global_qualified, "{degree} {:?}", baseline.reason);
+        for solver in [
+            EvolutionRoute::Scalar5,
+            EvolutionRoute::Reduced5,
+            EvolutionRoute::BoundedSturm5,
+            EvolutionRoute::BoundedSturmNewton5,
+        ] {
+            let ((r, a), alloc) = measure(|| {
+                evolve_epoch_audited(
+                    &src,
+                    &[0.],
+                    &[0.5],
+                    &branch,
+                    epoch,
+                    &opts(),
+                    policy(),
+                    solver,
+                    &[],
+                )
+            });
+            match r {
+                Ok(r) => println!(
+                    "STURM_EPOCH {}",
+                    serde_json::json!({"degree":degree,"solver":solver,"allocation":alloc,"qualified":r.global_qualified,"max_physical_error":r.max_physical_error,"slabs":r.slabs().len(),"reason":r.reason,"audit":a})
+                ),
+                Err(e) => println!(
+                    "STURM_EPOCH {}",
+                    serde_json::json!({"degree":degree,"solver":solver,"allocation":alloc,"qualified":false,"reason":e.to_string(),"slabs":0,"max_physical_error":null,"audit":a})
+                ),
+            }
+        }
+        let slabs = baseline.slabs();
+        let mut workspace = de::ScalarReconstructionWorkspace::new();
+        for (position, k) in [
+            ("first", 0),
+            ("middle", slabs.len() / 2),
+            ("last", slabs.len() - 1),
+        ] {
+            let s = &slabs[k];
+            let c = s.certificate.as_ref().unwrap();
+            let t = s.times[0];
+            let x = &s.native.y0;
+            for (route, newton) in [("legacy", false), ("bounded", false), ("newton", true)] {
+                let (r, w, allocation) = if route == "legacy" {
+                    let ((r, w), a) = measure(|| {
+                        src.initialize_audited(
+                            t,
+                            x,
+                            &[0.5],
+                            &branch,
+                            policy().init,
+                            InitRoute::ScalarRoot,
+                        )
+                    });
+                    (r, w, a)
+                } else {
+                    let ((r, w), a) = measure(|| {
+                        src.initialize_scalar_bounded_sturm_audited(
+                            t,
+                            x,
+                            &[0.5],
+                            &branch,
+                            policy().init,
+                            newton,
+                        )
+                    });
+                    if r.is_ok() {
+                        assert_eq!(a.requests(), 0);
+                    }
+                    (r.map(|r| r.to_owned_report()), w, a)
+                };
+                match r {
+                    Ok(r) => {
+                        assert!(r.qualified);
+                        println!(
+                            "STURM_POINT {}",
+                            serde_json::json!({"degree":degree,"position":position,"route":route,"x":x,"time":t,"allocation":allocation,"report":r,"audit":w,"qualified":true})
+                        );
+                    }
+                    Err(e) => {
+                        assert_ne!(route, "legacy");
+                        println!(
+                            "STURM_POINT {}",
+                            serde_json::json!({"degree":degree,"position":position,"route":route,"x":x,"time":t,"allocation":allocation,"error":e.to_string(),"audit":w,"qualified":false})
+                        );
+                    }
+                }
+            }
+            let xp = de::dense_power(&s.native.y0, &s.native.y1, &s.native.stages, s.native.basis)
+                .unwrap();
+            let mut out = [Iv::point(123.).unwrap(); 5];
+            let mut work: [InitWork; 5] = std::array::from_fn(|_| InitWork::default());
+            for (candidate, newton, seed_route) in [
+                ("legacy", false, S::Fixed),
+                ("bounded_fixed", false, S::Fixed),
+                ("bounded_previous", false, S::PreviousNode),
+                ("newton_fixed", true, S::Fixed),
+                ("newton_previous", true, S::PreviousNode),
+            ] {
+                let (r, a, allocation) = if candidate == "legacy" {
+                    let ((r, a), allocation) = measure(|| {
+                        de::reconstruct_audited(
+                            &src,
+                            s.times,
+                            &xp,
+                            &[0.5],
+                            &branch,
+                            policy().init,
+                            InitRoute::ScalarRoot,
+                            None,
+                            5,
+                        )
+                    });
+                    (r.map(|(v, _)| v), a, allocation)
+                } else {
+                    let mut a = ProjectionAttemptWork::default();
+                    let (r, allocation) = measure(|| {
+                        de::reconstruct_scalar_bounded_sturm_into(
+                            &src,
+                            s.times,
+                            &xp,
+                            &[0.5],
+                            &branch,
+                            policy().init,
+                            seed_route,
+                            newton,
+                            &mut out,
+                            &mut work,
+                            &mut a,
+                            &mut workspace,
+                        )
+                    });
+                    if r.is_ok() {
+                        assert_eq!(allocation.requests(), 0);
+                        assert_eq!(a.calls.returned, 5);
+                    }
+                    (r.map(|_| vec![out.to_vec()]), a, allocation)
+                };
+                match r {
+                    Ok(z) => {
+                        let mut full = xp.clone();
+                        full.extend(z);
+                        let r = de::certify_slab(
+                            &src,
+                            s.times,
+                            &full,
+                            &branch,
+                            policy().tube_radius,
+                            Some(c.incoming),
+                            policy().green,
+                            policy().init.condition_cap,
+                        )
+                        .unwrap();
+                        assert!(r.global_qualified);
+                        println!(
+                            "STURM_RECON {}",
+                            serde_json::json!({"degree":degree,"position":position,"candidate":candidate,"allocation":allocation,"audit":a,"qualified":r.global_qualified,"whole_x":r.whole_x_error,"whole_z":r.whole_z_error,"original_g":r.original_g_upper})
+                        );
+                    }
+                    Err(e) => {
+                        assert_ne!(candidate, "legacy");
+                        println!(
+                            "STURM_RECON {}",
+                            serde_json::json!({"degree":degree,"position":position,"candidate":candidate,"allocation":allocation,"audit":a,"qualified":false,"error":e.to_string()})
+                        );
+                    }
+                }
+            }
+        }
+    }
+    let z = |root| F::component(1, root);
+    let mk = |terms| DaeSource::new(vec![p(vec![tr(1., vec![])])], vec![p(terms)]).unwrap();
+    for (case, src, branch, ok) in [
+        (
+            "two_roots",
+            mk(vec![tr(1., vec![z(0.25), z(0.75)])]),
+            [0., 1.],
+            false,
+        ),
+        (
+            "repeated",
+            mk(vec![tr(1., vec![z(0.5), z(0.5)])]),
+            [0., 1.],
+            false,
+        ),
+        (
+            "three_roots",
+            mk(vec![tr(1., vec![z(0.25), z(0.5), z(0.75)])]),
+            [0., 1.],
+            false,
+        ),
+        (
+            "boundary",
+            mk(vec![tr(1., vec![z(0.), z(0.75)])]),
+            [0., 1.],
+            false,
+        ),
+        (
+            "one_interior",
+            mk(vec![tr(1., vec![z(0.25), z(0.75)])]),
+            [0.5, 1.],
+            true,
+        ),
+        (
+            "quartic_single",
+            mk(vec![tr(1., vec![z(0.5), z(-1.), z(-2.), z(-3.)])]),
+            [0., 1.],
+            true,
+        ),
+        (
+            "capacity",
+            mk(vec![
+                tr(1., vec![z(0.), z(0.)]),
+                tr(2f64.powi(-200), vec![z(0.)]),
+                tr(-0.25, vec![]),
+            ]),
+            [0.25, 1.],
+            false,
+        ),
+    ] {
+        for newton in [false, true] {
+            let (r, a) = src.initialize_scalar_bounded_sturm_audited(
+                0.,
+                &[0.],
+                &[0.5],
+                &[branch],
+                policy().init,
+                newton,
+            );
+            assert_eq!(r.is_ok(), ok, "{case} {:?}", r.as_ref().err());
+            println!(
+                "STURM_EDGE {}",
+                serde_json::json!({"case":case,"newton":newton,"accepted":r.is_ok(),"error":r.err().map(|e|e.to_string()),"audit":a})
+            );
+        }
+    }
+}
+fn oscillator_source(rate: f64, freq: f64, forced: bool) -> DaeSource {
+    let lin = |i, w| tr(w, vec![F::component(i, 0.)]);
+    let mut f = [
+        vec![lin(0, rate), lin(1, -freq)],
+        vec![lin(0, freq), lin(1, rate)],
+    ];
+    if forced {
+        // Manufactured exact x=1+t+t², y=1/2-t.
+        for (i, co) in [
+            [1. - rate + 0.5 * freq, 2. - rate - freq, -rate],
+            [-1. - freq - 0.5 * rate, rate - freq, -freq],
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            for (k, &c) in co.iter().enumerate() {
+                f[i].push(tr(c, vec![F::clock(0.); k]));
+            }
+        }
+    }
+    DaeSource::new(
+        f.into_iter().map(p).collect(),
+        vec![p(vec![lin(2, 1.), lin(0, -1.), lin(1, -1.)])],
+    )
+    .unwrap()
+}
+#[test]
+fn source_complex_phi_portfolio() {
+    use de::ComplexEndpointRoute as R;
+    warm();
+    let iv = |x| Iv::point(x).unwrap();
+    let routes = [R::DictionaryDirected, R::Taylor48, R::ScaledRecurrence];
+    for freq in [0.5, 4., 8., 12.] {
+        for forced in [false, true] {
+            let src = oscillator_source(-0.25, freq, forced);
+            let power = if forced {
+                vec![
+                    vec![iv(1.), iv(1.), iv(1.)],
+                    vec![iv(0.5), iv(-1.)],
+                    vec![iv(1.5), iv(0.), iv(1.)],
+                ]
+            } else {
+                vec![vec![iv(1.)], vec![iv(0.5)], vec![iv(1.5)]]
+            };
+            let exact = if forced {
+                [3., -0.5]
+            } else {
+                let (s, c) = freq.sin_cos();
+                [
+                    (-0.25f64).exp() * (c - 0.5 * s),
+                    (-0.25f64).exp() * (s + 0.5 * c),
+                ]
+            };
+            let right = if forced { [3., -0.5] } else { [1., 0.5] };
+            for route in routes {
+                let (r, allocation) =
+                    measure(|| de::source_complex_endpoint(&src, [0., 1.], &power, 0., route));
+                let r = r.unwrap();
+                assert_eq!(allocation.requests(), 0);
+                assert!(
+                    exact
+                        .into_iter()
+                        .zip(right)
+                        .all(|(a, b)| (a - b).abs() <= r.candidate_error + 1e-14)
+                );
+                println!(
+                    "COMPLEX_BOUND {}",
+                    serde_json::json!({"freq":freq,"forced":forced,"route":route,"allocation":allocation,"bounds":r,"qualified":true})
+                );
+            }
+        }
+    }
+    for freq in [0.5, 4., 8.] {
+        for forced in [false, true] {
+            let src = oscillator_source(-0.25, freq, forced);
+            let branch = [[-4., 4.]];
+            for solver in [
+                EvolutionRoute::Reduced5,
+                EvolutionRoute::Reduced5PolynomialPicard,
+                EvolutionRoute::Reduced5ComplexDictionary,
+                EvolutionRoute::Reduced5ComplexScaled,
+            ] {
+                let ((r, a), allocation) = measure(|| {
+                    evolve_epoch_audited(
+                        &src,
+                        &[1., 0.5],
+                        &[1.5],
+                        &branch,
+                        EvolutionEpoch {
+                            start: 0.,
+                            end: 0.125,
+                            incoming_x_error: Some(0.),
+                        },
+                        &opts(),
+                        policy(),
+                        solver,
+                        &[],
+                    )
+                });
+                let r = r.unwrap();
+                assert!(
+                    r.global_qualified,
+                    "{freq} {forced} {solver:?} {:?}",
+                    r.reason
+                );
+                let mut receipts = 0;
+                let mut tighter = 0;
+                for s in r.slabs() {
+                    let c = s.certificate.as_ref().unwrap();
+                    if let Some(v) = c.complex_endpoint {
+                        receipts += 1;
+                        let old = de::certify_slab(
+                            &src,
+                            s.times,
+                            &power(s),
+                            &branch,
+                            policy().tube_radius,
+                            Some(c.incoming),
+                            policy().green,
+                            policy().init.condition_cap,
+                        )
+                        .unwrap();
+                        assert!(c.outgoing.unwrap() <= old.outgoing.unwrap());
+                        assert_eq!(c.whole_x_error, old.whole_x_error);
+                        tighter += usize::from(c.outgoing.unwrap() < old.outgoing.unwrap());
+                        println!(
+                            "COMPLEX_NATIVE {}",
+                            serde_json::json!({"freq":freq,"forced":forced,"solver":solver,"times":s.times,"power":s.power,"incoming":c.incoming,"bounds":v,"outgoing":c.outgoing,"base_outgoing":old.outgoing})
+                        );
+                    }
+                }
+                if matches!(
+                    solver,
+                    EvolutionRoute::Reduced5ComplexDictionary
+                        | EvolutionRoute::Reduced5ComplexScaled
+                ) {
+                    assert_eq!(receipts, r.slabs().len());
+                }
+                println!(
+                    "COMPLEX_EPOCH {}",
+                    serde_json::json!({"freq":freq,"forced":forced,"solver":solver,"allocation":allocation,"qualified":r.global_qualified,"slabs":r.slabs().len(),"receipts":receipts,"tighter":tighter,"max_physical_error":r.max_physical_error,"outgoing":r.slabs().last().unwrap().certificate.as_ref().unwrap().outgoing,"audit":a})
+                );
+            }
+        }
+    }
+    let nonrotation = DaeSource::new(
+        vec![
+            p(vec![tr(1., vec![F::component(1, 0.)])]),
+            p(vec![tr(2., vec![F::component(0, 0.)])]),
+        ],
+        vec![p(vec![tr(1., vec![F::component(2, 0.)])])],
+    )
+    .unwrap();
+    let y = vec![vec![iv(1.)], vec![iv(0.5)], vec![iv(1.5)]];
+    assert!(
+        de::source_complex_endpoint(&nonrotation, [0., 1.], &y, 0., R::ScaledRecurrence).is_err()
+    );
+    assert!(
+        de::source_complex_endpoint(
+            &oscillator_source(0.25, 1., false),
+            [0., 1.],
+            &y,
+            0.,
+            R::ScaledRecurrence
+        )
+        .is_err()
+    );
+}
