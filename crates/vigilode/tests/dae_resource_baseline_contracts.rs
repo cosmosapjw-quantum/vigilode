@@ -4176,3 +4176,83 @@ fn source_picard_endpoint_portfolio() {
         );
     }
 }
+
+fn vector_projection_fixture(a: f64, b: f64) -> DaeSource {
+    let lin = |k, w| tr(w, vec![F::component(k, 0.)]);
+    let cross = |k, w| tr(w, vec![F::clock(0.), F::component(k, 0.)]);
+    DaeSource::new(
+        vec![p(vec![tr(1., vec![]), lin(1, 0.125), lin(2, -0.0625)])],
+        vec![
+            p(vec![
+                lin(1, 1.),
+                lin(0, -1.),
+                cross(2, a),
+                cross(0, -2. * a),
+            ]),
+            p(vec![lin(2, 1.), lin(0, -2.), cross(1, b), cross(0, -b)]),
+        ],
+    )
+    .unwrap()
+}
+#[test]
+fn vector_projection_actual_callbacks_noalloc() {
+    warm();
+    let src = vector_projection_fixture(2., -1.);
+    let branch = [[-1., 1.], [-1., 1.]];
+    let candidate = initialize_reduced_problem(
+        &src,
+        0.,
+        &[0.],
+        &[0., 0.],
+        &branch,
+        policy(),
+        EvolutionRoute::BoundedVector5,
+    )
+    .unwrap();
+    let old = initialize_reduced_problem(
+        &src,
+        0.,
+        &[0.],
+        &[0., 0.],
+        &branch,
+        policy(),
+        EvolutionRoute::Reduced5,
+    )
+    .unwrap();
+    let mut values = [0.; 3];
+    let mut alloc = [Counts::default(); 3];
+    let t = 0.0625;
+    let x = [0.0625];
+    let vigilode::Jacobian::Dense(j) = candidate.problem.jacobian_provider() else {
+        panic!("dense")
+    };
+    let (r, a) = measure(|| (candidate.problem.rhs_fn())(t, &x, &mut values[0..1]));
+    r.unwrap();
+    alloc[0] = a;
+    let (r, a) = measure(|| j(t, &x, &mut values[1..2]));
+    r.unwrap();
+    alloc[1] = a;
+    let (r, a) =
+        measure(|| candidate.problem.time_derivative_fn().unwrap()(t, &x, &mut values[2..3]));
+    r.unwrap();
+    alloc[2] = a;
+    let mut refv = [0.; 3];
+    let vigilode::Jacobian::Dense(j) = old.problem.jacobian_provider() else {
+        panic!("dense")
+    };
+    (old.problem.rhs_fn())(t, &x, &mut refv[0..1]).unwrap();
+    j(t, &x, &mut refv[1..2]).unwrap();
+    old.problem.time_derivative_fn().unwrap()(t, &x, &mut refv[2..3]).unwrap();
+    for (v, r) in values.into_iter().zip(refv) {
+        assert!((v - r).abs() <= 1e-12);
+    }
+    println!(
+        "VECTOR_RED_GREEN {}",
+        serde_json::json!({"values":values,"reference":refv,"allocations":alloc})
+    );
+    assert_eq!(
+        alloc.map(|a| a.requests()),
+        [0; 3],
+        "actual vector callback allocations"
+    );
+}
