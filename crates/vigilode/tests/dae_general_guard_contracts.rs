@@ -484,3 +484,56 @@ fn centered_schur_native_event_roots() {
         }
     }
 }
+
+#[test]
+fn dual_schur_native_event_roots() {
+    for f in fixtures() {
+        for solver in [EvolutionRoute::Mass, EvolutionRoute::Reduced5] {
+            for derivative in [
+                GuardDerivativeRoute::SchurDualCentered,
+                GuardDerivativeRoute::SchurDualCenteredGs2,
+                GuardDerivativeRoute::SchurDualGrouped,
+                GuardDerivativeRoute::BoundedPreparedDualCenteredGs2,
+                GuardDerivativeRoute::BoundedPreparedSchur,
+            ] {
+                let r = run(
+                    &f,
+                    solver,
+                    ThresholdRoute::IntervalNewton,
+                    derivative,
+                    GuardValueRoute::Transport,
+                )
+                .unwrap();
+                let b = r.root();
+                if let Some(b) = b {
+                    assert!(b[0] <= f.expected && f.expected <= b[1] && b[1] - b[0] <= 1e-6);
+                    assert!(r.guard_slabs().iter().all(|s| s.velocity[0] > 0.));
+                }
+                let parent = if matches!(
+                    derivative,
+                    GuardDerivativeRoute::BoundedPreparedDualCenteredGs2
+                        | GuardDerivativeRoute::BoundedPreparedSchur
+                ) {
+                    GuardDerivativeRoute::PreparedSchur
+                } else {
+                    GuardDerivativeRoute::Schur
+                };
+                let old = run(
+                    &f,
+                    solver,
+                    ThresholdRoute::IntervalNewton,
+                    parent,
+                    GuardValueRoute::Transport,
+                )
+                .unwrap();
+                if old.root().is_some() {
+                    assert!(b.is_some(), "{} {solver:?} {derivative:?}", f.name);
+                }
+                println!(
+                    "NATIVE_MUTATION {}",
+                    serde_json::json!({"fixture":f.name,"solver":solver,"derivative":derivative,"root":b,"parent_root":old.root(),"reason":r.reason()})
+                );
+            }
+        }
+    }
+}
