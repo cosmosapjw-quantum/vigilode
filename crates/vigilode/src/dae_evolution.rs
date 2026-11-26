@@ -52,6 +52,8 @@ pub enum EvolutionRoute {
     Reduced5BoundedLs,
     BoundedSturm5,
     BoundedSturmNewton5,
+    Reduced5ComplexDictionary,
+    Reduced5ComplexScaled,
 }
 impl EvolutionRoute {
     fn init(self) -> InitRoute {
@@ -89,6 +91,13 @@ impl EvolutionRoute {
         match self {
             Self::Reduced5NormalLs => Some(de::LinearLsEndpointRoute::NormalEquations),
             Self::Reduced5BoundedLs => Some(de::LinearLsEndpointRoute::BoundedNormal),
+            _ => None,
+        }
+    }
+    fn complex(self) -> Option<de::ComplexEndpointRoute> {
+        match self {
+            Self::Reduced5ComplexDictionary => Some(de::ComplexEndpointRoute::DictionaryDirected),
+            Self::Reduced5ComplexScaled => Some(de::ComplexEndpointRoute::ScaledRecurrence),
             _ => None,
         }
     }
@@ -264,6 +273,18 @@ impl Engine {
                 self.policy.init.condition_cap,
                 *route,
             )
+        } else if let Some(route) = self.route.complex() {
+            de::certify_slab_with_complex(
+                &self.src,
+                times,
+                power,
+                &self.branch,
+                self.policy.tube_radius,
+                incoming,
+                self.policy.green,
+                self.policy.init.condition_cap,
+                route,
+            )
         } else if let Some(route) = self.route.linear_ls() {
             de::certify_slab_with_linear_ls(
                 &self.src,
@@ -417,6 +438,8 @@ impl Engine {
                 | EvolutionRoute::Reduced5BoundedLs
                 | EvolutionRoute::BoundedSturm5
                 | EvolutionRoute::BoundedSturmNewton5
+                | EvolutionRoute::Reduced5ComplexDictionary
+                | EvolutionRoute::Reduced5ComplexScaled
         ) && self.src.nz() == 1
             && self.warp.is_none()
     }
@@ -938,7 +961,10 @@ fn evolve_epoch_authority(
         return Err(bad("input/clock/dense scalar tolerance contract"));
     }
     if conservation.is_some()
-        && (route.spectral() || route.picard().is_some() || route.linear_ls().is_some())
+        && (route.spectral()
+            || route.picard().is_some()
+            || route.linear_ls().is_some()
+            || route.complex().is_some())
     {
         return Err(bad("spectral route requires general slab authority"));
     }

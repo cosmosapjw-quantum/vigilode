@@ -1816,6 +1816,240 @@ pub fn certify_slab_with_linear_ls(
     }
     Ok(c)
 }
+/// Verified complex response for source-owned constant damped rotation
+/// with polynomial forcing. Dictionary output is a proposal, never authority.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum ComplexEndpointRoute {
+    DictionaryDirected,
+    Taylor48,
+    ScaledRecurrence,
+}
+#[derive(Clone, Copy, Debug, Serialize)]
+pub struct ComplexEndpointBounds {
+    pub route: ComplexEndpointRoute,
+    pub rate: [f64; 2],
+    pub frequency: [f64; 2],
+    pub candidate_error: f64,
+    pub initial_error: f64,
+    pub proposal_error: f64,
+    pub response: [[f64; 2]; 2],
+    pub series_terms: usize,
+    pub squarings: usize,
+    pub dictionary_taylor: Option<bool>,
+}
+type Ci = [Iv; 2];
+fn ci_add(a: Ci, b: Ci) -> CoreResult<Ci> {
+    Ok([a[0].add(b[0])?, a[1].add(b[1])?])
+}
+fn ci_mul(a: Ci, b: Ci) -> CoreResult<Ci> {
+    Ok([
+        a[0].mul(b[0])?.sub(a[1].mul(b[1])?)?,
+        a[0].mul(b[1])?.add(a[1].mul(b[0])?)?,
+    ])
+}
+fn ci_div(a: Ci, b: Ci) -> CoreResult<Ci> {
+    let square = |v: Iv| -> CoreResult<Iv> {
+        let lo = if v.contains_zero() {
+            0.
+        } else {
+            v.lo.abs().min(v.hi.abs())
+        };
+        let hi = v.mag();
+        Ok(Iv::new(p(lo)?.mul(p(lo)?)?.lo, p(hi)?.mul(p(hi)?)?.hi)?)
+    };
+    let den = square(b[0])?.add(square(b[1])?)?;
+    let v = ci_mul(a, [b[0], -b[1]])?;
+    Ok([v[0].div(den)?, v[1].div(den)?])
+}
+fn ci_norm(a: Ci) -> CoreResult<f64> {
+    add_up(a[0].mag(), a[1].mag())
+}
+fn complex_series(z: Ci, j: usize, kmax: usize, terms: &mut usize) -> CoreResult<Ci> {
+    let mut first = p(1.)?;
+    for k in 1..=j {
+        first = first.div(p(k as f64)?)?;
+    }
+    let mut term = [first, zero()];
+    let mut sum = term;
+    let r = ci_norm(z)?;
+    for k in 1..=kmax {
+        term = ci_mul(term, z)?;
+        term = [
+            term[0].div(p((k + j) as f64)?)?,
+            term[1].div(p((k + j) as f64)?)?,
+        ];
+        sum = ci_add(sum, term)?;
+        *terms += 1;
+    }
+    // Absolute tail: next term majorant then geometric ratio.
+    let next = div_up(mul_up(ci_norm(term)?, r)?, (kmax + j + 1) as f64)?;
+    let ratio = div_up(r, (kmax + j + 2) as f64)?;
+    let gap = sub_down(1., ratio)?;
+    if gap <= 0. {
+        return Err(bad("complex series tail cap"));
+    }
+    let tail = div_up(next, gap)?;
+    let e = Iv::new(-tail, tail)?;
+    Ok([sum[0].add(e)?, sum[1].add(e)?])
+}
+fn verified_complex_phi(
+    z: Ci,
+    scaled: bool,
+    terms: &mut usize,
+    squares: &mut usize,
+) -> CoreResult<[Ci; 4]> {
+    let r = ci_norm(z)?;
+    if r > 64. {
+        return Err(bad("complex response norm cap"));
+    }
+    let mut out = [[zero(); 2]; 4];
+    if !scaled || r <= 1. {
+        if r > 16. {
+            return Err(bad("complex direct series norm cap"));
+        }
+        for (j, v) in out.iter_mut().enumerate() {
+            *v = complex_series(z, j, 48, terms)?;
+        }
+    } else {
+        let mut a = z;
+        while ci_norm(a)? > 0.5 {
+            a = [a[0].scale(0.5)?, a[1].scale(0.5)?];
+            *squares += 1;
+        }
+        let mut e = complex_series(a, 0, 24, terms)?;
+        for _ in 0..*squares {
+            e = ci_mul(e, e)?;
+        }
+        out[0] = e;
+        let mut inv_fact = p(1.)?;
+        for j in 1..4 {
+            if j > 1 {
+                inv_fact = inv_fact.div(p((j - 1) as f64)?)?;
+            }
+            out[j] = ci_div([out[j - 1][0].sub(inv_fact)?, out[j - 1][1]], z)?;
+        }
+    }
+    Ok(out)
+}
+/// Endpoint proof for Y'= (a+i*b)Y+sum f_j u^j in normalized time.
+/// Independent real source extraction proves the physical block identities
+/// before normalization. Full slab proof remains the caller's authority.
+pub fn source_complex_endpoint(
+    src: &DaeSource,
+    times: [f64; 2],
+    y: &[Poly],
+    incoming: f64,
+    route: ComplexEndpointRoute,
+) -> CoreResult<ComplexEndpointBounds> {
+    crate::affine_event_certificate::check_affine_event_arithmetic()?;
+    if src.nx() != 2
+        || y.len() != 2 + src.nz()
+        || y.iter().any(|v| v.is_empty() || v.len() > 5)
+        || !incoming.is_finite()
+        || incoming < 0.
+    {
+        return Err(bad("complex endpoint shape"));
+    }
+    for v in y.iter().flatten() {
+        Iv::new(v.lo, v.hi)?;
+    }
+    let (physical, n) = linear_source_matrices(src, [0., 1.])?;
+    let q = &physical[0];
+    let iszero = |v: Iv| v.lo == 0. && v.hi == 0.;
+    if n != 3
+        || q[0].hi > 0.
+        || !iszero(q[0].sub(q[4])?)
+        || !iszero(q[1].add(q[3])?)
+        || physical[1..]
+            .iter()
+            .any(|a| [0, 1, 3, 4].iter().any(|&k| !iszero(a[k])))
+    {
+        return Err(bad("complex source is not proved constant damped rotation"));
+    }
+    let h = p(times[1])?.sub(p(times[0])?)?;
+    let z = [q[0].mul(h)?, q[3].mul(h)?];
+    let (a, _) = linear_source_matrices(src, times)?;
+    let mut terms = 0;
+    let mut squares = 0;
+    let phi = verified_complex_phi(
+        z,
+        route != ComplexEndpointRoute::Taylor48,
+        &mut terms,
+        &mut squares,
+    )?;
+    let initial = [p(di::mid(y[0][0]))?, p(di::mid(y[1][0]))?];
+    let left_error = y[0][0]
+        .sub(initial[0])?
+        .mag()
+        .max(y[1][0].sub(initial[1])?.mag());
+    let initial_error = mul_up(ci_norm(phi[0])?, add_up(incoming, left_error)?)?;
+    let endpoint = |v: &[Ci; 4]| -> CoreResult<Ci> {
+        let mut e = ci_mul(v[0], initial)?;
+        for k in 0..3 {
+            let f = [a[k][2], a[k][5]];
+            let term = ci_mul(v[k + 1], f)?;
+            let scale = if k == 2 { 2. } else { 1. };
+            e = ci_add(e, [term[0].scale(scale)?, term[1].scale(scale)?])?;
+        }
+        Ok(e)
+    };
+    let rigorous = endpoint(&phi)?;
+    let mut proposed = rigorous;
+    let mut proposal_error = 0_f64;
+    let mut dictionary_taylor = None;
+    if route == ComplexEndpointRoute::DictionaryDirected {
+        let d = Dictionary::get()?.complex_phi(di::mid(z[0]), di::mid(z[1]))?;
+        let mut v = [[zero(); 2]; 4];
+        for (i, w) in v.iter_mut().enumerate() {
+            *w = [p(d.values[i][0])?, p(d.values[i][1])?];
+        }
+        proposed = endpoint(&v)?;
+        for i in 0..2 {
+            proposal_error = proposal_error.max(rigorous[i].sub(proposed[i])?.mag());
+        }
+        dictionary_taylor = Some(d.used_taylor);
+    }
+    let mut error = 0_f64;
+    for i in 0..2 {
+        error = error.max(proposed[i].sub(eval(&y[i], p(1.)?)?)?.mag());
+    }
+    Ok(ComplexEndpointBounds {
+        route,
+        rate: z[0].as_pair(),
+        frequency: z[1].as_pair(),
+        candidate_error: add_up(error, add_up(initial_error, proposal_error)?)?,
+        initial_error,
+        proposal_error,
+        response: proposed.map(|v| v.as_pair()),
+        series_terms: terms,
+        squarings: squares,
+        dictionary_taylor,
+    })
+}
+#[allow(clippy::too_many_arguments)]
+pub fn certify_slab_with_complex(
+    src: &DaeSource,
+    times: [f64; 2],
+    y: &[Poly],
+    branch: &[[f64; 2]],
+    tube: f64,
+    incoming: Option<f64>,
+    green: bool,
+    condition_cap: f64,
+    route: ComplexEndpointRoute,
+) -> CoreResult<SlabCertificate> {
+    let mut c = certify_slab(src, times, y, branch, tube, incoming, green, condition_cap)?;
+    if c.global_qualified {
+        let r = source_complex_endpoint(src, times, y, c.incoming, route)?;
+        c.outgoing = Some(
+            c.outgoing
+                .ok_or_else(|| bad("complex original outgoing"))?
+                .min(r.candidate_error),
+        );
+        c.complex_endpoint = Some(r);
+    }
+    Ok(c)
+}
 #[derive(Clone, Debug, Serialize)]
 pub struct SlabCertificate {
     pub times: [f64; 2],
@@ -1835,6 +2069,8 @@ pub struct SlabCertificate {
     pub picard_endpoint: Option<PicardEndpointBounds>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub linear_ls_endpoint: Option<LinearLsEndpointBounds>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub complex_endpoint: Option<ComplexEndpointBounds>,
     pub algebraic_defect: f64,
     pub differential_defect: f64,
     pub normalized_reduced_defect: f64,
@@ -2080,6 +2316,7 @@ pub fn certify_slab_with_residual(
         residual_variant,
         picard_endpoint: None,
         linear_ls_endpoint: None,
+        complex_endpoint: None,
         algebraic_defect: az,
         differential_defect: dx,
         normalized_reduced_defect: rnorm,
