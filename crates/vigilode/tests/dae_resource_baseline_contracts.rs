@@ -1002,3 +1002,77 @@ fn refusals() {
         println!("REFUSAL {}", row);
     }
 }
+
+#[test]
+#[ignore = "bounded native guard builder before/after portfolio"]
+fn guard_workspace_portfolio() {
+    warm();
+    for solver in [
+        EvolutionRoute::Mass,
+        EvolutionRoute::Reduced5,
+        EvolutionRoute::Prepared5,
+        EvolutionRoute::Scalar5,
+        EvolutionRoute::Affine5,
+    ] {
+        for cert in [ConservationRoute::Max, ConservationRoute::Integral4] {
+            let modes = graph("alternating", solver, cert);
+            let run = evolve_robertson_phase_atlas(
+                &modes,
+                0,
+                initial(2f64.powi(-26)),
+                [0., 0.002],
+                &opts(),
+                policy(),
+                pm(MultiGuardRoute::Correlated),
+                atlas_budget(),
+                PhaseReuseRoute::Reuse,
+            )
+            .unwrap();
+            assert_eq!(run.stop(), PhaseAtlasStop::Horizon);
+            let phase = &run.phases()[0];
+            let model = RobertsonModel::new(modes[phase.mode].rate).unwrap();
+            let s = &phase.original_slab_diagnostics()[0];
+            let c = s.certificate.as_ref().unwrap();
+            assert!(c.global_qualified);
+            let power: Vec<Vec<Iv>> = s
+                .power
+                .iter()
+                .map(|row| row.iter().map(|v| Iv::new(v[0], v[1]).unwrap()).collect())
+                .collect();
+            let guard = &modes[phase.mode].guards[0];
+            for derivative in [
+                GuardDerivativeRoute::Tangent,
+                GuardDerivativeRoute::Schur,
+                GuardDerivativeRoute::PreparedSchur,
+                GuardDerivativeRoute::ConservedSchur,
+            ] {
+                for value in [GuardValueRoute::Box, GuardValueRoute::Transport] {
+                    let mut audit = de::GuardKernelAudit::default();
+                    let (r, a) = measure(|| {
+                        de::GuardProof::new_recorded(
+                            model.source(),
+                            guard,
+                            &power,
+                            c,
+                            derivative,
+                            value,
+                            &mut audit,
+                        )
+                    });
+                    let result = match r {
+                        Ok(g) => {
+                            let t = c.times[0] + (c.times[1] - c.times[0]) * 0.5;
+                            let v = g.value_at(t, c.whole_x_error.unwrap()).unwrap();
+                            serde_json::json!({"evidence":g.evidence,"mid_value":v.as_pair()})
+                        }
+                        Err(e) => serde_json::json!({"error":e.to_string()}),
+                    };
+                    println!(
+                        "GUARD {}",
+                        serde_json::json!({"solver":solver,"cert":cert,"derivative":derivative,"value":value,"allocation":a,"audit":audit,"result":result})
+                    );
+                }
+            }
+        }
+    }
+}
