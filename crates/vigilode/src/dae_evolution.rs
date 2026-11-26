@@ -4853,62 +4853,7 @@ impl PhaseCycleRun {
             .epochs
             .get(epoch)
             .ok_or_else(|| bad("unknown relative phase epoch"))?;
-        if !t.is_finite() || t < e.clock[1] || t > e.absolute_safe {
-            return Err(bad("outside common absolute phase prefix"));
-        }
-        let a = &self.phases[e.phase_index];
-        if !a.run.initial_negative {
-            return Err(bad("unqualified initial phase"));
-        }
-        let span = Iv::point(t)?.sub(Iv::new(e.clock[0], e.clock[1])?)?;
-        if span.lo < 0. || span.hi > e.relative_safe {
-            return Err(bad("relative phase outside certified prefix"));
-        }
-        let mut covered = span.lo;
-        let mut cells = Vec::new();
-        let mut hull = [[f64::INFINITY, f64::NEG_INFINITY]; 3];
-        for s in a.original_slab_diagnostics() {
-            let lo = span.lo.max(s.times[0]);
-            let hi = span.hi.min(s.times[1]);
-            if lo > hi {
-                continue;
-            }
-            if lo > covered {
-                return Err(bad("relative phase coverage gap"));
-            }
-            let c = s
-                .certificate
-                .as_ref()
-                .filter(|c| c.global_qualified && c.conservation.is_some())
-                .ok_or_else(|| bad("uncertified phase slab"))?;
-            let y = s
-                .power
-                .iter()
-                .map(|row| {
-                    row.iter()
-                        .map(|v| Iv::new(v[0], v[1]))
-                        .collect::<CoreResult<Vec<_>>>()
-                })
-                .collect::<CoreResult<Vec<_>>>()?;
-            let v = de::phase_slab_enclosure(&y, c, [lo, hi], route)?;
-            for (h, x) in hull.iter_mut().zip(v.enclosure) {
-                h[0] = h[0].min(x[0]);
-                h[1] = h[1].max(x[1]);
-            }
-            cells.push(v);
-            covered = covered.max(hi);
-        }
-        if cells.is_empty() || covered != span.hi {
-            return Err(bad("incomplete relative phase coverage"));
-        }
-        Ok(PhaseQuery {
-            t,
-            epoch,
-            phase: span.as_pair(),
-            route,
-            enclosure: hull,
-            cells,
-        })
+        phase_query_run(&self.phases[e.phase_index].run, e, epoch, t, route)
     }
 }
 /// Autonomous source, state-only guards, identical constant stochastic
@@ -5149,5 +5094,476 @@ pub fn evolve_robertson_phase_cycle(
         out.work.committed += 1;
         clock = absolute;
         family = reset;
+    }
+}
+
+fn phase_query_run(
+    a: &MultiGuardRun,
+    e: &PhaseEpoch,
+    epoch: usize,
+    t: f64,
+    route: PhaseQueryRoute,
+) -> CoreResult<PhaseQuery> {
+    if !t.is_finite() || t < e.clock[1] || t > e.absolute_safe {
+        return Err(bad("outside common absolute phase prefix"));
+    }
+    if !a.initial_negative {
+        return Err(bad("unqualified initial phase"));
+    }
+    let span = Iv::point(t)?.sub(Iv::new(e.clock[0], e.clock[1])?)?;
+    if span.lo < 0. || span.hi > e.relative_safe {
+        return Err(bad("relative phase outside certified prefix"));
+    }
+    let mut covered = span.lo;
+    let mut cells = Vec::new();
+    let mut hull = [[f64::INFINITY, f64::NEG_INFINITY]; 3];
+    for s in a.runs.first().map_or(&[][..], |r| r.trial.slabs()) {
+        let lo = span.lo.max(s.times[0]);
+        let hi = span.hi.min(s.times[1]);
+        if lo > hi {
+            continue;
+        }
+        if lo > covered {
+            return Err(bad("relative phase coverage gap"));
+        }
+        let c = s
+            .certificate
+            .as_ref()
+            .filter(|c| c.global_qualified && c.conservation.is_some())
+            .ok_or_else(|| bad("uncertified phase slab"))?;
+        let y = s
+            .power
+            .iter()
+            .map(|row| {
+                row.iter()
+                    .map(|v| Iv::new(v[0], v[1]))
+                    .collect::<CoreResult<Vec<_>>>()
+            })
+            .collect::<CoreResult<Vec<_>>>()?;
+        let v = de::phase_slab_enclosure(&y, c, [lo, hi], route)?;
+        for (h, x) in hull.iter_mut().zip(v.enclosure) {
+            h[0] = h[0].min(x[0]);
+            h[1] = h[1].max(x[1]);
+        }
+        cells.push(v);
+        covered = covered.max(hi);
+    }
+    if cells.is_empty() || covered != span.hi {
+        return Err(bad("incomplete relative phase coverage"));
+    }
+    Ok(PhaseQuery {
+        t,
+        epoch,
+        phase: span.as_pair(),
+        route,
+        enclosure: hull,
+        cells,
+    })
+}
+
+/// Per-call phase atlas. Source/guard/policy identity is bound by the
+/// immutable borrowed mode table and invocation, never by a global cache.
+#[derive(Clone, Copy, Debug, Serialize)]
+pub struct PhaseAtlasBudget {
+    pub limits: PhaseCycleBudget,
+    pub reset_checks: usize,
+    pub cache_entries: usize,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum PhaseAtlasStop {
+    Horizon,
+    OrderUnresolved,
+    NativeBudget,
+    SlabBudget,
+    TransitionBudget,
+    DwellUnproved,
+    AbsoluteWidth,
+    HorizonAmbiguous,
+    NativeRefused,
+    ResetBudget,
+    ResetRefused,
+}
+#[derive(Clone, Debug, Default, Serialize)]
+pub struct PhaseAtlasWork {
+    pub phase: PhaseCycleWork,
+    pub cache_lookups: usize,
+    pub cache_inserts: usize,
+    pub cache_full_misses: usize,
+}
+pub struct AtlasRelativePhase {
+    pub mode: usize,
+    pub initial: RobertsonInitial,
+    run: MultiGuardRun,
+}
+impl AtlasRelativePhase {
+    pub fn ordered(&self) -> &MultiGuardRun {
+        &self.run
+    }
+    pub fn original_slab_diagnostics(&self) -> &[SlabRecord] {
+        self.run.runs.first().map_or(&[], |r| r.trial.slabs())
+    }
+}
+#[derive(Clone, Debug, Serialize)]
+pub struct PhaseAtlasEpoch {
+    pub mode: usize,
+    pub phase: PhaseEpoch,
+}
+#[derive(Clone, Debug, Serialize)]
+pub struct PhaseAtlasEvent {
+    pub from: usize,
+    pub target: usize,
+    pub reset_center: [f64; 2],
+    pub event: PhaseEvent,
+    pub reset_guards: Vec<SimplexGapEvidence>,
+}
+pub struct PhaseAtlasRun {
+    phases: Vec<AtlasRelativePhase>,
+    epochs: Vec<PhaseAtlasEpoch>,
+    events: Vec<PhaseAtlasEvent>,
+    final_mode: usize,
+    stop: PhaseAtlasStop,
+    reason: Option<String>,
+    work: PhaseAtlasWork,
+}
+impl PhaseAtlasRun {
+    pub fn phases(&self) -> &[AtlasRelativePhase] {
+        &self.phases
+    }
+    pub fn epochs(&self) -> &[PhaseAtlasEpoch] {
+        &self.epochs
+    }
+    pub fn events(&self) -> &[PhaseAtlasEvent] {
+        &self.events
+    }
+    pub fn final_mode(&self) -> usize {
+        self.final_mode
+    }
+    pub fn stop(&self) -> PhaseAtlasStop {
+        self.stop
+    }
+    pub fn reason(&self) -> Option<&str> {
+        self.reason.as_deref()
+    }
+    pub fn work(&self) -> &PhaseAtlasWork {
+        &self.work
+    }
+    pub fn query(&self, epoch: usize, t: f64, route: PhaseQueryRoute) -> CoreResult<PhaseQuery> {
+        let e = self
+            .epochs
+            .get(epoch)
+            .ok_or_else(|| bad("unknown atlas epoch"))?;
+        let p = &self.phases[e.phase.phase_index];
+        if p.mode != e.mode {
+            return Err(bad("atlas phase identity mismatch"));
+        }
+        phase_query_run(&p.run, &e.phase, epoch, t, route)
+    }
+}
+/// Finite autonomous Robertson graph, every edge a constant exact
+/// stochastic reset. Unsupported graphs are explicitly rejected;
+/// callers may separately select the existing conserved chain.
+#[allow(clippy::too_many_arguments)]
+pub fn evolve_robertson_phase_atlas(
+    modes: &[ConservedMode],
+    initial_mode: usize,
+    initial: RobertsonInitial,
+    times: [f64; 2],
+    opts: &Options,
+    policy: EvolutionPolicy,
+    mp: MultiGuardPolicy,
+    budget: PhaseAtlasBudget,
+    reuse: PhaseReuseRoute,
+) -> CoreResult<PhaseAtlasRun> {
+    robertson_policy(policy)?;
+    let b = budget.limits;
+    if modes.is_empty()
+        || modes.len() > 64
+        || initial_mode >= modes.len()
+        || mp.method == MultiGuardRoute::Independent
+        || b.native_attempts == 0
+        || b.scan_slabs == 0
+        || b.transitions > 64
+        || budget.cache_entries > 65
+        || !b.min_dwell.is_finite()
+        || b.min_dwell <= 0.
+        || !b.absolute_width.is_finite()
+        || b.absolute_width <= 0.
+        || !times[0].is_finite()
+        || !times[1].is_finite()
+        || times[1] <= times[0]
+    {
+        return Err(bad("phase atlas input/budget"));
+    }
+    let models = modes
+        .iter()
+        .map(|m| RobertsonModel::new(m.rate))
+        .collect::<CoreResult<Vec<_>>>()?;
+    let mut centers = Vec::with_capacity(modes.len());
+    for m in modes {
+        if m.guards.len() != m.transitions.len() || !(2..=8).contains(&m.guards.len()) {
+            return Err(bad("phase atlas guard/edge shape"));
+        }
+        for g in &m.guards {
+            g.validate(3)?;
+            if g.terms()
+                .iter()
+                .flat_map(|t| &t.factors)
+                .any(|f| f.time != 0.)
+            {
+                return Err(bad("phase atlas requires state-only guards"));
+            }
+        }
+        let mut c = Vec::with_capacity(m.transitions.len());
+        for edge in &m.transitions {
+            let matrix = edge.reset.matrix();
+            if edge.target >= modes.len()
+                || edge.reset.operator_l1() != 0.
+                || matrix.iter().any(|r| r[0] != r[1] || r[0] != r[2])
+            {
+                return Err(bad("phase atlas requires rank-zero stochastic edges"));
+            }
+            c.push(RobertsonInitial::exact([matrix[0][0], matrix[1][0]])?);
+        }
+        centers.push(c);
+    }
+    let span = Iv::point(times[1])?.sub(Iv::point(times[0])?)?.hi;
+    let total = b.native_attempts.min(opts.max_steps);
+    let mut out = PhaseAtlasRun {
+        phases: Vec::with_capacity(b.transitions + 1),
+        epochs: Vec::with_capacity(b.transitions + 1),
+        events: Vec::with_capacity(b.transitions + 1),
+        final_mode: initial_mode,
+        stop: PhaseAtlasStop::Horizon,
+        reason: None,
+        work: PhaseAtlasWork::default(),
+    };
+    // No cache escapes this invocation. Index identifies the complete
+    // immutable mode, bitwise center identifies its exact reset state.
+    // Only successful exact-relative first-event receipts are inserted.
+    let mut cache: Vec<(usize, [u64; 2], usize)> = Vec::with_capacity(budget.cache_entries);
+    let mut mode = initial_mode;
+    let mut family = initial;
+    let mut clock = Iv::point(times[0])?;
+    macro_rules! stop {
+        ($k:expr,$why:expr) => {{
+            out.stop = $k;
+            out.reason = Some($why.to_string());
+            return Ok(out);
+        }};
+    }
+    loop {
+        let m = &modes[mode];
+        let key = family.center.map(f64::to_bits);
+        let hit = if reuse == PhaseReuseRoute::Reuse && family.l1_radius == 0. {
+            out.work.cache_lookups += 1;
+            cache
+                .iter()
+                .find(|v| v.0 == mode && v.1 == key)
+                .map(|v| v.2)
+        } else {
+            None
+        };
+        let idx = if let Some(i) = hit {
+            out.work.phase.cache_hits += 1;
+            i
+        } else {
+            let remaining = total.saturating_sub(out.work.phase.charged_native_attempts);
+            if remaining == 0 {
+                stop!(PhaseAtlasStop::NativeBudget, "phase atlas native budget");
+            }
+            let slabs = b
+                .scan_slabs
+                .saturating_sub(out.work.phase.charged_scan_slabs);
+            if slabs == 0 {
+                stop!(PhaseAtlasStop::SlabBudget, "phase atlas slab budget");
+            }
+            let mut o = opts.clone();
+            o.max_steps = remaining;
+            let mut q = mp;
+            q.max_slabs = q.max_slabs.min(slabs);
+            let r = match evolve_robertson_to_first_guard(
+                m.rate,
+                family,
+                [0., span],
+                &o,
+                policy,
+                m.route,
+                m.certificate,
+                &m.guards,
+                q,
+            ) {
+                Ok(v) => v,
+                Err(e) => {
+                    out.work.phase.charged_native_attempts += remaining;
+                    out.work.phase.charged_scan_slabs += q.max_slabs;
+                    stop!(PhaseAtlasStop::NativeRefused, e);
+                }
+            };
+            let w = &r.work;
+            let a = &mut out.work.phase;
+            a.native_runs += w.native_runs;
+            a.native_attempts += w.attempts;
+            a.charged_native_attempts += w.attempts;
+            a.scan_slabs += w.physical_certificates;
+            a.charged_scan_slabs += r
+                .runs
+                .first()
+                .map_or(w.physical_certificates, |v| v.stats().accepted_steps);
+            a.driver_rhs += w.driver_rhs;
+            a.projection_rhs += w.shared_projection.rhs_count
+                + w.replay_projection_rhs
+                + w.guard_prepared_rhs
+                + w.difference_prepared_rhs;
+            a.guard_evals += w.guard_evals;
+            a.dictionary_uses += w.dictionary_uses;
+            a.comparison_attempts += w.comparison_attempts;
+            if r.runs.first().is_none_or(|v| {
+                v.trial.initial.x != family.center
+                    || v.trial
+                        .driver
+                        .y
+                        .first()
+                        .is_none_or(|x| x[..2] != family.center)
+            }) {
+                stop!(
+                    PhaseAtlasStop::NativeRefused,
+                    "atlas differential center changed"
+                );
+            }
+            let i = out.phases.len();
+            if reuse == PhaseReuseRoute::Reuse
+                && family.l1_radius == 0.
+                && r.event_authority().is_some()
+            {
+                if cache.len() < budget.cache_entries {
+                    cache.push((mode, key, i));
+                    out.work.cache_inserts += 1;
+                } else {
+                    out.work.cache_full_misses += 1;
+                }
+            }
+            out.phases.push(AtlasRelativePhase {
+                mode,
+                initial: family,
+                run: r,
+            });
+            i
+        };
+        let r = &out.phases[idx].run;
+        let safe = r.committed_until();
+        let abs_safe = Iv::point(clock.lo)?.add(Iv::point(safe)?)?.lo.min(times[1]);
+        out.epochs.push(PhaseAtlasEpoch {
+            mode,
+            phase: PhaseEpoch {
+                phase_index: idx,
+                clock: clock.as_pair(),
+                relative_safe: safe,
+                absolute_safe: abs_safe,
+                cached: hit.is_some(),
+            },
+        });
+        let needed = Iv::point(times[1])?.sub(clock)?.hi;
+        let Some(authority) = r.event_authority() else {
+            if r.initial_negative && (safe > needed || (safe == needed && r.reason().is_none())) {
+                return Ok(out);
+            }
+            let k = if out.work.phase.charged_native_attempts >= total {
+                PhaseAtlasStop::NativeBudget
+            } else if out.work.phase.charged_scan_slabs >= b.scan_slabs {
+                PhaseAtlasStop::SlabBudget
+            } else {
+                PhaseAtlasStop::OrderUnresolved
+            };
+            stop!(k, r.reason().unwrap_or("atlas relative order unresolved"));
+        };
+        let j = r.winner().expect("winner");
+        let target = m.transitions[j].target;
+        let next = centers[mode][j];
+        let relative = authority.root().expect("relative root");
+        let absolute = clock.add(Iv::new(relative[0], relative[1])?)?;
+        if absolute.lo > times[1] && safe >= needed {
+            return Ok(out);
+        }
+        let width = Iv::point(absolute.hi)?.sub(Iv::point(absolute.lo)?)?.hi;
+        let dwell = (out.work.phase.committed > 0).then_some(relative[0]);
+        let mut ev = PhaseAtlasEvent {
+            from: mode,
+            target,
+            reset_center: next.center,
+            event: PhaseEvent {
+                epoch: out.epochs.len() - 1,
+                phase_index: idx,
+                guard: j,
+                relative,
+                absolute: absolute.as_pair(),
+                width_upper: width,
+                dwell_lower: dwell,
+                committed: false,
+                reason: None,
+            },
+            reset_guards: Vec::with_capacity(modes[target].guards.len()),
+        };
+        let refusal = if absolute.lo > times[1] {
+            Some(PhaseAtlasStop::OrderUnresolved)
+        } else if absolute.hi >= times[1] {
+            Some(PhaseAtlasStop::HorizonAmbiguous)
+        } else if width > b.absolute_width {
+            Some(PhaseAtlasStop::AbsoluteWidth)
+        } else if dwell.is_some_and(|v| v < b.min_dwell) {
+            Some(PhaseAtlasStop::DwellUnproved)
+        } else if out.work.phase.committed >= b.transitions {
+            Some(PhaseAtlasStop::TransitionBudget)
+        } else {
+            None
+        };
+        if let Some(k) = refusal {
+            ev.event.reason = Some(format!("{k:?}"));
+            out.events.push(ev);
+            stop!(k, format!("{k:?}"));
+        }
+        // Even for a cache hit, the actual selected edge is checked
+        // against the target mode's guards at the exact reset point.
+        let admission = (|| -> Result<(), (PhaseAtlasStop, String)> {
+            for g in &modes[target].guards {
+                if out.work.phase.reset_checks >= budget.reset_checks {
+                    return Err((
+                        PhaseAtlasStop::ResetBudget,
+                        "atlas reset guard budget".into(),
+                    ));
+                }
+                out.work.phase.reset_checks += 1;
+                let e = models[target]
+                    .simplex_gap_enclosure(
+                        g,
+                        [0., 0.],
+                        [[0.; 2]; 2],
+                        next.center,
+                        Some(0.),
+                        SimplexGapRoute::AffineDual,
+                    )
+                    .map_err(|e| (PhaseAtlasStop::ResetRefused, e.to_string()))?;
+                let good = e.enclosure[1] < 0.;
+                ev.reset_guards.push(e);
+                if !good {
+                    return Err((
+                        PhaseAtlasStop::ResetRefused,
+                        "target guard not strictly negative at exact reset".into(),
+                    ));
+                }
+            }
+            Ok(())
+        })();
+        if let Err((k, e)) = admission {
+            ev.event.reason = Some(e.clone());
+            out.events.push(ev);
+            stop!(k, e);
+        }
+        ev.event.committed = true;
+        out.events.push(ev);
+        out.work.phase.committed += 1;
+        clock = absolute;
+        family = next;
+        mode = target;
+        out.final_mode = mode;
     }
 }
