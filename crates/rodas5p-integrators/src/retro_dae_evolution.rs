@@ -1441,7 +1441,10 @@ pub fn certify_vector_branch(
         || branch.len() != nz
         || !matches!(
             route,
-            InitRoute::Reuse | InitRoute::PreparedBatch | InitRoute::ScalarRoot
+            InitRoute::Reuse
+                | InitRoute::PreparedBatch
+                | InitRoute::ScalarRoot
+                | InitRoute::AffineExact
         )
     {
         return Err(bad("vector uniform branch contract"));

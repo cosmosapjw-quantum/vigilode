@@ -3,7 +3,7 @@
 //! infer the index of an arbitrary singular mass matrix or prove evolution.
 use crate::{
     ParallelExecution,
-    retro_event_poly::{DeclaredPolynomial, RepresentedPolynomial, RootRoute},
+    retro_event_poly::{DeclaredPolynomial, RepresentedPolynomial, RootInterval, RootRoute},
     retro_foundation::{BatchMode, PreparedRhs},
     retro_portfolio::{Portfolio, Route, Selection},
 };
@@ -451,6 +451,8 @@ pub enum InitRoute {
     PreparedBatch,
     PreparedRayon,
     ScalarRoot,
+    /// Explicit opt-in: exact frozen degree-one root, no automatic fallback.
+    AffineExact,
 }
 #[derive(Clone, Copy, Debug, Serialize)]
 pub struct InitPolicy {
@@ -500,6 +502,8 @@ pub struct InitReport {
     pub branch: Vec<[f64; 2]>,
     pub root_box: Vec<[f64; 2]>,
     pub branch_authority: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub affine_root: Option<RootInterval>,
     pub original_residual_upper: f64,
     pub residual_upper: f64,
     pub state_error_upper: f64,
@@ -536,7 +540,7 @@ fn batch(
     w.linear_batches += 1;
     w.rhs_count += rhs.len();
     match route {
-        InitRoute::Direct | InitRoute::ScalarRoot => {
+        InitRoute::Direct | InitRoute::ScalarRoot | InitRoute::AffineExact => {
             rhs.iter().map(|b| direct_solve(a, b)).collect()
         }
         InitRoute::Reuse => {
@@ -587,21 +591,80 @@ pub(crate) fn preconditioner(
         .collect::<Vec<_>>();
     DenseMatrix::from_vec_rows(batch(a, &rhs, route, exec, w)?).map(|r| r.transpose())
 }
+// Only scratch, never an authoritative source or matrix owner. All active
+// entries are written before use, including after failed initialization.
+// nx+nz <=32, hence (nx+2)*nz <= 289 (max at nx=15,nz=17).
+const PROJ_DIM: usize = 32;
+const PROJ_COLUMNS: usize = 289;
+pub struct ProjectionWorkspace {
+    a: [Iv; PROJ_DIM],
+    b: [Iv; PROJ_DIM],
+    c: [Iv; PROJ_DIM],
+    d: [Iv; PROJ_DIM],
+    rhs: [Iv; PROJ_COLUMNS],
+    enclosures: [Iv; PROJ_COLUMNS],
+}
+impl ProjectionWorkspace {
+    pub const fn new() -> Self {
+        const ZERO: Iv = Iv { lo: 0., hi: 0. };
+        Self {
+            a: [ZERO; PROJ_DIM],
+            b: [ZERO; PROJ_DIM],
+            c: [ZERO; PROJ_DIM],
+            d: [ZERO; PROJ_DIM],
+            rhs: [ZERO; PROJ_COLUMNS],
+            enclosures: [ZERO; PROJ_COLUMNS],
+        }
+    }
+}
+impl Default for ProjectionWorkspace {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+fn matvec_into(a: &DenseMatrix, v: &[Iv], out: &mut [Iv]) -> CoreResult<()> {
+    if a.ncols() != v.len() || a.nrows() != out.len() {
+        return Err(bad("projection matvec shape"));
+    }
+    for (i, x) in out.iter_mut().enumerate() {
+        *x = a
+            .row(i)
+            .iter()
+            .zip(v)
+            .try_fold(z(), |s, (&c, &v)| s.add(v.scale(c)?))?;
+    }
+    Ok(())
+}
+fn iv_matvec_into(a: &[Vec<Iv>], v: &[Iv], out: &mut [Iv]) -> CoreResult<()> {
+    if a.len() != out.len() || a.iter().any(|r| r.len() != v.len()) {
+        return Err(bad("projection interval matvec shape"));
+    }
+    for (r, x) in a.iter().zip(out) {
+        *x = r
+            .iter()
+            .zip(v)
+            .try_fold(z(), |s, (&a, &b)| s.add(a.mul(b)?))?;
+    }
+    Ok(())
+}
 fn verified_root_box(
     c: &DenseMatrix,
     g: &[Iv],
     j: &[Vec<Iv>],
     center: &[f64],
     branch: &[Iv],
+    scratch: &mut ProjectionWorkspace,
 ) -> CoreResult<(Vec<Iv>, f64)> {
+    let n = center.len();
     let e = defect(c, j)?;
     let q = rows_norm(&e)?;
     let gap = sub_down(1., q)?;
     if gap <= 0. {
         return Err(bad("whole branch contraction not proved"));
     }
-    let cg = matvec(c, g)?;
-    let eta = norm(&cg);
+    let cg = &mut scratch.a[..n];
+    matvec_into(c, g, cg)?;
+    let eta = norm(cg);
     // For rounded box endpoints use explicit componentwise self-map
     // inclusion, not a floating-point assertion of eta/(1-q).
     let r = mul_up(2., div_up(eta, gap)?)?;
@@ -609,19 +672,17 @@ fn verified_root_box(
     if !subset(&b, branch) {
         return Err(bad("existence box leaves declared branch"));
     }
-    let delta = b
-        .iter()
-        .zip(center)
-        .map(|(&v, &c)| v.sub(p(c)?))
-        .collect::<CoreResult<Vec<_>>>()?;
-    let ed = iv_matvec(&e, &delta)?;
-    let mapped = center
-        .iter()
-        .zip(cg)
-        .zip(ed)
-        .map(|((&v, g), d)| p(v)?.sub(g)?.add(d))
-        .collect::<CoreResult<Vec<_>>>()?;
-    if !subset(&mapped, &b) {
+    let delta = &mut scratch.b[..n];
+    for (d, (&v, &c)) in delta.iter_mut().zip(b.iter().zip(center)) {
+        *d = v.sub(p(c)?)?;
+    }
+    let ed = &mut scratch.c[..n];
+    iv_matvec_into(&e, delta, ed)?;
+    let mapped = &mut scratch.d[..n];
+    for (i, x) in mapped.iter_mut().enumerate() {
+        *x = p(center[i])?.sub(cg[i])?.add(ed[i])?;
+    }
+    if !subset(mapped, &b) {
         return Err(bad("local self-map inclusion not proved"));
     }
     Ok((b, q))
@@ -637,6 +698,29 @@ impl DaeSource {
         branch: &[[f64; 2]],
         policy: InitPolicy,
         route: InitRoute,
+    ) -> CoreResult<InitReport> {
+        self.initialize_with_workspace(
+            t,
+            x,
+            z0,
+            branch,
+            policy,
+            route,
+            &mut ProjectionWorkspace::new(),
+        )
+    }
+    /// Same original source proof and owned result; caller supplies reusable
+    /// temporary interval columns. No stale factor/source authority is retained.
+    #[allow(clippy::too_many_arguments)]
+    pub fn initialize_with_workspace(
+        &self,
+        t: f64,
+        x: &[f64],
+        z0: &[f64],
+        branch: &[[f64; 2]],
+        policy: InitPolicy,
+        route: InitRoute,
+        scratch: &mut ProjectionWorkspace,
     ) -> CoreResult<InitReport> {
         crate::affine_event_certificate::check_affine_event_arithmetic()?;
         let nx = self.nx();
@@ -668,7 +752,7 @@ impl DaeSource {
         {
             return Err(bad("invalid branch or initial guess outside"));
         }
-        if route == InitRoute::ScalarRoot && nz != 1 {
+        if matches!(route, InitRoute::ScalarRoot | InitRoute::AffineExact) && nz != 1 {
             return Err(bad("scalar root route requires nz=1"));
         }
         let exec = if route == InitRoute::PreparedRayon {
@@ -685,7 +769,8 @@ impl DaeSource {
         }
         let mut center = z0.to_vec();
         let mut scalar_box = None;
-        if route == InitRoute::ScalarRoot {
+        let mut affine_root = None;
+        if matches!(route, InitRoute::ScalarRoot | InitRoute::AffineExact) {
             for v in [b[0].lo, b[0].hi] {
                 let (_, g) = self.eval(t, x, &[p(v)?])?;
                 w.evaluations += 1;
@@ -694,14 +779,24 @@ impl DaeSource {
                 }
             }
             let poly = RepresentedPolynomial::frozen_scalar(&self.g[0], t, x, branch[0])?;
-            let roots = poly.isolate(RootRoute::DictionaryCompanion, 2f64.powi(-48))?;
-            w.root_calls += 1;
-            w.dictionary_uses += roots.work.dictionary_uses;
-            w.conditioned_horner_uses += roots.work.conditioned_horner_uses;
-            if roots.roots.len() != 1 || roots.roots[0].multiplicity != 1 {
-                return Err(bad("scalar branch not exactly one simple root"));
-            }
-            let [l, h] = roots.roots[0].time;
+            let [l, h] = if route == InitRoute::AffineExact {
+                let r = poly
+                    .isolate_affine_exact(2f64.powi(-48))?
+                    .ok_or_else(|| bad("affine branch not exactly one interior root"))?;
+                w.root_calls += 1;
+                let time = r.time;
+                affine_root = Some(r);
+                time
+            } else {
+                let roots = poly.isolate(RootRoute::DictionaryCompanion, 2f64.powi(-48))?;
+                w.root_calls += 1;
+                w.dictionary_uses += roots.work.dictionary_uses;
+                w.conditioned_horner_uses += roots.work.conditioned_horner_uses;
+                if roots.roots.len() != 1 || roots.roots[0].multiplicity != 1 {
+                    return Err(bad("scalar branch not exactly one simple root"));
+                }
+                roots.roots[0].time
+            };
             let q = Iv::new(l, h)?;
             if !subset(&[q], &b) {
                 return Err(bad("scalar root box leaves branch"));
@@ -774,11 +869,16 @@ impl DaeSource {
         let a = center_matrix(&self.jac_z(&gc))?;
         let c = preconditioner(&a, route, &exec, &mut w)?;
         let (root, branch_defect_upper, authority) = if let Some(r) = scalar_box {
-            (r, None, "exact scalar root count".to_string())
+            let label = if affine_root.is_some() {
+                "exact affine scalar root"
+            } else {
+                "exact scalar root count"
+            };
+            (r, None, label.to_string())
         } else {
             let (_, g) = self.eval(t, x, &b)?;
             w.evaluations += 1;
-            let (r, q) = verified_root_box(&c, &gc.v, &self.jac_z(&g), &center, &b)?;
+            let (r, q) = verified_root_box(&c, &gc.v, &self.jac_z(&g), &center, &b, scratch)?;
             (
                 r,
                 Some(q),
@@ -799,30 +899,34 @@ impl DaeSource {
         if gap <= 0. {
             return Err(bad("rank/regularity not proved at root"));
         }
-        let ci = (0..nz)
-            .map(|i| points(c.row(i)))
-            .collect::<CoreResult<Vec<_>>>()?;
-        let inverse_norm_upper = div_up(rows_norm(&ci)?, gap)?;
+        let mut cnorm = 0_f64;
+        for i in 0..nz {
+            let v = c
+                .row(i)
+                .iter()
+                .try_fold(0_f64, |s, &v| add_up(s, p(v)?.mag()))?;
+            cnorm = cnorm.max(v);
+        }
+        let inverse_norm_upper = div_up(cnorm, gap)?;
         let condition_upper = mul_up(inverse_norm_upper, rows_norm(&j)?)?;
         if condition_upper > policy.condition_cap {
             return Err(bad("certified condition exceeds cap"));
         }
         // actual root RHS columns: z_t, each z_x column, and z_dot.
-        let mut rhs = Vec::with_capacity(nx + 2);
-        rhs.push(gr.j.iter().map(|r| -r[0]).collect::<Vec<_>>());
-        for i in 0..nx {
-            rhs.push(gr.j.iter().map(|r| -r[i + 1]).collect());
+        let ncols = nx + 2;
+        let len = ncols * nz;
+        let rhs = &mut scratch.rhs[..len];
+        for col in 0..=nx {
+            for (i, r) in gr.j.iter().enumerate() {
+                rhs[col * nz + i] = -r[col];
+            }
         }
-        rhs.push(
-            gr.j.iter()
-                .map(|r| {
-                    r[1..1 + nx]
-                        .iter()
-                        .zip(&fr.v)
-                        .try_fold(-r[0], |s, (&g, &f)| s.sub(g.mul(f)?))
-                })
-                .collect::<CoreResult<Vec<_>>>()?,
-        );
+        for (i, r) in gr.j.iter().enumerate() {
+            rhs[(nx + 1) * nz + i] = r[1..1 + nx]
+                .iter()
+                .zip(&fr.v)
+                .try_fold(-r[0], |s, (&g, &f)| s.sub(g.mul(f)?))?;
+        }
         // Centers are evaluated from the same immutable original source.
         let xdot = fc.v.iter().copied().map(mid).collect::<Vec<_>>();
         let mut br = Vec::with_capacity(nx + 2);
@@ -842,20 +946,27 @@ impl DaeSource {
                 .collect::<CoreResult<Vec<_>>>()?,
         );
         let sol = batch(&a, &br, route, &exec, &mut w)?;
-        let mut err = Vec::new();
-        let mut enc = Vec::new();
-        for (b, v) in rhs.iter().zip(&sol) {
-            let av = iv_matvec(&j, &points(v)?)?;
-            let residual = b
-                .iter()
-                .zip(av)
-                .map(|(&b, a)| b.sub(a))
-                .collect::<CoreResult<Vec<_>>>()?;
-            let e = div_up(norm(&matvec(&c, &residual)?), gap)?;
-            err.push(e);
-            enc.push(box_at(v, e)?);
+        let enc = &mut scratch.enclosures[..len];
+        let points = &mut scratch.a[..nz];
+        let av = &mut scratch.b[..nz];
+        let residual = &mut scratch.c[..nz];
+        let pc = &mut scratch.d[..nz];
+        let mut derivative_error_upper = 0_f64;
+        for (col, (b, v)) in rhs.chunks_exact(nz).zip(&sol).enumerate() {
+            for (a, &x) in points.iter_mut().zip(v) {
+                *a = p(x)?;
+            }
+            iv_matvec_into(&j, points, av)?;
+            for (r, (&b, &a)) in residual.iter_mut().zip(b.iter().zip(av.iter())) {
+                *r = b.sub(a)?;
+            }
+            matvec_into(&c, residual, pc)?;
+            let e = div_up(norm(pc), gap)?;
+            derivative_error_upper = derivative_error_upper.max(e);
+            for (a, &x) in enc[col * nz..(col + 1) * nz].iter_mut().zip(v) {
+                *a = p(x)?.add(Iv::new(-e, e)?)?;
+            }
         }
-        let mut derivative_error_upper = err.iter().copied().fold(0., f64::max);
         for (&v, &f) in xdot.iter().zip(&fr.v) {
             derivative_error_upper = derivative_error_upper.max(distance(f, v)?);
         }
@@ -868,7 +979,7 @@ impl DaeSource {
                     .try_fold(fc.j[i][k + 1], |s, (&fz, &v)| s.add(fz.scale(v)?))?;
                 let exact = fr.j[i][1 + nx..]
                     .iter()
-                    .zip(&enc[1 + k])
+                    .zip(&enc[(1 + k) * nz..(2 + k) * nz])
                     .try_fold(fr.j[i][k + 1], |s, (&fz, &v)| s.add(fz.mul(v)?))?;
                 let m = mid(v);
                 *entry = m;
@@ -876,18 +987,14 @@ impl DaeSource {
             }
         }
         let zdot = sol.last().unwrap().clone();
-        let tangent_residual_upper = norm(
-            &gc.j
+        let tangent_residual_upper = gc.j.iter().try_fold(0_f64, |s, r| {
+            let v = r[1..1 + nx]
                 .iter()
-                .map(|r| {
-                    r[1..1 + nx]
-                        .iter()
-                        .zip(&xdot)
-                        .chain(r[1 + nx..].iter().zip(&zdot))
-                        .try_fold(r[0], |s, (&a, &v)| s.add(a.scale(v)?))
-                })
-                .collect::<CoreResult<Vec<_>>>()?,
-        );
+                .zip(&xdot)
+                .chain(r[1 + nx..].iter().zip(&zdot))
+                .try_fold(r[0], |s, (&a, &v)| s.add(a.scale(v)?))?;
+            Ok::<f64, CoreError>(s.max(v.mag()))
+        })?;
         if derivative_error_upper > policy.derivative_tol
             || tangent_residual_upper > policy.derivative_tol
         {
@@ -907,6 +1014,7 @@ impl DaeSource {
             branch: branch.to_vec(),
             root_box: root.iter().map(|v| v.as_pair()).collect(),
             branch_authority: authority,
+            affine_root,
             original_residual_upper,
             residual_upper,
             state_error_upper,

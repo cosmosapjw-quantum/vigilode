@@ -31,12 +31,15 @@ pub enum EvolutionRoute {
     WarpDirect,
     WarpFolded,
     Scalar5,
+    /// Explicit exact-affine initialization and existing five-node reconstruction.
+    Affine5,
 }
 impl EvolutionRoute {
     fn init(self) -> InitRoute {
         match self {
             Self::Prepared5 => InitRoute::PreparedBatch,
             Self::Scalar5 => InitRoute::ScalarRoot,
+            Self::Affine5 => InitRoute::AffineExact,
             _ => InitRoute::Reuse,
         }
     }
