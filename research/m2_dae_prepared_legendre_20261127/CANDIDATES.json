@@ -1,0 +1,2461 @@
+{
+  "abstract_routes": 64,
+  "designs": {
+    "atlas": {
+      "fields": [
+        "cert",
+        "solver"
+      ],
+      "fixed_design": [
+        {
+          "cert": "Max",
+          "solver": "Reduced5"
+        },
+        {
+          "cert": "Max",
+          "solver": "Prepared5"
+        },
+        {
+          "cert": "Max",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Max",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "solver": "Reduced5"
+        },
+        {
+          "cert": "Integral4",
+          "solver": "Prepared5"
+        },
+        {
+          "cert": "Integral4",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "solver": "Affine5"
+        }
+      ],
+      "uct_proposals": [
+        {
+          "cert": "Max",
+          "solver": "Scalar5"
+        },
+        {
+          "cert": "Integral4",
+          "solver": "Reduced5"
+        },
+        {
+          "cert": "Integral4",
+          "solver": "Prepared5"
+        },
+        {
+          "cert": "Max",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Max",
+          "solver": "Reduced5"
+        },
+        {
+          "cert": "Integral4",
+          "solver": "Affine5"
+        },
+        {
+          "cert": "Integral4",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Max",
+          "solver": "Prepared5"
+        },
+        {
+          "cert": "Max",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "cert": "Integral4",
+          "solver": "Scalar5"
+        }
+      ]
+    },
+    "epoch": {
+      "fields": [
+        "case",
+        "solver"
+      ],
+      "fixed_design": [
+        {
+          "case": "quadratic",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "case": "quadratic",
+          "solver": "Reduced5Legendre"
+        },
+        {
+          "case": "quadratic",
+          "solver": "BoundedPreparedLegendre5"
+        },
+        {
+          "case": "quartic",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "case": "quartic",
+          "solver": "Reduced5Legendre"
+        },
+        {
+          "case": "quartic",
+          "solver": "BoundedPreparedLegendre5"
+        }
+      ],
+      "uct_proposals": [
+        {
+          "case": "quadratic",
+          "solver": "Reduced5Legendre"
+        },
+        {
+          "case": "quartic",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "solver": "BoundedPreparedLegendre5"
+        },
+        {
+          "case": "quadratic",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "solver": "BoundedPreparedLegendre5"
+        },
+        {
+          "case": "quartic",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "case": "quadratic",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "case": "quartic",
+          "solver": "Reduced5Legendre"
+        }
+      ]
+    },
+    "reconstruction": {
+      "fields": [
+        "solver",
+        "cert",
+        "position",
+        "candidate"
+      ],
+      "fixed_design": [
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "first",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "first",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "first",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "last",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "last",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "last",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Affine5"
+        }
+      ],
+      "uct_proposals": [
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "first",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "last",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "last",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "first",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "last",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Integral4",
+          "position": "last",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Prepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Max",
+          "position": "first",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "last",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Max",
+          "position": "middle",
+          "solver": "Reduced5"
+        },
+        {
+          "candidate": "bounded_fixed",
+          "cert": "Max",
+          "position": "first",
+          "solver": "Scalar5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "BoundedPrepared5"
+        },
+        {
+          "candidate": "bounded_previous",
+          "cert": "Integral4",
+          "position": "middle",
+          "solver": "Affine5"
+        },
+        {
+          "candidate": "existing",
+          "cert": "Integral4",
+          "position": "first",
+          "solver": "Prepared5"
+        }
+      ]
+    },
+    "spectral_manufactured": {
+      "fields": [
+        "case",
+        "solver",
+        "position",
+        "route"
+      ],
+      "fixed_design": [
+        {
+          "case": "oscillatory",
+          "position": "one",
+          "route": "Bernstein",
+          "solver": "manufactured"
+        },
+        {
+          "case": "oscillatory",
+          "position": "one",
+          "route": "LegendreInterval",
+          "solver": "manufactured"
+        },
+        {
+          "case": "oscillatory",
+          "position": "one",
+          "route": "LegendreCentered",
+          "solver": "manufactured"
+        },
+        {
+          "case": "oscillatory",
+          "position": "one",
+          "route": "HybridInterval",
+          "solver": "manufactured"
+        },
+        {
+          "case": "oscillatory",
+          "position": "one",
+          "route": "HybridCentered",
+          "solver": "manufactured"
+        }
+      ],
+      "uct_proposals": [
+        {
+          "case": "oscillatory",
+          "position": "one",
+          "route": "HybridCentered",
+          "solver": "manufactured"
+        },
+        {
+          "case": "oscillatory",
+          "position": "one",
+          "route": "LegendreCentered",
+          "solver": "manufactured"
+        },
+        {
+          "case": "oscillatory",
+          "position": "one",
+          "route": "HybridInterval",
+          "solver": "manufactured"
+        },
+        {
+          "case": "oscillatory",
+          "position": "one",
+          "route": "Bernstein",
+          "solver": "manufactured"
+        },
+        {
+          "case": "oscillatory",
+          "position": "one",
+          "route": "LegendreInterval",
+          "solver": "manufactured"
+        }
+      ]
+    },
+    "spectral_native": {
+      "fields": [
+        "case",
+        "solver",
+        "position",
+        "route"
+      ],
+      "fixed_design": [
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "Bernstein",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "LegendreInterval",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "LegendreCentered",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "HybridInterval",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "HybridCentered",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "Bernstein",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "LegendreInterval",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "LegendreCentered",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "HybridInterval",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "HybridCentered",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "Bernstein",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "LegendreInterval",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "LegendreCentered",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "HybridInterval",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "HybridCentered",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "Bernstein",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "LegendreInterval",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "LegendreCentered",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "HybridInterval",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "HybridCentered",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "Bernstein",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "LegendreInterval",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "LegendreCentered",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "HybridInterval",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "HybridCentered",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "Bernstein",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "LegendreInterval",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "LegendreCentered",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "HybridInterval",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "HybridCentered",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "Bernstein",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "LegendreInterval",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "LegendreCentered",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "HybridInterval",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "HybridCentered",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "Bernstein",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "LegendreInterval",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "LegendreCentered",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "HybridInterval",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "HybridCentered",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "Bernstein",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "LegendreInterval",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "LegendreCentered",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "HybridInterval",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "HybridCentered",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "Bernstein",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "LegendreInterval",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "LegendreCentered",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "HybridInterval",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "HybridCentered",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "Bernstein",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "LegendreInterval",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "LegendreCentered",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "HybridInterval",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "HybridCentered",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "Bernstein",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "LegendreInterval",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "LegendreCentered",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "HybridInterval",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "HybridCentered",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "Bernstein",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "LegendreInterval",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "LegendreCentered",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "HybridInterval",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "HybridCentered",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "Bernstein",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "LegendreInterval",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "LegendreCentered",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "HybridInterval",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "HybridCentered",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "Bernstein",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "LegendreInterval",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "LegendreCentered",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "HybridInterval",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "HybridCentered",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "Bernstein",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "LegendreInterval",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "LegendreCentered",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "HybridInterval",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "HybridCentered",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "Bernstein",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "LegendreInterval",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "LegendreCentered",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "HybridInterval",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "HybridCentered",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "Bernstein",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "LegendreInterval",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "LegendreCentered",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "HybridInterval",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "HybridCentered",
+          "solver": "Prepared5"
+        }
+      ],
+      "uct_proposals": [
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "HybridInterval",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "LegendreCentered",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "HybridInterval",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "HybridCentered",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "HybridCentered",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "LegendreCentered",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "HybridInterval",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "HybridInterval",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "HybridCentered",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "LegendreInterval",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "HybridInterval",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "LegendreInterval",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "HybridInterval",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "LegendreCentered",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "HybridInterval",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "Bernstein",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "HybridCentered",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "LegendreCentered",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "HybridCentered",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "Bernstein",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "LegendreInterval",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "LegendreInterval",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "HybridInterval",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "LegendreInterval",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "Bernstein",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "Bernstein",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "LegendreCentered",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "Bernstein",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "Bernstein",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "LegendreCentered",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "Bernstein",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "HybridCentered",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "Bernstein",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "LegendreInterval",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "LegendreInterval",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "HybridInterval",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "LegendreCentered",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "HybridInterval",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "LegendreInterval",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "LegendreInterval",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "LegendreInterval",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "Bernstein",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "LegendreCentered",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "Bernstein",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "HybridCentered",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "LegendreCentered",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "LegendreCentered",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "Bernstein",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "LegendreInterval",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "HybridCentered",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "Bernstein",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "Bernstein",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "HybridCentered",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "HybridCentered",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "HybridInterval",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "LegendreCentered",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "HybridCentered",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "LegendreInterval",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "LegendreInterval",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "HybridCentered",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "HybridCentered",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "LegendreCentered",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "LegendreCentered",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "Bernstein",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "HybridCentered",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "LegendreCentered",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "Bernstein",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "HybridInterval",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "HybridCentered",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "LegendreInterval",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "LegendreInterval",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "Bernstein",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "Bernstein",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "HybridCentered",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "LegendreCentered",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "HybridInterval",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "Bernstein",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "HybridCentered",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quadratic",
+          "position": "last",
+          "route": "HybridInterval",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "HybridInterval",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "LegendreInterval",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "HybridCentered",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "middle",
+          "route": "LegendreCentered",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "LegendreCentered",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "first",
+          "route": "LegendreInterval",
+          "solver": "Prepared5"
+        },
+        {
+          "case": "quartic",
+          "position": "last",
+          "route": "HybridInterval",
+          "solver": "Mass"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "HybridInterval",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "HybridInterval",
+          "solver": "Mass"
+        },
+        {
+          "case": "quadratic",
+          "position": "middle",
+          "route": "LegendreCentered",
+          "solver": "Reduced5"
+        },
+        {
+          "case": "quartic",
+          "position": "first",
+          "route": "LegendreInterval",
+          "solver": "Prepared5"
+        }
+      ]
+    }
+  },
+  "manifest_files": 154,
+  "mutation_edges": {
+    "BoundedPrepared5": "Prepared5",
+    "BoundedPreparedLegendre5": "BoundedPrepared5",
+    "HybridCentered": "LegendreCentered",
+    "HybridInterval": "LegendreInterval",
+    "LegendreCentered": "LegendreInterval",
+    "LegendreInterval": "Bernstein",
+    "Reduced5Legendre": "Reduced5",
+    "bounded_fixed": "existing",
+    "bounded_previous": "bounded_fixed"
+  },
+  "revived_modules": [
+    "Dictionary::legendre_product",
+    "Dictionary::products",
+    "ScalarReuseProjection",
+    "IntervalEvalWorkspace",
+    "ScalarReconstructionWorkspace"
+  ],
+  "scope": "actual measured candidates; per-stratum Pareto; no default promotion"
+}
