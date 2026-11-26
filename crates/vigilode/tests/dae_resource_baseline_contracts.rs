@@ -1431,3 +1431,55 @@ fn guard_column_workspace_noalloc_and_transactional() {
     );
     assert_eq!(out.map(|x| x.as_pair()), sentinel.map(|x| x.as_pair()));
 }
+
+#[test]
+fn guard_poly_ownership_allocation_contract() {
+    warm();
+    let modes = graph(
+        "alternating",
+        EvolutionRoute::Mass,
+        ConservationRoute::Integral4,
+    );
+    let run = evolve_robertson_phase_atlas(
+        &modes,
+        0,
+        initial(2f64.powi(-26)),
+        [0., 0.002],
+        &opts(),
+        policy(),
+        pm(MultiGuardRoute::Correlated),
+        atlas_budget(),
+        PhaseReuseRoute::Reuse,
+    )
+    .unwrap();
+    assert_eq!(run.stop(), PhaseAtlasStop::Horizon);
+    let phase = &run.phases()[0];
+    let model = RobertsonModel::new(modes[phase.mode].rate).unwrap();
+    let s = &phase.original_slab_diagnostics()[0];
+    let c = s.certificate.as_ref().unwrap();
+    let power: Vec<Vec<Iv>> = s
+        .power
+        .iter()
+        .map(|row| row.iter().map(|v| Iv::new(v[0], v[1]).unwrap()).collect())
+        .collect();
+    for value in [GuardValueRoute::Box, GuardValueRoute::Transport] {
+        let (r, a) = measure(|| {
+            de::GuardProof::new(
+                model.source(),
+                &modes[phase.mode].guards[0],
+                &power,
+                c,
+                GuardDerivativeRoute::ConservedSchur,
+                value,
+            )
+        });
+        let r = r.unwrap();
+        assert!(r.evidence.velocity[0] > 0.);
+        println!("GUARD_POLY_ALLOC {:?} {:?}", value, a);
+        assert!(
+            a.requests() <= 5,
+            "guard polynomial ownership still requests {} allocations",
+            a.requests()
+        );
+    }
+}
