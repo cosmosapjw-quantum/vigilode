@@ -1,0 +1,8 @@
+Branch research/m2-dae-projection-workspace-20261126. EXEC_SHA.txt, INPUT_SHA256SUMS, BINARY.sha256 and RESOURCE_BINARY.sha256 bind execution.
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_projection_workspace_contracts -- --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_projection_workspace_contracts projection_portfolio -- --ignored --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_projection_workspace_contracts affine_training -- --ignored --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts component_replay -- --ignored --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts refusals -- --ignored --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts training -- --ignored --exact --nocapture --test-threads=1
+Restore raw logs from gzip in scratch: focused2,red,green,projection_portfolio,affine_training,components,refusals,training. Run affine_audit.py then audit.py (prior sibling m2_dae_scalar_affine_20261126 evidence), then guide.py select. guide.py generate uses verified archive and fresh ledger. Actual committed tests authoritative; RED_GREEN_TEST.rs at base in isolated scratch reproduces runtime red; extra_tests.rs draft predates log-only BatchMode correction. No holdout.
