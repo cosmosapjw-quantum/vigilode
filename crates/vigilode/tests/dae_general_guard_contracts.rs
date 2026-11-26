@@ -571,3 +571,118 @@ fn affine_graph_real_event_and_nonaffine_refusal() {
         }
     }
 }
+
+#[test]
+fn time_coupled_affine_graph_end_to_end() {
+    let source = DaeSource::new(
+        vec![p(vec![c(1.)])],
+        vec![
+            p(vec![
+                l(1, 1.),
+                l(0, -1.),
+                tr(2., vec![t(), y(2)]),
+                tr(-4., vec![t(), y(0)]),
+            ]),
+            p(vec![
+                l(2, 1.),
+                l(0, -2.),
+                tr(-1., vec![t(), y(1)]),
+                tr(1., vec![t(), y(0)]),
+            ]),
+        ],
+    )
+    .unwrap();
+    let guard = p(vec![l(2, 1.), l(0, -2.), tr(0.25, vec![t()]), c(-0.015625)]);
+    for solver in [EvolutionRoute::Mass, EvolutionRoute::Reduced5] {
+        for derivative in [
+            GuardDerivativeRoute::SchurDualCenteredGs2,
+            GuardDerivativeRoute::SchurAffineGraph,
+        ] {
+            let r = evolve_to_guard(
+                &source,
+                &[0.],
+                &[0., 0.],
+                &[[-1., 1.], [-1., 1.]],
+                EvolutionEpoch {
+                    start: 0.,
+                    end: 0.125,
+                    incoming_x_error: Some(0.),
+                },
+                &opts(),
+                policy(),
+                solver,
+                &guard,
+                1e-6,
+                ThresholdRoute::IntervalNewton,
+                derivative,
+                GuardValueRoute::Transport,
+            )
+            .unwrap();
+            if let Some(b) = r.root() {
+                assert!(b[0] <= 0.0625 && 0.0625 <= b[1] && b[1] - b[0] <= 1e-6);
+            }
+            if derivative == GuardDerivativeRoute::SchurAffineGraph {
+                for s in r.guard_slabs() {
+                    assert_eq!(s.velocity, [0.25, 0.25]);
+                }
+            }
+            println!(
+                "COUPLED_EVENT {}",
+                serde_json::json!({"solver":solver,"derivative":derivative,"root":r.root(),"reason":r.reason(),"slabs":r.guard_slabs().len()})
+            );
+        }
+    }
+}
+
+#[test]
+fn affine_graph_degree_four_exact_and_tiny_defect_refusal() {
+    use rodas5p_core::directed::Interval as Iv;
+    use rodas5p_integrators::retro_dae_evolution as de;
+    let iv = |x| Iv::point(x).unwrap();
+    let power = vec![vec![iv(0.), iv(0.125)], vec![iv(0.), iv(0.125)]];
+    let guard = p(vec![l(1, 1.), l(0, -1.), tr(0.25, vec![t()])]);
+    for perturb in [0., 2f64.powi(-40)] {
+        let src = DaeSource::new(
+            vec![p(vec![c(1.)])],
+            vec![p(vec![
+                l(1, 1.),
+                l(0, -1.),
+                tr(1., vec![t(), t(), t(), y(1)]),
+                tr(-1., vec![t(), t(), t(), y(0)]),
+                tr(perturb, vec![y(0), y(0)]),
+            ])],
+        )
+        .unwrap();
+        let cert = de::certify_slab(
+            &src,
+            [0., 0.125],
+            &power,
+            &[[-1., 1.]],
+            0.01,
+            Some(0.),
+            true,
+            1e6,
+        )
+        .unwrap();
+        assert!(cert.global_qualified);
+        let r = de::GuardProof::new(
+            &src,
+            &guard,
+            &power,
+            &cert,
+            GuardDerivativeRoute::SchurAffineGraph,
+            GuardValueRoute::Box,
+        );
+        if perturb == 0. {
+            assert_eq!(r.unwrap().evidence.velocity, [0.25, 0.25]);
+            println!("AFFINE_DEGREE4 exact source identity");
+        } else {
+            let err = r
+                .err()
+                .expect("nonzero source polynomial must refuse graph")
+                .to_string();
+            assert!(err.contains("affine graph identity not proved"), "{err}");
+            println!("AFFINE_DEGREE4 perturb={perturb} refusal={err}");
+        }
+    }
+}
