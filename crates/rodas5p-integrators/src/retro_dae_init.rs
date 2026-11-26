@@ -120,6 +120,72 @@ pub(crate) fn evaluate(polys: &[DeclaredPolynomial], t: Iv, y: &[Iv]) -> CoreRes
     }
     Ok(Eval { v, j })
 }
+/// Select the rounded output of the original declared source. All
+/// derivatives are still evaluated, even when only values are requested,
+/// preserving the original overflow/refusal contract.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SourceEvalKind {
+    Rhs,
+    Jacobian,
+    Time,
+}
+
+/// Caller-owned transactional staging for repeated point evaluations.
+/// No heap allocation is needed to construct or reuse it.
+pub struct SourceEvalWorkspace {
+    staged: [f64; 32 * 32],
+}
+impl SourceEvalWorkspace {
+    pub const fn new() -> Self {
+        Self {
+            staged: [0.; 32 * 32],
+        }
+    }
+}
+impl Default for SourceEvalWorkspace {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+// Exact same directed operations and iteration order as evaluate().
+// The immutable validated DaeSource owns the dimension/factor caps.
+// Do not skip a derivative because the requested output is RHS only.
+fn evaluate_row_bounded(
+    eq: &DeclaredPolynomial,
+    t: Iv,
+    y: &[Iv],
+    row: &mut [Iv],
+) -> CoreResult<Iv> {
+    row.fill(z());
+    let mut sum = z();
+    let mut factors = [z(); 4];
+    for term in eq.terms() {
+        let vals = &mut factors[..term.factors.len()];
+        for (v, f) in vals.iter_mut().zip(&term.factors) {
+            *v = f
+                .state
+                .iter()
+                .try_fold(p(f.constant)?.add(t.scale(f.time)?)?, |s, &(i, a)| {
+                    s.add(y[i].scale(a)?)
+                })?;
+        }
+        let c = p(term.coefficient)?;
+        sum = sum.add(vals.iter().try_fold(c, |s, &v| s.mul(v))?)?;
+        for (i, f) in term.factors.iter().enumerate() {
+            let other = vals
+                .iter()
+                .enumerate()
+                .filter(|(k, _)| *k != i)
+                .try_fold(c, |s, (_, &v)| s.mul(v))?;
+            row[0] = row[0].add(other.scale(f.time)?)?;
+            for &(k, a) in &f.state {
+                row[k + 1] = row[k + 1].add(other.scale(a)?)?;
+            }
+        }
+    }
+    Ok(sum)
+}
 /// Immutable polynomial source. f and g share state ordering [x,z].
 #[derive(Clone, Debug, Serialize)]
 pub struct DaeSource {
@@ -157,6 +223,74 @@ impl DaeSource {
             return Err(bad("state shape"));
         }
         Ok(norm(&evaluate(&self.g, p(t)?, &points(y)?)?.v))
+    }
+    /// Rounded original-source output, written atomically only after all
+    /// equations and derivatives succeed. Output order matches the Vec API;
+    /// Jacobian is row-major in [x,z] order. Successful bounded evaluation
+    /// requires no heap allocations; diagnostics on error may allocate.
+    fn point_into(
+        &self,
+        t: f64,
+        y: &[f64],
+        kind: SourceEvalKind,
+        out: &mut [f64],
+        staged: &mut [f64],
+    ) -> CoreResult<()> {
+        let n = self.nx() + self.nz();
+        if y.len() != n {
+            return Err(bad("state shape"));
+        }
+        let len = if kind == SourceEvalKind::Jacobian {
+            n * n
+        } else {
+            n
+        };
+        if out.len() != len || staged.len() < len {
+            return Err(bad("source output shape"));
+        }
+        let mut points = [z(); 32];
+        for (v, &x) in points[..n].iter_mut().zip(y) {
+            *v = p(x)?;
+        }
+        let t = p(t)?;
+        let mut row = [z(); 33];
+        for (i, eq) in self.f.iter().chain(&self.g).enumerate() {
+            let v = evaluate_row_bounded(eq, t, &points[..n], &mut row[..=n])?;
+            match kind {
+                SourceEvalKind::Rhs => staged[i] = mid(v),
+                SourceEvalKind::Time => staged[i] = mid(row[0]),
+                SourceEvalKind::Jacobian => {
+                    for (d, &v) in staged[i * n..(i + 1) * n].iter_mut().zip(&row[1..=n]) {
+                        *d = mid(v);
+                    }
+                }
+            }
+        }
+        out.copy_from_slice(&staged[..len]);
+        Ok(())
+    }
+    /// Reuse caller-owned staging for any rounded original-source output.
+    pub fn evaluate_into(
+        &self,
+        t: f64,
+        y: &[f64],
+        kind: SourceEvalKind,
+        out: &mut [f64],
+        work: &mut SourceEvalWorkspace,
+    ) -> CoreResult<()> {
+        self.point_into(t, y, kind, out, &mut work.staged)
+    }
+    /// Stack-staged RHS (including the algebraic residual rows).
+    pub fn rhs_into(&self, t: f64, y: &[f64], out: &mut [f64]) -> CoreResult<()> {
+        self.point_into(t, y, SourceEvalKind::Rhs, out, &mut [0.; 32])
+    }
+    /// Stack-staged row-major full source Jacobian.
+    pub fn jacobian_into(&self, t: f64, y: &[f64], out: &mut [f64]) -> CoreResult<()> {
+        self.point_into(t, y, SourceEvalKind::Jacobian, out, &mut [0.; 32 * 32])
+    }
+    /// Stack-staged explicit source time derivative.
+    pub fn time_into(&self, t: f64, y: &[f64], out: &mut [f64]) -> CoreResult<()> {
+        self.point_into(t, y, SourceEvalKind::Time, out, &mut [0.; 32])
     }
     pub fn rhs_values(&self, t: f64, y: &[f64]) -> CoreResult<Vec<f64>> {
         if y.len() != self.nx() + self.nz() {

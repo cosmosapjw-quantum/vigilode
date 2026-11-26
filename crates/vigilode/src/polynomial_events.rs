@@ -269,25 +269,16 @@ pub fn initialize_mass_problem(
     let b = source.clone();
     let c = source.clone();
     let problem = crate::Problem::new(n, move |t, y, out| {
-        let r = a
-            .rhs_values(t, y)
-            .map_err(|e| crate::CallbackError::Fatal(e.to_string()))?;
-        out.copy_from_slice(&r);
-        Ok(())
+        a.rhs_into(t, y, out)
+            .map_err(|e| crate::CallbackError::Fatal(e.to_string()))
     })
     .jacobian(crate::Jacobian::dense(move |t, y, out| {
-        let r = b
-            .jacobian_values(t, y)
-            .map_err(|e| crate::CallbackError::Fatal(e.to_string()))?;
-        out.copy_from_slice(&r);
-        Ok(())
+        b.jacobian_into(t, y, out)
+            .map_err(|e| crate::CallbackError::Fatal(e.to_string()))
     }))
     .time_derivative(move |t, y, out| {
-        let r = c
-            .time_values(t, y)
-            .map_err(|e| crate::CallbackError::Fatal(e.to_string()))?;
-        out.copy_from_slice(&r);
-        Ok(())
+        c.time_into(t, y, out)
+            .map_err(|e| crate::CallbackError::Fatal(e.to_string()))
     })
     .mass(m);
     let mut initial_state = report.x.clone();

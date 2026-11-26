@@ -342,6 +342,11 @@ impl Problem {
         &self.jacobian
     }
 
+    /// The explicit time-derivative callback, when supplied.
+    pub fn time_derivative_fn(&self) -> Option<&TimeDerivativeFn> {
+        self.time_derivative.as_ref()
+    }
+
     /// The declared band, if any.
     pub fn band(&self) -> Option<(usize, usize)> {
         self.band
