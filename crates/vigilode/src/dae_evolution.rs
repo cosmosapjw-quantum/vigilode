@@ -47,11 +47,14 @@ pub enum EvolutionRoute {
     Reduced5PolynomialPicard,
     BoundedAffinePicard5,
     BoundedVector5,
+    BoundedVectorRefined5,
 }
 impl EvolutionRoute {
     fn init(self) -> InitRoute {
         match self {
             Self::Prepared5 => InitRoute::PreparedBatch,
+            Self::BoundedVector5 => InitRoute::BoundedVector,
+            Self::BoundedVectorRefined5 => InitRoute::BoundedVectorRefined,
             Self::BoundedPrepared5 | Self::BoundedPreparedLegendre5 => {
                 InitRoute::BoundedPreparedScalar
             }
@@ -415,6 +418,47 @@ impl Engine {
         }
         r.map_err(|e| CallbackError::Fatal(e.to_string()))
     }
+    fn vector_callback(&self) -> bool {
+        matches!(
+            self.route,
+            EvolutionRoute::BoundedVector5 | EvolutionRoute::BoundedVectorRefined5
+        )
+    }
+    fn fixed_vector(
+        &self,
+        t: f64,
+        x: &[f64],
+    ) -> Result<rodas5p_integrators::retro_dae_init::BoundedVectorProjection, CallbackError> {
+        let mut seed = [0.; 32];
+        for (i, &v) in self.seed.iter().enumerate() {
+            seed[i] = v.clamp(self.branch[i][0], self.branch[i][1]);
+        }
+        let mut policy = self.policy.init;
+        policy.mode = rodas5p_integrators::retro_dae_init::InitMode::ProjectAlgebraic;
+        let (r, receipt) = self.src.initialize_bounded_vector_audited(
+            t,
+            x,
+            &seed[..self.seed.len()],
+            &self.branch,
+            policy,
+            self.route == EvolutionRoute::BoundedVectorRefined5,
+            &mut rodas5p_integrators::retro_dae_init::VectorProjectionWorkspace::new(),
+        );
+        update_audit(&self.audit, |a| {
+            a.point_projection.record(&receipt, r.is_ok())
+        });
+        let mut w = self
+            .work
+            .lock()
+            .map_err(|_| CallbackError::Fatal("work lock".into()))?;
+        if let Ok(v) = &r {
+            w.add(v.work(), false);
+        } else {
+            w.calls += 1;
+            w.refused += 1;
+        }
+        r.map_err(|e| CallbackError::Fatal(e.to_string()))
+    }
     fn fixed(&self, t: f64, x: &[f64]) -> Result<InitReport, CallbackError> {
         self.project(t, x, &self.seed)
             .map_err(|e| CallbackError::Fatal(e.to_string()))
@@ -426,7 +470,9 @@ fn reduced_problem(e: &Engine) -> Problem {
     let b = e.clone();
     let c = e.clone();
     Problem::new(nx, move |t, x, out| {
-        if a.scalar_callback() {
+        if a.vector_callback() {
+            out.copy_from_slice(a.fixed_vector(t, x)?.xdot());
+        } else if a.scalar_callback() {
             out.copy_from_slice(a.fixed_scalar(t, x)?.xdot());
         } else {
             out.copy_from_slice(&a.fixed(t, x)?.xdot);
@@ -434,7 +480,9 @@ fn reduced_problem(e: &Engine) -> Problem {
         Ok(())
     })
     .jacobian(Jacobian::dense(move |t, x, out| {
-        if b.scalar_callback() {
+        if b.vector_callback() {
+            out.copy_from_slice(b.fixed_vector(t, x)?.reduced_jacobian());
+        } else if b.scalar_callback() {
             out.copy_from_slice(b.fixed_scalar(t, x)?.reduced_jacobian());
         } else {
             let r = b.fixed(t, x)?;
@@ -445,6 +493,10 @@ fn reduced_problem(e: &Engine) -> Problem {
         Ok(())
     }))
     .time_derivative(move |t, x, out| {
+        if c.vector_callback() {
+            out.copy_from_slice(c.fixed_vector(t, x)?.reduced_time());
+            return Ok(());
+        }
         if c.scalar_callback() {
             let r = c.fixed_scalar(t, x)?;
             let n = nx + 1;

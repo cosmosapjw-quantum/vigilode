@@ -471,6 +471,8 @@ pub enum InitRoute {
     BoundedAffineScalar,
     /// Interval-only coefficient expansion competitor.
     BoundedAffineIntervalScalar,
+    BoundedVector,
+    BoundedVectorRefined,
 }
 #[derive(Clone, Copy, Debug, Serialize)]
 pub struct InitPolicy {
@@ -940,6 +942,23 @@ impl DaeSource {
         scratch: &mut ProjectionWorkspace,
         attempt: &mut InitAttemptWork,
     ) -> CoreResult<InitReport> {
+        if matches!(
+            route,
+            InitRoute::BoundedVector | InitRoute::BoundedVectorRefined
+        ) {
+            return self
+                .bounded_vector_recorded(
+                    t,
+                    x,
+                    z0,
+                    branch,
+                    policy,
+                    route == InitRoute::BoundedVectorRefined,
+                    &mut VectorProjectionWorkspace::new(),
+                    attempt,
+                )
+                .map(|r| r.to_owned_report());
+        }
         if matches!(
             route,
             InitRoute::BoundedPreparedScalar
@@ -2010,6 +2029,579 @@ impl DaeSource {
             derivative_error,
             tangent_residual,
             work: w.legacy.clone(),
+        })
+    }
+}
+
+/// Bounded vector projection result. The fixed arrays are not a cached
+/// matrix or source authority; owned diagnostics are made at the API edge.
+pub struct BoundedVectorProjection {
+    nx: usize,
+    nz: usize,
+    route: InitRoute,
+    mode: InitMode,
+    t: f64,
+    x: [f64; 32],
+    seed: [f64; 32],
+    center: [f64; 32],
+    branch: [Iv; 32],
+    root: [Iv; 32],
+    original_residual: f64,
+    residual: f64,
+    state_error: f64,
+    correction: f64,
+    branch_defect: f64,
+    local_defect: f64,
+    inverse_norm: f64,
+    condition: f64,
+    xdot: [f64; 32],
+    sol: [f64; PROJ_COLUMNS],
+    reduced: [f64; 1024],
+    ft: [f64; 32],
+    derivative_error: f64,
+    tangent_residual: f64,
+    work: InitWork,
+}
+impl BoundedVectorProjection {
+    pub fn z(&self) -> &[f64] {
+        &self.center[..self.nz]
+    }
+    pub fn xdot(&self) -> &[f64] {
+        &self.xdot[..self.nx]
+    }
+    pub fn reduced_jacobian(&self) -> &[f64] {
+        &self.reduced[..self.nx * self.nx]
+    }
+    pub fn reduced_time(&self) -> &[f64] {
+        &self.ft[..self.nx]
+    }
+    pub fn work(&self) -> &InitWork {
+        &self.work
+    }
+    pub fn to_owned_report(&self) -> InitReport {
+        InitReport {
+            route: self.route,
+            mode: self.mode,
+            t: self.t,
+            x: self.x[..self.nx].to_vec(),
+            original_z: self.seed[..self.nz].to_vec(),
+            z: self.z().to_vec(),
+            correction_upper: self.correction,
+            branch: self.branch[..self.nz].iter().map(|v| v.as_pair()).collect(),
+            root_box: self.root[..self.nz].iter().map(|v| v.as_pair()).collect(),
+            branch_authority: "whole-branch contraction + local self-map".into(),
+            affine_root: None,
+            original_residual_upper: self.original_residual,
+            residual_upper: self.residual,
+            state_error_upper: self.state_error,
+            exact_center_consistency: self.residual == 0.,
+            branch_defect_upper: Some(self.branch_defect),
+            local_defect_upper: self.local_defect,
+            inverse_norm_upper: self.inverse_norm,
+            condition_upper: self.condition,
+            rank: self.nz,
+            xdot: self.xdot().to_vec(),
+            zdot: self.sol[(self.nx + 1) * self.nz..(self.nx + 2) * self.nz].to_vec(),
+            zt: self.sol[..self.nz].to_vec(),
+            zx_columns: self.sol[self.nz..(self.nx + 1) * self.nz]
+                .chunks_exact(self.nz)
+                .map(|v| v.to_vec())
+                .collect(),
+            reduced_jacobian: self
+                .reduced_jacobian()
+                .chunks_exact(self.nx)
+                .map(|v| v.to_vec())
+                .collect(),
+            derivative_error_upper: self.derivative_error,
+            tangent_residual_upper: self.tangent_residual,
+            work: self.work.clone(),
+            qualified: true,
+        }
+    }
+}
+pub struct VectorProjectionWorkspace {
+    point: IntervalEvalWorkspace,
+    eval: IntervalEvalWorkspace,
+    inverse: crate::retro_dae_evolution::GuardInverseWorkspace,
+    a: [f64; 1024],
+    c: [f64; 1024],
+    e: [Iv; 1024],
+    projection: ProjectionWorkspace,
+}
+impl VectorProjectionWorkspace {
+    pub const fn new() -> Self {
+        Self {
+            point: IntervalEvalWorkspace::new(),
+            eval: IntervalEvalWorkspace::new(),
+            inverse: crate::retro_dae_evolution::GuardInverseWorkspace::new(),
+            a: [0.; 1024],
+            c: [0.; 1024],
+            e: [Iv { lo: 0., hi: 0. }; 1024],
+            projection: ProjectionWorkspace::new(),
+        }
+    }
+}
+impl Default for VectorProjectionWorkspace {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+fn vector_eval(
+    src: &DaeSource,
+    t: f64,
+    x: &[f64],
+    a: &[Iv],
+    w: &mut IntervalEvalWorkspace,
+    receipt: &mut InitAttemptWork,
+) -> CoreResult<()> {
+    let mut y = [z(); 32];
+    for (v, &x) in y[..x.len()].iter_mut().zip(x) {
+        *v = p(x)?;
+    }
+    y[x.len()..x.len() + a.len()].copy_from_slice(a);
+    let r = src.fill_interval_workspace(p(t)?, &y[..x.len() + a.len()], w);
+    receipt.evaluations.record(r.is_ok());
+    if r.is_ok() {
+        receipt.legacy.evaluations += 1;
+    }
+    r
+}
+fn vector_row(w: &IntervalEvalWorkspace, n: usize, i: usize) -> &[Iv] {
+    &w.jacobian[i * (n + 1)..(i + 1) * (n + 1)]
+}
+fn vector_inverse(
+    w: &mut VectorProjectionWorkspace,
+    nx: usize,
+    nz: usize,
+    receipt: &mut InitAttemptWork,
+) -> CoreResult<()> {
+    let n = nx + nz;
+    for i in 0..nz {
+        for j in 0..nz {
+            w.a[i * nz + j] = mid(vector_row(&w.point, n, nx + i)[nx + 1 + j]);
+        }
+    }
+    let r = w.inverse.invert(nz, &w.a[..nz * nz], &mut w.c[..nz * nz]);
+    receipt.legacy.linear_batches += 1;
+    receipt.legacy.rhs_count += nz;
+    receipt.rhs_requested += nz;
+    receipt.legacy.bounded_prepared_batches += 1;
+    receipt.linear.record(r.is_ok());
+    if r.is_ok() {
+        receipt.rhs_returned += nz;
+        let nnz = w.a[..nz * nz].iter().filter(|&&v| v != 0.).count();
+        receipt.legacy.bounded_residual_terms +=
+            nz * if nnz <= nz * nz / 2 { nnz } else { nz * nz };
+    }
+    r.map(|_| ())
+}
+// A numerical candidate, followed by the actual original interval residual.
+// Refinement uses b-Ax in represented midpoint arithmetic and is optional.
+fn vector_action(
+    w: &VectorProjectionWorkspace,
+    nz: usize,
+    b: &[f64],
+    refine: bool,
+    out: &mut [f64],
+    receipt: &mut InitAttemptWork,
+) -> CoreResult<()> {
+    receipt.legacy.linear_batches += 1;
+    receipt.legacy.rhs_count += 1;
+    receipt.rhs_requested += 1;
+    let r = (|| {
+        for i in 0..nz {
+            out[i] = w.c[i * nz..(i + 1) * nz]
+                .iter()
+                .zip(b)
+                .fold(0., |s, (&a, &v)| a.mul_add(v, s));
+        }
+        if refine {
+            let mut residual = [0.; 32];
+            for i in 0..nz {
+                residual[i] = w.a[i * nz..(i + 1) * nz]
+                    .iter()
+                    .zip(&*out)
+                    .fold(b[i], |s, (&a, &v)| (-a).mul_add(v, s));
+            }
+            for i in 0..nz {
+                out[i] += w.c[i * nz..(i + 1) * nz]
+                    .iter()
+                    .zip(&residual[..nz])
+                    .fold(0., |s, (&a, &v)| a.mul_add(v, s));
+            }
+            receipt.legacy.bounded_residual_terms += nz * nz;
+        }
+        if out.iter().any(|v| !v.is_finite()) {
+            return Err(bad("bounded vector action nonfinite"));
+        }
+        Ok(())
+    })();
+    receipt.linear.record(r.is_ok());
+    if r.is_ok() {
+        receipt.rhs_returned += 1;
+    }
+    r
+}
+fn vector_defect(
+    c: &[f64],
+    j: &IntervalEvalWorkspace,
+    nx: usize,
+    nz: usize,
+    e: &mut [Iv],
+) -> CoreResult<f64> {
+    let n = nx + nz;
+    let mut q = 0_f64;
+    for i in 0..nz {
+        let mut sum = 0.;
+        for k in 0..nz {
+            let v = (0..nz).try_fold(p(if i == k { 1. } else { 0. })?, |s, l| {
+                s.sub(vector_row(j, n, nx + l)[nx + 1 + k].scale(c[i * nz + l])?)
+            })?;
+            e[i * nz + k] = v;
+            sum = add_up(sum, v.mag())?;
+        }
+        q = q.max(sum);
+    }
+    Ok(q)
+}
+impl DaeSource {
+    /// Opt-in bounded inverse action. Strict dominance is a proposal-domain
+    /// restriction, not a substitute for the full original-source proof.
+    pub fn initialize_bounded_vector_audited(
+        &self,
+        t: f64,
+        x: &[f64],
+        seed: &[f64],
+        branch: &[[f64; 2]],
+        policy: InitPolicy,
+        refine: bool,
+        scratch: &mut VectorProjectionWorkspace,
+    ) -> (CoreResult<BoundedVectorProjection>, InitAttemptWork) {
+        let mut receipt = InitAttemptWork::default();
+        let r =
+            self.bounded_vector_recorded(t, x, seed, branch, policy, refine, scratch, &mut receipt);
+        (r, receipt)
+    }
+    fn bounded_vector_recorded(
+        &self,
+        t: f64,
+        x: &[f64],
+        seed: &[f64],
+        branch: &[[f64; 2]],
+        policy: InitPolicy,
+        refine: bool,
+        w: &mut VectorProjectionWorkspace,
+        receipt: &mut InitAttemptWork,
+    ) -> CoreResult<BoundedVectorProjection> {
+        crate::affine_event_certificate::check_affine_event_arithmetic()?;
+        let nx = self.nx();
+        let nz = self.nz();
+        let n = nx + nz;
+        if !t.is_finite()
+            || x.len() != nx
+            || seed.len() != nz
+            || branch.len() != nz
+            || x.iter().chain(seed).any(|v| !v.is_finite())
+            || [
+                policy.state_tol,
+                policy.residual_tol,
+                policy.derivative_tol,
+                policy.condition_cap,
+            ]
+            .iter()
+            .any(|v| !v.is_finite() || *v <= 0.)
+            || !(1..=64).contains(&policy.max_newton)
+        {
+            return Err(bad("policy/input shape"));
+        }
+        let mut b = [z(); 32];
+        let mut center = [0.; 32];
+        let mut zz = [z(); 32];
+        for i in 0..nz {
+            b[i] = Iv::new(branch[i][0], branch[i][1])?;
+            if b[i].lo >= b[i].hi || !b[i].contains(seed[i]) {
+                return Err(bad("invalid branch or initial guess outside"));
+            }
+            center[i] = seed[i];
+            zz[i] = p(seed[i])?;
+        }
+        receipt.admitted = true;
+        vector_eval(self, t, x, &zz[..nz], &mut w.point, receipt)?;
+        let original_residual = norm(&w.point.values[nx..n]);
+        if policy.mode == InitMode::Strict && original_residual > policy.residual_tol {
+            return Err(bad("strict initial residual exceeds tolerance"));
+        }
+        if policy.mode == InitMode::ProjectAlgebraic {
+            for _ in 0..policy.max_newton {
+                for i in 0..nz {
+                    zz[i] = p(center[i])?;
+                }
+                vector_eval(self, t, x, &zz[..nz], &mut w.point, receipt)?;
+                let r = norm(&w.point.values[nx..n]);
+                if r == 0. {
+                    break;
+                }
+                vector_inverse(w, nx, nz, receipt)?;
+                let mut rhs = [0.; 32];
+                for i in 0..nz {
+                    rhs[i] = -mid(w.point.values[nx + i]);
+                }
+                let mut d = [0.; 32];
+                vector_action(w, nz, &rhs[..nz], refine, &mut d[..nz], receipt)?;
+                let mut accepted = false;
+                for j in 0..16 {
+                    let mut trial = [0.; 32];
+                    for i in 0..nz {
+                        trial[i] = 2f64.powi(-j).mul_add(d[i], center[i]);
+                        zz[i] = p(trial[i])?;
+                    }
+                    if !subset(&zz[..nz], &b[..nz]) {
+                        continue;
+                    }
+                    vector_eval(self, t, x, &zz[..nz], &mut w.eval, receipt)?;
+                    if norm(&w.eval.values[nx..n]) < r {
+                        center = trial;
+                        accepted = true;
+                        receipt.legacy.newton_steps += 1;
+                        break;
+                    }
+                }
+                if !accepted {
+                    break;
+                }
+            }
+        }
+        for i in 0..nz {
+            zz[i] = p(center[i])?;
+        }
+        vector_eval(self, t, x, &zz[..nz], &mut w.point, receipt)?;
+        let residual = norm(&w.point.values[nx..n]);
+        if residual > policy.residual_tol {
+            return Err(bad("original constraint residual exceeds tolerance"));
+        }
+        vector_inverse(w, nx, nz, receipt)?;
+        vector_eval(self, t, x, &b[..nz], &mut w.eval, receipt)?;
+        let branch_defect = vector_defect(&w.c, &w.eval, nx, nz, &mut w.e)?;
+        let gap = sub_down(1., branch_defect)?;
+        if gap <= 0. {
+            return Err(bad("whole branch contraction not proved"));
+        }
+        let mut cg = [z(); 32];
+        for i in 0..nz {
+            cg[i] = w.c[i * nz..(i + 1) * nz]
+                .iter()
+                .zip(&w.point.values[nx..n])
+                .try_fold(z(), |s, (&c, &v)| s.add(v.scale(c)?))?;
+        }
+        let mut radius = mul_up(2., div_up(norm(&cg[..nz]), gap)?)?;
+        let mut root = [z(); 32];
+        let mut proved = false;
+        for retry in 0..=8 {
+            if retry == 1 {
+                for &v in &center[..nz] {
+                    radius = radius
+                        .max(p(v.next_up())?.sub(p(v)?)?.mag())
+                        .max(p(v)?.sub(p(v.next_down())?)?.mag());
+                }
+            } else if retry > 1 {
+                radius = mul_up(2., radius)?;
+            }
+            for i in 0..nz {
+                root[i] = p(center[i])?.add(Iv::new(-radius, radius)?)?;
+                w.projection.b[i] = root[i].sub(p(center[i])?)?;
+            }
+            if !subset(&root[..nz], &b[..nz]) {
+                break;
+            }
+            for i in 0..nz {
+                let ed = w.e[i * nz..(i + 1) * nz]
+                    .iter()
+                    .zip(&w.projection.b[..nz])
+                    .try_fold(z(), |s, (&a, &v)| s.add(a.mul(v)?))?;
+                w.projection.c[i] = ed;
+                w.projection.d[i] = p(center[i])?.sub(cg[i])?.add(ed)?;
+            }
+            if retry == 0 && subset(&w.projection.d[..nz], &root[..nz]) {
+                proved = true;
+                break;
+            }
+            receipt.legacy.root_map_rechecks += 1;
+            for i in 0..nz {
+                w.projection.d[i] = p(center[i])?.add(w.projection.c[i].sub(cg[i])?)?;
+            }
+            if subset(&w.projection.d[..nz], &root[..nz]) {
+                if retry == 0 {
+                    receipt.legacy.root_map_regrouped += 1;
+                } else {
+                    receipt.legacy.root_map_expanded += 1;
+                }
+                proved = true;
+                break;
+            }
+        }
+        if !proved {
+            return Err(bad("local self-map inclusion not proved"));
+        }
+        let mut state_error = 0_f64;
+        let mut correction = 0_f64;
+        for i in 0..nz {
+            state_error = state_error.max(distance(root[i], center[i])?);
+            correction = correction.max(p(center[i])?.sub(p(seed[i])?)?.mag());
+        }
+        if state_error > policy.state_tol {
+            return Err(bad("certified root distance exceeds tolerance"));
+        }
+        vector_eval(self, t, x, &root[..nz], &mut w.eval, receipt)?;
+        let local_defect = vector_defect(&w.c, &w.eval, nx, nz, &mut w.e)?;
+        let gap = sub_down(1., local_defect)?;
+        if gap <= 0. {
+            return Err(bad("rank/regularity not proved at root"));
+        }
+        let mut cnorm = 0_f64;
+        let mut jnorm = 0_f64;
+        for i in 0..nz {
+            cnorm = cnorm.max(
+                w.c[i * nz..(i + 1) * nz]
+                    .iter()
+                    .try_fold(0., |s, v| add_up(s, v.abs()))?,
+            );
+            jnorm = jnorm.max(
+                vector_row(&w.eval, n, nx + i)[nx + 1..]
+                    .iter()
+                    .try_fold(0., |s, v| add_up(s, v.mag()))?,
+            );
+        }
+        let inverse_norm = div_up(cnorm, gap)?;
+        let condition = mul_up(inverse_norm, jnorm)?;
+        if condition > policy.condition_cap {
+            return Err(bad("certified condition exceeds cap"));
+        }
+        let mut xdot = [0.; 32];
+        for i in 0..nx {
+            xdot[i] = mid(w.point.values[i]);
+        }
+        let mut sol = [0.; PROJ_COLUMNS];
+        let mut derivative_error = 0_f64;
+        for col in 0..nx + 2 {
+            let mut br = [0.; 32];
+            let mut rhs = [z(); 32];
+            for i in 0..nz {
+                let gc = vector_row(&w.point, n, nx + i);
+                let gr = vector_row(&w.eval, n, nx + i);
+                if col <= nx {
+                    br[i] = -mid(gc[col]);
+                    rhs[i] = -gr[col];
+                } else {
+                    br[i] = mid(gc[1..nx + 1]
+                        .iter()
+                        .zip(&xdot[..nx])
+                        .try_fold(-gc[0], |s, (&a, &v)| s.sub(a.scale(v)?))?);
+                    rhs[i] = gr[1..nx + 1]
+                        .iter()
+                        .zip(&w.eval.values[..nx])
+                        .try_fold(-gr[0], |s, (&a, &v)| s.sub(a.mul(v)?))?;
+                }
+            }
+            let v = &mut sol[col * nz..(col + 1) * nz];
+            vector_action(w, nz, &br[..nz], refine, v, receipt)?;
+            let mut res = [z(); 32];
+            for i in 0..nz {
+                let a = vector_row(&w.eval, n, nx + i)[nx + 1..]
+                    .iter()
+                    .zip(&*v)
+                    .try_fold(z(), |s, (&a, &v)| s.add(a.scale(v)?))?;
+                res[i] = rhs[i].sub(a)?;
+            }
+            let mut e = 0_f64;
+            for i in 0..nz {
+                let pc = w.c[i * nz..(i + 1) * nz]
+                    .iter()
+                    .zip(&res[..nz])
+                    .try_fold(z(), |s, (&c, &v)| s.add(v.scale(c)?))?;
+                e = e.max(pc.mag());
+            }
+            e = div_up(e, gap)?;
+            derivative_error = derivative_error.max(e);
+            for i in 0..nz {
+                w.projection.enclosures[col * nz + i] = p(v[i])?.add(Iv::new(-e, e)?)?;
+            }
+        }
+        for i in 0..nx {
+            derivative_error = derivative_error.max(distance(w.eval.values[i], xdot[i])?);
+        }
+        let mut reduced = [0.; 1024];
+        let mut ft = [0.; 32];
+        for i in 0..nx {
+            let fc = vector_row(&w.point, n, i);
+            let fr = vector_row(&w.eval, n, i);
+            ft[i] = fc[nx + 1..]
+                .iter()
+                .zip(&sol[..nz])
+                .fold(mid(fc[0]), |s, (&a, &v)| mid(a).mul_add(v, s));
+            if !ft[i].is_finite() {
+                return Err(bad("bounded vector time nonfinite"));
+            }
+            for k in 0..nx {
+                let col = (k + 1) * nz;
+                let v = fc[nx + 1..]
+                    .iter()
+                    .zip(&sol[col..col + nz])
+                    .try_fold(fc[k + 1], |s, (&a, &v)| s.add(a.scale(v)?))?;
+                let exact = fr[nx + 1..]
+                    .iter()
+                    .zip(&w.projection.enclosures[col..col + nz])
+                    .try_fold(fr[k + 1], |s, (&a, &v)| s.add(a.mul(v)?))?;
+                reduced[i * nx + k] = mid(v);
+                derivative_error = derivative_error.max(distance(exact, mid(v))?);
+            }
+        }
+        let mut tangent_residual = 0_f64;
+        for i in 0..nz {
+            let gc = vector_row(&w.point, n, nx + i);
+            let r = gc[1..nx + 1]
+                .iter()
+                .zip(&xdot[..nx])
+                .chain(gc[nx + 1..].iter().zip(&sol[(nx + 1) * nz..(nx + 2) * nz]))
+                .try_fold(gc[0], |s, (&a, &v)| s.add(a.scale(v)?))?;
+            tangent_residual = tangent_residual.max(r.mag());
+        }
+        if derivative_error > policy.derivative_tol || tangent_residual > policy.derivative_tol {
+            return Err(bad("derivative/Schur certificate exceeds tolerance"));
+        }
+        let mut xx = [0.; 32];
+        xx[..nx].copy_from_slice(x);
+        let mut ss = [0.; 32];
+        ss[..nz].copy_from_slice(seed);
+        Ok(BoundedVectorProjection {
+            nx,
+            nz,
+            route: if refine {
+                InitRoute::BoundedVectorRefined
+            } else {
+                InitRoute::BoundedVector
+            },
+            mode: policy.mode,
+            t,
+            x: xx,
+            seed: ss,
+            center,
+            branch: b,
+            root,
+            original_residual,
+            residual,
+            state_error,
+            correction,
+            branch_defect,
+            local_defect,
+            inverse_norm,
+            condition,
+            xdot,
+            sol,
+            reduced,
+            ft,
+            derivative_error,
+            tangent_residual,
+            work: receipt.legacy.clone(),
         })
     }
 }
