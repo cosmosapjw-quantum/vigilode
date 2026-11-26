@@ -4264,3 +4264,124 @@ mod centered_source_residual_contracts {
         );
     }
 }
+
+#[cfg(test)]
+mod guard_dual_inverse_contracts {
+    use super::*;
+    use crate::retro_event_poly::{AffineFactor as F, EventTerm as T};
+    use num_rational::BigRational as Q;
+
+    #[test]
+    fn bounded_inverse_exact_rational_dimension_lattice() {
+        let mut ws = GuardInverseWorkspace::new();
+        let mut a = [0.; 32 * 32];
+        let mut inv = [0.; 32 * 32];
+        let mut checks = 0;
+        for n in [1, 2, 4, 8, 16, 31, 32] {
+            // A=2I+J/64, A^-1=I/2 - J/[2(128+n)].
+            for i in 0..n {
+                for j in 0..n {
+                    a[i * n + j] = 1. / 64. + if i == j { 2. } else { 0. };
+                }
+            }
+            let err = ws.invert(n, &a[..n * n], &mut inv[..n * n]).unwrap();
+            let err = Q::from_float(err).unwrap();
+            let corr = Q::new(1.into(), (2 * (128 + n) as i64).into());
+            for i in 0..n {
+                for j in 0..n {
+                    let exact = if i == j {
+                        Q::new(1.into(), 2.into()) - corr.clone()
+                    } else {
+                        -corr.clone()
+                    };
+                    let diff = Q::from_float(inv[i * n + j]).unwrap() - exact;
+                    assert!(diff <= err && diff >= -err.clone(), "n={n} i={i} j={j}");
+                    checks += 1;
+                }
+            }
+        }
+        println!("BOUNDED_INVERSE_RATIONAL_CHECKS {checks}");
+    }
+
+    #[test]
+    fn dual_source_cross_row_degree_four_cancellation() {
+        let t = F::clock(0.);
+        let x = F::component(0, 0.);
+        let z = F::component(1, 0.);
+        let w = F::component(2, 0.);
+        let tr = |coefficient, factors| T {
+            coefficient,
+            factors,
+        };
+        let g1 = vec![
+            tr(1., vec![z.clone()]),
+            tr(-1., vec![x.clone()]),
+            tr(1., vec![z, t.clone(), t.clone(), t.clone()]),
+            tr(-1., vec![x.clone(), t.clone(), t.clone(), t.clone()]),
+        ];
+        let g2 = vec![
+            tr(1., vec![w.clone()]),
+            tr(-2., vec![x.clone()]),
+            tr(1., vec![w, x.clone(), x.clone()]),
+            tr(-2., vec![x.clone(), x.clone(), x.clone()]),
+        ];
+        let mut ht = Vec::new();
+        for mut term in g1.clone() {
+            term.coefficient *= 2.;
+            ht.push(term);
+        }
+        for mut term in g2.clone() {
+            term.coefficient *= -1.;
+            ht.push(term);
+        }
+        ht.push(tr(0.25, vec![t]));
+        ht.push(tr(0.5, vec![x]));
+        let guard = DeclaredPolynomial::new(ht).unwrap();
+        let src = DaeSource::new(
+            vec![DeclaredPolynomial::new(vec![tr(1., vec![])]).unwrap()],
+            vec![
+                DeclaredPolynomial::new(g1).unwrap(),
+                DeclaredPolynomial::new(g2).unwrap(),
+            ],
+        )
+        .unwrap();
+        guard.validate(3).unwrap();
+        let time = Iv::new(0., 0.5).unwrap();
+        let state = [Iv::new(-0.25, 0.25).unwrap(); 3];
+        let mut checks = 0;
+        for direction in [
+            [1., 0., 0.5, -0.25],
+            [0., 1., 1., 2.],
+            [0.5, -0.25, 0.75, -0.5],
+        ] {
+            let [dt, dx, dz, dw] = direction;
+            let exact = 0.25 * dt + 0.5 * dx;
+            let r =
+                guard_dual_direction(&src, &guard, &[2., -1.], time, &state, &direction).unwrap();
+            assert_eq!(r.as_pair(), [exact, exact]);
+            let r =
+                guard_dual_direction(&src, &guard, &[1., -0.5], time, &state, &direction).unwrap();
+            for ti in 0..=8 {
+                for xi in -4..=4 {
+                    for zi in -4..=4 {
+                        for wi in -4..=4 {
+                            let t = ti as f64 / 16.;
+                            let x = xi as f64 / 16.;
+                            let z = zi as f64 / 16.;
+                            let w = wi as f64 / 16.;
+                            let v = 3. * t * t * dt * (z - x) + (1. + t * t * t) * (dz - dx)
+                                - 0.5
+                                    * (2. * x * dx * (w - 2. * x) + (1. + x * x) * (dw - 2. * dx))
+                                + exact;
+                            assert!(r.lo <= v && v <= r.hi, "{v} in {r:?}");
+                            checks += 1;
+                        }
+                    }
+                }
+            }
+        }
+        println!(
+            "DUAL_SOURCE_DYADIC_CHECKS {checks}, exact cross-row cancellation for 3 directions"
+        );
+    }
+}
