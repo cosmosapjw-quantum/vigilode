@@ -1,0 +1,373 @@
+{
+  "checks": [
+    "RED101 GREEN0",
+    "36 bounded point72 reconstruction zeroheap",
+    "48 stream zeroheap",
+    "18 qualified vector epochs/12 scoped refusals;10 aperiodic epochs qualified",
+    "1368+3072+768 independent Fraction assertions",
+    "32 regression pass5 ignored",
+    "1120 exact prior records",
+    "source hashes/rustfmt/diff check"
+  ],
+  "claim_id": "M2-03d.5b.11",
+  "cleanup": {
+    "duplicate_log_payloads": 0,
+    "raw_bytes_removed": 3936254,
+    "unique_compressed_bytes": 144388
+  },
+  "command": [
+    "cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "--release",
+    "-p",
+    "vigilode",
+    "--features",
+    "polynomial-events",
+    "--test",
+    "dae_resource_baseline_contracts",
+    "nondominant_vector_portfolio",
+    "--",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "declared_results": [
+    "SELECTION.json",
+    "APERIODIC_CROSS_DESIGN.json",
+    "INDEPENDENT_CHECKS.json",
+    "REPLAY_COMPARE.json",
+    "RESOURCE_COMPARE.json",
+    "MODULE_ACTIVATION_LEDGER.json"
+  ],
+  "environment": {
+    "hardware": "AMD Ryzen9 5900X x86_64 remote host",
+    "software": [
+      {
+        "name": "rustc",
+        "version": "rustc 1.94.1 (e408947bf 2026-03-25)"
+      },
+      {
+        "name": "cargo",
+        "version": "cargo 1.94.1 (29ea6fb6a 2026-03-24)"
+      },
+      {
+        "name": "MathHarness General",
+        "version": "3.1.0 verified154 files"
+      }
+    ]
+  },
+  "input_artifacts": [
+    {
+      "current_sha256": "42f2988389f3a870ccdad5ce81f097f1624298c52b1f44f943de9c340abf2c98",
+      "path": "crates/rodas5p-integrators/src/retro_dae_init.rs",
+      "sha256": "42f2988389f3a870ccdad5ce81f097f1624298c52b1f44f943de9c340abf2c98",
+      "source_commit": "e797b3aa83a900c4765102d3263ab9b29a9a8dd0",
+      "verified_git_blob_sha256": "42f2988389f3a870ccdad5ce81f097f1624298c52b1f44f943de9c340abf2c98"
+    },
+    {
+      "current_sha256": "64ea91e77e00db818577e21a217ee820e9add18577f7b133dbb79b81e08f7d22",
+      "path": "crates/rodas5p-integrators/src/retro_dae_evolution.rs",
+      "sha256": "64ea91e77e00db818577e21a217ee820e9add18577f7b133dbb79b81e08f7d22",
+      "source_commit": "e797b3aa83a900c4765102d3263ab9b29a9a8dd0",
+      "verified_git_blob_sha256": "64ea91e77e00db818577e21a217ee820e9add18577f7b133dbb79b81e08f7d22"
+    },
+    {
+      "current_sha256": "f15833ef631c892f18d9668d4c1479e045b90e43faf30c4e1d4f4c33a06a496d",
+      "path": "crates/vigilode/src/dae_evolution.rs",
+      "sha256": "f15833ef631c892f18d9668d4c1479e045b90e43faf30c4e1d4f4c33a06a496d",
+      "source_commit": "e797b3aa83a900c4765102d3263ab9b29a9a8dd0",
+      "verified_git_blob_sha256": "f15833ef631c892f18d9668d4c1479e045b90e43faf30c4e1d4f4c33a06a496d"
+    },
+    {
+      "current_sha256": "96d88d9ceb1a546cb790bd9cac69630cc3fae02afaa8db59453b68ff7edf39ca",
+      "path": "crates/vigilode/tests/dae_resource_baseline_contracts.rs",
+      "sha256": "96d88d9ceb1a546cb790bd9cac69630cc3fae02afaa8db59453b68ff7edf39ca",
+      "source_commit": "e797b3aa83a900c4765102d3263ab9b29a9a8dd0",
+      "verified_git_blob_sha256": "96d88d9ceb1a546cb790bd9cac69630cc3fae02afaa8db59453b68ff7edf39ca"
+    },
+    {
+      "current_sha256": "4d0990a4e3823256d1cdbde118316e1b4f7b6987152374f19a572b231297eab9",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/PREREGISTRATION.md",
+      "sha256": "4d0990a4e3823256d1cdbde118316e1b4f7b6987152374f19a572b231297eab9",
+      "source_commit": "e797b3aa83a900c4765102d3263ab9b29a9a8dd0",
+      "verified_git_blob_sha256": "4d0990a4e3823256d1cdbde118316e1b4f7b6987152374f19a572b231297eab9"
+    },
+    {
+      "current_sha256": "0b0bf2ed28061f989430a5ae2d6cf40def59de6cdaf4c9ef8d53da033708da4e",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/guide.py",
+      "sha256": "9d830e3d38c7353967499e5914c5ddaf5fdaa4254f713e6d7a58adacce765ed9",
+      "source_commit": "dfb8f594712fe662c8154c9ff95ed10d6eb44878",
+      "verified_git_blob_sha256": "9d830e3d38c7353967499e5914c5ddaf5fdaa4254f713e6d7a58adacce765ed9"
+    },
+    {
+      "current_sha256": "12c9175ef202a0086af7dcb6f95c9ee8b2c3e4b6ae84d5e8d0ba612dbf42d8cf",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/CANDIDATES.json",
+      "sha256": "12c9175ef202a0086af7dcb6f95c9ee8b2c3e4b6ae84d5e8d0ba612dbf42d8cf",
+      "source_commit": "dfb8f594712fe662c8154c9ff95ed10d6eb44878",
+      "verified_git_blob_sha256": "12c9175ef202a0086af7dcb6f95c9ee8b2c3e4b6ae84d5e8d0ba612dbf42d8cf"
+    },
+    {
+      "current_sha256": "53ac6995d8412668e61ac32764983bb7eed45c6e9578b343c059797d661c4e12",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/HARNESS_ROUTES.json",
+      "sha256": "53ac6995d8412668e61ac32764983bb7eed45c6e9578b343c059797d661c4e12",
+      "source_commit": "dfb8f594712fe662c8154c9ff95ed10d6eb44878",
+      "verified_git_blob_sha256": "53ac6995d8412668e61ac32764983bb7eed45c6e9578b343c059797d661c4e12"
+    },
+    {
+      "current_sha256": "d985290a01a38e439aa0d540c2b8b1ee7d5a30c1880d3b757903b5121e057840",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/LITERATURE.md",
+      "sha256": "d985290a01a38e439aa0d540c2b8b1ee7d5a30c1880d3b757903b5121e057840",
+      "source_commit": "dfb8f594712fe662c8154c9ff95ed10d6eb44878",
+      "verified_git_blob_sha256": "d985290a01a38e439aa0d540c2b8b1ee7d5a30c1880d3b757903b5121e057840"
+    },
+    {
+      "current_sha256": "0b0bf2ed28061f989430a5ae2d6cf40def59de6cdaf4c9ef8d53da033708da4e",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/guide.py",
+      "sha256": "0b0bf2ed28061f989430a5ae2d6cf40def59de6cdaf4c9ef8d53da033708da4e",
+      "source_commit": "c6a01ae04ab352e8028e7201cf5b13084dd9db75",
+      "verified_git_blob_sha256": "0b0bf2ed28061f989430a5ae2d6cf40def59de6cdaf4c9ef8d53da033708da4e"
+    }
+  ],
+  "mathematics": {
+    "assertion_tested": "actual nondominant callback RED admission failure -> GREEN0/0/0;90 point,90 reconstruction,30 vector epochs,96 aperiodic isolated,10 aperiodic epochs;1368+3072+768 exact assertions;316 finite candidates 268 qualified/48 refused and168 within-stratum Pareto;1120 old receipts exact",
+    "bounds": {
+      "aperiodic_epochs": 10,
+      "aperiodic_native_slabs": 24,
+      "cells": [
+        2,
+        4,
+        8
+      ],
+      "isolated_aperiodic": 96,
+      "orders": [
+        7,
+        12
+      ],
+      "point": 90,
+      "reconstruction": 90,
+      "tested_nz": [
+        2,
+        4,
+        8
+      ],
+      "transition_dim_max": 8,
+      "vector_epochs": 30
+    },
+    "coefficient_domain": "directed binary64; independent Fraction graph and analytic affine IVP enclosures",
+    "conventions": "original left defect and branch/physical tube; represented nonuniform time cells, augmented constant and ordered transition coefficient recurrence",
+    "non_claims": [
+      "all nonsingular or unstructured systems",
+      "full VG1",
+      "generic root completeness",
+      "default promotion",
+      "walltime/stack/scan worker allocation",
+      "holdout",
+      "all prior modules activated"
+    ]
+  },
+  "outputs": [
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/APERIODIC_CROSS_DESIGN.json",
+      "sha256": "e4deab400c7940cda21c0d9d3c630ff590ed375f844c8a328e0171666ba7a92b"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/BINARY.sha256",
+      "sha256": "6db7ae4d9abc826ae5c80df659198273b843efa25c16fdf6fc6fff283466873c"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/INDEPENDENT_CHECKS.json",
+      "sha256": "f458bf8e92a16ff58e70d539067c57f7821b9cd516ff0728dae61b57297d846e"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/MODULE_ACTIVATION_LEDGER.json",
+      "sha256": "139afc93b8a8b16d808c3f6b3f7a92e658a05cadb5de2e9c02e856766b2df93b"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/RAW_LOG_CLEANUP.json",
+      "sha256": "299d4bdba49590a74f1fa445d41bc211090cf3df644d903873176e32f59356a4"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/REPLAY_COMPARE.json",
+      "sha256": "ab60072c2a43e308edbbb86818a15cd0ab59099754f8b487228341c37861ab13"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/RESOURCE_COMPARE.json",
+      "sha256": "daeb7a7f395d6b56b510d7d00bd8478c3da3450efdd758b7e08a9f30a87e0749"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/SELECTION.json",
+      "sha256": "850306e3995a74ad26c289244ee4f42f2cd50bdb662458e93fed50e3fd5c9027"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/allocator.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/allocator.log.gz",
+      "sha256": "81d835fe4a3c3845e11be8128ad7763d16025340f81adfb4ea96e5080aa10a3e"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/aperiodic.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/aperiodic.log.gz",
+      "sha256": "5e807ebf09209492d6f61fa6a117e4e478437a66569a54b624b33fdd436f5275"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/components.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/components.log.gz",
+      "sha256": "cb7a18317f4c48ea306c8227379e90c89c2b5371ff424e250581cfedcb56d7f3"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/green.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/green.log.gz",
+      "sha256": "4f5bee23cb11d6f8bc58b34e040d8951c909cf7b5cd2fd4b6ebc26a5282752ce"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/green_final.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/green_final.log.gz",
+      "sha256": "86ec93663caab3aef6ba5e8fe3de8f6ad87fd092564aa03e8b6433812f48bc1c"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/harness.log.gz",
+      "sha256": "6a63b7be8943d5dcef06736d4a68cdd6c1d63890eb5b9b64c2442c8fc5b633a9"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/native.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/native.log.gz",
+      "sha256": "b0efb5c5d4a2966910a9ecef87fd7d42979f07979053b88e45028c8b40c1b5ac"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/pivot.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/pivot.log.gz",
+      "sha256": "385f94b32b12f833f3e879e13aa9f8caa2b937bcb7a75f23cd6b7da1d2149a34"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/red.exit",
+      "sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/red.log.gz",
+      "sha256": "f3e0a5be087c27f877da62da21690d7657f681d63e41f64e4c013e4342d4375f"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/regression.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/regression.log.gz",
+      "sha256": "f91595243be2738a67a4a6d3a8b9ef55d418ac9ff4c1777b8f62a1aa9714e68d"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/selection.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/selection.log.gz",
+      "sha256": "58241024e96651f79614611fec386310fcbf71bdb9f23f9d3efdbfd1cb16c109"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/vector.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/vector.log.gz",
+      "sha256": "a5ad2fd03bb266b8ee7d9a3a6f9815c36f880ee5968967005c4fa7fc4239711d"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/verify.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/verify.log.gz",
+      "sha256": "3d23c878ae03bdac4f5ccd81e06d4188e7efb7d730a88f8cc8a3b9d6e11d1bfa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_pivot_aperiodic_20261127/verify.py",
+      "sha256": "58dc18957e8960d1c7e7f4d1cd68753a395b372eb6224eae59639d459680d2d9"
+    }
+  ],
+  "randomness": {
+    "generator": "Python random.Random finite measured replay",
+    "seeds": [
+      1729,
+      97531
+    ],
+    "used": true
+  },
+  "repository": {
+    "commit": "e797b3aa83a900c4765102d3263ab9b29a9a8dd0",
+    "final_guide_commit": "c6a01ae04ab352e8028e7201cf5b13084dd9db75",
+    "guide_commit": "dfb8f594712fe662c8154c9ff95ed10d6eb44878",
+    "tracked_dirty": false,
+    "untracked_evidence": true
+  },
+  "residual_risks": [
+    "structured fixture domain",
+    "fixed array stack costs",
+    "whole driver and report ownership",
+    "row equilibration tie not superiority",
+    "parallel worker allocation unmeasured",
+    "timing/holdout and broader modules"
+  ],
+  "result": "implementation-verified scoped; formal M2/full VG1 OPEN",
+  "run": {
+    "exit_status": 0,
+    "runtime_seconds": null,
+    "status": "completed",
+    "timing_note": "per-test logs retain elapsed; no aggregate controlled benchmark"
+  },
+  "schema_version": 2
+}
