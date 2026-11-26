@@ -3119,3 +3119,163 @@ mod bounded_polynomial_scratch_tests {
         println!("POLYNOMIAL_BIT_CHECKS {checked}");
     }
 }
+
+#[cfg(test)]
+mod guard_defect_scratch_contracts {
+    use super::*;
+    use crate::retro_event_poly::{AffineFactor as F, EventTerm as T};
+    use std::{
+        alloc::{GlobalAlloc, Layout, System},
+        cell::Cell,
+        hint::black_box,
+    };
+    thread_local! {
+        static TRACK: Cell<bool> = const { Cell::new(false) };
+        static REQUESTS: Cell<usize> = const { Cell::new(0) };
+    }
+    struct Counter;
+    fn request() {
+        if TRACK.try_with(Cell::get).unwrap_or(false) {
+            let _ = REQUESTS.try_with(|v| v.set(v.get() + 1));
+        }
+    }
+    unsafe impl GlobalAlloc for Counter {
+        unsafe fn alloc(&self, l: Layout) -> *mut u8 {
+            request();
+            unsafe { System.alloc(l) }
+        }
+        unsafe fn alloc_zeroed(&self, l: Layout) -> *mut u8 {
+            request();
+            unsafe { System.alloc_zeroed(l) }
+        }
+        unsafe fn realloc(&self, p: *mut u8, l: Layout, n: usize) -> *mut u8 {
+            request();
+            unsafe { System.realloc(p, l, n) }
+        }
+        unsafe fn dealloc(&self, p: *mut u8, l: Layout) {
+            unsafe { System.dealloc(p, l) }
+        }
+    }
+    #[global_allocator]
+    static ALLOC: Counter = Counter;
+    struct Reset;
+    impl Drop for Reset {
+        fn drop(&mut self) {
+            TRACK.with(|v| v.set(false));
+        }
+    }
+    fn measured<T>(f: impl FnOnce() -> T) -> (T, usize) {
+        assert!(!TRACK.with(Cell::get));
+        REQUESTS.with(|v| v.set(0));
+        TRACK.with(|v| v.set(true));
+        let reset = Reset;
+        let r = f();
+        drop(reset);
+        (r, REQUESTS.with(Cell::get))
+    }
+    fn same(a: Iv, b: Iv) {
+        assert_eq!(
+            (a.lo.to_bits(), a.hi.to_bits()),
+            (b.lo.to_bits(), b.hi.to_bits())
+        );
+    }
+    #[test]
+    fn actual_directed_source_defect_and_refinement_are_noalloc() {
+        // Positive control using the allocator directly to avoid optimized-away allocations.
+        let (_, positive) = measured(|| unsafe {
+            let l = Layout::from_size_align(32, 8).unwrap();
+            let ptr = std::alloc::alloc(l);
+            assert!(!ptr.is_null());
+            black_box(ptr);
+            ptr.write(7);
+            assert_eq!(ptr.read(), 7);
+            std::alloc::dealloc(ptr, l);
+        });
+        assert_eq!(positive, 1);
+        let t = Iv::new(0., 0.25).unwrap();
+        let y = [Iv::new(-0.25, 0.25).unwrap(); 3];
+        let tr = |coefficient, factors| T {
+            coefficient,
+            factors,
+        };
+        let g = [
+            DeclaredPolynomial::new(vec![
+                tr(1., vec![F::component(1, 0.)]),
+                tr(1., vec![F::clock(0.), F::component(2, 0.)]),
+            ])
+            .unwrap(),
+            DeclaredPolynomial::new(vec![
+                tr(1., vec![F::component(2, 0.)]),
+                tr(-0.5, vec![F::clock(0.), F::component(1, 0.)]),
+            ])
+            .unwrap(),
+        ];
+        for e in &g {
+            e.validate(3).unwrap();
+        }
+        let c = DenseMatrix::identity(2);
+        let old = di::evaluate(&g, t, &y).unwrap();
+        let j = jz(&old, 1);
+        let defect = di::defect(&c, &j).unwrap();
+        let q0 = di::rows_norm(&defect).unwrap();
+        let rhs = [p(1.).unwrap(), p(2.).unwrap()];
+        let expected = product_bound(
+            q0,
+            sub_down(1., q0).unwrap(),
+            &di::matvec(&c, &rhs).unwrap(),
+        )
+        .unwrap();
+        let mut v = [zero(); 2];
+        let mut jac = [[zero(); 33]; 2];
+        let mut e = [zero(); 4];
+        let mut base = [zero(); 2];
+        let mut one = [zero(); 2];
+        let mut two = [zero(); 2];
+        let mut audit = [di::AttemptCount::default(); 3];
+        let (q, requests) = measured(|| {
+            guard_source_rows(&g, t, &y, &mut v, &mut jac).unwrap();
+            let q = guard_defect_into(&c, &jac, 1, &mut e).unwrap();
+            let gap = sub_down(1., q).unwrap();
+            for (sweeps, out) in [(0, &mut base), (1, &mut one), (2, &mut two)] {
+                guard_solve_into(&c, &rhs, q, gap, out, &e, sweeps, &mut audit[sweeps]).unwrap();
+            }
+            q
+        });
+        assert_eq!(requests, 0);
+        assert_eq!(q.to_bits(), q0.to_bits());
+        for i in 0..2 {
+            same(v[i], old.v[i]);
+            for k in 0..4 {
+                same(jac[i][k], old.j[i][k]);
+            }
+            for k in 0..2 {
+                same(e[i * 2 + k], defect[i][k]);
+            }
+            same(base[i], expected[i]);
+            assert!(base[i].lo <= one[i].lo && one[i].hi <= base[i].hi);
+            assert!(one[i].lo <= two[i].lo && two[i].hi <= one[i].hi);
+        }
+        assert!(
+            two.iter()
+                .zip(base)
+                .any(|(x, y)| x.lo > y.lo || x.hi < y.hi)
+        );
+        for k in 0..=64 {
+            let t = k as f64 / 256.;
+            let exact = [
+                (1. - 2. * t) / (1. + 0.5 * t * t),
+                (2. + 0.5 * t) / (1. + 0.5 * t * t),
+            ];
+            for i in 0..2 {
+                assert!(two[i].lo <= exact[i] && exact[i] <= two[i].hi);
+            }
+        }
+        for (k, a) in audit.iter().enumerate() {
+            assert_eq!((a.started, a.returned), (k, k));
+        }
+        println!(
+            "GUARD_KERNEL positive_requests={positive} requests={requests} q={q} base={:?} one={:?} two={:?}",
+            base, one, two
+        );
+    }
+}
