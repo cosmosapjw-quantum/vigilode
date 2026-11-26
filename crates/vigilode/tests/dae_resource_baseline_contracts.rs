@@ -4256,3 +4256,362 @@ fn vector_projection_actual_callbacks_noalloc() {
         "actual vector callback allocations"
     );
 }
+
+#[test]
+fn bounded_vector_portfolio() {
+    use de::ReconstructionSeedRoute as S;
+    warm();
+    let branch = [[-1., 1.], [-1., 1.]];
+    let epoch = EvolutionEpoch {
+        start: 0.,
+        end: 0.125,
+        incoming_x_error: Some(0.),
+    };
+    for (case, a, b) in [
+        ("weak", 0.5, 0.25),
+        ("moderate", 1., 0.5),
+        ("strong", 2., -1.),
+    ] {
+        let src = vector_projection_fixture(a, b);
+        let baseline = evolve_epoch(
+            &src,
+            &[0.],
+            &[0., 0.],
+            &branch,
+            epoch,
+            &opts(),
+            policy(),
+            EvolutionRoute::Reduced5,
+            &[],
+        )
+        .unwrap();
+        assert!(baseline.global_qualified, "{case} {:?}", baseline.reason);
+        for solver in [
+            EvolutionRoute::Reduced5,
+            EvolutionRoute::Prepared5,
+            EvolutionRoute::BoundedVector5,
+            EvolutionRoute::BoundedVectorRefined5,
+        ] {
+            let ((r, receipt), allocation) = measure(|| {
+                evolve_epoch_audited(
+                    &src,
+                    &[0.],
+                    &[0., 0.],
+                    &branch,
+                    epoch,
+                    &opts(),
+                    policy(),
+                    solver,
+                    &[],
+                )
+            });
+            let r = r.unwrap();
+            assert!(r.global_qualified, "{case} {solver:?} {:?}", r.reason);
+            println!(
+                "VECTOR_EPOCH {}",
+                serde_json::json!({"case":case,"solver":solver,"allocation":allocation,"slabs":r.slabs().len(),"qualified":r.global_qualified,"max_physical_error":r.max_physical_error,"audit":receipt})
+            );
+        }
+        let mut scratch = VectorProjectionWorkspace::new();
+        let mut recon = de::VectorReconstructionWorkspace::new();
+        let slabs = baseline.slabs();
+        for (position, k) in [
+            ("first", 0),
+            ("middle", slabs.len() / 2),
+            ("last", slabs.len() - 1),
+        ] {
+            let s = &slabs[k];
+            let c = s.certificate.as_ref().unwrap();
+            let x = &s.native.y0;
+            let t = s.times[0];
+            for (route, refined) in [("legacy", false), ("bounded", false), ("refined", true)] {
+                let (r, receipt, alloc) = if route == "legacy" {
+                    let ((r, w), a) = measure(|| {
+                        src.initialize_audited(
+                            t,
+                            x,
+                            &[0., 0.],
+                            &branch,
+                            policy().init,
+                            InitRoute::PreparedBatch,
+                        )
+                    });
+                    (r.unwrap(), w, a)
+                } else {
+                    let ((r, w), a) = measure(|| {
+                        src.initialize_bounded_vector_audited(
+                            t,
+                            x,
+                            &[0., 0.],
+                            &branch,
+                            policy().init,
+                            refined,
+                            &mut scratch,
+                        )
+                    });
+                    assert_eq!(a.requests(), 0);
+                    (r.unwrap().to_owned_report(), w, a)
+                };
+                assert!(r.qualified);
+                for (i, z) in r.root_box.iter().enumerate() {
+                    let exact = x[0] * (i + 1) as f64;
+                    assert!(z[0] <= exact && exact <= z[1]);
+                }
+                assert!((r.xdot[0] - 1.).abs() <= 1e-12);
+                assert!((r.reduced_jacobian[0][0]).abs() <= 1e-12);
+                println!(
+                    "VECTOR_POINT {}",
+                    serde_json::json!({"case":case,"position":position,"route":route,"x":x,"time":t,"allocation":alloc,"report":r,"audit":receipt})
+                );
+            }
+            let xp = de::dense_power(&s.native.y0, &s.native.y1, &s.native.stages, s.native.basis)
+                .unwrap();
+            let mut out = [Iv::point(123.).unwrap(); 10];
+            let mut work: [InitWork; 5] = std::array::from_fn(|_| InitWork::default());
+            for (candidate, refined, seed) in [
+                ("legacy", false, S::Fixed),
+                ("bounded_fixed", false, S::Fixed),
+                ("bounded_previous", false, S::PreviousNode),
+                ("refined_fixed", true, S::Fixed),
+                ("refined_previous", true, S::PreviousNode),
+            ] {
+                let (z, receipt, allocation) = if candidate == "legacy" {
+                    let ((r, w), a) = measure(|| {
+                        de::reconstruct_audited(
+                            &src,
+                            s.times,
+                            &xp,
+                            &[0., 0.],
+                            &branch,
+                            policy().init,
+                            InitRoute::PreparedBatch,
+                            None,
+                            5,
+                        )
+                    });
+                    let (z, _) = r.unwrap();
+                    (z, w, a)
+                } else {
+                    let mut w = ProjectionAttemptWork::default();
+                    let (r, a) = measure(|| {
+                        de::reconstruct_bounded_vector_into(
+                            &src,
+                            s.times,
+                            &xp,
+                            &[0., 0.],
+                            &branch,
+                            policy().init,
+                            refined,
+                            seed,
+                            &mut out,
+                            &mut work,
+                            &mut w,
+                            &mut recon,
+                        )
+                    });
+                    r.unwrap();
+                    assert_eq!(a.requests(), 0);
+                    assert_eq!((w.calls.started, w.calls.returned), (5, 5));
+                    (out.chunks_exact(5).map(|v| v.to_vec()).collect(), w, a)
+                };
+                let mut full = xp.clone();
+                full.extend(z);
+                let r = de::certify_slab(
+                    &src,
+                    s.times,
+                    &full,
+                    &branch,
+                    policy().tube_radius,
+                    Some(c.incoming),
+                    policy().green,
+                    policy().init.condition_cap,
+                )
+                .unwrap();
+                assert!(
+                    r.global_qualified
+                        && r.whole_x_error.unwrap() <= policy().global_tol
+                        && r.whole_z_error.unwrap() <= policy().global_tol
+                );
+                println!(
+                    "VECTOR_RECON {}",
+                    serde_json::json!({"case":case,"position":position,"candidate":candidate,"allocation":allocation,"audit":receipt,"qualified":r.global_qualified,"whole_x":r.whole_x_error,"whole_z":r.whole_z_error,"original_g":r.original_g_upper})
+                );
+            }
+        }
+    }
+    // Nonlinear perturbation with the same unique physical graph.
+    let lin = |k, w| tr(w, vec![F::component(k, 0.)]);
+    let delta = F {
+        constant: 0.,
+        time: 0.,
+        state: vec![(1, 1.), (0, -1.)],
+    };
+    let src = DaeSource::new(
+        vec![p(vec![tr(1., vec![])])],
+        vec![
+            p(vec![
+                lin(1, 1.),
+                lin(0, -1.),
+                tr(0.03125, vec![delta.clone(), delta]),
+            ]),
+            p(vec![lin(2, 1.), lin(0, -2.)]),
+        ],
+    )
+    .unwrap();
+    for refined in [false, true] {
+        let (r, w) = src.initialize_bounded_vector_audited(
+            0.125,
+            &[0.125],
+            &[0., 0.],
+            &branch,
+            policy().init,
+            refined,
+            &mut scratch_for_vector(),
+        );
+        let r = r.unwrap().to_owned_report();
+        assert!(r.root_box[0][0] <= 0.125 && 0.125 <= r.root_box[0][1]);
+        println!(
+            "VECTOR_NONLINEAR {}",
+            serde_json::json!({"refined":refined,"report":r,"audit":w})
+        );
+    }
+    let singular = DaeSource::new(
+        vec![p(vec![tr(1., vec![])])],
+        vec![
+            p(vec![lin(1, 1.), lin(2, 1.)]),
+            p(vec![lin(1, 1.), lin(2, 1.)]),
+        ],
+    )
+    .unwrap();
+    let (r, w) = singular.initialize_bounded_vector_audited(
+        0.,
+        &[0.],
+        &[0., 0.],
+        &branch,
+        policy().init,
+        false,
+        &mut scratch_for_vector(),
+    );
+    assert!(r.is_err());
+    println!(
+        "VECTOR_REFUSAL {}",
+        serde_json::json!({"error":r.err().unwrap().to_string(),"audit":w})
+    );
+}
+fn scratch_for_vector() -> VectorProjectionWorkspace {
+    VectorProjectionWorkspace::new()
+}
+
+#[test]
+fn source_linear_ls_portfolio() {
+    use de::LinearLsEndpointRoute as R;
+    warm();
+    let iv = |x| Iv::point(x).unwrap();
+    let source = |rate: f64| {
+        DaeSource::new(
+            vec![p(vec![tr(rate, vec![F::component(0, 0.)])])],
+            vec![p(vec![
+                tr(1., vec![F::component(1, 0.)]),
+                tr(-1., vec![F::component(0, 0.)]),
+            ])],
+        )
+        .unwrap()
+    };
+    let routes = [
+        R::NormalEquations,
+        R::BoundedNormal,
+        R::QrProposal,
+        R::RationalResponse,
+    ];
+    for rate in [0., -0.125, -1., -4., -16., -64.] {
+        let src = source(rate);
+        let power = vec![vec![iv(1.)], vec![iv(1.)]];
+        for order in [1, 3, 6] {
+            for route in routes {
+                let (v, allocation) = measure(|| {
+                    de::source_linear_ls_endpoint(&src, [0., 1.], &power, 0., order, route)
+                });
+                let v = v.unwrap();
+                if matches!(route, R::BoundedNormal | R::RationalResponse) {
+                    assert_eq!(allocation.requests(), 0);
+                }
+                assert!((rate.exp() - 1.).abs() <= v.candidate_error);
+                println!(
+                    "LS_BOUND {}",
+                    serde_json::json!({"case":"manufactured","rate":rate,"order":order,"route":route,"allocation":allocation,"bounds":v,"qualified":true})
+                );
+            }
+        }
+    }
+    for rate in [-1., -8.] {
+        let src = source(rate);
+        let branch = [[-2., 2.]];
+        for solver in [
+            EvolutionRoute::Reduced5,
+            EvolutionRoute::Reduced5NormalLs,
+            EvolutionRoute::Reduced5BoundedLs,
+        ] {
+            let ((r, a), alloc) = measure(|| {
+                evolve_epoch_audited(
+                    &src,
+                    &[1.],
+                    &[1.],
+                    &branch,
+                    EvolutionEpoch {
+                        start: 0.,
+                        end: 0.125,
+                        incoming_x_error: Some(0.),
+                    },
+                    &opts(),
+                    policy(),
+                    solver,
+                    &[],
+                )
+            });
+            let r = r.unwrap();
+            assert!(r.global_qualified, "{rate} {solver:?} {:?}", r.reason);
+            let mut receipts = 0;
+            let mut tighter = 0;
+            for s in r.slabs() {
+                let c = s.certificate.as_ref().unwrap();
+                if let Some(v) = c.linear_ls_endpoint {
+                    receipts += 1;
+                    let b = de::certify_slab(
+                        &src,
+                        s.times,
+                        &power(s),
+                        &branch,
+                        policy().tube_radius,
+                        Some(c.incoming),
+                        policy().green,
+                        policy().init.condition_cap,
+                    )
+                    .unwrap();
+                    assert_eq!(c.whole_x_error, b.whole_x_error);
+                    assert!(c.outgoing.unwrap() <= b.outgoing.unwrap());
+                    tighter += usize::from(c.outgoing.unwrap() < b.outgoing.unwrap());
+                    println!(
+                        "LS_NATIVE {}",
+                        serde_json::json!({"rate":rate,"solver":solver,"times":s.times,"power":s.power,"incoming":c.incoming,"bounds":v,"outgoing":c.outgoing,"base_outgoing":b.outgoing})
+                    );
+                }
+            }
+            if solver != EvolutionRoute::Reduced5 {
+                assert_eq!(receipts, r.slabs().len());
+            }
+            println!(
+                "LS_EPOCH {}",
+                serde_json::json!({"rate":rate,"solver":solver,"allocation":alloc,"qualified":r.global_qualified,"slabs":r.slabs().len(),"receipts":receipts,"tighter":tighter,"max_physical_error":r.max_physical_error,"audit":a})
+            );
+        }
+    }
+    let r = de::source_linear_ls_endpoint(
+        &source(1.),
+        [0., 1.],
+        &[vec![iv(1.)], vec![iv(1.)]],
+        0.,
+        3,
+        R::BoundedNormal,
+    );
+    assert!(r.is_err());
+}
