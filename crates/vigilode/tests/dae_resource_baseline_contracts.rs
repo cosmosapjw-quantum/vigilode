@@ -2635,7 +2635,7 @@ fn scalar_reuse_reconstruct_allocation_contract() {
         &z.iter()
             .map(|r| r.iter().map(|v| v.as_pair()).collect::<Vec<_>>())
             .collect::<Vec<_>>(),
-        &s.power[power.len()..],
+        &s.power[power.len()..].to_vec(),
     );
     println!("RECONSTRUCT_REUSE_ALLOC {:?}", a);
     assert!(
