@@ -955,6 +955,31 @@ macro_rules! observed_reset {
         r
     }};
 }
+// Same row-major dot and defect-product rounding as di::matvec followed
+// by product_bound. Output is local scratch, not accepted physical state.
+fn guard_solve_into(
+    c: &DenseMatrix,
+    rhs: &[Iv],
+    q: f64,
+    gap: f64,
+    out: &mut [Iv],
+) -> CoreResult<()> {
+    for (i, o) in out.iter_mut().enumerate() {
+        *o = c
+            .row(i)
+            .iter()
+            .zip(rhs)
+            .try_fold(zero(), |s, (&a, &v)| s.add(v.scale(a)?))?;
+    }
+    let e = div_up(mul_up(q, di::norm(out))?, gap)?;
+    for v in out {
+        *v = v.add(Iv::new(-e, e)?)?;
+    }
+    Ok(())
+}
+fn guard_row_norm(row: &[Iv]) -> CoreResult<f64> {
+    Ok(0.0_f64.max(row.iter().try_fold(0., |s, v| add_up(s, v.mag()))?))
+}
 impl<'a> GuardProof<'a> {
     pub fn new(
         src: &DaeSource,
@@ -1045,6 +1070,7 @@ impl<'a> GuardProof<'a> {
         let j = jz(&g, nx);
         let original = DenseMatrix::new(nz, nz, cert.preconditioner.clone())?;
         let mut work = InitWork::default();
+        let prepared;
         let c = if derivative == GuardDerivativeRoute::PreparedSchur {
             let center = di::center_matrix(&j)?;
             audit.rhs_requested += nz;
@@ -1058,35 +1084,47 @@ impl<'a> GuardProof<'a> {
             if r.is_ok() {
                 audit.rhs_returned += nz;
             }
-            r?
+            prepared = r?;
+            &prepared
         } else {
-            original.clone()
+            &original
         };
-        let q = di::rows_norm(&di::defect(&c, &j)?)?;
+        let q = di::rows_norm(&di::defect(c, &j)?)?;
         let gap = sub_down(1., q)?;
         if gap <= 0. {
             return Err(bad("guard inverse defect"));
         }
-        let mut solve = |rhs: &[Iv]| -> CoreResult<Vec<Iv>> {
+        // DaeSource owns nx+nz<=32. Keep all directed operations and their
+        // order, but reuse bounded column storage rather than three Vecs per
+        // solve. GuardSlabEvidence still owns its public output.
+        let mut rhs_storage = [zero(); 32];
+        let mut solved_storage = [zero(); 32];
+        let mut reduced_storage = [zero(); 33];
+        let rhs = &mut rhs_storage[..nz];
+        let solved = &mut solved_storage[..nz];
+        let reduced = &mut reduced_storage[..=nx];
+        let mut solve = |rhs: &[Iv], out: &mut [Iv]| -> CoreResult<()> {
             observed_reset!(
                 audit,
                 reduced_columns,
-                product_bound(q, gap, &di::matvec(&c, rhs)?)
+                guard_solve_into(c, rhs, q, gap, out)
             )
         };
         let hz = &h[1 + nx..];
-        let mut reduced = Vec::with_capacity(nx + 1);
         for (k, &hk) in h[..=nx].iter().enumerate() {
-            let rhs = g.j.iter().map(|r| -r[k]).collect::<Vec<_>>();
-            reduced.push(hk.add(guard_dot(hz, &solve(&rhs)?)?)?);
+            for (v, r) in rhs.iter_mut().zip(&g.j) {
+                *v = -r[k];
+            }
+            solve(rhs, solved)?;
+            reduced[k] = hk.add(guard_dot(hz, solved)?)?;
         }
         let velocity = if derivative == GuardDerivativeRoute::Tangent {
-            let rhs =
-                g.j.iter()
-                    .map(|r| r[0].add(guard_dot(&r[1..1 + nx], &f.v)?).map(|v| -v))
-                    .collect::<CoreResult<Vec<_>>>()?;
-            h[0].add(guard_dot(&h[1..1 + nx], &f.v)?)?
-                .add(guard_dot(hz, &solve(&rhs)?)?)?
+            for (v, r) in rhs.iter_mut().zip(&g.j) {
+                *v = -r[0].add(guard_dot(&r[1..1 + nx], &f.v)?)?;
+            }
+            let partial = h[0].add(guard_dot(&h[1..1 + nx], &f.v)?)?;
+            solve(rhs, solved)?;
+            partial.add(guard_dot(hz, solved)?)?
         } else {
             reduced[0].add(guard_dot(&reduced[1..], &f.v)?)?
         };
@@ -1095,7 +1133,7 @@ impl<'a> GuardProof<'a> {
         let reduced_lip = if structural {
             reduced[1..].iter().map(|v| v.mag()).fold(0., f64::max)
         } else {
-            di::rows_norm(&[reduced[1..].to_vec()])?
+            guard_row_norm(&reduced[1..])?
         };
         // The straight segment between represented V and true Z(t,U)
         // lies in this hull; use it for the algebraic correction only.
@@ -1108,7 +1146,7 @@ impl<'a> GuardProof<'a> {
             evaluations,
             di::evaluate(std::slice::from_ref(guard), time, &hull)
         )?;
-        let algebraic_guard_lip = di::rows_norm(&[hh.j[0][1 + nx..].to_vec()])?;
+        let algebraic_guard_lip = guard_row_norm(&hh.j[0][1 + nx..])?;
         let clock = [p(cert.times[0])?, p(cert.times[1])?.sub(p(cert.times[0])?)?];
         let (h_poly, algebraic_guard_lip) = if structural && value == GuardValueRoute::Transport {
             // The source-owned Robertson constraint is exact affine
