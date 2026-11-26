@@ -1,0 +1,7 @@
+Branch research/m2-dae-source-into-20261126, EXEC_SHA.txt, INPUT_SHA256SUMS, BINARY.sha256, RESOURCE_BINARY.sha256 bind executable inputs. Rust locked offline:
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_source_into_contracts -- --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_source_into_contracts source_portfolio -- --ignored --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts component_replay -- --ignored --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts refusals -- --ignored --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts training -- --ignored --exact --nocapture --test-threads=1
+Restore source_portfolio.log, components.log, refusals.log, training.log in scratch; audit.py compares prior sibling m2_dae_resource_baseline_20261126 logs and AUDIT.json; guide.py select. Exact raw CELL string equality separately recorded PHYSICAL_REPLAY.json. Red snapshot RED_GREEN_TEST.rs may be run at base as integration test in isolated scratch worktree; preserve original source. Compare logical receipts, not durations. No holdout.
