@@ -3860,3 +3860,73 @@ mod guard_defect_scratch_contracts {
         );
     }
 }
+
+#[cfg(test)]
+mod centered_source_residual_contracts {
+    use super::*;
+    use crate::retro_event_poly::{AffineFactor as F, EventTerm as T};
+
+    #[test]
+    fn repeated_degree_four_factors_preserve_exact_cancellation() {
+        // g=(1+t^3)(z-x), expanded in the original declaration.
+        // Independent dyadic point formula is exact for this small grid.
+        let t = F::clock(0.);
+        let x = F::component(0, 0.);
+        let z = F::component(1, 0.);
+        let g = DeclaredPolynomial::new(vec![
+            T {
+                coefficient: 1.,
+                factors: vec![z.clone()],
+            },
+            T {
+                coefficient: -1.,
+                factors: vec![x.clone()],
+            },
+            T {
+                coefficient: 1.,
+                factors: vec![z, t.clone(), t.clone(), t.clone()],
+            },
+            T {
+                coefficient: -1.,
+                factors: vec![x, t.clone(), t.clone(), t],
+            },
+        ])
+        .unwrap();
+        g.validate(2).unwrap();
+        let time = Iv::new(0., 0.5).unwrap();
+        let state = [Iv::new(-0.25, 0.25).unwrap(), Iv::new(-0.5, 0.5).unwrap()];
+        let independent = guard_directional_residual(&g, time, &state, 1, 1, &[1.], false).unwrap();
+        let grouped = guard_directional_residual(&g, time, &state, 1, 1, &[1.], true).unwrap();
+        assert!(independent.lo < 0. && independent.hi > 0.);
+        assert_eq!(grouped.as_pair(), [0., 0.]);
+        let mut checks = 0;
+        for k in [0, 1] {
+            for grouped in [false, true] {
+                let r =
+                    guard_directional_residual(&g, time, &state, 1, k, &[0.75], grouped).unwrap();
+                for ti in 0..=8 {
+                    let t = ti as f64 / 16.;
+                    for xi in -4..=4 {
+                        let x = xi as f64 / 16.;
+                        for zi in -8..=8 {
+                            let z = zi as f64 / 16.;
+                            let exact = if k == 0 {
+                                -3. * t * t * (z - x) - 0.75 * (1. + t * t * t)
+                            } else {
+                                0.25 * (1. + t * t * t)
+                            };
+                            assert!(
+                                r.lo <= exact && exact <= r.hi,
+                                "k={k} grouped={grouped} exact={exact} box={r:?}"
+                            );
+                            checks += 1;
+                        }
+                    }
+                }
+            }
+        }
+        println!(
+            "CENTERED_SOURCE_DEGREE4 checks={checks} independent={independent:?} grouped={grouped:?}"
+        );
+    }
+}
