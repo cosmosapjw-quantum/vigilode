@@ -151,7 +151,7 @@ impl Default for SourceEvalWorkspace {
 // Exact same directed operations and iteration order as evaluate().
 // The immutable validated DaeSource owns the dimension/factor caps.
 // Do not skip a derivative because the requested output is RHS only.
-fn evaluate_row_bounded(
+pub(crate) fn evaluate_row_bounded(
     eq: &DeclaredPolynomial,
     t: Iv,
     y: &[Iv],

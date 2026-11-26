@@ -57,24 +57,123 @@ fn eval(p: &[Iv], x: Iv) -> CoreResult<Iv> {
 fn choose(n: usize, k: usize) -> usize {
     (0..k).fold(1, |v, i| v * (n - i) / (i + 1))
 }
-fn bernstein(a: &[Iv]) -> CoreResult<Poly> {
+// Degree <= 16 for four affine factors composed with native quartics.
+// Preserve trailing zeros and exactly the old arithmetic order. No trimming.
+const POLY_SCRATCH: usize = 17;
+struct ScratchPoly {
+    a: [Iv; POLY_SCRATCH],
+    len: usize,
+}
+impl ScratchPoly {
+    fn new(a: &[Iv]) -> CoreResult<Self> {
+        if a.len() > POLY_SCRATCH {
+            return Err(bad("polynomial scratch capacity"));
+        }
+        let mut out = Self {
+            a: [zero(); POLY_SCRATCH],
+            len: a.len(),
+        };
+        out.a[..a.len()].copy_from_slice(a);
+        Ok(out)
+    }
+    fn slice(&self) -> &[Iv] {
+        &self.a[..self.len]
+    }
+    fn add(&self, b: &[Iv]) -> CoreResult<Self> {
+        let mut v = Self::new(&[])?;
+        v.len = self.len.max(b.len());
+        if v.len > POLY_SCRATCH {
+            return Err(bad("polynomial scratch capacity"));
+        }
+        for (i, &x) in self.slice().iter().enumerate() {
+            v.a[i] = v.a[i].add(x)?;
+        }
+        for (i, &x) in b.iter().enumerate() {
+            v.a[i] = v.a[i].add(x)?;
+        }
+        Ok(v)
+    }
+    fn scale(&self, b: Iv) -> CoreResult<Self> {
+        let mut v = Self::new(&[])?;
+        v.len = self.len;
+        for (o, &x) in v.a.iter_mut().zip(self.slice()) {
+            *o = x.mul(b)?;
+        }
+        Ok(v)
+    }
+    fn mul(&self, b: &[Iv]) -> CoreResult<Self> {
+        if self.len == 0 || b.is_empty() {
+            return Err(bad("empty product polynomial"));
+        }
+        let mut v = Self::new(&[])?;
+        v.len = self.len + b.len() - 1;
+        if v.len > POLY_SCRATCH {
+            return Err(bad("polynomial scratch capacity"));
+        }
+        for (i, &x) in self.slice().iter().enumerate() {
+            for (j, &y) in b.iter().enumerate() {
+                v.a[i + j] = v.a[i + j].add(x.mul(y)?)?;
+            }
+        }
+        Ok(v)
+    }
+}
+fn bernstein_at(a: &[Iv], i: usize) -> CoreResult<Iv> {
     let n = a.len() - 1;
-    (0..=n)
-        .map(|i| {
-            (0..=i).try_fold(zero(), |s, j| {
-                s.add(a[j].mul(p(choose(i, j) as f64)?.div(p(choose(n, j) as f64)?)?)?)
-            })
-        })
-        .collect()
+    (0..=i).try_fold(zero(), |s, j| {
+        s.add(a[j].mul(p(choose(i, j) as f64)?.div(p(choose(n, j) as f64)?)?)?)
+    })
 }
 fn range(a: &[Iv]) -> CoreResult<Iv> {
-    let b = bernstein(a)?;
-    Iv::new(
-        b.iter().map(|v| v.lo).fold(f64::INFINITY, f64::min),
-        b.iter().map(|v| v.hi).fold(f64::NEG_INFINITY, f64::max),
-    )
+    if a.is_empty() {
+        return Err(bad("empty polynomial range"));
+    }
+    let mut lo = f64::INFINITY;
+    let mut hi = f64::NEG_INFINITY;
+    for i in 0..a.len() {
+        let b = bernstein_at(a, i)?;
+        lo = lo.min(b.lo);
+        hi = hi.max(b.hi);
+    }
+    Iv::new(lo, hi)
+}
+fn bernstein_magnitude(a: &[Iv], mean: bool) -> CoreResult<f64> {
+    if a.is_empty() {
+        return Err(bad("empty Bernstein magnitude"));
+    }
+    let mut out = 0_f64;
+    for i in 0..a.len() {
+        let m = bernstein_at(a, i)?.mag();
+        out = if mean { add_up(out, m)? } else { out.max(m) };
+    }
+    if mean {
+        div_up(out, a.len() as f64)
+    } else {
+        Ok(out)
+    }
 }
 fn compose(e: &DeclaredPolynomial, t: &[Iv], y: &[Poly]) -> CoreResult<Poly> {
+    // Low-level callers may supply longer power rows: retain owned
+    // composition for those; only the admitted quartic case is bounded.
+    if t.len() > 5 || y.iter().any(|v| v.len() > 5) {
+        return compose_owned(e, t, y);
+    }
+    let mut out = ScratchPoly::new(&[zero()])?;
+    for term in e.terms() {
+        let mut v = ScratchPoly::new(&[p(term.coefficient)?])?;
+        for f in &term.factors {
+            let mut a = ScratchPoly::new(&[p(f.constant)?])?
+                .add(ScratchPoly::new(t)?.scale(p(f.time)?)?.slice())?;
+            for &(i, w) in &f.state {
+                a = a.add(ScratchPoly::new(&y[i])?.scale(p(w)?)?.slice())?;
+            }
+            v = v.mul(a.slice())?;
+        }
+        out = out.add(v.slice())?;
+    }
+    Ok(out.slice().to_vec())
+}
+fn compose_owned(e: &DeclaredPolynomial, t: &[Iv], y: &[Poly]) -> CoreResult<Poly> {
     let mut out = vec![zero()];
     for term in e.terms() {
         let mut v = vec![p(term.coefficient)?];
@@ -97,10 +196,18 @@ fn pol_norm(p: &[Poly]) -> CoreResult<f64> {
 fn c_polys(c: &DenseMatrix, v: &[Poly]) -> CoreResult<Vec<Poly>> {
     (0..c.nrows())
         .map(|i| {
-            c.row(i)
-                .iter()
-                .zip(v)
-                .try_fold(vec![zero()], |s, (&a, v)| add(&s, &scale(v, p(a)?)?))
+            if v.iter().all(|r| r.len() <= POLY_SCRATCH) {
+                let mut out = ScratchPoly::new(&[zero()])?;
+                for (&a, r) in c.row(i).iter().zip(v) {
+                    out = out.add(ScratchPoly::new(r)?.scale(p(a)?)?.slice())?;
+                }
+                Ok(out.slice().to_vec())
+            } else {
+                c.row(i)
+                    .iter()
+                    .zip(v)
+                    .try_fold(vec![zero()], |s, (&a, v)| add(&s, &scale(v, p(a)?)?))
+            }
         })
         .collect()
 }
@@ -915,6 +1022,35 @@ impl<'a> GuardProof<'a> {
             },
         })
     }
+    fn algebraic_radius(&self, u: Iv) -> CoreResult<f64> {
+        let n = self
+            .cg_poly
+            .iter()
+            .try_fold(0_f64, |s, v| Ok::<f64, CoreError>(s.max(eval(v, u)?.mag())))?;
+        div_up(n, self.gap)
+    }
+    fn box_value(&self, u: Iv, clock: Iv, error: f64, az: f64) -> CoreResult<Iv> {
+        let n = self.y.len();
+        if n > 32 {
+            return Err(bad("guard scratch shape"));
+        }
+        let ez = add_up(az, mul_up(self.zx_lip, error)?)?;
+        let mut values = [zero(); 32];
+        for (i, v) in self.y.iter().enumerate() {
+            let a = eval(v, u)?;
+            values[i] = if i < self.nx {
+                intersect(a.add(Iv::new(-error, error)?)?, self.x_range[i])?
+            } else {
+                let k = i - self.nx;
+                let a = intersect(a, self.z_range[k])?;
+                intersect(a.add(Iv::new(-ez, ez)?)?, self.root_box[k])?
+            };
+        }
+        // Preserve all derivative evaluation, including errors, even
+        // though this query only consumes the value.
+        let mut row = [zero(); 33];
+        di::evaluate_row_bounded(self.guard, clock, &values[..n], &mut row[..=n])
+    }
     /// Only an advisory polynomial, never an authority on physical roots.
     pub fn hint_coefficients(&self) -> Vec<f64> {
         self.h_poly.iter().map(|&v| di::mid(v)).collect()
@@ -933,12 +1069,7 @@ impl<'a> GuardProof<'a> {
             .sub(p(self.times[0])?)?
             .div(p(self.times[1])?.sub(p(self.times[0])?)?)?;
         let u = Iv::new(u.lo.max(0.), u.hi.min(1.))?;
-        let cg = self
-            .cg_poly
-            .iter()
-            .map(|v| eval(v, u))
-            .collect::<CoreResult<Vec<_>>>()?;
-        let az = div_up(di::norm(&cg), self.gap)?;
+        let az = self.algebraic_radius(u)?;
         match self.evidence.value_route {
             GuardValueRoute::Transport => {
                 let r = add_up(
@@ -947,21 +1078,7 @@ impl<'a> GuardProof<'a> {
                 )?;
                 eval(&self.h_poly, u)?.add(Iv::new(-r, r)?)
             }
-            GuardValueRoute::Box => {
-                let mut values = Vec::with_capacity(self.y.len());
-                let ez = add_up(az, mul_up(self.zx_lip, error)?)?;
-                for (i, v) in self.y.iter().enumerate() {
-                    let a = eval(v, u)?;
-                    if i < self.nx {
-                        values.push(intersect(a.add(Iv::new(-error, error)?)?, self.x_range[i])?);
-                    } else {
-                        let k = i - self.nx;
-                        let a = intersect(a, self.z_range[k])?;
-                        values.push(intersect(a.add(Iv::new(-ez, ez)?)?, self.root_box[k])?);
-                    }
-                }
-                Ok(di::evaluate(std::slice::from_ref(self.guard), p(t)?, &values)?.v[0])
-            }
+            GuardValueRoute::Box => self.box_value(u, p(t)?, error, az),
         }
     }
 }
@@ -1027,32 +1144,13 @@ pub fn reset_slab(
     };
     let u = normalize(clock)?;
     let ex = proof.whole_x;
-    let cg = proof
-        .cg_poly
-        .iter()
-        .map(|v| eval(v, u))
-        .collect::<CoreResult<Vec<_>>>()?;
-    let az = div_up(di::norm(&cg), proof.gap)?;
+    let az = proof.algebraic_radius(u)?;
     let er = add_up(
         mul_up(proof.evidence.reduced_lip, ex)?,
         mul_up(proof.evidence.algebraic_guard_lip, az)?,
     )?;
     let r = if value == GuardValueRoute::Box {
-        let ez = add_up(az, mul_up(proof.zx_lip, ex)?)?;
-        let mut values = Vec::with_capacity(y.len());
-        for (i, v) in y.iter().enumerate() {
-            let b = eval(v, u)?;
-            if i < proof.nx {
-                values.push(intersect(b.add(Iv::new(-ex, ex)?)?, proof.x_range[i])?);
-            } else {
-                let j = i - proof.nx;
-                values.push(intersect(
-                    intersect(b, proof.z_range[j])?.add(Iv::new(-ez, ez)?)?,
-                    proof.root_box[j],
-                )?);
-            }
-        }
-        di::evaluate(std::slice::from_ref(reset), clock, &values)?.v[0]
+        proof.box_value(u, clock, ex, az)?
     } else {
         eval(&proof.h_poly, u)?.add(Iv::new(-er, er)?)?
     };
@@ -1283,33 +1381,14 @@ pub fn vector_reset_component(
     let h = p(c.times[1])?.sub(p(c.times[0])?)?;
     let u = clock.sub(p(c.times[0])?)?.div(h)?;
     let u = Iv::new(u.lo.max(0.), u.hi.min(1.))?;
-    let cg = proof
-        .cg_poly
-        .iter()
-        .map(|v| eval(v, u))
-        .collect::<CoreResult<Vec<_>>>()?;
-    let az = div_up(di::norm(&cg), proof.gap)?;
+    let az = proof.algebraic_radius(u)?;
     let ex = proof.whole_x;
     let er = add_up(
         mul_up(proof.evidence.reduced_lip, ex)?,
         mul_up(proof.evidence.algebraic_guard_lip, az)?,
     )?;
     let r = if value == GuardValueRoute::Box {
-        let ez = add_up(az, mul_up(proof.zx_lip, ex)?)?;
-        let mut values = Vec::with_capacity(y.len());
-        for (i, v) in y.iter().enumerate() {
-            let b = eval(v, u)?;
-            if i < proof.nx {
-                values.push(intersect(b.add(Iv::new(-ex, ex)?)?, proof.x_range[i])?);
-            } else {
-                let j = i - proof.nx;
-                values.push(intersect(
-                    intersect(b, proof.z_range[j])?.add(Iv::new(-ez, ez)?)?,
-                    proof.root_box[j],
-                )?);
-            }
-        }
-        di::evaluate(std::slice::from_ref(reset), clock, &values)?.v[0]
+        proof.box_value(u, clock, ex, az)?
     } else {
         eval(&proof.h_poly, u)?.add(Iv::new(-er, er)?)?
     };
@@ -1571,13 +1650,26 @@ pub struct VectorSyncEvidence {
 // Local mean-value chart for an interval-coefficient represented polynomial.
 fn reset_centered_eval(poly: &[Iv], u: Iv) -> CoreResult<Iv> {
     let center = p(di::mid(u))?;
-    let d = poly
-        .iter()
-        .enumerate()
-        .skip(1)
-        .map(|(k, v)| v.scale(k as f64))
-        .collect::<CoreResult<Vec<_>>>()?;
-    let tight = eval(poly, center)?.add(u.sub(center)?.mul(eval(&d, u)?)?)?;
+    // Evaluate derivative coefficients in the old forward order, then
+    // use the identical reverse Horner recurrence. Longer inputs retain
+    // the prior owned derivative path.
+    let mut d = [zero(); POLY_SCRATCH];
+    let owned;
+    let d = if poly.len() <= POLY_SCRATCH {
+        for (k, v) in poly.iter().enumerate().skip(1) {
+            d[k - 1] = v.scale(k as f64)?;
+        }
+        &d[..poly.len().saturating_sub(1)]
+    } else {
+        owned = poly
+            .iter()
+            .enumerate()
+            .skip(1)
+            .map(|(k, v)| v.scale(k as f64))
+            .collect::<CoreResult<Vec<_>>>()?;
+        owned.as_slice()
+    };
+    let tight = eval(poly, center)?.add(u.sub(center)?.mul(eval(d, u)?)?)?;
     intersect(eval(poly, u)?, tight)
 }
 /// Synchronize every reset clock in times to s. The tube must be an
@@ -1911,8 +2003,8 @@ impl RobertsonModel {
             let w = 1. / n as f64;
             for k in 0..n {
                 let l = k as f64 * w;
-                let vminus = (-range(&conservation_restrict(&y[1], l, w)?)?.lo).max(0.);
-                let zminus = (-range(&conservation_restrict(&lift, l, w)?)?.lo).max(0.);
+                let vminus = (-range(conservation_restrict(&y[1], l, w)?.slice())?.lo).max(0.);
+                let zminus = (-range(conservation_restrict(&lift, l, w)?.slice())?.lo).max(0.);
                 let a = mul_up(
                     2.,
                     rodas5p_core::directed::sub_up(mul_up(1e4, vminus)?, 0.04)?.max(0.),
@@ -1929,15 +2021,8 @@ impl RobertsonModel {
                 let gain = div_up(1., den)?;
                 let mut r = 0.;
                 for d in &defect {
-                    let coeff = bernstein(&conservation_restrict(d, l, w)?)?;
-                    let m = if route == ConservationRoute::Max {
-                        coeff.iter().map(|v| v.mag()).fold(0., f64::max)
-                    } else {
-                        div_up(
-                            coeff.iter().try_fold(0., |s, v| add_up(s, v.mag()))?,
-                            coeff.len() as f64,
-                        )?
-                    };
+                    let q = conservation_restrict(d, l, w)?;
+                    let m = bernstein_magnitude(q.slice(), route != ConservationRoute::Max)?;
                     r = add_up(r, m)?;
                 }
                 r = mul_up(r, w)?;
@@ -1971,14 +2056,13 @@ impl RobertsonModel {
 }
 /// Restrict power polynomial to exact dyadic subcell using directed Horner
 /// composition. Degrees remain bounded by the original polynomial degree.
-fn conservation_restrict(a: &[Iv], l: f64, w: f64) -> CoreResult<Poly> {
-    let mut out = vec![
-        *a.last()
-            .ok_or_else(|| bad("empty conservation polynomial"))?,
-    ];
+fn conservation_restrict(a: &[Iv], l: f64, w: f64) -> CoreResult<ScratchPoly> {
+    let mut out = ScratchPoly::new(&[*a
+        .last()
+        .ok_or_else(|| bad("empty conservation polynomial"))?])?;
     let v = [p(l)?, p(w)?];
     for &c in a[..a.len() - 1].iter().rev() {
-        out = add(&mul(&out, &v)?, &[c])?;
+        out = out.mul(&v)?.add(&[c])?;
     }
     Ok(out)
 }
@@ -2024,10 +2108,9 @@ pub fn conservation_query_full(
     let correction = [a, b, lift]
         .iter()
         .zip(state)
-        .map(|(&a, &b)| a.sub(p(b)?).map(|x| x.mag()))
-        .collect::<CoreResult<Vec<_>>>()?
-        .into_iter()
-        .fold(0., f64::max);
+        .try_fold(0_f64, |s, (&a, &b)| {
+            Ok::<f64, CoreError>(s.max(a.sub(p(b)?)?.mag()))
+        })?;
     add_up(ideal, correction)
 }
 
@@ -2341,4 +2424,137 @@ pub fn phase_slab_enclosure(
         enclosure,
         error_l1: error,
     })
+}
+
+#[cfg(test)]
+mod bounded_polynomial_scratch_tests {
+    use super::*;
+    use crate::retro_event_poly::{AffineFactor as F, EventTerm as T};
+    fn same(a: &[Iv], b: &[Iv]) {
+        assert_eq!(a.len(), b.len());
+        for (x, y) in a.iter().zip(b) {
+            assert_eq!(x.lo.to_bits(), y.lo.to_bits());
+            assert_eq!(x.hi.to_bits(), y.hi.to_bits());
+        }
+    }
+    fn old_restrict(a: &[Iv], l: f64, w: f64) -> CoreResult<Poly> {
+        let mut out = vec![*a.last().unwrap()];
+        let v = [p(l)?, p(w)?];
+        for &c in a[..a.len() - 1].iter().rev() {
+            out = add(&mul(&out, &v)?, &[c])?;
+        }
+        Ok(out)
+    }
+    fn old_bernstein(a: &[Iv]) -> CoreResult<Poly> {
+        let n = a.len() - 1;
+        (0..=n)
+            .map(|i| {
+                (0..=i).try_fold(zero(), |s, j| {
+                    s.add(a[j].mul(p(choose(i, j) as f64)?.div(p(choose(n, j) as f64)?)?)?)
+                })
+            })
+            .collect()
+    }
+    #[test]
+    fn exact_operation_order_and_capacity() {
+        let a = F {
+            constant: 0.125,
+            time: -0.5,
+            state: vec![(0, 0.75), (1, -0.25), (0, 0.125)],
+        };
+        let q = DeclaredPolynomial::new(vec![
+            T {
+                coefficient: 1. / 3.,
+                factors: vec![a.clone(), a.clone(), a.clone(), a],
+            },
+            T {
+                coefficient: -0.25,
+                factors: vec![],
+            },
+        ])
+        .unwrap();
+        q.validate(2).unwrap();
+        let t = [p(0.125).unwrap(), p(0.25).unwrap()];
+        let mut checked = 0;
+        // Includes non-degenerate interval coefficients, all native
+        // polynomial lengths, and the old longer-row fallback.
+        for n in 1..=6 {
+            for k in 0..8 {
+                let y = (0..2)
+                    .map(|j| {
+                        (0..n)
+                            .map(|i| {
+                                let x = ((k + 1) * (i + 2 + j)) as f64 / 17. - 0.5;
+                                Iv::new(x.next_down(), x.next_up()).unwrap()
+                            })
+                            .collect::<Vec<_>>()
+                    })
+                    .collect::<Vec<_>>();
+                let b = compose_owned(&q, &t, &y).unwrap();
+                let c = compose(&q, &t, &y).unwrap();
+                same(&b, &c);
+                checked += b.len() * 2;
+                let old = old_bernstein(&b).unwrap();
+                let r = range(&c).unwrap();
+                same(
+                    &[r],
+                    &[Iv::new(
+                        old.iter().map(|v| v.lo).fold(f64::INFINITY, f64::min),
+                        old.iter().map(|v| v.hi).fold(f64::NEG_INFINITY, f64::max),
+                    )
+                    .unwrap()],
+                );
+                let max = old.iter().map(Iv::mag).fold(0_f64, f64::max);
+                let mean = div_up(
+                    old.iter()
+                        .try_fold(0_f64, |s, v| add_up(s, v.mag()))
+                        .unwrap(),
+                    old.len() as f64,
+                )
+                .unwrap();
+                assert_eq!(
+                    bernstein_magnitude(&c, false).unwrap().to_bits(),
+                    max.to_bits()
+                );
+                assert_eq!(
+                    bernstein_magnitude(&c, true).unwrap().to_bits(),
+                    mean.to_bits()
+                );
+                if c.len() <= POLY_SCRATCH {
+                    for m in [1, 4, 16] {
+                        let w = 1. / m as f64;
+                        for i in 0..m {
+                            let l = i as f64 * w;
+                            same(
+                                conservation_restrict(&c, l, w).unwrap().slice(),
+                                &old_restrict(&b, l, w).unwrap(),
+                            );
+                            checked += 2 * b.len();
+                        }
+                    }
+                }
+                let u = Iv::new(0.25, 0.75).unwrap();
+                let center = p(di::mid(u)).unwrap();
+                let d = c
+                    .iter()
+                    .enumerate()
+                    .skip(1)
+                    .map(|(k, v)| v.scale(k as f64))
+                    .collect::<CoreResult<Vec<_>>>()
+                    .unwrap();
+                let tight = eval(&c, center)
+                    .unwrap()
+                    .add(u.sub(center).unwrap().mul(eval(&d, u).unwrap()).unwrap())
+                    .unwrap();
+                same(
+                    &[reset_centered_eval(&c, u).unwrap()],
+                    &[intersect(eval(&c, u).unwrap(), tight).unwrap()],
+                );
+            }
+        }
+        assert!(ScratchPoly::new(&[zero(); 18]).is_err());
+        assert!(conservation_restrict(&[], 0., 1.).is_err());
+        assert!(range(&[]).is_err());
+        println!("POLYNOMIAL_BIT_CHECKS {checked}");
+    }
 }
