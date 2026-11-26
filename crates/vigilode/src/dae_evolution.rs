@@ -1319,7 +1319,7 @@ impl ThresholdScan {
             .as_ref()
             .map(|g| {
                 let mut work = de::GuardKernelAudit::default();
-                let r = de::GuardProof::new_recorded(
+                let r = de::GuardProofCore::new_recorded(
                     &e.src,
                     &g.source,
                     p,
@@ -1336,8 +1336,8 @@ impl ThresholdScan {
             })
             .transpose()?;
         let velocity = if let Some(proof) = &proof {
-            let v = proof.evidence.velocity;
-            self.guard_slabs.push(proof.evidence.clone());
+            let v = proof.velocity();
+            self.guard_slabs.push(proof.owned_evidence());
             Iv::new(v[0], v[1])?
         } else {
             de::threshold_velocity(&e.src, c)?

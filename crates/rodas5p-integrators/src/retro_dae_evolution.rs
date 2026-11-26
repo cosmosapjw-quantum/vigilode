@@ -910,6 +910,11 @@ pub enum GuardDerivativeRoute {
     SchurGsAdaptive2,
     PreparedSchurGs2,
     ConservedSchurGsAdaptive2,
+    SchurCentered,
+    SchurCenteredGrouped,
+    SchurCenteredGs2,
+    PreparedSchurCenteredGs2,
+    ConservedSchurCenteredGs2,
 }
 /// Conditional interval linear refinement; never an independent slab certificate.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -961,14 +966,31 @@ impl GuardDerivativeRoute {
     fn prepared(self) -> bool {
         matches!(
             self,
-            Self::PreparedSchur | Self::PreparedSchurRefine2 | Self::PreparedSchurGs2
+            Self::PreparedSchur
+                | Self::PreparedSchurRefine2
+                | Self::PreparedSchurGs2
+                | Self::PreparedSchurCenteredGs2
         )
     }
     fn conserved(self) -> bool {
         matches!(
             self,
-            Self::ConservedSchur | Self::ConservedSchurRefine2 | Self::ConservedSchurGsAdaptive2
+            Self::ConservedSchur
+                | Self::ConservedSchurRefine2
+                | Self::ConservedSchurGsAdaptive2
+                | Self::ConservedSchurCenteredGs2
         )
+    }
+    fn centered(self) -> Option<(bool, GuardColumnRefinement)> {
+        use GuardColumnRefinement as R;
+        match self {
+            Self::SchurCentered => Some((false, R::None)),
+            Self::SchurCenteredGrouped => Some((true, R::None)),
+            Self::SchurCenteredGs2
+            | Self::PreparedSchurCenteredGs2
+            | Self::ConservedSchurCenteredGs2 => Some((true, R::GaussSeidel2)),
+            _ => None,
+        }
     }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -1070,11 +1092,33 @@ fn guard_polynomial(
         Ok(GuardPoly::Owned(compose(guard, clock, y)?))
     }
 }
+#[derive(Clone, Copy)]
+struct GuardMatrix<'a> {
+    n: usize,
+    data: &'a [f64],
+}
+impl<'a> GuardMatrix<'a> {
+    fn new(n: usize, data: &'a [f64]) -> CoreResult<Self> {
+        if n.checked_mul(n) != Some(data.len()) {
+            return Err(CoreError::Dimension(format!(
+                "matrix shape {n}x{n} does not match {} entries",
+                data.len()
+            )));
+        }
+        if !data.iter().all(|x| x.is_finite()) {
+            return Err(CoreError::NonFinite("matrix contains NaN/Inf".into()));
+        }
+        Ok(Self { n, data })
+    }
+    fn row(self, i: usize) -> &'a [f64] {
+        &self.data[i * self.n..(i + 1) * self.n]
+    }
+}
 fn guard_cg(
     src: &DaeSource,
     clock: &[Iv],
     y: &[Poly],
-    original: &DenseMatrix,
+    original: GuardMatrix<'_>,
 ) -> CoreResult<GuardCg> {
     if y.iter().all(|v| v.len() <= 5) {
         let empty = ScratchPoly::new(&[])?;
@@ -1098,7 +1142,10 @@ fn guard_cg(
             .iter()
             .map(|g| compose(g, clock, y))
             .collect::<CoreResult<Vec<_>>>()?;
-        Ok(GuardCg::Owned(c_polys(original, &gp)?))
+        Ok(GuardCg::Owned(c_polys(
+            &DenseMatrix::new(original.n, original.n, original.data.to_vec())?,
+            &gp,
+        )?))
     }
 }
 fn guard_pairs(v: &[[f64; 2]]) -> CoreResult<[Iv; 32]> {
@@ -1113,7 +1160,7 @@ fn guard_pairs(v: &[[f64; 2]]) -> CoreResult<[Iv; 32]> {
 }
 /// Conditional on an authentic certificate for the same original source,
 /// polynomial and slab. Only the facade constructs event authority.
-pub struct GuardProof<'a> {
+pub struct GuardProofCore<'a> {
     guard: &'a DeclaredPolynomial,
     y: &'a [Poly],
     nx: usize,
@@ -1126,7 +1173,95 @@ pub struct GuardProof<'a> {
     gap: f64,
     zx_lip: f64,
     whole_x: f64,
+    evidence: GuardInlineEvidence,
+}
+// Public owning report remains unchanged. The numerical core needs only
+// bounded arrays and scalar receipts. Materialization is an explicit boundary.
+struct GuardInlineEvidence {
+    times: [f64; 2],
+    derivative_route: GuardDerivativeRoute,
+    value_route: GuardValueRoute,
+    velocity: [f64; 2],
+    reduced_gradient: [[f64; 2]; 32],
+    nx: usize,
+    reduced_clock: [f64; 2],
+    inverse_defect: f64,
+    reduced_lip: f64,
+    algebraic_guard_lip: f64,
+    prepared_work: InitWork,
+    conserved_derivative_box: Option<[[f64; 2]; 32]>,
+    n: usize,
+}
+impl GuardInlineEvidence {
+    fn owned(&self) -> GuardSlabEvidence {
+        GuardSlabEvidence {
+            evaluations: Vec::new(),
+            times: self.times,
+            derivative_route: self.derivative_route,
+            value_route: self.value_route,
+            velocity: self.velocity,
+            reduced_gradient: self.reduced_gradient[..self.nx].to_vec(),
+            reduced_clock: self.reduced_clock,
+            inverse_defect: self.inverse_defect,
+            reduced_lip: self.reduced_lip,
+            algebraic_guard_lip: self.algebraic_guard_lip,
+            prepared_work: self.prepared_work.clone(),
+            conserved_derivative_box: self
+                .conserved_derivative_box
+                .as_ref()
+                .map(|v| v[..self.n].to_vec()),
+        }
+    }
+}
+/// Compatibility owner; legacy callers can still own/mutate their diagnostic report.
+pub struct GuardProof<'a> {
+    core: GuardProofCore<'a>,
     pub evidence: GuardSlabEvidence,
+}
+impl<'a> GuardProof<'a> {
+    pub fn new(
+        src: &DaeSource,
+        guard: &'a DeclaredPolynomial,
+        y: &'a [Poly],
+        cert: &SlabCertificate,
+        derivative: GuardDerivativeRoute,
+        value: GuardValueRoute,
+    ) -> CoreResult<Self> {
+        Self::new_recorded(
+            src,
+            guard,
+            y,
+            cert,
+            derivative,
+            value,
+            &mut GuardKernelAudit::default(),
+        )
+    }
+    pub fn new_recorded(
+        src: &DaeSource,
+        guard: &'a DeclaredPolynomial,
+        y: &'a [Poly],
+        cert: &SlabCertificate,
+        derivative: GuardDerivativeRoute,
+        value: GuardValueRoute,
+        audit: &mut GuardKernelAudit,
+    ) -> CoreResult<Self> {
+        let core = GuardProofCore::new_recorded(src, guard, y, cert, derivative, value, audit)?;
+        let evidence = core.owned_evidence();
+        Ok(Self { core, evidence })
+    }
+    pub fn hint_coefficients(&self) -> Vec<f64> {
+        self.core.hint_coefficients()
+    }
+    pub fn value_at(&self, t: f64, error: f64) -> CoreResult<Iv> {
+        self.core.value_at_with(
+            t,
+            error,
+            self.evidence.value_route,
+            self.evidence.reduced_lip,
+            self.evidence.algebraic_guard_lip,
+        )
+    }
 }
 fn iv_pairs(v: &[[f64; 2]]) -> CoreResult<Vec<Iv>> {
     v.iter().map(|a| Iv::new(a[0], a[1])).collect()
@@ -1161,16 +1296,16 @@ fn guard_source_rows(
     Ok(())
 }
 fn guard_defect_into(
-    c: &DenseMatrix,
+    c: GuardMatrix<'_>,
     g: &[[Iv; 33]],
     nx: usize,
     defect: &mut [Iv],
 ) -> CoreResult<f64> {
-    let n = c.nrows();
+    let n = c.n;
     for i in 0..n {
         for k in 0..n {
             defect[i * n + k] = (0..n).try_fold(p(if i == k { 1. } else { 0. })?, |s, l| {
-                s.sub(g[l][1 + nx + k].scale(c[(i, l)])?)
+                s.sub(g[l][1 + nx + k].scale(c.row(i)[l])?)
             })?;
         }
     }
@@ -1216,7 +1351,7 @@ fn guard_gs_refine(w: &[Iv], defect: &[Iv], out: &mut [Iv]) -> CoreResult<()> {
 // Same row-major dot and defect-product rounding as di::matvec followed
 // by product_bound. Output is local scratch, not accepted physical state.
 fn guard_solve_into(
-    c: &DenseMatrix,
+    c: GuardMatrix<'_>,
     rhs: &[Iv],
     q: f64,
     gap: f64,
@@ -1264,6 +1399,162 @@ fn guard_solve_into(
                 break;
             }
         }
+    }
+    Ok(())
+}
+// Directional residual r=-D_(e_k,center)g; all coefficients are directed.
+// Grouping is exact algebra before interval evaluation. Repeated remaining
+// factors are compared in declared order; affine terms are collected by variable.
+fn guard_directional_residual(
+    eq: &DeclaredPolynomial,
+    time: Iv,
+    state: &[Iv],
+    nx: usize,
+    k: usize,
+    center: &[f64],
+    grouped: bool,
+) -> CoreResult<Iv> {
+    use crate::retro_event_poly::AffineFactor;
+    fn equal(a: &AffineFactor, b: &AffineFactor) -> bool {
+        a.constant == b.constant && a.time == b.time && a.state == b.state
+    }
+    fn factor(f: &AffineFactor, t: Iv, y: &[Iv]) -> CoreResult<Iv> {
+        f.state
+            .iter()
+            .try_fold(p(f.constant)?.add(t.scale(f.time)?)?, |s, &(i, a)| {
+                s.add(y[i].scale(a)?)
+            })
+    }
+    let terms = eq.terms();
+    let mut entries: [Option<(usize, usize, Iv)>; 64] = [None; 64];
+    let mut count = 0;
+    let mut affine = [zero(); 34]; // constant, clock, then 32 state variables
+    let mut sum = zero();
+    for (ti, term) in terms.iter().enumerate() {
+        for (fi, f) in term.factors.iter().enumerate() {
+            let mut df = if k == 0 { p(f.time)? } else { zero() };
+            for &(j, a) in &f.state {
+                if j < nx {
+                    if j + 1 == k {
+                        df = df.add(p(a)?)?;
+                    }
+                } else {
+                    df = df.add(p(center[j - nx])?.scale(a)?)?;
+                }
+            }
+            let coef = df.scale(-term.coefficient)?;
+            let rest = term
+                .factors
+                .iter()
+                .enumerate()
+                .filter(|(i, _)| *i != fi)
+                .map(|(_, f)| f);
+            if !grouped {
+                let mut v = coef;
+                for f in rest {
+                    v = v.mul(factor(f, time, state)?)?;
+                }
+                sum = sum.add(v)?;
+            } else if term.factors.len() <= 2 {
+                if let Some(f) = rest.clone().next() {
+                    affine[0] = affine[0].add(coef.scale(f.constant)?)?;
+                    affine[1] = affine[1].add(coef.scale(f.time)?)?;
+                    for &(j, a) in &f.state {
+                        affine[2 + j] = affine[2 + j].add(coef.scale(a)?)?;
+                    }
+                } else {
+                    affine[0] = affine[0].add(coef)?;
+                }
+            } else {
+                let existing = entries[..count].iter().position(|entry| {
+                    let (ot, of, _) = entry.unwrap();
+                    let other = &terms[ot];
+                    other.factors.len() == term.factors.len()
+                        && rest
+                            .clone()
+                            .zip(
+                                other
+                                    .factors
+                                    .iter()
+                                    .enumerate()
+                                    .filter(|(i, _)| *i != of)
+                                    .map(|(_, f)| f),
+                            )
+                            .all(|(a, b)| equal(a, b))
+                });
+                if let Some(i) = existing {
+                    let (ot, of, old) = entries[i].unwrap();
+                    entries[i] = Some((ot, of, old.add(coef)?));
+                } else {
+                    if count == entries.len() {
+                        return Err(bad("guard residual factor cap"));
+                    }
+                    entries[count] = Some((ti, fi, coef));
+                    count += 1;
+                }
+            }
+        }
+    }
+    if grouped {
+        sum = affine[0].add(affine[1].mul(time)?)?;
+        for (a, v) in affine[2..].iter().zip(state) {
+            sum = sum.add(a.mul(*v)?)?;
+        }
+        for entry in &entries[..count] {
+            let (ti, fi, mut v) = entry.unwrap();
+            for (i, f) in terms[ti].factors.iter().enumerate() {
+                if i != fi {
+                    v = v.mul(factor(f, time, state)?)?;
+                }
+            }
+            sum = sum.add(v)?;
+        }
+    }
+    Ok(sum)
+}
+fn guard_centered_column(
+    src: &DaeSource,
+    time: Iv,
+    physical: &[Iv],
+    k: usize,
+    c: GuardMatrix<'_>,
+    q: f64,
+    gap: f64,
+    defect: &[Iv],
+    grouped: bool,
+    refinement: GuardColumnRefinement,
+    out: &mut [Iv],
+    audit: &mut GuardKernelAudit,
+) -> CoreResult<()> {
+    let n = out.len();
+    let mut center = [0.; 32];
+    let mut residual = [zero(); 32];
+    let mut correction = [zero(); 32];
+    for (v, a) in center.iter_mut().zip(out.iter()) {
+        *v = di::mid(*a);
+    }
+    observed_reset!(audit, centered_residuals, {
+        for (o, g) in residual[..n].iter_mut().zip(&src.g) {
+            *o = guard_directional_residual(g, time, physical, src.nx(), k, &center[..n], grouped)?;
+        }
+        Ok::<(), CoreError>(())
+    })?;
+    observed_reset!(
+        audit,
+        centered_corrections,
+        guard_solve_into(
+            c,
+            &residual[..n],
+            q,
+            gap,
+            &mut correction[..n],
+            defect,
+            refinement,
+            &mut audit.refinement_sweeps
+        )
+    )?;
+    for i in 0..n {
+        out[i] = intersect(out[i], p(center[i])?.add(correction[i])?)?;
     }
     Ok(())
 }
@@ -1346,6 +1637,7 @@ impl GuardColumnWorkspace {
         let gj = &mut self.jacobian[..nz];
         guard_source_rows(&src.g, time, state, &mut self.values[..nz], gj)?;
         let defect = &mut self.defect[..nz * nz];
+        let c = GuardMatrix::new(nz, c.as_slice())?;
         let q = guard_defect_into(c, gj, nx, defect)?;
         let gap = sub_down(1., q)?;
         if gap <= 0. {
@@ -1362,7 +1654,7 @@ impl Default for GuardColumnWorkspace {
         Self::new()
     }
 }
-impl<'a> GuardProof<'a> {
+impl<'a> GuardProofCore<'a> {
     pub fn new(
         src: &DaeSource,
         guard: &'a DeclaredPolynomial,
@@ -1467,7 +1759,7 @@ impl<'a> GuardProof<'a> {
             evaluations,
             di::evaluate_row_bounded(guard, time, physical, h)
         )?;
-        let original = DenseMatrix::new(nz, nz, cert.preconditioner.clone())?;
+        let original = GuardMatrix::new(nz, &cert.preconditioner)?;
         let mut work = InitWork::default();
         let prepared;
         let c = if derivative.prepared() {
@@ -1490,9 +1782,9 @@ impl<'a> GuardProof<'a> {
                 audit.rhs_returned += nz;
             }
             prepared = r?;
-            &prepared
+            GuardMatrix::new(nz, prepared.as_slice())?
         } else {
-            &original
+            original
         };
         let defect = &mut linear.defect[..nz * nz];
         let q = guard_defect_into(c, gj, nx, defect)?;
@@ -1509,7 +1801,11 @@ impl<'a> GuardProof<'a> {
         let rhs = &mut rhs_storage[..nz];
         let solved = &mut solved_storage[..nz];
         let reduced = &mut reduced_storage[..=nx];
-        let mut solve = |rhs: &[Iv], out: &mut [Iv]| -> CoreResult<()> {
+        let solve = |rhs: &[Iv],
+                     out: &mut [Iv],
+                     k: Option<usize>,
+                     audit: &mut GuardKernelAudit|
+         -> CoreResult<()> {
             observed_reset!(
                 audit,
                 reduced_columns,
@@ -1523,14 +1819,20 @@ impl<'a> GuardProof<'a> {
                     derivative.refinement(),
                     &mut audit.refinement_sweeps
                 )
-            )
+            )?;
+            if let (Some(k), Some((grouped, refinement))) = (k, derivative.centered()) {
+                guard_centered_column(
+                    src, time, physical, k, c, q, gap, defect, grouped, refinement, out, audit,
+                )?;
+            }
+            Ok(())
         };
         let hz = &h[1 + nx..];
         for (k, &hk) in h[..=nx].iter().enumerate() {
             for (v, r) in rhs.iter_mut().zip(gj.iter()) {
                 *v = -r[k];
             }
-            solve(rhs, solved)?;
+            solve(rhs, solved, Some(k), audit)?;
             reduced[k] = hk.add(guard_dot(hz, solved)?)?;
         }
         let velocity = if derivative == GuardDerivativeRoute::Tangent {
@@ -1538,7 +1840,7 @@ impl<'a> GuardProof<'a> {
                 *v = -r[0].add(guard_dot(&r[1..1 + nx], fv)?)?;
             }
             let partial = h[0].add(guard_dot(&h[1..1 + nx], fv)?)?;
-            solve(rhs, solved)?;
+            solve(rhs, solved, None, audit)?;
             partial.add(guard_dot(hz, solved)?)?
         } else {
             reduced[0].add(guard_dot(&reduced[1..], fv)?)?
@@ -1577,7 +1879,7 @@ impl<'a> GuardProof<'a> {
                 algebraic_guard_lip,
             )
         };
-        let cg_poly = guard_cg(src, &clock, y, &original)?;
+        let cg_poly = guard_cg(src, &clock, y, original)?;
         let original_gap = sub_down(1., cert.branch_defect)?;
         if original_gap <= 0. {
             return Err(bad("guard original branch defect"));
@@ -1598,22 +1900,41 @@ impl<'a> GuardProof<'a> {
             gap: original_gap,
             zx_lip: cert.zx_norm_upper,
             whole_x,
-            evidence: GuardSlabEvidence {
-                evaluations: vec![],
+            evidence: GuardInlineEvidence {
                 times: cert.times,
                 derivative_route: derivative,
                 value_route: value,
                 velocity: velocity.as_pair(),
-                reduced_gradient: reduced[1..].iter().map(|v| v.as_pair()).collect(),
+                nx,
+                n: nx + nz,
+                reduced_gradient: {
+                    let mut a = [[0.; 2]; 32];
+                    for (o, v) in a.iter_mut().zip(&reduced[1..]) {
+                        *o = v.as_pair();
+                    }
+                    a
+                },
                 reduced_clock: reduced[0].as_pair(),
                 inverse_defect: q,
                 reduced_lip,
                 algebraic_guard_lip,
                 prepared_work: work,
-                conserved_derivative_box: tight
-                    .then(|| physical.iter().map(|v| v.as_pair()).collect()),
+                conserved_derivative_box: tight.then(|| {
+                    let mut a = [[0.; 2]; 32];
+                    for (o, v) in a.iter_mut().zip(physical.iter()) {
+                        *o = v.as_pair();
+                    }
+                    a
+                }),
             },
         })
+    }
+    /// Allocating compatibility report, separated from the core computation.
+    pub fn owned_evidence(&self) -> GuardSlabEvidence {
+        self.evidence.owned()
+    }
+    pub fn velocity(&self) -> [f64; 2] {
+        self.evidence.velocity
     }
     fn algebraic_radius(&self, u: Iv) -> CoreResult<f64> {
         let n = self.cg_poly.norm_at(u)?;
@@ -1648,6 +1969,22 @@ impl<'a> GuardProof<'a> {
     /// At a physical time in the certified slab; error must be an externally
     /// established differential radius (endpoint or whole-slab).
     pub fn value_at(&self, t: f64, error: f64) -> CoreResult<Iv> {
+        self.value_at_with(
+            t,
+            error,
+            self.evidence.value_route,
+            self.evidence.reduced_lip,
+            self.evidence.algebraic_guard_lip,
+        )
+    }
+    fn value_at_with(
+        &self,
+        t: f64,
+        error: f64,
+        value_route: GuardValueRoute,
+        reduced_lip: f64,
+        algebraic_guard_lip: f64,
+    ) -> CoreResult<Iv> {
         if !(self.times[0] <= t && t <= self.times[1])
             || !error.is_finite()
             || error < 0.
@@ -1660,11 +1997,11 @@ impl<'a> GuardProof<'a> {
             .div(p(self.times[1])?.sub(p(self.times[0])?)?)?;
         let u = Iv::new(u.lo.max(0.), u.hi.min(1.))?;
         let az = self.algebraic_radius(u)?;
-        match self.evidence.value_route {
+        match value_route {
             GuardValueRoute::Transport => {
                 let r = add_up(
-                    mul_up(self.evidence.reduced_lip, error)?,
-                    mul_up(self.evidence.algebraic_guard_lip, az)?,
+                    mul_up(reduced_lip, error)?,
+                    mul_up(algebraic_guard_lip, az)?,
                 )?;
                 eval(&self.h_poly, u)?.add(Iv::new(-r, r)?)
             }
@@ -1725,7 +2062,7 @@ pub fn reset_slab(
     } else {
         GuardValueRoute::Transport
     };
-    let proof = GuardProof::new(src, reset, y, cert, derivative, value)?;
+    let proof = GuardProofCore::new(src, reset, y, cert, derivative, value)?;
     let h = p(cert.times[1])?.sub(p(cert.times[0])?)?;
     let clock = Iv::new(times[0], times[1])?;
     let normalize = |t: Iv| -> CoreResult<Iv> {
@@ -1948,6 +2285,10 @@ pub struct GuardKernelAudit {
     pub reduced_columns: di::AttemptCount,
     #[serde(skip_serializing_if = "guard_attempt_empty")]
     pub refinement_sweeps: di::AttemptCount,
+    #[serde(skip_serializing_if = "guard_attempt_empty")]
+    pub centered_residuals: di::AttemptCount,
+    #[serde(skip_serializing_if = "guard_attempt_empty")]
+    pub centered_corrections: di::AttemptCount,
 }
 fn guard_attempt_empty(w: &di::AttemptCount) -> bool {
     w.started == 0 && w.returned == 0
@@ -1961,6 +2302,8 @@ impl GuardKernelAudit {
         self.rhs_returned += b.rhs_returned;
         self.reduced_columns.merge(b.reduced_columns);
         self.refinement_sweeps.merge(b.refinement_sweeps);
+        self.centered_residuals.merge(b.centered_residuals);
+        self.centered_corrections.merge(b.centered_corrections);
     }
 }
 /// Retained separately from an owning vector certificate, even on Err.
@@ -2046,7 +2389,7 @@ fn vector_reset_component_inner(
     } else {
         GuardValueRoute::Transport
     };
-    let proof = GuardProof::new_recorded(
+    let proof = GuardProofCore::new_recorded(
         src,
         reset,
         y,
@@ -3462,11 +3805,12 @@ mod guard_defect_scratch_contracts {
         let mut audit = [di::AttemptCount::default(); 3];
         let q = {
             guard_source_rows(&g, t, &y, &mut v, &mut jac).unwrap();
-            let q = guard_defect_into(&c, &jac, 1, &mut e).unwrap();
+            let q = guard_defect_into(GuardMatrix::new(2, c.as_slice()).unwrap(), &jac, 1, &mut e)
+                .unwrap();
             let gap = sub_down(1., q).unwrap();
             for (sweeps, out) in [(0, &mut base), (1, &mut one), (2, &mut two)] {
                 guard_solve_into(
-                    &c,
+                    GuardMatrix::new(2, c.as_slice()).unwrap(),
                     &rhs,
                     q,
                     gap,
