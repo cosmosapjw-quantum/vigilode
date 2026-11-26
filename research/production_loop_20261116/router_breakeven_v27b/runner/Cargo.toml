@@ -1,0 +1,33 @@
+# V30 evaluation runner (node V30_ROUTER_BREAKEVEN_V27B, phase 2): a copy of the V27 runner
+# (router_hyperparameter_free/runner) with the 37 problems of fresh_set.py, the option --h0 (arm R,
+# for R_H) and the last-step replays; one (arm, problem, tolerance, options) case per process, one
+# JSON line of raw counters per run on stdout.
+#
+# Arm N: this package as it is, built with `--features pilots` against the crates of this
+# worktree. Arm T: a copy whose `vigilode` path points at the T checkout (see build.sh); it is built
+# without the feature. Arms D and R run in both builds. Cargo.lock is the V27 runner's lock with
+# the root package renamed.
+[package]
+name = "v30-runner"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+vigilode = { path = "../../../../crates/vigilode" }
+serde_json = "1"
+
+[features]
+# VigilodeSolution::pilots exists only in the FBP implementation (arm N)
+pilots = []
+
+# the release profile of the repository workspace, so that the runner is built with the
+# flags of the facade suite
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+
+# a workspace of its own: the repository workspace does not list this package
+[workspace]
