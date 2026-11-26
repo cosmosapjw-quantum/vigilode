@@ -1,0 +1,8 @@
+Branch research/m2-dae-scalar-affine-20261126, EXEC_SHA.txt, INPUT_SHA256SUMS, BINARY.sha256 and RESOURCE_BINARY.sha256 bind executable inputs.
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_scalar_affine_contracts -- --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_scalar_affine_contracts scalar_portfolio -- --ignored --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p rodas5p-integrators --features polynomial-events --lib retro_event_poly::affine_lattice_tests::identical_exact_root_reports -- --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts component_replay -- --ignored --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts refusals -- --ignored --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts training -- --ignored --exact --nocapture --test-threads=1
+Restore raw scalar_portfolio.log, genuine_red.log, green.log, components.log, refusals.log and training.log in scratch from gzip. audit.py compares prior sibling m2_dae_polynomial_scratch_20261126 logs/AUDIT.json. guide.py select uses audited values; guide.py generate verified archive and fresh ledger. RED_GREEN_TEST.rs at base in isolated scratch reproduces genuine runtime red; simple fixture control is a PASS, not red. Compare actual logical rows not durations. No holdout.
