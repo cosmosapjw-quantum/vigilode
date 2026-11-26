@@ -501,6 +501,19 @@ pub struct InitWork {
     pub root_calls: usize,
     pub dictionary_uses: usize,
     pub conditioned_horner_uses: usize,
+    #[serde(skip_serializing_if = "init_count_zero")]
+    pub root_map_rechecks: usize,
+    #[serde(skip_serializing_if = "init_count_zero")]
+    pub root_map_regrouped: usize,
+    #[serde(skip_serializing_if = "init_count_zero")]
+    pub root_map_expanded: usize,
+    #[serde(skip_serializing_if = "init_count_zero")]
+    pub bounded_prepared_batches: usize,
+    #[serde(skip_serializing_if = "init_count_zero")]
+    pub bounded_residual_terms: usize,
+}
+fn init_count_zero(n: &usize) -> bool {
+    *n == 0
 }
 /// Boundary calls, not arithmetic inside failed kernels. A returned
 /// call may still be physically unqualified.
@@ -737,6 +750,7 @@ fn verified_root_box(
     center: &[f64],
     branch: &[Iv],
     scratch: &mut ProjectionWorkspace,
+    work: &mut InitWork,
 ) -> CoreResult<(Vec<Iv>, f64)> {
     let n = center.len();
     let e = defect(c, j)?;
@@ -765,10 +779,52 @@ fn verified_root_box(
     for (i, x) in mapped.iter_mut().enumerate() {
         *x = p(center[i])?.sub(cg[i])?.add(ed[i])?;
     }
-    if !subset(mapped, &b) {
-        return Err(bad("local self-map inclusion not proved"));
+    if subset(mapped, &b) {
+        return Ok((b, q));
     }
-    Ok((b, q))
+    // Same affine interval image, but sum the small corrections before
+    // adding the center. Recheck actual rounded endpoints, never infer
+    // inclusion from a real-arithmetic radius inequality.
+    let mut b = b;
+    let mut radius = r;
+    for retry in 0..=8 {
+        if retry > 0 {
+            radius = if retry == 1 {
+                let mut spacing = 0_f64;
+                for &v in center {
+                    spacing = spacing
+                        .max(p(v.next_up())?.sub(p(v)?)?.mag())
+                        .max(p(v)?.sub(p(v.next_down())?)?.mag());
+                }
+                radius.max(spacing)
+            } else {
+                mul_up(radius, 2.)?
+            };
+            for (o, &v) in b.iter_mut().zip(center) {
+                *o = p(v)?.add(Iv::new(-radius, radius)?)?;
+            }
+            if !subset(&b, branch) {
+                break;
+            }
+            for (d, (&v, &c)) in delta.iter_mut().zip(b.iter().zip(center)) {
+                *d = v.sub(p(c)?)?;
+            }
+            iv_matvec_into(&e, delta, ed)?;
+        }
+        work.root_map_rechecks += 1;
+        for (i, x) in mapped.iter_mut().enumerate() {
+            *x = p(center[i])?.add(ed[i].sub(cg[i])?)?;
+        }
+        if subset(mapped, &b) {
+            if retry == 0 {
+                work.root_map_regrouped += 1;
+            } else {
+                work.root_map_expanded += 1;
+            }
+            return Ok((b, q));
+        }
+    }
+    Err(bad("local self-map inclusion not proved"))
 }
 impl DaeSource {
     /// Explicit policy and branch. All returned centers are numerical; exact
@@ -1033,7 +1089,7 @@ impl DaeSource {
         } else {
             let (_, g) = observed!(evaluations, self.eval(t, x, &b))?;
             w.evaluations += 1;
-            let (r, q) = verified_root_box(&c, &gc.v, &self.jac_z(&g), &center, &b, scratch)?;
+            let (r, q) = verified_root_box(&c, &gc.v, &self.jac_z(&g), &center, &b, scratch, w)?;
             (
                 r,
                 Some(q),
@@ -1493,15 +1549,47 @@ impl DaeSource {
         }
         let cg = z().add(point.values[nx].scale(c)?)?;
         let rad = mul_up(2., div_up(cg.mag(), gap)?)?;
-        let root = p(center)?.add(Iv::new(-rad, rad)?)?;
+        let mut root = p(center)?.add(Iv::new(-rad, rad)?)?;
         if root.lo < b.lo || root.hi > b.hi {
             return Err(bad("existence box leaves declared branch"));
         }
-        let delta = root.sub(p(center)?)?;
-        let ed = z().add(defect.mul(delta)?)?;
+        let ed = z().add(defect.mul(root.sub(p(center)?)?)?)?;
         let mapped = p(center)?.sub(cg)?.add(ed)?;
         if mapped.lo < root.lo || mapped.hi > root.hi {
-            return Err(bad("local self-map inclusion not proved"));
+            let mut radius = rad;
+            let mut admitted = false;
+            for retry in 0..=8 {
+                if retry > 0 {
+                    radius = if retry == 1 {
+                        let spacing = p(center.next_up())?
+                            .sub(p(center)?)?
+                            .mag()
+                            .max(p(center)?.sub(p(center.next_down())?)?.mag());
+                        radius.max(spacing)
+                    } else {
+                        mul_up(radius, 2.)?
+                    };
+                    root = p(center)?.add(Iv::new(-radius, radius)?)?;
+                    if root.lo < b.lo || root.hi > b.hi {
+                        break;
+                    }
+                }
+                let ed = z().add(defect.mul(root.sub(p(center)?)?)?)?;
+                w.legacy.root_map_rechecks += 1;
+                let image = p(center)?.add(ed.sub(cg)?)?;
+                if image.lo >= root.lo && image.hi <= root.hi {
+                    if retry == 0 {
+                        w.legacy.root_map_regrouped += 1;
+                    } else {
+                        w.legacy.root_map_expanded += 1;
+                    }
+                    admitted = true;
+                    break;
+                }
+            }
+            if !admitted {
+                return Err(bad("local self-map inclusion not proved"));
+            }
         }
         let state_error = distance(root, center)?;
         if state_error > policy.state_tol {
