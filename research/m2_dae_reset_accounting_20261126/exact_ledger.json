@@ -1,0 +1,291 @@
+{
+  "schema_version": "3.1.0",
+  "events": [
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "ATTEMPTS",
+      "payload": {
+        "claim_id": "ATTEMPTS",
+        "statement": "(a+r)+(b+s) = (a+b)+(r+s)",
+        "formal_statement": "POLY_IDENTITY: a + b + r + s = a + b + r + s",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite bookkeeping identities only; measured costs independent"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795676842.9414842,
+      "seq": 0,
+      "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "a640021364ae9f834eed4f49dad8deda53d80b8d1637de8341475ffffd8e75d7"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "ATTEMPTS",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "d54043232312ed9917ac322f5d684314ef6b9006cdeb9c309ad04c24efc3bb7c",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "(a+r)+(b+s)",
+            "rhs": "(a+b)+(r+s)"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: a + b + r + s = a + b + r + s",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-26T07:07:22Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795676842.9434342,
+      "seq": 1,
+      "prev_hash": "a640021364ae9f834eed4f49dad8deda53d80b8d1637de8341475ffffd8e75d7",
+      "hash": "de42b0f21030fa3890e05a9823c749ca5389cfb411b47918f6637e4a3229ce89"
+    },
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "RHS-PARTITION",
+      "payload": {
+        "claim_id": "RHS-PARTITION",
+        "statement": "(a+b)+(c+d) = (a+c)+(b+d)",
+        "formal_statement": "POLY_IDENTITY: a + b + c + d = a + b + c + d",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite bookkeeping identities only; measured costs independent"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795676842.943729,
+      "seq": 2,
+      "prev_hash": "de42b0f21030fa3890e05a9823c749ca5389cfb411b47918f6637e4a3229ce89",
+      "hash": "e3ebe3b0d21ac90bda2de33d86d42c24b7c16a219e2b73ce7c3ada007126289e"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "RHS-PARTITION",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "06b9a0e5126c52f06bd4e96e2a7ed3dea5e07f18cef82fb8ffb7398727a33744",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "(a+b)+(c+d)",
+            "rhs": "(a+c)+(b+d)"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: a + b + c + d = a + b + c + d",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-26T07:07:22Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795676842.9443936,
+      "seq": 3,
+      "prev_hash": "e3ebe3b0d21ac90bda2de33d86d42c24b7c16a219e2b73ce7c3ada007126289e",
+      "hash": "d2e0b2fdb0ea2c2553c025500d402c2f96ea554c8ac894059e9eef130f1eb300"
+    },
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "DEBIT",
+      "payload": {
+        "claim_id": "DEBIT",
+        "statement": "m+(q-m) = q",
+        "formal_statement": "POLY_IDENTITY: q = q",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite bookkeeping identities only; measured costs independent"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795676842.9446836,
+      "seq": 4,
+      "prev_hash": "d2e0b2fdb0ea2c2553c025500d402c2f96ea554c8ac894059e9eef130f1eb300",
+      "hash": "27985ace1cafd4a2eff4d2f7300003db9576b236fa55f9481e25137d42e0e255"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "DEBIT",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "eea2e1cedf9440ab7501333e16e69c5f019e6053b1478eeb42040d649ecb1601",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "m+(q-m)",
+            "rhs": "q"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: q = q",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-26T07:07:22Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795676842.94537,
+      "seq": 5,
+      "prev_hash": "27985ace1cafd4a2eff4d2f7300003db9576b236fa55f9481e25137d42e0e255",
+      "hash": "642aec8e0c978a126afa14de63513d1d3ab1c2d9f3171e4ee3d0e107438aa96f"
+    }
+  ],
+  "claims": {
+    "ATTEMPTS": {
+      "claim_id": "ATTEMPTS",
+      "statement": "(a+r)+(b+s) = (a+b)+(r+s)",
+      "formal_statement": "POLY_IDENTITY: a + b + r + s = a + b + r + s",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite bookkeeping identities only; measured costs independent"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "d54043232312ed9917ac322f5d684314ef6b9006cdeb9c309ad04c24efc3bb7c",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "(a+r)+(b+s)",
+              "rhs": "(a+b)+(r+s)"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: a + b + r + s = a + b + r + s",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-26T07:07:22Z"
+        }
+      ]
+    },
+    "RHS-PARTITION": {
+      "claim_id": "RHS-PARTITION",
+      "statement": "(a+b)+(c+d) = (a+c)+(b+d)",
+      "formal_statement": "POLY_IDENTITY: a + b + c + d = a + b + c + d",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite bookkeeping identities only; measured costs independent"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "06b9a0e5126c52f06bd4e96e2a7ed3dea5e07f18cef82fb8ffb7398727a33744",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "(a+b)+(c+d)",
+              "rhs": "(a+c)+(b+d)"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: a + b + c + d = a + b + c + d",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-26T07:07:22Z"
+        }
+      ]
+    },
+    "DEBIT": {
+      "claim_id": "DEBIT",
+      "statement": "m+(q-m) = q",
+      "formal_statement": "POLY_IDENTITY: q = q",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite bookkeeping identities only; measured costs independent"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "eea2e1cedf9440ab7501333e16e69c5f019e6053b1478eeb42040d649ecb1601",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "m+(q-m)",
+              "rhs": "q"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: q = q",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-26T07:07:22Z"
+        }
+      ]
+    }
+  },
+  "head": "642aec8e0c978a126afa14de63513d1d3ab1c2d9f3171e4ee3d0e107438aa96f",
+  "trust": [
+    "PROVED_EXACT_CERTIFICATE",
+    "PROVED_FORMAL_KERNEL"
+  ]
+}

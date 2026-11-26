@@ -115,6 +115,10 @@ pub struct NativeResourceAudit {
     pub scan_global_certificates: usize,
     pub replay_global_certificates: usize,
     pub guard_build: AttemptCount,
+    pub guard_kernel: de::GuardKernelAudit,
+    pub difference_kernel: de::ResetKernelAudit,
+    pub difference_comparisons: AttemptCount,
+    pub positive_differences: usize,
     pub warp_setup: AttemptCount,
     pub driver_invoked: bool,
     pub stats: Option<crate::Stats>,
@@ -1215,8 +1219,20 @@ impl ThresholdScan {
             .guard
             .as_ref()
             .map(|g| {
-                let r = de::GuardProof::new(&e.src, &g.source, p, c, g.derivative, g.value);
-                update_audit(&e.audit, |a| a.guard_build.record(r.is_ok()));
+                let mut work = de::GuardKernelAudit::default();
+                let r = de::GuardProof::new_recorded(
+                    &e.src,
+                    &g.source,
+                    p,
+                    c,
+                    g.derivative,
+                    g.value,
+                    &mut work,
+                );
+                update_audit(&e.audit, |a| {
+                    a.guard_build.record(r.is_ok());
+                    a.guard_kernel.merge(&work);
+                });
                 r
             })
             .transpose()?;
@@ -2290,6 +2306,22 @@ pub struct VectorResetPolicy {
     pub branch_route: InitRoute,
     pub subdivisions: usize,
 }
+/// Transaction-local diagnostics, not reset authority. A returned
+/// preparation can carry a refusal reason and must not imply commit.
+#[derive(Clone, Debug, Default, Serialize)]
+pub struct ResetTransactionAudit {
+    pub preparation: AttemptCount,
+    pub table_setup: AttemptCount,
+    pub cells: AttemptCount,
+    pub restart_branch: AttemptCount,
+    pub kernel: de::ResetKernelAudit,
+    pub transport: AttemptCount,
+    pub transport_cells: AttemptCount,
+    pub transport_qualified: usize,
+    pub gap_checks: AttemptCount,
+    pub negative_gaps: usize,
+    pub committed: bool,
+}
 #[derive(Serialize)]
 pub struct VectorResetCell {
     pub times: [f64; 2],
@@ -2395,6 +2427,58 @@ impl ThresholdRun {
         reset_policy: VectorResetPolicy,
         max_cells: usize,
     ) -> CoreResult<VectorRestartRun> {
+        self.prepare_vector_restart_recorded(
+            reset,
+            post_src,
+            z_seed,
+            branch,
+            end,
+            policy,
+            reset_policy,
+            max_cells,
+            &mut ResetTransactionAudit::default(),
+        )
+    }
+    #[allow(clippy::too_many_arguments)]
+    fn prepare_vector_restart_recorded(
+        &self,
+        reset: &[DeclaredPolynomial],
+        post_src: &DaeSource,
+        z_seed: &[f64],
+        branch: &[[f64; 2]],
+        end: f64,
+        policy: EvolutionPolicy,
+        reset_policy: VectorResetPolicy,
+        max_cells: usize,
+        audit: &mut ResetTransactionAudit,
+    ) -> CoreResult<VectorRestartRun> {
+        let r = self.prepare_vector_restart_inner(
+            reset,
+            post_src,
+            z_seed,
+            branch,
+            end,
+            policy,
+            reset_policy,
+            max_cells,
+            audit,
+        );
+        audit.preparation.record(r.is_ok());
+        r
+    }
+    #[allow(clippy::too_many_arguments)]
+    fn prepare_vector_restart_inner(
+        &self,
+        reset: &[DeclaredPolynomial],
+        post_src: &DaeSource,
+        z_seed: &[f64],
+        branch: &[[f64; 2]],
+        end: f64,
+        policy: EvolutionPolicy,
+        reset_policy: VectorResetPolicy,
+        max_cells: usize,
+        audit: &mut ResetTransactionAudit,
+    ) -> CoreResult<VectorRestartRun> {
         use rodas5p_core::retro_dictionary::RealMode;
         use rodas5p_integrators::{retro_dae_init::InitMode, retro_green::RetroTable};
         let root = self
@@ -2415,7 +2499,9 @@ impl ThresholdRun {
         for r in reset {
             r.validate(self.trial.engine.src.nx() + self.trial.engine.src.nz())?;
         }
-        let table = RetroTable::with_dictionary(RealMode::Hybrid)?;
+        let table = RetroTable::with_dictionary(RealMode::Hybrid);
+        audit.table_setup.record(table.is_ok());
+        let table = table?;
         let mut out = VectorRestartRun {
             event_time: root,
             policy: reset_policy,
@@ -2476,7 +2562,7 @@ impl ThresholdRun {
                 };
                 let result = (|| -> CoreResult<()> {
                     for r in reset {
-                        cell.reset.push(de::vector_reset_component(
+                        cell.reset.push(de::vector_reset_component_recorded(
                             &self.trial.engine.src,
                             r,
                             &power,
@@ -2484,10 +2570,11 @@ impl ThresholdRun {
                             [a, b],
                             reset_policy.sync,
                             reset_policy.derivative,
+                            &mut audit.kernel,
                         )?);
                     }
                     let r = cell.reset.iter().map(|v| v.enclosure).collect::<Vec<_>>();
-                    let tube = de::certify_vector_tube(
+                    let tube = de::certify_vector_tube_recorded(
                         post_src,
                         [a, root[1]],
                         &r,
@@ -2495,14 +2582,16 @@ impl ThresholdRun {
                         branch,
                         policy.init,
                         reset_policy.branch_route,
+                        &mut audit.kernel,
                     )?;
-                    let sync = de::synchronize_vector(
+                    let sync = de::synchronize_vector_recorded(
                         &cell.reset,
                         [a, b],
                         root[1],
                         &tube,
                         reset_policy.sync,
                         &table,
+                        &mut audit.kernel,
                     );
                     cell.tube = Some(tube);
                     let sync = sync?;
@@ -2517,6 +2606,7 @@ impl ThresholdRun {
                     cell.sync = Some(sync);
                     Ok(())
                 })();
+                audit.cells.record(result.is_ok());
                 if let Err(e) = result {
                     let e = e.to_string();
                     cell.reason = Some(e.clone());
@@ -2551,7 +2641,7 @@ impl ThresholdRun {
             .collect::<CoreResult<Vec<_>>>()?;
         out.synchronized_x = Some(sync);
         out.incoming_radius = Some(radius);
-        let proof = match de::certify_vector_branch(
+        let result = de::certify_vector_branch_recorded(
             post_src,
             [root[1], root[1]],
             &ball,
@@ -2560,7 +2650,10 @@ impl ThresholdRun {
             branch,
             policy.init,
             reset_policy.branch_route,
-        ) {
+            &mut audit.kernel,
+        );
+        audit.restart_branch.record(result.is_ok());
+        let proof = match result {
             Ok(v) => v,
             Err(e) => {
                 out.reason = Some(e.to_string());
@@ -2875,6 +2968,7 @@ impl MultiScan {
             positive: false,
             reason: None,
         };
+        let mut kernel = de::ResetKernelAudit::default();
         let result = (|| -> CoreResult<bool> {
             let a = &self.scans[j].guard.as_ref().expect("declared guard").source;
             let b = &self.scans[k].guard.as_ref().expect("declared guard").source;
@@ -2889,7 +2983,7 @@ impl MultiScan {
                 if lo > covered {
                     return Err(bad("guard difference coverage gap"));
                 }
-                let v = de::vector_reset_component(
+                let v = de::vector_reset_component_recorded(
                     &e.src,
                     &d,
                     &slab.power,
@@ -2897,6 +2991,7 @@ impl MultiScan {
                     [lo, hi],
                     de::VectorSyncRoute::SchurPicard,
                     self.policy.derivative,
+                    &mut kernel,
                 )?;
                 self.work.difference_cells += 1;
                 self.work.difference_prepared_rhs += v.prepared_work.rhs_count;
@@ -2912,6 +3007,14 @@ impl MultiScan {
             }
             Ok(!out.cells.is_empty() && covered == root[1])
         })();
+        update_audit(&e.audit, |a| {
+            a.difference_kernel.components.merge(kernel.components);
+            a.difference_kernel
+                .component_guards
+                .merge(&kernel.component_guards);
+            a.difference_comparisons.record(result.is_ok());
+            a.positive_differences += usize::from(result.as_ref().is_ok_and(|&v| v));
+        });
         match result {
             Ok(v) => out.positive = v,
             Err(e) => out.reason = Some(e.to_string()),
@@ -3860,6 +3963,30 @@ fn robertson_epoch(
     certificate: ConservationRoute,
     grid: &[f64],
 ) -> CoreResult<EvolutionRun> {
+    robertson_epoch_recorded(
+        model,
+        initial,
+        times,
+        opts,
+        policy,
+        route,
+        certificate,
+        grid,
+        None,
+    )
+}
+#[allow(clippy::too_many_arguments)]
+fn robertson_epoch_recorded(
+    model: &RobertsonModel,
+    initial: RobertsonInitial,
+    times: [f64; 2],
+    opts: &Options,
+    policy: EvolutionPolicy,
+    route: EvolutionRoute,
+    certificate: ConservationRoute,
+    grid: &[f64],
+    audit: Option<AuditHandle>,
+) -> CoreResult<EvolutionRun> {
     robertson_policy(policy)?;
     let epoch = EvolutionEpoch {
         start: times[0],
@@ -3878,7 +4005,7 @@ fn robertson_epoch(
         grid,
         None,
         Some((model.clone(), certificate)),
-        None,
+        audit,
     )?;
     if r.initial.x != initial.center || r.driver.y.first().is_none_or(|v| v[..2] != initial.center)
     {
@@ -4333,6 +4460,16 @@ fn simplex_transport_receipt(
     root: [f64; 2],
     sync: SimplexSyncRoute,
 ) -> CoreResult<(SimplexTransportReceipt, Option<String>)> {
+    simplex_transport_recorded(a, reset, prep, root, sync, &mut AttemptCount::default())
+}
+fn simplex_transport_recorded(
+    a: &ThresholdRun,
+    reset: &SimplexReset,
+    prep: &VectorRestartRun,
+    root: [f64; 2],
+    sync: SimplexSyncRoute,
+    audit: &mut AttemptCount,
+) -> CoreResult<(SimplexTransportReceipt, Option<String>)> {
     let bp = prep.restart_branch.as_ref().expect("prepared branch");
     let center = [bp.initial.x[0], bp.initial.x[1]];
     let radius = prep.incoming_radius.expect("prepared radius");
@@ -4381,7 +4518,7 @@ fn simplex_transport_receipt(
                             .collect::<CoreResult<Vec<_>>>()
                     })
                     .collect::<CoreResult<Vec<_>>>()?;
-                let v = de::simplex_transport_cell(
+                let r = de::simplex_transport_cell(
                     reset,
                     &y,
                     c,
@@ -4389,7 +4526,9 @@ fn simplex_transport_receipt(
                     root[1],
                     cell.tube.as_ref().expect("prepared tube"),
                     center,
-                )?;
+                );
+                audit.record(r.is_ok());
+                let v = r?;
                 joint = joint.max(v.joint_l1);
                 evidence.cells.push(v);
             }
@@ -4552,6 +4691,77 @@ pub fn evolve_conserved_chain(
     budget: ConservedChainBudget,
     gap: SimplexGapRoute,
 ) -> CoreResult<ConservedChainRun> {
+    conserved_chain_recorded(
+        modes,
+        initial_mode,
+        initial,
+        times,
+        opts,
+        policy,
+        mp,
+        budget,
+        gap,
+        None,
+    )
+}
+#[derive(Clone, Debug, Serialize)]
+pub struct ChainTransitionAudit {
+    pub from: usize,
+    pub target: usize,
+    pub guard: usize,
+    pub root: [f64; 2],
+    pub cell_quota: usize,
+    pub charged_cells: usize,
+    pub charged_picard_attempts: usize,
+    pub work: ResetTransactionAudit,
+}
+#[derive(Clone, Debug, Default, Serialize)]
+pub struct ConservedChainResourceAudit {
+    pub admitted: bool,
+    pub native: Vec<AtlasNativeAudit>,
+    pub transitions: Vec<ChainTransitionAudit>,
+}
+/// Diagnostic execution snapshot including rejected reset work.
+#[allow(clippy::too_many_arguments)]
+pub fn evolve_conserved_chain_audited(
+    modes: &[ConservedMode],
+    initial_mode: usize,
+    initial: RobertsonInitial,
+    times: [f64; 2],
+    opts: &Options,
+    policy: EvolutionPolicy,
+    mp: MultiGuardPolicy,
+    budget: ConservedChainBudget,
+    gap: SimplexGapRoute,
+) -> (CoreResult<ConservedChainRun>, ConservedChainResourceAudit) {
+    let mut a = ConservedChainResourceAudit::default();
+    let r = conserved_chain_recorded(
+        modes,
+        initial_mode,
+        initial,
+        times,
+        opts,
+        policy,
+        mp,
+        budget,
+        gap,
+        Some(&mut a),
+    );
+    (r, a)
+}
+#[allow(clippy::too_many_arguments)]
+fn conserved_chain_recorded(
+    modes: &[ConservedMode],
+    initial_mode: usize,
+    initial: RobertsonInitial,
+    times: [f64; 2],
+    opts: &Options,
+    policy: EvolutionPolicy,
+    mp: MultiGuardPolicy,
+    budget: ConservedChainBudget,
+    gap: SimplexGapRoute,
+    mut audit: Option<&mut ConservedChainResourceAudit>,
+) -> CoreResult<ConservedChainRun> {
     let b = budget.limits;
     robertson_policy(policy)?;
     if modes.is_empty()
@@ -4585,6 +4795,9 @@ pub fn evolve_conserved_chain(
                 return Err(bad("conserved chain edge contract"));
             }
         }
+    }
+    if let Some(a) = audit.as_deref_mut() {
+        a.admitted = true;
     }
     let mut out = ConservedChainRun {
         epochs: vec![],
@@ -4622,7 +4835,10 @@ pub fn evolve_conserved_chain(
         o.max_steps = remaining;
         if m.guards.is_empty() {
             o.max_steps = o.max_steps.min(slabs);
-            let r = match robertson_epoch(
+            let h = audit
+                .as_ref()
+                .map(|_| Arc::new(Mutex::new(NativeResourceAudit::default())));
+            let result = robertson_epoch_recorded(
                 model,
                 start,
                 [clock, times[1]],
@@ -4631,7 +4847,28 @@ pub fn evolve_conserved_chain(
                 m.route,
                 m.certificate,
                 &[],
-            ) {
+                h.clone(),
+            );
+            if let (Some(a), Some(h)) = (audit.as_deref_mut(), h) {
+                let native = h.lock().expect("native audit lock").clone();
+                let (charged, slabs) = result.as_ref().map_or((o.max_steps, o.max_steps), |r| {
+                    (r.driver.stats.attempts, r.driver.stats.accepted_steps)
+                });
+                a.native.push(AtlasNativeAudit {
+                    mode,
+                    clock: [clock, clock],
+                    center: start.center,
+                    route: m.route,
+                    native_quota: o.max_steps,
+                    slab_quota: o.max_steps,
+                    returned: result.is_ok(),
+                    charged_native_attempts: charged,
+                    charged_scan_slabs: slabs,
+                    measured_attempts: native.measured_attempts(),
+                    native,
+                });
+            }
+            let r = match result {
                 Ok(v) => v,
                 Err(e) => {
                     w.charged_native_attempts += o.max_steps;
@@ -4677,7 +4914,10 @@ pub fn evolve_conserved_chain(
         }
         let mut q = mp;
         q.max_slabs = q.max_slabs.min(slabs);
-        let r = match evolve_robertson_to_first_guard(
+        let h = audit
+            .as_ref()
+            .map(|_| Arc::new(Mutex::new(NativeResourceAudit::default())));
+        let result = robertson_first_guard_recorded(
             m.rate,
             start,
             [clock, times[1]],
@@ -4687,7 +4927,33 @@ pub fn evolve_conserved_chain(
             m.certificate,
             &m.guards,
             q,
-        ) {
+            h.clone(),
+        );
+        if let (Some(a), Some(h)) = (audit.as_deref_mut(), h) {
+            let native = h.lock().expect("native audit lock").clone();
+            let (charged, slabs) = result.as_ref().map_or((remaining, q.max_slabs), |r| {
+                (
+                    r.work.attempts,
+                    r.runs
+                        .first()
+                        .map_or(r.work.physical_certificates, |v| v.stats().accepted_steps),
+                )
+            });
+            a.native.push(AtlasNativeAudit {
+                mode,
+                clock: [clock, clock],
+                center: start.center,
+                route: m.route,
+                native_quota: remaining,
+                slab_quota: q.max_slabs,
+                returned: result.is_ok(),
+                charged_native_attempts: charged,
+                charged_scan_slabs: slabs,
+                measured_attempts: native.measured_attempts(),
+                native,
+            });
+        }
+        let r = match result {
             Ok(v) => v,
             Err(e) => {
                 w.charged_native_attempts += remaining;
@@ -4810,8 +5076,24 @@ pub fn evolve_conserved_chain(
             stop!(k, format!("{k:?}"));
         }
         w.transitions_attempted += 1;
+        let mut discarded = ChainTransitionAudit {
+            from: mode,
+            target: edge.target,
+            guard: j,
+            root,
+            cell_quota: cap,
+            charged_cells: 0,
+            charged_picard_attempts: 0,
+            work: ResetTransactionAudit::default(),
+        };
+        let a = if let Some(a) = audit.as_deref_mut() {
+            a.transitions.push(discarded.clone());
+            a.transitions.last_mut().unwrap()
+        } else {
+            &mut discarded
+        };
         let polynomials = edge.reset.polynomials()?;
-        let prep = match authority.prepare_vector_restart(
+        let prep = match authority.prepare_vector_restart_recorded(
             &polynomials,
             target_model.source(),
             &[0.125],
@@ -4820,11 +5102,14 @@ pub fn evolve_conserved_chain(
             policy,
             edge.policy,
             cap,
+            &mut a.work,
         ) {
             Ok(v) => v,
             Err(e) => {
                 w.charged_reset_cells += cap;
                 out.work.charged_picard_attempts += 8 * cap + 1;
+                a.charged_cells = cap;
+                a.charged_picard_attempts = 8 * cap + 1;
                 ev.reason = Some(e.to_string());
                 out.transitions.push(ev);
                 stop!(ChainStop::ResetRefused, e);
@@ -4832,6 +5117,8 @@ pub fn evolve_conserved_chain(
         };
         add_reset_work(w, &prep);
         out.work.charged_picard_attempts += 8 * prep.cells.len() + 1;
+        a.charged_cells = prep.cells.len();
+        a.charged_picard_attempts = 8 * prep.cells.len() + 1;
         if let Some(e) = prep.reason.clone() {
             let k = if e.contains("cell cap") {
                 ChainStop::ResetBudget
@@ -4843,16 +5130,25 @@ pub fn evolve_conserved_chain(
             out.transitions.push(ev);
             stop!(k, e);
         }
-        let (transport, refusal) =
-            match simplex_transport_receipt(authority, &edge.reset, &prep, root, edge.sync) {
-                Ok(v) => v,
-                Err(e) => {
-                    ev.reason = Some(e.to_string());
-                    ev.reset = Some(prep);
-                    out.transitions.push(ev);
-                    stop!(ChainStop::ResetRefused, e);
-                }
-            };
+        let result = simplex_transport_recorded(
+            authority,
+            &edge.reset,
+            &prep,
+            root,
+            edge.sync,
+            &mut a.work.transport_cells,
+        );
+        a.work.transport.record(result.is_ok());
+        a.work.transport_qualified += usize::from(result.as_ref().is_ok_and(|(_, r)| r.is_none()));
+        let (transport, refusal) = match result {
+            Ok(v) => v,
+            Err(e) => {
+                ev.reason = Some(e.to_string());
+                ev.reset = Some(prep);
+                out.transitions.push(ev);
+                stop!(ChainStop::ResetRefused, e);
+            }
+        };
         out.work.joint_cells += transport.cells.len();
         if let Some(e) = refusal {
             ev.reason = Some(e.clone());
@@ -4877,10 +5173,11 @@ pub fn evolve_conserved_chain(
                         return Err((ChainStop::GapBudget, "conserved gap budget".into()));
                     }
                     w.gap_checks += 1;
-                    let e = target_model
-                        .simplex_gap_enclosure(g, bp.times, xb, center, None, gap)
-                        .map_err(|e| (ChainStop::GapUnproved, e.to_string()))?;
+                    let r = target_model.simplex_gap_enclosure(g, bp.times, xb, center, None, gap);
+                    a.work.gap_checks.record(r.is_ok());
+                    let e = r.map_err(|e| (ChainStop::GapUnproved, e.to_string()))?;
                     let negative = e.enclosure[1] < 0.;
+                    a.work.negative_gaps += usize::from(negative);
                     ev.gap.push(ConservedGapCheck {
                         guard: k,
                         cell: Some(ci),
@@ -4902,17 +5199,18 @@ pub fn evolve_conserved_chain(
                     return Err((ChainStop::GapBudget, "conserved gap budget".into()));
                 }
                 w.gap_checks += 1;
-                let e = target_model
-                    .simplex_gap_enclosure(
-                        g,
-                        [root[1], root[1]],
-                        [[0.; 2]; 2],
-                        next.center,
-                        Some(next.l1_radius),
-                        gap,
-                    )
-                    .map_err(|e| (ChainStop::GapUnproved, e.to_string()))?;
+                let r = target_model.simplex_gap_enclosure(
+                    g,
+                    [root[1], root[1]],
+                    [[0.; 2]; 2],
+                    next.center,
+                    Some(next.l1_radius),
+                    gap,
+                );
+                a.work.gap_checks.record(r.is_ok());
+                let e = r.map_err(|e| (ChainStop::GapUnproved, e.to_string()))?;
                 let negative = e.enclosure[1] < 0.;
+                a.work.negative_gaps += usize::from(negative);
                 ev.gap.push(ConservedGapCheck {
                     guard: k,
                     cell: None,
@@ -4940,6 +5238,7 @@ pub fn evolve_conserved_chain(
         prior = Some(root);
         mode = edge.target;
         ev.committed = true;
+        a.work.committed = true;
         out.transitions.push(ev);
         w.transitions_committed += 1;
         out.final_mode = mode;

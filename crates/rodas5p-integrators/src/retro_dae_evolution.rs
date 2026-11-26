@@ -948,6 +948,13 @@ fn guard_dot(a: &[Iv], b: &[Iv]) -> CoreResult<Iv> {
         .zip(b)
         .try_fold(zero(), |s, (&a, &b)| s.add(a.mul(b)?))
 }
+macro_rules! observed_reset {
+    ($a:expr,$field:ident,$e:expr) => {{
+        let r = (|| $e)();
+        $a.$field.record(r.is_ok());
+        r
+    }};
+}
 impl<'a> GuardProof<'a> {
     pub fn new(
         src: &DaeSource,
@@ -956,6 +963,39 @@ impl<'a> GuardProof<'a> {
         cert: &SlabCertificate,
         derivative: GuardDerivativeRoute,
         value: GuardValueRoute,
+    ) -> CoreResult<Self> {
+        Self::new_recorded(
+            src,
+            guard,
+            y,
+            cert,
+            derivative,
+            value,
+            &mut GuardKernelAudit::default(),
+        )
+    }
+    /// Counts actual guard construction boundaries, even on failure.
+    pub fn new_recorded(
+        src: &DaeSource,
+        guard: &'a DeclaredPolynomial,
+        y: &'a [Poly],
+        cert: &SlabCertificate,
+        derivative: GuardDerivativeRoute,
+        value: GuardValueRoute,
+        audit: &mut GuardKernelAudit,
+    ) -> CoreResult<Self> {
+        let r = Self::build_recorded(src, guard, y, cert, derivative, value, audit);
+        audit.builds.record(r.is_ok());
+        r
+    }
+    fn build_recorded(
+        src: &DaeSource,
+        guard: &'a DeclaredPolynomial,
+        y: &'a [Poly],
+        cert: &SlabCertificate,
+        derivative: GuardDerivativeRoute,
+        value: GuardValueRoute,
+        audit: &mut GuardKernelAudit,
     ) -> CoreResult<Self> {
         let nx = src.nx();
         let nz = src.nz();
@@ -994,21 +1034,31 @@ impl<'a> GuardProof<'a> {
         }
         let mut physical = xb.clone();
         physical.extend_from_slice(&rb);
-        let f = di::evaluate(&src.f, time, &physical)?;
-        let g = di::evaluate(&src.g, time, &physical)?;
-        let hg = di::evaluate(std::slice::from_ref(guard), time, &physical)?;
+        let f = observed_reset!(audit, evaluations, di::evaluate(&src.f, time, &physical))?;
+        let g = observed_reset!(audit, evaluations, di::evaluate(&src.g, time, &physical))?;
+        let hg = observed_reset!(
+            audit,
+            evaluations,
+            di::evaluate(std::slice::from_ref(guard), time, &physical)
+        )?;
         let h = &hg.j[0];
         let j = jz(&g, nx);
         let original = DenseMatrix::new(nz, nz, cert.preconditioner.clone())?;
         let mut work = InitWork::default();
         let c = if derivative == GuardDerivativeRoute::PreparedSchur {
             let center = di::center_matrix(&j)?;
-            di::preconditioner(
+            audit.rhs_requested += nz;
+            let r = di::preconditioner(
                 &center,
                 InitRoute::PreparedBatch,
                 &ParallelExecution::sequential(),
                 &mut work,
-            )?
+            );
+            audit.preconditioners.record(r.is_ok());
+            if r.is_ok() {
+                audit.rhs_returned += nz;
+            }
+            r?
         } else {
             original.clone()
         };
@@ -1017,8 +1067,13 @@ impl<'a> GuardProof<'a> {
         if gap <= 0. {
             return Err(bad("guard inverse defect"));
         }
-        let solve =
-            |rhs: &[Iv]| -> CoreResult<Vec<Iv>> { product_bound(q, gap, &di::matvec(&c, rhs)?) };
+        let mut solve = |rhs: &[Iv]| -> CoreResult<Vec<Iv>> {
+            observed_reset!(
+                audit,
+                reduced_columns,
+                product_bound(q, gap, &di::matvec(&c, rhs)?)
+            )
+        };
         let hz = &h[1 + nx..];
         let mut reduced = Vec::with_capacity(nx + 1);
         for (k, &hk) in h[..=nx].iter().enumerate() {
@@ -1048,7 +1103,11 @@ impl<'a> GuardProof<'a> {
         for (&v, &r) in zb.iter().zip(&rb) {
             hull.push(Iv::new(v.lo.min(r.lo), v.hi.max(r.hi))?);
         }
-        let hh = di::evaluate(std::slice::from_ref(guard), time, &hull)?;
+        let hh = observed_reset!(
+            audit,
+            evaluations,
+            di::evaluate(std::slice::from_ref(guard), time, &hull)
+        )?;
         let algebraic_guard_lip = di::rows_norm(&[hh.j[0][1 + nx..].to_vec()])?;
         let clock = [p(cert.times[0])?, p(cert.times[1])?.sub(p(cert.times[0])?)?];
         let (h_poly, algebraic_guard_lip) = if structural && value == GuardValueRoute::Transport {
@@ -1431,6 +1490,45 @@ pub enum VectorSyncRoute {
     Centered,
     GreenMoment,
 }
+/// Observed Result boundaries, not internal arithmetic or physical authority.
+#[derive(Clone, Debug, Default, Serialize)]
+pub struct GuardKernelAudit {
+    pub builds: di::AttemptCount,
+    pub evaluations: di::AttemptCount,
+    pub preconditioners: di::AttemptCount,
+    pub rhs_requested: usize,
+    pub rhs_returned: usize,
+    pub reduced_columns: di::AttemptCount,
+}
+impl GuardKernelAudit {
+    pub fn merge(&mut self, b: &Self) {
+        self.builds.merge(b.builds);
+        self.evaluations.merge(b.evaluations);
+        self.preconditioners.merge(b.preconditioners);
+        self.rhs_requested += b.rhs_requested;
+        self.rhs_returned += b.rhs_returned;
+        self.reduced_columns.merge(b.reduced_columns);
+    }
+}
+/// Retained separately from an owning vector certificate, even on Err.
+#[derive(Clone, Debug, Default, Serialize)]
+pub struct ResetKernelAudit {
+    pub components: di::AttemptCount,
+    pub component_guards: GuardKernelAudit,
+    pub branches: di::AttemptCount,
+    pub branch_initialization: di::ProjectionAttemptWork,
+    pub branch_evaluations: di::AttemptCount,
+    pub branch_preconditioners: di::AttemptCount,
+    pub branch_rhs_requested: usize,
+    pub branch_rhs_returned: usize,
+    pub branch_columns: di::AttemptCount,
+    pub tubes: di::AttemptCount,
+    pub picard_images: di::AttemptCount,
+    pub strict_images: usize,
+    pub synchronizations: di::AttemptCount,
+    pub sync_components: di::AttemptCount,
+    pub green: di::AttemptCount,
+}
 #[derive(Clone, Debug, Serialize)]
 pub struct VectorResetComponent {
     pub enclosure: [f64; 2],
@@ -1452,6 +1550,41 @@ pub fn vector_reset_component(
     route: VectorSyncRoute,
     derivative: GuardDerivativeRoute,
 ) -> CoreResult<VectorResetComponent> {
+    vector_reset_component_recorded(
+        src,
+        reset,
+        y,
+        c,
+        times,
+        route,
+        derivative,
+        &mut ResetKernelAudit::default(),
+    )
+}
+pub fn vector_reset_component_recorded(
+    src: &DaeSource,
+    reset: &DeclaredPolynomial,
+    y: &[Poly],
+    c: &SlabCertificate,
+    times: [f64; 2],
+    route: VectorSyncRoute,
+    derivative: GuardDerivativeRoute,
+    audit: &mut ResetKernelAudit,
+) -> CoreResult<VectorResetComponent> {
+    let r = vector_reset_component_inner(src, reset, y, c, times, route, derivative, audit);
+    audit.components.record(r.is_ok());
+    r
+}
+fn vector_reset_component_inner(
+    src: &DaeSource,
+    reset: &DeclaredPolynomial,
+    y: &[Poly],
+    c: &SlabCertificate,
+    times: [f64; 2],
+    route: VectorSyncRoute,
+    derivative: GuardDerivativeRoute,
+    audit: &mut ResetKernelAudit,
+) -> CoreResult<VectorResetComponent> {
     if !(c.times[0] <= times[0] && times[0] <= times[1] && times[1] <= c.times[1]) {
         return Err(bad("vector reset slab domain"));
     }
@@ -1460,7 +1593,15 @@ pub fn vector_reset_component(
     } else {
         GuardValueRoute::Transport
     };
-    let proof = GuardProof::new(src, reset, y, c, derivative, value)?;
+    let proof = GuardProof::new_recorded(
+        src,
+        reset,
+        y,
+        c,
+        derivative,
+        value,
+        &mut audit.component_guards,
+    )?;
     let clock = Iv::new(times[0], times[1])?;
     let h = p(c.times[1])?.sub(p(c.times[0])?)?;
     let u = clock.sub(p(c.times[0])?)?.div(h)?;
@@ -1513,6 +1654,46 @@ pub fn certify_vector_branch(
     policy: InitPolicy,
     route: InitRoute,
 ) -> CoreResult<VectorBranchProof> {
+    certify_vector_branch_recorded(
+        src,
+        times,
+        xb,
+        center,
+        z_seed,
+        branch,
+        policy,
+        route,
+        &mut ResetKernelAudit::default(),
+    )
+}
+#[allow(clippy::too_many_arguments)]
+pub fn certify_vector_branch_recorded(
+    src: &DaeSource,
+    times: [f64; 2],
+    xb: &[[f64; 2]],
+    center: &[f64],
+    z_seed: &[f64],
+    branch: &[[f64; 2]],
+    policy: InitPolicy,
+    route: InitRoute,
+    audit: &mut ResetKernelAudit,
+) -> CoreResult<VectorBranchProof> {
+    let r =
+        certify_vector_branch_inner(src, times, xb, center, z_seed, branch, policy, route, audit);
+    audit.branches.record(r.is_ok());
+    r
+}
+fn certify_vector_branch_inner(
+    src: &DaeSource,
+    times: [f64; 2],
+    xb: &[[f64; 2]],
+    center: &[f64],
+    z_seed: &[f64],
+    branch: &[[f64; 2]],
+    policy: InitPolicy,
+    route: InitRoute,
+    audit: &mut ResetKernelAudit,
+) -> CoreResult<VectorBranchProof> {
     crate::affine_event_certificate::check_affine_event_arithmetic()?;
     let nx = src.nx();
     let nz = src.nz();
@@ -1533,22 +1714,36 @@ pub fn certify_vector_branch(
     {
         return Err(bad("vector uniform branch contract"));
     }
-    let initial = src.initialize(times[1], center, z_seed, branch, policy, route)?;
+    let (initial, w) = src.initialize_audited(times[1], center, z_seed, branch, policy, route);
+    audit.branch_initialization.record(&w, initial.is_ok());
+    let initial = initial?;
     let b = iv_pairs(branch)?;
     let zc = di::points(&initial.z)?;
     let mut point = di::points(center)?;
     point.extend_from_slice(&zc);
-    let jp = jz(&di::evaluate(&src.g, p(times[1])?, &point)?, nx);
+    let jp = jz(
+        &observed_reset!(
+            audit,
+            branch_evaluations,
+            di::evaluate(&src.g, p(times[1])?, &point)
+        )?,
+        nx,
+    );
     let mut work = InitWork::default();
-    let c = di::preconditioner(
-        &di::center_matrix(&jp)?,
-        route,
-        &ParallelExecution::sequential(),
-        &mut work,
-    )?;
+    let a = di::center_matrix(&jp)?;
+    audit.branch_rhs_requested += nz;
+    let c = di::preconditioner(&a, route, &ParallelExecution::sequential(), &mut work);
+    audit.branch_preconditioners.record(c.is_ok());
+    if c.is_ok() {
+        audit.branch_rhs_returned += nz;
+    }
+    let c = c?;
     let mut full = x.clone();
     full.extend_from_slice(&b);
-    let j = jz(&di::evaluate(&src.g, t, &full)?, nx);
+    let j = jz(
+        &observed_reset!(audit, branch_evaluations, di::evaluate(&src.g, t, &full))?,
+        nx,
+    );
     let err = di::defect(&c, &j)?;
     let q = di::rows_norm(&err)?;
     let gap = sub_down(1., q)?;
@@ -1557,7 +1752,10 @@ pub fn certify_vector_branch(
     }
     let mut base = x.clone();
     base.extend_from_slice(&zc);
-    let cg = di::matvec(&c, &di::evaluate(&src.g, t, &base)?.v)?;
+    let cg = di::matvec(
+        &c,
+        &observed_reset!(audit, branch_evaluations, di::evaluate(&src.g, t, &base))?.v,
+    )?;
     let image = |local: &[Iv], error: &[Vec<Iv>]| -> CoreResult<Vec<Iv>> {
         let delta = local
             .iter()
@@ -1587,7 +1785,13 @@ pub fn certify_vector_branch(
             }
             let mut v = x.clone();
             v.extend_from_slice(&trial);
-            let el = di::defect(&c, &jz(&di::evaluate(&src.g, t, &v)?, nx))?;
+            let el = di::defect(
+                &c,
+                &jz(
+                    &observed_reset!(audit, branch_evaluations, di::evaluate(&src.g, t, &v))?,
+                    nx,
+                ),
+            )?;
             let candidate = image(&trial, &el)?;
             if di::subset(&candidate, &trial) {
                 local = trial;
@@ -1609,8 +1813,8 @@ pub fn certify_vector_branch(
     }
     let mut y = x.clone();
     y.extend_from_slice(&root);
-    let g = di::evaluate(&src.g, t, &y)?;
-    let f = di::evaluate(&src.f, t, &y)?;
+    let g = observed_reset!(audit, branch_evaluations, di::evaluate(&src.g, t, &y))?;
+    let f = observed_reset!(audit, branch_evaluations, di::evaluate(&src.f, t, &y))?;
     let qr = di::rows_norm(&di::defect(&c, &jz(&g, nx))?)?;
     let gr = sub_down(1., qr)?;
     if gr <= 0. {
@@ -1619,7 +1823,11 @@ pub fn certify_vector_branch(
     let mut columns = Vec::with_capacity(nx + 1);
     for k in 0..=nx {
         let rhs = g.j.iter().map(|r| -r[k]).collect::<Vec<_>>();
-        columns.push(product_bound(qr, gr, &di::matvec(&c, &rhs)?)?);
+        columns.push(observed_reset!(
+            audit,
+            branch_columns,
+            product_bound(qr, gr, &di::matvec(&c, &rhs)?)
+        )?);
     }
     let mut reduced = Vec::with_capacity(nx);
     for r in &f.j {
@@ -1630,7 +1838,12 @@ pub fn certify_vector_branch(
     }
     let mut nominal = di::points(center)?;
     nominal.extend(iv_pairs(&initial.root_box)?);
-    let f0 = di::evaluate(&src.f, p(times[1])?, &nominal)?.v;
+    let f0 = observed_reset!(
+        audit,
+        branch_evaluations,
+        di::evaluate(&src.f, p(times[1])?, &nominal)
+    )?
+    .v;
     // Centered reduced mean-value bound intersects the direct source box.
     let mut delta = vec![t.sub(p(times[1])?)?];
     for (&v, &a) in x.iter().zip(center) {
@@ -1678,6 +1891,54 @@ pub fn certify_vector_tube(
     policy: InitPolicy,
     route: InitRoute,
 ) -> CoreResult<VectorTubeProof> {
+    certify_vector_tube_recorded(
+        src,
+        times,
+        r,
+        z_seed,
+        branch,
+        policy,
+        route,
+        &mut ResetKernelAudit::default(),
+    )
+}
+pub fn certify_vector_tube_audited(
+    src: &DaeSource,
+    times: [f64; 2],
+    r: &[[f64; 2]],
+    z_seed: &[f64],
+    branch: &[[f64; 2]],
+    policy: InitPolicy,
+    route: InitRoute,
+) -> (CoreResult<VectorTubeProof>, ResetKernelAudit) {
+    let mut a = ResetKernelAudit::default();
+    let r = certify_vector_tube_recorded(src, times, r, z_seed, branch, policy, route, &mut a);
+    (r, a)
+}
+pub fn certify_vector_tube_recorded(
+    src: &DaeSource,
+    times: [f64; 2],
+    r: &[[f64; 2]],
+    z_seed: &[f64],
+    branch: &[[f64; 2]],
+    policy: InitPolicy,
+    route: InitRoute,
+    audit: &mut ResetKernelAudit,
+) -> CoreResult<VectorTubeProof> {
+    let r = certify_vector_tube_inner(src, times, r, z_seed, branch, policy, route, audit);
+    audit.tubes.record(r.is_ok());
+    r
+}
+fn certify_vector_tube_inner(
+    src: &DaeSource,
+    times: [f64; 2],
+    r: &[[f64; 2]],
+    z_seed: &[f64],
+    branch: &[[f64; 2]],
+    policy: InitPolicy,
+    route: InitRoute,
+    audit: &mut ResetKernelAudit,
+) -> CoreResult<VectorTubeProof> {
     let reset = iv_pairs(r)?;
     if reset.len() != src.nx() {
         return Err(bad("vector tube shape"));
@@ -1700,17 +1961,24 @@ pub fn certify_vector_tube(
     for _ in 0..8 {
         let center = b.iter().map(|&v| di::mid(v)).collect::<Vec<_>>();
         let xb = b.iter().map(|v| v.as_pair()).collect::<Vec<_>>();
-        let proof = certify_vector_branch(src, times, &xb, &center, z_seed, branch, policy, route)?;
+        let proof = certify_vector_branch_recorded(
+            src, times, &xb, &center, z_seed, branch, policy, route, audit,
+        )?;
         let field = iv_pairs(&proof.field)?;
-        let image = reset
-            .iter()
-            .zip(&field)
-            .map(|(&r, &f)| r.add(elapsed.mul(f)?))
-            .collect::<CoreResult<Vec<_>>>()?;
+        let image = observed_reset!(
+            audit,
+            picard_images,
+            reset
+                .iter()
+                .zip(&field)
+                .map(|(&r, &f)| r.add(elapsed.mul(f)?))
+                .collect::<CoreResult<Vec<_>>>()
+        )?;
         let admitted = image
             .iter()
             .zip(&b)
             .all(|(a, b)| b.lo < a.lo && a.hi < b.hi);
+        audit.strict_images += usize::from(admitted);
         attempts.push(proof);
         if admitted {
             return Ok(VectorTubeProof {
@@ -1769,6 +2037,38 @@ pub fn synchronize_vector(
     route: VectorSyncRoute,
     table: &RetroTable,
 ) -> CoreResult<VectorSyncEvidence> {
+    synchronize_vector_recorded(
+        reset,
+        times,
+        s,
+        tube,
+        route,
+        table,
+        &mut ResetKernelAudit::default(),
+    )
+}
+pub fn synchronize_vector_recorded(
+    reset: &[VectorResetComponent],
+    times: [f64; 2],
+    s: f64,
+    tube: &VectorTubeProof,
+    route: VectorSyncRoute,
+    table: &RetroTable,
+    audit: &mut ResetKernelAudit,
+) -> CoreResult<VectorSyncEvidence> {
+    let r = synchronize_vector_inner(reset, times, s, tube, route, table, audit);
+    audit.synchronizations.record(r.is_ok());
+    r
+}
+fn synchronize_vector_inner(
+    reset: &[VectorResetComponent],
+    times: [f64; 2],
+    s: f64,
+    tube: &VectorTubeProof,
+    route: VectorSyncRoute,
+    table: &RetroTable,
+    audit: &mut ResetKernelAudit,
+) -> CoreResult<VectorSyncEvidence> {
     let proof = tube
         .attempts
         .last()
@@ -1788,85 +2088,94 @@ pub fn synchronize_vector(
         forcing_remainder: vec![],
     };
     for (i, r) in reset.iter().enumerate() {
-        let rect = Iv::new(r.enclosure[0], r.enclosure[1])?.add(elapsed.mul(field[i])?)?;
-        let h = p(r.native_times[1])?.sub(p(r.native_times[0])?)?;
-        let u = clock.sub(p(r.native_times[0])?)?.div(h)?;
-        let u = Iv::new(u.lo.max(0.), u.hi.min(1.))?;
-        let v = match route {
-            VectorSyncRoute::BoxPicard | VectorSyncRoute::SchurPicard => rect,
-            VectorSyncRoute::Centered => {
-                let k = di::mid(field[i]);
-                let shifted = add(
-                    &r.power,
-                    &[p(s)?.sub(p(r.native_times[0])?)?.scale(k)?, h.scale(-k)?],
-                )?;
-                let remainder = field[i].sub(p(k)?)?;
-                out.forcing_remainder.push(remainder.as_pair());
-                let corrected = reset_centered_eval(&shifted, u)?
-                    .add(Iv::new(-r.transport_error, r.transport_error)?)?
-                    .add(elapsed.mul(remainder)?)?;
-                intersect(rect, corrected)?
-            }
-            VectorSyncRoute::GreenMoment => {
-                // Diagonal unit damping is an exact split, not an
-                // approximation of the post Jacobian: F=-(X-e)+B.
-                let e = p(proof.initial.x[i]
-                    + di::mid(Iv::new(
-                        proof.nominal_field[i][0],
-                        proof.nominal_field[i][1],
-                    )?))?;
-                let mut residual = Iv::new(proof.nominal_field[i][0], proof.nominal_field[i][1])?
-                    .add(p(proof.initial.x[i])?)?
-                    .sub(e)?;
-                residual = residual.add(
-                    Iv::new(proof.reduced_clock[i][0], proof.reduced_clock[i][1])?
-                        .mul(Iv::new(-p(s)?.sub(p(times[0])?)?.hi, 0.)?)?,
-                )?;
-                for j in 0..n {
-                    let d = Iv::new(
-                        proof.reduced_jacobian[i][j][0],
-                        proof.reduced_jacobian[i][j][1],
-                    )?
-                    .add(p(if i == j { 1. } else { 0. })?)?;
-                    residual = residual.add(d.mul(xb[j].sub(p(proof.initial.x[j])?)?)?)?;
+        let result = (|| -> CoreResult<Iv> {
+            let rect = Iv::new(r.enclosure[0], r.enclosure[1])?.add(elapsed.mul(field[i])?)?;
+            let h = p(r.native_times[1])?.sub(p(r.native_times[0])?)?;
+            let u = clock.sub(p(r.native_times[0])?)?.div(h)?;
+            let u = Iv::new(u.lo.max(0.), u.hi.min(1.))?;
+            let v = match route {
+                VectorSyncRoute::BoxPicard | VectorSyncRoute::SchurPicard => rect,
+                VectorSyncRoute::Centered => {
+                    let k = di::mid(field[i]);
+                    let shifted = add(
+                        &r.power,
+                        &[p(s)?.sub(p(r.native_times[0])?)?.scale(k)?, h.scale(-k)?],
+                    )?;
+                    let remainder = field[i].sub(p(k)?)?;
+                    out.forcing_remainder.push(remainder.as_pair());
+                    let corrected = reset_centered_eval(&shifted, u)?
+                        .add(Iv::new(-r.transport_error, r.transport_error)?)?
+                        .add(elapsed.mul(remainder)?)?;
+                    intersect(rect, corrected)?
                 }
-                let remainder = intersect(residual, field[i].add(xb[i])?.sub(e)?)?;
-                out.forcing_remainder.push(remainder.as_pair());
-                let mut d = r
-                    .power
-                    .iter()
-                    .enumerate()
-                    .skip(1)
-                    .map(|(k, v)| v.scale(k as f64)?.div(h))
-                    .collect::<CoreResult<Vec<_>>>()?;
-                if d.is_empty() {
-                    d.push(zero());
+                VectorSyncRoute::GreenMoment => {
+                    // Diagonal unit damping is an exact split, not an
+                    // approximation of the post Jacobian: F=-(X-e)+B.
+                    let e = p(proof.initial.x[i]
+                        + di::mid(Iv::new(
+                            proof.nominal_field[i][0],
+                            proof.nominal_field[i][1],
+                        )?))?;
+                    let mut residual =
+                        Iv::new(proof.nominal_field[i][0], proof.nominal_field[i][1])?
+                            .add(p(proof.initial.x[i])?)?
+                            .sub(e)?;
+                    residual = residual.add(
+                        Iv::new(proof.reduced_clock[i][0], proof.reduced_clock[i][1])?
+                            .mul(Iv::new(-p(s)?.sub(p(times[0])?)?.hi, 0.)?)?,
+                    )?;
+                    for j in 0..n {
+                        let d = Iv::new(
+                            proof.reduced_jacobian[i][j][0],
+                            proof.reduced_jacobian[i][j][1],
+                        )?
+                        .add(p(if i == j { 1. } else { 0. })?)?;
+                        residual = residual.add(d.mul(xb[j].sub(p(proof.initial.x[j])?)?)?)?;
+                    }
+                    let remainder = intersect(residual, field[i].add(xb[i])?.sub(e)?)?;
+                    out.forcing_remainder.push(remainder.as_pair());
+                    let mut d = r
+                        .power
+                        .iter()
+                        .enumerate()
+                        .skip(1)
+                        .map(|(k, v)| v.scale(k as f64)?.div(h))
+                        .collect::<CoreResult<Vec<_>>>()?;
+                    if d.is_empty() {
+                        d.push(zero());
+                    }
+                    let mut shifted = r.power.clone();
+                    shifted[0] = shifted[0].sub(e)?;
+                    let q = eval(&add(&d, &shifted)?, u)?;
+                    let b = p(times[1])?;
+                    let ub = b.sub(p(r.native_times[0])?)?.div(h)?;
+                    let ub = Iv::new(ub.lo.max(0.), ub.hi.min(1.))?;
+                    let db = p(s)?.sub(b)?;
+                    let db = Iv::new(db.lo.max(0.), db.hi)?;
+                    let gb = observed_reset!(audit, green, table.phi(db, 0))?;
+                    let yb = e.add(gb.mul(eval(&shifted, ub)?)?)?;
+                    let d = b.sub(clock)?;
+                    let d = Iv::new(d.lo.max(0.), d.hi)?;
+                    let weight = gb
+                        .mul(d)?
+                        .mul(observed_reset!(audit, green, table.phi(d, 1))?)?;
+                    let ge = observed_reset!(audit, green, table.phi(elapsed, 0))?;
+                    let err = mul_up(ge.hi, r.transport_error)?;
+                    let forcing = elapsed
+                        .mul(observed_reset!(audit, green, table.phi(elapsed, 1))?)?
+                        .mul(remainder)?;
+                    out.green_calls += 4;
+                    let corrected = yb
+                        .sub(weight.mul(q)?)?
+                        .add(Iv::new(-err, err)?)?
+                        .add(forcing)?;
+                    intersect(rect, corrected)?
                 }
-                let mut shifted = r.power.clone();
-                shifted[0] = shifted[0].sub(e)?;
-                let q = eval(&add(&d, &shifted)?, u)?;
-                let b = p(times[1])?;
-                let ub = b.sub(p(r.native_times[0])?)?.div(h)?;
-                let ub = Iv::new(ub.lo.max(0.), ub.hi.min(1.))?;
-                let db = p(s)?.sub(b)?;
-                let db = Iv::new(db.lo.max(0.), db.hi)?;
-                let gb = table.phi(db, 0)?;
-                let yb = e.add(gb.mul(eval(&shifted, ub)?)?)?;
-                let d = b.sub(clock)?;
-                let d = Iv::new(d.lo.max(0.), d.hi)?;
-                let weight = gb.mul(d)?.mul(table.phi(d, 1)?)?;
-                let ge = table.phi(elapsed, 0)?;
-                let err = mul_up(ge.hi, r.transport_error)?;
-                let forcing = elapsed.mul(table.phi(elapsed, 1)?)?.mul(remainder)?;
-                out.green_calls += 4;
-                let corrected = yb
-                    .sub(weight.mul(q)?)?
-                    .add(Iv::new(-err, err)?)?
-                    .add(forcing)?;
-                intersect(rect, corrected)?
-            }
-        };
-        out.synchronized.push(intersect(v, xb[i])?.as_pair());
+            };
+            intersect(v, xb[i])
+        })();
+        audit.sync_components.record(result.is_ok());
+        out.synchronized.push(result?.as_pair());
     }
     Ok(out)
 }
