@@ -766,3 +766,71 @@ fn coupled_driver_diagnosis() {
         );
     }
 }
+
+#[test]
+fn coupled_projection_rounded_self_map_recovery() {
+    let source = DaeSource::new(
+        vec![p(vec![c(1.)])],
+        vec![
+            p(vec![
+                l(1, 1.),
+                l(0, -1.),
+                tr(2., vec![t(), y(2)]),
+                tr(-4., vec![t(), y(0)]),
+            ]),
+            p(vec![
+                l(2, 1.),
+                l(0, -2.),
+                tr(-1., vec![t(), y(1)]),
+                tr(1., vec![t(), y(0)]),
+            ]),
+        ],
+    )
+    .unwrap();
+    let branch = [[-1., 1.], [-1., 1.]];
+    for time in [1e-8, 1e-6, 0.0006358126895828704, 0.01, 0.05] {
+        for route in [InitRoute::Reuse, InitRoute::PreparedBatch] {
+            let (r, w) =
+                source.initialize_audited(time, &[time], &[0., 0.], &branch, policy().init, route);
+            let r = r.unwrap_or_else(|e| panic!("projection t={time} {route:?}: {e}"));
+            assert!(r.qualified && r.state_error_upper <= policy().init.state_tol);
+            for (b, z) in r.root_box.iter().zip([time, 2. * time]) {
+                assert!(b[0] <= z && z <= b[1]);
+            }
+            println!(
+                "ROUND_MAP {}",
+                serde_json::json!({"time":time,"route":route,"report":r,"audit":w})
+            );
+        }
+    }
+    let guard = p(vec![l(2, 1.), l(0, -2.), tr(0.25, vec![t()]), c(-0.015625)]);
+    let r = evolve_to_guard(
+        &source,
+        &[0.],
+        &[0., 0.],
+        &branch,
+        EvolutionEpoch {
+            start: 0.,
+            end: 0.125,
+            incoming_x_error: Some(0.),
+        },
+        &opts(),
+        policy(),
+        EvolutionRoute::Reduced5,
+        &guard,
+        1e-6,
+        ThresholdRoute::IntervalNewton,
+        GuardDerivativeRoute::SchurAffineGraph,
+        GuardValueRoute::Transport,
+    )
+    .unwrap();
+    let b = r
+        .root()
+        .unwrap_or_else(|| panic!("Reduced5 recovery: {:?}", r.reason()));
+    assert!(b[0] <= 0.0625 && 0.0625 <= b[1] && b[1] - b[0] <= 1e-6);
+    assert!(r.guard_slabs().iter().all(|s| s.velocity == [0.25, 0.25]));
+    println!(
+        "RECOVERED_EVENT {}",
+        serde_json::json!({"root":b,"slabs":r.guard_slabs().len(),"stats":r.stats(),"work":r.projection_work()})
+    );
+}
