@@ -5211,3 +5211,474 @@ fn nondominant_vector_actual_callbacks_noalloc() {
     );
     assert_eq!([a.requests(), b.requests(), c.requests()], [0; 3]);
 }
+
+fn scaled_nondominant_source(n: usize, nonlinear: bool) -> DaeSource {
+    let lin = |i, w| tr(w, vec![F::component(i, 0.)]);
+    let mut g = Vec::new();
+    for i in 0..n {
+        let j = (i + 1) % n;
+        let scale = if nonlinear {
+            [3., 0.125, 8., 0.5][i % 4]
+        } else {
+            1.
+        };
+        let mut terms = vec![lin(j + 1, scale), lin(0, -scale * ((j + 1) as f64))];
+        if j + 1 < n {
+            terms.push(lin(j + 2, 0.25 * scale));
+            terms.push(lin(0, -0.25 * scale * ((j + 2) as f64)));
+        }
+        if nonlinear {
+            let d = F {
+                constant: 0.,
+                time: 0.,
+                state: vec![(j + 1, 1.), (0, -((j + 1) as f64))],
+            };
+            terms.push(tr(scale / 256., vec![d.clone(), d]));
+        }
+        g.push(p(terms));
+    }
+    DaeSource::new(vec![p(vec![tr(0.125, vec![]), lin(1, 0.125)])], g).unwrap()
+}
+#[test]
+fn nondominant_vector_portfolio() {
+    use de::ReconstructionSeedRoute as S;
+    warm();
+    for n in [2, 4, 8] {
+        for nonlinear in [false, true] {
+            let src = scaled_nondominant_source(n, nonlinear);
+            let branch = vec![[-1., 1.]; n];
+            let seed = vec![0.; n];
+            let epoch = EvolutionEpoch {
+                start: 0.,
+                end: 0.125,
+                incoming_x_error: Some(0.),
+            };
+            let baseline = evolve_epoch(
+                &src,
+                &[0.],
+                &seed,
+                &branch,
+                epoch,
+                &opts(),
+                policy(),
+                EvolutionRoute::Reduced5,
+                &[],
+            )
+            .unwrap();
+            assert!(
+                baseline.global_qualified,
+                "{n} {nonlinear} {:?}",
+                baseline.reason
+            );
+            for solver in [
+                EvolutionRoute::Reduced5,
+                EvolutionRoute::Prepared5,
+                EvolutionRoute::BoundedVector5,
+                EvolutionRoute::BoundedVectorPivot5,
+                EvolutionRoute::BoundedVectorEquilibrated5,
+            ] {
+                let ((r, a), alloc) = measure(|| {
+                    evolve_epoch_audited(
+                        &src,
+                        &[0.],
+                        &seed,
+                        &branch,
+                        epoch,
+                        &opts(),
+                        policy(),
+                        solver,
+                        &[],
+                    )
+                });
+                let expect = matches!(
+                    solver,
+                    EvolutionRoute::Reduced5
+                        | EvolutionRoute::BoundedVectorPivot5
+                        | EvolutionRoute::BoundedVectorEquilibrated5
+                );
+                match r {
+                    Ok(r) => {
+                        assert_eq!(
+                            r.global_qualified, expect,
+                            "{n} {nonlinear} {solver:?} {:?}",
+                            r.reason
+                        );
+                        println!(
+                            "PIVOT_EPOCH {}",
+                            serde_json::json!({"n":n,"nonlinear":nonlinear,"solver":solver,"allocation":alloc,"qualified":r.global_qualified,"slabs":r.slabs().len(),"max_physical_error":r.max_physical_error,"reason":r.reason,"audit":a})
+                        );
+                    }
+                    Err(e) => {
+                        assert!(!expect, "{n} {nonlinear} {solver:?} {e}");
+                        println!(
+                            "PIVOT_EPOCH {}",
+                            serde_json::json!({"n":n,"nonlinear":nonlinear,"solver":solver,"allocation":alloc,"qualified":false,"slabs":0,"max_physical_error":null,"reason":e.to_string(),"audit":a})
+                        );
+                    }
+                }
+            }
+            let slabs = baseline.slabs();
+            let mut work = VectorProjectionWorkspace::new();
+            let mut recon = de::VectorReconstructionWorkspace::new();
+            for (position, k) in [
+                ("first", 0),
+                ("middle", slabs.len() / 2),
+                ("last", slabs.len() - 1),
+            ] {
+                let s = &slabs[k];
+                let c = s.certificate.as_ref().unwrap();
+                let x = &s.native.y0;
+                let t = s.times[0];
+                for (route, eq) in [
+                    ("reuse", false),
+                    ("prepared", false),
+                    ("dominant", false),
+                    ("pivot", false),
+                    ("equilibrated", true),
+                ] {
+                    let (r, a, alloc) = match route {
+                        "reuse" | "prepared" => {
+                            let ((r, a), alloc) = measure(|| {
+                                src.initialize_audited(
+                                    t,
+                                    x,
+                                    &seed,
+                                    &branch,
+                                    policy().init,
+                                    if route == "reuse" {
+                                        InitRoute::Reuse
+                                    } else {
+                                        InitRoute::PreparedBatch
+                                    },
+                                )
+                            });
+                            (r, a, alloc)
+                        }
+                        "dominant" => {
+                            let ((r, a), alloc) = measure(|| {
+                                src.initialize_bounded_vector_audited(
+                                    t,
+                                    x,
+                                    &seed,
+                                    &branch,
+                                    policy().init,
+                                    false,
+                                    &mut work,
+                                )
+                            });
+                            (r.map(|r| r.to_owned_report()), a, alloc)
+                        }
+                        _ => {
+                            let ((r, a), alloc) = measure(|| {
+                                src.initialize_pivoted_vector_audited(
+                                    t,
+                                    x,
+                                    &seed,
+                                    &branch,
+                                    policy().init,
+                                    eq,
+                                    &mut work,
+                                )
+                            });
+                            if r.is_ok() {
+                                assert_eq!(alloc.requests(), 0);
+                            }
+                            (r.map(|r| r.to_owned_report()), a, alloc)
+                        }
+                    };
+                    let expect = matches!(route, "reuse" | "pivot" | "equilibrated");
+                    assert_eq!(
+                        r.is_ok(),
+                        expect,
+                        "{n} {nonlinear} {route} {:?}",
+                        r.as_ref().err()
+                    );
+                    match r {
+                        Ok(r) => {
+                            assert!(r.qualified);
+                            println!(
+                                "PIVOT_POINT {}",
+                                serde_json::json!({"n":n,"nonlinear":nonlinear,"position":position,"route":route,"x":x,"time":t,"allocation":alloc,"report":r,"audit":a,"qualified":true})
+                            );
+                        }
+                        Err(e) => println!(
+                            "PIVOT_POINT {}",
+                            serde_json::json!({"n":n,"nonlinear":nonlinear,"position":position,"route":route,"x":x,"time":t,"allocation":alloc,"error":e.to_string(),"audit":a,"qualified":false})
+                        ),
+                    }
+                }
+                let xp =
+                    de::dense_power(&s.native.y0, &s.native.y1, &s.native.stages, s.native.basis)
+                        .unwrap();
+                let mut out = vec![Iv::point(123.).unwrap(); n * 5];
+                let mut work: [InitWork; 5] = std::array::from_fn(|_| InitWork::default());
+                for (candidate, eq, seed_route) in [
+                    ("reuse", false, S::Fixed),
+                    ("pivot_fixed", false, S::Fixed),
+                    ("pivot_previous", false, S::PreviousNode),
+                    ("equilibrated_fixed", true, S::Fixed),
+                    ("equilibrated_previous", true, S::PreviousNode),
+                ] {
+                    let (z, a, allocation) = if candidate == "reuse" {
+                        let ((r, a), allocation) = measure(|| {
+                            de::reconstruct_audited(
+                                &src,
+                                s.times,
+                                &xp,
+                                &seed,
+                                &branch,
+                                policy().init,
+                                InitRoute::Reuse,
+                                None,
+                                5,
+                            )
+                        });
+                        (r.unwrap().0, a, allocation)
+                    } else {
+                        let mut a = ProjectionAttemptWork::default();
+                        let (r, allocation) = measure(|| {
+                            de::reconstruct_pivoted_vector_into(
+                                &src,
+                                s.times,
+                                &xp,
+                                &seed,
+                                &branch,
+                                policy().init,
+                                eq,
+                                seed_route,
+                                &mut out,
+                                &mut work,
+                                &mut a,
+                                &mut recon,
+                            )
+                        });
+                        r.unwrap();
+                        assert_eq!(allocation.requests(), 0);
+                        assert_eq!(a.calls.returned, 5);
+                        (
+                            out.chunks_exact(5).map(|v| v.to_vec()).collect(),
+                            a,
+                            allocation,
+                        )
+                    };
+                    let mut full = xp.clone();
+                    full.extend(z);
+                    let r = de::certify_slab(
+                        &src,
+                        s.times,
+                        &full,
+                        &branch,
+                        policy().tube_radius,
+                        Some(c.incoming),
+                        policy().green,
+                        policy().init.condition_cap,
+                    )
+                    .unwrap();
+                    assert!(
+                        r.global_qualified
+                            && r.whole_x_error.unwrap() <= policy().global_tol
+                            && r.whole_z_error.unwrap() <= policy().global_tol
+                    );
+                    println!(
+                        "PIVOT_RECON {}",
+                        serde_json::json!({"n":n,"nonlinear":nonlinear,"position":position,"candidate":candidate,"allocation":allocation,"audit":a,"qualified":r.global_qualified,"whole_x":r.whole_x_error,"whole_z":r.whole_z_error,"original_g":r.original_g_upper})
+                    );
+                }
+            }
+        }
+    }
+    let lin = |i, w| tr(w, vec![F::component(i, 0.)]);
+    let singular = DaeSource::new(
+        vec![p(vec![tr(1., vec![])])],
+        vec![
+            p(vec![lin(1, 1.), lin(2, 1.)]),
+            p(vec![lin(1, 1.), lin(2, 1.)]),
+        ],
+    )
+    .unwrap();
+    for eq in [false, true] {
+        let (r, a) = singular.initialize_pivoted_vector_audited(
+            0.,
+            &[0.],
+            &[0., 0.],
+            &[[-1., 1.]; 2],
+            policy().init,
+            eq,
+            &mut VectorProjectionWorkspace::new(),
+        );
+        assert!(r.is_err());
+        println!(
+            "PIVOT_EDGE {}",
+            serde_json::json!({"case":"singular","equilibrated":eq,"accepted":r.is_ok(),"audit":a,"error":r.err().unwrap().to_string()})
+        );
+    }
+}
+fn aperiodic_fixture(case: &str) -> DaeSource {
+    let v = |i, w| tr(w, vec![F::component(i, 0.)]);
+    let t = || F::clock(0.);
+    let f = if case == "noncommuting" {
+        vec![
+            p(vec![v(1, 3.), tr(3., vec![t(), t()])]),
+            p(vec![tr(2., vec![t()])]),
+        ]
+    } else {
+        vec![
+            p(vec![v(0, -0.5), tr(0.125, vec![t(), t()])]),
+            p(vec![v(1, -0.25)]),
+        ]
+    };
+    DaeSource::new(f, vec![p(vec![v(2, 1.), v(0, -1.), v(1, -1.)])]).unwrap()
+}
+#[test]
+fn source_aperiodic_portfolio() {
+    use de::AperiodicEndpointRoute as R;
+    use rodas5p_integrators::ParallelExecution;
+    warm();
+    let seq = ParallelExecution::sequential();
+    let scan = ParallelExecution::rayon(2).unwrap();
+    let iv = |x| Iv::point(x).unwrap();
+    let routes = [
+        R::Sequential,
+        R::OrderedScan,
+        R::CenteredStream,
+        R::IntervalStream,
+    ];
+    for case in ["noncommuting", "stable"] {
+        let src = aperiodic_fixture(case);
+        let x = if case == "stable" {
+            [0.25, -0.125]
+        } else {
+            [0., 0.]
+        };
+        for h in [0.125, 0.5] {
+            let power = if case == "noncommuting" {
+                vec![
+                    vec![
+                        iv(0.),
+                        iv(2f64.powi(-20)),
+                        iv(-2f64.powi(-20)),
+                        iv(2. * h * h * h),
+                    ],
+                    vec![iv(0.), iv(0.), iv(h * h)],
+                    vec![
+                        iv(0.),
+                        iv(2f64.powi(-20)),
+                        iv(h * h - 2f64.powi(-20)),
+                        iv(2. * h * h * h),
+                    ],
+                ]
+            } else {
+                vec![vec![iv(x[0])], vec![iv(x[1])], vec![iv(x[0] + x[1])]]
+            };
+            for cells in [2, 4, 8] {
+                for order in [7, 12] {
+                    for route in routes {
+                        let exec = if route == R::OrderedScan { &scan } else { &seq };
+                        let (r, allocation) = measure(|| {
+                            de::source_aperiodic_endpoint(
+                                &src,
+                                [0., h],
+                                &power,
+                                2f64.powi(-30),
+                                cells,
+                                order,
+                                route,
+                                exec,
+                            )
+                        });
+                        let r = r.unwrap();
+                        if matches!(route, R::CenteredStream | R::IntervalStream) {
+                            assert_eq!(allocation.requests(), 0);
+                        }
+                        println!(
+                            "APERIODIC_BOUND {}",
+                            serde_json::json!({"case":case,"h":h,"cells":cells,"order":order,"route":route,"allocation":allocation,"bounds":r,"qualified":true,"power":power.iter().map(|row|row.iter().map(|v|v.as_pair()).collect::<Vec<_>>()).collect::<Vec<_>>(),"times":[0.,h],"incoming":2f64.powi(-30)})
+                        );
+                    }
+                }
+            }
+        }
+        let branch = [[-2., 2.]];
+        let z = [x[0] + x[1]];
+        for solver in [
+            EvolutionRoute::Reduced5,
+            EvolutionRoute::Reduced5PolynomialPicard,
+            EvolutionRoute::Reduced5Aperiodic,
+            EvolutionRoute::Reduced5AperiodicCentered,
+            EvolutionRoute::Reduced5AperiodicInterval,
+        ] {
+            let ((r, a), allocation) = measure(|| {
+                evolve_epoch_audited(
+                    &src,
+                    &x,
+                    &z,
+                    &branch,
+                    EvolutionEpoch {
+                        start: 0.,
+                        end: 0.125,
+                        incoming_x_error: Some(0.),
+                    },
+                    &opts(),
+                    policy(),
+                    solver,
+                    &[],
+                )
+            });
+            let r = r.unwrap();
+            assert!(r.global_qualified, "{case} {solver:?} {:?}", r.reason);
+            let mut receipts = 0;
+            let mut tightened = 0;
+            for s in r.slabs() {
+                let c = s.certificate.as_ref().unwrap();
+                if let Some(v) = c.aperiodic_endpoint {
+                    receipts += 1;
+                    let b = de::certify_slab(
+                        &src,
+                        s.times,
+                        &power(s),
+                        &branch,
+                        policy().tube_radius,
+                        Some(c.incoming),
+                        policy().green,
+                        policy().init.condition_cap,
+                    )
+                    .unwrap();
+                    assert_eq!(b.whole_x_error, c.whole_x_error);
+                    assert_eq!(b.whole_z_error, c.whole_z_error);
+                    assert!(c.outgoing.unwrap() <= b.outgoing.unwrap());
+                    tightened += usize::from(c.outgoing.unwrap() < b.outgoing.unwrap());
+                    println!(
+                        "APERIODIC_NATIVE {}",
+                        serde_json::json!({"case":case,"solver":solver,"times":s.times,"power":s.power,"incoming":c.incoming,"bounds":v,"outgoing":c.outgoing,"base_outgoing":b.outgoing})
+                    );
+                }
+            }
+            if matches!(
+                solver,
+                EvolutionRoute::Reduced5Aperiodic
+                    | EvolutionRoute::Reduced5AperiodicCentered
+                    | EvolutionRoute::Reduced5AperiodicInterval
+            ) {
+                assert_eq!(receipts, r.slabs().len());
+            }
+            println!(
+                "APERIODIC_EPOCH {}",
+                serde_json::json!({"case":case,"solver":solver,"allocation":allocation,"qualified":r.global_qualified,"slabs":r.slabs().len(),"receipts":receipts,"tightened":tightened,"max_physical_error":r.max_physical_error,"outgoing":r.slabs().last().unwrap().certificate.as_ref().unwrap().outgoing,"audit":a})
+            );
+        }
+    }
+    let badsrc = nonlinear_scalar_fixture();
+    assert!(
+        de::source_aperiodic_endpoint(
+            &badsrc,
+            [0., 0.125],
+            &[vec![iv(0.)], vec![iv(0.5)]],
+            0.,
+            4,
+            12,
+            R::IntervalStream,
+            &seq
+        )
+        .is_err()
+    );
+}
