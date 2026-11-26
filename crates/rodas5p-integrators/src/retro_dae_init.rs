@@ -469,6 +469,8 @@ pub enum InitRoute {
     BoundedPreparedScalar,
     /// Directed frozen affine coefficient proof, no rational string metadata.
     BoundedAffineScalar,
+    /// Interval-only coefficient expansion competitor.
+    BoundedAffineIntervalScalar,
 }
 #[derive(Clone, Copy, Debug, Serialize)]
 pub struct InitPolicy {
@@ -515,6 +517,8 @@ pub struct InitWork {
     pub bounded_prepared_batches: usize,
     #[serde(skip_serializing_if = "init_count_zero")]
     pub bounded_residual_terms: usize,
+    #[serde(skip_serializing_if = "init_count_zero")]
+    pub affine_dyadic_success: usize,
 }
 fn init_count_zero(n: &usize) -> bool {
     *n == 0
@@ -570,6 +574,8 @@ pub struct ProjectionAttemptWork {
     pub bounded_prepared_batches: usize,
     #[serde(skip_serializing_if = "init_count_zero")]
     pub bounded_residual_terms: usize,
+    #[serde(skip_serializing_if = "init_count_zero")]
+    pub affine_dyadic_success: usize,
 }
 impl ProjectionAttemptWork {
     pub fn record(&mut self, w: &InitAttemptWork, success: bool) {
@@ -586,6 +592,7 @@ impl ProjectionAttemptWork {
         self.root_map_expanded += w.legacy.root_map_expanded;
         self.bounded_prepared_batches += w.legacy.bounded_prepared_batches;
         self.bounded_residual_terms += w.legacy.bounded_residual_terms;
+        self.affine_dyadic_success += w.legacy.affine_dyadic_success;
         if success {
             self.successful_rhs_requested += w.rhs_requested;
         } else {
@@ -608,6 +615,7 @@ impl ProjectionAttemptWork {
         self.root_map_expanded += w.root_map_expanded;
         self.bounded_prepared_batches += w.bounded_prepared_batches;
         self.bounded_residual_terms += w.bounded_residual_terms;
+        self.affine_dyadic_success += w.affine_dyadic_success;
     }
 }
 #[derive(Clone, Debug, Serialize)]
@@ -934,7 +942,9 @@ impl DaeSource {
     ) -> CoreResult<InitReport> {
         if matches!(
             route,
-            InitRoute::BoundedPreparedScalar | InitRoute::BoundedAffineScalar
+            InitRoute::BoundedPreparedScalar
+                | InitRoute::BoundedAffineScalar
+                | InitRoute::BoundedAffineIntervalScalar
         ) {
             return self
                 .scalar_reuse_recorded(t, x, z0, branch, policy, route, attempt)
@@ -1406,7 +1416,10 @@ impl ScalarReuseProjection {
             correction_upper: self.correction,
             branch: vec![self.branch],
             root_box: vec![self.root.as_pair()],
-            branch_authority: if self.route == InitRoute::BoundedAffineScalar {
+            branch_authority: if matches!(
+                self.route,
+                InitRoute::BoundedAffineScalar | InitRoute::BoundedAffineIntervalScalar
+            ) {
                 "directed frozen affine root enclosure"
             } else {
                 "whole-branch contraction + local self-map"
@@ -1521,10 +1534,113 @@ fn frozen_affine_coefficients(eq: &DeclaredPolynomial, t: f64, x: &[f64]) -> Cor
             *a = a.add(b)?;
         }
     }
-    if sum[2..].iter().any(|v| v.lo != 0. || v.hi != 0.) || sum[1].contains_zero() {
-        return Err(bad("bounded frozen affine degree or slope not proved"));
-    }
     Ok(sum)
+}
+// Exact dyadic arithmetic with a bounded signed i128 mantissa. A failed
+// capacity check is NOT evidence of non-affineness; the independently
+// directed coefficient proof remains available. Never wrap an integer.
+#[derive(Clone, Copy)]
+struct RootDyadic {
+    m: i128,
+    e: i32,
+}
+impl RootDyadic {
+    const ZERO: Self = Self { m: 0, e: 0 };
+    fn new(m: i128, e: i32) -> Option<Self> {
+        if m == 0 {
+            return Some(Self::ZERO);
+        }
+        let k = m.trailing_zeros().min(126);
+        Some(Self {
+            m: m >> k,
+            e: e.checked_add(k as i32)?,
+        })
+    }
+    fn from_f64(v: f64) -> Option<Self> {
+        if !v.is_finite() {
+            return None;
+        }
+        let b = v.to_bits();
+        let exp = ((b >> 52) & 2047) as i32;
+        let m = ((b & ((1u64 << 52) - 1)) | if exp == 0 { 0 } else { 1u64 << 52 }) as i128;
+        Self::new(
+            if b >> 63 == 1 { -m } else { m },
+            if exp == 0 { -1074 } else { exp - 1023 - 52 },
+        )
+    }
+    fn add(self, b: Self) -> Option<Self> {
+        if self.m == 0 {
+            return Some(b);
+        }
+        if b.m == 0 {
+            return Some(self);
+        }
+        let e = self.e.min(b.e);
+        let scale = |v: Self| {
+            let k = v.e.checked_sub(e)?;
+            if k > 126 {
+                return None;
+            }
+            v.m.checked_mul(1i128 << k)
+        };
+        Self::new(scale(self)?.checked_add(scale(b)?)?, e)
+    }
+    fn mul(self, b: Self) -> Option<Self> {
+        Self::new(self.m.checked_mul(b.m)?, self.e.checked_add(b.e)?)
+    }
+    fn interval(self) -> Option<Iv> {
+        // Conservative conversion range; exact integer comparison before
+        // directed scaling, no unchecked saturated float-to-int decision.
+        if self.m == 0 {
+            return Some(z());
+        }
+        if !(-900..=900).contains(&self.e) || self.m.unsigned_abs() > (1u128 << 120) {
+            return None;
+        }
+        let v = self.m as f64;
+        let m = v as i128;
+        let a = Iv::new(
+            if m > self.m { v.next_down() } else { v },
+            if m < self.m { v.next_up() } else { v },
+        )
+        .ok()?;
+        a.scale(2f64.powi(self.e)).ok()
+    }
+}
+fn frozen_affine_dyadic(eq: &DeclaredPolynomial, t: f64, x: &[f64]) -> Option<[Iv; 5]> {
+    let q = RootDyadic::from_f64;
+    let mut sum = [RootDyadic::ZERO; 5];
+    for term in eq.terms() {
+        let mut poly = [RootDyadic::ZERO; 5];
+        poly[0] = q(term.coefficient)?;
+        let mut degree = 0;
+        for f in &term.factors {
+            let mut c = q(f.constant)?.add(q(t)?.mul(q(f.time)?)?)?;
+            let mut a = RootDyadic::ZERO;
+            for &(i, w) in &f.state {
+                if i == x.len() {
+                    a = a.add(q(w)?)?;
+                } else {
+                    c = c.add(q(x[i])?.mul(q(w)?)?)?;
+                }
+            }
+            let mut next = [RootDyadic::ZERO; 5];
+            for k in 0..=degree {
+                next[k] = next[k].add(poly[k].mul(c)?)?;
+                next[k + 1] = next[k + 1].add(poly[k].mul(a)?)?;
+            }
+            degree += 1;
+            poly = next;
+        }
+        for (v, w) in sum.iter_mut().zip(poly) {
+            *v = v.add(w)?;
+        }
+    }
+    let mut out = [z(); 5];
+    for (v, d) in out.iter_mut().zip(sum) {
+        *v = d.interval()?;
+    }
+    Some(out)
 }
 fn scalar_defect(c: f64, j: Iv) -> CoreResult<Iv> {
     p(1.)?.sub(j.scale(c)?)
@@ -1645,14 +1761,31 @@ impl DaeSource {
         }
         let mut center = seed[0];
         let mut affine_box = None;
-        if route == InitRoute::BoundedAffineScalar {
+        if matches!(
+            route,
+            InitRoute::BoundedAffineScalar | InitRoute::BoundedAffineIntervalScalar
+        ) {
             for v in [b.lo, b.hi] {
                 eval!(work, p(v)?);
                 if work.values[nx].contains_zero() {
                     return Err(bad("scalar branch boundary root/unknown"));
                 }
             }
-            let coeff = frozen_affine_coefficients(&self.g[0], t, x);
+            let coeff = (|| {
+                let mut c = frozen_affine_coefficients(&self.g[0], t, x)?;
+                if route == InitRoute::BoundedAffineScalar {
+                    if let Some(d) = frozen_affine_dyadic(&self.g[0], t, x) {
+                        for (v, d) in c.iter_mut().zip(d) {
+                            *v = Iv::new(v.lo.max(d.lo), v.hi.min(d.hi))?;
+                        }
+                        w.legacy.affine_dyadic_success += 1;
+                    }
+                }
+                if c[2..].iter().any(|v| v.lo != 0. || v.hi != 0.) || c[1].contains_zero() {
+                    return Err(bad("bounded frozen affine degree or slope not proved"));
+                }
+                Ok(c)
+            })();
             w.frozen.record(coeff.is_ok());
             let coeff = coeff?;
             let q = (|| {

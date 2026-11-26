@@ -126,6 +126,8 @@ pub struct ProjectionWork {
     pub bounded_prepared_batches: usize,
     #[serde(skip_serializing_if = "projection_count_zero")]
     pub bounded_residual_terms: usize,
+    #[serde(skip_serializing_if = "projection_count_zero")]
+    pub affine_dyadic_success: usize,
 }
 fn projection_count_zero(n: &usize) -> bool {
     *n == 0
@@ -146,6 +148,7 @@ impl ProjectionWork {
         self.root_map_expanded += w.root_map_expanded;
         self.bounded_prepared_batches += w.bounded_prepared_batches;
         self.bounded_residual_terms += w.bounded_residual_terms;
+        self.affine_dyadic_success += w.affine_dyadic_success;
     }
 }
 /// Diagnostic boundary receipt, never an event or trajectory authority.
