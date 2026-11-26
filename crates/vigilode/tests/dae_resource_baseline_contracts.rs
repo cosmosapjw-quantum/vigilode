@@ -1483,3 +1483,350 @@ fn guard_poly_ownership_allocation_contract() {
         );
     }
 }
+
+#[test]
+#[ignore = "polynomial ownership and GS native portfolio"]
+fn guard_poly_gs_native_portfolio() {
+    warm();
+    for solver in [
+        EvolutionRoute::Mass,
+        EvolutionRoute::Reduced5,
+        EvolutionRoute::Prepared5,
+        EvolutionRoute::Scalar5,
+        EvolutionRoute::Affine5,
+    ] {
+        for cert in [ConservationRoute::Max, ConservationRoute::Integral4] {
+            let modes = graph("alternating", solver, cert);
+            let run = evolve_robertson_phase_atlas(
+                &modes,
+                0,
+                initial(2f64.powi(-26)),
+                [0., 0.002],
+                &opts(),
+                policy(),
+                pm(MultiGuardRoute::Correlated),
+                atlas_budget(),
+                PhaseReuseRoute::Reuse,
+            )
+            .unwrap();
+            assert_eq!(run.stop(), PhaseAtlasStop::Horizon);
+            let phase = &run.phases()[0];
+            let model = RobertsonModel::new(modes[phase.mode].rate).unwrap();
+            let s = &phase.original_slab_diagnostics()[0];
+            let c = s.certificate.as_ref().unwrap();
+            assert!(c.global_qualified);
+            let power: Vec<Vec<Iv>> = s
+                .power
+                .iter()
+                .map(|row| row.iter().map(|v| Iv::new(v[0], v[1]).unwrap()).collect())
+                .collect();
+            let guard = &modes[phase.mode].guards[0];
+            for derivative in [
+                GuardDerivativeRoute::Tangent,
+                GuardDerivativeRoute::Schur,
+                GuardDerivativeRoute::PreparedSchur,
+                GuardDerivativeRoute::ConservedSchur,
+                GuardDerivativeRoute::SchurRefine1,
+                GuardDerivativeRoute::SchurRefine2,
+                GuardDerivativeRoute::PreparedSchurRefine2,
+                GuardDerivativeRoute::ConservedSchurRefine2,
+                GuardDerivativeRoute::SchurGs1,
+                GuardDerivativeRoute::SchurGs2,
+                GuardDerivativeRoute::SchurGsAdaptive2,
+                GuardDerivativeRoute::PreparedSchurGs2,
+                GuardDerivativeRoute::ConservedSchurGsAdaptive2,
+            ] {
+                for value in [GuardValueRoute::Box, GuardValueRoute::Transport] {
+                    let mut audit = de::GuardKernelAudit::default();
+                    let (r, a) = measure(|| {
+                        de::GuardProof::new_recorded(
+                            model.source(),
+                            guard,
+                            &power,
+                            c,
+                            derivative,
+                            value,
+                            &mut audit,
+                        )
+                    });
+                    let result = match r {
+                        Ok(g) => {
+                            let t = c.times[0] + (c.times[1] - c.times[0]) * 0.5;
+                            let v = g.value_at(t, c.whole_x_error.unwrap()).unwrap();
+                            let left = g.value_at(c.times[0], c.whole_x_error.unwrap()).unwrap();
+                            let right = g.value_at(c.times[1], c.whole_x_error.unwrap()).unwrap();
+                            serde_json::json!({"evidence":g.evidence,"mid_value":v.as_pair(),"left_value":left.as_pair(),"right_value":right.as_pair()})
+                        }
+                        Err(e) => serde_json::json!({"error":e.to_string()}),
+                    };
+                    println!(
+                        "GUARD {}",
+                        serde_json::json!({"solver":solver,"cert":cert,"derivative":derivative,"value":value,"allocation":a,"audit":audit,"result":result})
+                    );
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn guard_poly_gs_vector_portfolio() {
+    warm();
+    let iv = |v: f64| Iv::point(v).unwrap();
+    let lin = |k: usize, w: f64| tr(w, vec![F::component(k, 0.)]);
+    let clock = |w: f64| tr(w, vec![F::clock(0.)]);
+    let cross = |k: usize, w: f64| tr(w, vec![F::clock(0.), F::component(k, 0.)]);
+    let covers = |v: [f64; 2], x: f64| v[0] <= x && x <= v[1];
+    for (case, a, b, step) in [
+        ("weak", 0.5, 0.25, 0.125),
+        ("moderate", 1., 0.5, 0.125),
+        ("coupled", 2., -1., 0.125),
+    ] {
+        let src = DaeSource::new(
+            vec![p(vec![tr(1., vec![])])],
+            vec![
+                p(vec![
+                    lin(1, 1.),
+                    lin(0, -1.),
+                    cross(2, a),
+                    cross(0, -2. * a),
+                ]),
+                p(vec![lin(2, 1.), lin(0, -2.), cross(1, b), cross(0, -b)]),
+            ],
+        )
+        .unwrap();
+        let power = vec![
+            vec![iv(0.), iv(step)],
+            vec![iv(0.), iv(step)],
+            vec![iv(0.), iv(2. * step)],
+        ];
+        let cert = de::certify_slab(
+            &src,
+            [0., step],
+            &power,
+            &[[-1., 1.], [-1., 1.]],
+            0.01,
+            Some(0.),
+            true,
+            1e6,
+        )
+        .unwrap();
+        assert!(cert.global_qualified, "{}", case);
+        for (name, guard, dx, dt) in [
+            (
+                "algebraic",
+                p(vec![lin(1, 1.), lin(2, 0.25), tr(-0.0625, vec![])]),
+                1.5,
+                0.,
+            ),
+            (
+                "cancellation",
+                p(vec![
+                    lin(2, 1.),
+                    lin(0, -2.),
+                    clock(0.25),
+                    tr(-0.015625, vec![]),
+                ]),
+                0.,
+                0.25,
+            ),
+        ] {
+            for route in [
+                GuardDerivativeRoute::Tangent,
+                GuardDerivativeRoute::Schur,
+                GuardDerivativeRoute::PreparedSchur,
+                GuardDerivativeRoute::SchurRefine1,
+                GuardDerivativeRoute::SchurRefine2,
+                GuardDerivativeRoute::PreparedSchurRefine2,
+                GuardDerivativeRoute::SchurGs1,
+                GuardDerivativeRoute::SchurGs2,
+                GuardDerivativeRoute::SchurGsAdaptive2,
+                GuardDerivativeRoute::PreparedSchurGs2,
+            ] {
+                for value in [GuardValueRoute::Box, GuardValueRoute::Transport] {
+                    let mut audit = de::GuardKernelAudit::default();
+                    let (r, allocation) = measure(|| {
+                        de::GuardProof::new_recorded(
+                            &src, &guard, &power, &cert, route, value, &mut audit,
+                        )
+                    });
+                    let r = r.unwrap();
+                    assert!(
+                        covers(r.evidence.reduced_gradient[0], dx),
+                        "{case} {route:?} gradient"
+                    );
+                    assert!(
+                        covers(r.evidence.reduced_clock, dt),
+                        "{case} {route:?} clock"
+                    );
+                    assert!(
+                        covers(r.evidence.velocity, dx + dt),
+                        "{case} {route:?} velocity"
+                    );
+                    let mut values = Vec::new();
+                    for t in [0., step / 2., step] {
+                        let v = r
+                            .value_at(t, cert.whole_x_error.unwrap())
+                            .unwrap()
+                            .as_pair();
+                        let exact = if name == "algebraic" {
+                            1.5 * t - 0.0625
+                        } else {
+                            0.25 * t - 0.015625
+                        };
+                        assert!(
+                            covers(v, exact),
+                            "{case} {name} {route:?} {value:?} time {t}"
+                        );
+                        values.push(v);
+                    }
+                    println!(
+                        "VECTOR {}",
+                        serde_json::json!({"case":case,"guard":name,"derivative":route,"value":value,"allocation":allocation,"audit":audit,"evidence":r.evidence,"values":values,"branch_defect":cert.branch_defect})
+                    );
+                }
+            }
+            let mut audit = de::GuardKernelAudit::default();
+            let fail = de::GuardProof::new_recorded(
+                &src,
+                &guard,
+                &power,
+                &cert,
+                GuardDerivativeRoute::ConservedSchurRefine2,
+                GuardValueRoute::Box,
+                &mut audit,
+            );
+            assert!(
+                fail.is_err()
+                    && audit.builds.started == 1
+                    && audit.builds.returned == 0
+                    && audit.refinement_sweeps.started == 0
+            );
+        }
+    }
+}
+
+#[test]
+fn guard_gs_shared_kernel_noalloc() {
+    warm();
+    use de::GuardColumnRefinement as R;
+    use rodas5p_core::DenseMatrix;
+    let iv = |v| Iv::point(v).unwrap();
+    let src = DaeSource::new(
+        vec![p(vec![tr(1., vec![])])],
+        vec![
+            p(vec![
+                tr(1., vec![F::component(1, 0.)]),
+                tr(1., vec![F::clock(0.), F::component(2, 0.)]),
+            ]),
+            p(vec![
+                tr(1., vec![F::component(2, 0.)]),
+                tr(-0.5, vec![F::clock(0.), F::component(1, 0.)]),
+            ]),
+        ],
+    )
+    .unwrap();
+    let t = Iv::new(0., 0.25).unwrap();
+    let state = [Iv::new(-0.25, 0.25).unwrap(); 3];
+    let c = DenseMatrix::new(2, 2, vec![0.875, 0., 0., 1.125]).unwrap();
+    let rhs = [iv(1.), iv(2.)];
+    let mut ws = de::GuardColumnWorkspace::new();
+    let mut boxes = [[iv(0.); 2]; 6];
+    let mut counts = [0; 6];
+    for (k, route) in [
+        R::None,
+        R::Jacobi1,
+        R::Jacobi2,
+        R::GaussSeidel1,
+        R::GaussSeidel2,
+        R::AdaptiveGaussSeidel2,
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let mut work = AttemptCount::default();
+        let (q, a) = measure(|| {
+            ws.enclose_refined(&src, t, &state, &c, &rhs, route, &mut boxes[k], &mut work)
+        });
+        let q = q.unwrap();
+        assert!(q < 1. && q > 0.);
+        assert_eq!(a.requests(), 0);
+        assert_eq!(a.requested_bytes, 0);
+        assert_eq!(work.started, work.returned);
+        counts[k] = work.started;
+        for j in 0..=64 {
+            let t = j as f64 / 256.;
+            let exact = [
+                (1. - 2. * t) / (1. + 0.5 * t * t),
+                (2. + 0.5 * t) / (1. + 0.5 * t * t),
+            ];
+            for i in 0..2 {
+                assert!(boxes[k][i].lo <= exact[i] && exact[i] <= boxes[k][i].hi);
+            }
+        }
+        println!(
+            "GS_KERNEL {:?} q={} requests={} bytes={} sweeps={} box={:?}",
+            route,
+            q,
+            a.requests(),
+            a.requested_bytes,
+            work.started,
+            boxes[k]
+        );
+    }
+    assert_eq!(&counts[..5], &[0, 1, 2, 1, 2]);
+    assert!(counts[5] >= 1 && counts[5] <= 2);
+    for i in 0..2 {
+        for (child, parent) in [(1, 0), (2, 1), (3, 0), (4, 3), (5, 0)] {
+            assert!(
+                boxes[parent][i].lo <= boxes[child][i].lo
+                    && boxes[child][i].hi <= boxes[parent][i].hi
+            );
+        }
+    }
+    // Adaptive skip when q=0, with an exact identity constraint source.
+    let ident = DaeSource::new(
+        vec![p(vec![tr(1., vec![])])],
+        vec![
+            p(vec![tr(1., vec![F::component(1, 0.)])]),
+            p(vec![tr(1., vec![F::component(2, 0.)])]),
+        ],
+    )
+    .unwrap();
+    let identity = DenseMatrix::identity(2);
+    let mut out = [iv(123.); 2];
+    let mut work = AttemptCount::default();
+    let (q, a) = measure(|| {
+        ws.enclose_refined(
+            &ident,
+            t,
+            &state,
+            &identity,
+            &rhs,
+            R::AdaptiveGaussSeidel2,
+            &mut out,
+            &mut work,
+        )
+    });
+    assert_eq!(q.unwrap(), 0.);
+    assert_eq!((a.requests(), work.started, work.returned), (0, 0, 0));
+    assert_eq!(out.map(|x| x.as_pair()), rhs.map(|x| x.as_pair()));
+    println!("GS_ADAPTIVE_EXACT q=0 requests=0 sweeps=0");
+    let sentinel = [iv(123.); 2];
+    out = sentinel;
+    assert!(
+        ws.enclose_refined(
+            &src,
+            t,
+            &state,
+            &DenseMatrix::zeros(2, 2),
+            &rhs,
+            R::GaussSeidel2,
+            &mut out,
+            &mut work
+        )
+        .is_err()
+    );
+    assert_eq!(out.map(|v| v.as_pair()), sentinel.map(|v| v.as_pair()));
+    assert_eq!(work.started, 0);
+}
