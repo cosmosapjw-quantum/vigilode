@@ -1,0 +1,19 @@
+86:pub(crate) fn evaluate(polys: &[DeclaredPolynomial], t: Iv, y: &[Iv]) -> CoreResult<Eval> {
+87:    let mut v = Vec::with_capacity(polys.len());
+88:    let mut j = Vec::with_capacity(polys.len());
+103:                .collect::<CoreResult<Vec<_>>>()?;
+161:    pub fn rhs_values(&self, t: f64, y: &[f64]) -> CoreResult<Vec<f64>> {
+170:    pub fn jacobian_values(&self, t: f64, y: &[f64]) -> CoreResult<Vec<f64>> {
+183:    pub fn time_values(&self, t: f64, y: &[f64]) -> CoreResult<Vec<f64>> {
+369:        .collect::<CoreResult<Vec<_>>>()?;
+376:        .collect::<CoreResult<Vec<_>>>()?;
+417:            .collect::<CoreResult<Vec<_>>>()?;
+544:            .collect::<CoreResult<Vec<_>>>()?
+560:            .collect::<CoreResult<Vec<_>>>()?;
+567:        let mut rhs = Vec::with_capacity(nx + 2);
+580:                .collect::<CoreResult<Vec<_>>>()?,
+584:        let mut br = Vec::with_capacity(nx + 2);
+598:                .collect::<CoreResult<Vec<_>>>()?,
+609:                .collect::<CoreResult<Vec<_>>>()?;
+645:                .collect::<CoreResult<Vec<_>>>()?,
+657:                .collect::<CoreResult<Vec<_>>>()?,

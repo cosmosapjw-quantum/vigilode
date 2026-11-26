@@ -1,0 +1,291 @@
+{
+  "schema_version": "3.1.0",
+  "events": [
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "ALLOC-CALLS",
+      "payload": {
+        "claim_id": "ALLOC-CALLS",
+        "statement": "(a+b+c)+(d+e+f) = (a+d)+(b+e)+(c+f)",
+        "formal_statement": "POLY_IDENTITY: a + b + c + d + e + f = a + b + c + d + e + f",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite bookkeeping identities only; measured costs independent"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795663641.6790185,
+      "seq": 0,
+      "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "b20fc305c356b05e9626e1d291a1390b18c201d5b5e6039d7bf407ddad3b4360"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "ALLOC-CALLS",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "ad8ad82e8cf8fac1a34bd5102905aeeb666926ef40e4753a5895f3ced27c3197",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "(a+b+c)+(d+e+f)",
+            "rhs": "(a+d)+(b+e)+(c+f)"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: a + b + c + d + e + f = a + b + c + d + e + f",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-26T03:27:21Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795663641.6815217,
+      "seq": 1,
+      "prev_hash": "b20fc305c356b05e9626e1d291a1390b18c201d5b5e6039d7bf407ddad3b4360",
+      "hash": "6fb3128bd7592f2950f9f4e788c46a09f675eb771889aac8dd1b951077565537"
+    },
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "NATIVE-DEBIT",
+      "payload": {
+        "claim_id": "NATIVE-DEBIT",
+        "statement": "(a+r)+(b+s) = a+b+r+s",
+        "formal_statement": "POLY_IDENTITY: a + b + r + s = a + b + r + s",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite bookkeeping identities only; measured costs independent"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795663641.6818645,
+      "seq": 2,
+      "prev_hash": "6fb3128bd7592f2950f9f4e788c46a09f675eb771889aac8dd1b951077565537",
+      "hash": "a85d4746f8dca291d78781d70bf75c8a4701e90d9fce231017f303deb29b812d"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "NATIVE-DEBIT",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "752a2eac5891a0bb43fef45d24f67f8ad1054a93c8050f720f7aeb9419f147d5",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "(a+r)+(b+s)",
+            "rhs": "a+b+r+s"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: a + b + r + s = a + b + r + s",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-26T03:27:21Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795663641.6825976,
+      "seq": 3,
+      "prev_hash": "a85d4746f8dca291d78781d70bf75c8a4701e90d9fce231017f303deb29b812d",
+      "hash": "bd4cd8a32cd6440eabe63105c798223c2bb0c67b34c4a3b1dc0f16907c48978d"
+    },
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "CLOCK-WIDTH",
+      "payload": {
+        "claim_id": "CLOCK-WIDTH",
+        "statement": "(b+q)-(a+p) = (b-a)+(q-p)",
+        "formal_statement": "POLY_IDENTITY: -a + b - p + q = -a + b - p + q",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite bookkeeping identities only; measured costs independent"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795663641.6829667,
+      "seq": 4,
+      "prev_hash": "bd4cd8a32cd6440eabe63105c798223c2bb0c67b34c4a3b1dc0f16907c48978d",
+      "hash": "d54693e18aba7ac0f0e0a78d98842850789214f97d1e573a7f84e3de19a5a570"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "CLOCK-WIDTH",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "c6b0b8ff1be6b378c8d1065dd676dc6457d40c3195fd3177e552e6b28b9ed5ff",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "(b+q)-(a+p)",
+            "rhs": "(b-a)+(q-p)"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: -a + b - p + q = -a + b - p + q",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-26T03:27:21Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795663641.6837592,
+      "seq": 5,
+      "prev_hash": "d54693e18aba7ac0f0e0a78d98842850789214f97d1e573a7f84e3de19a5a570",
+      "hash": "46f9c461bac08d1919a7b96d93972494e0419b7b5ce7b8412bd2acc055a8ad51"
+    }
+  ],
+  "claims": {
+    "ALLOC-CALLS": {
+      "claim_id": "ALLOC-CALLS",
+      "statement": "(a+b+c)+(d+e+f) = (a+d)+(b+e)+(c+f)",
+      "formal_statement": "POLY_IDENTITY: a + b + c + d + e + f = a + b + c + d + e + f",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite bookkeeping identities only; measured costs independent"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "ad8ad82e8cf8fac1a34bd5102905aeeb666926ef40e4753a5895f3ced27c3197",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "(a+b+c)+(d+e+f)",
+              "rhs": "(a+d)+(b+e)+(c+f)"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: a + b + c + d + e + f = a + b + c + d + e + f",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-26T03:27:21Z"
+        }
+      ]
+    },
+    "NATIVE-DEBIT": {
+      "claim_id": "NATIVE-DEBIT",
+      "statement": "(a+r)+(b+s) = a+b+r+s",
+      "formal_statement": "POLY_IDENTITY: a + b + r + s = a + b + r + s",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite bookkeeping identities only; measured costs independent"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "752a2eac5891a0bb43fef45d24f67f8ad1054a93c8050f720f7aeb9419f147d5",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "(a+r)+(b+s)",
+              "rhs": "a+b+r+s"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: a + b + r + s = a + b + r + s",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-26T03:27:21Z"
+        }
+      ]
+    },
+    "CLOCK-WIDTH": {
+      "claim_id": "CLOCK-WIDTH",
+      "statement": "(b+q)-(a+p) = (b-a)+(q-p)",
+      "formal_statement": "POLY_IDENTITY: -a + b - p + q = -a + b - p + q",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite bookkeeping identities only; measured costs independent"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "c6b0b8ff1be6b378c8d1065dd676dc6457d40c3195fd3177e552e6b28b9ed5ff",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "(b+q)-(a+p)",
+              "rhs": "(b-a)+(q-p)"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: -a + b - p + q = -a + b - p + q",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-26T03:27:21Z"
+        }
+      ]
+    }
+  },
+  "head": "46f9c461bac08d1919a7b96d93972494e0419b7b5ce7b8412bd2acc055a8ad51",
+  "trust": [
+    "PROVED_EXACT_CERTIFICATE",
+    "PROVED_FORMAL_KERNEL"
+  ]
+}

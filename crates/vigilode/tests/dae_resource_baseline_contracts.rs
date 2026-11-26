@@ -1,0 +1,1004 @@
+#![cfg(feature = "polynomial-events")]
+use rodas5p_core::{directed::Interval as Iv, retro_dictionary::RealMode};
+use rodas5p_integrators::{retro_dae_evolution as de, retro_green::RetroTable};
+use serde::Serialize;
+use std::{
+    alloc::{GlobalAlloc, Layout, System},
+    cell::Cell,
+    hint::black_box,
+};
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+struct Counts {
+    alloc: u64,
+    zeroed: u64,
+    realloc: u64,
+    requested_bytes: u64,
+    dealloc: u64,
+    dealloc_bytes: u64,
+}
+impl Counts {
+    fn requests(self) -> u64 {
+        self.alloc + self.zeroed + self.realloc
+    }
+    fn add(&mut self, o: Self) {
+        self.alloc += o.alloc;
+        self.zeroed += o.zeroed;
+        self.realloc += o.realloc;
+        self.requested_bytes += o.requested_bytes;
+        self.dealloc += o.dealloc;
+        self.dealloc_bytes += o.dealloc_bytes;
+    }
+}
+thread_local! {
+    static TRACK:Cell<bool>=const{Cell::new(false)};
+    static COUNT:Cell<Counts>=const{Cell::new(Counts{alloc:0,zeroed:0,realloc:0,requested_bytes:0,dealloc:0,dealloc_bytes:0})};
+}
+fn record(kind: u8, bytes: usize) {
+    if TRACK.try_with(Cell::get).unwrap_or(false) {
+        let _ = COUNT.try_with(|v| {
+            let mut c = v.get();
+            match kind {
+                0 => {
+                    c.alloc += 1;
+                    c.requested_bytes += bytes as u64;
+                }
+                1 => {
+                    c.zeroed += 1;
+                    c.requested_bytes += bytes as u64;
+                }
+                2 => {
+                    c.realloc += 1;
+                    c.requested_bytes += bytes as u64;
+                }
+                _ => {
+                    c.dealloc += 1;
+                    c.dealloc_bytes += bytes as u64;
+                }
+            }
+            v.set(c);
+        });
+    }
+}
+struct CountingAllocator;
+unsafe impl GlobalAlloc for CountingAllocator {
+    unsafe fn alloc(&self, l: Layout) -> *mut u8 {
+        record(0, l.size());
+        unsafe { System.alloc(l) }
+    }
+    unsafe fn alloc_zeroed(&self, l: Layout) -> *mut u8 {
+        record(1, l.size());
+        unsafe { System.alloc_zeroed(l) }
+    }
+    unsafe fn realloc(&self, p: *mut u8, l: Layout, n: usize) -> *mut u8 {
+        record(2, n);
+        unsafe { System.realloc(p, l, n) }
+    }
+    unsafe fn dealloc(&self, p: *mut u8, l: Layout) {
+        record(3, l.size());
+        unsafe { System.dealloc(p, l) }
+    }
+}
+#[global_allocator]
+static ALLOC: CountingAllocator = CountingAllocator;
+struct Tracking;
+impl Drop for Tracking {
+    fn drop(&mut self) {
+        TRACK.with(|v| v.set(false));
+    }
+}
+fn measure<T>(f: impl FnOnce() -> T) -> (T, Counts) {
+    assert!(!TRACK.with(Cell::get));
+    COUNT.with(|v| v.set(Counts::default()));
+    TRACK.with(|v| v.set(true));
+    let guard = Tracking;
+    let r = f();
+    drop(guard);
+    (r, COUNT.with(Cell::get))
+}
+#[derive(Default, Serialize)]
+struct QueryWork {
+    calls: usize,
+    refused: usize,
+    cells: usize,
+    allocation: Counts,
+}
+impl QueryWork {
+    fn query<T>(
+        &mut self,
+        f: impl FnOnce() -> Result<T, rodas5p_core::CoreError>,
+    ) -> Result<T, rodas5p_core::CoreError> {
+        let (r, a) = measure(f);
+        self.calls += 1;
+        self.refused += usize::from(r.is_err());
+        self.allocation.add(a);
+        r
+    }
+}
+#[test]
+fn allocator_positive_and_zero_control() {
+    // Explicit direct calls with escaping pointer; no optimization-dependent Vec count.
+    let (_, c) = measure(|| unsafe {
+        let l = Layout::from_size_align(64, 8).unwrap();
+        let p = std::alloc::alloc(l);
+        assert!(!p.is_null());
+        black_box(p);
+        p.write(7);
+        let q = std::alloc::realloc(p, l, 128);
+        assert!(!q.is_null());
+        black_box(q);
+        assert_eq!(q.read(), 7);
+        std::alloc::dealloc(q, Layout::from_size_align(128, 8).unwrap());
+        let z = std::alloc::alloc_zeroed(l);
+        assert!(!z.is_null());
+        black_box(z);
+        assert_eq!(z.read(), 0);
+        std::alloc::dealloc(z, l);
+    });
+    assert_eq!(
+        c,
+        Counts {
+            alloc: 1,
+            zeroed: 1,
+            realloc: 1,
+            requested_bytes: 256,
+            dealloc: 2,
+            dealloc_bytes: 192
+        }
+    );
+    let (_, z) = measure(|| black_box([1., 2., 3.]));
+    assert_eq!(z, Counts::default());
+    println!(
+        "CONTROL {}",
+        serde_json::json!({"positive":c,"stack_zero":z})
+    );
+}
+
+use vigilode::dae_evolution::*;
+use vigilode::polynomial_events::{
+    AffineFactor as F, DeclaredPolynomial as P, EventTerm as T, retro_dae_init::*,
+};
+use vigilode::{Atol, InteriorError, Options};
+fn p(v: Vec<T>) -> P {
+    P::new(v).unwrap()
+}
+fn tr(coefficient: f64, factors: Vec<F>) -> T {
+    T {
+        coefficient,
+        factors,
+    }
+}
+fn h(q: f64) -> P {
+    p(vec![
+        tr(1., vec![F::clock(q)]),
+        tr(1. / 128., vec![F::component(2, 0.)]),
+    ])
+}
+fn opts() -> Options {
+    Options {
+        rtol: 1e-8,
+        atol: Atol::Scalar(1e-11),
+        dense_output: true,
+        interior_error: InteriorError::Off,
+        max_steps: 4096,
+        ..Default::default()
+    }
+}
+fn policy() -> EvolutionPolicy {
+    EvolutionPolicy {
+        init: InitPolicy {
+            mode: InitMode::ProjectAlgebraic,
+            state_tol: 1e-11,
+            residual_tol: 1e-11,
+            derivative_tol: 1e-6,
+            ..Default::default()
+        },
+        tube_radius: 1e-3,
+        global_tol: 1e-3,
+        green: true,
+    }
+}
+fn mp(method: MultiGuardRoute) -> MultiGuardPolicy {
+    MultiGuardPolicy {
+        method,
+        tolerance: 1e-6,
+        root_route: ThresholdRoute::DictionaryHint,
+        derivative: GuardDerivativeRoute::Schur,
+        value: GuardValueRoute::Transport,
+        pending: PendingPolicy {
+            method: PendingMethod::PiecewiseProbe,
+            max_slabs: 8,
+        },
+        max_slabs: 128,
+    }
+}
+fn reset() -> SimplexReset {
+    SimplexReset::new([[1., 0., 0.], [0., 0.5, 0.], [0., 0.5, 1.]]).unwrap()
+}
+fn rp(sync: VectorSyncRoute) -> VectorResetPolicy {
+    VectorResetPolicy {
+        sync,
+        derivative: GuardDerivativeRoute::Schur,
+        branch_route: InitRoute::Reuse,
+        subdivisions: 1,
+    }
+}
+fn mixed() -> SimplexReset {
+    SimplexReset::new([
+        [1023. / 1024., 0., 0.25],
+        [0., 0.5, 0.],
+        [1. / 1024., 0.5, 0.75],
+    ])
+    .unwrap()
+}
+fn cycle(
+    overlap: bool,
+    route: EvolutionRoute,
+    cert: ConservationRoute,
+    sync: VectorSyncRoute,
+) -> ConservedMode {
+    let v = 1. / 8192.;
+    let q = 1. / 16384.;
+    let h = |q: f64| p(vec![tr(q, vec![]), tr(-1., vec![F::component(1, 0.)])]);
+    let reset = SimplexReset::new([[1. - v; 3], [v; 3], [0.; 3]]).unwrap();
+    let mut pol = rp(sync);
+    pol.branch_route = match route {
+        EvolutionRoute::Prepared5 => InitRoute::PreparedBatch,
+        EvolutionRoute::Scalar5 => InitRoute::ScalarRoot,
+        _ => InitRoute::Reuse,
+    };
+    ConservedMode {
+        rate: 3e7,
+        route,
+        certificate: cert,
+        guards: vec![
+            h(q),
+            h(q - if overlap {
+                2f64.powi(-28)
+            } else {
+                2f64.powi(-18)
+            }),
+        ],
+        transitions: (0..2)
+            .map(|_| ConservedTransition {
+                target: 0,
+                reset: reset.clone(),
+                policy: pol,
+                sync: SimplexSyncRoute::JointTransport,
+            })
+            .collect(),
+    }
+}
+fn initial(rad: f64) -> RobertsonInitial {
+    let v = 1. / 8192.;
+    RobertsonInitial::simplex_ball([1. - v, v], rad).unwrap()
+}
+fn pm(order: MultiGuardRoute) -> MultiGuardPolicy {
+    let mut p = mp(order);
+    p.derivative = GuardDerivativeRoute::ConservedSchur;
+    p
+}
+fn limits() -> PhaseCycleBudget {
+    PhaseCycleBudget {
+        native_attempts: 4096,
+        scan_slabs: 512,
+        transitions: 3,
+        min_dwell: 1e-5,
+        absolute_width: 1e-6,
+    }
+}
+fn constant(v: f64) -> SimplexReset {
+    SimplexReset::new([[1. - v; 3], [v; 3], [0.; 3]]).unwrap()
+}
+fn graph(case: &str, solver: EvolutionRoute, cert: ConservationRoute) -> Vec<ConservedMode> {
+    let mut a = cycle(case == "overlap", solver, cert, VectorSyncRoute::Centered);
+    let mut b = cycle(case == "overlap", solver, cert, VectorSyncRoute::Centered);
+    b.rate = 6e7;
+    if case == "distinct" {
+        let mut c = cycle(false, solver, cert, VectorSyncRoute::Centered);
+        for e in &mut a.transitions {
+            e.target = 1;
+            e.reset = constant(1. / 8192.);
+        }
+        for e in &mut b.transitions {
+            e.target = 2;
+            e.reset = constant(5. / 32768.);
+        }
+        for e in &mut c.transitions {
+            e.target = 1;
+            e.reset = constant(3. / 16384.);
+        }
+        {
+            a.transitions[1].target = 0;
+            a.transitions[1].reset = constant(3. / 16384.);
+            vec![a, b, c]
+        }
+    } else {
+        for e in &mut a.transitions {
+            e.target = 1;
+            e.reset = constant(3. / 16384.);
+        }
+        for e in &mut b.transitions {
+            e.target = 0;
+            e.reset = constant(5. / 32768.);
+        }
+        {
+            a.transitions[1].target = 0;
+            a.transitions[1].reset = constant(1. / 8192.);
+            vec![a, b]
+        }
+    }
+}
+fn atlas_budget() -> PhaseAtlasBudget {
+    PhaseAtlasBudget {
+        limits: PhaseCycleBudget {
+            transitions: 10,
+            ..limits()
+        },
+        reset_checks: 64,
+        cache_entries: 10,
+    }
+}
+
+fn chain_limits() -> ConservedChainBudget {
+    ConservedChainBudget {
+        limits: ChainBudget {
+            native_attempts: 4096,
+            scan_slabs: 512,
+            transition_attempts: 10,
+            reset_cells: 64,
+            gap_checks: 256,
+            min_dwell: 1e-5,
+        },
+        picard_attempts: 512,
+    }
+}
+
+#[test]
+#[ignore = "fixed resource audit of identical phase atlas matrix"]
+fn training() {
+    warm();
+    use serde_json::json;
+    for case in ["alternating", "distinct", "overlap"] {
+        for solver in [
+            EvolutionRoute::Mass,
+            EvolutionRoute::Prepared5,
+            EvolutionRoute::Scalar5,
+        ] {
+            for cert in [ConservationRoute::Max, ConservationRoute::Integral4] {
+                for order in [MultiGuardRoute::Shared, MultiGuardRoute::Correlated] {
+                    for method in ["JointCentered", "JointGreen", "AtlasFresh", "AtlasReuse"] {
+                        let mut m = graph(case, solver, cert);
+                        if method == "JointGreen" {
+                            for a in &mut m {
+                                for e in &mut a.transitions {
+                                    e.policy.sync = VectorSyncRoute::GreenMoment;
+                                }
+                            }
+                        }
+                        let mut row = json!({"case":case,"solver":solver,"cert":cert,"order":order,"method":method,"radius":2f64.powi(-26)});
+                        if method.starts_with("Atlas") {
+                            let (r, run_alloc) = measure(|| {
+                                evolve_robertson_phase_atlas(
+                                    &m,
+                                    0,
+                                    initial(2f64.powi(-26)),
+                                    [0., 0.002],
+                                    &opts(),
+                                    policy(),
+                                    pm(order),
+                                    atlas_budget(),
+                                    if method == "AtlasReuse" {
+                                        PhaseReuseRoute::Reuse
+                                    } else {
+                                        PhaseReuseRoute::Fresh
+                                    },
+                                )
+                            });
+                            let r = r.unwrap();
+                            let mut hwork = QueryWork::default();
+                            let mut cwork = QueryWork::default();
+                            let mut qs = vec![];
+                            for (i, e) in r.epochs().iter().enumerate() {
+                                let ep = &e.phase;
+                                if ep.absolute_safe <= ep.clock[1] {
+                                    continue;
+                                }
+                                for j in 0..=4 {
+                                    let t = if j == 4
+                                        && r.stop() == PhaseAtlasStop::Horizon
+                                        && ep.absolute_safe == 0.002
+                                    {
+                                        0.002
+                                    } else {
+                                        ep.clock[1]
+                                            + (ep.absolute_safe - ep.clock[1])
+                                                * ((j as f64 + 0.5) / 5.)
+                                    };
+                                    let a = hwork
+                                        .query(|| r.query(i, t, PhaseQueryRoute::Horner))
+                                        .unwrap();
+                                    hwork.cells += a.cells.len();
+                                    let b = cwork
+                                        .query(|| r.query(i, t, PhaseQueryRoute::Centered))
+                                        .unwrap();
+                                    cwork.cells += b.cells.len();
+                                    qs.push(json!({"epoch":i,"horner":a,"centered":b}));
+                                }
+                            }
+                            let driver_stats = r
+                                .phases()
+                                .iter()
+                                .map(|p| p.ordered().event_authority().map(|a| a.stats()))
+                                .collect::<Vec<_>>();
+                            println!(
+                                "RESOURCE {}",
+                                json!({"case":case,"solver":solver,"cert":cert,"order":order,"method":method,"solve_alloc":run_alloc,"horner":hwork,"centered":cwork,"driver_stats":driver_stats})
+                            );
+                            row["atlas"] = json!({"stop":r.stop(),"reason":r.reason(),"final_mode":r.final_mode(),"work":r.work(),"phases":r.phases().iter().map(|p|json!({"mode":p.mode,"initial":p.initial,"winner":p.ordered().winner(),"safe":p.ordered().committed_until(),"reason":p.ordered().reason(),"guards":p.ordered().guards(),"comparisons":p.ordered().comparisons(),"work":p.ordered().work,"slabs":p.original_slab_diagnostics()})).collect::<Vec<_>>(),"epochs":r.epochs(),"events":r.events(),"queries":qs});
+                        } else {
+                            let (r, run_alloc) = measure(|| {
+                                evolve_conserved_chain(
+                                    &m,
+                                    0,
+                                    initial(2f64.powi(-26)),
+                                    [0., 0.002],
+                                    &opts(),
+                                    policy(),
+                                    pm(order),
+                                    chain_limits(),
+                                    SimplexGapRoute::AffineDual,
+                                )
+                            });
+                            let r = r.unwrap();
+                            let mut qwork = QueryWork::default();
+                            let mut es = vec![];
+                            for (i, e) in r.epochs().iter().enumerate() {
+                                let qs = if e.safe() > e.start() {
+                                    (0..=4)
+                                        .filter_map(|j| {
+                                            qwork
+                                                .query(|| {
+                                                    r.query(
+                                                        i,
+                                                        if j == 4 {
+                                                            e.safe()
+                                                        } else {
+                                                            e.start()
+                                                                + (e.safe() - e.start())
+                                                                    * (j as f64 / 4.)
+                                                        },
+                                                    )
+                                                })
+                                                .ok()
+                                        })
+                                        .collect::<Vec<_>>()
+                                } else {
+                                    vec![]
+                                };
+                                es.push(json!({"mode":e.mode(),"start":e.start(),"safe":e.safe(),"radius":e.incoming_l1(),"center":e.center(),"slabs":e.original_slab_diagnostics(),"queries":qs}));
+                            }
+                            let driver_stats = r
+                                .epochs()
+                                .iter()
+                                .map(|e| {
+                                    e.ordered()
+                                        .and_then(|a| a.event_authority())
+                                        .map(|a| a.stats())
+                                })
+                                .collect::<Vec<_>>();
+                            println!(
+                                "RESOURCE {}",
+                                json!({"case":case,"solver":solver,"cert":cert,"order":order,"method":method,"solve_alloc":run_alloc,"point":qwork,"driver_stats":driver_stats})
+                            );
+                            row["joint"] = json!({"stop":r.stop(),"reason":r.reason(),"final_mode":r.final_mode(),"work":r.work(),"events":r.transitions(),"epochs":es});
+                        }
+                        println!("CELL {}", row);
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn warm() {
+    for solver in [
+        EvolutionRoute::Mass,
+        EvolutionRoute::Prepared5,
+        EvolutionRoute::Scalar5,
+    ] {
+        let m = graph("alternating", solver, ConservationRoute::Integral4);
+        let _ = evolve_robertson_phase_atlas(
+            &m,
+            0,
+            initial(2f64.powi(-26)),
+            [0., 0.002],
+            &opts(),
+            policy(),
+            pm(MultiGuardRoute::Correlated),
+            atlas_budget(),
+            PhaseReuseRoute::Reuse,
+        )
+        .unwrap();
+    }
+    black_box(RetroTable::with_dictionary(RealMode::Hybrid).unwrap());
+}
+fn init_route(solver: EvolutionRoute) -> InitRoute {
+    match solver {
+        EvolutionRoute::Prepared5 => InitRoute::PreparedBatch,
+        EvolutionRoute::Scalar5 => InitRoute::ScalarRoot,
+        _ => InitRoute::Reuse,
+    }
+}
+fn power(s: &SlabRecord) -> Vec<Vec<Iv>> {
+    s.power
+        .iter()
+        .map(|row| row.iter().map(|v| Iv::new(v[0], v[1]).unwrap()).collect())
+        .collect()
+}
+fn same<T: Serialize, U: Serialize>(a: &T, b: &U) {
+    assert_eq!(
+        serde_json::to_value(a).unwrap(),
+        serde_json::to_value(b).unwrap()
+    );
+}
+fn component(
+    case: &str,
+    solver: EvolutionRoute,
+    cert: ConservationRoute,
+    op: &str,
+    alloc: Counts,
+    detail: serde_json::Value,
+) {
+    println!(
+        "COMPONENT {}",
+        serde_json::json!({"case":case,"solver":solver,"cert":cert,"operation":op,"allocation":alloc,"detail":detail})
+    );
+}
+#[test]
+#[ignore = "authentic native slab and reset component allocation replay"]
+fn component_replay() {
+    use serde_json::json;
+    warm();
+    const BRANCH: [[f64; 2]; 1] = [[-0.25, 1.25]];
+    for solver in [
+        EvolutionRoute::Mass,
+        EvolutionRoute::Prepared5,
+        EvolutionRoute::Scalar5,
+    ] {
+        for cert in [ConservationRoute::Max, ConservationRoute::Integral4] {
+            let m = graph("alternating", solver, cert);
+            let r = evolve_robertson_phase_atlas(
+                &m,
+                0,
+                initial(2f64.powi(-26)),
+                [0., 0.002],
+                &opts(),
+                policy(),
+                pm(MultiGuardRoute::Correlated),
+                atlas_budget(),
+                PhaseReuseRoute::Reuse,
+            )
+            .unwrap();
+            assert_eq!(r.stop(), PhaseAtlasStop::Horizon);
+            for phase in r.phases().iter().take(2) {
+                let model = RobertsonModel::new(m[phase.mode].rate).unwrap();
+                let src = model.source();
+                let ir = init_route(solver);
+                let init = src
+                    .initialize(
+                        0.,
+                        &phase.initial.center(),
+                        &[0.125],
+                        &BRANCH,
+                        policy().init,
+                        ir,
+                    )
+                    .unwrap();
+                let slabs = phase.original_slab_diagnostics();
+                for (tag, k) in [
+                    ("first", 0),
+                    ("middle", slabs.len() / 2),
+                    ("last", slabs.len() - 1),
+                ] {
+                    let s = &slabs[k];
+                    let c = s.certificate.as_ref().unwrap();
+                    assert!(c.global_qualified);
+                    let detail = json!({"mode":phase.mode,"slab":k,"position":tag,"times":s.times});
+                    let (p, a) = measure(|| {
+                        de::dense_power(
+                            &s.native.y0,
+                            &s.native.y1,
+                            &s.native.stages,
+                            s.native.basis,
+                        )
+                    });
+                    let mut p = p.unwrap();
+                    component("slab", solver, cert, "dense_power", a, detail.clone());
+                    if solver != EvolutionRoute::Mass {
+                        let (z, a) = measure(|| {
+                            de::reconstruct(
+                                src,
+                                s.times,
+                                &p,
+                                &init.z,
+                                &BRANCH,
+                                policy().init,
+                                ir,
+                                None,
+                                5,
+                            )
+                        });
+                        let (z, w) = z.unwrap();
+                        let mut d = detail.clone();
+                        d["init_work"] = json!(w);
+                        component("slab", solver, cert, "reconstruct", a, d);
+                        p.extend(z);
+                    }
+                    same(
+                        &p.iter()
+                            .map(|row| row.iter().map(|v| v.as_pair()).collect::<Vec<_>>())
+                            .collect::<Vec<_>>(),
+                        &s.power,
+                    );
+                    let (proof, a) = measure(|| {
+                        model.certify(
+                            s.times,
+                            &p,
+                            &BRANCH,
+                            policy().tube_radius,
+                            Some(c.incoming),
+                            policy().init.condition_cap,
+                            cert,
+                        )
+                    });
+                    let proof = proof.unwrap();
+                    same(&proof, c);
+                    let mut d = detail.clone();
+                    d["subcells"] = json!(proof.conservation.as_ref().unwrap().cells.len());
+                    component("slab", solver, cert, "residual", a, d);
+                    let guard = &m[phase.mode].guards[0];
+                    let (g, a) = measure(|| {
+                        de::GuardProof::new(
+                            src,
+                            guard,
+                            &p,
+                            c,
+                            GuardDerivativeRoute::ConservedSchur,
+                            GuardValueRoute::Transport,
+                        )
+                    });
+                    let g = g.unwrap();
+                    let mut d = detail.clone();
+                    d["prepared_work"] = json!(g.evidence.prepared_work);
+                    component("slab", solver, cert, "guard_build", a, d);
+                    if let Some(s0) = phase.ordered().guards()[0]
+                        .slabs
+                        .iter()
+                        .find(|v| v.times == s.times)
+                    {
+                        let mut a0 = serde_json::to_value(&g.evidence).unwrap();
+                        let mut b0 = serde_json::to_value(s0).unwrap();
+                        a0["evaluations"] = json!([]);
+                        b0["evaluations"] = json!([]);
+                        assert_eq!(a0, b0);
+                        if let Some(v) = s0.evaluations.first() {
+                            let (v0, a) = measure(|| g.value_at(v.time, v.differential_radius));
+                            same(&v0.unwrap().as_pair(), &v.value);
+                            component("slab", solver, cert, "guard_value", a, detail.clone());
+                        }
+                    }
+                    // Exact native differential state. For reduced routes this is
+                    // precisely the de::project invoked by Engine::fixed in callbacks.
+                    let seed = if solver == EvolutionRoute::Mass {
+                        &s.native.y0[2..]
+                    } else {
+                        &init.z
+                    };
+                    let (pr, a) = measure(|| {
+                        de::project(
+                            src,
+                            s.times[0],
+                            &s.native.y0[..2],
+                            seed,
+                            &BRANCH,
+                            policy().init,
+                            ir,
+                            None,
+                        )
+                    });
+                    let pr = pr.unwrap();
+                    let mut d = detail.clone();
+                    d["init_work"] = json!(pr.work);
+                    component("slab", solver, cert, "project", a, d);
+                    if solver == EvolutionRoute::Mass {
+                        let prepared = vigilode::polynomial_events::initialize_mass_problem(
+                            src,
+                            0.,
+                            &phase.initial.center(),
+                            &[0.125],
+                            &BRANCH,
+                            policy().init,
+                            ir,
+                        )
+                        .unwrap();
+                        let mut dy = [0.; 3];
+                        let mut jac = [0.; 9];
+                        let (x, a) = measure(|| {
+                            (prepared.problem.rhs_fn())(s.times[0], &s.native.y0, &mut dy)
+                        });
+                        x.unwrap();
+                        black_box(dy);
+                        same(&dy, &src.rhs_values(s.times[0], &s.native.y0).unwrap());
+                        component("slab", solver, cert, "mass_rhs_callback", a, detail.clone());
+                        let vigilode::Jacobian::Dense(j) = prepared.problem.jacobian_provider()
+                        else {
+                            panic!("mass Jacobian provider")
+                        };
+                        let (x, a) = measure(|| j(s.times[0], &s.native.y0, &mut jac));
+                        x.unwrap();
+                        black_box(jac);
+                        same(
+                            &jac,
+                            &src.jacobian_values(s.times[0], &s.native.y0).unwrap(),
+                        );
+                        component(
+                            "slab",
+                            solver,
+                            cert,
+                            "mass_jacobian_callback",
+                            a,
+                            detail.clone(),
+                        );
+                        let (x, a) = measure(|| src.time_values(s.times[0], &s.native.y0));
+                        black_box(x.unwrap());
+                        component("slab", solver, cert, "mass_time_values", a, detail.clone());
+                    }
+                }
+            }
+            // Compare actual old Joint transport components on the first committed edge.
+            for sync in [VectorSyncRoute::Centered, VectorSyncRoute::GreenMoment] {
+                let mut m = graph("alternating", solver, cert);
+                for a in &mut m {
+                    for e in &mut a.transitions {
+                        e.policy.sync = sync;
+                    }
+                }
+                let r = evolve_conserved_chain(
+                    &m,
+                    0,
+                    initial(2f64.powi(-26)),
+                    [0., 0.002],
+                    &opts(),
+                    policy(),
+                    pm(MultiGuardRoute::Correlated),
+                    chain_limits(),
+                    SimplexGapRoute::AffineDual,
+                )
+                .unwrap();
+                let ev = &r.transitions()[0];
+                assert!(ev.committed);
+                let prep = ev.reset.as_ref().unwrap();
+                let trans = ev.transport.as_ref().unwrap();
+                let src = RobertsonModel::new(m[ev.from].rate).unwrap();
+                let post = RobertsonModel::new(m[ev.target].rate).unwrap();
+                let edge = &m[ev.from].transitions[ev.guard];
+                let pol = edge.reset.polynomials().unwrap();
+                let (table, a) = measure(|| RetroTable::with_dictionary(RealMode::Hybrid));
+                let table = table.unwrap();
+                component(
+                    "reset",
+                    solver,
+                    cert,
+                    "green_table",
+                    a,
+                    json!({"sync":sync}),
+                );
+                for (i, cell) in prep.cells.iter().enumerate() {
+                    let s = r.epochs()[0]
+                        .original_slab_diagnostics()
+                        .iter()
+                        .find(|v| v.times[0] <= cell.times[0] && cell.times[1] <= v.times[1])
+                        .unwrap();
+                    let y = power(s);
+                    let c = s.certificate.as_ref().unwrap();
+                    let mut rr = vec![];
+                    for (j, g) in pol.iter().enumerate() {
+                        let (x, a) = measure(|| {
+                            de::vector_reset_component(
+                                src.source(),
+                                g,
+                                &y,
+                                c,
+                                cell.times,
+                                sync,
+                                edge.policy.derivative,
+                            )
+                        });
+                        let x = x.unwrap();
+                        same(&x, &cell.reset[j]);
+                        component(
+                            "reset",
+                            solver,
+                            cert,
+                            "reset_component",
+                            a,
+                            json!({"sync":sync,"cell":i,"component":j,"init_work":x.prepared_work}),
+                        );
+                        rr.push(x);
+                    }
+                    let boxes = rr.iter().map(|v| v.enclosure).collect::<Vec<_>>();
+                    let (tube, a) = measure(|| {
+                        de::certify_vector_tube(
+                            post.source(),
+                            [cell.times[0], ev.event_time[1]],
+                            &boxes,
+                            &[0.125],
+                            &BRANCH,
+                            policy().init,
+                            edge.policy.branch_route,
+                        )
+                    });
+                    let tube = tube.unwrap();
+                    same(&tube, cell.tube.as_ref().unwrap());
+                    component(
+                        "reset",
+                        solver,
+                        cert,
+                        "picard_tube",
+                        a,
+                        json!({"sync":sync,"cell":i,"attempts":tube.attempts.len()}),
+                    );
+                    let (x, a) = measure(|| {
+                        de::synchronize_vector(
+                            &rr,
+                            cell.times,
+                            ev.event_time[1],
+                            &tube,
+                            sync,
+                            &table,
+                        )
+                    });
+                    let x = x.unwrap();
+                    same(&x, cell.sync.as_ref().unwrap());
+                    component(
+                        "reset",
+                        solver,
+                        cert,
+                        "synchronize",
+                        a,
+                        json!({"sync":sync,"cell":i,"green_calls":x.green_calls}),
+                    );
+                    let (x, a) = measure(|| {
+                        de::simplex_transport_cell(
+                            &edge.reset,
+                            &y,
+                            c,
+                            cell.times,
+                            ev.event_time[1],
+                            &tube,
+                            trans.center,
+                        )
+                    });
+                    let x = x.unwrap();
+                    same(&x, &trans.cells[i]);
+                    component(
+                        "reset",
+                        solver,
+                        cert,
+                        "joint_transport",
+                        a,
+                        json!({"sync":sync,"cell":i}),
+                    );
+                }
+                for g in &ev.gap {
+                    let a = &g.evidence;
+                    let (x, c) = measure(|| {
+                        post.simplex_gap_enclosure(
+                            &m[ev.target].guards[g.guard],
+                            a.times,
+                            a.differential_box,
+                            a.center,
+                            a.incoming_l1,
+                            a.route,
+                        )
+                    });
+                    let x = x.unwrap();
+                    same(&x, a);
+                    component(
+                        "reset",
+                        solver,
+                        cert,
+                        "gap_guard",
+                        c,
+                        json!({"sync":sync,"cell":g.cell,"guard":g.guard}),
+                    );
+                }
+            }
+        }
+    }
+}
+#[test]
+#[ignore = "bounded refusal allocation and debit observations"]
+fn refusals() {
+    use serde_json::json;
+    warm();
+    for case in [
+        "native",
+        "slab",
+        "transition",
+        "reset_quota",
+        "active_target",
+        "tie",
+        "width",
+        "dwell",
+        "warp",
+        "time_guard",
+        "nonconstant_reset",
+    ] {
+        let mut m = graph(
+            "alternating",
+            if case == "warp" {
+                EvolutionRoute::WarpFolded
+            } else {
+                EvolutionRoute::Mass
+            },
+            ConservationRoute::Integral4,
+        );
+        let mut b = atlas_budget();
+        match case {
+            "native" => b.limits.native_attempts = 1,
+            "slab" => b.limits.scan_slabs = 1,
+            "transition" => b.limits.transitions = 1,
+            "reset_quota" => b.reset_checks = 1,
+            "active_target" => m[0].transitions[0].reset = constant(0.),
+            "tie" => m[0].guards[1] = m[0].guards[0].clone(),
+            "width" => b.limits.absolute_width = 1e-8,
+            "dwell" => b.limits.min_dwell = 0.001,
+            "time_guard" => m[0].guards[0] = h(0.001),
+            "nonconstant_reset" => m[0].transitions[0].reset = reset(),
+            _ => {}
+        }
+        let (r, a) = measure(|| {
+            evolve_robertson_phase_atlas(
+                &m,
+                0,
+                initial(2f64.powi(-26)),
+                [0., 0.002],
+                &opts(),
+                policy(),
+                pm(MultiGuardRoute::Correlated),
+                b,
+                PhaseReuseRoute::Reuse,
+            )
+        });
+        let row = match r {
+            Ok(r) => {
+                let expected = match case {
+                    "native" => PhaseAtlasStop::NativeBudget,
+                    "slab" => PhaseAtlasStop::SlabBudget,
+                    "transition" => PhaseAtlasStop::TransitionBudget,
+                    "reset_quota" => PhaseAtlasStop::ResetBudget,
+                    "active_target" => PhaseAtlasStop::ResetRefused,
+                    "tie" => PhaseAtlasStop::OrderUnresolved,
+                    "width" => PhaseAtlasStop::AbsoluteWidth,
+                    "dwell" => PhaseAtlasStop::DwellUnproved,
+                    "warp" => PhaseAtlasStop::NativeRefused,
+                    _ => panic!("expected admission rejection"),
+                };
+                assert_eq!(r.stop(), expected);
+                assert!(
+                    r.work().phase.charged_native_attempts <= b.limits.native_attempts
+                        && r.work().phase.charged_scan_slabs <= b.limits.scan_slabs
+                        && r.work().phase.reset_checks <= b.reset_checks
+                );
+                json!({"case":case,"stop":r.stop(),"reason":r.reason(),"work":r.work(),"alloc":a,"epochs":r.epochs(),"events":r.events(),"final_mode":r.final_mode()})
+            }
+            Err(e) => {
+                assert!(matches!(case, "time_guard" | "nonconstant_reset"));
+                json!({"case":case,"stop":"AdmissionErr","reason":e.to_string(),"work":null,"alloc":a})
+            }
+        };
+        println!("REFUSAL {}", row);
+    }
+}
