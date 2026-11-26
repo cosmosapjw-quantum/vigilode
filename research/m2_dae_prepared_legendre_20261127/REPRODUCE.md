@@ -1,0 +1,13 @@
+Locked offline Rust/cargo on authorized remote x86_64. Isolated worktree; never reset an active tree. Exact revision pointers DIAG_SHA.txt, RED_SHA.txt, GREEN_SHA.txt, PRODUCTION_SHA.txt, EXEC_SHA.txt, GUIDE_SHA.txt, VERIFY_SHA.txt. Run actual commands in corresponding revisions:
+```sh
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_general_guard_contracts coupled_driver_diagnosis -- --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_general_guard_contracts coupled_projection_rounded_self_map_recovery -- --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts legendre_residual_portfolio -- --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts allocator_positive_and_zero_control -- --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts bounded_prepared_scalar_portfolio -- --ignored --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts component_replay -- --ignored --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts guard_affine_graph_native_portfolio -- --ignored --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts guard_affine_graph_vector_portfolio -- --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_general_guard_contracts --test dae_multi_guard_contracts --test dae_pending_guard_contracts --test dae_reduced_callback_contracts --test dae_interval_scratch_contracts -- --nocapture --test-threads=1
+```
+Recover raw logs into an isolated copy per RAW_LOG_CLEANUP.json, check exact hashes. guide.py generate verifies MathHarness archive and manifest; guide.py select uses restored raw campaign logs, verifies finite measured design coverage and Pareto; verify.py handles raw or compressed logs and independently checks manufactured rational bounds and prior receipts. No holdout. The initial and corrected guide versions are bound separately. Current tracked source bytes match EXEC commit.

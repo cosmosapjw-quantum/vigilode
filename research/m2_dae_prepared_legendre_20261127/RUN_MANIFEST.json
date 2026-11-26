@@ -1,0 +1,407 @@
+{
+  "checks": [
+    "behavioral RED101, GREEN0 and final GREEN0",
+    "95 residual cases qualified/0 heap,90 reconstruction cases qualified including60 caller-output0 heap",
+    "10 actual epoch and10 phase atlas successful",
+    "760 guard complete exact,360 component logical/count exact;36 byte changes retained",
+    "10 regrouped recovery points and actual Reduced5 root",
+    "28 regression passed/4 ignored",
+    "10250 exact sample checks plus10 independent exact basis bounds",
+    "source/guide hashes and formatting checks"
+  ],
+  "claim_id": "M2-03d.5b.7",
+  "cleanup": {
+    "duplicate_log_payloads": 0,
+    "raw_bytes_removed": 3852365,
+    "unique_compressed_bytes": 126793
+  },
+  "command": [
+    "cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "--release",
+    "-p",
+    "vigilode",
+    "--features",
+    "polynomial-events",
+    "--test",
+    "dae_resource_baseline_contracts",
+    "legendre_residual_portfolio",
+    "--",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "declared_results": [
+    "SELECTION.json",
+    "EXACT_MANUFACTURED_CHECK.json",
+    "REPLAY_AND_RECOVERY.json",
+    "RESOURCE_COMPARE.json",
+    "MODULE_ACTIVATION_LEDGER.json"
+  ],
+  "environment": {
+    "hardware": "AMD Ryzen9 5900X x86_64 remote host",
+    "software": [
+      {
+        "name": "rustc",
+        "version": "rustc 1.94.1 (e408947bf 2026-03-25)"
+      },
+      {
+        "name": "cargo",
+        "version": "cargo 1.94.1 (29ea6fb6a 2026-03-24)"
+      },
+      {
+        "name": "MathHarness General",
+        "version": "3.1.0 verified154 files"
+      }
+    ]
+  },
+  "input_artifacts": [
+    {
+      "current_sha256": "09e6d801d2222839957a28709e83787b2a7ca0271c52e50eefa0f3279c01ef50",
+      "path": "crates/rodas5p-integrators/src/retro_dae_init.rs",
+      "sha256": "09e6d801d2222839957a28709e83787b2a7ca0271c52e50eefa0f3279c01ef50",
+      "source_commit": "12e09f028f00034c29880b00db042e7b9c95a03e",
+      "verified_git_blob_sha256": "09e6d801d2222839957a28709e83787b2a7ca0271c52e50eefa0f3279c01ef50"
+    },
+    {
+      "current_sha256": "7573b4a3f9feffdc35701a4eab41d44d6f4d9387818ab84117b7132952d9ce68",
+      "path": "crates/rodas5p-integrators/src/retro_dae_evolution.rs",
+      "sha256": "7573b4a3f9feffdc35701a4eab41d44d6f4d9387818ab84117b7132952d9ce68",
+      "source_commit": "12e09f028f00034c29880b00db042e7b9c95a03e",
+      "verified_git_blob_sha256": "7573b4a3f9feffdc35701a4eab41d44d6f4d9387818ab84117b7132952d9ce68"
+    },
+    {
+      "current_sha256": "4fb2b61c416db24fc6d9a5531ed1f660af330e97b246d5e66a5b77ed6be0f66f",
+      "path": "crates/vigilode/src/dae_evolution.rs",
+      "sha256": "4fb2b61c416db24fc6d9a5531ed1f660af330e97b246d5e66a5b77ed6be0f66f",
+      "source_commit": "12e09f028f00034c29880b00db042e7b9c95a03e",
+      "verified_git_blob_sha256": "4fb2b61c416db24fc6d9a5531ed1f660af330e97b246d5e66a5b77ed6be0f66f"
+    },
+    {
+      "current_sha256": "632e930d64d03c03bcbd34c69c6be2be549d003a653aef32655759b1bff18640",
+      "path": "crates/vigilode/tests/dae_resource_baseline_contracts.rs",
+      "sha256": "632e930d64d03c03bcbd34c69c6be2be549d003a653aef32655759b1bff18640",
+      "source_commit": "12e09f028f00034c29880b00db042e7b9c95a03e",
+      "verified_git_blob_sha256": "632e930d64d03c03bcbd34c69c6be2be549d003a653aef32655759b1bff18640"
+    },
+    {
+      "current_sha256": "65131fbc855777556caf3e429f1dfb3f4a8730d6aff6ec9f7d39e43f236e4fee",
+      "path": "crates/vigilode/tests/dae_general_guard_contracts.rs",
+      "sha256": "65131fbc855777556caf3e429f1dfb3f4a8730d6aff6ec9f7d39e43f236e4fee",
+      "source_commit": "12e09f028f00034c29880b00db042e7b9c95a03e",
+      "verified_git_blob_sha256": "65131fbc855777556caf3e429f1dfb3f4a8730d6aff6ec9f7d39e43f236e4fee"
+    },
+    {
+      "current_sha256": "d8374ebd0fc6aeffde8874d1da68f45cf54a0f39d46761482dcfc3df6c245f92",
+      "path": "research/m2_dae_prepared_legendre_20261127/PREREGISTRATION.md",
+      "sha256": "d8374ebd0fc6aeffde8874d1da68f45cf54a0f39d46761482dcfc3df6c245f92",
+      "source_commit": "12e09f028f00034c29880b00db042e7b9c95a03e",
+      "verified_git_blob_sha256": "d8374ebd0fc6aeffde8874d1da68f45cf54a0f39d46761482dcfc3df6c245f92"
+    },
+    {
+      "current_sha256": "df95c0ef13d38d150610934b7d5e936ed0f3de3122df49d0f1d2876099f407d5",
+      "path": "research/m2_dae_prepared_legendre_20261127/guide.py",
+      "sha256": "64955662b96e40eca8ddbb7bdab701bb290dc7ff75ecb4d505b88d905158e152",
+      "source_commit": "166286798fb64b31d96aa263016410f9052af908",
+      "verified_git_blob_sha256": "64955662b96e40eca8ddbb7bdab701bb290dc7ff75ecb4d505b88d905158e152"
+    },
+    {
+      "current_sha256": "0cee9c976ed2881c83036c0dc5fb430da40f760afbd86bdffda660983ad352ff",
+      "path": "research/m2_dae_prepared_legendre_20261127/CANDIDATES.json",
+      "sha256": "0cee9c976ed2881c83036c0dc5fb430da40f760afbd86bdffda660983ad352ff",
+      "source_commit": "166286798fb64b31d96aa263016410f9052af908",
+      "verified_git_blob_sha256": "0cee9c976ed2881c83036c0dc5fb430da40f760afbd86bdffda660983ad352ff"
+    },
+    {
+      "current_sha256": "16d519317f6d3799598cd009b125be673bc6cddb327b73812bf53c1190af20a8",
+      "path": "research/m2_dae_prepared_legendre_20261127/HARNESS_ROUTES.json",
+      "sha256": "16d519317f6d3799598cd009b125be673bc6cddb327b73812bf53c1190af20a8",
+      "source_commit": "166286798fb64b31d96aa263016410f9052af908",
+      "verified_git_blob_sha256": "16d519317f6d3799598cd009b125be673bc6cddb327b73812bf53c1190af20a8"
+    },
+    {
+      "current_sha256": "2301879ece15cc4e6860c9406475563dd15bfa4010da86710cd709a13e036208",
+      "path": "research/m2_dae_prepared_legendre_20261127/LITERATURE.md",
+      "sha256": "2301879ece15cc4e6860c9406475563dd15bfa4010da86710cd709a13e036208",
+      "source_commit": "166286798fb64b31d96aa263016410f9052af908",
+      "verified_git_blob_sha256": "2301879ece15cc4e6860c9406475563dd15bfa4010da86710cd709a13e036208"
+    },
+    {
+      "current_sha256": "df95c0ef13d38d150610934b7d5e936ed0f3de3122df49d0f1d2876099f407d5",
+      "path": "research/m2_dae_prepared_legendre_20261127/guide.py",
+      "sha256": "df95c0ef13d38d150610934b7d5e936ed0f3de3122df49d0f1d2876099f407d5",
+      "source_commit": "abff71a62281e11b796672c7bf88910891940d62",
+      "verified_git_blob_sha256": "df95c0ef13d38d150610934b7d5e936ed0f3de3122df49d0f1d2876099f407d5"
+    },
+    {
+      "current_sha256": "aec544d44f042fe4d125742b1b986a8b93608f8194fa62629c4edeb944cdef4d",
+      "path": "research/m2_dae_prepared_legendre_20261127/verify.py",
+      "sha256": "aec544d44f042fe4d125742b1b986a8b93608f8194fa62629c4edeb944cdef4d",
+      "source_commit": "abff71a62281e11b796672c7bf88910891940d62",
+      "verified_git_blob_sha256": "aec544d44f042fe4d125742b1b986a8b93608f8194fa62629c4edeb944cdef4d"
+    },
+    {
+      "current_sha256": "37c0d68d34c09e910cc7b291f516e33fc876644e30f1292134782eb6b9806830",
+      "path": "research/m2_dae_prepared_legendre_20261127/SELECTION.json",
+      "sha256": "37c0d68d34c09e910cc7b291f516e33fc876644e30f1292134782eb6b9806830",
+      "source_commit": "abff71a62281e11b796672c7bf88910891940d62",
+      "verified_git_blob_sha256": "37c0d68d34c09e910cc7b291f516e33fc876644e30f1292134782eb6b9806830"
+    },
+    {
+      "current_sha256": "2986f7e3729a224048796b272767380dab2e350963beb3a9a69df01ecc6b4c80",
+      "path": "research/m2_dae_prepared_legendre_20261127/EXACT_MANUFACTURED_CHECK.json",
+      "sha256": "2986f7e3729a224048796b272767380dab2e350963beb3a9a69df01ecc6b4c80",
+      "source_commit": "abff71a62281e11b796672c7bf88910891940d62",
+      "verified_git_blob_sha256": "2986f7e3729a224048796b272767380dab2e350963beb3a9a69df01ecc6b4c80"
+    },
+    {
+      "current_sha256": "0de185ccc498aa24b7dd2379d7cff4da6de2de6d47d96062e684394569ce297c",
+      "path": "research/m2_dae_prepared_legendre_20261127/REPLAY_AND_RECOVERY.json",
+      "sha256": "0de185ccc498aa24b7dd2379d7cff4da6de2de6d47d96062e684394569ce297c",
+      "source_commit": "abff71a62281e11b796672c7bf88910891940d62",
+      "verified_git_blob_sha256": "0de185ccc498aa24b7dd2379d7cff4da6de2de6d47d96062e684394569ce297c"
+    },
+    {
+      "current_sha256": "82c8811446d45e1ce166f8da99b753990e3d46b171ab9dcd86317c909538f1be",
+      "path": "research/m2_dae_prepared_legendre_20261127/RESOURCE_COMPARE.json",
+      "sha256": "82c8811446d45e1ce166f8da99b753990e3d46b171ab9dcd86317c909538f1be",
+      "source_commit": "abff71a62281e11b796672c7bf88910891940d62",
+      "verified_git_blob_sha256": "82c8811446d45e1ce166f8da99b753990e3d46b171ab9dcd86317c909538f1be"
+    },
+    {
+      "current_sha256": "798980e3287ecb5244fafffcf39968605ef40f9cc92a203c4de555dd7d1f290a",
+      "path": "research/m2_dae_prepared_legendre_20261127/MODULE_ACTIVATION_LEDGER.json",
+      "sha256": "798980e3287ecb5244fafffcf39968605ef40f9cc92a203c4de555dd7d1f290a",
+      "source_commit": "abff71a62281e11b796672c7bf88910891940d62",
+      "verified_git_blob_sha256": "798980e3287ecb5244fafffcf39968605ef40f9cc92a203c4de555dd7d1f290a"
+    }
+  ],
+  "mathematics": {
+    "assertion_tested": "actual rounded-map RED/GREEN and Reduced5 exact graph event, bounded scalar30 point and18 callback noalloc boundaries,60 reconstruction noalloc cases,95 spectral residual noalloc cases,205 candidate selection,760 guard and360 logical component replay,10250 exact dyadic checks and10 exact ideal basis bound assertions",
+    "bounds": {
+      "atlas_rows": 10,
+      "degree_max": 16,
+      "epoch_rows": 10,
+      "reconstruction_rows": 90,
+      "root_regrouped_rows": 10,
+      "spectral_rows": 95,
+      "state_dimension_max": 32
+    },
+    "coefficient_domain": "directed binary64, exact Fraction comparator, shifted Legendre degree16 with max operand8",
+    "conventions": "unchanged source branch, exact root self-map, original midpoint residual, full physical slab, general certificate only for spectral variants",
+    "non_claims": [
+      "full VG1",
+      "generic vector noheap",
+      "new routes default",
+      "speed",
+      "peak stack",
+      "expanded fallback covered",
+      "all prior modules activated",
+      "independent holdout"
+    ]
+  },
+  "outputs": [
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/BINARY.sha256",
+      "sha256": "2c9dbb213c0b4b20f43e8bf4168996647834f7f59b696e7492ad0ad2ddcddf68"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/EXACT_MANUFACTURED_CHECK.json",
+      "sha256": "2986f7e3729a224048796b272767380dab2e350963beb3a9a69df01ecc6b4c80"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/MODULE_ACTIVATION_LEDGER.json",
+      "sha256": "798980e3287ecb5244fafffcf39968605ef40f9cc92a203c4de555dd7d1f290a"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/RAW_LOG_CLEANUP.json",
+      "sha256": "3272c82f907ee19671499da2f1f71eff07ca1ecf8a822a184052dc42c074e3b0"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/REPLAY_AND_RECOVERY.json",
+      "sha256": "0de185ccc498aa24b7dd2379d7cff4da6de2de6d47d96062e684394569ce297c"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/RESOURCE_COMPARE.json",
+      "sha256": "82c8811446d45e1ce166f8da99b753990e3d46b171ab9dcd86317c909538f1be"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/SELECTION.json",
+      "sha256": "37c0d68d34c09e910cc7b291f516e33fc876644e30f1292134782eb6b9806830"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/allocator.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/allocator.log.gz",
+      "sha256": "450bb4da6afcfe3765099788264e285c9ab9110511fdb1d284e23cc137f3acec"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/components.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/components.log.gz",
+      "sha256": "9b4d47fc51280a044707597a21e19b5a589075c253f42668e201fc77f4e5ad83"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/diagnosis.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/diagnosis.log.gz",
+      "sha256": "5dce378e3bff8ede1a21a81083ffabf575878c3941f38b56f4c0e014db9bbd54"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/green.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/green.log.gz",
+      "sha256": "2bd5caa23ab1c3d0de664a91e5ea235394dff5139efbcc66b91237b44252f065"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/green_final.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/green_final.log.gz",
+      "sha256": "00fabec6ba53de25085d1bbe7f86e1b9c13127aa584c140920217ec789519598"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/harness.log.gz",
+      "sha256": "2e0be9ef8eaeb1731f361054042cb37039ec47e9ea6cbda2c07c120d0433e607"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/native.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/native.log.gz",
+      "sha256": "bb4d3fd1e6d7bd34bbef76922a8bd4ba392c83a715fb8c0b99cc20491b5c68bc"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/prepared.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/prepared.log.gz",
+      "sha256": "1f150256171b177094e9ee3ddd5e9c02ed67e74a0c0fd560ec72fb456bbfd043"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/red.exit",
+      "sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/red.log.gz",
+      "sha256": "573bd527a4f798a2acfb5584acfa2cdf00937206ef8838b6af7493e2e06fc644"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/regression.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/regression.log.gz",
+      "sha256": "593bf6b7016e286224b4d7b9be354cdd46c64ce97ec8a2daf5ffdf5d2c4fa536"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/selection.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/selection.log.gz",
+      "sha256": "077fede6f45d06e12724c9e1405a7050548090700e5fc41e9f89cd5796418142"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/spectral.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/spectral.log.gz",
+      "sha256": "08f221edc4cb2a0acc79934f43ae8345828408a0c1c810e4be9933b76be8968f"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/vector.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/vector.log.gz",
+      "sha256": "eaafd7e2de824dd5bd0a0da6c6770aa72d601da95daf253d2f8f4423cd8f7458"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/verify.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_prepared_legendre_20261127/verify.log.gz",
+      "sha256": "4f68b46d766fe2ec0cb33429ad28d9164617c5dc5870ce240e69c96b399eb2ce"
+    }
+  ],
+  "randomness": {
+    "generator": "Python random.Random in finite measured UCT/bandit replay",
+    "seeds": [
+      1729,
+      97531
+    ],
+    "used": true
+  },
+  "repository": {
+    "commit": "12e09f028f00034c29880b00db042e7b9c95a03e",
+    "guide_commit": "166286798fb64b31d96aa263016410f9052af908",
+    "tracked_dirty": false,
+    "untracked_evidence": true,
+    "verification_commit": "abff71a62281e11b796672c7bf88910891940d62"
+  },
+  "residual_risks": [
+    "legacy root owning paths and vector allocation",
+    "extra receipt bytes",
+    "radius expansion unexercised",
+    "stack/timing/independent holdout",
+    "focused module ledger only"
+  ],
+  "result": "implementation-verified scoped; exact graph Reduced5 blocker resolved; M2 and full VG1 OPEN",
+  "run": {
+    "exit_status": 0,
+    "runtime_seconds": null,
+    "status": "completed",
+    "timing_note": "per-test logs retain elapsed time; aggregate not measured"
+  },
+  "schema_version": 2
+}
