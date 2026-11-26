@@ -13,7 +13,8 @@ use rodas5p_core::{
 use rodas5p_integrators::{
     retro_dae_evolution::{self as de, DenseBasis, SlabCertificate, WarpSeed},
     retro_dae_init::{
-        AttemptCount, DaeSource, InitPolicy, InitReport, InitRoute, InitWork, ProjectionAttemptWork,
+        AttemptCount, DaeSource, InitPolicy, InitReport, InitRoute, InitWork,
+        ProjectionAttemptWork, ScalarReuseProjection,
     },
     retro_foundation::QuotientMode,
     retro_portfolio::{Portfolio, Route, Selection},
@@ -287,6 +288,37 @@ impl Engine {
         }
         r
     }
+    fn scalar_callback(&self) -> bool {
+        matches!(
+            self.route,
+            EvolutionRoute::Reduced3 | EvolutionRoute::Reduced5
+        ) && self.src.nz() == 1
+            && self.warp.is_none()
+    }
+    fn fixed_scalar(&self, t: f64, x: &[f64]) -> Result<ScalarReuseProjection, CallbackError> {
+        // Same clamp and ProjectAlgebraic policy as de::project. The
+        // immutable initialized Engine owns a valid one-component branch.
+        let mut policy = self.policy.init;
+        policy.mode = rodas5p_integrators::retro_dae_init::InitMode::ProjectAlgebraic;
+        let seed = [self.seed[0].clamp(self.branch[0][0], self.branch[0][1])];
+        let (r, receipt) =
+            self.src
+                .initialize_scalar_reuse_audited(t, x, &seed, &self.branch, policy);
+        update_audit(&self.audit, |a| {
+            a.point_projection.record(&receipt, r.is_ok())
+        });
+        let mut w = self
+            .work
+            .lock()
+            .map_err(|_| CallbackError::Fatal("work lock".into()))?;
+        if let Ok(v) = &r {
+            w.add(v.work(), false);
+        } else {
+            w.calls += 1;
+            w.refused += 1;
+        }
+        r.map_err(|e| CallbackError::Fatal(e.to_string()))
+    }
     fn fixed(&self, t: f64, x: &[f64]) -> Result<InitReport, CallbackError> {
         self.project(t, x, &self.seed)
             .map_err(|e| CallbackError::Fatal(e.to_string()))
@@ -298,17 +330,44 @@ fn reduced_problem(e: &Engine) -> Problem {
     let b = e.clone();
     let c = e.clone();
     Problem::new(nx, move |t, x, out| {
-        out.copy_from_slice(&a.fixed(t, x)?.xdot);
+        if a.scalar_callback() {
+            out.copy_from_slice(a.fixed_scalar(t, x)?.xdot());
+        } else {
+            out.copy_from_slice(&a.fixed(t, x)?.xdot);
+        }
         Ok(())
     })
     .jacobian(Jacobian::dense(move |t, x, out| {
-        let r = b.fixed(t, x)?;
-        for (i, row) in r.reduced_jacobian.iter().enumerate() {
-            out[i * nx..(i + 1) * nx].copy_from_slice(row);
+        if b.scalar_callback() {
+            out.copy_from_slice(b.fixed_scalar(t, x)?.reduced_jacobian());
+        } else {
+            let r = b.fixed(t, x)?;
+            for (i, row) in r.reduced_jacobian.iter().enumerate() {
+                out[i * nx..(i + 1) * nx].copy_from_slice(row);
+            }
         }
         Ok(())
     }))
     .time_derivative(move |t, x, out| {
+        if c.scalar_callback() {
+            let r = c.fixed_scalar(t, x)?;
+            let n = nx + 1;
+            let mut y = [0.; 32];
+            y[..nx].copy_from_slice(x);
+            y[nx] = r.z();
+            let mut j = [0.; 32 * 32];
+            let mut ft = [0.; 32];
+            c.src
+                .jacobian_into(t, &y[..n], &mut j[..n * n])
+                .map_err(|e| CallbackError::Fatal(e.to_string()))?;
+            c.src
+                .time_into(t, &y[..n], &mut ft[..n])
+                .map_err(|e| CallbackError::Fatal(e.to_string()))?;
+            for i in 0..nx {
+                out[i] = j[i * n + nx].mul_add(r.zt(), ft[i]);
+            }
+            return Ok(());
+        }
         let r = c.fixed(t, x)?;
         let mut y = x.to_vec();
         y.extend_from_slice(&r.z);
@@ -679,7 +738,6 @@ fn evolve_epoch_authority(
     {
         return Err(bad("input/clock/dense scalar tolerance contract"));
     }
-    let nx = src.nx();
     let initial = audited_init(src, start, x, z, branch, policy.init, route.init(), &audit)?;
     let warp = match route {
         EvolutionRoute::WarpDirect | EvolutionRoute::WarpFolded => {

@@ -1,0 +1,291 @@
+{
+  "schema_version": "3.1.0",
+  "events": [
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "IMPLICIT",
+      "payload": {
+        "claim_id": "IMPLICIT",
+        "statement": "a*(b*c) = (a*b)*c",
+        "formal_statement": "POLY_IDENTITY: a*b*c = a*b*c",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite bookkeeping identities only; measured costs independent"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795695275.7717018,
+      "seq": 0,
+      "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "hash": "3a5ece228792d3ed4f65170daa0e79d456c977534c418dba84eb0f643a0ed1ea"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "IMPLICIT",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "8a0b38f8d7ef993cba85789df0a9ad100e0c4ec5c7aa91fb3bea9fc64204cb94",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "a*(b*c)",
+            "rhs": "(a*b)*c"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: a*b*c = a*b*c",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-26T12:14:35Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795695275.7741525,
+      "seq": 1,
+      "prev_hash": "3a5ece228792d3ed4f65170daa0e79d456c977534c418dba84eb0f643a0ed1ea",
+      "hash": "d0f535cb0f1e5ef95d0004f9c573e250e52a3604cfb173f3bc8818700d02b874"
+    },
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "SCHUR",
+      "payload": {
+        "claim_id": "SCHUR",
+        "statement": "a*x+a*y = a*(x+y)",
+        "formal_statement": "POLY_IDENTITY: a*x + a*y = a*x + a*y",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite bookkeeping identities only; measured costs independent"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795695275.774462,
+      "seq": 2,
+      "prev_hash": "d0f535cb0f1e5ef95d0004f9c573e250e52a3604cfb173f3bc8818700d02b874",
+      "hash": "2f398ae9ffdb6858f031567ff64cd8e18e5fe5281694bec80c0e63996a713aa7"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "SCHUR",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "b23897fe44ed45d7b45459cb7a8afa327f4e05e7d2483fa2ef2530cdcefc4974",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "a*x+a*y",
+            "rhs": "a*(x+y)"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: a*x + a*y = a*x + a*y",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-26T12:14:35Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795695275.775151,
+      "seq": 3,
+      "prev_hash": "2f398ae9ffdb6858f031567ff64cd8e18e5fe5281694bec80c0e63996a713aa7",
+      "hash": "8aab376215c4b50b99443ce80d1342100f49466ab7e4a7f3f793966c945f33f4"
+    },
+    {
+      "kind": "ADD_CLAIM",
+      "claim_id": "TANGENT",
+      "payload": {
+        "claim_id": "TANGENT",
+        "statement": "a*(b+c)+d = a*b+a*c+d",
+        "formal_statement": "POLY_IDENTITY: a*b + a*c + d = a*b + a*c + d",
+        "domain": {},
+        "hypotheses": [],
+        "parents": [],
+        "source": {
+          "scope": "finite bookkeeping identities only; measured costs independent"
+        },
+        "status": "OPEN",
+        "evidence": []
+      },
+      "timestamp": 1795695275.775499,
+      "seq": 4,
+      "prev_hash": "8aab376215c4b50b99443ce80d1342100f49466ab7e4a7f3f793966c945f33f4",
+      "hash": "2c0448d3ad18d34c463a2400fb99bc148cdfce5e47f0f7b59d2cf4afc5636d75"
+    },
+    {
+      "kind": "STATUS_CHANGE",
+      "claim_id": "TANGENT",
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": {
+        "trust_base": [
+          "PROVED_EXACT_CERTIFICATE"
+        ],
+        "checker": "mathharness_general.identity",
+        "checker_result": "CERTIFICATE_ACCEPTED",
+        "artifact_sha256": "5d275ea7ba1864aca923b55fa72243fef09d24244eb1c5ad3c11f060898b5604",
+        "artifact": {
+          "kind": "identity",
+          "spec": {
+            "lhs": "a*(b+c)+d",
+            "rhs": "a*b+a*c+d"
+          },
+          "checker_result": {
+            "status": "CERTIFIED_IDENTITY",
+            "residual": "0",
+            "exact_over": "Q[variables]"
+          },
+          "proposition": "POLY_IDENTITY: a*b + a*c + d = a*b + a*c + d",
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+        },
+        "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+        "accepted_at_utc": "2026-11-26T12:14:35Z"
+      },
+      "reason": "checker identity accepted proposition",
+      "timestamp": 1795695275.7762537,
+      "seq": 5,
+      "prev_hash": "2c0448d3ad18d34c463a2400fb99bc148cdfce5e47f0f7b59d2cf4afc5636d75",
+      "hash": "bb28d6fb09e45c9bdbc963a67e78d2ed7b3b3dd414bd6a7db6cd7f3f96e6c40c"
+    }
+  ],
+  "claims": {
+    "IMPLICIT": {
+      "claim_id": "IMPLICIT",
+      "statement": "a*(b*c) = (a*b)*c",
+      "formal_statement": "POLY_IDENTITY: a*b*c = a*b*c",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite bookkeeping identities only; measured costs independent"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "8a0b38f8d7ef993cba85789df0a9ad100e0c4ec5c7aa91fb3bea9fc64204cb94",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "a*(b*c)",
+              "rhs": "(a*b)*c"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: a*b*c = a*b*c",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-26T12:14:35Z"
+        }
+      ]
+    },
+    "SCHUR": {
+      "claim_id": "SCHUR",
+      "statement": "a*x+a*y = a*(x+y)",
+      "formal_statement": "POLY_IDENTITY: a*x + a*y = a*x + a*y",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite bookkeeping identities only; measured costs independent"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "b23897fe44ed45d7b45459cb7a8afa327f4e05e7d2483fa2ef2530cdcefc4974",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "a*x+a*y",
+              "rhs": "a*(x+y)"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: a*x + a*y = a*x + a*y",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-26T12:14:35Z"
+        }
+      ]
+    },
+    "TANGENT": {
+      "claim_id": "TANGENT",
+      "statement": "a*(b+c)+d = a*b+a*c+d",
+      "formal_statement": "POLY_IDENTITY: a*b + a*c + d = a*b + a*c + d",
+      "domain": {},
+      "hypotheses": [],
+      "parents": [],
+      "source": {
+        "scope": "finite bookkeeping identities only; measured costs independent"
+      },
+      "status": "PROVED_EXACT_CERTIFICATE",
+      "evidence": [
+        {
+          "trust_base": [
+            "PROVED_EXACT_CERTIFICATE"
+          ],
+          "checker": "mathharness_general.identity",
+          "checker_result": "CERTIFICATE_ACCEPTED",
+          "artifact_sha256": "5d275ea7ba1864aca923b55fa72243fef09d24244eb1c5ad3c11f060898b5604",
+          "artifact": {
+            "kind": "identity",
+            "spec": {
+              "lhs": "a*(b+c)+d",
+              "rhs": "a*b+a*c+d"
+            },
+            "checker_result": {
+              "status": "CERTIFIED_IDENTITY",
+              "residual": "0",
+              "exact_over": "Q[variables]"
+            },
+            "proposition": "POLY_IDENTITY: a*b + a*c + d = a*b + a*c + d",
+            "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8"
+          },
+          "checker_code_sha256": "1da7c3915aa15f749be675b2b4f19b1734fce77ab11dc2036272946b816f77a8",
+          "accepted_at_utc": "2026-11-26T12:14:35Z"
+        }
+      ]
+    }
+  },
+  "head": "bb28d6fb09e45c9bdbc963a67e78d2ed7b3b3dd414bd6a7db6cd7f3f96e6c40c",
+  "trust": [
+    "PROVED_EXACT_CERTIFICATE",
+    "PROVED_FORMAL_KERNEL"
+  ]
+}
