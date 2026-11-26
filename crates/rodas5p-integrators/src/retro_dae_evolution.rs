@@ -991,6 +991,136 @@ pub fn reconstruct_scalar_bounded_affine_into(
     work.clone_from_slice(&scratch.work[..nodes]);
     Ok(())
 }
+/// Caller-owned vector dictionary reconstruction; fixed scalar workspace
+/// remains separate. Every node retains original vector projection proof.
+pub struct VectorReconstructionWorkspace {
+    power: [[Iv; 7]; 32],
+    work: [InitWork; 7],
+    projection: di::VectorProjectionWorkspace,
+}
+impl VectorReconstructionWorkspace {
+    pub fn new() -> Self {
+        Self {
+            power: [[zero(); 7]; 32],
+            work: std::array::from_fn(|_| InitWork::default()),
+            projection: di::VectorProjectionWorkspace::new(),
+        }
+    }
+}
+impl Default for VectorReconstructionWorkspace {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+#[allow(clippy::too_many_arguments)]
+fn reconstruct_vector_inner(
+    src: &DaeSource,
+    times: [f64; 2],
+    x: &[Poly],
+    seed: &[f64],
+    branch: &[[f64; 2]],
+    policy: InitPolicy,
+    nodes: usize,
+    refine: bool,
+    seed_route: ReconstructionSeedRoute,
+    mut audit: Option<&mut di::ProjectionAttemptWork>,
+    w: &mut VectorReconstructionWorkspace,
+) -> CoreResult<()> {
+    let b = Dictionary::get()?.basis(nodes)?;
+    let h = p(times[1])?.sub(p(times[0])?)?;
+    let nx = src.nx();
+    let nz = src.nz();
+    if x.len() != nx
+        || seed.len() != nz
+        || branch.len() != nz
+        || branch
+            .iter()
+            .any(|v| !v[0].is_finite() || !v[1].is_finite() || v[0] >= v[1])
+    {
+        return Err(bad("vector reconstruction shape"));
+    }
+    let mut guess = [0.; 32];
+    for i in 0..nz {
+        guess[i] = seed[i].clamp(branch[i][0], branch[i][1]);
+        w.power[i][..nodes].fill(zero());
+    }
+    let mut v = [0.; 32];
+    for (j, node) in b.nodes.iter().enumerate() {
+        let t = di::mid(p(times[0])?.add(h.scale(node.value)?)?);
+        for (v, a) in v[..nx].iter_mut().zip(x) {
+            *v = di::mid(eval(a, p(node.value)?)?);
+        }
+        let (r, receipt) = src.initialize_bounded_vector_audited(
+            t,
+            &v[..nx],
+            &guess[..nz],
+            branch,
+            InitPolicy {
+                mode: InitMode::ProjectAlgebraic,
+                ..policy
+            },
+            refine,
+            &mut w.projection,
+        );
+        if let Some(a) = audit.as_deref_mut() {
+            a.record(&receipt, r.is_ok());
+        }
+        let r = r?;
+        w.work[j] = r.work().clone();
+        for i in 0..nz {
+            if seed_route == ReconstructionSeedRoute::PreviousNode {
+                guess[i] = r.z()[i];
+            }
+            for (k, v) in w.power[i][..nodes].iter_mut().enumerate() {
+                *v = v.add(b.monomial[j][k].enclosure.scale(r.z()[i])?)?;
+            }
+        }
+    }
+    for row in &mut w.power[..nz] {
+        for v in &mut row[..nodes] {
+            *v = p(di::mid(*v))?;
+        }
+    }
+    Ok(())
+}
+#[allow(clippy::too_many_arguments)]
+pub fn reconstruct_bounded_vector_into(
+    src: &DaeSource,
+    times: [f64; 2],
+    x: &[Poly],
+    seed: &[f64],
+    branch: &[[f64; 2]],
+    policy: InitPolicy,
+    refine: bool,
+    seed_route: ReconstructionSeedRoute,
+    out: &mut [Iv],
+    work: &mut [InitWork],
+    audit: &mut di::ProjectionAttemptWork,
+    w: &mut VectorReconstructionWorkspace,
+) -> CoreResult<()> {
+    let nodes = work.len();
+    if out.len() != src.nz() * nodes {
+        return Err(bad("vector reconstruction output shape"));
+    }
+    reconstruct_vector_inner(
+        src,
+        times,
+        x,
+        seed,
+        branch,
+        policy,
+        nodes,
+        refine,
+        seed_route,
+        Some(audit),
+        w,
+    )?;
+    for (o, v) in out.chunks_exact_mut(nodes).zip(&w.power[..src.nz()]) {
+        o.copy_from_slice(&v[..nodes]);
+    }
+    work.clone_from_slice(&w.work[..nodes]);
+    Ok(())
+}
 #[allow(clippy::too_many_arguments)]
 fn reconstruct_recorded(
     src: &DaeSource,
@@ -1004,6 +1134,33 @@ fn reconstruct_recorded(
     nodes: usize,
     mut audit: Option<&mut di::ProjectionAttemptWork>,
 ) -> CoreResult<(Vec<Poly>, Vec<InitWork>)> {
+    if matches!(
+        route,
+        InitRoute::BoundedVector | InitRoute::BoundedVectorRefined
+    ) && warp.is_none()
+    {
+        let mut w = VectorReconstructionWorkspace::new();
+        reconstruct_vector_inner(
+            src,
+            times,
+            x,
+            seed,
+            branch,
+            policy,
+            nodes,
+            route == InitRoute::BoundedVectorRefined,
+            ReconstructionSeedRoute::Fixed,
+            audit,
+            &mut w,
+        )?;
+        return Ok((
+            w.power[..src.nz()]
+                .iter()
+                .map(|r| r[..nodes].to_vec())
+                .collect(),
+            w.work[..nodes].to_vec(),
+        ));
+    }
     if src.nz() == 1
         && matches!(
             route,
