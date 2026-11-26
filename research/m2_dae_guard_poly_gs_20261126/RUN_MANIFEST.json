@@ -1,0 +1,314 @@
+{
+  "checks": [
+    "expected RED101, GREEN0",
+    "260 native and120 vector actual runs",
+    "232 prior receipts and360 component receipts exact nonallocation content",
+    "56 actual event root comparisons including32 new GS",
+    "14 regression passed/3 ignored",
+    "both safe library unit tests pass including17584 polynomial bit comparisons",
+    "allocator positive/zero, 6 conditional linear routes zero heap, q=0 and refusal",
+    "input hashes, format and diff check"
+  ],
+  "claim_id": "M2-03d.5b.3",
+  "cleanup": {
+    "duplicate_log_payloads": 0,
+    "raw_bytes_removed": 643384,
+    "unique_compressed_bytes": 22266
+  },
+  "command": [
+    "cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "--release",
+    "-p",
+    "vigilode",
+    "--features",
+    "polynomial-events",
+    "--test",
+    "dae_resource_baseline_contracts",
+    "guard_poly_gs_native_portfolio",
+    "--",
+    "--ignored",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "declared_results": [
+    "SELECTION.json",
+    "COMPONENT_COMPARE.json",
+    "NATIVE_EVENT_COMPARE.json"
+  ],
+  "environment": {
+    "hardware": "AMD Ryzen 9 5900X x86_64 (12C/24T; previously measured on same remote host)",
+    "software": [
+      {
+        "name": "rustc",
+        "version": "rustc 1.94.1 (e408947bf 2026-03-25)"
+      },
+      {
+        "name": "cargo",
+        "version": "cargo 1.94.1 (29ea6fb6a 2026-03-24)"
+      },
+      {
+        "name": "MathHarness General",
+        "version": "3.1.0; verified archive and 154 manifest entries"
+      }
+    ]
+  },
+  "input_artifacts": [
+    {
+      "path": "crates/rodas5p-integrators/src/retro_dae_evolution.rs",
+      "sha256": "8de427126039005651269c742683d05e2c8dd13002e5767af79bff9724ba1b68",
+      "sha256_after": "8de427126039005651269c742683d05e2c8dd13002e5767af79bff9724ba1b68"
+    },
+    {
+      "path": "crates/vigilode/tests/dae_resource_baseline_contracts.rs",
+      "sha256": "9d413de68bfec6b4f9ae428942caede8a9f593cabca3d56c594cabd7671d0dc9",
+      "sha256_after": "9d413de68bfec6b4f9ae428942caede8a9f593cabca3d56c594cabd7671d0dc9"
+    },
+    {
+      "path": "crates/vigilode/tests/dae_general_guard_contracts.rs",
+      "sha256": "0b520a04e7adf345153a8211d1d9510d4324eddc9a5f2ee5de1dae0eff7bd54e",
+      "sha256_after": "0b520a04e7adf345153a8211d1d9510d4324eddc9a5f2ee5de1dae0eff7bd54e"
+    },
+    {
+      "path": "research/m2_dae_guard_poly_gs_20261126/PREREGISTRATION.md",
+      "sha256": "1162f54cd81dd90209768ef1ab6d09c8bed656362bafcaf4a86d7e407915e582",
+      "sha256_after": "1162f54cd81dd90209768ef1ab6d09c8bed656362bafcaf4a86d7e407915e582"
+    },
+    {
+      "path": "research/m2_dae_guard_poly_gs_20261126/guide.py",
+      "sha256": "2f6d56e78130669467d363d6c86a4abd8832558d5e0bc5b63f8f1b7a97f60879",
+      "sha256_after": "2f6d56e78130669467d363d6c86a4abd8832558d5e0bc5b63f8f1b7a97f60879"
+    },
+    {
+      "path": "research/m2_dae_guard_poly_gs_20261126/CANDIDATES.json",
+      "sha256": "740232528f05cd3591de0a956068c98979feed248036556753103375ea594f9a",
+      "sha256_after": "740232528f05cd3591de0a956068c98979feed248036556753103375ea594f9a"
+    },
+    {
+      "path": "research/m2_dae_guard_poly_gs_20261126/HARNESS_ROUTES.json",
+      "sha256": "774a5bbb10811f15481690f4aed7a816bc8c4ef00f096404c2c99793609c05da",
+      "sha256_after": "774a5bbb10811f15481690f4aed7a816bc8c4ef00f096404c2c99793609c05da"
+    },
+    {
+      "path": "research/m2_dae_guard_poly_gs_20261126/LITERATURE.md",
+      "sha256": "81152861f3df02968c48d6e45f2bccaeff5a3f5bb45735b2a1044a5634ad1dd5",
+      "sha256_after": "81152861f3df02968c48d6e45f2bccaeff5a3f5bb45735b2a1044a5634ad1dd5"
+    }
+  ],
+  "mathematics": {
+    "assertion_tested": "160 old native + 72 old vector nonallocation receipts unchanged; new native100 and vector48 GS parent enclosure/audit contracts; native 32 new GS event roots; shared conditional kernel zero heap requests; owned guard build <=5 requests",
+    "bounds": {
+      "degree_max": 16,
+      "native_rows": 260,
+      "refinement_cap": 2,
+      "state_dimension_max": 32,
+      "vector_rows": 120
+    },
+    "coefficient_domain": "binary64 directed interval arithmetic, bounded native polynomial degree16, DAE dimension<=32",
+    "conventions": "q<1, directed diagonal isolation and forward component intersection; adaptive q=0 or exact unchanged endpoint stop, at most2 sweeps",
+    "inputs": [
+      "PREREGISTRATION.md",
+      "CANDIDATES.json",
+      "prior native/vector/component logs"
+    ],
+    "non_claims": [
+      "full VG1",
+      "independent holdout",
+      "general GS dominance",
+      "peak stack or timing advantage",
+      "default promotion"
+    ]
+  },
+  "outputs": [
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/BINARY.sha256",
+      "sha256": "de00a27ae939d76dce538a4a23dff01f4214b0a8344fe2f13eab77a4c2b23c1a"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/COMPONENT_COMPARE.json",
+      "sha256": "fe866ee7af73a5012930c7b9d326bc2d971e3b57fc52f8a2d4dc8cdad763ec18"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/NATIVE_EVENT_COMPARE.json",
+      "sha256": "79621e906d618d7b668b1ff7e2cf1603d7a9b50b5aba9c2834b83329f99c5965"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/RAW_LOG_CLEANUP.json",
+      "sha256": "b82786b4f0434cb0260585ef02349127797fdb866ded1415c642dc3e8658aac4"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/SELECTION.json",
+      "sha256": "23cc850b7f9236ffbcf6c761b5bb3b4e7c270742e14885d0cbce654d6c5ac18b"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/allocator.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/allocator.log.gz",
+      "sha256": "4dc64d729fc4853fc72a70a78c88a5ad5c6dd8fdbd3396e693b236665c70352f"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/components.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/components.log.gz",
+      "sha256": "b71c7536cfa347b68fd8dc87525f1670a1926c4465d331910888f4470db85f50"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/defect_unit.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/defect_unit.log.gz",
+      "sha256": "e4a3db01cbf848032d9f8b1adc426f3dc968e1adffc12f8403e08ccc2dd7e2c8"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/green.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/green.log.gz",
+      "sha256": "2e8e408c0362cafe752095718bc7039962b091f36be47ab5169d268d4db997d7"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/green_final.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/green_final.log.gz",
+      "sha256": "93907ffcaf03851adcedf6b600a2a1f5042f32d67bc12eb500570dd2598ac3db"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/harness.log.gz",
+      "sha256": "e9e3ac7cebe84fed635c7a674028f240b93a9aaf6a89f662640cc6f3e6a0cb1e"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/kernel.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/kernel.log.gz",
+      "sha256": "6a9cc01cc1c921284d605293b4e376d7ebc571e7b8b938695eb90c9310358495"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/native.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/native.log.gz",
+      "sha256": "e9ea0609b54aae57db659531f689344beeafdf3e7d72cda23e90b1587827b5f7"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/poly_unit.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/poly_unit.log.gz",
+      "sha256": "089677d96fc95240ec74c02ed73978ab07bc2ac2b81f6ffc304681e277e8e2a3"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/red.exit",
+      "sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/red.log.gz",
+      "sha256": "f6f46dd94d5e8668fb35eebdc539e22d985309c244611800d9bd417d96a2c8b7"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/regression.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/regression.log.gz",
+      "sha256": "31a766883966c667677498d823f471e7eba183a3625acdc604455068457ed4c7"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/selection.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/selection.log.gz",
+      "sha256": "f449e3be1010da16d685857e9fb6342fb372b7628d4b6f2ec04019350962adb4"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/vector.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_poly_gs_20261126/vector.log.gz",
+      "sha256": "61276b21ffa40d3975d5be3feb43e782b1787507fc568bc6549525ce3d4f44b8"
+    }
+  ],
+  "randomness": {
+    "additional_seeds": [
+      271828,
+      123407
+    ],
+    "generator": "Python random.Random for UCT/Bandit measured-table replay",
+    "seed": 1729,
+    "used": true
+  },
+  "repository": {
+    "commit": "c617a46fa074894728060d8c7a6e9b3769aca6f0",
+    "dirty": true,
+    "tracked_dirty": false,
+    "untracked_evidence": true
+  },
+  "residual_risks": [
+    "owned GuardProof and PreparedRhs allocations",
+    "strong coupling uncertified",
+    "peak stack not measured",
+    "long-row complete GuardProof fallback not separately campaigned",
+    "no independent reviewer"
+  ],
+  "result": "implementation-verified finite scope; full VG1 open",
+  "run": {
+    "exit_status": 0,
+    "resource_limits": {
+      "cpu_seconds": null,
+      "max_cores": null,
+      "max_threads": 1,
+      "memory_bytes": null
+    },
+    "runtime_seconds": null,
+    "started_at": "",
+    "status": "completed",
+    "timing_note": "exact aggregate wall clock not captured; per-test logs retain elapsed time"
+  },
+  "schema_version": 2
+}
