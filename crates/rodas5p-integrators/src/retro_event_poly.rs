@@ -609,10 +609,197 @@ fn positive_after(p: &[Q], b: &Q) -> CoreResult<bool> {
     }
     Err(bad("zero event polynomial"))
 }
+// At the admitted minimum tolerance 2^-50, the generic isolation
+// target is at least 2^-51. Every old linear split is dyadic, starting
+// at 0, 1/2 or 1, so every visited endpoint lies on this exact lattice.
+// Compute the exact root's lattice position ONCE with rational arithmetic.
+const LINEAR_GRID: u64 = 1u64 << 51;
+struct LinearPosition {
+    floor: i64,
+    exact: bool,
+}
+impl LinearPosition {
+    fn new(root: &Q) -> CoreResult<Self> {
+        if root.is_negative() {
+            return Ok(Self {
+                floor: -1,
+                exact: false,
+            });
+        }
+        if root > &Q::one() {
+            return Ok(Self {
+                floor: LINEAR_GRID as i64 + 1,
+                exact: false,
+            });
+        }
+        let scaled = root * Q::from_integer(LINEAR_GRID.into());
+        let floor = scaled
+            .to_integer()
+            .to_i64()
+            .ok_or_else(|| bad("linear lattice position"))?;
+        Ok(Self {
+            floor,
+            exact: scaled.is_integer(),
+        })
+    }
+    // For the degree-one Sturm chain [slope*(x-r), slope], the
+    // sign-change count is 1 iff x<r (zero is skipped at equality).
+    fn variations(&self, k: u64, w: &mut RootWork) -> usize {
+        w.variation_calls += 1;
+        usize::from((k as i64) < self.floor || ((k as i64) == self.floor && !self.exact))
+    }
+    fn at_root(&self, k: u64) -> bool {
+        self.exact && k as i64 == self.floor
+    }
+    fn count(&self, a: u64, b: u64, w: &mut RootWork) -> CoreResult<usize> {
+        self.variations(a, w)
+            .checked_sub(self.variations(b, w))
+            .ok_or_else(|| bad("linear Sturm count invariant"))
+    }
+}
+fn lattice_endpoint(x: &Q) -> Option<u64> {
+    let v = x * Q::from_integer(LINEAR_GRID.into());
+    if !v.is_integer() {
+        return None;
+    }
+    v.to_integer().to_u64().filter(|&k| k <= LINEAR_GRID)
+}
+fn lattice_value(k: u64) -> f64 {
+    k as f64 / LINEAR_GRID as f64
+}
 impl RepresentedPolynomial {
+    // The generic screens and actual chain construction have already
+    // executed. Preserve the exact same isolation intervals and work
+    // events, only change the implementation of each linear variation
+    // and dyadic midpoint. No synthetic accounting of skipped work.
+    fn isolate_linear_lattice(
+        &self,
+        route: RootRoute,
+        tol: f64,
+        parts: &[(Q, Q)],
+        mut w: RootWork,
+    ) -> CoreResult<Option<RootReport>> {
+        let root = -&self.p[0] / &self.p[1];
+        let pos = LinearPosition::new(&root)?;
+        let mut lattice = Vec::with_capacity(parts.len());
+        for (a, b) in parts {
+            let (Some(a), Some(b)) = (lattice_endpoint(a), lattice_endpoint(b)) else {
+                return Ok(None);
+            };
+            // The screens/hints currently produce only these dyadic
+            // partitions for linear polynomials. Fail back to generic
+            // isolation if their future contract changes.
+            if !(a == 0 || a == LINEAR_GRID / 2)
+                || !(b == LINEAR_GRID / 2 || b == LINEAR_GRID)
+                || a >= b
+            {
+                return Ok(None);
+            }
+            lattice.push((a, b));
+        }
+        let target = tol * 0.5;
+        let mut roots = vec![];
+        let mut max_width = 0_f64;
+        for (mut a, mut b) in lattice.into_iter().rev() {
+            if pos.count(a, b, &mut w)? == 0 {
+                continue;
+            }
+            let mut depth = 0;
+            loop {
+                w.isolation_nodes += 1;
+                if depth > MAX_DEPTH || w.isolation_nodes > MAX_NODES {
+                    return Err(bad("isolation resource cap"));
+                }
+                if pos.at_root(b) || lattice_value(b - a) <= target {
+                    let l = if pos.at_root(b) { b } else { a };
+                    let (l, b) = (q(lattice_value(l))?, q(lattice_value(b))?);
+                    let time_l = &self.t0 + &self.h * &l;
+                    let time_b = &self.t0 + &self.h * &b;
+                    let theta = [iv(&l)?.lo, iv(&b)?.hi];
+                    let time = [iv(&time_l)?.lo, iv(&time_b)?.hi];
+                    let width = sub_up(theta[1], theta[0])?;
+                    if width > tol {
+                        return Err(bad("binary64 bracket width"));
+                    }
+                    max_width = max_width.max(width);
+                    roots.push(RootInterval {
+                        exact_theta: [l.to_string(), b.to_string()],
+                        theta,
+                        time,
+                        multiplicity: 1,
+                        kind: if self.p[1].is_positive() {
+                            RootKind::Up
+                        } else {
+                            RootKind::Down
+                        },
+                    });
+                    break;
+                }
+                if (b - a) % 2 != 0 {
+                    return Ok(None);
+                }
+                let mid = a + (b - a) / 2;
+                if pos.count(a, mid, &mut w)? > 0 {
+                    b = mid;
+                } else {
+                    a = mid;
+                }
+                depth += 1;
+            }
+        }
+        // At most one distinct root in all disjoint half-open parts.
+        Ok(Some(RootReport {
+            route,
+            roots,
+            max_theta_width: max_width,
+            work: w,
+        }))
+    }
+
+    /// Exact affine root diagnostic. This is a different certificate
+    /// representation from the legacy dyadic bracket, not a substitute
+    /// for the source-bound initialization report. No screen or Sturm
+    /// counters are claimed. Only exactly degree-one polynomials admitted.
+    pub fn isolate_affine_exact(&self, tol: f64) -> CoreResult<Option<RootInterval>> {
+        check_binary64_environment()?;
+        if !tol.is_finite() || !(2f64.powi(-50)..=1e-3).contains(&tol) {
+            return Err(bad("theta tolerance"));
+        }
+        if self.p.len() != 2 {
+            return Err(bad("affine diagnostic requires degree one"));
+        }
+        let r = -&self.p[0] / &self.p[1];
+        if r <= zero() || r > Q::one() {
+            return Ok(None);
+        }
+        let x = iv(&r)?;
+        let t = iv(&(&self.t0 + &self.h * &r))?;
+        if sub_up(x.hi, x.lo)? > tol {
+            return Err(bad("binary64 bracket width"));
+        }
+        Ok(Some(RootInterval {
+            exact_theta: [r.to_string(), r.to_string()],
+            theta: x.as_pair(),
+            time: t.as_pair(),
+            multiplicity: 1,
+            kind: if self.p[1].is_positive() {
+                RootKind::Up
+            } else {
+                RootKind::Down
+            },
+        }))
+    }
     /// Complete exact distinct-root isolation in (0,1]. A zero polynomial,
     /// resource cap or unrepresentable output is a refusal, not an empty set.
     pub fn isolate(&self, route: RootRoute, tol: f64) -> CoreResult<RootReport> {
+        self.isolate_impl(route, tol, true)
+    }
+    fn isolate_impl(
+        &self,
+        route: RootRoute,
+        tol: f64,
+        linear_lattice: bool,
+    ) -> CoreResult<RootReport> {
         check_binary64_environment()?;
         if !tol.is_finite() || !(2f64.powi(-50)..=1e-3).contains(&tol) {
             return Err(bad("theta tolerance"));
@@ -661,6 +848,11 @@ impl RepresentedPolynomial {
                 split.push((l, b));
             }
             parts = split;
+        }
+        if linear_lattice && self.p.len() == 2 {
+            if let Some(r) = self.isolate_linear_lattice(route, tol, &parts, w.clone())? {
+                return Ok(r);
+            }
         }
         let target = q(tol * 0.5)?;
         let mut stack = Vec::new();
@@ -773,5 +965,119 @@ impl RepresentedPolynomial {
                 Ok((v, e))
             },
         )
+    }
+}
+
+#[cfg(test)]
+mod affine_lattice_tests {
+    use super::*;
+    const ROUTES: [RootRoute; 5] = [
+        RootRoute::Sturm,
+        RootRoute::NativeBernstein,
+        RootRoute::DictionaryBernstein,
+        RootRoute::Companion,
+        RootRoute::DictionaryCompanion,
+    ];
+    fn compare(p: &RepresentedPolynomial, tol: f64) -> usize {
+        for route in ROUTES {
+            let old = p.isolate_impl(route, tol, false);
+            let new = p.isolate(route, tol);
+            match (old, new) {
+                (Ok(a), Ok(b)) => assert_eq!(
+                    serde_json::to_string(&a).unwrap(),
+                    serde_json::to_string(&b).unwrap(),
+                    "{:?} {:?} {tol}",
+                    p.exact_coefficients(),
+                    route
+                ),
+                (Err(a), Err(b)) => assert_eq!(a.to_string(), b.to_string()),
+                (a, b) => panic!("root outcome mismatch {a:?} {b:?}"),
+            }
+        }
+        ROUTES.len()
+    }
+    #[test]
+    fn identical_exact_root_reports() {
+        let mut n = 0;
+        for a in [
+            vec![-1., 3.],
+            vec![0., 1.],
+            vec![-1., 1.],
+            vec![-1., 2.],
+            vec![1., -2.],
+            vec![1., 1.],
+            vec![-2., 1.],
+            vec![0., 0.],
+            vec![3.],
+            vec![-f64::from_bits(1), 1.],
+            vec![f64::from_bits(1), -1.],
+            vec![-1e300, 3e300],
+            vec![-1., f64::MAX],
+            vec![0.25, -1., 1.],
+            vec![0.125, -0.75, 1.],
+            vec![0., -1., 1.],
+            vec![-0.125, 0.75, -1.5, 1.],
+        ] {
+            let p = RepresentedPolynomial::from_power(&a).unwrap();
+            for t in [2f64.powi(-50), 2f64.powi(-48), 1e-6, 0.001] {
+                n += compare(&p, t);
+            }
+        }
+        // Genuine exact frozen source, including non-dyadic normalized root.
+        let g = DeclaredPolynomial::new(vec![
+            EventTerm {
+                coefficient: 1.,
+                factors: vec![AffineFactor::component(0, 0.)],
+            },
+            EventTerm {
+                coefficient: 1.,
+                factors: vec![AffineFactor::component(1, 0.)],
+            },
+            EventTerm {
+                coefficient: 1.,
+                factors: vec![AffineFactor::component(2, 0.)],
+            },
+            EventTerm {
+                coefficient: -1.,
+                factors: vec![],
+            },
+        ])
+        .unwrap();
+        for k in 0..32 {
+            let x = [
+                0.9998658289383162 - (k as f64) * 2f64.powi(-48),
+                6.457305003072096e-5 + (k as f64) * 2f64.powi(-54),
+            ];
+            let p = RepresentedPolynomial::frozen_scalar(&g, 0.0005, &x, [-0.25, 1.25]).unwrap();
+            for t in [2f64.powi(-50), 2f64.powi(-48)] {
+                n += compare(&p, t);
+            }
+        }
+        // Nonautonomous affine source with repeated state indices,
+        // and exact branch endpoint roots. Exact degree after freezing,
+        // not a rounded degree or a source-name heuristic, is authority.
+        let a = AffineFactor {
+            constant: 0.25,
+            time: 0.5,
+            state: vec![(0, 0.125), (1, 1.), (1, 0.5)],
+        };
+        let g = DeclaredPolynomial::new(vec![
+            EventTerm {
+                coefficient: 1.,
+                factors: vec![a],
+            },
+            EventTerm {
+                coefficient: -0.5,
+                factors: vec![],
+            },
+        ])
+        .unwrap();
+        for t in [0., 0.125, 0.25, 0.5] {
+            for x in [0., 0.125, 0.5] {
+                let p = RepresentedPolynomial::frozen_scalar(&g, t, &[x], [0., 1.]).unwrap();
+                n += compare(&p, 2f64.powi(-48));
+            }
+        }
+        println!("EXACT_ROOT_REPORT_COMPARISONS {n}");
     }
 }
