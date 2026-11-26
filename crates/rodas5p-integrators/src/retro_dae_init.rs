@@ -471,6 +471,8 @@ pub enum InitRoute {
     BoundedAffineScalar,
     /// Interval-only coefficient expansion competitor.
     BoundedAffineIntervalScalar,
+    BoundedSturmScalar,
+    BoundedSturmNewtonScalar,
     BoundedVector,
     BoundedVectorRefined,
 }
@@ -521,6 +523,12 @@ pub struct InitWork {
     pub bounded_residual_terms: usize,
     #[serde(skip_serializing_if = "init_count_zero")]
     pub affine_dyadic_success: usize,
+    #[serde(skip_serializing_if = "init_count_zero")]
+    pub bounded_sturm_chains: usize,
+    #[serde(skip_serializing_if = "init_count_zero")]
+    pub bounded_sturm_iterations: usize,
+    #[serde(skip_serializing_if = "init_count_zero")]
+    pub bounded_sturm_newton: usize,
 }
 fn init_count_zero(n: &usize) -> bool {
     *n == 0
@@ -578,6 +586,12 @@ pub struct ProjectionAttemptWork {
     pub bounded_residual_terms: usize,
     #[serde(skip_serializing_if = "init_count_zero")]
     pub affine_dyadic_success: usize,
+    #[serde(skip_serializing_if = "init_count_zero")]
+    pub bounded_sturm_chains: usize,
+    #[serde(skip_serializing_if = "init_count_zero")]
+    pub bounded_sturm_iterations: usize,
+    #[serde(skip_serializing_if = "init_count_zero")]
+    pub bounded_sturm_newton: usize,
 }
 impl ProjectionAttemptWork {
     pub fn record(&mut self, w: &InitAttemptWork, success: bool) {
@@ -595,6 +609,9 @@ impl ProjectionAttemptWork {
         self.bounded_prepared_batches += w.legacy.bounded_prepared_batches;
         self.bounded_residual_terms += w.legacy.bounded_residual_terms;
         self.affine_dyadic_success += w.legacy.affine_dyadic_success;
+        self.bounded_sturm_chains += w.legacy.bounded_sturm_chains;
+        self.bounded_sturm_iterations += w.legacy.bounded_sturm_iterations;
+        self.bounded_sturm_newton += w.legacy.bounded_sturm_newton;
         if success {
             self.successful_rhs_requested += w.rhs_requested;
         } else {
@@ -618,6 +635,9 @@ impl ProjectionAttemptWork {
         self.bounded_prepared_batches += w.bounded_prepared_batches;
         self.bounded_residual_terms += w.bounded_residual_terms;
         self.affine_dyadic_success += w.affine_dyadic_success;
+        self.bounded_sturm_chains += w.bounded_sturm_chains;
+        self.bounded_sturm_iterations += w.bounded_sturm_iterations;
+        self.bounded_sturm_newton += w.bounded_sturm_newton;
     }
 }
 #[derive(Clone, Debug, Serialize)]
@@ -964,6 +984,8 @@ impl DaeSource {
             InitRoute::BoundedPreparedScalar
                 | InitRoute::BoundedAffineScalar
                 | InitRoute::BoundedAffineIntervalScalar
+                | InitRoute::BoundedSturmScalar
+                | InitRoute::BoundedSturmNewtonScalar
         ) {
             return self
                 .scalar_reuse_recorded(t, x, z0, branch, policy, route, attempt)
@@ -1437,6 +1459,11 @@ impl ScalarReuseProjection {
             root_box: vec![self.root.as_pair()],
             branch_authority: if matches!(
                 self.route,
+                InitRoute::BoundedSturmScalar | InitRoute::BoundedSturmNewtonScalar
+            ) {
+                "bounded exact square-free Sturm count + certified root bracket"
+            } else if matches!(
+                self.route,
                 InitRoute::BoundedAffineScalar | InitRoute::BoundedAffineIntervalScalar
             ) {
                 "directed frozen affine root enclosure"
@@ -1626,7 +1653,7 @@ impl RootDyadic {
         a.scale(2f64.powi(self.e)).ok()
     }
 }
-fn frozen_affine_dyadic(eq: &DeclaredPolynomial, t: f64, x: &[f64]) -> Option<[Iv; 5]> {
+fn frozen_dyadic(eq: &DeclaredPolynomial, t: f64, x: &[f64]) -> Option<[RootDyadic; 5]> {
     let q = RootDyadic::from_f64;
     let mut sum = [RootDyadic::ZERO; 5];
     for term in eq.terms() {
@@ -1655,11 +1682,242 @@ fn frozen_affine_dyadic(eq: &DeclaredPolynomial, t: f64, x: &[f64]) -> Option<[I
             *v = v.add(w)?;
         }
     }
+    Some(sum)
+}
+fn frozen_affine_dyadic(eq: &DeclaredPolynomial, t: f64, x: &[f64]) -> Option<[Iv; 5]> {
     let mut out = [z(); 5];
-    for (v, d) in out.iter_mut().zip(sum) {
+    for (v, d) in out.iter_mut().zip(frozen_dyadic(eq, t, x)?) {
         *v = d.interval()?;
     }
     Some(out)
+}
+// Primitive signed polynomial remainder sequence. Each elimination scales
+// the dividend by |lc(B)|, never by a negative quantity. The negative
+// remainder is therefore a positive multiple of the ordinary Sturm term.
+// Checked bounded integer arithmetic; refusal on overflow or nonconstant gcd.
+#[derive(Clone, Copy)]
+struct SmallSturmPoly {
+    a: [i128; 5],
+    n: usize,
+}
+impl SmallSturmPoly {
+    const ZERO: Self = Self { a: [0; 5], n: 0 };
+    fn primitive(mut self) -> Option<Self> {
+        while self.n > 0 && self.a[self.n - 1] == 0 {
+            self.n -= 1;
+        }
+        let mut g = 0u128;
+        for &v in &self.a[..self.n] {
+            let mut b = v.unsigned_abs();
+            while b != 0 {
+                let r = g % b;
+                g = b;
+                b = r;
+            }
+        }
+        if g > i128::MAX as u128 {
+            return None;
+        }
+        if g > 1 {
+            for v in &mut self.a[..self.n] {
+                *v /= g as i128;
+            }
+        }
+        Some(self)
+    }
+    fn from_dyadic(d: [RootDyadic; 5]) -> Option<Self> {
+        let e = d.iter().filter(|v| v.m != 0).map(|v| v.e).min()?;
+        let mut a = [0; 5];
+        for (v, c) in a.iter_mut().zip(d) {
+            if c.m == 0 {
+                continue;
+            }
+            let k = c.e.checked_sub(e)?;
+            if k > 126 {
+                return None;
+            }
+            *v = c.m.checked_mul(1i128 << k)?;
+        }
+        Self { a, n: 5 }.primitive()
+    }
+    fn derivative(self) -> Option<Self> {
+        let mut a = [0; 5];
+        for i in 1..self.n {
+            a[i - 1] = self.a[i].checked_mul(i as i128)?;
+        }
+        Self {
+            a,
+            n: self.n.saturating_sub(1),
+        }
+        .primitive()
+    }
+    fn negative_remainder(mut self, b: Self) -> Option<Self> {
+        let lc = b.a[b.n.checked_sub(1)?];
+        let abs = lc.checked_abs()?;
+        while self.n >= b.n && self.n != 0 {
+            let k = self.n - b.n;
+            let r = self.a[self.n - 1].checked_mul(lc.signum())?;
+            for i in 0..self.n {
+                let t = if i >= k && i - k < b.n {
+                    r.checked_mul(b.a[i - k])?
+                } else {
+                    0
+                };
+                self.a[i] = self.a[i].checked_mul(abs)?.checked_sub(t)?;
+            }
+            self = self.primitive()?;
+        }
+        for a in &mut self.a[..self.n] {
+            *a = a.checked_neg()?;
+        }
+        self.primitive()
+    }
+    fn interval(self, x: Iv) -> CoreResult<Iv> {
+        self.a[..self.n].iter().rev().try_fold(z(), |s, &v| {
+            let a = RootDyadic::new(v, 0)
+                .and_then(RootDyadic::interval)
+                .ok_or_else(|| bad("bounded Sturm coefficient enclosure cap"))?;
+            s.mul(x)?.add(a)
+        })
+    }
+    fn sign(self, x: f64) -> CoreResult<Option<i8>> {
+        if let Some(v) = (|| {
+            let x = RootDyadic::from_f64(x)?;
+            self.a[..self.n]
+                .iter()
+                .rev()
+                .try_fold(RootDyadic::ZERO, |s, &v| {
+                    s.mul(x)?.add(RootDyadic::new(v, 0)?)
+                })
+        })() {
+            return Ok(Some(v.m.signum() as i8));
+        }
+        let r = self.interval(p(x)?)?;
+        Ok(if r.lo > 0. {
+            Some(1)
+        } else if r.hi < 0. {
+            Some(-1)
+        } else if r.lo == 0. && r.hi == 0. {
+            Some(0)
+        } else {
+            None
+        })
+    }
+}
+fn sturm_variation(chain: &[SmallSturmPoly], x: f64) -> CoreResult<usize> {
+    let mut last = 0;
+    let mut count = 0;
+    for poly in chain {
+        let s = poly
+            .sign(x)?
+            .ok_or_else(|| bad("bounded Sturm endpoint sign unknown"))?;
+        if s != 0 {
+            if last != 0 && last != s {
+                count += 1;
+            }
+            last = s;
+        }
+    }
+    Ok(count)
+}
+fn bounded_sturm_root(
+    poly: SmallSturmPoly,
+    b: Iv,
+    newton: bool,
+    w: &mut InitWork,
+) -> CoreResult<Iv> {
+    if poly.n < 2 {
+        return Err(bad("bounded Sturm constant or zero polynomial"));
+    }
+    let mut chain = [SmallSturmPoly::ZERO; 5];
+    chain[0] = poly;
+    chain[1] = poly
+        .derivative()
+        .ok_or_else(|| bad("bounded Sturm derivative cap"))?;
+    let mut n = 2;
+    while chain[n - 1].n > 1 {
+        let r = chain[n - 2]
+            .negative_remainder(chain[n - 1])
+            .ok_or_else(|| bad("bounded Sturm PRS cap"))?;
+        if r.n == 0 {
+            return Err(bad("bounded Sturm non-square-free polynomial"));
+        }
+        if n == chain.len() {
+            return Err(bad("bounded Sturm chain cap"));
+        }
+        chain[n] = r;
+        n += 1;
+    }
+    let lsign = poly
+        .sign(b.lo)?
+        .filter(|&s| s != 0)
+        .ok_or_else(|| bad("bounded Sturm boundary sign"))?;
+    let hsign = poly
+        .sign(b.hi)?
+        .filter(|&s| s != 0)
+        .ok_or_else(|| bad("bounded Sturm boundary sign"))?;
+    let vl = sturm_variation(&chain[..n], b.lo)?;
+    let vh = sturm_variation(&chain[..n], b.hi)?;
+    w.bounded_sturm_chains += 1;
+    if vl.checked_sub(vh) != Some(1) || lsign == hsign {
+        return Err(bad("bounded Sturm not exactly one simple interior root"));
+    }
+    let h = p(b.hi)?.sub(p(b.lo)?)?;
+    let target = h.scale(2f64.powi(-49))?.lo;
+    let mut bracket = b;
+    // Use the original polynomial derivative, NOT the primitive scaled
+    // derivative, for Newton. Its coefficient signs/values enclose exact p'.
+    let mut derivative = [z(); 4];
+    for i in 1..poly.n {
+        derivative[i - 1] = RootDyadic::new(poly.a[i], 0)
+            .and_then(RootDyadic::interval)
+            .ok_or_else(|| bad("bounded Sturm derivative conversion"))?
+            .scale(i as f64)?;
+    }
+    for _ in 0..128 {
+        w.bounded_sturm_iterations += 1;
+        if p(bracket.hi)?.sub(p(bracket.lo)?)?.hi <= target {
+            return Ok(bracket);
+        }
+        let m = mid(bracket);
+        if m <= bracket.lo || m >= bracket.hi {
+            return Err(bad("bounded Sturm bracket precision"));
+        }
+        let sign = poly.sign(m)?;
+        if sign == Some(0) {
+            return p(m);
+        }
+        // Even when the exact sign is too expensive, interval Newton can
+        // shrink a box already known to contain exactly one root.
+        if newton || sign.is_none() {
+            let j = derivative[..poly.n - 1]
+                .iter()
+                .rev()
+                .try_fold(z(), |s, &a| s.mul(bracket)?.add(a))?;
+            if !j.contains_zero() {
+                let image = p(m)?.sub(poly.interval(p(m)?)?.div(j)?)?;
+                let next = Iv::new(bracket.lo.max(image.lo), bracket.hi.min(image.hi))?;
+                let nw = p(next.hi)?.sub(p(next.lo)?)?.hi;
+                if nw <= target {
+                    w.bounded_sturm_newton += 1;
+                    return Ok(next);
+                }
+                if newton && nw < 0.5 * (bracket.hi - bracket.lo) {
+                    if poly.sign(next.lo)? == Some(lsign) && poly.sign(next.hi)? == Some(hsign) {
+                        bracket = next;
+                        w.bounded_sturm_newton += 1;
+                        continue;
+                    }
+                }
+            }
+        }
+        match sign {
+            Some(s) if s == lsign => bracket.lo = m,
+            Some(s) if s == hsign => bracket.hi = m,
+            _ => return Err(bad("bounded Sturm midpoint sign unknown")),
+        }
+    }
+    Err(bad("bounded Sturm isolation cap"))
 }
 fn scalar_defect(c: f64, j: Iv) -> CoreResult<Iv> {
     p(1.)?.sub(j.scale(c)?)
@@ -1725,6 +1983,31 @@ impl DaeSource {
         );
         (r, w)
     }
+    pub fn initialize_scalar_bounded_sturm_audited(
+        &self,
+        t: f64,
+        x: &[f64],
+        seed: &[f64],
+        branch: &[[f64; 2]],
+        policy: InitPolicy,
+        newton: bool,
+    ) -> (CoreResult<ScalarReuseProjection>, InitAttemptWork) {
+        let mut w = InitAttemptWork::default();
+        let r = self.scalar_reuse_recorded(
+            t,
+            x,
+            seed,
+            branch,
+            policy,
+            if newton {
+                InitRoute::BoundedSturmNewtonScalar
+            } else {
+                InitRoute::BoundedSturmScalar
+            },
+            &mut w,
+        );
+        (r, w)
+    }
     fn scalar_reuse_recorded(
         &self,
         t: f64,
@@ -1782,7 +2065,10 @@ impl DaeSource {
         let mut affine_box = None;
         if matches!(
             route,
-            InitRoute::BoundedAffineScalar | InitRoute::BoundedAffineIntervalScalar
+            InitRoute::BoundedAffineScalar
+                | InitRoute::BoundedAffineIntervalScalar
+                | InitRoute::BoundedSturmScalar
+                | InitRoute::BoundedSturmNewtonScalar
         ) {
             for v in [b.lo, b.hi] {
                 eval!(work, p(v)?);
@@ -1790,32 +2076,51 @@ impl DaeSource {
                     return Err(bad("scalar branch boundary root/unknown"));
                 }
             }
-            let coeff = (|| {
-                let mut c = frozen_affine_coefficients(&self.g[0], t, x)?;
-                if route == InitRoute::BoundedAffineScalar {
-                    if let Some(d) = frozen_affine_dyadic(&self.g[0], t, x) {
-                        for (v, d) in c.iter_mut().zip(d) {
-                            *v = Iv::new(v.lo.max(d.lo), v.hi.min(d.hi))?;
+            let q = if matches!(
+                route,
+                InitRoute::BoundedSturmScalar | InitRoute::BoundedSturmNewtonScalar
+            ) {
+                let poly = frozen_dyadic(&self.g[0], t, x)
+                    .and_then(SmallSturmPoly::from_dyadic)
+                    .ok_or_else(|| bad("bounded Sturm frozen integer cap"));
+                w.frozen.record(poly.is_ok());
+                let poly = poly?;
+                let q = bounded_sturm_root(
+                    poly,
+                    b,
+                    route == InitRoute::BoundedSturmNewtonScalar,
+                    &mut w.legacy,
+                );
+                w.roots.record(q.is_ok());
+                q?
+            } else {
+                let coeff = (|| {
+                    let mut c = frozen_affine_coefficients(&self.g[0], t, x)?;
+                    if route == InitRoute::BoundedAffineScalar {
+                        if let Some(d) = frozen_affine_dyadic(&self.g[0], t, x) {
+                            for (v, d) in c.iter_mut().zip(d) {
+                                *v = Iv::new(v.lo.max(d.lo), v.hi.min(d.hi))?;
+                            }
+                            w.legacy.affine_dyadic_success += 1;
                         }
-                        w.legacy.affine_dyadic_success += 1;
                     }
-                }
-                if c[2..].iter().any(|v| v.lo != 0. || v.hi != 0.) || c[1].contains_zero() {
-                    return Err(bad("bounded frozen affine degree or slope not proved"));
-                }
-                Ok(c)
-            })();
-            w.frozen.record(coeff.is_ok());
-            let coeff = coeff?;
-            let q = (|| {
-                let root = (-coeff[0]).div(coeff[1])?;
-                if root.lo <= b.lo || root.hi >= b.hi {
-                    return Err(bad("bounded affine interior root not proved"));
-                }
-                Ok(root)
-            })();
-            w.roots.record(q.is_ok());
-            let q = q?;
+                    if c[2..].iter().any(|v| v.lo != 0. || v.hi != 0.) || c[1].contains_zero() {
+                        return Err(bad("bounded frozen affine degree or slope not proved"));
+                    }
+                    Ok(c)
+                })();
+                w.frozen.record(coeff.is_ok());
+                let coeff = coeff?;
+                let q = (|| {
+                    let root = (-coeff[0]).div(coeff[1])?;
+                    if root.lo <= b.lo || root.hi >= b.hi {
+                        return Err(bad("bounded affine interior root not proved"));
+                    }
+                    Ok(root)
+                })();
+                w.roots.record(q.is_ok());
+                q?
+            };
             w.legacy.root_calls += 1;
             if policy.mode == InitMode::ProjectAlgebraic {
                 center = mid(q);

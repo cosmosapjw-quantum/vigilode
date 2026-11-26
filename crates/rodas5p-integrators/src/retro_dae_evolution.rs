@@ -845,7 +845,19 @@ fn reconstruct_scalar_inner(
                 mode: InitMode::ProjectAlgebraic,
                 ..policy
             };
-            if route == InitRoute::BoundedAffineScalar {
+            if matches!(
+                route,
+                InitRoute::BoundedSturmScalar | InitRoute::BoundedSturmNewtonScalar
+            ) {
+                src.initialize_scalar_bounded_sturm_audited(
+                    t,
+                    &v[..x.len()],
+                    &guess,
+                    branch,
+                    policy,
+                    route == InitRoute::BoundedSturmNewtonScalar,
+                )
+            } else if route == InitRoute::BoundedAffineScalar {
                 src.initialize_scalar_bounded_affine_audited(
                     t,
                     &v[..x.len()],
@@ -984,6 +996,47 @@ pub fn reconstruct_scalar_bounded_affine_into(
         nodes,
         seed_route,
         InitRoute::BoundedAffineScalar,
+        Some(audit),
+        scratch,
+    )?;
+    out.copy_from_slice(&scratch.power[..nodes]);
+    work.clone_from_slice(&scratch.work[..nodes]);
+    Ok(())
+}
+/// Caller-owned certified nonlinear scalar root reconstruction.
+#[allow(clippy::too_many_arguments)]
+pub fn reconstruct_scalar_bounded_sturm_into(
+    src: &DaeSource,
+    times: [f64; 2],
+    x: &[Poly],
+    seed: &[f64],
+    branch: &[[f64; 2]],
+    policy: InitPolicy,
+    seed_route: ReconstructionSeedRoute,
+    newton: bool,
+    out: &mut [Iv],
+    work: &mut [InitWork],
+    audit: &mut di::ProjectionAttemptWork,
+    scratch: &mut ScalarReconstructionWorkspace,
+) -> CoreResult<()> {
+    if out.len() != work.len() {
+        return Err(bad("scalar reconstruction output shape"));
+    }
+    let nodes = out.len();
+    reconstruct_scalar_inner(
+        src,
+        times,
+        x,
+        seed,
+        branch,
+        policy,
+        nodes,
+        seed_route,
+        if newton {
+            InitRoute::BoundedSturmNewtonScalar
+        } else {
+            InitRoute::BoundedSturmScalar
+        },
         Some(audit),
         scratch,
     )?;
@@ -1164,7 +1217,11 @@ fn reconstruct_recorded(
     if src.nz() == 1
         && matches!(
             route,
-            InitRoute::Reuse | InitRoute::BoundedPreparedScalar | InitRoute::BoundedAffineScalar
+            InitRoute::Reuse
+                | InitRoute::BoundedPreparedScalar
+                | InitRoute::BoundedAffineScalar
+                | InitRoute::BoundedSturmScalar
+                | InitRoute::BoundedSturmNewtonScalar
         )
         && warp.is_none()
     {

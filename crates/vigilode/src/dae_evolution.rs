@@ -51,6 +51,7 @@ pub enum EvolutionRoute {
     Reduced5NormalLs,
     Reduced5BoundedLs,
     BoundedSturm5,
+    BoundedSturmNewton5,
 }
 impl EvolutionRoute {
     fn init(self) -> InitRoute {
@@ -61,7 +62,9 @@ impl EvolutionRoute {
             Self::BoundedPrepared5 | Self::BoundedPreparedLegendre5 => {
                 InitRoute::BoundedPreparedScalar
             }
-            Self::Scalar5 | Self::BoundedSturm5 => InitRoute::ScalarRoot,
+            Self::Scalar5 => InitRoute::ScalarRoot,
+            Self::BoundedSturm5 => InitRoute::BoundedSturmScalar,
+            Self::BoundedSturmNewton5 => InitRoute::BoundedSturmNewtonScalar,
             Self::Affine5 => InitRoute::AffineExact,
             Self::BoundedAffine5 | Self::BoundedAffinePicard5 => InitRoute::BoundedAffineScalar,
             _ => InitRoute::Reuse,
@@ -142,6 +145,12 @@ pub struct ProjectionWork {
     pub bounded_residual_terms: usize,
     #[serde(skip_serializing_if = "projection_count_zero")]
     pub affine_dyadic_success: usize,
+    #[serde(skip_serializing_if = "projection_count_zero")]
+    pub bounded_sturm_chains: usize,
+    #[serde(skip_serializing_if = "projection_count_zero")]
+    pub bounded_sturm_iterations: usize,
+    #[serde(skip_serializing_if = "projection_count_zero")]
+    pub bounded_sturm_newton: usize,
 }
 fn projection_count_zero(n: &usize) -> bool {
     *n == 0
@@ -163,6 +172,9 @@ impl ProjectionWork {
         self.bounded_prepared_batches += w.bounded_prepared_batches;
         self.bounded_residual_terms += w.bounded_residual_terms;
         self.affine_dyadic_success += w.affine_dyadic_success;
+        self.bounded_sturm_chains += w.bounded_sturm_chains;
+        self.bounded_sturm_iterations += w.bounded_sturm_iterations;
+        self.bounded_sturm_newton += w.bounded_sturm_newton;
     }
 }
 /// Diagnostic boundary receipt, never an event or trajectory authority.
@@ -403,6 +415,8 @@ impl Engine {
                 | EvolutionRoute::BoundedAffinePicard5
                 | EvolutionRoute::Reduced5NormalLs
                 | EvolutionRoute::Reduced5BoundedLs
+                | EvolutionRoute::BoundedSturm5
+                | EvolutionRoute::BoundedSturmNewton5
         ) && self.src.nz() == 1
             && self.warp.is_none()
     }
@@ -413,6 +427,18 @@ impl Engine {
         policy.mode = rodas5p_integrators::retro_dae_init::InitMode::ProjectAlgebraic;
         let seed = [self.seed[0].clamp(self.branch[0][0], self.branch[0][1])];
         let (r, receipt) = if matches!(
+            self.route,
+            EvolutionRoute::BoundedSturm5 | EvolutionRoute::BoundedSturmNewton5
+        ) {
+            self.src.initialize_scalar_bounded_sturm_audited(
+                t,
+                x,
+                &seed,
+                &self.branch,
+                policy,
+                self.route == EvolutionRoute::BoundedSturmNewton5,
+            )
+        } else if matches!(
             self.route,
             EvolutionRoute::BoundedAffine5 | EvolutionRoute::BoundedAffinePicard5
         ) {
