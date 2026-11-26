@@ -1,0 +1,33 @@
+[package]
+name = "v10-ppsw1-decision-runner"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+# Standalone measurement program of loop L1 node V10_PPSW1_DECISION (see ../PREDECLARED.json).
+# It is not a member of the repository workspace and changes no crate source. src/ppsw1.rs is a
+# research copy of the protected crates/rodas5p-integrators/src/ppsw1.rs with three changes.
+[workspace]
+
+[lib]
+name = "v10_runner"
+path = "src/lib.rs"
+
+[[bin]]
+name = "v10-runner"
+path = "src/main.rs"
+
+[dependencies]
+rodas5p-core = { path = "../../../../crates/rodas5p-core" }
+rodas5p-krylov = { path = "../../../../crates/rodas5p-krylov" }
+rodas5p-integrators = { path = "../../../../crates/rodas5p-integrators" }
+vigilode = { path = "../../../../crates/vigilode" }
+serde_json = { version = "1.0.151", features = ["float_roundtrip"] }
+
+# The release profile of the repository workspace (root Cargo.toml), repeated because a standalone
+# package does not inherit it: the protected drivers are measured as the workspace builds them.
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
