@@ -1,0 +1,307 @@
+{
+  "checks": [
+    "inverse workspace actual 0 requests and transactional refusals",
+    "480 native/228 vector actual builds,580 core noalloc including64 bounded prepared",
+    "528 prior canonical and360 component receipts unchanged",
+    "32 paired bounded/legacy physical evidence exact; 10 whole atlas allocation receipts unchanged",
+    "128 event roots,16 regression PASS/3 ignored",
+    "5 targeted library units PASS,2326 exact rational and19683 dyadic",
+    "allocator controls, historical git blob hashes, identical production prefix, rustfmt/diff checks"
+  ],
+  "claim_id": "M2-03d.5b.5",
+  "cleanup": {
+    "duplicate_log_payloads": 0,
+    "raw_bytes_removed": 1388960,
+    "unique_compressed_bytes": 35819
+  },
+  "command": [
+    "cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "--release",
+    "-p",
+    "vigilode",
+    "--features",
+    "polynomial-events",
+    "--test",
+    "dae_resource_baseline_contracts",
+    "guard_dual_native_portfolio",
+    "--",
+    "--ignored",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "declared_results": [
+    "SELECTION.json",
+    "RESOURCE_DECOMPOSITION.json",
+    "BOUNDED_COMPARE.json",
+    "NATIVE_EVENT_COMPARE.json"
+  ],
+  "environment": {
+    "hardware": "AMD Ryzen9 5900X x86_64 (12C/24T; previously measured same host)",
+    "software": [
+      {
+        "name": "rustc",
+        "version": "rustc 1.94.1 (e408947bf 2026-03-25)"
+      },
+      {
+        "name": "cargo",
+        "version": "cargo 1.94.1 (29ea6fb6a 2026-03-24)"
+      },
+      {
+        "name": "MathHarness General",
+        "version": "3.1.0; verified archive and154 manifest entries"
+      }
+    ]
+  },
+  "input_artifacts": [
+    {
+      "current_sha256": "4722f681c1c2bb2e672fcdcb82bcbc540a9f24e31f8dcfdb884bd597bf4a5b7c",
+      "path": "crates/rodas5p-integrators/src/retro_dae_evolution.rs",
+      "sha256": "2069c9121f576057f6b319ce990704a125f1211a71c6a31074d2015545e197be",
+      "source_commit": "b4d512a715019bd07b87578d838a34443f811f1f",
+      "verified_git_blob_sha256": "2069c9121f576057f6b319ce990704a125f1211a71c6a31074d2015545e197be"
+    },
+    {
+      "current_sha256": "5593742acf4df3261164cf7ad3622c62dbdb90cf15d72b054131b6ded750b961",
+      "path": "crates/vigilode/tests/dae_resource_baseline_contracts.rs",
+      "sha256": "5593742acf4df3261164cf7ad3622c62dbdb90cf15d72b054131b6ded750b961",
+      "source_commit": "b4d512a715019bd07b87578d838a34443f811f1f",
+      "verified_git_blob_sha256": "5593742acf4df3261164cf7ad3622c62dbdb90cf15d72b054131b6ded750b961"
+    },
+    {
+      "current_sha256": "dd8101957e64cf726bb26db3490594f35fe51bd0545a14be89c284c545a03966",
+      "path": "crates/vigilode/tests/dae_general_guard_contracts.rs",
+      "sha256": "dd8101957e64cf726bb26db3490594f35fe51bd0545a14be89c284c545a03966",
+      "source_commit": "b4d512a715019bd07b87578d838a34443f811f1f",
+      "verified_git_blob_sha256": "dd8101957e64cf726bb26db3490594f35fe51bd0545a14be89c284c545a03966"
+    },
+    {
+      "current_sha256": "a2b04a9ee009a629291b711ce9af123110ac0e50978bd8df0744805eb0f7b375",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/PREREGISTRATION.md",
+      "sha256": "a2b04a9ee009a629291b711ce9af123110ac0e50978bd8df0744805eb0f7b375",
+      "source_commit": "b4d512a715019bd07b87578d838a34443f811f1f",
+      "verified_git_blob_sha256": "a2b04a9ee009a629291b711ce9af123110ac0e50978bd8df0744805eb0f7b375"
+    },
+    {
+      "current_sha256": "26d38caeaa9b880942f8d13aeaa70b3d462c3fed6e3d22784d40db91ef4bfb2d",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/guide.py",
+      "sha256": "26d38caeaa9b880942f8d13aeaa70b3d462c3fed6e3d22784d40db91ef4bfb2d",
+      "source_commit": "61bf290f0f271fcb506f73e4f3512aed61eceb53",
+      "verified_git_blob_sha256": "26d38caeaa9b880942f8d13aeaa70b3d462c3fed6e3d22784d40db91ef4bfb2d"
+    },
+    {
+      "current_sha256": "8dc5499f49f5eb51f0f28a745e2e0dee5eace937f3d8a8b46466dfd2a1c961a5",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/CANDIDATES.json",
+      "sha256": "8dc5499f49f5eb51f0f28a745e2e0dee5eace937f3d8a8b46466dfd2a1c961a5",
+      "source_commit": "61bf290f0f271fcb506f73e4f3512aed61eceb53",
+      "verified_git_blob_sha256": "8dc5499f49f5eb51f0f28a745e2e0dee5eace937f3d8a8b46466dfd2a1c961a5"
+    },
+    {
+      "current_sha256": "ab673439be60ce88430c785951a711debe04ad203b217aaaee5681ec8fef9c62",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/HARNESS_ROUTES.json",
+      "sha256": "ab673439be60ce88430c785951a711debe04ad203b217aaaee5681ec8fef9c62",
+      "source_commit": "61bf290f0f271fcb506f73e4f3512aed61eceb53",
+      "verified_git_blob_sha256": "ab673439be60ce88430c785951a711debe04ad203b217aaaee5681ec8fef9c62"
+    },
+    {
+      "current_sha256": "da579ce41c011dfa85db2749a3d851113c3e178d80d3a6800f6505b1b995983b",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/LITERATURE.md",
+      "sha256": "da579ce41c011dfa85db2749a3d851113c3e178d80d3a6800f6505b1b995983b",
+      "source_commit": "61bf290f0f271fcb506f73e4f3512aed61eceb53",
+      "verified_git_blob_sha256": "da579ce41c011dfa85db2749a3d851113c3e178d80d3a6800f6505b1b995983b"
+    },
+    {
+      "current_sha256": "4722f681c1c2bb2e672fcdcb82bcbc540a9f24e31f8dcfdb884bd597bf4a5b7c",
+      "path": "crates/rodas5p-integrators/src/retro_dae_evolution.rs",
+      "sha256": "4722f681c1c2bb2e672fcdcb82bcbc540a9f24e31f8dcfdb884bd597bf4a5b7c",
+      "source_commit": "87366502fa6f160b48c7c9e87ff4d4940ab52fc6",
+      "verified_git_blob_sha256": "4722f681c1c2bb2e672fcdcb82bcbc540a9f24e31f8dcfdb884bd597bf4a5b7c"
+    }
+  ],
+  "mathematics": {
+    "assertion_tested": "64 bounded prepared core build+3 queries zero heap; 708 actual builds; 528 prior canonical records unchanged; dual enclosure and analytic guards; 128 actual event roots; 2326 exact rational inverse and19683 dyadic source checks",
+    "bounds": {
+      "group_slot_cap": 2048,
+      "inverse_workspace_capacity": 32,
+      "native_rows": 480,
+      "state_dimension_max": 32,
+      "sweep_cap": 2,
+      "vector_rows": 228
+    },
+    "coefficient_domain": "binary64 directed interval arithmetic; exact rational inverse unit comparator; bounded source degree4/native degree16",
+    "conventions": "same full certified physical box q<1, fixed dual center, grouped original factors, intersection with primal; new midpoint inverse candidate checked against original matrix",
+    "inputs": [
+      "PREREGISTRATION.md",
+      "CANDIDATES.json",
+      "prior native/vector/component logs"
+    ],
+    "non_claims": [
+      "full VG1",
+      "legacy PreparedRhs rewritten",
+      "independent holdout",
+      "universal dual superiority",
+      "strong cancellation certified",
+      "whole atlas allocation improvement",
+      "walltime/peak stack"
+    ]
+  },
+  "outputs": [
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/BINARY.sha256",
+      "sha256": "b1aa899fd1633905963336ccdd23df54da4c3c2c8de6eb8a03aa482c3d3684d1"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/BOUNDED_COMPARE.json",
+      "sha256": "bee8d83e55bbe93d7d964a033ff70ad7f655e4049d845d99784c3e20b8450ab1"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/NATIVE_EVENT_COMPARE.json",
+      "sha256": "7d2eedc1a76298be568845fbcc36bccd7ad57cb681f23abe675d59a143dad64f"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/RAW_LOG_CLEANUP.json",
+      "sha256": "9ee62f248a733a635b7a296354c3b9a56b5a2a198ebbc069bd3dec29724bc4a3"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/RESOURCE_DECOMPOSITION.json",
+      "sha256": "2bfeb6f4fe97b6899b05ee9740d700f045ff149c32d7c6aad6bb732ddc3eca1a"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/SELECTION.json",
+      "sha256": "049a0b5610b9ee5d888096e5266c4b3ccec64eed9fde8fd23555667c61da1899"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/allocator.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/allocator.log.gz",
+      "sha256": "abc42100f710be65d13445fc0190f4a25d010b7ff4e894483c23e845d68a454b"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/components.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/components.log.gz",
+      "sha256": "a28510d39cdf1dcc3bd79630c558465a0d3a229805b6261875705f3f6d49dcfa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/harness.log.gz",
+      "sha256": "0780acb958fb2206d75c8678bd5df243443d143a08dfceab7fa2ca465d401700"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/inverse.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/inverse.log.gz",
+      "sha256": "c6cc5526de11e7195959042b63069478a6f6414add1bde001e2ce5473648ebfd"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/native.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/native.log.gz",
+      "sha256": "256a6e18d3b2e9a8af2ed00bf33d7a00555c006593beb2c5feaa409a5f5c6cd7"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/regression.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/regression.log.gz",
+      "sha256": "db95fcd8d3574afacfd439500bfbf078e3faeae4a4916443356c803c78f90092"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/selection.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/selection.log.gz",
+      "sha256": "6cd3e9b223da7fb73c58f038d8fd092d8920428ab8a6c89a6338d1a8f8361e0f"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/unit.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/unit.log.gz",
+      "sha256": "377fc26629dc08378cd8de5b6e97e509682bceb54725b91e255c0c8eac0707b2"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/vector.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_dual_inverse_20261126/vector.log.gz",
+      "sha256": "249fa33be8005fde7a9dc5219dc700503efde6df1e8534b7c94cc380b25ecf0d"
+    }
+  ],
+  "randomness": {
+    "additional_seeds": [
+      271828,
+      123407
+    ],
+    "generator": "Python random.Random for UCT/Bandit measured replay",
+    "seed": 1729,
+    "used": true
+  },
+  "repository": {
+    "commit": "b4d512a715019bd07b87578d838a34443f811f1f",
+    "dirty": true,
+    "guide_commit": "61bf290f0f271fcb506f73e4f3512aed61eceb53",
+    "tracked_dirty": false,
+    "unit_only_commit": "87366502fa6f160b48c7c9e87ff4d4940ab52fc6",
+    "untracked_evidence": true
+  },
+  "residual_risks": [
+    "legacy PreparedRhs and owning report allocations",
+    "reconstruction/projection and actual driver allocations",
+    "strong cancellation not certified",
+    "peak stack unmeasured",
+    "no independent reviewer/holdout"
+  ],
+  "result": "implementation-verified finite scope; bounded prepared candidate zero heap; strong cancellation and full VG1 OPEN",
+  "run": {
+    "exit_status": 0,
+    "resource_limits": {
+      "cpu_seconds": null,
+      "max_cores": null,
+      "max_threads": 1,
+      "memory_bytes": null
+    },
+    "runtime_seconds": null,
+    "started_at": "",
+    "status": "completed",
+    "timing_note": "per-test build/test elapsed retained; aggregate wall time not captured"
+  },
+  "schema_version": 2
+}
