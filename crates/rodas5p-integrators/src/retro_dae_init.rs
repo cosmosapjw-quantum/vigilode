@@ -83,7 +83,7 @@ pub(crate) struct Eval {
     pub(crate) v: Vec<Iv>,
     pub(crate) j: Vec<Vec<Iv>>,
 } // derivative columns: t, x, z
-pub(crate) fn evaluate(polys: &[DeclaredPolynomial], t: Iv, y: &[Iv]) -> CoreResult<Eval> {
+fn evaluate_legacy(polys: &[DeclaredPolynomial], t: Iv, y: &[Iv]) -> CoreResult<Eval> {
     let mut v = Vec::with_capacity(polys.len());
     let mut j = Vec::with_capacity(polys.len());
     for eq in polys {
@@ -186,6 +186,38 @@ fn evaluate_row_bounded(
     }
     Ok(sum)
 }
+/// Owned interval result used by the original proof/projection paths.
+pub(crate) fn evaluate(polys: &[DeclaredPolynomial], t: Iv, y: &[Iv]) -> CoreResult<Eval> {
+    let mut v = Vec::with_capacity(polys.len());
+    let mut j = Vec::with_capacity(polys.len());
+    for eq in polys {
+        let mut row = vec![z(); 1 + y.len()];
+        v.push(evaluate_row_bounded(eq, t, y, &mut row)?);
+        j.push(row);
+    }
+    Ok(Eval { v, j })
+}
+
+/// Transactional interval output staging. Derivative columns are t,x,z;
+/// only the active prefix is used, and every active entry is overwritten.
+pub struct IntervalEvalWorkspace {
+    values: [Iv; 32],
+    jacobian: [Iv; 32 * 33],
+}
+impl IntervalEvalWorkspace {
+    pub const fn new() -> Self {
+        const ZERO: Iv = Iv { lo: 0., hi: 0. };
+        Self {
+            values: [ZERO; 32],
+            jacobian: [ZERO; 32 * 33],
+        }
+    }
+}
+impl Default for IntervalEvalWorkspace {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 /// Immutable polynomial source. f and g share state ordering [x,z].
 #[derive(Clone, Debug, Serialize)]
 pub struct DaeSource {
@@ -209,9 +241,29 @@ impl DaeSource {
         self.g.len()
     }
     fn eval(&self, t: f64, x: &[f64], a: &[Iv]) -> CoreResult<(Eval, Eval)> {
-        let mut y = points(x)?;
-        y.extend_from_slice(a);
-        Ok((evaluate(&self.f, p(t)?, &y)?, evaluate(&self.g, p(t)?, &y)?))
+        let n = self.nx() + self.nz();
+        if x.len() != self.nx() || a.len() != self.nz() {
+            return Err(bad("interval source partition shape"));
+        }
+        let mut y = [z(); 32];
+        for (v, &x) in y[..self.nx()].iter_mut().zip(x) {
+            *v = p(x)?;
+        }
+        y[self.nx()..n].copy_from_slice(a);
+        Ok((
+            evaluate(&self.f, p(t)?, &y[..n])?,
+            evaluate(&self.g, p(t)?, &y[..n])?,
+        ))
+    }
+    fn eval_point(&self, t: f64, x: &[f64], a: &[f64]) -> CoreResult<(Eval, Eval)> {
+        if a.len() != self.nz() {
+            return Err(bad("source algebraic shape"));
+        }
+        let mut b = [z(); 32];
+        for (v, &x) in b[..a.len()].iter_mut().zip(a) {
+            *v = p(x)?;
+        }
+        self.eval(t, x, &b[..a.len()])
     }
     fn jac_z(&self, g: &Eval) -> Vec<Vec<Iv>> {
         g.j.iter().map(|r| r[1 + self.nx()..].to_vec()).collect()
@@ -222,7 +274,68 @@ impl DaeSource {
         if y.len() != self.nx() + self.nz() {
             return Err(bad("state shape"));
         }
-        Ok(norm(&evaluate(&self.g, p(t)?, &points(y)?)?.v))
+        let t = p(t)?;
+        let n = y.len();
+        let mut ys = [z(); 32];
+        for (v, &x) in ys[..n].iter_mut().zip(y) {
+            *v = p(x)?;
+        }
+        let mut row = [z(); 33];
+        let mut upper = 0_f64;
+        for eq in &self.g {
+            upper = upper.max(evaluate_row_bounded(eq, t, &ys[..n], &mut row[..=n])?.mag());
+        }
+        Ok(upper)
+    }
+    fn interval_inputs(&self, t: Iv, y: &[Iv]) -> CoreResult<()> {
+        if y.len() != self.nx() + self.nz() {
+            return Err(bad("interval source state shape"));
+        }
+        Iv::new(t.lo, t.hi)?;
+        for v in y {
+            Iv::new(v.lo, v.hi)?;
+        }
+        Ok(())
+    }
+    /// Owned original-source interval evaluation. Values ordered f,g;
+    /// derivative rows have columns t,x,z, using the same directed kernel
+    /// as proof and projection. Not an existence certificate on its own.
+    pub fn interval_values(&self, t: Iv, y: &[Iv]) -> CoreResult<(Vec<Iv>, Vec<Vec<Iv>>)> {
+        self.interval_inputs(t, y)?;
+        let n = y.len();
+        let mut values = Vec::with_capacity(n);
+        let mut jac = Vec::with_capacity(n);
+        for eq in self.f.iter().chain(&self.g) {
+            let mut row = vec![z(); n + 1];
+            values.push(evaluate_row_bounded(eq, t, y, &mut row)?);
+            jac.push(row);
+        }
+        Ok((values, jac))
+    }
+    /// Full value and row-major derivative enclosure, committed only on
+    /// success. Caller workspace has no cached physical/source authority.
+    /// Successful calls allocate no heap; error diagnostics may allocate.
+    pub fn interval_into(
+        &self,
+        t: Iv,
+        y: &[Iv],
+        values: &mut [Iv],
+        jacobian: &mut [Iv],
+        work: &mut IntervalEvalWorkspace,
+    ) -> CoreResult<()> {
+        self.interval_inputs(t, y)?;
+        let n = y.len();
+        let stride = n + 1;
+        if values.len() != n || jacobian.len() != n * stride {
+            return Err(bad("interval source output shape"));
+        }
+        for (i, eq) in self.f.iter().chain(&self.g).enumerate() {
+            work.values[i] =
+                evaluate_row_bounded(eq, t, y, &mut work.jacobian[i * stride..(i + 1) * stride])?;
+        }
+        values.copy_from_slice(&work.values[..n]);
+        jacobian.copy_from_slice(&work.jacobian[..n * stride]);
+        Ok(())
     }
     /// Rounded original-source output, written atomically only after all
     /// equations and derivatives succeed. Output order matches the Vec API;
@@ -297,8 +410,8 @@ impl DaeSource {
             return Err(bad("state shape"));
         }
         let y = points(y)?;
-        let a = evaluate(&self.f, p(t)?, &y)?;
-        let b = evaluate(&self.g, p(t)?, &y)?;
+        let a = evaluate_legacy(&self.f, p(t)?, &y)?;
+        let b = evaluate_legacy(&self.g, p(t)?, &y)?;
         Ok(a.v.iter().chain(&b.v).copied().map(mid).collect())
     }
     pub fn jacobian_values(&self, t: f64, y: &[f64]) -> CoreResult<Vec<f64>> {
@@ -306,8 +419,8 @@ impl DaeSource {
             return Err(bad("state shape"));
         }
         let y = points(y)?;
-        let a = evaluate(&self.f, p(t)?, &y)?;
-        let b = evaluate(&self.g, p(t)?, &y)?;
+        let a = evaluate_legacy(&self.f, p(t)?, &y)?;
+        let b = evaluate_legacy(&self.g, p(t)?, &y)?;
         Ok(a.j
             .iter()
             .chain(&b.j)
@@ -319,8 +432,8 @@ impl DaeSource {
             return Err(bad("state shape"));
         }
         let y = points(y)?;
-        let a = evaluate(&self.f, p(t)?, &y)?;
-        let b = evaluate(&self.g, p(t)?, &y)?;
+        let a = evaluate_legacy(&self.f, p(t)?, &y)?;
+        let b = evaluate_legacy(&self.g, p(t)?, &y)?;
         Ok(a.j.iter().chain(&b.j).map(|r| mid(r[0])).collect())
     }
 }
@@ -564,7 +677,7 @@ impl DaeSource {
             ParallelExecution::sequential()
         };
         let mut w = InitWork::default();
-        let (_, g0) = self.eval(t, x, &points(z0)?)?;
+        let (_, g0) = self.eval_point(t, x, z0)?;
         w.evaluations += 1;
         let original_residual_upper = norm(&g0.v);
         if policy.mode == InitMode::Strict && original_residual_upper > policy.residual_tol {
@@ -617,7 +730,7 @@ impl DaeSource {
             // Newton is a proposal mechanism. Neither a small rounded
             // correction nor a successful factorization authorizes a root.
             for _ in 0..policy.max_newton {
-                let (_, g) = self.eval(t, x, &points(&center)?)?;
+                let (_, g) = self.eval_point(t, x, &center)?;
                 w.evaluations += 1;
                 let r = norm(&g.v);
                 if r == 0. {
@@ -629,18 +742,19 @@ impl DaeSource {
                 let mut accepted = false;
                 for j in 0..16 {
                     let s = 2f64.powi(-j);
-                    let trial = center
-                        .iter()
-                        .zip(&d)
-                        .map(|(&v, &d)| s.mul_add(d, v))
-                        .collect::<Vec<_>>();
-                    if !subset(&points(&trial)?, &b) {
+                    let mut trial = [0.; 32];
+                    let mut trial_box = [z(); 32];
+                    for (i, (&v, &d)) in center.iter().zip(&d).enumerate() {
+                        trial[i] = s.mul_add(d, v);
+                        trial_box[i] = p(trial[i])?;
+                    }
+                    if !subset(&trial_box[..nz], &b) {
                         continue;
                     }
-                    let (_, v) = self.eval(t, x, &points(&trial)?)?;
+                    let (_, v) = self.eval(t, x, &trial_box[..nz])?;
                     w.evaluations += 1;
                     if norm(&v.v) < r {
-                        center = trial;
+                        center.copy_from_slice(&trial[..nz]);
                         accepted = true;
                         w.newton_steps += 1;
                         break;
@@ -651,7 +765,7 @@ impl DaeSource {
                 }
             }
         }
-        let (fc, gc) = self.eval(t, x, &points(&center)?)?;
+        let (fc, gc) = self.eval_point(t, x, &center)?;
         w.evaluations += 1;
         let residual_upper = norm(&gc.v);
         if residual_upper > policy.residual_tol {
@@ -671,13 +785,9 @@ impl DaeSource {
                 "whole-branch contraction + local self-map".to_string(),
             )
         };
-        let state_error_upper = root
-            .iter()
-            .zip(&center)
-            .map(|(&v, &c)| distance(v, c))
-            .collect::<CoreResult<Vec<_>>>()?
-            .into_iter()
-            .fold(0., f64::max);
+        let state_error_upper = root.iter().zip(&center).try_fold(0_f64, |s, (&v, &c)| {
+            Ok::<f64, CoreError>(s.max(distance(v, c)?))
+        })?;
         if state_error_upper > policy.state_tol {
             return Err(bad("certified root distance exceeds tolerance"));
         }
@@ -783,13 +893,9 @@ impl DaeSource {
         {
             return Err(bad("derivative/Schur certificate exceeds tolerance"));
         }
-        let correction_upper = norm(
-            &center
-                .iter()
-                .zip(z0)
-                .map(|(&a, &b)| p(a)?.sub(p(b)?))
-                .collect::<CoreResult<Vec<_>>>()?,
-        );
+        let correction_upper = center.iter().zip(z0).try_fold(0_f64, |s, (&a, &b)| {
+            Ok::<f64, CoreError>(s.max(p(a)?.sub(p(b)?)?.mag()))
+        })?;
         Ok(InitReport {
             route,
             mode: policy.mode,

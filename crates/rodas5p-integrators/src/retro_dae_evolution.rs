@@ -312,10 +312,17 @@ pub fn project(
     {
         return Err(bad("branch shape"));
     }
-    let mut seed = if let Some(w) = warp {
-        w.seed(src, t, x)?
+    let mut scratch = [0.; 32];
+    let mut predicted;
+    let seed = if let Some(w) = warp {
+        predicted = w.seed(src, t, x)?;
+        predicted.as_mut_slice()
     } else {
-        seed.to_vec()
+        if seed.len() > 32 {
+            return Err(bad("seed shape"));
+        }
+        scratch[..seed.len()].copy_from_slice(seed);
+        &mut scratch[..seed.len()]
     };
     if seed.len() != branch.len() {
         return Err(bad("seed shape"));
@@ -326,7 +333,7 @@ pub fn project(
     src.initialize(
         t,
         x,
-        &seed,
+        seed,
         branch,
         InitPolicy {
             mode: InitMode::ProjectAlgebraic,
@@ -353,14 +360,17 @@ pub fn reconstruct(
     let b = Dictionary::get()?.basis(nodes)?;
     let h = p(times[1])?.sub(p(times[0])?)?;
     let mut out = vec![vec![zero(); nodes]; src.nz()];
-    let mut work = vec![];
+    if x.len() != src.nx() {
+        return Err(bad("reconstruction differential shape"));
+    }
+    let mut work = Vec::with_capacity(nodes);
+    let mut v = [0.; 32];
     for (j, node) in b.nodes.iter().enumerate() {
         let t = di::mid(p(times[0])?.add(h.scale(node.value)?)?);
-        let v = x
-            .iter()
-            .map(|a| eval(a, p(node.value)?).map(di::mid))
-            .collect::<CoreResult<Vec<_>>>()?;
-        let r = project(src, t, &v, seed, branch, policy, route, warp)?;
+        for (v, a) in v[..x.len()].iter_mut().zip(x) {
+            *v = di::mid(eval(a, p(node.value)?)?);
+        }
+        let r = project(src, t, &v[..x.len()], seed, branch, policy, route, warp)?;
         work.push(r.work);
         for (i, &z) in r.z.iter().enumerate() {
             for (k, a) in out[i].iter_mut().enumerate() {
