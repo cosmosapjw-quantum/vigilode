@@ -1,0 +1,4057 @@
+{
+  "native_core": {
+    "affine_graph_zero": 40,
+    "count": 520,
+    "zero": 440
+  },
+  "native_mutations": {
+    "ConservedSchurAffineGraph": {
+      "count": 20,
+      "narrower_than_comparator": 0,
+      "new_transverse_vs_comparator": 0,
+      "new_transverse_vs_parent": 0,
+      "refusal_reasons": {},
+      "refused": 0,
+      "returned": 20,
+      "strict_velocity_narrowing": 0,
+      "transverse": 20
+    },
+    "SchurAffineGraph": {
+      "count": 20,
+      "narrower_than_comparator": 0,
+      "new_transverse_vs_comparator": 0,
+      "new_transverse_vs_parent": 0,
+      "refusal_reasons": {},
+      "refused": 0,
+      "returned": 20,
+      "strict_velocity_narrowing": 0,
+      "transverse": 0
+    }
+  },
+  "native_old": {
+    "bytes": [
+      72640,
+      72640
+    ],
+    "count": 480,
+    "medians": [
+      1.0,
+      1.0
+    ],
+    "requests": [
+      2260,
+      2260
+    ],
+    "saved_range": [
+      0,
+      0
+    ]
+  },
+  "native_rows": 520,
+  "native_search": {
+    "pareto_count": 2,
+    "pareto_covered": 2,
+    "posterior": {
+      "mutation": [
+        3.0,
+        509.0
+      ],
+      "structure": [
+        13.0,
+        1527.0
+      ]
+    },
+    "proposals": {
+      "mutation": 510,
+      "structure": 1538
+    },
+    "strata": [
+      {
+        "covered": 2,
+        "group": null,
+        "pareto": [
+          {
+            "cert": "Integral4",
+            "derivative": "ConservedSchur",
+            "objectives": [
+              2,
+              80,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0.04525817472765947,
+              2.981161516579019e-08
+            ],
+            "solver": "Mass",
+            "value": "Transport",
+            "velocity": [
+              0.3618992781671827,
+              0.4071574528948422
+            ]
+          },
+          {
+            "cert": "Integral4",
+            "derivative": "ConservedSchurGsAdaptive2",
+            "objectives": [
+              2,
+              80,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0.04525817472765947,
+              2.981161516579019e-08
+            ],
+            "solver": "Mass",
+            "value": "Transport",
+            "velocity": [
+              0.3618992781671827,
+              0.4071574528948422
+            ]
+          }
+        ],
+        "pareto_count": 2,
+        "qualified": 120,
+        "recommendations": {
+          "resource_first": {
+            "cert": "Integral4",
+            "derivative": "ConservedSchur",
+            "objectives": [
+              2,
+              80,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0.04525817472765947,
+              2.981161516579019e-08
+            ],
+            "solver": "Mass",
+            "value": "Transport",
+            "velocity": [
+              0.3618992781671827,
+              0.4071574528948422
+            ]
+          },
+          "width_first": {
+            "cert": "Integral4",
+            "derivative": "ConservedSchur",
+            "objectives": [
+              2,
+              80,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0.04525817472765947,
+              2.981161516579019e-08
+            ],
+            "solver": "Mass",
+            "value": "Transport",
+            "velocity": [
+              0.3618992781671827,
+              0.4071574528948422
+            ]
+          }
+        }
+      }
+    ],
+    "unique": 520
+  },
+  "reconstruction": {
+    "candidates": {
+      "existing": {
+        "bytes": 1184780,
+        "count": 24,
+        "evaluations": 1812,
+        "newton_steps": 140,
+        "qualified": 24,
+        "requests": 31402,
+        "rhs": 768
+      },
+      "fixed": {
+        "bytes": 0,
+        "count": 24,
+        "evaluations": 2840,
+        "newton_steps": 224,
+        "qualified": 24,
+        "requests": 0,
+        "rhs": 936
+      },
+      "previous": {
+        "bytes": 0,
+        "count": 24,
+        "evaluations": 2840,
+        "newton_steps": 224,
+        "qualified": 24,
+        "requests": 0,
+        "rhs": 936
+      }
+    },
+    "pareto_count": 60,
+    "pareto_covered": 60,
+    "proposals": {
+      "mutation": 32,
+      "structure": 480
+    },
+    "rows": 72,
+    "strata": [
+      {
+        "covered": 3,
+        "group": [
+          "Affine5",
+          "Integral4",
+          "first"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Integral4",
+            "objectives": [
+              1196,
+              48436,
+              31,
+              25,
+              0,
+              1.490677362522787e-08,
+              1.4906773917500526e-08,
+              2.9227265362399725e-16
+            ],
+            "position": "first",
+            "solver": "Affine5"
+          },
+          {
+            "candidate": "fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              8,
+              1.490677362522787e-08,
+              1.4906773922330027e-08,
+              2.97102153972106e-16
+            ],
+            "position": "first",
+            "solver": "Affine5"
+          },
+          {
+            "candidate": "previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              8,
+              1.490677362522787e-08,
+              1.4906773922330027e-08,
+              2.97102153972106e-16
+            ],
+            "position": "first",
+            "solver": "Affine5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Affine5",
+          "Integral4",
+          "last"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Integral4",
+            "objectives": [
+              1665,
+              56148,
+              30,
+              25,
+              0,
+              1.495096460132967e-08,
+              1.4950964908340978e-08,
+              3.070113048389078e-16
+            ],
+            "position": "last",
+            "solver": "Affine5"
+          },
+          {
+            "candidate": "fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.495096460132967e-08,
+              1.4950965254587086e-08,
+              6.532574140226514e-16
+            ],
+            "position": "last",
+            "solver": "Affine5"
+          },
+          {
+            "candidate": "previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.495096460132967e-08,
+              1.4950965254587086e-08,
+              6.532574140226514e-16
+            ],
+            "position": "last",
+            "solver": "Affine5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Affine5",
+          "Integral4",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Integral4",
+            "objectives": [
+              1438,
+              52126,
+              30,
+              25,
+              0,
+              1.4929453790305595e-08,
+              1.4929454666974568e-08,
+              8.766689713058735e-16
+            ],
+            "position": "middle",
+            "solver": "Affine5"
+          },
+          {
+            "candidate": "fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.4929453790305595e-08,
+              1.4929454655827614e-08,
+              8.655220177200069e-16
+            ],
+            "position": "middle",
+            "solver": "Affine5"
+          },
+          {
+            "candidate": "previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.4929453790305595e-08,
+              1.4929454655827614e-08,
+              8.655220177200069e-16
+            ],
+            "position": "middle",
+            "solver": "Affine5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Affine5",
+          "Max",
+          "first"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Max",
+            "objectives": [
+              1196,
+              48436,
+              31,
+              25,
+              0,
+              1.4921829793139256e-08,
+              1.4921830085411912e-08,
+              2.9227265362399725e-16
+            ],
+            "position": "first",
+            "solver": "Affine5"
+          },
+          {
+            "candidate": "fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              8,
+              1.4921829793139256e-08,
+              1.4921830090241413e-08,
+              2.97102153972106e-16
+            ],
+            "position": "first",
+            "solver": "Affine5"
+          },
+          {
+            "candidate": "previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              8,
+              1.4921829793139256e-08,
+              1.4921830090241413e-08,
+              2.97102153972106e-16
+            ],
+            "position": "first",
+            "solver": "Affine5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Affine5",
+          "Max",
+          "last"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Max",
+            "objectives": [
+              1665,
+              56148,
+              30,
+              25,
+              0,
+              1.5084507352227303e-08,
+              1.508450765923861e-08,
+              3.070113048389078e-16
+            ],
+            "position": "last",
+            "solver": "Affine5"
+          },
+          {
+            "candidate": "fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.5084507352227303e-08,
+              1.5084508005484718e-08,
+              6.532574140226514e-16
+            ],
+            "position": "last",
+            "solver": "Affine5"
+          },
+          {
+            "candidate": "previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.5084507352227303e-08,
+              1.5084508005484718e-08,
+              6.532574140226514e-16
+            ],
+            "position": "last",
+            "solver": "Affine5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Affine5",
+          "Max",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Max",
+            "objectives": [
+              1438,
+              52126,
+              30,
+              25,
+              0,
+              1.500523103676501e-08,
+              1.5005231913433983e-08,
+              8.766689713058735e-16
+            ],
+            "position": "middle",
+            "solver": "Affine5"
+          },
+          {
+            "candidate": "fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.500523103676501e-08,
+              1.500523190228703e-08,
+              8.655220177200069e-16
+            ],
+            "position": "middle",
+            "solver": "Affine5"
+          },
+          {
+            "candidate": "previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.500523103676501e-08,
+              1.500523190228703e-08,
+              8.655220177200069e-16
+            ],
+            "position": "middle",
+            "solver": "Affine5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "Prepared5",
+          "Integral4",
+          "first"
+        ],
+        "pareto": [
+          {
+            "candidate": "fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              8,
+              1.490677362546802e-08,
+              1.49067739414082e-08,
+              3.159401782995702e-16
+            ],
+            "position": "first",
+            "solver": "Prepared5"
+          },
+          {
+            "candidate": "previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              8,
+              1.490677362546802e-08,
+              1.49067739414082e-08,
+              3.159401782995702e-16
+            ],
+            "position": "first",
+            "solver": "Prepared5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "Prepared5",
+          "Integral4",
+          "last"
+        ],
+        "pareto": [
+          {
+            "candidate": "fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.4950964551005654e-08,
+              1.4950965085564335e-08,
+              5.345586813639263e-16
+            ],
+            "position": "last",
+            "solver": "Prepared5"
+          },
+          {
+            "candidate": "previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.4950964551005654e-08,
+              1.4950965085564335e-08,
+              5.345586813639263e-16
+            ],
+            "position": "last",
+            "solver": "Prepared5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "Prepared5",
+          "Integral4",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "candidate": "fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.4929453747807226e-08,
+              1.4929454918714295e-08,
+              1.1709070678281157e-15
+            ],
+            "position": "middle",
+            "solver": "Prepared5"
+          },
+          {
+            "candidate": "previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.4929453747807226e-08,
+              1.4929454918714295e-08,
+              1.1709070678281157e-15
+            ],
+            "position": "middle",
+            "solver": "Prepared5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "Prepared5",
+          "Max",
+          "first"
+        ],
+        "pareto": [
+          {
+            "candidate": "fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              8,
+              1.492182979050543e-08,
+              1.492183010644561e-08,
+              3.159401782995702e-16
+            ],
+            "position": "first",
+            "solver": "Prepared5"
+          },
+          {
+            "candidate": "previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              8,
+              1.492182979050543e-08,
+              1.492183010644561e-08,
+              3.159401782995702e-16
+            ],
+            "position": "first",
+            "solver": "Prepared5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "Prepared5",
+          "Max",
+          "last"
+        ],
+        "pareto": [
+          {
+            "candidate": "fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.5084507840690015e-08,
+              1.5084508375248696e-08,
+              5.345586813639263e-16
+            ],
+            "position": "last",
+            "solver": "Prepared5"
+          },
+          {
+            "candidate": "previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.5084507840690015e-08,
+              1.5084508375248696e-08,
+              5.345586813639263e-16
+            ],
+            "position": "last",
+            "solver": "Prepared5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "Prepared5",
+          "Max",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "candidate": "fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.5005231369021102e-08,
+              1.500523253992817e-08,
+              1.1709070678281157e-15
+            ],
+            "position": "middle",
+            "solver": "Prepared5"
+          },
+          {
+            "candidate": "previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.5005231369021102e-08,
+              1.500523253992817e-08,
+              1.1709070678281157e-15
+            ],
+            "position": "middle",
+            "solver": "Prepared5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "Reduced5",
+          "Integral4",
+          "first"
+        ],
+        "pareto": [
+          {
+            "candidate": "fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              8,
+              1.490677362546802e-08,
+              1.49067739414082e-08,
+              3.159401782995702e-16
+            ],
+            "position": "first",
+            "solver": "Reduced5"
+          },
+          {
+            "candidate": "previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              8,
+              1.490677362546802e-08,
+              1.49067739414082e-08,
+              3.159401782995702e-16
+            ],
+            "position": "first",
+            "solver": "Reduced5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "Reduced5",
+          "Integral4",
+          "last"
+        ],
+        "pareto": [
+          {
+            "candidate": "fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.4950964551005654e-08,
+              1.4950965085564335e-08,
+              5.345586813639263e-16
+            ],
+            "position": "last",
+            "solver": "Reduced5"
+          },
+          {
+            "candidate": "previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.4950964551005654e-08,
+              1.4950965085564335e-08,
+              5.345586813639263e-16
+            ],
+            "position": "last",
+            "solver": "Reduced5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "Reduced5",
+          "Integral4",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "candidate": "fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.4929453747807226e-08,
+              1.4929454918714295e-08,
+              1.1709070678281157e-15
+            ],
+            "position": "middle",
+            "solver": "Reduced5"
+          },
+          {
+            "candidate": "previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.4929453747807226e-08,
+              1.4929454918714295e-08,
+              1.1709070678281157e-15
+            ],
+            "position": "middle",
+            "solver": "Reduced5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "Reduced5",
+          "Max",
+          "first"
+        ],
+        "pareto": [
+          {
+            "candidate": "fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              8,
+              1.492182979050543e-08,
+              1.492183010644561e-08,
+              3.159401782995702e-16
+            ],
+            "position": "first",
+            "solver": "Reduced5"
+          },
+          {
+            "candidate": "previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              8,
+              1.492182979050543e-08,
+              1.492183010644561e-08,
+              3.159401782995702e-16
+            ],
+            "position": "first",
+            "solver": "Reduced5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "Reduced5",
+          "Max",
+          "last"
+        ],
+        "pareto": [
+          {
+            "candidate": "fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.5084507840690015e-08,
+              1.5084508375248696e-08,
+              5.345586813639263e-16
+            ],
+            "position": "last",
+            "solver": "Reduced5"
+          },
+          {
+            "candidate": "previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.5084507840690015e-08,
+              1.5084508375248696e-08,
+              5.345586813639263e-16
+            ],
+            "position": "last",
+            "solver": "Reduced5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "Reduced5",
+          "Max",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "candidate": "fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.5005231369021102e-08,
+              1.500523253992817e-08,
+              1.1709070678281157e-15
+            ],
+            "position": "middle",
+            "solver": "Reduced5"
+          },
+          {
+            "candidate": "previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.5005231369021102e-08,
+              1.500523253992817e-08,
+              1.1709070678281157e-15
+            ],
+            "position": "middle",
+            "solver": "Reduced5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Scalar5",
+          "Integral4",
+          "first"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Integral4",
+            "objectives": [
+              1743,
+              74500,
+              35,
+              25,
+              4,
+              1.490677362523459e-08,
+              1.490677485639307e-08,
+              1.231158480130005e-15
+            ],
+            "position": "first",
+            "solver": "Scalar5"
+          },
+          {
+            "candidate": "fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              8,
+              1.490677362523459e-08,
+              1.490677392233219e-08,
+              2.970976003428339e-16
+            ],
+            "position": "first",
+            "solver": "Scalar5"
+          },
+          {
+            "candidate": "previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              8,
+              1.490677362523459e-08,
+              1.490677392233219e-08,
+              2.970976003428339e-16
+            ],
+            "position": "first",
+            "solver": "Scalar5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Scalar5",
+          "Integral4",
+          "last"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Integral4",
+            "objectives": [
+              2867,
+              93695,
+              35,
+              25,
+              5,
+              1.4950964554275975e-08,
+              1.495096543863807e-08,
+              8.843620951097515e-16
+            ],
+            "position": "last",
+            "solver": "Scalar5"
+          },
+          {
+            "candidate": "fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.4950964554275975e-08,
+              1.4950965494144706e-08,
+              9.398687288319576e-16
+            ],
+            "position": "last",
+            "solver": "Scalar5"
+          },
+          {
+            "candidate": "previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.4950964554275975e-08,
+              1.4950965494144706e-08,
+              9.398687288319576e-16
+            ],
+            "position": "last",
+            "solver": "Scalar5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Scalar5",
+          "Integral4",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Integral4",
+            "objectives": [
+              2426,
+              85166,
+              35,
+              25,
+              5,
+              1.492945374323464e-08,
+              1.4929454307996823e-08,
+              5.647621821971201e-16
+            ],
+            "position": "middle",
+            "solver": "Scalar5"
+          },
+          {
+            "candidate": "fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.492945374323464e-08,
+              1.492945406744963e-08,
+              3.242149895722659e-16
+            ],
+            "position": "middle",
+            "solver": "Scalar5"
+          },
+          {
+            "candidate": "previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.492945374323464e-08,
+              1.492945406744963e-08,
+              3.242149895722659e-16
+            ],
+            "position": "middle",
+            "solver": "Scalar5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Scalar5",
+          "Max",
+          "first"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Max",
+            "objectives": [
+              1743,
+              74500,
+              35,
+              25,
+              4,
+              1.4921829793136553e-08,
+              1.4921831024295034e-08,
+              1.231158480130005e-15
+            ],
+            "position": "first",
+            "solver": "Scalar5"
+          },
+          {
+            "candidate": "fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              8,
+              1.4921829793136553e-08,
+              1.4921830090234153e-08,
+              2.970976003428339e-16
+            ],
+            "position": "first",
+            "solver": "Scalar5"
+          },
+          {
+            "candidate": "previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              8,
+              1.4921829793136553e-08,
+              1.4921830090234153e-08,
+              2.970976003428339e-16
+            ],
+            "position": "first",
+            "solver": "Scalar5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Scalar5",
+          "Max",
+          "last"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Max",
+            "objectives": [
+              2867,
+              93695,
+              35,
+              25,
+              5,
+              1.5084507708048242e-08,
+              1.5084508592410338e-08,
+              8.843620951097515e-16
+            ],
+            "position": "last",
+            "solver": "Scalar5"
+          },
+          {
+            "candidate": "fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.5084507708048242e-08,
+              1.5084508647916973e-08,
+              9.398687288319576e-16
+            ],
+            "position": "last",
+            "solver": "Scalar5"
+          },
+          {
+            "candidate": "previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.5084507708048242e-08,
+              1.5084508647916973e-08,
+              9.398687288319576e-16
+            ],
+            "position": "last",
+            "solver": "Scalar5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Scalar5",
+          "Max",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Max",
+            "objectives": [
+              2426,
+              85166,
+              35,
+              25,
+              5,
+              1.5005231284654314e-08,
+              1.5005231849416497e-08,
+              5.647621821971201e-16
+            ],
+            "position": "middle",
+            "solver": "Scalar5"
+          },
+          {
+            "candidate": "fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.5005231284654314e-08,
+              1.5005231608869304e-08,
+              3.242149895722659e-16
+            ],
+            "position": "middle",
+            "solver": "Scalar5"
+          },
+          {
+            "candidate": "previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              10,
+              1.5005231284654314e-08,
+              1.5005231608869304e-08,
+              3.242149895722659e-16
+            ],
+            "position": "middle",
+            "solver": "Scalar5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "fixed"
+      }
+    ],
+    "unique": 72
+  },
+  "scope": "offline measured-table selection; no held-out generalization or default promotion",
+  "vector_core": {
+    "affine_graph_zero": 12,
+    "count": 240,
+    "zero": 192
+  },
+  "vector_mutations": {
+    "SchurAffineGraph": {
+      "count": 12,
+      "narrower_than_comparator": 12,
+      "new_transverse_vs_comparator": 2,
+      "new_transverse_vs_parent": 6,
+      "refusal_reasons": {},
+      "refused": 0,
+      "returned": 12,
+      "strict_velocity_narrowing": 12,
+      "transverse": 12
+    }
+  },
+  "vector_old": {
+    "bytes": [
+      61248,
+      61248
+    ],
+    "count": 228,
+    "medians": [
+      1.0,
+      1.0
+    ],
+    "requests": [
+      1332,
+      1332
+    ],
+    "saved_range": [
+      0,
+      0
+    ]
+  },
+  "vector_rows": 240,
+  "vector_search": {
+    "pareto_count": 82,
+    "pareto_covered": 82,
+    "posterior": {
+      "mutation": [
+        12.0,
+        309.0
+      ],
+      "structure": [
+        85.0,
+        1646.0
+      ]
+    },
+    "proposals": {
+      "mutation": 319,
+      "structure": 1729
+    },
+    "strata": [
+      {
+        "covered": 10,
+        "group": [
+          "coupled",
+          "algebraic"
+        ],
+        "pareto": [
+          {
+            "case": "coupled",
+            "derivative": "SchurCenteredGrouped",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2.126288770420735,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.44469769158790196,
+              2.5709864620086367
+            ]
+          },
+          {
+            "case": "coupled",
+            "derivative": "SchurCenteredGrouped",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2.126288770420735,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              0.44469769158790196,
+              2.5709864620086367
+            ]
+          },
+          {
+            "case": "coupled",
+            "derivative": "SchurCenteredGs2",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              0,
+              0,
+              0,
+              0,
+              4,
+              1.9810413118324326,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.5173214208820531,
+              2.4983627327144857
+            ]
+          },
+          {
+            "case": "coupled",
+            "derivative": "SchurCenteredGs2",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              0,
+              0,
+              0,
+              0,
+              4,
+              1.9810413118324326,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              0.5173214208820531,
+              2.4983627327144857
+            ]
+          },
+          {
+            "case": "coupled",
+            "derivative": "SchurDualCentered",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              2,
+              0,
+              0,
+              0,
+              1.862446636591116,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.5766187585027115,
+              2.4390653950938277
+            ]
+          },
+          {
+            "case": "coupled",
+            "derivative": "SchurDualCentered",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              2,
+              0,
+              0,
+              0,
+              1.862446636591116,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              0.5766187585027115,
+              2.4390653950938277
+            ]
+          },
+          {
+            "case": "coupled",
+            "derivative": "SchurDualCenteredGs2",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              4,
+              2,
+              0,
+              0,
+              4,
+              1.7373836185196145,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.6391502675384624,
+              2.376533886058077
+            ]
+          },
+          {
+            "case": "coupled",
+            "derivative": "SchurDualCenteredGs2",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              4,
+              2,
+              0,
+              0,
+              4,
+              1.7373836185196145,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              0.6391502675384624,
+              2.376533886058077
+            ]
+          },
+          {
+            "case": "coupled",
+            "derivative": "SchurAffineGraph",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              2,
+              0,
+              0.0,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              1.5,
+              1.5
+            ]
+          },
+          {
+            "case": "coupled",
+            "derivative": "SchurAffineGraph",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              2,
+              0,
+              0.0,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              1.5,
+              1.5
+            ]
+          }
+        ],
+        "pareto_count": 10,
+        "qualified": 16,
+        "recommendations": {
+          "resource_first": {
+            "case": "coupled",
+            "derivative": "SchurAffineGraph",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              2,
+              0,
+              0.0,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              1.5,
+              1.5
+            ]
+          },
+          "width_first": {
+            "case": "coupled",
+            "derivative": "SchurAffineGraph",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              2,
+              0,
+              0.0,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              1.5,
+              1.5
+            ]
+          }
+        }
+      },
+      {
+        "covered": 2,
+        "group": [
+          "coupled",
+          "cancellation"
+        ],
+        "pareto": [
+          {
+            "case": "coupled",
+            "derivative": "SchurAffineGraph",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              2,
+              0,
+              0.0,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.25,
+              0.25
+            ]
+          },
+          {
+            "case": "coupled",
+            "derivative": "SchurAffineGraph",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              2,
+              0,
+              0.0,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              0.25,
+              0.25
+            ]
+          }
+        ],
+        "pareto_count": 2,
+        "qualified": 2,
+        "recommendations": {
+          "resource_first": {
+            "case": "coupled",
+            "derivative": "SchurAffineGraph",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              2,
+              0,
+              0.0,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.25,
+              0.25
+            ]
+          },
+          "width_first": {
+            "case": "coupled",
+            "derivative": "SchurAffineGraph",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              2,
+              0,
+              0.0,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.25,
+              0.25
+            ]
+          }
+        }
+      },
+      {
+        "covered": 18,
+        "group": [
+          "moderate",
+          "algebraic"
+        ],
+        "pareto": [
+          {
+            "case": "moderate",
+            "derivative": "Tangent",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1.4028177552275078,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.7961650440547451,
+              2.198982799282253
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "Tangent",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1.4028177552275078,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              0.7961650440547451,
+              2.198982799282253
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurGs1",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2,
+              1.354473315320982,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.8208904387630656,
+              2.1753637540840476
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurGs1",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2,
+              1.354473315320982,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              0.8208904387630656,
+              2.1753637540840476
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurGs2",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              1.3406877921887204,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.827771244402927,
+              2.1684590365916474
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurGs2",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              1.3406877921887204,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              0.827771244402927,
+              2.1684590365916474
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurGsAdaptive2",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              1.3406877921887204,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.827771244402927,
+              2.1684590365916474
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurGsAdaptive2",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              1.3406877921887204,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              0.827771244402927,
+              2.1684590365916474
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurCenteredGrouped",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0.8160869799231736,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              1.0895304317069119,
+              1.9056174116300855
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurCenteredGrouped",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0.8160869799231736,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              1.0895304317069119,
+              1.9056174116300855
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurCenteredGs2",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              0,
+              0,
+              0,
+              0,
+              4,
+              0.7827099846569938,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              1.1062189293400018,
+              1.8889289139969956
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurCenteredGs2",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              0,
+              0,
+              0,
+              0,
+              4,
+              0.7827099846569938,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              1.1062189293400018,
+              1.8889289139969956
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurDualCentered",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              2,
+              0,
+              0,
+              0,
+              0.7641024745537148,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              1.1155226843916413,
+              1.879625158945356
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurDualCentered",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              2,
+              0,
+              0,
+              0,
+              0.7641024745537148,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              1.1155226843916413,
+              1.879625158945356
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurDualCenteredGs2",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              4,
+              2,
+              0,
+              0,
+              4,
+              0.7374197020524162,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              1.1288640706422906,
+              1.8662837726947068
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurDualCenteredGs2",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              4,
+              2,
+              0,
+              0,
+              4,
+              0.7374197020524162,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              1.1288640706422906,
+              1.8662837726947068
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurAffineGraph",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              2,
+              0,
+              0.0,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              1.5,
+              1.5
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurAffineGraph",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              2,
+              0,
+              0.0,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              1.5,
+              1.5
+            ]
+          }
+        ],
+        "pareto_count": 18,
+        "qualified": 40,
+        "recommendations": {
+          "resource_first": {
+            "case": "moderate",
+            "derivative": "Tangent",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1.4028177552275078,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.7961650440547451,
+              2.198982799282253
+            ]
+          },
+          "width_first": {
+            "case": "moderate",
+            "derivative": "SchurAffineGraph",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              2,
+              0,
+              0.0,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              1.5,
+              1.5
+            ]
+          }
+        }
+      },
+      {
+        "covered": 16,
+        "group": [
+          "moderate",
+          "cancellation"
+        ],
+        "pareto": [
+          {
+            "case": "moderate",
+            "derivative": "SchurGs1",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2,
+              0.45509632944409695,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.018791869159908964,
+              0.4738881986040059
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurGs1",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2,
+              0.45509632944409695,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              0.018791869159908964,
+              0.4738881986040059
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurGs2",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              0.45466720810145833,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.01900605766231714,
+              0.4736732657637755
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurGs2",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              0.45466720810145833,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              0.01900605766231714,
+              0.4736732657637755
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurGsAdaptive2",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              0.45466720810145833,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.01900605766231714,
+              0.4736732657637755
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurGsAdaptive2",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              0.45466720810145833,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              0.01900605766231714,
+              0.4736732657637755
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurCenteredGrouped",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0.32226723406688207,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.08505971862320863,
+              0.40732695269009067
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurCenteredGrouped",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0.32226723406688207,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              0.08505971862320863,
+              0.40732695269009067
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurCenteredGs2",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              0,
+              0,
+              0,
+              0,
+              4,
+              0.29750864953343803,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.09743901088993062,
+              0.39494766042336865
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurCenteredGs2",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              0,
+              0,
+              0,
+              0,
+              4,
+              0.29750864953343803,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              0.09743901088993062,
+              0.39494766042336865
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurDualCentered",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              2,
+              0,
+              0,
+              0,
+              0.2976705604530786,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.09735805543011036,
+              0.395028615883189
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurDualCentered",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              2,
+              0,
+              0,
+              0,
+              0.2976705604530786,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              0.09735805543011036,
+              0.395028615883189
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurDualCenteredGs2",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              4,
+              2,
+              0,
+              0,
+              4,
+              0.27931838210217896,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.10653414460556018,
+              0.3858525267077392
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurDualCenteredGs2",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              4,
+              2,
+              0,
+              0,
+              4,
+              0.27931838210217896,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              0.10653414460556018,
+              0.3858525267077392
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurAffineGraph",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              2,
+              0,
+              0.0,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.25,
+              0.25
+            ]
+          },
+          {
+            "case": "moderate",
+            "derivative": "SchurAffineGraph",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              2,
+              0,
+              0.0,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              0.25,
+              0.25
+            ]
+          }
+        ],
+        "pareto_count": 16,
+        "qualified": 30,
+        "recommendations": {
+          "resource_first": {
+            "case": "moderate",
+            "derivative": "SchurGs1",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2,
+              0.45509632944409695,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.018791869159908964,
+              0.4738881986040059
+            ]
+          },
+          "width_first": {
+            "case": "moderate",
+            "derivative": "SchurAffineGraph",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              2,
+              0,
+              0.0,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.25,
+              0.25
+            ]
+          }
+        }
+      },
+      {
+        "covered": 18,
+        "group": [
+          "weak",
+          "algebraic"
+        ],
+        "pareto": [
+          {
+            "case": "weak",
+            "derivative": "Tangent",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0.6449544895831165,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              1.176854172805989,
+              1.8218086623891054
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "Tangent",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0.6449544895831165,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              1.176854172805989,
+              1.8218086623891054
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurGs1",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2,
+              0.621008829192629,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              1.1888938149371173,
+              1.8099026441297463
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurGs1",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2,
+              0.621008829192629,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              1.1888938149371173,
+              1.8099026441297463
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurGs2",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              0.6178605419061978,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              1.1904672302977197,
+              1.8083277722039175
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurGs2",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              0.6178605419061978,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              1.1904672302977197,
+              1.8083277722039175
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurGsAdaptive2",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              0.6178605419061978,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              1.1904672302977197,
+              1.8083277722039175
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurGsAdaptive2",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              0.6178605419061978,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              1.1904672302977197,
+              1.8083277722039175
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurCenteredGrouped",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0.35403358563534315,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              1.3223146247798756,
+              1.6763482104152188
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurCenteredGrouped",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0.35403358563534315,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              1.3223146247798756,
+              1.6763482104152188
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurCenteredGs2",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              0,
+              0,
+              0,
+              0,
+              4,
+              0.3459769004276487,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              1.3263429673837228,
+              1.6723198678113715
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurCenteredGs2",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              0,
+              0,
+              0,
+              0,
+              4,
+              0.3459769004276487,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              1.3263429673837228,
+              1.6723198678113715
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurDualCentered",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              2,
+              0,
+              0,
+              0,
+              0.3432247906244448,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              1.3277190222853248,
+              1.6709438129097696
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurDualCentered",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              2,
+              0,
+              0,
+              0,
+              0.3432247906244448,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              1.3277190222853248,
+              1.6709438129097696
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurDualCenteredGs2",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              4,
+              2,
+              0,
+              0,
+              4,
+              0.336999189944875,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              1.3308318226251097,
+              1.6678310125699847
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurDualCenteredGs2",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              4,
+              2,
+              0,
+              0,
+              4,
+              0.336999189944875,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              1.3308318226251097,
+              1.6678310125699847
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurAffineGraph",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              2,
+              0,
+              0.0,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              1.5,
+              1.5
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurAffineGraph",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              2,
+              0,
+              0.0,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              1.5,
+              1.5
+            ]
+          }
+        ],
+        "pareto_count": 18,
+        "qualified": 40,
+        "recommendations": {
+          "resource_first": {
+            "case": "weak",
+            "derivative": "Tangent",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0.6449544895831165,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              1.176854172805989,
+              1.8218086623891054
+            ]
+          },
+          "width_first": {
+            "case": "weak",
+            "derivative": "SchurAffineGraph",
+            "guard": "algebraic",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              2,
+              0,
+              0.0,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              1.5,
+              1.5
+            ]
+          }
+        }
+      },
+      {
+        "covered": 18,
+        "group": [
+          "weak",
+          "cancellation"
+        ],
+        "pareto": [
+          {
+            "case": "weak",
+            "derivative": "Tangent",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0.2729317276234351,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.11257141571300311,
+              0.3855031433364382
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "Tangent",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0.2729317276234351,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              0.11257141571300311,
+              0.3855031433364382
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurGs1",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2,
+              0.17960521578713176,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.15925141217593689,
+              0.33885662796306865
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurGs1",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              2,
+              0.17960521578713176,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              0.15925141217593689,
+              0.33885662796306865
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurGs2",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              0.17955616749445116,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.15927592497610218,
+              0.33883209247055335
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurGs2",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              0.17955616749445116,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              0.15927592497610218,
+              0.33883209247055335
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurGsAdaptive2",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              0.17955616749445116,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.15927592497610218,
+              0.33883209247055335
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurGsAdaptive2",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              0.17955616749445116,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              0.15927592497610218,
+              0.33883209247055335
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurCenteredGrouped",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0.1144406044415128,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.19181697730396421,
+              0.306257581745477
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurCenteredGrouped",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0.1144406044415128,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              0.19181697730396421,
+              0.306257581745477
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurCenteredGs2",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              0,
+              0,
+              0,
+              0,
+              4,
+              0.10914138744509222,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.19446658580217452,
+              0.30360797324726674
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurCenteredGs2",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              0,
+              0,
+              0,
+              0,
+              4,
+              0.10914138744509222,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              0.19446658580217452,
+              0.30360797324726674
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurDualCentered",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              2,
+              0,
+              0,
+              0,
+              0.10883275575542467,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.19462090164700835,
+              0.303453657402433
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurDualCentered",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              4,
+              2,
+              0,
+              0,
+              0,
+              0.10883275575542467,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              0.19462090164700835,
+              0.303453657402433
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurDualCenteredGs2",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              4,
+              2,
+              0,
+              0,
+              4,
+              0.10460604260781783,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.19673425822081178,
+              0.3013403008286296
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurDualCenteredGs2",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              2,
+              2,
+              4,
+              2,
+              0,
+              0,
+              4,
+              0.10460604260781783,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              0.19673425822081178,
+              0.3013403008286296
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurAffineGraph",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              2,
+              0,
+              0.0,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.25,
+              0.25
+            ]
+          },
+          {
+            "case": "weak",
+            "derivative": "SchurAffineGraph",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              2,
+              0,
+              0.0,
+              0.0
+            ],
+            "value": "Transport",
+            "velocity": [
+              0.25,
+              0.25
+            ]
+          }
+        ],
+        "pareto_count": 18,
+        "qualified": 40,
+        "recommendations": {
+          "resource_first": {
+            "case": "weak",
+            "derivative": "Tangent",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0.2729317276234351,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.11257141571300311,
+              0.3855031433364382
+            ]
+          },
+          "width_first": {
+            "case": "weak",
+            "derivative": "SchurAffineGraph",
+            "guard": "cancellation",
+            "objectives": [
+              1,
+              16,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              1,
+              2,
+              0,
+              0.0,
+              0.0
+            ],
+            "value": "Box",
+            "velocity": [
+              0.25,
+              0.25
+            ]
+          }
+        }
+      }
+    ],
+    "unique": 240
+  }
+}

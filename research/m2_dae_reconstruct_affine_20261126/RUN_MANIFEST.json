@@ -1,0 +1,348 @@
+{
+  "checks": [
+    "behavioral RED101 and two GREEN0, initial compile failure preserved",
+    "72 recon rows/48 noalloc and all requalified",
+    "760 guard rows/632 noalloc and exact prior708 receipts",
+    "strong Mass new certified root; reduced driver refusal recorded",
+    "360 component identical,10 atlas measured",
+    "24 regression pass/4 ignored, extra10 general pass/1 ignored",
+    "scalar311 qualified/787 refused equivalence",
+    "source and guide hashes, rustfmt/diff checks"
+  ],
+  "claim_id": "M2-03d.5b.6",
+  "cleanup": {
+    "duplicate_log_payloads": 0,
+    "raw_bytes_removed": 3511266,
+    "unique_compressed_bytes": 107947
+  },
+  "command": [
+    "cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "--release",
+    "-p",
+    "vigilode",
+    "--features",
+    "polynomial-events",
+    "--test",
+    "dae_resource_baseline_contracts",
+    "scalar_reconstruction_portfolio",
+    "--",
+    "--ignored",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "declared_results": [
+    "SELECTION.json",
+    "RESOURCE_COMPARE.json",
+    "RECONSTRUCTION_COMPARE.json",
+    "EVENT_COMPARE.json",
+    "MODULE_ACTIVATION_LEDGER.json"
+  ],
+  "environment": {
+    "hardware": "AMD Ryzen9 5900X x86_64 (same remote host)",
+    "software": [
+      {
+        "name": "rustc",
+        "version": "rustc 1.94.1 (e408947bf 2026-03-25)"
+      },
+      {
+        "name": "cargo",
+        "version": "cargo 1.94.1 (29ea6fb6a 2026-03-24)"
+      },
+      {
+        "name": "MathHarness General",
+        "version": "3.1.0 verified154 files"
+      }
+    ]
+  },
+  "input_artifacts": [
+    {
+      "current_sha256": "b457dea088569211ddb97b296b824565b65204aad0c2a65bde5c54965bb6564d",
+      "path": "crates/rodas5p-integrators/src/retro_dae_init.rs",
+      "sha256": "b457dea088569211ddb97b296b824565b65204aad0c2a65bde5c54965bb6564d",
+      "source_commit": "87a1468311af840ddae8839d998cfb0c41db117b",
+      "verified_git_blob_sha256": "b457dea088569211ddb97b296b824565b65204aad0c2a65bde5c54965bb6564d"
+    },
+    {
+      "current_sha256": "9a94df866561e09846c5dbcac7079af5414f05de3c102cec6d1183777d0fa363",
+      "path": "crates/rodas5p-integrators/src/retro_dae_evolution.rs",
+      "sha256": "9a94df866561e09846c5dbcac7079af5414f05de3c102cec6d1183777d0fa363",
+      "source_commit": "87a1468311af840ddae8839d998cfb0c41db117b",
+      "verified_git_blob_sha256": "9a94df866561e09846c5dbcac7079af5414f05de3c102cec6d1183777d0fa363"
+    },
+    {
+      "current_sha256": "580b4b324d474d50d1d6fa6e91db735e7ad24b24fe6d85f974aa10dc4e4bcd5e",
+      "path": "crates/vigilode/tests/dae_resource_baseline_contracts.rs",
+      "sha256": "580b4b324d474d50d1d6fa6e91db735e7ad24b24fe6d85f974aa10dc4e4bcd5e",
+      "source_commit": "87a1468311af840ddae8839d998cfb0c41db117b",
+      "verified_git_blob_sha256": "580b4b324d474d50d1d6fa6e91db735e7ad24b24fe6d85f974aa10dc4e4bcd5e"
+    },
+    {
+      "current_sha256": "2bb488590c0a038381a1a503123e4f602e1f6527b51408a005cf30f4108763b9",
+      "path": "crates/vigilode/tests/dae_general_guard_contracts.rs",
+      "sha256": "2898ac9f93f6816d8bc4dd7a0a84ffaaf1dea6433f92aa7aa017dd1fe9cff1d5",
+      "source_commit": "87a1468311af840ddae8839d998cfb0c41db117b",
+      "verified_git_blob_sha256": "2898ac9f93f6816d8bc4dd7a0a84ffaaf1dea6433f92aa7aa017dd1fe9cff1d5"
+    },
+    {
+      "current_sha256": "7afe4194dcda1a97435e82081b05ad24502fd51df5eec44c704fa4228c62773e",
+      "path": "research/m2_dae_reconstruct_affine_20261126/PREREGISTRATION.md",
+      "sha256": "7afe4194dcda1a97435e82081b05ad24502fd51df5eec44c704fa4228c62773e",
+      "source_commit": "87a1468311af840ddae8839d998cfb0c41db117b",
+      "verified_git_blob_sha256": "7afe4194dcda1a97435e82081b05ad24502fd51df5eec44c704fa4228c62773e"
+    },
+    {
+      "current_sha256": "0fcec3cde4fc4f5c5859674bce0f7fb7248bc96044c26e726ac4158ce56155e7",
+      "path": "research/m2_dae_reconstruct_affine_20261126/guide.py",
+      "sha256": "0fcec3cde4fc4f5c5859674bce0f7fb7248bc96044c26e726ac4158ce56155e7",
+      "source_commit": "d2dcc382405087eda0441d3ef3551d60d4a3406c",
+      "verified_git_blob_sha256": "0fcec3cde4fc4f5c5859674bce0f7fb7248bc96044c26e726ac4158ce56155e7"
+    },
+    {
+      "current_sha256": "2ab32e1ab631d6bc4881770ec2d641b52eee101e458ee7db47770a3c326a3f55",
+      "path": "research/m2_dae_reconstruct_affine_20261126/CANDIDATES.json",
+      "sha256": "2ab32e1ab631d6bc4881770ec2d641b52eee101e458ee7db47770a3c326a3f55",
+      "source_commit": "d2dcc382405087eda0441d3ef3551d60d4a3406c",
+      "verified_git_blob_sha256": "2ab32e1ab631d6bc4881770ec2d641b52eee101e458ee7db47770a3c326a3f55"
+    },
+    {
+      "current_sha256": "45ab6750c27e262fbe1672f4f70ee544ca32185d900abdd176731d60b32f5af6",
+      "path": "research/m2_dae_reconstruct_affine_20261126/HARNESS_ROUTES.json",
+      "sha256": "45ab6750c27e262fbe1672f4f70ee544ca32185d900abdd176731d60b32f5af6",
+      "source_commit": "d2dcc382405087eda0441d3ef3551d60d4a3406c",
+      "verified_git_blob_sha256": "45ab6750c27e262fbe1672f4f70ee544ca32185d900abdd176731d60b32f5af6"
+    },
+    {
+      "current_sha256": "1301b625a753cb3a16115d91be34c56a06d048857b1aa2dbed60de4cfa902dfe",
+      "path": "research/m2_dae_reconstruct_affine_20261126/LITERATURE.md",
+      "sha256": "1301b625a753cb3a16115d91be34c56a06d048857b1aa2dbed60de4cfa902dfe",
+      "source_commit": "d2dcc382405087eda0441d3ef3551d60d4a3406c",
+      "verified_git_blob_sha256": "1301b625a753cb3a16115d91be34c56a06d048857b1aa2dbed60de4cfa902dfe"
+    },
+    {
+      "current_sha256": "2bb488590c0a038381a1a503123e4f602e1f6527b51408a005cf30f4108763b9",
+      "path": "crates/vigilode/tests/dae_general_guard_contracts.rs",
+      "sha256": "2bb488590c0a038381a1a503123e4f602e1f6527b51408a005cf30f4108763b9",
+      "source_commit": "44e12d998afa5709a526b1ff4536ff507af6f447",
+      "verified_git_blob_sha256": "2bb488590c0a038381a1a503123e4f602e1f6527b51408a005cf30f4108763b9"
+    }
+  ],
+  "mathematics": {
+    "assertion_tested": "scalar Reuse native reconstruction RED1211->GREEN3,48 caller output recon cases zero heap,520 native/240 vector guard builds,708 old receipts exact,52 new affine graph cases core noalloc,12 exact vector derivative cases, actual strong Mass event and explicit nonlinear source refusals",
+    "bounds": {
+      "monomial_cap": 256,
+      "native_rows": 520,
+      "node_count_tested": 5,
+      "recon_rows": 72,
+      "state_dimension_max": 32,
+      "vector_rows": 240
+    },
+    "coefficient_domain": "directed binary64, sparse monomial degree<=4 cap256, native basis3/5/7 (actual recon5)",
+    "conventions": "full original certified branch and physical tube, affine source identity exact coefficients, original derivative intersection, original slab recertification",
+    "non_claims": [
+      "full VG1",
+      "general nonlinear graph",
+      "Reduced5 strong time-coupled event solved",
+      "all old modules activated",
+      "holdout",
+      "speed or stack superiority"
+    ]
+  },
+  "outputs": [
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/BINARY.sha256",
+      "sha256": "1092095f45ad3129d79823f9c07744a9d5bb61aa85d4fbe582c4a6a2baa9bd3a"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/EVENT_COMPARE.json",
+      "sha256": "e08bef91f925b4c6621d5b2cef2be9a870952c65aaf7b507d9f9e9312fd1b655"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/MODULE_ACTIVATION_LEDGER.json",
+      "sha256": "dc79d967bd101243e35ac26ea8efbdc6258c20d2de8eac68f03640b821e3d6cf"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/RAW_LOG_CLEANUP.json",
+      "sha256": "1d4ca6fad37af9308bcee8a81465210c5bb8f486f24a9332a0c90f7924cc1e4a"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/RECONSTRUCTION_COMPARE.json",
+      "sha256": "4a6b4ba22691f71af02cf6148eac78b14bdbcf030b512a420f981fcc022ef7e7"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/RESOURCE_COMPARE.json",
+      "sha256": "0c1a915129f0f76f43c7e86edb4c67e0198c77e7f7ae76b8bbb986b4cdee0741"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/SELECTION.json",
+      "sha256": "191b98e8665eaf685e0a47280e0d2543713be7818fb31a3454a8c93e5afb96a1"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/allocator.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/allocator.log.gz",
+      "sha256": "7ac9f5df854816d38ce2c81a3021a9b40d44dc7af859d7a4c34573f14a1f6848"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/components.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/components.log.gz",
+      "sha256": "b9e7095c4facbba2ae63472b696dabc7e05d9092d665471880eade9b96b4ebb7"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/extra.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/extra.log.gz",
+      "sha256": "eae7697a2cc6f299cc5dcf874418f282d2138767280e2d3721848fb18393c2db"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/green.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/green.log.gz",
+      "sha256": "c3707f08d496a1589aef736e7f4977dec05caa9bbe4e9767516d2162ff9d0d47"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/green_final.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/green_final.log.gz",
+      "sha256": "e807342427c8e311342ce087f9c375d7ad6c993a303e30ee67437f31fdd3dec9"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/harness.log.gz",
+      "sha256": "b309f887e94706d2b62c55a596a3cf457b79a465d6e14aa077233d5a23faaab4"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/native.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/native.log.gz",
+      "sha256": "d22183dccb367fd9e1cad6b3406fb6fcc27afef9c40d8eb38eeb2f371dc3be62"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/recon.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/recon.log.gz",
+      "sha256": "7a6d6b4386e0659bfec02ec4f7a5d20190fdc67661673d2fdde3c8226d6c6f6a"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/red.exit",
+      "sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/red.log.gz",
+      "sha256": "2bff80be5a5b86061aa232ca8a3f6bdf4339365ea60ae278023622292edd5bad"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/red_compile.exit",
+      "sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/red_compile.log.gz",
+      "sha256": "697feadc6308ea2fbc91fd38bf727a6830ed5d21407c87c0bb9c71a255794310"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/regression.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/regression.log.gz",
+      "sha256": "d7d98b9b1886603f2166408708ebef7fecc9d161509b441c052073061e662368"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/selection.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/selection.log.gz",
+      "sha256": "b5f2e8402a961d2189858f0d4e55cfbef611a1b08816a043a6934e4f8bd67fe9"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/vector.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_reconstruct_affine_20261126/vector.log.gz",
+      "sha256": "9760c4120b8955c0bdd7e01ef5b4306153ec73d728bc0c4acc8dfa4b4aacf9e5"
+    }
+  ],
+  "randomness": {
+    "generator": "Python random.Random in measured table replay",
+    "seeds": [
+      1729,
+      271828,
+      123407,
+      97531
+    ],
+    "used": true
+  },
+  "repository": {
+    "commit": "87a1468311af840ddae8839d998cfb0c41db117b",
+    "extra_test_commit": "44e12d998afa5709a526b1ff4536ff507af6f447",
+    "guide_commit": "d2dcc382405087eda0441d3ef3551d60d4a3406c",
+    "tracked_dirty": false,
+    "untracked_evidence": true
+  },
+  "residual_risks": [
+    "Prepared5/Scalar5/Affine5 and vector projection allocations",
+    "strong Reduced5 early driver failure",
+    "nonaffine graphs",
+    "stack high-water/independent holdout",
+    "module ledger not exhaustive"
+  ],
+  "result": "implementation-verified scoped scalar reconstruction and affine graph; formal M2/VG1 OPEN",
+  "run": {
+    "exit_status": 0,
+    "runtime_seconds": null,
+    "status": "completed",
+    "timing_note": "per-test logs retain elapsed time; aggregate not captured"
+  },
+  "schema_version": 2
+}

@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "base": "081733aa9bbb1885b53770cd1d8e0a98de879b96",
+  "observed_at_commit": "44e12d998afa5709a526b1ff4536ff507af6f447",
+  "scope": "bounded initial inventory of relevant RETRO/DAE modules; lexical source references, including definitions and cfg(test), not a complete reachability analysis or proof of repo-wide nonuse",
+  "policy": "each subsequent node inspect and activate at least one applicable previously unused/underused module as an actual evaluated candidate; preserve its authority, test results and failures; distinguish static candidate, execution, qualification, selection and production promotion; never force an inapplicable module into a numerical path",
+  "modules": [
+    {
+      "symbol": "IntervalEvalWorkspace",
+      "status": "ACTIVATED_SHARED_KERNEL",
+      "candidate_or_evidence": "scalar projection shared source fill; public interval_into remains a transactional adapter; prior exact tests rerun",
+      "baseline_source_references": [
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_dae_init.rs:203:pub struct IntervalEvalWorkspace {",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_dae_init.rs:207:impl IntervalEvalWorkspace {",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_dae_init.rs:216:impl Default for IntervalEvalWorkspace {",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_dae_init.rs:324:        work: &mut IntervalEvalWorkspace,"
+      ],
+      "current_source_references": [
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-integrators/src/retro_dae_init.rs:203:pub struct IntervalEvalWorkspace {",
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-integrators/src/retro_dae_init.rs:207:impl IntervalEvalWorkspace {",
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-integrators/src/retro_dae_init.rs:216:impl Default for IntervalEvalWorkspace {",
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-integrators/src/retro_dae_init.rs:324:        work: &mut IntervalEvalWorkspace,",
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-integrators/src/retro_dae_init.rs:342:        work: &mut IntervalEvalWorkspace,",
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-integrators/src/retro_dae_init.rs:1251:impl IntervalEvalWorkspace {",
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-integrators/src/retro_dae_init.rs:1432:        let mut work = IntervalEvalWorkspace::new();",
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-integrators/src/retro_dae_init.rs:1433:        let mut point = IntervalEvalWorkspace::new();"
+      ]
+    },
+    {
+      "symbol": "initialize_scalar_reuse_audited",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "candidate_or_evidence": "was live in reduced callbacks; actual reconstruction and caller-output candidates now use it",
+      "baseline_source_references": [
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_dae_init.rs:1380:    pub fn initialize_scalar_reuse_audited(",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/vigilode/src/dae_evolution.rs:306:                .initialize_scalar_reuse_audited(t, x, &seed, &self.branch, policy);"
+      ],
+      "current_source_references": [
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-integrators/src/retro_dae_evolution.rs:605:            src.initialize_scalar_reuse_audited(",
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-integrators/src/retro_dae_init.rs:1383:    pub fn initialize_scalar_reuse_audited(",
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/vigilode/src/dae_evolution.rs:306:                .initialize_scalar_reuse_audited(t, x, &seed, &self.branch, policy);"
+      ]
+    },
+    {
+      "symbol": "GuardInverseWorkspace",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "candidate_or_evidence": "was live in bounded guard preconditioner; now proposes affine constraint graph before exact identity and branch verification",
+      "baseline_source_references": [
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1145:pub struct GuardInverseWorkspace {",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1149:impl GuardInverseWorkspace {",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1245:impl Default for GuardInverseWorkspace {",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2009:            let r = GuardInverseWorkspace::new().invert(",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_dae_evolution.rs:4276:        let mut ws = GuardInverseWorkspace::new();"
+      ],
+      "current_source_references": [
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1302:pub struct GuardInverseWorkspace {",
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1306:impl GuardInverseWorkspace {",
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1402:impl Default for GuardInverseWorkspace {",
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2040:        GuardInverseWorkspace::new().invert(nz, &center[..nz * nz], &mut inv[..nz * nz])?;",
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2337:            let r = GuardInverseWorkspace::new().invert(",
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-integrators/src/retro_dae_evolution.rs:4633:        let mut ws = GuardInverseWorkspace::new();"
+      ]
+    },
+    {
+      "symbol": "legendre_product",
+      "status": "QUEUED_STATIC_NO_OTHER_SRC_HIT",
+      "candidate_or_evidence": "next candidate: original-source slab polynomial product in Legendre basis; certify point conversion and outward coefficient errors",
+      "baseline_source_references": [
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-core/src/retro_dictionary.rs:790:    pub fn legendre_product(&self, a: &[f64], b: &[f64]) -> CoreResult<[Iv; 17]> {"
+      ],
+      "current_source_references": [
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-core/src/retro_dictionary.rs:790:    pub fn legendre_product(&self, a: &[f64], b: &[f64]) -> CoreResult<[Iv; 17]> {"
+      ]
+    },
+    {
+      "symbol": "normal_equations",
+      "status": "QUEUED_STATIC_NO_OTHER_SRC_HIT",
+      "candidate_or_evidence": "candidate reduced reconstruction fitting; conditioning and original residual needed",
+      "baseline_source_references": [
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-core/src/retro_dictionary.rs:339:    pub fn normal_equations(&self, z: f64) -> CoreResult<(DenseMatrix, Vec<f64>)> {"
+      ],
+      "current_source_references": [
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-core/src/retro_dictionary.rs:339:    pub fn normal_equations(&self, z: f64) -> CoreResult<(DenseMatrix, Vec<f64>)> {"
+      ]
+    },
+    {
+      "symbol": "complex_phi",
+      "status": "QUEUED_STATIC_NO_OTHER_SRC_HIT",
+      "candidate_or_evidence": "candidate oscillatory linear forcing response; require verified real/imaginary embedding and source error",
+      "baseline_source_references": [
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-core/src/retro_dictionary.rs:802:    pub fn complex_phi(&self, re: f64, im: f64) -> CoreResult<ComplexCandidate> {"
+      ],
+      "current_source_references": [
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-core/src/retro_dictionary.rs:802:    pub fn complex_phi(&self, re: f64, im: f64) -> CoreResult<ComplexCandidate> {"
+      ]
+    },
+    {
+      "symbol": "ordered_picard",
+      "status": "QUEUED_STATIC_NO_OTHER_SRC_HIT",
+      "candidate_or_evidence": "candidate polynomial-time linear transport; not interchangeable with nonlinear Picard tube",
+      "baseline_source_references": [
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_foundation.rs:559:pub fn ordered_picard(a: &[DenseMatrix; 3], y: &[f64]) -> CoreResult<PicardReport> {"
+      ],
+      "current_source_references": [
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-integrators/src/retro_foundation.rs:559:pub fn ordered_picard(a: &[DenseMatrix; 3], y: &[f64]) -> CoreResult<PicardReport> {"
+      ]
+    },
+    {
+      "symbol": "Aperiodic",
+      "status": "QUEUED_STATIC_NO_OTHER_SRC_HIT",
+      "candidate_or_evidence": "candidate certified linear collocation/response, compare existing methods under applicable assumptions",
+      "baseline_source_references": [
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_foundation.rs:379:pub struct Aperiodic {",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_foundation.rs:399:impl Aperiodic {"
+      ],
+      "current_source_references": [
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-integrators/src/retro_foundation.rs:379:pub struct Aperiodic {",
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-integrators/src/retro_foundation.rs:399:impl Aperiodic {"
+      ]
+    },
+    {
+      "symbol": "nilpotent_green",
+      "status": "ALREADY_LIVE_OTHER_PATH",
+      "candidate_or_evidence": "retro_physical_event native carrier; test reset/reconstruction integration only if structural nilpotency proven",
+      "baseline_source_references": [
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_foundation.rs:622:pub fn nilpotent_green(",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_physical_event.rs:14:    retro_foundation::nilpotent_green,",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_physical_event.rs:634:        nilpotent_green("
+      ],
+      "current_source_references": [
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-integrators/src/retro_foundation.rs:622:pub fn nilpotent_green(",
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-integrators/src/retro_physical_event.rs:14:    retro_foundation::nilpotent_green,",
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-integrators/src/retro_physical_event.rs:634:        nilpotent_green("
+      ]
+    },
+    {
+      "symbol": "TensorPencil",
+      "status": "ALREADY_LIVE_OTHER_PATH",
+      "candidate_or_evidence": "WARP seed candidate; retain exact full-source projection guard",
+      "baseline_source_references": [
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_dae_evolution.rs:12:    retro_foundation::{PencilTerm, QuotientMode, TensorPencil},",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_dae_evolution.rs:356:        let mut pencil = TensorPencil::new(",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_foundation.rs:710:pub struct TensorPencil {",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_foundation.rs:720:impl TensorPencil {"
+      ],
+      "current_source_references": [
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-integrators/src/retro_dae_evolution.rs:12:    retro_foundation::{PencilTerm, QuotientMode, TensorPencil},",
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-integrators/src/retro_dae_evolution.rs:356:        let mut pencil = TensorPencil::new(",
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-integrators/src/retro_foundation.rs:710:pub struct TensorPencil {",
+        "44e12d998afa5709a526b1ff4536ff507af6f447:crates/rodas5p-integrators/src/retro_foundation.rs:720:impl TensorPencil {"
+      ]
+    }
+  ]
+}
