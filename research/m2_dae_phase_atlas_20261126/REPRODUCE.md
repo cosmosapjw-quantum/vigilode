@@ -1,0 +1,4 @@
+Exact branch research/m2-dae-phase-atlas-20261126, EXEC_SHA.txt and INPUT_SHA256SUMS bind inputs. Locked offline Rust, SciPy1.17.0.
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_phase_atlas_contracts -- --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_phase_atlas_contracts training -- --ignored --exact --nocapture --test-threads=1
+Restore raw training.log from compressed archive into scratch and copy audit.py, exact_phase.py, exact_native.py, structural.py, reference.py, guide.py; python3 audit.py and python3 guide.py select. For generating candidates, fresh ledger guide.py generate. Compare parsed logical CELL rows, not test times. Old campaign replay and scoped tests in REPLAY.json/regression.log.gz. No holdout.

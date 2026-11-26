@@ -1,0 +1,5524 @@
+{
+  "counts": {
+    "coefficient_checks": 97940,
+    "exact_cell_checks": 20950,
+    "event_reference_checks": 9660,
+    "joint_reference_components": 45540,
+    "exact_reset_guard_checks": 720,
+    "clock_sum_checks": 360,
+    "exact_monotone_ranges": 13776,
+    "represented_samples": 68880,
+    "inflation_checks": 13776,
+    "phase_queries": 4320,
+    "centered_strict_queries": 1800,
+    "atlas_reference_components": 298080,
+    "cache_identity_checks": 108,
+    "fresh_reuse_equivalence": 36
+  },
+  "stops": [
+    {
+      "case": "alternating",
+      "method": "AtlasFresh",
+      "stop": "Horizon",
+      "n": 12
+    },
+    {
+      "case": "alternating",
+      "method": "AtlasReuse",
+      "stop": "Horizon",
+      "n": 12
+    },
+    {
+      "case": "alternating",
+      "method": "JointCentered",
+      "stop": "OrderUnresolved",
+      "n": 12
+    },
+    {
+      "case": "alternating",
+      "method": "JointGreen",
+      "stop": "OrderUnresolved",
+      "n": 12
+    },
+    {
+      "case": "distinct",
+      "method": "AtlasFresh",
+      "stop": "Horizon",
+      "n": 12
+    },
+    {
+      "case": "distinct",
+      "method": "AtlasReuse",
+      "stop": "Horizon",
+      "n": 12
+    },
+    {
+      "case": "distinct",
+      "method": "JointCentered",
+      "stop": "OrderUnresolved",
+      "n": 12
+    },
+    {
+      "case": "distinct",
+      "method": "JointGreen",
+      "stop": "OrderUnresolved",
+      "n": 12
+    },
+    {
+      "case": "overlap",
+      "method": "AtlasFresh",
+      "stop": "Horizon",
+      "n": 6
+    },
+    {
+      "case": "overlap",
+      "method": "AtlasFresh",
+      "stop": "OrderUnresolved",
+      "n": 6
+    },
+    {
+      "case": "overlap",
+      "method": "AtlasReuse",
+      "stop": "Horizon",
+      "n": 6
+    },
+    {
+      "case": "overlap",
+      "method": "AtlasReuse",
+      "stop": "OrderUnresolved",
+      "n": 6
+    },
+    {
+      "case": "overlap",
+      "method": "JointCentered",
+      "stop": "OrderUnresolved",
+      "n": 12
+    },
+    {
+      "case": "overlap",
+      "method": "JointGreen",
+      "stop": "OrderUnresolved",
+      "n": 12
+    }
+  ],
+  "reference_periods": [
+    {
+      "mode": 1,
+      "center_v": 0.00018310546875,
+      "solver": "Radau",
+      "period": 0.00019968749679010906
+    },
+    {
+      "mode": 1,
+      "center_v": 0.00018310546875,
+      "solver": "BDF",
+      "period": 0.00019968749681713015
+    },
+    {
+      "mode": 0,
+      "center_v": 0.000152587890625,
+      "solver": "Radau",
+      "period": 0.0004073199657550561
+    },
+    {
+      "mode": 0,
+      "center_v": 0.000152587890625,
+      "solver": "BDF",
+      "period": 0.0004073199658171422
+    },
+    {
+      "mode": 1,
+      "center_v": 0.0001220703125,
+      "solver": "Radau",
+      "period": 0.00015272034132748457
+    },
+    {
+      "mode": 1,
+      "center_v": 0.0001220703125,
+      "solver": "BDF",
+      "period": 0.00015272034134954503
+    },
+    {
+      "mode": 2,
+      "center_v": 0.000152587890625,
+      "solver": "Radau",
+      "period": 0.0004073199657550561
+    },
+    {
+      "mode": 2,
+      "center_v": 0.000152587890625,
+      "solver": "BDF",
+      "period": 0.0004073199658171422
+    }
+  ],
+  "initial_samples": 23,
+  "max_reference_spread": 3.2029194292453045e-13,
+  "max_joint_ratio": 0.999688283317316,
+  "raw_sha256": "2216a80fc598fcbc81600a2651b27368b055d47cc82aca3a6dede97ca3dc7f89",
+  "rows": [
+    {
+      "case": "alternating",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 46,
+      "rhs_proxy": 639,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4821559833536093e-07
+      ],
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 46,
+      "rhs_proxy": 639,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4821559833536093e-07
+      ],
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 165,
+      "rhs_proxy": 2210,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 8.691435591557956e-08,
+      "last_horner_width": 9.354506485223545e-08,
+      "absolute_widths": [
+        4.4821559833536093e-07,
+        4.5077681918366964e-07,
+        4.5742445163436153e-07,
+        4.5998567248283287e-07,
+        4.666333049336332e-07,
+        4.691945257821045e-07
+      ],
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ],
+        [
+          0.0005479460103556265,
+          0.0005483967871748102
+        ],
+        [
+          0.0009552626443819761,
+          0.0009557200688336104
+        ],
+        [
+          0.0011549488557005784,
+          0.0011554088413730612
+        ],
+        [
+          0.0015622654897269278,
+          0.0015627321230318614
+        ],
+        [
+          0.00176195170104553,
+          0.0017624208955713122
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 67,
+      "rhs_proxy": 896,
+      "native_runs": 3,
+      "cache_hits": 4,
+      "cache_inserts": 2,
+      "last_width": 8.691435591557956e-08,
+      "last_horner_width": 9.354506485223545e-08,
+      "absolute_widths": [
+        4.4821559833536093e-07,
+        4.5077681918366964e-07,
+        4.5742445163436153e-07,
+        4.5998567248283287e-07,
+        4.666333049336332e-07,
+        4.691945257821045e-07
+      ],
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ],
+        [
+          0.0005479460103556265,
+          0.0005483967871748102
+        ],
+        [
+          0.0009552626443819761,
+          0.0009557200688336104
+        ],
+        [
+          0.0011549488557005784,
+          0.0011554088413730612
+        ],
+        [
+          0.0015622654897269278,
+          0.0015627321230318614
+        ],
+        [
+          0.00176195170104553,
+          0.0017624208955713122
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 46,
+      "rhs_proxy": 639,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4821559833536093e-07
+      ],
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 46,
+      "rhs_proxy": 639,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4821559833536093e-07
+      ],
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 165,
+      "rhs_proxy": 2210,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 8.691435591557956e-08,
+      "last_horner_width": 9.354506485223545e-08,
+      "absolute_widths": [
+        4.4821559833536093e-07,
+        4.5077681918366964e-07,
+        4.5742445163436153e-07,
+        4.5998567248283287e-07,
+        4.666333049336332e-07,
+        4.691945257821045e-07
+      ],
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ],
+        [
+          0.0005479460103556265,
+          0.0005483967871748102
+        ],
+        [
+          0.0009552626443819761,
+          0.0009557200688336104
+        ],
+        [
+          0.0011549488557005784,
+          0.0011554088413730612
+        ],
+        [
+          0.0015622654897269278,
+          0.0015627321230318614
+        ],
+        [
+          0.00176195170104553,
+          0.0017624208955713122
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 67,
+      "rhs_proxy": 896,
+      "native_runs": 3,
+      "cache_hits": 4,
+      "cache_inserts": 2,
+      "last_width": 8.691435591557956e-08,
+      "last_horner_width": 9.354506485223545e-08,
+      "absolute_widths": [
+        4.4821559833536093e-07,
+        4.5077681918366964e-07,
+        4.5742445163436153e-07,
+        4.5998567248283287e-07,
+        4.666333049336332e-07,
+        4.691945257821045e-07
+      ],
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ],
+        [
+          0.0005479460103556265,
+          0.0005483967871748102
+        ],
+        [
+          0.0009552626443819761,
+          0.0009557200688336104
+        ],
+        [
+          0.0011549488557005784,
+          0.0011554088413730612
+        ],
+        [
+          0.0015622654897269278,
+          0.0015627321230318614
+        ],
+        [
+          0.00176195170104553,
+          0.0017624208955713122
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 46,
+      "rhs_proxy": 637,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4482225376832633e-07
+      ],
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 46,
+      "rhs_proxy": 637,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4482225376832633e-07
+      ],
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 165,
+      "rhs_proxy": 2210,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 8.324378327699122e-08,
+      "last_horner_width": 8.961398625699708e-08,
+      "absolute_widths": [
+        4.4482225376832633e-07,
+        4.4551961707686456e-07,
+        4.4732765617431884e-07,
+        4.480250194829113e-07,
+        4.49833058580474e-07,
+        4.505304218890664e-07
+      ],
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ],
+        [
+          0.0005479486389566799,
+          0.0005483941585737568
+        ],
+        [
+          0.0009552676927797061,
+          0.0009557150204358804
+        ],
+        [
+          0.0011549548360270784,
+          0.0011554028610465613
+        ],
+        [
+          0.0015622738898501045,
+          0.001562723722908685
+        ],
+        [
+          0.0017619610330974768,
+          0.001762411563519366
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 67,
+      "rhs_proxy": 896,
+      "native_runs": 3,
+      "cache_hits": 4,
+      "cache_inserts": 2,
+      "last_width": 8.324378327699122e-08,
+      "last_horner_width": 8.961398625699708e-08,
+      "absolute_widths": [
+        4.4482225376832633e-07,
+        4.4551961707686456e-07,
+        4.4732765617431884e-07,
+        4.480250194829113e-07,
+        4.49833058580474e-07,
+        4.505304218890664e-07
+      ],
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ],
+        [
+          0.0005479486389566799,
+          0.0005483941585737568
+        ],
+        [
+          0.0009552676927797061,
+          0.0009557150204358804
+        ],
+        [
+          0.0011549548360270784,
+          0.0011554028610465613
+        ],
+        [
+          0.0015622738898501045,
+          0.001562723722908685
+        ],
+        [
+          0.0017619610330974768,
+          0.001762411563519366
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 46,
+      "rhs_proxy": 637,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4482225376832633e-07
+      ],
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 46,
+      "rhs_proxy": 637,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4482225376832633e-07
+      ],
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 165,
+      "rhs_proxy": 2210,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 8.324378327699122e-08,
+      "last_horner_width": 8.961398625699708e-08,
+      "absolute_widths": [
+        4.4482225376832633e-07,
+        4.4551961707686456e-07,
+        4.4732765617431884e-07,
+        4.480250194829113e-07,
+        4.49833058580474e-07,
+        4.505304218890664e-07
+      ],
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ],
+        [
+          0.0005479486389566799,
+          0.0005483941585737568
+        ],
+        [
+          0.0009552676927797061,
+          0.0009557150204358804
+        ],
+        [
+          0.0011549548360270784,
+          0.0011554028610465613
+        ],
+        [
+          0.0015622738898501045,
+          0.001562723722908685
+        ],
+        [
+          0.0017619610330974768,
+          0.001762411563519366
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 67,
+      "rhs_proxy": 896,
+      "native_runs": 3,
+      "cache_hits": 4,
+      "cache_inserts": 2,
+      "last_width": 8.324378327699122e-08,
+      "last_horner_width": 8.961398625699708e-08,
+      "absolute_widths": [
+        4.4482225376832633e-07,
+        4.4551961707686456e-07,
+        4.4732765617431884e-07,
+        4.480250194829113e-07,
+        4.49833058580474e-07,
+        4.505304218890664e-07
+      ],
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ],
+        [
+          0.0005479486389566799,
+          0.0005483941585737568
+        ],
+        [
+          0.0009552676927797061,
+          0.0009557150204358804
+        ],
+        [
+          0.0011549548360270784,
+          0.0011554028610465613
+        ],
+        [
+          0.0015622738898501045,
+          0.001562723722908685
+        ],
+        [
+          0.0017619610330974768,
+          0.001762411563519366
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 45,
+      "rhs_proxy": 7137,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559469476399e-07
+      ],
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 45,
+      "rhs_proxy": 7137,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559469476399e-07
+      ],
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 162,
+      "rhs_proxy": 25724,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 9.350657902708586e-08,
+      "last_horner_width": 9.62465158253111e-08,
+      "absolute_widths": [
+        4.807559469476399e-07,
+        4.840269303882892e-07,
+        4.910451699347744e-07,
+        4.943161533755864e-07,
+        5.0133439292218e-07,
+        5.046053763628836e-07
+      ],
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ],
+        [
+          0.0005479293978476633,
+          0.0005484134247780516
+        ],
+        [
+          0.0009552458301308011,
+          0.0009557368753007359
+        ],
+        [
+          0.0011549316835347706,
+          0.0011554259996881461
+        ],
+        [
+          0.0015622481158179082,
+          0.0015627494502108304
+        ],
+        [
+          0.0017619339692218777,
+          0.0017624385745982406
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 66,
+      "rhs_proxy": 10454,
+      "native_runs": 3,
+      "cache_hits": 4,
+      "cache_inserts": 2,
+      "last_width": 9.350657902708586e-08,
+      "last_horner_width": 9.62465158253111e-08,
+      "absolute_widths": [
+        4.807559469476399e-07,
+        4.840269303882892e-07,
+        4.910451699347744e-07,
+        4.943161533755864e-07,
+        5.0133439292218e-07,
+        5.046053763628836e-07
+      ],
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ],
+        [
+          0.0005479293978476633,
+          0.0005484134247780516
+        ],
+        [
+          0.0009552458301308011,
+          0.0009557368753007359
+        ],
+        [
+          0.0011549316835347706,
+          0.0011554259996881461
+        ],
+        [
+          0.0015622481158179082,
+          0.0015627494502108304
+        ],
+        [
+          0.0017619339692218777,
+          0.0017624385745982406
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 45,
+      "rhs_proxy": 7137,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559469476399e-07
+      ],
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 45,
+      "rhs_proxy": 7137,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559469476399e-07
+      ],
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 162,
+      "rhs_proxy": 25724,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 9.350657902708586e-08,
+      "last_horner_width": 9.62465158253111e-08,
+      "absolute_widths": [
+        4.807559469476399e-07,
+        4.840269303882892e-07,
+        4.910451699347744e-07,
+        4.943161533755864e-07,
+        5.0133439292218e-07,
+        5.046053763628836e-07
+      ],
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ],
+        [
+          0.0005479293978476633,
+          0.0005484134247780516
+        ],
+        [
+          0.0009552458301308011,
+          0.0009557368753007359
+        ],
+        [
+          0.0011549316835347706,
+          0.0011554259996881461
+        ],
+        [
+          0.0015622481158179082,
+          0.0015627494502108304
+        ],
+        [
+          0.0017619339692218777,
+          0.0017624385745982406
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 66,
+      "rhs_proxy": 10454,
+      "native_runs": 3,
+      "cache_hits": 4,
+      "cache_inserts": 2,
+      "last_width": 9.350657902708586e-08,
+      "last_horner_width": 9.62465158253111e-08,
+      "absolute_widths": [
+        4.807559469476399e-07,
+        4.840269303882892e-07,
+        4.910451699347744e-07,
+        4.943161533755864e-07,
+        5.0133439292218e-07,
+        5.046053763628836e-07
+      ],
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ],
+        [
+          0.0005479293978476633,
+          0.0005484134247780516
+        ],
+        [
+          0.0009552458301308011,
+          0.0009557368753007359
+        ],
+        [
+          0.0011549316835347706,
+          0.0011554259996881461
+        ],
+        [
+          0.0015622481158179082,
+          0.0015627494502108304
+        ],
+        [
+          0.0017619339692218777,
+          0.0017624385745982406
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 45,
+      "rhs_proxy": 7137,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488020474e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 45,
+      "rhs_proxy": 7137,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488020474e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 162,
+      "rhs_proxy": 25724,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 8.92482448102387e-08,
+      "last_horner_width": 9.187450398715196e-08,
+      "absolute_widths": [
+        4.764962488020474e-07,
+        4.773861732589816e-07,
+        4.792938429815834e-07,
+        4.801837674387344e-07,
+        4.820914371614447e-07,
+        4.829813616184873e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ],
+        [
+          0.000547932718226228,
+          0.0005484101043994869
+        ],
+        [
+          0.0009552517057942777,
+          0.0009557309996372593
+        ],
+        [
+          0.001154938749727739,
+          0.0011554189334951777
+        ],
+        [
+          0.0015622577372957887,
+          0.0015627398287329502
+        ],
+        [
+          0.00176194478122925,
+          0.0017624277625908685
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 66,
+      "rhs_proxy": 10454,
+      "native_runs": 3,
+      "cache_hits": 4,
+      "cache_inserts": 2,
+      "last_width": 8.92482448102387e-08,
+      "last_horner_width": 9.187450398715196e-08,
+      "absolute_widths": [
+        4.764962488020474e-07,
+        4.773861732589816e-07,
+        4.792938429815834e-07,
+        4.801837674387344e-07,
+        4.820914371614447e-07,
+        4.829813616184873e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ],
+        [
+          0.000547932718226228,
+          0.0005484101043994869
+        ],
+        [
+          0.0009552517057942777,
+          0.0009557309996372593
+        ],
+        [
+          0.001154938749727739,
+          0.0011554189334951777
+        ],
+        [
+          0.0015622577372957887,
+          0.0015627398287329502
+        ],
+        [
+          0.00176194478122925,
+          0.0017624277625908685
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 45,
+      "rhs_proxy": 7137,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488020474e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 45,
+      "rhs_proxy": 7137,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488020474e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 162,
+      "rhs_proxy": 25724,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 8.92482448102387e-08,
+      "last_horner_width": 9.187450398715196e-08,
+      "absolute_widths": [
+        4.764962488020474e-07,
+        4.773861732589816e-07,
+        4.792938429815834e-07,
+        4.801837674387344e-07,
+        4.820914371614447e-07,
+        4.829813616184873e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ],
+        [
+          0.000547932718226228,
+          0.0005484101043994869
+        ],
+        [
+          0.0009552517057942777,
+          0.0009557309996372593
+        ],
+        [
+          0.001154938749727739,
+          0.0011554189334951777
+        ],
+        [
+          0.0015622577372957887,
+          0.0015627398287329502
+        ],
+        [
+          0.00176194478122925,
+          0.0017624277625908685
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 66,
+      "rhs_proxy": 10454,
+      "native_runs": 3,
+      "cache_hits": 4,
+      "cache_inserts": 2,
+      "last_width": 8.92482448102387e-08,
+      "last_horner_width": 9.187450398715196e-08,
+      "absolute_widths": [
+        4.764962488020474e-07,
+        4.773861732589816e-07,
+        4.792938429815834e-07,
+        4.801837674387344e-07,
+        4.820914371614447e-07,
+        4.829813616184873e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ],
+        [
+          0.000547932718226228,
+          0.0005484101043994869
+        ],
+        [
+          0.0009552517057942777,
+          0.0009557309996372593
+        ],
+        [
+          0.001154938749727739,
+          0.0011554189334951777
+        ],
+        [
+          0.0015622577372957887,
+          0.0015627398287329502
+        ],
+        [
+          0.00176194478122925,
+          0.0017624277625908685
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 45,
+      "rhs_proxy": 4616,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559426472062e-07
+      ],
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 45,
+      "rhs_proxy": 4616,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559426472062e-07
+      ],
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 162,
+      "rhs_proxy": 16637,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 9.350657975622538e-08,
+      "last_horner_width": 9.624651658785759e-08,
+      "absolute_widths": [
+        4.807559426472062e-07,
+        4.840269218678696e-07,
+        4.91045170332785e-07,
+        4.943161495535569e-07,
+        5.013343980185807e-07,
+        5.046053772393526e-07
+      ],
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ],
+        [
+          0.0005479293978519231,
+          0.000548413424773791
+        ],
+        [
+          0.0009552458301305999,
+          0.0009557368753009326
+        ],
+        [
+          0.0011549316835366787,
+          0.0011554259996862323
+        ],
+        [
+          0.0015622481158153554,
+          0.001562749450213374
+        ],
+        [
+          0.0017619339692214343,
+          0.0017624385745986736
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 66,
+      "rhs_proxy": 6763,
+      "native_runs": 3,
+      "cache_hits": 4,
+      "cache_inserts": 2,
+      "last_width": 9.350657975622538e-08,
+      "last_horner_width": 9.624651658785759e-08,
+      "absolute_widths": [
+        4.807559426472062e-07,
+        4.840269218678696e-07,
+        4.91045170332785e-07,
+        4.943161495535569e-07,
+        5.013343980185807e-07,
+        5.046053772393526e-07
+      ],
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ],
+        [
+          0.0005479293978519231,
+          0.000548413424773791
+        ],
+        [
+          0.0009552458301305999,
+          0.0009557368753009326
+        ],
+        [
+          0.0011549316835366787,
+          0.0011554259996862323
+        ],
+        [
+          0.0015622481158153554,
+          0.001562749450213374
+        ],
+        [
+          0.0017619339692214343,
+          0.0017624385745986736
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 45,
+      "rhs_proxy": 4616,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559426472062e-07
+      ],
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 45,
+      "rhs_proxy": 4616,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559426472062e-07
+      ],
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 162,
+      "rhs_proxy": 16637,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 9.350657975622538e-08,
+      "last_horner_width": 9.624651658785759e-08,
+      "absolute_widths": [
+        4.807559426472062e-07,
+        4.840269218678696e-07,
+        4.91045170332785e-07,
+        4.943161495535569e-07,
+        5.013343980185807e-07,
+        5.046053772393526e-07
+      ],
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ],
+        [
+          0.0005479293978519231,
+          0.000548413424773791
+        ],
+        [
+          0.0009552458301305999,
+          0.0009557368753009326
+        ],
+        [
+          0.0011549316835366787,
+          0.0011554259996862323
+        ],
+        [
+          0.0015622481158153554,
+          0.001562749450213374
+        ],
+        [
+          0.0017619339692214343,
+          0.0017624385745986736
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 66,
+      "rhs_proxy": 6763,
+      "native_runs": 3,
+      "cache_hits": 4,
+      "cache_inserts": 2,
+      "last_width": 9.350657975622538e-08,
+      "last_horner_width": 9.624651658785759e-08,
+      "absolute_widths": [
+        4.807559426472062e-07,
+        4.840269218678696e-07,
+        4.91045170332785e-07,
+        4.943161495535569e-07,
+        5.013343980185807e-07,
+        5.046053772393526e-07
+      ],
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ],
+        [
+          0.0005479293978519231,
+          0.000548413424773791
+        ],
+        [
+          0.0009552458301305999,
+          0.0009557368753009326
+        ],
+        [
+          0.0011549316835366787,
+          0.0011554259996862323
+        ],
+        [
+          0.0015622481158153554,
+          0.001562749450213374
+        ],
+        [
+          0.0017619339692214343,
+          0.0017624385745986736
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 45,
+      "rhs_proxy": 4616,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488375008e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 45,
+      "rhs_proxy": 4616,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488375008e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 162,
+      "rhs_proxy": 16637,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 8.924824441187572e-08,
+      "last_horner_width": 9.187450360841304e-08,
+      "absolute_widths": [
+        4.764962488375008e-07,
+        4.773861738740495e-07,
+        4.792938419532176e-07,
+        4.801837669898747e-07,
+        4.820914350691513e-07,
+        4.829813601058084e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ],
+        [
+          0.00054793271822592,
+          0.0005484101043997941
+        ],
+        [
+          0.0009552517057947896,
+          0.0009557309996367429
+        ],
+        [
+          0.0011549387497279606,
+          0.0011554189334949505
+        ],
+        [
+          0.0015622577372968302,
+          0.0015627398287318993
+        ],
+        [
+          0.0017619447812300011,
+          0.001762427762590107
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 66,
+      "rhs_proxy": 6763,
+      "native_runs": 3,
+      "cache_hits": 4,
+      "cache_inserts": 2,
+      "last_width": 8.924824441187572e-08,
+      "last_horner_width": 9.187450360841304e-08,
+      "absolute_widths": [
+        4.764962488375008e-07,
+        4.773861738740495e-07,
+        4.792938419532176e-07,
+        4.801837669898747e-07,
+        4.820914350691513e-07,
+        4.829813601058084e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ],
+        [
+          0.00054793271822592,
+          0.0005484101043997941
+        ],
+        [
+          0.0009552517057947896,
+          0.0009557309996367429
+        ],
+        [
+          0.0011549387497279606,
+          0.0011554189334949505
+        ],
+        [
+          0.0015622577372968302,
+          0.0015627398287318993
+        ],
+        [
+          0.0017619447812300011,
+          0.001762427762590107
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 45,
+      "rhs_proxy": 4616,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488375008e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 45,
+      "rhs_proxy": 4616,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488375008e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 162,
+      "rhs_proxy": 16637,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 8.924824441187572e-08,
+      "last_horner_width": 9.187450360841304e-08,
+      "absolute_widths": [
+        4.764962488375008e-07,
+        4.773861738740495e-07,
+        4.792938419532176e-07,
+        4.801837669898747e-07,
+        4.820914350691513e-07,
+        4.829813601058084e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ],
+        [
+          0.00054793271822592,
+          0.0005484101043997941
+        ],
+        [
+          0.0009552517057947896,
+          0.0009557309996367429
+        ],
+        [
+          0.0011549387497279606,
+          0.0011554189334949505
+        ],
+        [
+          0.0015622577372968302,
+          0.0015627398287318993
+        ],
+        [
+          0.0017619447812300011,
+          0.001762427762590107
+        ]
+      ]
+    },
+    {
+      "case": "alternating",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 66,
+      "rhs_proxy": 6763,
+      "native_runs": 3,
+      "cache_hits": 4,
+      "cache_inserts": 2,
+      "last_width": 8.924824441187572e-08,
+      "last_horner_width": 9.187450360841304e-08,
+      "absolute_widths": [
+        4.764962488375008e-07,
+        4.773861738740495e-07,
+        4.792938419532176e-07,
+        4.801837669898747e-07,
+        4.820914350691513e-07,
+        4.829813601058084e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ],
+        [
+          0.00054793271822592,
+          0.0005484101043997941
+        ],
+        [
+          0.0009552517057947896,
+          0.0009557309996367429
+        ],
+        [
+          0.0011549387497279606,
+          0.0011554189334949505
+        ],
+        [
+          0.0015622577372968302,
+          0.0015627398287318993
+        ],
+        [
+          0.0017619447812300011,
+          0.001762427762590107
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 513,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4821559833536093e-07
+      ],
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 510,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4821559833536093e-07
+      ],
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 157,
+      "rhs_proxy": 2096,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 7.383424666922037e-08,
+      "last_horner_width": 7.718782508421378e-08,
+      "absolute_widths": [
+        4.4821559833536093e-07,
+        4.498635136651087e-07,
+        4.565111461158006e-07,
+        4.590723669641635e-07,
+        4.6571999941496384e-07,
+        4.682812202634352e-07
+      ],
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ],
+        [
+          0.0005009793080587178,
+          0.0005014291715723829
+        ],
+        [
+          0.0009082959420850673,
+          0.0009087524532311831
+        ],
+        [
+          0.0011079821534036697,
+          0.001108441225770634
+        ],
+        [
+          0.0015152987874300192,
+          0.0015157645074294341
+        ],
+        [
+          0.0017149849987486215,
+          0.001715453279968885
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 85,
+      "rhs_proxy": 1129,
+      "native_runs": 4,
+      "cache_hits": 3,
+      "cache_inserts": 3,
+      "last_width": 7.383424666922037e-08,
+      "last_horner_width": 7.718782508421378e-08,
+      "absolute_widths": [
+        4.4821559833536093e-07,
+        4.498635136651087e-07,
+        4.565111461158006e-07,
+        4.590723669641635e-07,
+        4.6571999941496384e-07,
+        4.682812202634352e-07
+      ],
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ],
+        [
+          0.0005009793080587178,
+          0.0005014291715723829
+        ],
+        [
+          0.0009082959420850673,
+          0.0009087524532311831
+        ],
+        [
+          0.0011079821534036697,
+          0.001108441225770634
+        ],
+        [
+          0.0015152987874300192,
+          0.0015157645074294341
+        ],
+        [
+          0.0017149849987486215,
+          0.001715453279968885
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 513,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4821559833536093e-07
+      ],
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 510,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4821559833536093e-07
+      ],
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 157,
+      "rhs_proxy": 2096,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 7.383424666922037e-08,
+      "last_horner_width": 7.718782508421378e-08,
+      "absolute_widths": [
+        4.4821559833536093e-07,
+        4.498635136651087e-07,
+        4.565111461158006e-07,
+        4.590723669641635e-07,
+        4.6571999941496384e-07,
+        4.682812202634352e-07
+      ],
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ],
+        [
+          0.0005009793080587178,
+          0.0005014291715723829
+        ],
+        [
+          0.0009082959420850673,
+          0.0009087524532311831
+        ],
+        [
+          0.0011079821534036697,
+          0.001108441225770634
+        ],
+        [
+          0.0015152987874300192,
+          0.0015157645074294341
+        ],
+        [
+          0.0017149849987486215,
+          0.001715453279968885
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 85,
+      "rhs_proxy": 1129,
+      "native_runs": 4,
+      "cache_hits": 3,
+      "cache_inserts": 3,
+      "last_width": 7.383424666922037e-08,
+      "last_horner_width": 7.718782508421378e-08,
+      "absolute_widths": [
+        4.4821559833536093e-07,
+        4.498635136651087e-07,
+        4.565111461158006e-07,
+        4.590723669641635e-07,
+        4.6571999941496384e-07,
+        4.682812202634352e-07
+      ],
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ],
+        [
+          0.0005009793080587178,
+          0.0005014291715723829
+        ],
+        [
+          0.0009082959420850673,
+          0.0009087524532311831
+        ],
+        [
+          0.0011079821534036697,
+          0.001108441225770634
+        ],
+        [
+          0.0015152987874300192,
+          0.0015157645074294341
+        ],
+        [
+          0.0017149849987486215,
+          0.001715453279968885
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 513,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4482225376832633e-07
+      ],
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 512,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4482225376832633e-07
+      ],
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 157,
+      "rhs_proxy": 2096,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 7.07558991514635e-08,
+      "last_horner_width": 7.398280249490158e-08,
+      "absolute_widths": [
+        4.4482225376832633e-07,
+        4.4527051920617046e-07,
+        4.4707855830362474e-07,
+        4.4777592161210876e-07,
+        4.4958396070967147e-07,
+        4.502813240182639e-07
+      ],
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ],
+        [
+          0.0005009816045559472,
+          0.0005014268750751534
+        ],
+        [
+          0.0009083006583789734,
+          0.000908747736937277
+        ],
+        [
+          0.0011079878016263458,
+          0.0011084355775479579
+        ],
+        [
+          0.0015153068554493718,
+          0.0015157564394100815
+        ],
+        [
+          0.0017149939986967442,
+          0.0017154442800207624
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 85,
+      "rhs_proxy": 1129,
+      "native_runs": 4,
+      "cache_hits": 3,
+      "cache_inserts": 3,
+      "last_width": 7.07558991514635e-08,
+      "last_horner_width": 7.398280249490158e-08,
+      "absolute_widths": [
+        4.4482225376832633e-07,
+        4.4527051920617046e-07,
+        4.4707855830362474e-07,
+        4.4777592161210876e-07,
+        4.4958396070967147e-07,
+        4.502813240182639e-07
+      ],
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ],
+        [
+          0.0005009816045559472,
+          0.0005014268750751534
+        ],
+        [
+          0.0009083006583789734,
+          0.000908747736937277
+        ],
+        [
+          0.0011079878016263458,
+          0.0011084355775479579
+        ],
+        [
+          0.0015153068554493718,
+          0.0015157564394100815
+        ],
+        [
+          0.0017149939986967442,
+          0.0017154442800207624
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 513,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4482225376832633e-07
+      ],
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 512,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4482225376832633e-07
+      ],
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 157,
+      "rhs_proxy": 2096,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 7.07558991514635e-08,
+      "last_horner_width": 7.398280249490158e-08,
+      "absolute_widths": [
+        4.4482225376832633e-07,
+        4.4527051920617046e-07,
+        4.4707855830362474e-07,
+        4.4777592161210876e-07,
+        4.4958396070967147e-07,
+        4.502813240182639e-07
+      ],
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ],
+        [
+          0.0005009816045559472,
+          0.0005014268750751534
+        ],
+        [
+          0.0009083006583789734,
+          0.000908747736937277
+        ],
+        [
+          0.0011079878016263458,
+          0.0011084355775479579
+        ],
+        [
+          0.0015153068554493718,
+          0.0015157564394100815
+        ],
+        [
+          0.0017149939986967442,
+          0.0017154442800207624
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 85,
+      "rhs_proxy": 1129,
+      "native_runs": 4,
+      "cache_hits": 3,
+      "cache_inserts": 3,
+      "last_width": 7.07558991514635e-08,
+      "last_horner_width": 7.398280249490158e-08,
+      "absolute_widths": [
+        4.4482225376832633e-07,
+        4.4527051920617046e-07,
+        4.4707855830362474e-07,
+        4.4777592161210876e-07,
+        4.4958396070967147e-07,
+        4.502813240182639e-07
+      ],
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ],
+        [
+          0.0005009816045559472,
+          0.0005014268750751534
+        ],
+        [
+          0.0009083006583789734,
+          0.000908747736937277
+        ],
+        [
+          0.0011079878016263458,
+          0.0011084355775479579
+        ],
+        [
+          0.0015153068554493718,
+          0.0015157564394100815
+        ],
+        [
+          0.0017149939986967442,
+          0.0017154442800207624
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 5731,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559469476399e-07
+      ],
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 5731,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559469476399e-07
+      ],
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 154,
+      "rhs_proxy": 24318,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 7.93939861083563e-08,
+      "last_horner_width": 8.734197593148754e-08,
+      "absolute_widths": [
+        4.807559469476399e-07,
+        4.828081216097773e-07,
+        4.898263611562625e-07,
+        4.930973445970745e-07,
+        5.001155841436681e-07,
+        5.033865675843716e-07
+      ],
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ],
+        [
+          0.0005009628560121924,
+          0.0005014456641338022
+        ],
+        [
+          0.0009082792882953302,
+          0.0009087691146564865
+        ],
+        [
+          0.0011079651416992997,
+          0.0011084582390438968
+        ],
+        [
+          0.0015152815739824374,
+          0.001515781689566581
+        ],
+        [
+          0.0017149674273864068,
+          0.0017154708139539912
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 84,
+      "rhs_proxy": 13160,
+      "native_runs": 4,
+      "cache_hits": 3,
+      "cache_inserts": 3,
+      "last_width": 7.93939861083563e-08,
+      "last_horner_width": 8.734197593148754e-08,
+      "absolute_widths": [
+        4.807559469476399e-07,
+        4.828081216097773e-07,
+        4.898263611562625e-07,
+        4.930973445970745e-07,
+        5.001155841436681e-07,
+        5.033865675843716e-07
+      ],
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ],
+        [
+          0.0005009628560121924,
+          0.0005014456641338022
+        ],
+        [
+          0.0009082792882953302,
+          0.0009087691146564865
+        ],
+        [
+          0.0011079651416992997,
+          0.0011084582390438968
+        ],
+        [
+          0.0015152815739824374,
+          0.001515781689566581
+        ],
+        [
+          0.0017149674273864068,
+          0.0017154708139539912
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 5731,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559469476399e-07
+      ],
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 5731,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559469476399e-07
+      ],
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 154,
+      "rhs_proxy": 24318,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 7.93939861083563e-08,
+      "last_horner_width": 8.734197593148754e-08,
+      "absolute_widths": [
+        4.807559469476399e-07,
+        4.828081216097773e-07,
+        4.898263611562625e-07,
+        4.930973445970745e-07,
+        5.001155841436681e-07,
+        5.033865675843716e-07
+      ],
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ],
+        [
+          0.0005009628560121924,
+          0.0005014456641338022
+        ],
+        [
+          0.0009082792882953302,
+          0.0009087691146564865
+        ],
+        [
+          0.0011079651416992997,
+          0.0011084582390438968
+        ],
+        [
+          0.0015152815739824374,
+          0.001515781689566581
+        ],
+        [
+          0.0017149674273864068,
+          0.0017154708139539912
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 84,
+      "rhs_proxy": 13160,
+      "native_runs": 4,
+      "cache_hits": 3,
+      "cache_inserts": 3,
+      "last_width": 7.93939861083563e-08,
+      "last_horner_width": 8.734197593148754e-08,
+      "absolute_widths": [
+        4.807559469476399e-07,
+        4.828081216097773e-07,
+        4.898263611562625e-07,
+        4.930973445970745e-07,
+        5.001155841436681e-07,
+        5.033865675843716e-07
+      ],
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ],
+        [
+          0.0005009628560121924,
+          0.0005014456641338022
+        ],
+        [
+          0.0009082792882953302,
+          0.0009087691146564865
+        ],
+        [
+          0.0011079651416992997,
+          0.0011084582390438968
+        ],
+        [
+          0.0015152815739824374,
+          0.001515781689566581
+        ],
+        [
+          0.0017149674273864068,
+          0.0017154708139539912
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 5732,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488020474e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 5733,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488020474e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 154,
+      "rhs_proxy": 24318,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 7.585641785494272e-08,
+      "last_horner_width": 8.348000895279817e-08,
+      "absolute_widths": [
+        4.764962488020474e-07,
+        4.770540336750248e-07,
+        4.789617033976266e-07,
+        4.798516278546692e-07,
+        4.817592975773794e-07,
+        4.82649222034422e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ],
+        [
+          0.0005009657330561597,
+          0.0005014427870898348
+        ],
+        [
+          0.0009082847206242095,
+          0.0009087636823276071
+        ],
+        [
+          0.0011079717645576708,
+          0.0011084516161855254
+        ],
+        [
+          0.0015152907521257205,
+          0.0015157725114232979
+        ],
+        [
+          0.0017149777960591818,
+          0.0017154604452812162
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 84,
+      "rhs_proxy": 13160,
+      "native_runs": 4,
+      "cache_hits": 3,
+      "cache_inserts": 3,
+      "last_width": 7.585641785494272e-08,
+      "last_horner_width": 8.348000895279817e-08,
+      "absolute_widths": [
+        4.764962488020474e-07,
+        4.770540336750248e-07,
+        4.789617033976266e-07,
+        4.798516278546692e-07,
+        4.817592975773794e-07,
+        4.82649222034422e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ],
+        [
+          0.0005009657330561597,
+          0.0005014427870898348
+        ],
+        [
+          0.0009082847206242095,
+          0.0009087636823276071
+        ],
+        [
+          0.0011079717645576708,
+          0.0011084516161855254
+        ],
+        [
+          0.0015152907521257205,
+          0.0015157725114232979
+        ],
+        [
+          0.0017149777960591818,
+          0.0017154604452812162
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 5732,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488020474e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 5733,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488020474e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 154,
+      "rhs_proxy": 24318,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 7.585641785494272e-08,
+      "last_horner_width": 8.348000895279817e-08,
+      "absolute_widths": [
+        4.764962488020474e-07,
+        4.770540336750248e-07,
+        4.789617033976266e-07,
+        4.798516278546692e-07,
+        4.817592975773794e-07,
+        4.82649222034422e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ],
+        [
+          0.0005009657330561597,
+          0.0005014427870898348
+        ],
+        [
+          0.0009082847206242095,
+          0.0009087636823276071
+        ],
+        [
+          0.0011079717645576708,
+          0.0011084516161855254
+        ],
+        [
+          0.0015152907521257205,
+          0.0015157725114232979
+        ],
+        [
+          0.0017149777960591818,
+          0.0017154604452812162
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 84,
+      "rhs_proxy": 13160,
+      "native_runs": 4,
+      "cache_hits": 3,
+      "cache_inserts": 3,
+      "last_width": 7.585641785494272e-08,
+      "last_horner_width": 8.348000895279817e-08,
+      "absolute_widths": [
+        4.764962488020474e-07,
+        4.770540336750248e-07,
+        4.789617033976266e-07,
+        4.798516278546692e-07,
+        4.817592975773794e-07,
+        4.82649222034422e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ],
+        [
+          0.0005009657330561597,
+          0.0005014427870898348
+        ],
+        [
+          0.0009082847206242095,
+          0.0009087636823276071
+        ],
+        [
+          0.0011079717645576708,
+          0.0011084516161855254
+        ],
+        [
+          0.0015152907521257205,
+          0.0015157725114232979
+        ],
+        [
+          0.0017149777960591818,
+          0.0017154604452812162
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 3712,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559426472062e-07
+      ],
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 3712,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559426472062e-07
+      ],
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 154,
+      "rhs_proxy": 15733,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 7.939398728617933e-08,
+      "last_horner_width": 8.734197720579101e-08,
+      "absolute_widths": [
+        4.807559426472062e-07,
+        4.828081165599973e-07,
+        4.898263650249127e-07,
+        4.93097344245793e-07,
+        5.001155927108168e-07,
+        5.033865719315887e-07
+      ],
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ],
+        [
+          0.0005009628560147172,
+          0.0005014456641312772
+        ],
+        [
+          0.0009082792882933939,
+          0.0009087691146584189
+        ],
+        [
+          0.0011079651416994727,
+          0.0011084582390437185
+        ],
+        [
+          0.0015152815739781493,
+          0.0015157816895708602
+        ],
+        [
+          0.0017149674273842282,
+          0.0017154708139561598
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 84,
+      "rhs_proxy": 8518,
+      "native_runs": 4,
+      "cache_hits": 3,
+      "cache_inserts": 3,
+      "last_width": 7.939398728617933e-08,
+      "last_horner_width": 8.734197720579101e-08,
+      "absolute_widths": [
+        4.807559426472062e-07,
+        4.828081165599973e-07,
+        4.898263650249127e-07,
+        4.93097344245793e-07,
+        5.001155927108168e-07,
+        5.033865719315887e-07
+      ],
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ],
+        [
+          0.0005009628560147172,
+          0.0005014456641312772
+        ],
+        [
+          0.0009082792882933939,
+          0.0009087691146584189
+        ],
+        [
+          0.0011079651416994727,
+          0.0011084582390437185
+        ],
+        [
+          0.0015152815739781493,
+          0.0015157816895708602
+        ],
+        [
+          0.0017149674273842282,
+          0.0017154708139561598
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 3712,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559426472062e-07
+      ],
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 3712,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559426472062e-07
+      ],
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 154,
+      "rhs_proxy": 15733,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 7.939398728617933e-08,
+      "last_horner_width": 8.734197720579101e-08,
+      "absolute_widths": [
+        4.807559426472062e-07,
+        4.828081165599973e-07,
+        4.898263650249127e-07,
+        4.93097344245793e-07,
+        5.001155927108168e-07,
+        5.033865719315887e-07
+      ],
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ],
+        [
+          0.0005009628560147172,
+          0.0005014456641312772
+        ],
+        [
+          0.0009082792882933939,
+          0.0009087691146584189
+        ],
+        [
+          0.0011079651416994727,
+          0.0011084582390437185
+        ],
+        [
+          0.0015152815739781493,
+          0.0015157816895708602
+        ],
+        [
+          0.0017149674273842282,
+          0.0017154708139561598
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 84,
+      "rhs_proxy": 8518,
+      "native_runs": 4,
+      "cache_hits": 3,
+      "cache_inserts": 3,
+      "last_width": 7.939398728617933e-08,
+      "last_horner_width": 8.734197720579101e-08,
+      "absolute_widths": [
+        4.807559426472062e-07,
+        4.828081165599973e-07,
+        4.898263650249127e-07,
+        4.93097344245793e-07,
+        5.001155927108168e-07,
+        5.033865719315887e-07
+      ],
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ],
+        [
+          0.0005009628560147172,
+          0.0005014456641312772
+        ],
+        [
+          0.0009082792882933939,
+          0.0009087691146584189
+        ],
+        [
+          0.0011079651416994727,
+          0.0011084582390437185
+        ],
+        [
+          0.0015152815739781493,
+          0.0015157816895708602
+        ],
+        [
+          0.0017149674273842282,
+          0.0017154708139561598
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 3712,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488375008e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 3712,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488375008e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 154,
+      "rhs_proxy": 15733,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 7.585641743287636e-08,
+      "last_horner_width": 8.348000852648988e-08,
+      "absolute_widths": [
+        4.764962488375008e-07,
+        4.770540337833366e-07,
+        4.789617018625047e-07,
+        4.798516268990534e-07,
+        4.8175929497833e-07,
+        4.826492200149871e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ],
+        [
+          0.0005009657330561055,
+          0.0005014427870898889
+        ],
+        [
+          0.0009082847206249751,
+          0.0009087636823268376
+        ],
+        [
+          0.001107971764558146,
+          0.0011084516161850451
+        ],
+        [
+          0.0015152907521270157,
+          0.001515772511421994
+        ],
+        [
+          0.0017149777960601866,
+          0.0017154604452802016
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 84,
+      "rhs_proxy": 8518,
+      "native_runs": 4,
+      "cache_hits": 3,
+      "cache_inserts": 3,
+      "last_width": 7.585641743287636e-08,
+      "last_horner_width": 8.348000852648988e-08,
+      "absolute_widths": [
+        4.764962488375008e-07,
+        4.770540337833366e-07,
+        4.789617018625047e-07,
+        4.798516268990534e-07,
+        4.8175929497833e-07,
+        4.826492200149871e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ],
+        [
+          0.0005009657330561055,
+          0.0005014427870898889
+        ],
+        [
+          0.0009082847206249751,
+          0.0009087636823268376
+        ],
+        [
+          0.001107971764558146,
+          0.0011084516161850451
+        ],
+        [
+          0.0015152907521270157,
+          0.001515772511421994
+        ],
+        [
+          0.0017149777960601866,
+          0.0017154604452802016
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 3712,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488375008e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 37,
+      "rhs_proxy": 3712,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488375008e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 154,
+      "rhs_proxy": 15733,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 7.585641743287636e-08,
+      "last_horner_width": 8.348000852648988e-08,
+      "absolute_widths": [
+        4.764962488375008e-07,
+        4.770540337833366e-07,
+        4.789617018625047e-07,
+        4.798516268990534e-07,
+        4.8175929497833e-07,
+        4.826492200149871e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ],
+        [
+          0.0005009657330561055,
+          0.0005014427870898889
+        ],
+        [
+          0.0009082847206249751,
+          0.0009087636823268376
+        ],
+        [
+          0.001107971764558146,
+          0.0011084516161850451
+        ],
+        [
+          0.0015152907521270157,
+          0.001515772511421994
+        ],
+        [
+          0.0017149777960601866,
+          0.0017154604452802016
+        ]
+      ]
+    },
+    {
+      "case": "distinct",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 84,
+      "rhs_proxy": 8518,
+      "native_runs": 4,
+      "cache_hits": 3,
+      "cache_inserts": 3,
+      "last_width": 7.585641743287636e-08,
+      "last_horner_width": 8.348000852648988e-08,
+      "absolute_widths": [
+        4.764962488375008e-07,
+        4.770540337833366e-07,
+        4.789617018625047e-07,
+        4.798516268990534e-07,
+        4.8175929497833e-07,
+        4.826492200149871e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ],
+        [
+          0.0005009657330561055,
+          0.0005014427870898889
+        ],
+        [
+          0.0009082847206249751,
+          0.0009087636823268376
+        ],
+        [
+          0.001107971764558146,
+          0.0011084516161850451
+        ],
+        [
+          0.0015152907521270157,
+          0.001515772511421994
+        ],
+        [
+          0.0017149777960601866,
+          0.0017154604452802016
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 239,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 239,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 239,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 239,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 45,
+      "rhs_proxy": 625,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4821559833536093e-07
+      ],
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 45,
+      "rhs_proxy": 625,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4821559833536093e-07
+      ],
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 165,
+      "rhs_proxy": 2210,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 8.691435591557956e-08,
+      "last_horner_width": 9.354506485223545e-08,
+      "absolute_widths": [
+        4.4821559833536093e-07,
+        4.5077681918366964e-07,
+        4.5742445163436153e-07,
+        4.5998567248283287e-07,
+        4.666333049336332e-07,
+        4.691945257821045e-07
+      ],
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ],
+        [
+          0.0005479460103556265,
+          0.0005483967871748102
+        ],
+        [
+          0.0009552626443819761,
+          0.0009557200688336104
+        ],
+        [
+          0.0011549488557005784,
+          0.0011554088413730612
+        ],
+        [
+          0.0015622654897269278,
+          0.0015627321230318614
+        ],
+        [
+          0.00176195170104553,
+          0.0017624208955713122
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 67,
+      "rhs_proxy": 896,
+      "native_runs": 3,
+      "cache_hits": 4,
+      "cache_inserts": 2,
+      "last_width": 8.691435591557956e-08,
+      "last_horner_width": 9.354506485223545e-08,
+      "absolute_widths": [
+        4.4821559833536093e-07,
+        4.5077681918366964e-07,
+        4.5742445163436153e-07,
+        4.5998567248283287e-07,
+        4.666333049336332e-07,
+        4.691945257821045e-07
+      ],
+      "events": [
+        [
+          0.0003482597990370241,
+          0.0003487080146353595
+        ],
+        [
+          0.0005479460103556265,
+          0.0005483967871748102
+        ],
+        [
+          0.0009552626443819761,
+          0.0009557200688336104
+        ],
+        [
+          0.0011549488557005784,
+          0.0011554088413730612
+        ],
+        [
+          0.0015622654897269278,
+          0.0015627321230318614
+        ],
+        [
+          0.00176195170104553,
+          0.0017624208955713122
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 239,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 239,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 239,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 239,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 45,
+      "rhs_proxy": 623,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4482225376832633e-07
+      ],
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 45,
+      "rhs_proxy": 623,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.4482225376832633e-07
+      ],
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 165,
+      "rhs_proxy": 2210,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 8.324378327699122e-08,
+      "last_horner_width": 8.961398625699708e-08,
+      "absolute_widths": [
+        4.4482225376832633e-07,
+        4.4551961707686456e-07,
+        4.4732765617431884e-07,
+        4.480250194829113e-07,
+        4.49833058580474e-07,
+        4.505304218890664e-07
+      ],
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ],
+        [
+          0.0005479486389566799,
+          0.0005483941585737568
+        ],
+        [
+          0.0009552676927797061,
+          0.0009557150204358804
+        ],
+        [
+          0.0011549548360270784,
+          0.0011554028610465613
+        ],
+        [
+          0.0015622738898501045,
+          0.001562723722908685
+        ],
+        [
+          0.0017619610330974768,
+          0.001762411563519366
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Mass",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 67,
+      "rhs_proxy": 896,
+      "native_runs": 3,
+      "cache_hits": 4,
+      "cache_inserts": 2,
+      "last_width": 8.324378327699122e-08,
+      "last_horner_width": 8.961398625699708e-08,
+      "absolute_widths": [
+        4.4482225376832633e-07,
+        4.4551961707686456e-07,
+        4.4732765617431884e-07,
+        4.480250194829113e-07,
+        4.49833058580474e-07,
+        4.505304218890664e-07
+      ],
+      "events": [
+        [
+          0.00034826149570930763,
+          0.00034870631796307596
+        ],
+        [
+          0.0005479486389566799,
+          0.0005483941585737568
+        ],
+        [
+          0.0009552676927797061,
+          0.0009557150204358804
+        ],
+        [
+          0.0011549548360270784,
+          0.0011554028610465613
+        ],
+        [
+          0.0015622738898501045,
+          0.001562723722908685
+        ],
+        [
+          0.0017619610330974768,
+          0.001762411563519366
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 2819,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 2819,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 2819,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 2819,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 44,
+      "rhs_proxy": 6961,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559469476399e-07
+      ],
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 44,
+      "rhs_proxy": 6961,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559469476399e-07
+      ],
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 162,
+      "rhs_proxy": 25724,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 9.350657902708586e-08,
+      "last_horner_width": 9.62465158253111e-08,
+      "absolute_widths": [
+        4.807559469476399e-07,
+        4.840269303882892e-07,
+        4.910451699347744e-07,
+        4.943161533755864e-07,
+        5.0133439292218e-07,
+        5.046053763628836e-07
+      ],
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ],
+        [
+          0.0005479293978476633,
+          0.0005484134247780516
+        ],
+        [
+          0.0009552458301308011,
+          0.0009557368753007359
+        ],
+        [
+          0.0011549316835347706,
+          0.0011554259996881461
+        ],
+        [
+          0.0015622481158179082,
+          0.0015627494502108304
+        ],
+        [
+          0.0017619339692218777,
+          0.0017624385745982406
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 66,
+      "rhs_proxy": 10454,
+      "native_runs": 3,
+      "cache_hits": 4,
+      "cache_inserts": 2,
+      "last_width": 9.350657902708586e-08,
+      "last_horner_width": 9.62465158253111e-08,
+      "absolute_widths": [
+        4.807559469476399e-07,
+        4.840269303882892e-07,
+        4.910451699347744e-07,
+        4.943161533755864e-07,
+        5.0133439292218e-07,
+        5.046053763628836e-07
+      ],
+      "events": [
+        [
+          0.0003482435444436937,
+          0.00034872430039064136
+        ],
+        [
+          0.0005479293978476633,
+          0.0005484134247780516
+        ],
+        [
+          0.0009552458301308011,
+          0.0009557368753007359
+        ],
+        [
+          0.0011549316835347706,
+          0.0011554259996881461
+        ],
+        [
+          0.0015622481158179082,
+          0.0015627494502108304
+        ],
+        [
+          0.0017619339692218777,
+          0.0017624385745982406
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 2819,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 2819,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 2819,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 2819,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 44,
+      "rhs_proxy": 6961,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488020474e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 44,
+      "rhs_proxy": 6961,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488020474e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 162,
+      "rhs_proxy": 25724,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 8.92482448102387e-08,
+      "last_horner_width": 9.187450398715196e-08,
+      "absolute_widths": [
+        4.764962488020474e-07,
+        4.773861732589816e-07,
+        4.792938429815834e-07,
+        4.801837674387344e-07,
+        4.820914371614447e-07,
+        4.829813616184873e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ],
+        [
+          0.000547932718226228,
+          0.0005484101043994869
+        ],
+        [
+          0.0009552517057942777,
+          0.0009557309996372593
+        ],
+        [
+          0.001154938749727739,
+          0.0011554189334951777
+        ],
+        [
+          0.0015622577372957887,
+          0.0015627398287329502
+        ],
+        [
+          0.00176194478122925,
+          0.0017624277625908685
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Prepared5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 66,
+      "rhs_proxy": 10454,
+      "native_runs": 3,
+      "cache_hits": 4,
+      "cache_inserts": 2,
+      "last_width": 8.92482448102387e-08,
+      "last_horner_width": 9.187450398715196e-08,
+      "absolute_widths": [
+        4.764962488020474e-07,
+        4.773861732589816e-07,
+        4.792938429815834e-07,
+        4.801837674387344e-07,
+        4.820914371614447e-07,
+        4.829813616184873e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927665,
+          0.00034872217054156854
+        ],
+        [
+          0.000547932718226228,
+          0.0005484101043994869
+        ],
+        [
+          0.0009552517057942777,
+          0.0009557309996372593
+        ],
+        [
+          0.001154938749727739,
+          0.0011554189334951777
+        ],
+        [
+          0.0015622577372957887,
+          0.0015627398287329502
+        ],
+        [
+          0.00176194478122925,
+          0.0017624277625908685
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 1826,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 1826,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 1826,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Shared",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 1826,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 44,
+      "rhs_proxy": 4503,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559426472062e-07
+      ],
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 44,
+      "rhs_proxy": 4503,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.807559426472062e-07
+      ],
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 162,
+      "rhs_proxy": 16637,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 9.350657975622538e-08,
+      "last_horner_width": 9.624651658785759e-08,
+      "absolute_widths": [
+        4.807559426472062e-07,
+        4.840269218678696e-07,
+        4.91045170332785e-07,
+        4.943161495535569e-07,
+        5.013343980185807e-07,
+        5.046053772393526e-07
+      ],
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ],
+        [
+          0.0005479293978519231,
+          0.000548413424773791
+        ],
+        [
+          0.0009552458301305999,
+          0.0009557368753009326
+        ],
+        [
+          0.0011549316835366787,
+          0.0011554259996862323
+        ],
+        [
+          0.0015622481158153554,
+          0.001562749450213374
+        ],
+        [
+          0.0017619339692214343,
+          0.0017624385745986736
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Max",
+      "order": "Correlated",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 66,
+      "rhs_proxy": 6763,
+      "native_runs": 3,
+      "cache_hits": 4,
+      "cache_inserts": 2,
+      "last_width": 9.350657975622538e-08,
+      "last_horner_width": 9.624651658785759e-08,
+      "absolute_widths": [
+        4.807559426472062e-07,
+        4.840269218678696e-07,
+        4.91045170332785e-07,
+        4.943161495535569e-07,
+        5.013343980185807e-07,
+        5.046053772393526e-07
+      ],
+      "events": [
+        [
+          0.00034824354444584424,
+          0.00034872430038849144
+        ],
+        [
+          0.0005479293978519231,
+          0.000548413424773791
+        ],
+        [
+          0.0009552458301305999,
+          0.0009557368753009326
+        ],
+        [
+          0.0011549316835366787,
+          0.0011554259996862323
+        ],
+        [
+          0.0015622481158153554,
+          0.001562749450213374
+        ],
+        [
+          0.0017619339692214343,
+          0.0017624385745986736
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 1826,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 1826,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 1826,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Shared",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 0,
+      "attempts": 18,
+      "rhs_proxy": 1826,
+      "native_runs": 1,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [],
+      "events": []
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointCentered",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 44,
+      "rhs_proxy": 4503,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488375008e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "JointGreen",
+      "radius": 1.4901161193847656e-08,
+      "stop": "OrderUnresolved",
+      "reason": "invalid numerical input: DAE client: first-event order unresolved",
+      "qualified": false,
+      "committed": 1,
+      "attempts": 44,
+      "rhs_proxy": 4503,
+      "native_runs": 2,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": null,
+      "last_horner_width": null,
+      "absolute_widths": [
+        4.764962488375008e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "AtlasFresh",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 162,
+      "rhs_proxy": 16637,
+      "native_runs": 7,
+      "cache_hits": 0,
+      "cache_inserts": 0,
+      "last_width": 8.924824441187572e-08,
+      "last_horner_width": 9.187450360841304e-08,
+      "absolute_widths": [
+        4.764962488375008e-07,
+        4.773861738740495e-07,
+        4.792938419532176e-07,
+        4.801837669898747e-07,
+        4.820914350691513e-07,
+        4.829813601058084e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ],
+        [
+          0.00054793271822592,
+          0.0005484101043997941
+        ],
+        [
+          0.0009552517057947896,
+          0.0009557309996367429
+        ],
+        [
+          0.0011549387497279606,
+          0.0011554189334949505
+        ],
+        [
+          0.0015622577372968302,
+          0.0015627398287318993
+        ],
+        [
+          0.0017619447812300011,
+          0.001762427762590107
+        ]
+      ]
+    },
+    {
+      "case": "overlap",
+      "solver": "Scalar5",
+      "cert": "Integral4",
+      "order": "Correlated",
+      "method": "AtlasReuse",
+      "radius": 1.4901161193847656e-08,
+      "stop": "Horizon",
+      "reason": null,
+      "qualified": true,
+      "committed": 6,
+      "attempts": 66,
+      "rhs_proxy": 6763,
+      "native_runs": 3,
+      "cache_hits": 4,
+      "cache_inserts": 2,
+      "last_width": 8.924824441187572e-08,
+      "last_horner_width": 9.187450360841304e-08,
+      "absolute_widths": [
+        4.764962488375008e-07,
+        4.773861738740495e-07,
+        4.792938419532176e-07,
+        4.801837669898747e-07,
+        4.820914350691513e-07,
+        4.829813601058084e-07
+      ],
+      "events": [
+        [
+          0.0003482456742927491,
+          0.0003487221705415866
+        ],
+        [
+          0.00054793271822592,
+          0.0005484101043997941
+        ],
+        [
+          0.0009552517057947896,
+          0.0009557309996367429
+        ],
+        [
+          0.0011549387497279606,
+          0.0011554189334949505
+        ],
+        [
+          0.0015622577372968302,
+          0.0015627398287318993
+        ],
+        [
+          0.0017619447812300011,
+          0.001762427762590107
+        ]
+      ]
+    }
+  ]
+}
