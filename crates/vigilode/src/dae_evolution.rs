@@ -56,6 +56,9 @@ pub enum EvolutionRoute {
     BoundedSturmNewton5,
     Reduced5ComplexDictionary,
     Reduced5ComplexScaled,
+    Reduced5Aperiodic,
+    Reduced5AperiodicCentered,
+    Reduced5AperiodicInterval,
 }
 impl EvolutionRoute {
     fn init(self) -> InitRoute {
@@ -102,6 +105,14 @@ impl EvolutionRoute {
         match self {
             Self::Reduced5ComplexDictionary => Some(de::ComplexEndpointRoute::DictionaryDirected),
             Self::Reduced5ComplexScaled => Some(de::ComplexEndpointRoute::ScaledRecurrence),
+            _ => None,
+        }
+    }
+    fn aperiodic(self) -> Option<de::AperiodicEndpointRoute> {
+        match self {
+            Self::Reduced5Aperiodic => Some(de::AperiodicEndpointRoute::Sequential),
+            Self::Reduced5AperiodicCentered => Some(de::AperiodicEndpointRoute::CenteredStream),
+            Self::Reduced5AperiodicInterval => Some(de::AperiodicEndpointRoute::IntervalStream),
             _ => None,
         }
     }
@@ -277,6 +288,21 @@ impl Engine {
                 self.policy.init.condition_cap,
                 *route,
             )
+        } else if let Some(route) = self.route.aperiodic() {
+            de::certify_slab_with_aperiodic(
+                &self.src,
+                times,
+                power,
+                &self.branch,
+                self.policy.tube_radius,
+                incoming,
+                self.policy.green,
+                self.policy.init.condition_cap,
+                4,
+                12,
+                route,
+                &rodas5p_integrators::ParallelExecution::sequential(),
+            )
         } else if let Some(route) = self.route.complex() {
             de::certify_slab_with_complex(
                 &self.src,
@@ -444,6 +470,9 @@ impl Engine {
                 | EvolutionRoute::BoundedSturmNewton5
                 | EvolutionRoute::Reduced5ComplexDictionary
                 | EvolutionRoute::Reduced5ComplexScaled
+                | EvolutionRoute::Reduced5Aperiodic
+                | EvolutionRoute::Reduced5AperiodicCentered
+                | EvolutionRoute::Reduced5AperiodicInterval
         ) && self.src.nz() == 1
             && self.warp.is_none()
     }
@@ -987,7 +1016,8 @@ fn evolve_epoch_authority(
         && (route.spectral()
             || route.picard().is_some()
             || route.linear_ls().is_some()
-            || route.complex().is_some())
+            || route.complex().is_some()
+            || route.aperiodic().is_some())
     {
         return Err(bad("spectral route requires general slab authority"));
     }

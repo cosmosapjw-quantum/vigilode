@@ -2116,6 +2116,334 @@ pub fn certify_slab_with_complex(
     }
     Ok(c)
 }
+/// Source-bound aperiodic transport. The owning recurrence verifies the
+/// rounded transition chain; the physical receipt additionally verifies
+/// transition truncation, source coefficients and incoming uncertainty.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum AperiodicEndpointRoute {
+    Sequential,
+    OrderedScan,
+    CenteredStream,
+    IntervalStream,
+}
+#[derive(Clone, Copy, Debug, Serialize)]
+pub struct AperiodicEndpointBounds {
+    pub route: AperiodicEndpointRoute,
+    pub cells: usize,
+    pub order: usize,
+    pub candidate_error: f64,
+    pub initial_error: f64,
+    pub propagated_error: f64,
+    pub discrete_error: Option<f64>,
+    pub max_tail: f64,
+    pub coefficient_steps: usize,
+    pub scalar_products: usize,
+    pub nonzero_actions: usize,
+    pub threads: usize,
+}
+const AP_DIM: usize = 8;
+const AP_MAT: usize = AP_DIM * AP_DIM;
+const AP_DEG: usize = 36;
+fn interval_matrix_transition(
+    src: &DaeSource,
+    times: [f64; 2],
+    order: usize,
+    steps: &mut usize,
+    products: &mut usize,
+    actions: &mut usize,
+) -> CoreResult<([Iv; AP_MAT], f64)> {
+    let (a, n) = linear_source_matrices(src, times)?;
+    if n > AP_DIM || !(7..=12).contains(&order) {
+        return Err(bad("aperiodic transition cap"));
+    }
+    let mut d = 0;
+    for j in 1..3 {
+        if a[j][..n * n].iter().any(|v| v.lo != 0. || v.hi != 0.) {
+            d = j;
+        }
+    }
+    let m = picard_majorant(&a, n)?;
+    if m > 8. {
+        return Err(bad("aperiodic transition majorant"));
+    }
+    // Direct time-power recurrence rather than enumerating ordered words.
+    // Terms omitted above degree (d+1)*order contain >order generators.
+    // Their absolute-coefficient sum is bounded by the Peano-Baker tail.
+    let limit = (d + 1) * order;
+    let mut t = [[zero(); AP_MAT]; AP_DEG + 1];
+    let mut sum = [zero(); AP_MAT];
+    for i in 0..n {
+        t[0][i * n + i] = p(1.)?;
+        sum[i * n + i] = p(1.)?;
+    }
+    let mut zero_run = 0;
+    let mut exact = false;
+    for k in 1..=limit {
+        for j in 0..=d.min(k - 1) {
+            let prev = t[k - 1 - j];
+            if prev[..n * n].iter().all(|v| v.lo == 0. && v.hi == 0.)
+                || a[j][..n * n].iter().all(|v| v.lo == 0. && v.hi == 0.)
+            {
+                continue;
+            }
+            *actions += 1;
+            for i in 0..n {
+                for l in 0..n {
+                    let c = a[j][i * n + l];
+                    if c.lo == 0. && c.hi == 0. {
+                        continue;
+                    }
+                    for col in 0..n {
+                        let v = prev[l * n + col];
+                        if v.lo == 0. && v.hi == 0. {
+                            continue;
+                        }
+                        let idx = i * n + col;
+                        t[k][idx] = t[k][idx].add(c.mul(v)?)?;
+                        *products += 1;
+                    }
+                }
+            }
+        }
+        for i in 0..n * n {
+            t[k][i] = t[k][i].div(p(k as f64)?)?;
+            sum[i] = sum[i].add(t[k][i])?;
+        }
+        *steps += 1;
+        if t[k][..n * n].iter().all(|v| v.lo == 0. && v.hi == 0.) {
+            zero_run += 1;
+        } else {
+            zero_run = 0;
+        }
+        if zero_run > d {
+            exact = true;
+            break;
+        }
+    }
+    let tail = if exact {
+        0.
+    } else {
+        picard_tail(1., m, order, exp_interval(m)?.hi)?
+    };
+    let e = Iv::new(-tail, tail)?;
+    for v in &mut sum[..(n - 1) * n] {
+        *v = v.add(e)?;
+    }
+    // The augmented coordinate is identically constant, not a free IVP
+    // error component. This identity is structural in linear_source_matrices.
+    for j in 0..n {
+        sum[(n - 1) * n + j] = p(if j + 1 == n { 1. } else { 0. })?;
+    }
+    Ok((sum, tail))
+}
+fn ap_action(a: &[Iv], v: &[Iv], n: usize) -> CoreResult<[Iv; AP_DIM]> {
+    let mut out = [zero(); AP_DIM];
+    for i in 0..n {
+        out[i] = a[i * n..(i + 1) * n]
+            .iter()
+            .zip(v)
+            .try_fold(zero(), |s, (&a, &x)| s.add(a.mul(x)?))?;
+    }
+    Ok(out)
+}
+fn ap_gain(a: &[Iv], n: usize) -> CoreResult<f64> {
+    let mut gain = 0_f64;
+    for i in 0..n - 1 {
+        gain = gain.max(
+            a[i * n..i * n + n - 1]
+                .iter()
+                .try_fold(0., |s, v| add_up(s, v.mag()))?,
+        );
+    }
+    Ok(gain)
+}
+/// Nonuniform partition uses represented clock endpoints, not an assumed
+/// exact equal step. Transition matrices enclose the exact local flow.
+pub fn source_aperiodic_endpoint(
+    src: &DaeSource,
+    times: [f64; 2],
+    y: &[Poly],
+    incoming: f64,
+    cells: usize,
+    order: usize,
+    route: AperiodicEndpointRoute,
+    exec: &ParallelExecution,
+) -> CoreResult<AperiodicEndpointBounds> {
+    crate::affine_event_certificate::check_affine_event_arithmetic()?;
+    let nx = src.nx();
+    let n = nx + 1;
+    if n > AP_DIM
+        || y.len() != nx + src.nz()
+        || y.iter().any(|v| v.is_empty() || v.len() > 5)
+        || !incoming.is_finite()
+        || incoming < 0.
+        || !matches!(cells, 2 | 4 | 8)
+        || !matches!(order, 7 | 12)
+    {
+        return Err(bad("aperiodic endpoint shape"));
+    }
+    for v in y.iter().flatten() {
+        Iv::new(v.lo, v.hi)?;
+    }
+    let h = p(times[1])?.sub(p(times[0])?)?;
+    if h.lo <= 0. {
+        return Err(bad("aperiodic clock"));
+    }
+    let mut clock = [0.; 9];
+    clock[0] = times[0];
+    clock[cells] = times[1];
+    // First cell half a regular cell, final cell one and a half.
+    for i in 1..cells {
+        let u = (i as f64 - 0.5) / cells as f64;
+        clock[i] = di::mid(p(times[0])?.add(h.scale(u)?)?);
+    }
+    if clock[..=cells].windows(2).any(|v| v[0] >= v[1]) {
+        return Err(bad("aperiodic partition resolution"));
+    }
+    let mut t = [[zero(); AP_MAT]; 8];
+    let mut max_tail = 0_f64;
+    let mut coefficient_steps = 0;
+    let mut scalar_products = 0;
+    let mut nonzero_actions = 0;
+    for i in 0..cells {
+        let (v, e) = interval_matrix_transition(
+            src,
+            [clock[i], clock[i + 1]],
+            order,
+            &mut coefficient_steps,
+            &mut scalar_products,
+            &mut nonzero_actions,
+        )?;
+        t[i] = v;
+        max_tail = max_tail.max(e);
+    }
+    let mut center = [0.; AP_DIM];
+    center[nx] = 1.;
+    let mut initial_error = incoming;
+    for i in 0..nx {
+        center[i] = di::mid(y[i][0]);
+        initial_error = initial_error.max(add_up(incoming, y[i][0].sub(p(center[i])?)?.mag())?);
+    }
+    let mut discrete_error = None;
+    let mut propagated_error = initial_error;
+    let mut final_box = [zero(); AP_DIM];
+    if route == AperiodicEndpointRoute::IntervalStream {
+        for i in 0..nx {
+            final_box[i] = y[i][0].add(Iv::new(-incoming, incoming)?)?;
+        }
+        final_box[nx] = p(1.)?;
+        for a in &t[..cells] {
+            final_box = ap_action(&a[..n * n], &final_box[..n], n)?;
+        }
+        propagated_error = 0.;
+        for v in &final_box[..nx] {
+            propagated_error = propagated_error.max(v.sub(p(di::mid(*v))?)?.mag());
+        }
+    } else {
+        let own = matches!(
+            route,
+            AperiodicEndpointRoute::Sequential | AperiodicEndpointRoute::OrderedScan
+        );
+        let report = if own {
+            let g = t[..cells]
+                .iter()
+                .map(|a| DenseMatrix::new(n, n, a[..n * n].iter().copied().map(di::mid).collect()))
+                .collect::<CoreResult<Vec<_>>>()?;
+            let owner = crate::retro_foundation::Aperiodic::new(g)?;
+            let b = vec![vec![0.; n]; cells];
+            let mode = if route == AperiodicEndpointRoute::Sequential {
+                crate::retro_foundation::TimeMode::Sequential
+            } else {
+                crate::retro_foundation::TimeMode::OrderedScan
+            };
+            let r = owner.solve(&center[..n], &b, mode, exec)?;
+            discrete_error = Some(r.error_upper);
+            Some(r)
+        } else {
+            None
+        };
+        for (i, a) in t[..cells].iter().enumerate() {
+            let mut point = [zero(); AP_DIM];
+            for j in 0..n {
+                point[j] = p(center[j])?;
+            }
+            let v = ap_action(&a[..n * n], &point[..n], n)?;
+            let mut next = [0.; AP_DIM];
+            next[nx] = 1.;
+            for j in 0..nx {
+                next[j] = if let Some(r) = &report {
+                    r.values[i][j]
+                } else {
+                    di::mid(v[j])
+                };
+            }
+            if report.as_ref().is_some_and(|r| r.values[i][nx] != 1.) {
+                return Err(bad("aperiodic augmented coordinate"));
+            }
+            let mut residual = 0_f64;
+            for j in 0..nx {
+                residual = residual.max(v[j].sub(p(next[j])?)?.mag());
+            }
+            propagated_error = add_up(
+                mul_up(ap_gain(&a[..n * n], n)?, propagated_error)?,
+                residual,
+            )?;
+            center = next;
+        }
+        for i in 0..nx {
+            final_box[i] = p(center[i])?.add(Iv::new(-propagated_error, propagated_error)?)?;
+        }
+    }
+    let mut candidate_error = 0_f64;
+    for i in 0..nx {
+        candidate_error = candidate_error.max(final_box[i].sub(eval(&y[i], p(1.)?)?)?.mag());
+    }
+    Ok(AperiodicEndpointBounds {
+        route,
+        cells,
+        order,
+        candidate_error,
+        initial_error,
+        propagated_error,
+        discrete_error,
+        max_tail,
+        coefficient_steps,
+        scalar_products,
+        nonzero_actions,
+        threads: if route == AperiodicEndpointRoute::OrderedScan {
+            exec.threads()
+        } else {
+            1
+        },
+    })
+}
+#[allow(clippy::too_many_arguments)]
+pub fn certify_slab_with_aperiodic(
+    src: &DaeSource,
+    times: [f64; 2],
+    y: &[Poly],
+    branch: &[[f64; 2]],
+    tube: f64,
+    incoming: Option<f64>,
+    green: bool,
+    condition_cap: f64,
+    cells: usize,
+    order: usize,
+    route: AperiodicEndpointRoute,
+    exec: &ParallelExecution,
+) -> CoreResult<SlabCertificate> {
+    let mut c = certify_slab(src, times, y, branch, tube, incoming, green, condition_cap)?;
+    if c.global_qualified {
+        let r = source_aperiodic_endpoint(src, times, y, c.incoming, cells, order, route, exec)?;
+        c.outgoing = Some(
+            c.outgoing
+                .ok_or_else(|| bad("aperiodic original outgoing"))?
+                .min(r.candidate_error),
+        );
+        c.aperiodic_endpoint = Some(r);
+    }
+    Ok(c)
+}
 #[derive(Clone, Debug, Serialize)]
 pub struct SlabCertificate {
     pub times: [f64; 2],
@@ -2137,6 +2465,8 @@ pub struct SlabCertificate {
     pub linear_ls_endpoint: Option<LinearLsEndpointBounds>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub complex_endpoint: Option<ComplexEndpointBounds>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub aperiodic_endpoint: Option<AperiodicEndpointBounds>,
     pub algebraic_defect: f64,
     pub differential_defect: f64,
     pub normalized_reduced_defect: f64,
@@ -2383,6 +2713,7 @@ pub fn certify_slab_with_residual(
         picard_endpoint: None,
         linear_ls_endpoint: None,
         complex_endpoint: None,
+        aperiodic_endpoint: None,
         algebraic_defect: az,
         differential_defect: dx,
         normalized_reduced_defect: rnorm,
