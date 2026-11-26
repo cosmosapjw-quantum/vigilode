@@ -1,0 +1,2621 @@
+{
+  "atlas": {
+    "candidates": {
+      "Affine5": {
+        "bytes": 30477574,
+        "qualified": 2,
+        "requests": 796912,
+        "rows": 2
+      },
+      "BoundedPrepared5": {
+        "bytes": 4039442,
+        "qualified": 2,
+        "requests": 53700,
+        "rows": 2
+      },
+      "Prepared5": {
+        "bytes": 35108830,
+        "qualified": 2,
+        "requests": 806600,
+        "rows": 2
+      },
+      "Reduced5": {
+        "bytes": 5297794,
+        "qualified": 2,
+        "requests": 84296,
+        "rows": 2
+      },
+      "Scalar5": {
+        "bytes": 46648116,
+        "qualified": 2,
+        "requests": 1256210,
+        "rows": 2
+      }
+    },
+    "pareto_count": 2,
+    "pareto_covered": 2,
+    "proposals": {
+      "mutation": 616,
+      "structure": 408
+    },
+    "rows": 10,
+    "strata": [
+      {
+        "covered": 1,
+        "group": [
+          "Integral4"
+        ],
+        "pareto": [
+          {
+            "cert": "Integral4",
+            "objectives": [
+              26850,
+              2019721,
+              56
+            ],
+            "solver": "BoundedPrepared5"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "BoundedPrepared5"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "Max"
+        ],
+        "pareto": [
+          {
+            "cert": "Max",
+            "objectives": [
+              26850,
+              2019721,
+              56
+            ],
+            "solver": "BoundedPrepared5"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "BoundedPrepared5"
+      }
+    ],
+    "unique": 10
+  },
+  "epoch": {
+    "candidates": {
+      "BoundedPrepared5": {
+        "bytes": 111365,
+        "qualified": 2,
+        "requests": 1446,
+        "rows": 2
+      },
+      "BoundedPreparedLegendre5": {
+        "bytes": 94821,
+        "qualified": 2,
+        "requests": 1333,
+        "rows": 2
+      },
+      "Prepared5": {
+        "bytes": 1269996,
+        "qualified": 2,
+        "requests": 37350,
+        "rows": 2
+      },
+      "Reduced5": {
+        "bytes": 177821,
+        "qualified": 2,
+        "requests": 3542,
+        "rows": 2
+      },
+      "Reduced5Legendre": {
+        "bytes": 161277,
+        "qualified": 2,
+        "requests": 3429,
+        "rows": 2
+      }
+    },
+    "pareto_count": 4,
+    "pareto_covered": 4,
+    "proposals": {
+      "mutation": 409,
+      "structure": 615
+    },
+    "rows": 10,
+    "strata": [
+      {
+        "covered": 2,
+        "group": [
+          "quadratic"
+        ],
+        "pareto": [
+          {
+            "case": "quadratic",
+            "objectives": [
+              656,
+              47226,
+              285,
+              0,
+              9.695221474412622e-10
+            ],
+            "solver": "BoundedPrepared5"
+          },
+          {
+            "case": "quadratic",
+            "objectives": [
+              608,
+              41722,
+              285,
+              12,
+              9.695221474412622e-10
+            ],
+            "solver": "BoundedPreparedLegendre5"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "BoundedPreparedLegendre5"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "quartic"
+        ],
+        "pareto": [
+          {
+            "case": "quartic",
+            "objectives": [
+              790,
+              64139,
+              360,
+              0,
+              6.816182722502019e-10
+            ],
+            "solver": "BoundedPrepared5"
+          },
+          {
+            "case": "quartic",
+            "objectives": [
+              725,
+              53099,
+              360,
+              45,
+              6.816182722502019e-10
+            ],
+            "solver": "BoundedPreparedLegendre5"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "BoundedPreparedLegendre5"
+      }
+    ],
+    "unique": 10
+  },
+  "reconstruction": {
+    "candidates": {
+      "bounded_fixed": {
+        "bytes": 0,
+        "qualified": 30,
+        "requests": 0,
+        "rows": 30
+      },
+      "bounded_previous": {
+        "bytes": 0,
+        "qualified": 30,
+        "requests": 0,
+        "rows": 30
+      },
+      "existing": {
+        "bytes": 1194284,
+        "qualified": 30,
+        "requests": 31420,
+        "rows": 30
+      }
+    },
+    "pareto_count": 78,
+    "pareto_covered": 78,
+    "proposals": {
+      "mutation": 67,
+      "structure": 957
+    },
+    "rows": 90,
+    "strata": [
+      {
+        "covered": 3,
+        "group": [
+          "Affine5",
+          "Integral4",
+          "first"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Integral4",
+            "objectives": [
+              1196,
+              48636,
+              31,
+              25,
+              0,
+              0,
+              2.9227265362399725e-16,
+              1.490677362522787e-08,
+              1.4906773917500526e-08
+            ],
+            "position": "first",
+            "solver": "Affine5"
+          },
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              37,
+              8,
+              2.97102153972106e-16,
+              1.490677362522787e-08,
+              1.4906773922330027e-08
+            ],
+            "position": "first",
+            "solver": "Affine5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              37,
+              8,
+              2.97102153972106e-16,
+              1.490677362522787e-08,
+              1.4906773922330027e-08
+            ],
+            "position": "first",
+            "solver": "Affine5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Affine5",
+          "Integral4",
+          "last"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Integral4",
+            "objectives": [
+              1665,
+              56348,
+              30,
+              25,
+              0,
+              0,
+              3.070113048389078e-16,
+              1.495096460132967e-08,
+              1.4950964908340978e-08
+            ],
+            "position": "last",
+            "solver": "Affine5"
+          },
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              6.532574140226514e-16,
+              1.495096460132967e-08,
+              1.4950965254587086e-08
+            ],
+            "position": "last",
+            "solver": "Affine5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              6.532574140226514e-16,
+              1.495096460132967e-08,
+              1.4950965254587086e-08
+            ],
+            "position": "last",
+            "solver": "Affine5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Affine5",
+          "Integral4",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Integral4",
+            "objectives": [
+              1438,
+              52326,
+              30,
+              25,
+              0,
+              0,
+              8.766689713058735e-16,
+              1.4929453790305595e-08,
+              1.4929454666974568e-08
+            ],
+            "position": "middle",
+            "solver": "Affine5"
+          },
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              8.655220177200069e-16,
+              1.4929453790305595e-08,
+              1.4929454655827614e-08
+            ],
+            "position": "middle",
+            "solver": "Affine5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              8.655220177200069e-16,
+              1.4929453790305595e-08,
+              1.4929454655827614e-08
+            ],
+            "position": "middle",
+            "solver": "Affine5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Affine5",
+          "Max",
+          "first"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Max",
+            "objectives": [
+              1196,
+              48636,
+              31,
+              25,
+              0,
+              0,
+              2.9227265362399725e-16,
+              1.4921829793139256e-08,
+              1.4921830085411912e-08
+            ],
+            "position": "first",
+            "solver": "Affine5"
+          },
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              37,
+              8,
+              2.97102153972106e-16,
+              1.4921829793139256e-08,
+              1.4921830090241413e-08
+            ],
+            "position": "first",
+            "solver": "Affine5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              37,
+              8,
+              2.97102153972106e-16,
+              1.4921829793139256e-08,
+              1.4921830090241413e-08
+            ],
+            "position": "first",
+            "solver": "Affine5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Affine5",
+          "Max",
+          "last"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Max",
+            "objectives": [
+              1665,
+              56348,
+              30,
+              25,
+              0,
+              0,
+              3.070113048389078e-16,
+              1.5084507352227303e-08,
+              1.508450765923861e-08
+            ],
+            "position": "last",
+            "solver": "Affine5"
+          },
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              6.532574140226514e-16,
+              1.5084507352227303e-08,
+              1.5084508005484718e-08
+            ],
+            "position": "last",
+            "solver": "Affine5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              6.532574140226514e-16,
+              1.5084507352227303e-08,
+              1.5084508005484718e-08
+            ],
+            "position": "last",
+            "solver": "Affine5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Affine5",
+          "Max",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Max",
+            "objectives": [
+              1438,
+              52326,
+              30,
+              25,
+              0,
+              0,
+              8.766689713058735e-16,
+              1.500523103676501e-08,
+              1.5005231913433983e-08
+            ],
+            "position": "middle",
+            "solver": "Affine5"
+          },
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              8.655220177200069e-16,
+              1.500523103676501e-08,
+              1.500523190228703e-08
+            ],
+            "position": "middle",
+            "solver": "Affine5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              8.655220177200069e-16,
+              1.500523103676501e-08,
+              1.500523190228703e-08
+            ],
+            "position": "middle",
+            "solver": "Affine5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "BoundedPrepared5",
+          "Integral4",
+          "first"
+        ],
+        "pareto": [
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              37,
+              8,
+              3.159401782995702e-16,
+              1.490677362546802e-08,
+              1.49067739414082e-08
+            ],
+            "position": "first",
+            "solver": "BoundedPrepared5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              37,
+              8,
+              3.159401782995702e-16,
+              1.490677362546802e-08,
+              1.49067739414082e-08
+            ],
+            "position": "first",
+            "solver": "BoundedPrepared5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "BoundedPrepared5",
+          "Integral4",
+          "last"
+        ],
+        "pareto": [
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              5.345586813639263e-16,
+              1.4950964551005654e-08,
+              1.4950965085564335e-08
+            ],
+            "position": "last",
+            "solver": "BoundedPrepared5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              5.345586813639263e-16,
+              1.4950964551005654e-08,
+              1.4950965085564335e-08
+            ],
+            "position": "last",
+            "solver": "BoundedPrepared5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "BoundedPrepared5",
+          "Integral4",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              1.1709070678281157e-15,
+              1.4929453747807226e-08,
+              1.4929454918714295e-08
+            ],
+            "position": "middle",
+            "solver": "BoundedPrepared5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              1.1709070678281157e-15,
+              1.4929453747807226e-08,
+              1.4929454918714295e-08
+            ],
+            "position": "middle",
+            "solver": "BoundedPrepared5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "BoundedPrepared5",
+          "Max",
+          "first"
+        ],
+        "pareto": [
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              37,
+              8,
+              3.159401782995702e-16,
+              1.492182979050543e-08,
+              1.492183010644561e-08
+            ],
+            "position": "first",
+            "solver": "BoundedPrepared5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              37,
+              8,
+              3.159401782995702e-16,
+              1.492182979050543e-08,
+              1.492183010644561e-08
+            ],
+            "position": "first",
+            "solver": "BoundedPrepared5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "BoundedPrepared5",
+          "Max",
+          "last"
+        ],
+        "pareto": [
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              5.345586813639263e-16,
+              1.5084507840690015e-08,
+              1.5084508375248696e-08
+            ],
+            "position": "last",
+            "solver": "BoundedPrepared5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              5.345586813639263e-16,
+              1.5084507840690015e-08,
+              1.5084508375248696e-08
+            ],
+            "position": "last",
+            "solver": "BoundedPrepared5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "BoundedPrepared5",
+          "Max",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              1.1709070678281157e-15,
+              1.5005231369021102e-08,
+              1.500523253992817e-08
+            ],
+            "position": "middle",
+            "solver": "BoundedPrepared5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              1.1709070678281157e-15,
+              1.5005231369021102e-08,
+              1.500523253992817e-08
+            ],
+            "position": "middle",
+            "solver": "BoundedPrepared5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "Prepared5",
+          "Integral4",
+          "first"
+        ],
+        "pareto": [
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              37,
+              8,
+              3.159401782995702e-16,
+              1.490677362546802e-08,
+              1.49067739414082e-08
+            ],
+            "position": "first",
+            "solver": "Prepared5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              37,
+              8,
+              3.159401782995702e-16,
+              1.490677362546802e-08,
+              1.49067739414082e-08
+            ],
+            "position": "first",
+            "solver": "Prepared5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "Prepared5",
+          "Integral4",
+          "last"
+        ],
+        "pareto": [
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              5.345586813639263e-16,
+              1.4950964551005654e-08,
+              1.4950965085564335e-08
+            ],
+            "position": "last",
+            "solver": "Prepared5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              5.345586813639263e-16,
+              1.4950964551005654e-08,
+              1.4950965085564335e-08
+            ],
+            "position": "last",
+            "solver": "Prepared5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "Prepared5",
+          "Integral4",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              1.1709070678281157e-15,
+              1.4929453747807226e-08,
+              1.4929454918714295e-08
+            ],
+            "position": "middle",
+            "solver": "Prepared5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              1.1709070678281157e-15,
+              1.4929453747807226e-08,
+              1.4929454918714295e-08
+            ],
+            "position": "middle",
+            "solver": "Prepared5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "Prepared5",
+          "Max",
+          "first"
+        ],
+        "pareto": [
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              37,
+              8,
+              3.159401782995702e-16,
+              1.492182979050543e-08,
+              1.492183010644561e-08
+            ],
+            "position": "first",
+            "solver": "Prepared5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              37,
+              8,
+              3.159401782995702e-16,
+              1.492182979050543e-08,
+              1.492183010644561e-08
+            ],
+            "position": "first",
+            "solver": "Prepared5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "Prepared5",
+          "Max",
+          "last"
+        ],
+        "pareto": [
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              5.345586813639263e-16,
+              1.5084507840690015e-08,
+              1.5084508375248696e-08
+            ],
+            "position": "last",
+            "solver": "Prepared5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              5.345586813639263e-16,
+              1.5084507840690015e-08,
+              1.5084508375248696e-08
+            ],
+            "position": "last",
+            "solver": "Prepared5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "Prepared5",
+          "Max",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              1.1709070678281157e-15,
+              1.5005231369021102e-08,
+              1.500523253992817e-08
+            ],
+            "position": "middle",
+            "solver": "Prepared5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              1.1709070678281157e-15,
+              1.5005231369021102e-08,
+              1.500523253992817e-08
+            ],
+            "position": "middle",
+            "solver": "Prepared5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Reduced5",
+          "Integral4",
+          "first"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Integral4",
+            "objectives": [
+              3,
+              784,
+              105,
+              37,
+              0,
+              8,
+              3.159401782995702e-16,
+              1.490677362546802e-08,
+              1.49067739414082e-08
+            ],
+            "position": "first",
+            "solver": "Reduced5"
+          },
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              37,
+              8,
+              3.159401782995702e-16,
+              1.490677362546802e-08,
+              1.49067739414082e-08
+            ],
+            "position": "first",
+            "solver": "Reduced5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              37,
+              8,
+              3.159401782995702e-16,
+              1.490677362546802e-08,
+              1.49067739414082e-08
+            ],
+            "position": "first",
+            "solver": "Reduced5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Reduced5",
+          "Integral4",
+          "last"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Integral4",
+            "objectives": [
+              3,
+              784,
+              125,
+              40,
+              0,
+              10,
+              5.345586813639263e-16,
+              1.4950964551005654e-08,
+              1.4950965085564335e-08
+            ],
+            "position": "last",
+            "solver": "Reduced5"
+          },
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              5.345586813639263e-16,
+              1.4950964551005654e-08,
+              1.4950965085564335e-08
+            ],
+            "position": "last",
+            "solver": "Reduced5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              5.345586813639263e-16,
+              1.4950964551005654e-08,
+              1.4950965085564335e-08
+            ],
+            "position": "last",
+            "solver": "Reduced5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Reduced5",
+          "Integral4",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Integral4",
+            "objectives": [
+              3,
+              784,
+              125,
+              40,
+              0,
+              10,
+              1.1709070678281157e-15,
+              1.4929453747807226e-08,
+              1.4929454918714295e-08
+            ],
+            "position": "middle",
+            "solver": "Reduced5"
+          },
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              1.1709070678281157e-15,
+              1.4929453747807226e-08,
+              1.4929454918714295e-08
+            ],
+            "position": "middle",
+            "solver": "Reduced5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              1.1709070678281157e-15,
+              1.4929453747807226e-08,
+              1.4929454918714295e-08
+            ],
+            "position": "middle",
+            "solver": "Reduced5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Reduced5",
+          "Max",
+          "first"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Max",
+            "objectives": [
+              3,
+              784,
+              105,
+              37,
+              0,
+              8,
+              3.159401782995702e-16,
+              1.492182979050543e-08,
+              1.492183010644561e-08
+            ],
+            "position": "first",
+            "solver": "Reduced5"
+          },
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              37,
+              8,
+              3.159401782995702e-16,
+              1.492182979050543e-08,
+              1.492183010644561e-08
+            ],
+            "position": "first",
+            "solver": "Reduced5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              37,
+              8,
+              3.159401782995702e-16,
+              1.492182979050543e-08,
+              1.492183010644561e-08
+            ],
+            "position": "first",
+            "solver": "Reduced5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Reduced5",
+          "Max",
+          "last"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Max",
+            "objectives": [
+              3,
+              784,
+              125,
+              40,
+              0,
+              10,
+              5.345586813639263e-16,
+              1.5084507840690015e-08,
+              1.5084508375248696e-08
+            ],
+            "position": "last",
+            "solver": "Reduced5"
+          },
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              5.345586813639263e-16,
+              1.5084507840690015e-08,
+              1.5084508375248696e-08
+            ],
+            "position": "last",
+            "solver": "Reduced5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              5.345586813639263e-16,
+              1.5084507840690015e-08,
+              1.5084508375248696e-08
+            ],
+            "position": "last",
+            "solver": "Reduced5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Reduced5",
+          "Max",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Max",
+            "objectives": [
+              3,
+              784,
+              125,
+              40,
+              0,
+              10,
+              1.1709070678281157e-15,
+              1.5005231369021102e-08,
+              1.500523253992817e-08
+            ],
+            "position": "middle",
+            "solver": "Reduced5"
+          },
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              1.1709070678281157e-15,
+              1.5005231369021102e-08,
+              1.500523253992817e-08
+            ],
+            "position": "middle",
+            "solver": "Reduced5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              1.1709070678281157e-15,
+              1.5005231369021102e-08,
+              1.500523253992817e-08
+            ],
+            "position": "middle",
+            "solver": "Reduced5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Scalar5",
+          "Integral4",
+          "first"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Integral4",
+            "objectives": [
+              1743,
+              74700,
+              35,
+              25,
+              0,
+              4,
+              1.231158480130005e-15,
+              1.490677362523459e-08,
+              1.490677485639307e-08
+            ],
+            "position": "first",
+            "solver": "Scalar5"
+          },
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              37,
+              8,
+              2.970976003428339e-16,
+              1.490677362523459e-08,
+              1.490677392233219e-08
+            ],
+            "position": "first",
+            "solver": "Scalar5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              37,
+              8,
+              2.970976003428339e-16,
+              1.490677362523459e-08,
+              1.490677392233219e-08
+            ],
+            "position": "first",
+            "solver": "Scalar5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Scalar5",
+          "Integral4",
+          "last"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Integral4",
+            "objectives": [
+              2867,
+              93895,
+              35,
+              25,
+              0,
+              5,
+              8.843620951097515e-16,
+              1.4950964554275975e-08,
+              1.495096543863807e-08
+            ],
+            "position": "last",
+            "solver": "Scalar5"
+          },
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              9.398687288319576e-16,
+              1.4950964554275975e-08,
+              1.4950965494144706e-08
+            ],
+            "position": "last",
+            "solver": "Scalar5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              9.398687288319576e-16,
+              1.4950964554275975e-08,
+              1.4950965494144706e-08
+            ],
+            "position": "last",
+            "solver": "Scalar5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Scalar5",
+          "Integral4",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Integral4",
+            "objectives": [
+              2426,
+              85366,
+              35,
+              25,
+              0,
+              5,
+              5.647621821971201e-16,
+              1.492945374323464e-08,
+              1.4929454307996823e-08
+            ],
+            "position": "middle",
+            "solver": "Scalar5"
+          },
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              3.242149895722659e-16,
+              1.492945374323464e-08,
+              1.492945406744963e-08
+            ],
+            "position": "middle",
+            "solver": "Scalar5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Integral4",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              3.242149895722659e-16,
+              1.492945374323464e-08,
+              1.492945406744963e-08
+            ],
+            "position": "middle",
+            "solver": "Scalar5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Scalar5",
+          "Max",
+          "first"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Max",
+            "objectives": [
+              1743,
+              74700,
+              35,
+              25,
+              0,
+              4,
+              1.231158480130005e-15,
+              1.4921829793136553e-08,
+              1.4921831024295034e-08
+            ],
+            "position": "first",
+            "solver": "Scalar5"
+          },
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              37,
+              8,
+              2.970976003428339e-16,
+              1.4921829793136553e-08,
+              1.4921830090234153e-08
+            ],
+            "position": "first",
+            "solver": "Scalar5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              105,
+              37,
+              37,
+              8,
+              2.970976003428339e-16,
+              1.4921829793136553e-08,
+              1.4921830090234153e-08
+            ],
+            "position": "first",
+            "solver": "Scalar5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Scalar5",
+          "Max",
+          "last"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Max",
+            "objectives": [
+              2867,
+              93895,
+              35,
+              25,
+              0,
+              5,
+              8.843620951097515e-16,
+              1.5084507708048242e-08,
+              1.5084508592410338e-08
+            ],
+            "position": "last",
+            "solver": "Scalar5"
+          },
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              9.398687288319576e-16,
+              1.5084507708048242e-08,
+              1.5084508647916973e-08
+            ],
+            "position": "last",
+            "solver": "Scalar5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              9.398687288319576e-16,
+              1.5084507708048242e-08,
+              1.5084508647916973e-08
+            ],
+            "position": "last",
+            "solver": "Scalar5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "Scalar5",
+          "Max",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "candidate": "existing",
+            "cert": "Max",
+            "objectives": [
+              2426,
+              85366,
+              35,
+              25,
+              0,
+              5,
+              5.647621821971201e-16,
+              1.5005231284654314e-08,
+              1.5005231849416497e-08
+            ],
+            "position": "middle",
+            "solver": "Scalar5"
+          },
+          {
+            "candidate": "bounded_fixed",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              3.242149895722659e-16,
+              1.5005231284654314e-08,
+              1.5005231608869304e-08
+            ],
+            "position": "middle",
+            "solver": "Scalar5"
+          },
+          {
+            "candidate": "bounded_previous",
+            "cert": "Max",
+            "objectives": [
+              0,
+              0,
+              125,
+              40,
+              40,
+              10,
+              3.242149895722659e-16,
+              1.5005231284654314e-08,
+              1.5005231608869304e-08
+            ],
+            "position": "middle",
+            "solver": "Scalar5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "bounded_fixed"
+      }
+    ],
+    "unique": 90
+  },
+  "scope": "finite measured-table selection; product counters not total FLOPs; no speed/default/holdout claim",
+  "spectral_comparison": {
+    "HybridCentered": {
+      "count": 19,
+      "tighter": {
+        "differential_defect": 0,
+        "original_g_upper": 1,
+        "preconditioned_g_upper": 1
+      },
+      "wider": {
+        "differential_defect": 0,
+        "original_g_upper": 0,
+        "preconditioned_g_upper": 0
+      }
+    },
+    "HybridInterval": {
+      "count": 19,
+      "tighter": {
+        "differential_defect": 0,
+        "original_g_upper": 1,
+        "preconditioned_g_upper": 1
+      },
+      "wider": {
+        "differential_defect": 0,
+        "original_g_upper": 0,
+        "preconditioned_g_upper": 0
+      }
+    },
+    "LegendreCentered": {
+      "count": 19,
+      "tighter": {
+        "differential_defect": 0,
+        "original_g_upper": 1,
+        "preconditioned_g_upper": 1
+      },
+      "wider": {
+        "differential_defect": 19,
+        "original_g_upper": 18,
+        "preconditioned_g_upper": 18
+      }
+    },
+    "LegendreInterval": {
+      "count": 19,
+      "tighter": {
+        "differential_defect": 0,
+        "original_g_upper": 1,
+        "preconditioned_g_upper": 1
+      },
+      "wider": {
+        "differential_defect": 19,
+        "original_g_upper": 18,
+        "preconditioned_g_upper": 18
+      }
+    }
+  },
+  "spectral_manufactured": {
+    "candidates": {
+      "Bernstein": {
+        "bytes": 0,
+        "qualified": 1,
+        "requests": 0,
+        "rows": 1
+      },
+      "HybridCentered": {
+        "bytes": 0,
+        "qualified": 1,
+        "requests": 0,
+        "rows": 1
+      },
+      "HybridInterval": {
+        "bytes": 0,
+        "qualified": 1,
+        "requests": 0,
+        "rows": 1
+      },
+      "LegendreCentered": {
+        "bytes": 0,
+        "qualified": 1,
+        "requests": 0,
+        "rows": 1
+      },
+      "LegendreInterval": {
+        "bytes": 0,
+        "qualified": 1,
+        "requests": 0,
+        "rows": 1
+      }
+    },
+    "pareto_count": 2,
+    "pareto_covered": 2,
+    "proposals": {
+      "mutation": 437,
+      "structure": 587
+    },
+    "rows": 5,
+    "strata": [
+      {
+        "covered": 2,
+        "group": [
+          "oscillatory",
+          "manufactured",
+          "one"
+        ],
+        "pareto": [
+          {
+            "case": "oscillatory",
+            "objectives": [
+              0,
+              0,
+              0,
+              0,
+              1.7753669193813227e-06,
+              1.7749335859863166e-06,
+              1.9073486328125e-06,
+              1.9074952882282523e-06,
+              3.691995981583055e-06
+            ],
+            "position": "one",
+            "route": "Bernstein",
+            "solver": "manufactured"
+          },
+          {
+            "case": "oscillatory",
+            "objectives": [
+              0,
+              0,
+              9,
+              497,
+              9.555369616113676e-07,
+              9.553037331608893e-07,
+              1.9073486328125e-06,
+              1.9074952882282523e-06,
+              2.870963339278464e-06
+            ],
+            "position": "one",
+            "route": "HybridInterval",
+            "solver": "manufactured"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Bernstein"
+      }
+    ],
+    "unique": 5
+  },
+  "spectral_native": {
+    "candidates": {
+      "Bernstein": {
+        "bytes": 0,
+        "qualified": 18,
+        "requests": 0,
+        "rows": 18
+      },
+      "HybridCentered": {
+        "bytes": 0,
+        "qualified": 18,
+        "requests": 0,
+        "rows": 18
+      },
+      "HybridInterval": {
+        "bytes": 0,
+        "qualified": 18,
+        "requests": 0,
+        "rows": 18
+      },
+      "LegendreCentered": {
+        "bytes": 0,
+        "qualified": 18,
+        "requests": 0,
+        "rows": 18
+      },
+      "LegendreInterval": {
+        "bytes": 0,
+        "qualified": 18,
+        "requests": 0,
+        "rows": 18
+      }
+    },
+    "pareto_count": 18,
+    "pareto_covered": 18,
+    "proposals": {
+      "mutation": 123,
+      "structure": 901
+    },
+    "rows": 90,
+    "strata": [
+      {
+        "covered": 1,
+        "group": [
+          "quadratic",
+          "Mass",
+          "first"
+        ],
+        "pareto": [
+          {
+            "case": "quadratic",
+            "objectives": [
+              0,
+              0,
+              0,
+              0,
+              4.4939045025375254e-17,
+              4.4936236510593355e-17,
+              1.6257044004962713e-16,
+              1.6257048069224338e-16,
+              2.075298470277054e-16
+            ],
+            "position": "first",
+            "route": "Bernstein",
+            "solver": "Mass"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Bernstein"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "quadratic",
+          "Mass",
+          "last"
+        ],
+        "pareto": [
+          {
+            "case": "quadratic",
+            "objectives": [
+              0,
+              0,
+              0,
+              0,
+              5.057145782044449e-15,
+              5.008314713586979e-15,
+              9.556018204213198e-10,
+              9.582948970919528e-10,
+              9.695164358160103e-10
+            ],
+            "position": "last",
+            "route": "Bernstein",
+            "solver": "Mass"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Bernstein"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "quadratic",
+          "Mass",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "case": "quadratic",
+            "objectives": [
+              0,
+              0,
+              0,
+              0,
+              1.5325185860374919e-15,
+              1.5289828132817784e-15,
+              1.2738339108080843e-12,
+              1.2749131212334305e-12,
+              1.2804256089575303e-12
+            ],
+            "position": "middle",
+            "route": "Bernstein",
+            "solver": "Mass"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Bernstein"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "quadratic",
+          "Prepared5",
+          "first"
+        ],
+        "pareto": [
+          {
+            "case": "quadratic",
+            "objectives": [
+              0,
+              0,
+              0,
+              0,
+              8.057273624197769e-17,
+              8.056770076068017e-17,
+              3.357816774290943e-16,
+              3.3578176137452656e-16,
+              4.1639647033667653e-16
+            ],
+            "position": "first",
+            "route": "Bernstein",
+            "solver": "Prepared5"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Bernstein"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "quadratic",
+          "Prepared5",
+          "last"
+        ],
+        "pareto": [
+          {
+            "case": "quadratic",
+            "objectives": [
+              0,
+              0,
+              0,
+              0,
+              8.865883311711717e-15,
+              8.780275624374074e-15,
+              9.556023329703945e-10,
+              9.582967924965263e-10,
+              9.695221474412622e-10
+            ],
+            "position": "last",
+            "route": "Bernstein",
+            "solver": "Prepared5"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Bernstein"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "quadratic",
+          "Prepared5",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "case": "quadratic",
+            "objectives": [
+              0,
+              0,
+              0,
+              0,
+              2.7667485822706688e-15,
+              2.760365237658584e-15,
+              1.2739623039279896e-12,
+              1.276293171756681e-12,
+              1.2830432739240667e-12
+            ],
+            "position": "middle",
+            "route": "Bernstein",
+            "solver": "Prepared5"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Bernstein"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "quadratic",
+          "Reduced5",
+          "first"
+        ],
+        "pareto": [
+          {
+            "case": "quadratic",
+            "objectives": [
+              0,
+              0,
+              0,
+              0,
+              8.057273624197769e-17,
+              8.056770076068017e-17,
+              3.357816774290943e-16,
+              3.3578176137452656e-16,
+              4.1639647033667653e-16
+            ],
+            "position": "first",
+            "route": "Bernstein",
+            "solver": "Reduced5"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Bernstein"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "quadratic",
+          "Reduced5",
+          "last"
+        ],
+        "pareto": [
+          {
+            "case": "quadratic",
+            "objectives": [
+              0,
+              0,
+              0,
+              0,
+              8.865883311711717e-15,
+              8.780275624374074e-15,
+              9.556023329703945e-10,
+              9.582967924965263e-10,
+              9.695221474412622e-10
+            ],
+            "position": "last",
+            "route": "Bernstein",
+            "solver": "Reduced5"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Bernstein"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "quadratic",
+          "Reduced5",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "case": "quadratic",
+            "objectives": [
+              0,
+              0,
+              0,
+              0,
+              2.7667485822706688e-15,
+              2.760365237658584e-15,
+              1.2739623039279896e-12,
+              1.276293171756681e-12,
+              1.2830432739240667e-12
+            ],
+            "position": "middle",
+            "route": "Bernstein",
+            "solver": "Reduced5"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Bernstein"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "quartic",
+          "Mass",
+          "first"
+        ],
+        "pareto": [
+          {
+            "case": "quartic",
+            "objectives": [
+              0,
+              0,
+              0,
+              0,
+              4.4892746249931837e-17,
+              4.489274624432025e-17,
+              1.565816435174392e-16,
+              1.5658164351775309e-16,
+              2.0147439007537245e-16
+            ],
+            "position": "first",
+            "route": "Bernstein",
+            "solver": "Mass"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Bernstein"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "quartic",
+          "Mass",
+          "last"
+        ],
+        "pareto": [
+          {
+            "case": "quartic",
+            "objectives": [
+              0,
+              0,
+              0,
+              0,
+              1.784761373049155e-15,
+              1.7827283608499802e-15,
+              1.461252509018797e-10,
+              6.804775874578125e-10,
+              6.815851001916042e-10
+            ],
+            "position": "last",
+            "route": "Bernstein",
+            "solver": "Mass"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Bernstein"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "quartic",
+          "Mass",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "case": "quartic",
+            "objectives": [
+              0,
+              0,
+              0,
+              0,
+              1.4122163878349564e-15,
+              1.4122074462669854e-15,
+              1.2246388745268048e-11,
+              1.2250418353876683e-11,
+              1.225240537861393e-11
+            ],
+            "position": "middle",
+            "route": "Bernstein",
+            "solver": "Mass"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Bernstein"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "quartic",
+          "Prepared5",
+          "first"
+        ],
+        "pareto": [
+          {
+            "case": "quartic",
+            "objectives": [
+              0,
+              0,
+              0,
+              0,
+              8.525569076080289e-17,
+              8.525569075014593e-17,
+              3.417741624500789e-16,
+              3.4177416245076406e-16,
+              4.2702985387361365e-16
+            ],
+            "position": "first",
+            "route": "Bernstein",
+            "solver": "Prepared5"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Bernstein"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "quartic",
+          "Prepared5",
+          "last"
+        ],
+        "pareto": [
+          {
+            "case": "quartic",
+            "objectives": [
+              0,
+              0,
+              0,
+              0,
+              3.696396900528008e-15,
+              3.692186332268304e-15,
+              1.4612518938383639e-10,
+              6.805088059773532e-10,
+              6.816182722502019e-10
+            ],
+            "position": "last",
+            "route": "Bernstein",
+            "solver": "Prepared5"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Bernstein"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "quartic",
+          "Prepared5",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "case": "quartic",
+            "objectives": [
+              0,
+              0,
+              0,
+              0,
+              2.6152820522128745e-15,
+              2.6152654933324968e-15,
+              1.2250600336351015e-11,
+              1.2255649165375391e-11,
+              1.2258839521810519e-11
+            ],
+            "position": "middle",
+            "route": "Bernstein",
+            "solver": "Prepared5"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Bernstein"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "quartic",
+          "Reduced5",
+          "first"
+        ],
+        "pareto": [
+          {
+            "case": "quartic",
+            "objectives": [
+              0,
+              0,
+              0,
+              0,
+              8.525569076080289e-17,
+              8.525569075014593e-17,
+              3.417741624500789e-16,
+              3.4177416245076406e-16,
+              4.2702985387361365e-16
+            ],
+            "position": "first",
+            "route": "Bernstein",
+            "solver": "Reduced5"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Bernstein"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "quartic",
+          "Reduced5",
+          "last"
+        ],
+        "pareto": [
+          {
+            "case": "quartic",
+            "objectives": [
+              0,
+              0,
+              0,
+              0,
+              3.696396900528008e-15,
+              3.692186332268304e-15,
+              1.4612518938383639e-10,
+              6.805088059773532e-10,
+              6.816182722502019e-10
+            ],
+            "position": "last",
+            "route": "Bernstein",
+            "solver": "Reduced5"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Bernstein"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "quartic",
+          "Reduced5",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "case": "quartic",
+            "objectives": [
+              0,
+              0,
+              0,
+              0,
+              2.6152820522128745e-15,
+              2.6152654933324968e-15,
+              1.2250600336351015e-11,
+              1.2255649165375391e-11,
+              1.2258839521810519e-11
+            ],
+            "position": "middle",
+            "route": "Bernstein",
+            "solver": "Reduced5"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Bernstein"
+      }
+    ],
+    "unique": 90
+  }
+}

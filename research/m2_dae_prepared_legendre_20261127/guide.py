@@ -36,11 +36,16 @@ def obj(name,r):
  if name.startswith('spectral'):
   b=r['bounds'];return (*o,b['spectral_products'],b['linearization_entries'],b['original_g_upper'],b['preconditioned_g_upper'],b['differential_defect'],r['whole_x'],r['whole_z'])
  if name=='reconstruction':
-  a=r['audit'];return (*o,a['evaluations']['started'],a['rhs_requested'],a.get('bounded_residual_terms',0),sum(w['newton_steps']for w in r['work']),r['original_g'],r['whole_x'],r['whole_z'])
+  a=r['audit'];return (*o,a['evaluations']['started'],a['rhs_requested'],a.get('bounded_residual_terms',0)+sum(w['prepared_residual_terms']for w in r['work']),sum(w['newton_steps']for w in r['work']),r['original_g'],r['whole_x'],r['whole_z'])
  if name=='epoch':
   return (*o,r['audit']['point_projection']['rhs_requested'],r['dictionary_center_products'],r['max_physical_error'])
  return (*o,r['slabs'])
-def good(name,r):return r['stop']=='Horizon' if name=='atlas' else r['qualified'] and (name not in ('reconstruction',) or (r['whole_x'] is not None and r['whole_z'] is not None and r['whole_x']<=0.005 and r['whole_z']<=0.005))
+def good(name,r):
+ # Match actual resource-baseline policy.global_tol=1e-3; no relaxed gate.
+ if name=='atlas':return r['stop']=='Horizon'
+ if not r['qualified']:return False
+ if name=='epoch':return r['max_physical_error'] is not None and r['max_physical_error']<=1e-3
+ return r['whole_x'] is not None and r['whole_z'] is not None and r['whole_x']<=1e-3 and r['whole_z']<=1e-3
 def dominates(a,b):return a!=b and all(x<=y for x,y in zip(a,b))
 def front(name,rows,g):
  ks=[k for k,r in rows.items()if k[:-1]==g and good(name,r)]
