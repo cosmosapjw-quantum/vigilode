@@ -537,3 +537,37 @@ fn dual_schur_native_event_roots() {
         }
     }
 }
+
+#[test]
+fn affine_graph_real_event_and_nonaffine_refusal() {
+    for f in fixtures()
+        .into_iter()
+        .filter(|f| f.name == "coupled-cancellation" || f.name == "algebraic")
+    {
+        for solver in [EvolutionRoute::Mass, EvolutionRoute::Reduced5] {
+            let r = run(
+                &f,
+                solver,
+                ThresholdRoute::IntervalNewton,
+                GuardDerivativeRoute::SchurAffineGraph,
+                GuardValueRoute::Transport,
+            )
+            .unwrap();
+            if f.name == "coupled-cancellation" {
+                let b = r.root().expect("original-source exact affine graph event");
+                assert!(b[0] <= f.expected && f.expected <= b[1] && b[1] - b[0] <= 1e-6);
+                assert!(r.guard_slabs().iter().all(|s| s.velocity[0] > 0.));
+                println!(
+                    "AFFINE_EVENT {}",
+                    serde_json::json!({"fixture":f.name,"solver":solver,"root":b,"reason":r.reason()})
+                );
+            } else {
+                assert!(r.root().is_none());
+                println!(
+                    "AFFINE_REFUSAL {}",
+                    serde_json::json!({"fixture":f.name,"solver":solver,"reason":r.reason()})
+                );
+            }
+        }
+    }
+}

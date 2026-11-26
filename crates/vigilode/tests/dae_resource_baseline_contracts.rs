@@ -2644,3 +2644,510 @@ fn scalar_reuse_reconstruct_allocation_contract() {
         a.requests()
     );
 }
+
+#[test]
+#[ignore = "affine graph native portfolio"]
+fn guard_affine_graph_native_portfolio() {
+    warm();
+    for solver in [
+        EvolutionRoute::Mass,
+        EvolutionRoute::Reduced5,
+        EvolutionRoute::Prepared5,
+        EvolutionRoute::Scalar5,
+        EvolutionRoute::Affine5,
+    ] {
+        for cert in [ConservationRoute::Max, ConservationRoute::Integral4] {
+            let modes = graph("alternating", solver, cert);
+            let (run, scan_alloc) = measure(|| {
+                evolve_robertson_phase_atlas(
+                    &modes,
+                    0,
+                    initial(2f64.powi(-26)),
+                    [0., 0.002],
+                    &opts(),
+                    policy(),
+                    pm(MultiGuardRoute::Correlated),
+                    atlas_budget(),
+                    PhaseReuseRoute::Reuse,
+                )
+            });
+            let run = run.unwrap();
+            assert_eq!(run.stop(), PhaseAtlasStop::Horizon);
+            println!(
+                "SCAN {}",
+                serde_json::json!({"solver":solver,"cert":cert,"allocation":scan_alloc,"stop":run.stop()})
+            );
+            let phase = &run.phases()[0];
+            let model = RobertsonModel::new(modes[phase.mode].rate).unwrap();
+            let s = &phase.original_slab_diagnostics()[0];
+            let c = s.certificate.as_ref().unwrap();
+            assert!(c.global_qualified);
+            let power: Vec<Vec<Iv>> = s
+                .power
+                .iter()
+                .map(|row| row.iter().map(|v| Iv::new(v[0], v[1]).unwrap()).collect())
+                .collect();
+            let guard = &modes[phase.mode].guards[0];
+            for derivative in [
+                GuardDerivativeRoute::Tangent,
+                GuardDerivativeRoute::Schur,
+                GuardDerivativeRoute::PreparedSchur,
+                GuardDerivativeRoute::ConservedSchur,
+                GuardDerivativeRoute::SchurRefine1,
+                GuardDerivativeRoute::SchurRefine2,
+                GuardDerivativeRoute::PreparedSchurRefine2,
+                GuardDerivativeRoute::ConservedSchurRefine2,
+                GuardDerivativeRoute::SchurGs1,
+                GuardDerivativeRoute::SchurGs2,
+                GuardDerivativeRoute::SchurGsAdaptive2,
+                GuardDerivativeRoute::PreparedSchurGs2,
+                GuardDerivativeRoute::ConservedSchurGsAdaptive2,
+                GuardDerivativeRoute::SchurCentered,
+                GuardDerivativeRoute::SchurCenteredGrouped,
+                GuardDerivativeRoute::SchurCenteredGs2,
+                GuardDerivativeRoute::PreparedSchurCenteredGs2,
+                GuardDerivativeRoute::ConservedSchurCenteredGs2,
+                GuardDerivativeRoute::SchurDualGrouped,
+                GuardDerivativeRoute::SchurDualCentered,
+                GuardDerivativeRoute::SchurDualCenteredGs2,
+                GuardDerivativeRoute::BoundedPreparedSchur,
+                GuardDerivativeRoute::BoundedPreparedDualCenteredGs2,
+                GuardDerivativeRoute::ConservedSchurDualCentered,
+                GuardDerivativeRoute::SchurAffineGraph,
+                GuardDerivativeRoute::ConservedSchurAffineGraph,
+            ] {
+                for value in [GuardValueRoute::Box, GuardValueRoute::Transport] {
+                    let mut audit = de::GuardKernelAudit::default();
+                    let (r, a) = measure(|| {
+                        de::GuardProof::new_recorded(
+                            model.source(),
+                            guard,
+                            &power,
+                            c,
+                            derivative,
+                            value,
+                            &mut audit,
+                        )
+                    });
+                    let result = match r {
+                        Ok(g) => {
+                            let mut caudit = de::GuardKernelAudit::default();
+                            let ((core, queries), core_alloc) = measure(|| {
+                                let core = de::GuardProofCore::new_recorded(
+                                    model.source(),
+                                    guard,
+                                    &power,
+                                    c,
+                                    derivative,
+                                    value,
+                                    &mut caudit,
+                                )
+                                .unwrap();
+                                let mid = c.times[0] + (c.times[1] - c.times[0]) * 0.5;
+                                let queries = [c.times[0], mid, c.times[1]].map(|t| {
+                                    core.value_at(t, c.whole_x_error.unwrap())
+                                        .unwrap()
+                                        .as_pair()
+                                });
+                                (core, queries)
+                            });
+                            let (report, report_alloc) = measure(|| core.owned_evidence());
+                            assert_eq!(
+                                serde_json::to_value(&report).unwrap(),
+                                serde_json::to_value(&g.evidence).unwrap()
+                            );
+                            assert_eq!(
+                                serde_json::to_value(&caudit).unwrap(),
+                                serde_json::to_value(&audit).unwrap()
+                            );
+                            if !matches!(
+                                derivative,
+                                GuardDerivativeRoute::PreparedSchur
+                                    | GuardDerivativeRoute::PreparedSchurRefine2
+                                    | GuardDerivativeRoute::PreparedSchurGs2
+                                    | GuardDerivativeRoute::PreparedSchurCenteredGs2
+                            ) {
+                                assert_eq!(core_alloc.requests(), 0);
+                                assert_eq!(core_alloc.requested_bytes, 0);
+                            }
+                            println!(
+                                "CORE {}",
+                                serde_json::json!({"solver":solver,"cert":cert,"derivative":derivative,"value":value,"core":core_alloc,"report":report_alloc,"queries":queries})
+                            );
+                            let t = c.times[0] + (c.times[1] - c.times[0]) * 0.5;
+                            let v = g.value_at(t, c.whole_x_error.unwrap()).unwrap();
+                            let left = g.value_at(c.times[0], c.whole_x_error.unwrap()).unwrap();
+                            let right = g.value_at(c.times[1], c.whole_x_error.unwrap()).unwrap();
+                            assert_eq!(queries, [left.as_pair(), v.as_pair(), right.as_pair()]);
+                            serde_json::json!({"evidence":g.evidence,"mid_value":v.as_pair(),"left_value":left.as_pair(),"right_value":right.as_pair()})
+                        }
+                        Err(e) => serde_json::json!({"error":e.to_string()}),
+                    };
+                    println!(
+                        "GUARD {}",
+                        serde_json::json!({"solver":solver,"cert":cert,"derivative":derivative,"value":value,"allocation":a,"audit":audit,"result":result})
+                    );
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn guard_affine_graph_vector_portfolio() {
+    warm();
+    let iv = |v: f64| Iv::point(v).unwrap();
+    let lin = |k: usize, w: f64| tr(w, vec![F::component(k, 0.)]);
+    let clock = |w: f64| tr(w, vec![F::clock(0.)]);
+    let cross = |k: usize, w: f64| tr(w, vec![F::clock(0.), F::component(k, 0.)]);
+    let covers = |v: [f64; 2], x: f64| v[0] <= x && x <= v[1];
+    for (case, a, b, step) in [
+        ("weak", 0.5, 0.25, 0.125),
+        ("moderate", 1., 0.5, 0.125),
+        ("coupled", 2., -1., 0.125),
+    ] {
+        let src = DaeSource::new(
+            vec![p(vec![tr(1., vec![])])],
+            vec![
+                p(vec![
+                    lin(1, 1.),
+                    lin(0, -1.),
+                    cross(2, a),
+                    cross(0, -2. * a),
+                ]),
+                p(vec![lin(2, 1.), lin(0, -2.), cross(1, b), cross(0, -b)]),
+            ],
+        )
+        .unwrap();
+        let power = vec![
+            vec![iv(0.), iv(step)],
+            vec![iv(0.), iv(step)],
+            vec![iv(0.), iv(2. * step)],
+        ];
+        let cert = de::certify_slab(
+            &src,
+            [0., step],
+            &power,
+            &[[-1., 1.], [-1., 1.]],
+            0.01,
+            Some(0.),
+            true,
+            1e6,
+        )
+        .unwrap();
+        assert!(cert.global_qualified, "{}", case);
+        for (name, guard, dx, dt) in [
+            (
+                "algebraic",
+                p(vec![lin(1, 1.), lin(2, 0.25), tr(-0.0625, vec![])]),
+                1.5,
+                0.,
+            ),
+            (
+                "cancellation",
+                p(vec![
+                    lin(2, 1.),
+                    lin(0, -2.),
+                    clock(0.25),
+                    tr(-0.015625, vec![]),
+                ]),
+                0.,
+                0.25,
+            ),
+        ] {
+            for route in [
+                GuardDerivativeRoute::Tangent,
+                GuardDerivativeRoute::Schur,
+                GuardDerivativeRoute::PreparedSchur,
+                GuardDerivativeRoute::SchurRefine1,
+                GuardDerivativeRoute::SchurRefine2,
+                GuardDerivativeRoute::PreparedSchurRefine2,
+                GuardDerivativeRoute::SchurGs1,
+                GuardDerivativeRoute::SchurGs2,
+                GuardDerivativeRoute::SchurGsAdaptive2,
+                GuardDerivativeRoute::PreparedSchurGs2,
+                GuardDerivativeRoute::SchurCentered,
+                GuardDerivativeRoute::SchurCenteredGrouped,
+                GuardDerivativeRoute::SchurCenteredGs2,
+                GuardDerivativeRoute::PreparedSchurCenteredGs2,
+                GuardDerivativeRoute::SchurDualGrouped,
+                GuardDerivativeRoute::SchurDualCentered,
+                GuardDerivativeRoute::SchurDualCenteredGs2,
+                GuardDerivativeRoute::BoundedPreparedSchur,
+                GuardDerivativeRoute::BoundedPreparedDualCenteredGs2,
+                GuardDerivativeRoute::SchurAffineGraph,
+            ] {
+                for value in [GuardValueRoute::Box, GuardValueRoute::Transport] {
+                    let mut audit = de::GuardKernelAudit::default();
+                    let (r, allocation) = measure(|| {
+                        de::GuardProof::new_recorded(
+                            &src, &guard, &power, &cert, route, value, &mut audit,
+                        )
+                    });
+                    let r = r.unwrap();
+                    if route == GuardDerivativeRoute::SchurAffineGraph {
+                        assert_eq!(r.evidence.reduced_gradient[0], [dx, dx]);
+                        assert_eq!(r.evidence.reduced_clock, [dt, dt]);
+                        assert_eq!(r.evidence.velocity, [dx + dt, dx + dt]);
+                    }
+                    let mut caudit = de::GuardKernelAudit::default();
+                    let ((core, queries), core_alloc) = measure(|| {
+                        let core = de::GuardProofCore::new_recorded(
+                            &src,
+                            &guard,
+                            &power,
+                            &cert,
+                            route,
+                            value,
+                            &mut caudit,
+                        )
+                        .unwrap();
+                        let queries = [0., step / 2., step].map(|t| {
+                            core.value_at(t, cert.whole_x_error.unwrap())
+                                .unwrap()
+                                .as_pair()
+                        });
+                        (core, queries)
+                    });
+                    let (report, report_alloc) = measure(|| core.owned_evidence());
+                    assert_eq!(
+                        serde_json::to_value(&report).unwrap(),
+                        serde_json::to_value(&r.evidence).unwrap()
+                    );
+                    assert_eq!(
+                        serde_json::to_value(&caudit).unwrap(),
+                        serde_json::to_value(&audit).unwrap()
+                    );
+                    if !matches!(
+                        route,
+                        GuardDerivativeRoute::PreparedSchur
+                            | GuardDerivativeRoute::PreparedSchurRefine2
+                            | GuardDerivativeRoute::PreparedSchurGs2
+                            | GuardDerivativeRoute::PreparedSchurCenteredGs2
+                    ) {
+                        assert_eq!(core_alloc.requests(), 0);
+                        assert_eq!(core_alloc.requested_bytes, 0);
+                    }
+                    println!(
+                        "VECTOR_CORE {}",
+                        serde_json::json!({"case":case,"guard":name,"derivative":route,"value":value,"core":core_alloc,"report":report_alloc,"queries":queries})
+                    );
+                    assert!(
+                        covers(r.evidence.reduced_gradient[0], dx),
+                        "{case} {route:?} gradient"
+                    );
+                    assert!(
+                        covers(r.evidence.reduced_clock, dt),
+                        "{case} {route:?} clock"
+                    );
+                    assert!(
+                        covers(r.evidence.velocity, dx + dt),
+                        "{case} {route:?} velocity"
+                    );
+                    let mut values = Vec::new();
+                    for t in [0., step / 2., step] {
+                        let v = r
+                            .value_at(t, cert.whole_x_error.unwrap())
+                            .unwrap()
+                            .as_pair();
+                        let exact = if name == "algebraic" {
+                            1.5 * t - 0.0625
+                        } else {
+                            0.25 * t - 0.015625
+                        };
+                        assert!(
+                            covers(v, exact),
+                            "{case} {name} {route:?} {value:?} time {t}"
+                        );
+                        values.push(v);
+                    }
+                    assert_eq!(values, queries);
+                    println!(
+                        "VECTOR {}",
+                        serde_json::json!({"case":case,"guard":name,"derivative":route,"value":value,"allocation":allocation,"audit":audit,"evidence":r.evidence,"values":values,"branch_defect":cert.branch_defect})
+                    );
+                }
+            }
+            let mut audit = de::GuardKernelAudit::default();
+            let fail = de::GuardProof::new_recorded(
+                &src,
+                &guard,
+                &power,
+                &cert,
+                GuardDerivativeRoute::ConservedSchurAffineGraph,
+                GuardValueRoute::Box,
+                &mut audit,
+            );
+            assert!(
+                fail.is_err()
+                    && audit.builds.started == 1
+                    && audit.builds.returned == 0
+                    && audit.refinement_sweeps.started == 0
+            );
+        }
+    }
+}
+
+#[test]
+#[ignore = "authentic scalar reconstruction portfolio with fixed and continuation seed"]
+fn scalar_reconstruction_portfolio() {
+    use de::ReconstructionSeedRoute as S;
+    use rodas5p_integrators::retro_dae_init::{InitWork, ProjectionAttemptWork};
+    warm();
+    const BRANCH: [[f64; 2]; 1] = [[-0.25, 1.25]];
+    for solver in [
+        EvolutionRoute::Reduced5,
+        EvolutionRoute::Prepared5,
+        EvolutionRoute::Scalar5,
+        EvolutionRoute::Affine5,
+    ] {
+        for cert in [ConservationRoute::Max, ConservationRoute::Integral4] {
+            let modes = graph("alternating", solver, cert);
+            let run = evolve_robertson_phase_atlas(
+                &modes,
+                0,
+                initial(2f64.powi(-26)),
+                [0., 0.002],
+                &opts(),
+                policy(),
+                pm(MultiGuardRoute::Correlated),
+                atlas_budget(),
+                PhaseReuseRoute::Reuse,
+            )
+            .unwrap();
+            assert_eq!(run.stop(), PhaseAtlasStop::Horizon);
+            let phase = &run.phases()[0];
+            let model = RobertsonModel::new(modes[phase.mode].rate).unwrap();
+            let src = model.source();
+            let init = src
+                .initialize(
+                    0.,
+                    &phase.initial.center(),
+                    &[0.125],
+                    &BRANCH,
+                    policy().init,
+                    InitRoute::Reuse,
+                )
+                .unwrap();
+            let slabs = phase.original_slab_diagnostics();
+            for (position, k) in [
+                ("first", 0),
+                ("middle", slabs.len() / 2),
+                ("last", slabs.len() - 1),
+            ] {
+                let s = &slabs[k];
+                let c = s.certificate.as_ref().unwrap();
+                let x =
+                    de::dense_power(&s.native.y0, &s.native.y1, &s.native.stages, s.native.basis)
+                        .unwrap();
+                assert_eq!(x.len(), src.nx());
+                let ir = match solver {
+                    EvolutionRoute::Prepared5 => InitRoute::PreparedBatch,
+                    EvolutionRoute::Scalar5 => InitRoute::ScalarRoot,
+                    EvolutionRoute::Affine5 => InitRoute::AffineExact,
+                    _ => InitRoute::Reuse,
+                };
+                let ((legacy, la), alloc) = measure(|| {
+                    de::reconstruct_audited(
+                        src,
+                        s.times,
+                        &x,
+                        &init.z,
+                        &BRANCH,
+                        policy().init,
+                        ir,
+                        None,
+                        5,
+                    )
+                });
+                let (legacy, legacy_work) = legacy.unwrap();
+                // Compare complete original-source slab certificates separately;
+                // non-default candidate powers are never committed without qualification.
+                let emit = |name: &str,
+                            poly: &[Iv],
+                            work: &[InitWork],
+                            audit: &ProjectionAttemptWork,
+                            allocation: Counts| {
+                    let mut full = x.clone();
+                    full.push(poly.to_vec());
+                    let r = model.certify(
+                        s.times,
+                        &full,
+                        &BRANCH,
+                        policy().tube_radius,
+                        Some(c.incoming),
+                        policy().init.condition_cap,
+                        cert,
+                    );
+                    let result = match r {
+                        Ok(c) => {
+                            serde_json::json!({"qualified":c.global_qualified&&c.whole_x_error.is_some_and(|v|v<=policy().global_tol)&&c.whole_z_error.is_some_and(|v|v<=policy().global_tol),"whole_x":c.whole_x_error,"whole_z":c.whole_z_error,"original_g":c.original_g_upper})
+                        }
+                        Err(e) => serde_json::json!({"qualified":false,"error":e.to_string()}),
+                    };
+                    println!(
+                        "RECON {}",
+                        serde_json::json!({"solver":solver,"cert":cert,"position":position,"candidate":name,"allocation":allocation,"power":poly.iter().map(|v|v.as_pair()).collect::<Vec<_>>(),"work":work,"audit":audit,"result":result})
+                    );
+                };
+                emit("existing", &legacy[0], &legacy_work, &la, alloc);
+                let mut scratch = de::ScalarReconstructionWorkspace::new();
+                let mut out = [Iv::point(123.).unwrap(); 5];
+                let mut work: [InitWork; 5] = std::array::from_fn(|_| InitWork::default());
+                for (name, route) in [("fixed", S::Fixed), ("previous", S::PreviousNode)] {
+                    let mut audit = ProjectionAttemptWork::default();
+                    let (r, alloc) = measure(|| {
+                        de::reconstruct_scalar_reuse_into(
+                            src,
+                            s.times,
+                            &x,
+                            &init.z,
+                            &BRANCH,
+                            policy().init,
+                            route,
+                            &mut out,
+                            &mut work,
+                            &mut audit,
+                            &mut scratch,
+                        )
+                    });
+                    r.unwrap();
+                    assert_eq!(alloc.requests(), 0);
+                    assert_eq!(alloc.requested_bytes, 0);
+                    assert_eq!((audit.calls.started, audit.calls.returned), (5, 5));
+                    if route == S::Fixed && ir == InitRoute::Reuse {
+                        same(
+                            &out.map(|v| v.as_pair()),
+                            &legacy[0].iter().map(|v| v.as_pair()).collect::<Vec<_>>(),
+                        );
+                        same(&work, &legacy_work);
+                        same(&audit, &la);
+                    }
+                    emit(name, &out, &work, &audit, alloc);
+                }
+                let saved = out;
+                let saved_work = serde_json::to_value(&work).unwrap();
+                let mut audit = ProjectionAttemptWork::default();
+                assert!(
+                    de::reconstruct_scalar_reuse_into(
+                        src,
+                        s.times,
+                        &x,
+                        &[f64::NAN],
+                        &BRANCH,
+                        policy().init,
+                        S::Fixed,
+                        &mut out,
+                        &mut work,
+                        &mut audit,
+                        &mut scratch
+                    )
+                    .is_err()
+                );
+                assert_eq!(out.map(|v| v.as_pair()), saved.map(|v| v.as_pair()));
+                assert_eq!(serde_json::to_value(&work).unwrap(), saved_work);
+                assert_eq!((audit.calls.started, audit.calls.returned), (1, 0));
+            }
+        }
+    }
+}
