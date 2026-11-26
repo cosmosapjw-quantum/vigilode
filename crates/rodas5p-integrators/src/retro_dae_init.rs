@@ -465,6 +465,8 @@ pub enum InitRoute {
     ScalarRoot,
     /// Explicit opt-in: exact frozen degree-one root, no automatic fallback.
     AffineExact,
+    /// Scalar-only bounded prepared solve with original midpoint residual.
+    BoundedPreparedScalar,
 }
 #[derive(Clone, Copy, Debug, Serialize)]
 pub struct InitPolicy {
@@ -556,6 +558,16 @@ pub struct ProjectionAttemptWork {
     pub rhs_returned: usize,
     pub successful_rhs_requested: usize,
     pub refused_rhs_requested: usize,
+    #[serde(skip_serializing_if = "init_count_zero")]
+    pub root_map_rechecks: usize,
+    #[serde(skip_serializing_if = "init_count_zero")]
+    pub root_map_regrouped: usize,
+    #[serde(skip_serializing_if = "init_count_zero")]
+    pub root_map_expanded: usize,
+    #[serde(skip_serializing_if = "init_count_zero")]
+    pub bounded_prepared_batches: usize,
+    #[serde(skip_serializing_if = "init_count_zero")]
+    pub bounded_residual_terms: usize,
 }
 impl ProjectionAttemptWork {
     pub fn record(&mut self, w: &InitAttemptWork, success: bool) {
@@ -567,6 +579,11 @@ impl ProjectionAttemptWork {
         self.linear.merge(w.linear);
         self.rhs_requested += w.rhs_requested;
         self.rhs_returned += w.rhs_returned;
+        self.root_map_rechecks += w.legacy.root_map_rechecks;
+        self.root_map_regrouped += w.legacy.root_map_regrouped;
+        self.root_map_expanded += w.legacy.root_map_expanded;
+        self.bounded_prepared_batches += w.legacy.bounded_prepared_batches;
+        self.bounded_residual_terms += w.legacy.bounded_residual_terms;
         if success {
             self.successful_rhs_requested += w.rhs_requested;
         } else {
@@ -584,6 +601,11 @@ impl ProjectionAttemptWork {
         self.rhs_returned += w.rhs_returned;
         self.successful_rhs_requested += w.successful_rhs_requested;
         self.refused_rhs_requested += w.refused_rhs_requested;
+        self.root_map_rechecks += w.root_map_rechecks;
+        self.root_map_regrouped += w.root_map_regrouped;
+        self.root_map_expanded += w.root_map_expanded;
+        self.bounded_prepared_batches += w.bounded_prepared_batches;
+        self.bounded_residual_terms += w.bounded_residual_terms;
     }
 }
 #[derive(Clone, Debug, Serialize)]
@@ -908,6 +930,11 @@ impl DaeSource {
         scratch: &mut ProjectionWorkspace,
         attempt: &mut InitAttemptWork,
     ) -> CoreResult<InitReport> {
+        if route == InitRoute::BoundedPreparedScalar {
+            return self
+                .scalar_reuse_recorded(t, x, z0, branch, policy, route, attempt)
+                .map(|r| r.to_owned_report());
+        }
         macro_rules! observed {
             ($field:ident,$e:expr) => {{
                 let r = (|| $e)();
@@ -1323,6 +1350,7 @@ impl IntervalEvalWorkspace {
 /// substitute for a slab certificate. Materialize the owning report only
 /// when a caller actually needs persistent evidence.
 pub struct ScalarReuseProjection {
+    route: InitRoute,
     nx: usize,
     mode: InitMode,
     t: f64,
@@ -1364,7 +1392,7 @@ impl ScalarReuseProjection {
     }
     pub fn to_owned_report(&self) -> InitReport {
         InitReport {
-            route: InitRoute::Reuse,
+            route: self.route,
             mode: self.mode,
             t: self.t,
             x: self.x[..self.nx].to_vec(),
@@ -1400,7 +1428,12 @@ impl ScalarReuseProjection {
         }
     }
 }
-fn scalar_batch(a: f64, rhs: &mut [f64], attempt: &mut InitAttemptWork) -> CoreResult<()> {
+fn scalar_batch(
+    a: f64,
+    rhs: &mut [f64],
+    route: InitRoute,
+    attempt: &mut InitAttemptWork,
+) -> CoreResult<()> {
     // Actual scalar linear batch, not an assertion that a general LU owner
     // was constructed. Preserve original batch and RHS accounting.
     attempt.legacy.linear_batches += 1;
@@ -1410,15 +1443,35 @@ fn scalar_batch(a: f64, rhs: &mut [f64], attempt: &mut InitAttemptWork) -> CoreR
         if !a.is_finite() {
             return Err(CoreError::NonFinite("matrix contains NaN/Inf".into()));
         }
+        let prepared = route == InitRoute::BoundedPreparedScalar;
+        if prepared {
+            attempt.legacy.bounded_prepared_batches += 1;
+            // Scalar specialization of strict row dominance and the
+            // original represented-matrix residual. No faer owner claimed.
+            crate::affine_event_certificate::check_affine_event_arithmetic()?;
+            if a == 0. {
+                return Err(bad("bounded scalar strict row dominance not proved"));
+            }
+        }
         let inv = a.recip();
+        let mut residual = 0_f64;
         for b in rhs.iter_mut() {
             if !b.is_finite() {
                 return Err(CoreError::NonFinite("LU RHS contains NaN/Inf".into()));
             }
+            let original = *b;
             *b *= inv;
             if !b.is_finite() {
                 return Err(CoreError::LinearSolve("LU produced NaN/Inf".into()));
             }
+            if prepared {
+                let r = p(original)?.sub(p(a)?.scale(*b)?)?.mag();
+                attempt.legacy.bounded_residual_terms += 1;
+                residual = residual.max(r);
+            }
+        }
+        if prepared {
+            let _error_upper = div_up(residual, a.abs())?;
         }
         Ok(())
     })();
@@ -1445,7 +1498,29 @@ impl DaeSource {
         policy: InitPolicy,
     ) -> (CoreResult<ScalarReuseProjection>, InitAttemptWork) {
         let mut w = InitAttemptWork::default();
-        let r = self.scalar_reuse_recorded(t, x, seed, branch, policy, &mut w);
+        let r = self.scalar_reuse_recorded(t, x, seed, branch, policy, InitRoute::Reuse, &mut w);
+        (r, w)
+    }
+    /// Separate route provenance: scalar prepared original midpoint residual
+    /// plus the same branch/derivative proof. Successful bounded core no heap.
+    pub fn initialize_scalar_bounded_prepared_audited(
+        &self,
+        t: f64,
+        x: &[f64],
+        seed: &[f64],
+        branch: &[[f64; 2]],
+        policy: InitPolicy,
+    ) -> (CoreResult<ScalarReuseProjection>, InitAttemptWork) {
+        let mut w = InitAttemptWork::default();
+        let r = self.scalar_reuse_recorded(
+            t,
+            x,
+            seed,
+            branch,
+            policy,
+            InitRoute::BoundedPreparedScalar,
+            &mut w,
+        );
         (r, w)
     }
     fn scalar_reuse_recorded(
@@ -1455,6 +1530,7 @@ impl DaeSource {
         seed: &[f64],
         branch: &[[f64; 2]],
         policy: InitPolicy,
+        route: InitRoute,
         w: &mut InitAttemptWork,
     ) -> CoreResult<ScalarReuseProjection> {
         crate::affine_event_certificate::check_affine_event_arithmetic()?;
@@ -1510,7 +1586,7 @@ impl DaeSource {
                 }
                 let a = mid(work.scalar_row(nx, nx)[zi]);
                 let mut d = [-mid(work.values[nx])];
-                scalar_batch(a, &mut d, w)?;
+                scalar_batch(a, &mut d, route, w)?;
                 let mut accepted = false;
                 for j in 0..16 {
                     let trial = 2f64.powi(-j).mul_add(d[0], center);
@@ -1538,7 +1614,7 @@ impl DaeSource {
         }
         let a = mid(point.scalar_row(nx, nx)[zi]);
         let mut c = [1.];
-        scalar_batch(a, &mut c, w)?;
+        scalar_batch(a, &mut c, route, w)?;
         let c = c[0];
         eval!(work, b);
         let defect = scalar_defect(c, work.scalar_row(nx, nx)[zi])?;
@@ -1629,7 +1705,7 @@ impl DaeSource {
             .iter()
             .zip(&xdot[..nx])
             .try_fold(-gc[0], |s, (&g, &f)| s.sub(g.scale(f)?))?);
-        scalar_batch(a, &mut sol[..nx + 2], w)?;
+        scalar_batch(a, &mut sol[..nx + 2], route, w)?;
         let mut enc = [z(); 33];
         let mut derivative_error = 0_f64;
         for k in 0..nx + 2 {
@@ -1668,6 +1744,7 @@ impl DaeSource {
         let mut xx = [0.; 31];
         xx[..nx].copy_from_slice(x);
         Ok(ScalarReuseProjection {
+            route,
             nx,
             mode: policy.mode,
             t,

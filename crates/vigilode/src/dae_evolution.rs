@@ -36,11 +36,14 @@ pub enum EvolutionRoute {
     Scalar5,
     /// Explicit exact-affine initialization and existing five-node reconstruction.
     Affine5,
+    /// Explicit bounded prepared scalar projection candidate.
+    BoundedPrepared5,
 }
 impl EvolutionRoute {
     fn init(self) -> InitRoute {
         match self {
             Self::Prepared5 => InitRoute::PreparedBatch,
+            Self::BoundedPrepared5 => InitRoute::BoundedPreparedScalar,
             Self::Scalar5 => InitRoute::ScalarRoot,
             Self::Affine5 => InitRoute::AffineExact,
             _ => InitRoute::Reuse,
@@ -87,6 +90,19 @@ pub struct ProjectionWork {
     pub dictionary_uses: usize,
     pub horner_uses: usize,
     pub warp_predictions: usize,
+    #[serde(skip_serializing_if = "projection_count_zero")]
+    pub root_map_rechecks: usize,
+    #[serde(skip_serializing_if = "projection_count_zero")]
+    pub root_map_regrouped: usize,
+    #[serde(skip_serializing_if = "projection_count_zero")]
+    pub root_map_expanded: usize,
+    #[serde(skip_serializing_if = "projection_count_zero")]
+    pub bounded_prepared_batches: usize,
+    #[serde(skip_serializing_if = "projection_count_zero")]
+    pub bounded_residual_terms: usize,
+}
+fn projection_count_zero(n: &usize) -> bool {
+    *n == 0
 }
 impl ProjectionWork {
     fn add(&mut self, w: &InitWork, warp: bool) {
@@ -99,6 +115,11 @@ impl ProjectionWork {
         self.dictionary_uses += w.dictionary_uses;
         self.horner_uses += w.conditioned_horner_uses;
         self.warp_predictions += usize::from(warp);
+        self.root_map_rechecks += w.root_map_rechecks;
+        self.root_map_regrouped += w.root_map_regrouped;
+        self.root_map_expanded += w.root_map_expanded;
+        self.bounded_prepared_batches += w.bounded_prepared_batches;
+        self.bounded_residual_terms += w.bounded_residual_terms;
     }
 }
 /// Diagnostic boundary receipt, never an event or trajectory authority.
@@ -291,7 +312,7 @@ impl Engine {
     fn scalar_callback(&self) -> bool {
         matches!(
             self.route,
-            EvolutionRoute::Reduced3 | EvolutionRoute::Reduced5
+            EvolutionRoute::Reduced3 | EvolutionRoute::Reduced5 | EvolutionRoute::BoundedPrepared5
         ) && self.src.nz() == 1
             && self.warp.is_none()
     }
@@ -301,9 +322,13 @@ impl Engine {
         let mut policy = self.policy.init;
         policy.mode = rodas5p_integrators::retro_dae_init::InitMode::ProjectAlgebraic;
         let seed = [self.seed[0].clamp(self.branch[0][0], self.branch[0][1])];
-        let (r, receipt) =
+        let (r, receipt) = if self.route == EvolutionRoute::BoundedPrepared5 {
             self.src
-                .initialize_scalar_reuse_audited(t, x, &seed, &self.branch, policy);
+                .initialize_scalar_bounded_prepared_audited(t, x, &seed, &self.branch, policy)
+        } else {
+            self.src
+                .initialize_scalar_reuse_audited(t, x, &seed, &self.branch, policy)
+        };
         update_audit(&self.audit, |a| {
             a.point_projection.record(&receipt, r.is_ok())
         });

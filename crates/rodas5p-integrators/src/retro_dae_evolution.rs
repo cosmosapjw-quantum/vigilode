@@ -571,6 +571,7 @@ fn reconstruct_scalar_inner(
     policy: InitPolicy,
     nodes: usize,
     seed_route: ReconstructionSeedRoute,
+    route: InitRoute,
     mut audit: Option<&mut di::ProjectionAttemptWork>,
     scratch: &mut ScalarReconstructionWorkspace,
 ) -> CoreResult<()> {
@@ -602,16 +603,21 @@ fn reconstruct_scalar_inner(
                 seed[0]
             };
             let guess = [z.clamp(branch[0][0], branch[0][1])];
-            src.initialize_scalar_reuse_audited(
-                t,
-                &v[..x.len()],
-                &guess,
-                branch,
-                InitPolicy {
-                    mode: InitMode::ProjectAlgebraic,
-                    ..policy
-                },
-            )
+            let policy = InitPolicy {
+                mode: InitMode::ProjectAlgebraic,
+                ..policy
+            };
+            if route == InitRoute::BoundedPreparedScalar {
+                src.initialize_scalar_bounded_prepared_audited(
+                    t,
+                    &v[..x.len()],
+                    &guess,
+                    branch,
+                    policy,
+                )
+            } else {
+                src.initialize_scalar_reuse_audited(t, &v[..x.len()], &guess, branch, policy)
+            }
         };
         if let Some(a) = audit.as_deref_mut() {
             a.record(&w, r.is_ok());
@@ -658,6 +664,44 @@ pub fn reconstruct_scalar_reuse_into(
         policy,
         nodes,
         seed_route,
+        InitRoute::Reuse,
+        Some(audit),
+        scratch,
+    )?;
+    out.copy_from_slice(&scratch.power[..nodes]);
+    work.clone_from_slice(&scratch.work[..nodes]);
+    Ok(())
+}
+/// Bounded prepared scalar projection at each dictionary node, retaining
+/// the same transactional output boundary and all original-source receipts.
+#[allow(clippy::too_many_arguments)]
+pub fn reconstruct_scalar_bounded_prepared_into(
+    src: &DaeSource,
+    times: [f64; 2],
+    x: &[Poly],
+    seed: &[f64],
+    branch: &[[f64; 2]],
+    policy: InitPolicy,
+    seed_route: ReconstructionSeedRoute,
+    out: &mut [Iv],
+    work: &mut [InitWork],
+    audit: &mut di::ProjectionAttemptWork,
+    scratch: &mut ScalarReconstructionWorkspace,
+) -> CoreResult<()> {
+    if out.len() != work.len() {
+        return Err(bad("scalar reconstruction output shape"));
+    }
+    let nodes = out.len();
+    reconstruct_scalar_inner(
+        src,
+        times,
+        x,
+        seed,
+        branch,
+        policy,
+        nodes,
+        seed_route,
+        InitRoute::BoundedPreparedScalar,
         Some(audit),
         scratch,
     )?;
@@ -678,7 +722,10 @@ fn reconstruct_recorded(
     nodes: usize,
     mut audit: Option<&mut di::ProjectionAttemptWork>,
 ) -> CoreResult<(Vec<Poly>, Vec<InitWork>)> {
-    if src.nz() == 1 && route == InitRoute::Reuse && warp.is_none() {
+    if src.nz() == 1
+        && matches!(route, InitRoute::Reuse | InitRoute::BoundedPreparedScalar)
+        && warp.is_none()
+    {
         let mut scratch = ScalarReconstructionWorkspace::new();
         reconstruct_scalar_inner(
             src,
@@ -689,6 +736,7 @@ fn reconstruct_recorded(
             policy,
             nodes,
             ReconstructionSeedRoute::Fixed,
+            route,
             audit,
             &mut scratch,
         )?;
