@@ -1,0 +1,373 @@
+{
+  "checks": [
+    "RED exit101 and expected allocation assertion",
+    "GREEN and final individual exits0",
+    "old 80 canonical evidence/audit and 360 component logical receipts",
+    "first-final canonical 160/72/24",
+    "safe unit exact interval bit comparison",
+    "integration allocator controls and q=1 transactional refusal",
+    "hashes, rustfmt, git diff check"
+  ],
+  "claim_id": "M2-03d.5b.2",
+  "cleanup": {
+    "duplicate_log_payloads": 3,
+    "raw_bytes_removed": 840180,
+    "unique_compressed_bytes": 27917
+  },
+  "command": [
+    "cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "--release",
+    "-p",
+    "vigilode",
+    "--features",
+    "polynomial-events",
+    "--test",
+    "dae_resource_baseline_contracts",
+    "guard_defect_mutation_portfolio",
+    "--",
+    "--ignored",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "declared_results": [
+    "SELECTION.json",
+    "VECTOR_GUIDANCE.json",
+    "COMPONENT_COMPARE.json",
+    "NATIVE_EVENT_COMPARE.json"
+  ],
+  "environment": {
+    "hardware": "AMD Ryzen 9 5900X 12-core/24-thread x86_64",
+    "software": [
+      {
+        "name": "rustc",
+        "version": "rustc 1.94.1 (e408947bf 2026-03-25)"
+      },
+      {
+        "name": "cargo",
+        "version": "cargo 1.94.1 (29ea6fb6a 2026-03-24)"
+      },
+      {
+        "name": "MathHarness General",
+        "version": "3.1.0, ZIP and 154 manifest files verified"
+      }
+    ]
+  },
+  "input_artifacts": [
+    {
+      "path": "crates/rodas5p-integrators/src/retro_dae_evolution.rs",
+      "sha256": "d54b14bb17157c2ae336d458988c969fbb6390cd8955d88fc1df1530d920969e",
+      "sha256_after": "d54b14bb17157c2ae336d458988c969fbb6390cd8955d88fc1df1530d920969e"
+    },
+    {
+      "path": "crates/vigilode/tests/dae_resource_baseline_contracts.rs",
+      "sha256": "7236b49f61d114cc5cd4dc87b745e63550e38b95a8dd362b68ee167ff1ad18a1",
+      "sha256_after": "7236b49f61d114cc5cd4dc87b745e63550e38b95a8dd362b68ee167ff1ad18a1"
+    },
+    {
+      "path": "crates/vigilode/tests/dae_general_guard_contracts.rs",
+      "sha256": "e0f33efdfdcadf0e145fe26547dbca64d043c31b21a86d91a7ba7ea068b5a61f",
+      "sha256_after": "e0f33efdfdcadf0e145fe26547dbca64d043c31b21a86d91a7ba7ea068b5a61f"
+    },
+    {
+      "path": "research/m2_dae_guard_defect_20261126/PREREGISTRATION.md",
+      "sha256": "bf81b07cbff6c2abc5a2db850254b6bc08b66d39cdb3ce6301fcee24e262a791",
+      "sha256_after": "bf81b07cbff6c2abc5a2db850254b6bc08b66d39cdb3ce6301fcee24e262a791"
+    },
+    {
+      "path": "research/m2_dae_guard_defect_20261126/guide.py",
+      "sha256": "0c31d1c7655054bd21eea1b72d9bb83db3b231fe16eb4c19d4e7c4f2fa6d93de",
+      "sha256_after": "0c31d1c7655054bd21eea1b72d9bb83db3b231fe16eb4c19d4e7c4f2fa6d93de"
+    },
+    {
+      "path": "research/m2_dae_guard_defect_20261126/CANDIDATES.json",
+      "sha256": "3a786743dbb431557a7caeaf9dac6b857d1c2f9ac8b657e1254402e33c5677e5",
+      "sha256_after": "3a786743dbb431557a7caeaf9dac6b857d1c2f9ac8b657e1254402e33c5677e5"
+    },
+    {
+      "path": "research/m2_dae_guard_defect_20261126/HARNESS_ROUTES.json",
+      "sha256": "74e4e6cba50be1903328a989f1ed3a222bd6b03509bf82e8235fcf1b0b49d3f6",
+      "sha256_after": "74e4e6cba50be1903328a989f1ed3a222bd6b03509bf82e8235fcf1b0b49d3f6"
+    },
+    {
+      "path": "research/m2_dae_guard_defect_20261126/LITERATURE.md",
+      "sha256": "6e1a2aed90990383a59eedbf95eab8b53d4d50084eb484f9d6fe350092634ef0",
+      "sha256_after": "6e1a2aed90990383a59eedbf95eab8b53d4d50084eb484f9d6fe350092634ef0"
+    }
+  ],
+  "mathematics": {
+    "assertion_tested": "80 legacy native receipts exact, 80 mutant containment/work; 72 analytic vector builds; 24 native events; shared conditional kernel 0 allocations for 0/1/2 sweeps",
+    "bounds": {
+      "native_event_rows": 24,
+      "native_rows": 160,
+      "source_dimension_max": 32,
+      "sweeps_max": 2,
+      "vector_rows": 72
+    },
+    "coefficient_domain": "binary64 directed interval arithmetic, validated polynomial DAE; finite development corpus",
+    "conventions": "q<1, synchronous intersections, source-owned slab; allocation requests same-thread only",
+    "inputs": [
+      "PREREGISTRATION.md",
+      "CANDIDATES.json",
+      "prior archived native/component receipts"
+    ],
+    "non_claims": [
+      "full VG1",
+      "independent holdout",
+      "general strict improvement",
+      "walltime or peak memory",
+      "default promotion"
+    ]
+  },
+  "outputs": [
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/BINARY.sha256",
+      "sha256": "25b5ea397cefbf5af0c1efb62c892ab7ddda7bb711e65637dae128c7a8aae8f2"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/COMPONENT_COMPARE.json",
+      "sha256": "91e17cba64eaa378bad16ff4faf8865aef659bc704945a767c0932dae80a687b"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/NATIVE_EVENT_COMPARE.json",
+      "sha256": "85f17b056969fab05624c256bdfa690e8e938a435fee0aa89406bcd14f463ffd"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/RAW_LOG_CLEANUP.json",
+      "sha256": "e5b0a3a59d1d7bb81da03de5115d81a257e6f3b3374fadbef4e45e3acafa4f85"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/SELECTION.json",
+      "sha256": "3718f3db270a9a2ba3ad5307dbe4112cc874fc5d634b33f60afbc78f24291e18"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/VECTOR_GUIDANCE.json",
+      "sha256": "76511073743dd0f1f669e9b8bdeab59baa07989e4decf748ac21cc5f2d3be677"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/allocator_positive_and_zero_control.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/allocator_positive_and_zero_control.log.gz",
+      "sha256": "fc82350e77a88b19565c8c87ffcaddcdea79906fef33b3d23af18498a752a7b2"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/components.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/components.log.gz",
+      "sha256": "8c9c4c16b1b69b782473e26af2252dd47bb22ec6814f53e3fac3f9b043089af5"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/equivalence.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/equivalence.log.gz",
+      "sha256": "edcd10c35b35ce6092d80ba9d1e3d6333a6965d8aae973a6f12a5a2022caba40"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/first_exec/SELECTION.json",
+      "sha256": "3718f3db270a9a2ba3ad5307dbe4112cc874fc5d634b33f60afbc78f24291e18"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/first_exec/portfolio.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/first_exec/portfolio.log.gz",
+      "sha256": "5d96ebaf9c307891b6604eb1b7de4cf9c8dda5aac4048edbe364ee03868cc5a9"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/first_exec/regression.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/first_exec/regression.log.gz",
+      "sha256": "c0d738f9ebe28f06322231688d3faafaa526d2a98a9d5265cf454e20fc66f3e3"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/first_exec/selection.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/first_exec/vector.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/first_exec/vector.log.gz",
+      "sha256": "da6d7931836ae2f74e94570d1065c500969d98657f613414f45ded255ee4524a"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/green.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/green.log.gz",
+      "sha256": "3e85e523b9f565e15465c0c2f633fe2445045688b4a110808619d94716a766d3"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/guard_defect_vector_mutations.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/guard_source_defect_allocation_contract.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/guard_source_defect_allocation_contract.log.gz",
+      "sha256": "8e27a3e9b1d619c15cda18902355e6470041eb327e9bda72c34ffece8cce7d01"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/harness.log.gz",
+      "sha256": "a0a2007565fecefcf0a8f1c34ec3187b076202085bf82a9c5264bce2d5c31214"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/kernel.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/kernel.log.gz",
+      "sha256": "f90b335ac0384e2fec15eb04146f8d9f56aa5da0e5148f63c6bfaf8eee7c0b88"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/kernel_forbid_unsafe.exit",
+      "sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/kernel_forbid_unsafe.log.gz",
+      "sha256": "438cb8f99dcb8f1b565249b75aa117f52b3b7361d259ea25bd2b7de3df089ef6"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/portfolio.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/portfolio.log.gz",
+      "sha256": "eaace9e82a706e4b7030a7ae34383c5dc04dfec87a86e23fe25ec543ba25d3d8"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/red.exit",
+      "sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/red.log.gz",
+      "sha256": "cf1a840439a69d3735ad9f3684c773831bcf05e9e54d8e724fb5af6192f570b9"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/regression.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/regression.log.gz",
+      "sha256": "f1e6f93fada6ebd38e9f6b2f3cc722bb1531598e248c008b92071fa8d696c517"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/selection.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/selection.log.gz",
+      "sha256": "4307d3ff36a90586857cc8412efefd5b6b3a0ce9a20d7cefd5f8d44447f94e3e"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/vector.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/vector.log.gz",
+      "sha256": "dc407ec15fcf415812a422eed0fe4b10ab5dba2458b48374b9ecf42cf8466375"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/vector_guidance.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_guard_defect_20261126/vector_guidance.log.gz",
+      "sha256": "312280b33c0537480acf29974b3cf0f4a99d142f9c3ad552c97e3fa517e383e0"
+    }
+  ],
+  "randomness": {
+    "additional_seeds": [
+      271828,
+      123407
+    ],
+    "generator": "Python random.Random for measured-table UCT/Bandit replay only",
+    "seed": 1729,
+    "used": true
+  },
+  "repository": {
+    "commit": "ce5b3d0e2c632a476fa230fbce1127c2e84ea408",
+    "dirty": true,
+    "tracked_dirty": false,
+    "untracked_evidence": true
+  },
+  "residual_risks": [
+    "remaining owning allocations and PreparedRhs",
+    "strong coupling nontransversality",
+    "stack high-water unmeasured",
+    "no independent model review or full workspace build"
+  ],
+  "result": "implementation-verified finite scope; full VG1 OPEN",
+  "run": {
+    "exit_status": 0,
+    "resource_limits": {
+      "cpu_seconds": null,
+      "max_cores": null,
+      "max_threads": 1,
+      "memory_bytes": null
+    },
+    "runtime_seconds": null,
+    "started_at": "",
+    "status": "completed",
+    "timing_note": "exact campaign aggregate timestamp/runtime not captured; per-test logs retain build/test elapsed and execution provenance"
+  },
+  "schema_version": 2
+}

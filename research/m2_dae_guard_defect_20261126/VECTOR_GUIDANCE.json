@@ -1,0 +1,192 @@
+{
+  "bandit_posterior": {
+    "mutation": [
+      3.0,
+      79.0
+    ],
+    "structure": [
+      24.0,
+      410.0
+    ]
+  },
+  "method": "post-campaign measured-table replay; UCT+ProposalBandit+MAP-Elites, front per problem stratum; no unseen score used in reward; no online promotion",
+  "pareto_coverage": 22,
+  "pareto_size": 22,
+  "proposal_counts": {
+    "mutation": 80,
+    "structure": 432
+  },
+  "rows": 72,
+  "seed": 123407,
+  "strata": [
+    {
+      "case": [
+        "coupled",
+        "algebraic"
+      ],
+      "covered": 0,
+      "pareto_count": 0,
+      "recommendations": {
+        "resource_first": null,
+        "width_first": null
+      }
+    },
+    {
+      "case": [
+        "coupled",
+        "cancellation"
+      ],
+      "covered": 0,
+      "pareto_count": 0,
+      "recommendations": {
+        "resource_first": null,
+        "width_first": null
+      }
+    },
+    {
+      "case": [
+        "moderate",
+        "algebraic"
+      ],
+      "covered": 6,
+      "pareto_count": 6,
+      "recommendations": {
+        "resource_first": {
+          "case": "moderate",
+          "derivative": "Tangent",
+          "guard": "algebraic",
+          "objectives": [
+            12,
+            656,
+            0,
+            1.4028177552275078,
+            0.0
+          ],
+          "value": "Box"
+        },
+        "width_first": {
+          "case": "moderate",
+          "derivative": "SchurRefine2",
+          "guard": "algebraic",
+          "objectives": [
+            12,
+            656,
+            4,
+            1.3420087578166167,
+            0.0
+          ],
+          "value": "Box"
+        }
+      }
+    },
+    {
+      "case": [
+        "moderate",
+        "cancellation"
+      ],
+      "covered": 4,
+      "pareto_count": 4,
+      "recommendations": {
+        "resource_first": {
+          "case": "moderate",
+          "derivative": "SchurRefine1",
+          "guard": "cancellation",
+          "objectives": [
+            12,
+            656,
+            2,
+            0.4567610235790547,
+            0.0
+          ],
+          "value": "Box"
+        },
+        "width_first": {
+          "case": "moderate",
+          "derivative": "SchurRefine2",
+          "guard": "cancellation",
+          "objectives": [
+            12,
+            656,
+            4,
+            0.455423996047298,
+            0.0
+          ],
+          "value": "Box"
+        }
+      }
+    },
+    {
+      "case": [
+        "weak",
+        "algebraic"
+      ],
+      "covered": 6,
+      "pareto_count": 6,
+      "recommendations": {
+        "resource_first": {
+          "case": "weak",
+          "derivative": "Tangent",
+          "guard": "algebraic",
+          "objectives": [
+            12,
+            656,
+            0,
+            0.6449544895831165,
+            0.0
+          ],
+          "value": "Box"
+        },
+        "width_first": {
+          "case": "weak",
+          "derivative": "SchurRefine2",
+          "guard": "algebraic",
+          "objectives": [
+            12,
+            656,
+            4,
+            0.6180130498565712,
+            0.0
+          ],
+          "value": "Box"
+        }
+      }
+    },
+    {
+      "case": [
+        "weak",
+        "cancellation"
+      ],
+      "covered": 6,
+      "pareto_count": 6,
+      "recommendations": {
+        "resource_first": {
+          "case": "weak",
+          "derivative": "Tangent",
+          "guard": "cancellation",
+          "objectives": [
+            12,
+            656,
+            0,
+            0.2729317276234351,
+            0.0
+          ],
+          "value": "Box"
+        },
+        "width_first": {
+          "case": "weak",
+          "derivative": "SchurRefine2",
+          "guard": "cancellation",
+          "objectives": [
+            12,
+            656,
+            4,
+            0.1796407174871489,
+            0.0
+          ],
+          "value": "Box"
+        }
+      }
+    }
+  ],
+  "unique": 72
+}
