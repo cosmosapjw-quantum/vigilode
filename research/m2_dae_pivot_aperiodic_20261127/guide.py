@@ -88,5 +88,14 @@ else:
  seq={'point':read('pivot.log','PIVOT_POINT'),'reconstruction':read('pivot.log','PIVOT_RECON'),'vector_epoch':read('pivot.log','PIVOT_EPOCH'),'aperiodic_bound':read('aperiodic.log','APERIODIC_BOUND'),'aperiodic_epoch':read('aperiodic.log','APERIODIC_EPOCH')}
  out={name:replay(name,rows)for name,rows in seq.items()}
  out['scope']='finite measured replay, refused candidates preserved; caller thread allocations only for parallel scan; work counters not walltime; no promotion'
+ # Compare order AND partition across the same physical problem. The
+ # earlier fronts deliberately held both fixed to isolate transport.
+ rows=seq['aperiodic_bound']
+ cross=[]
+ for case,h in itertools.product(['noncommuting','stable'],[.125,.5]):
+  group=[r for r in rows if r['case']==case and r['h']==h and good('aperiodic_bound',r)]
+  f=[r for r in group if not any(dom(obj('aperiodic_bound',q),obj('aperiodic_bound',r))for q in group)]
+  cross.append({'case':case,'h':h,'qualified':len(group),'pareto':[{'cells':r['cells'],'order':r['order'],'route':r['route'],'objectives':obj('aperiodic_bound',r)}for r in f]})
+ dump('APERIODIC_CROSS_DESIGN.json',{'strata':cross,'scope':'same source and physical interval, all order/partition/route choices jointly; measured finite objectives; scan allocations are caller-thread only'})
  dump('SELECTION.json',out)
  for k,v in out.items():print(k,{a:b for a,b in v.items()if a!='strata'}if isinstance(v,dict)else v)
