@@ -6263,3 +6263,306 @@ fn query_workspace_actual_query_noalloc() {
         "actual full query into preallocated retained report"
     );
 }
+
+fn query_replay_case(case: &str, run: &EvolutionRun) {
+    use QueryWorkspaceRoute as R;
+    assert!(run.global_qualified, "{case} {:?}", run.reason);
+    let ts = &run.driver().t;
+    let last = *ts.last().unwrap();
+    let mid = ts.len() / 2;
+    let mut clocks = vec![
+        ts[0],
+        (ts[0] + ts[1]) / 2.,
+        ts[1],
+        ts[mid],
+        (ts[mid] + ts[mid + 1]) / 2.,
+        last,
+    ];
+    clocks.extend_from_within(..);
+    clocks[6..].reverse();
+    let refs = clocks
+        .iter()
+        .map(|&t| run.query(t).unwrap())
+        .collect::<Vec<_>>();
+    let mut workspace = QueryWorkspace::new();
+    let mut out = refs[0].clone();
+    for (k, &t) in clocks.iter().enumerate() {
+        let mut raw = [0.; 32];
+        let (r, a) = measure(|| run.driver().at_into(t, &mut raw[..refs[k].raw.len()]));
+        assert_eq!(r, Some(()));
+        assert_eq!(&raw[..refs[k].raw.len()], &refs[k].raw);
+        assert_eq!(a.requests(), 0);
+    }
+    for candidate in [
+        "legacy",
+        "fresh_fixed",
+        "fixed_rows",
+        "stream_pairs",
+        "cursor_pairs",
+    ] {
+        workspace.reset_cursor();
+        for (k, &t) in clocks.iter().enumerate() {
+            let (allocation, work) = if candidate == "legacy" {
+                let (r, a) = measure(|| run.query(t));
+                same(&r.unwrap(), &refs[k]);
+                (a, None)
+            } else if candidate == "fresh_fixed" {
+                let (r, a) =
+                    measure(|| run.query_owned_workspace(t, R::StreamPairs, &mut workspace));
+                same(&r.unwrap(), &refs[k]);
+                (a, Some(workspace.work()))
+            } else {
+                let route = match candidate {
+                    "fixed_rows" => R::FixedRows,
+                    "stream_pairs" => R::StreamPairs,
+                    _ => R::CursorPairs,
+                };
+                let (r, a) = measure(|| run.query_into(t, route, &mut workspace, &mut out));
+                r.unwrap();
+                same(&out, &refs[k]);
+                assert_eq!(a.requests(), 0);
+                assert_eq!(a.requested_bytes, 0);
+                (a, Some(workspace.work()))
+            };
+            println!(
+                "QUERY_POINT {}",
+                serde_json::json!({"case":case,"index":k,"time":t,"candidate":candidate,"allocation":allocation,"work":work,"qualified":refs[k].physical_error_upper.is_some(),"query":refs[k]})
+            );
+        }
+    }
+    // Invalid domain and NaN: leave the last retained result unchanged.
+    let before = serde_json::to_value(&out).unwrap();
+    for t in [ts[0] - 1., last + 1., f64::NAN] {
+        assert!(
+            run.query_into(t, R::CursorPairs, &mut workspace, &mut out)
+                .is_err()
+        );
+        assert_eq!(serde_json::to_value(&out).unwrap(), before);
+    }
+    println!(
+        "QUERY_EDGE {}",
+        serde_json::json!({"case":case,"transactional":true,"raw_into_zero":clocks.len()})
+    );
+    let mut timing: [Vec<u128>; 5] = std::array::from_fn(|_| Vec::new());
+    for rep in 0..7 {
+        for j in 0..5 {
+            let i = (j + rep) % 5;
+            workspace.reset_cursor();
+            let start = std::time::Instant::now();
+            for _ in 0..4 {
+                for &t in &clocks {
+                    match i {
+                        0 => {
+                            black_box(run.query(t).unwrap());
+                        }
+                        1 => {
+                            black_box(
+                                run.query_owned_workspace(t, R::StreamPairs, &mut workspace)
+                                    .unwrap(),
+                            );
+                        }
+                        _ => {
+                            let route = [R::FixedRows, R::StreamPairs, R::CursorPairs][i - 2];
+                            run.query_into(t, route, &mut workspace, &mut out).unwrap();
+                            black_box(&out);
+                        }
+                    }
+                }
+            }
+            timing[i].push(start.elapsed().as_nanos() / (4 * clocks.len()) as u128);
+        }
+    }
+    for (i, v) in timing.iter_mut().enumerate() {
+        v.sort_unstable();
+        println!(
+            "QUERY_TIMING {}",
+            serde_json::json!({"case":case,"candidate":["legacy","fresh_fixed","fixed_rows","stream_pairs","cursor_pairs"][i],"median_ns":v[3],"samples_ns":v,"calls_per_sample":4*clocks.len()})
+        );
+    }
+    // For independent exact state/error checks, retain every distinct reference.
+    println!(
+        "QUERY_REFERENCE {}",
+        serde_json::json!({"case":case,"queries":refs,"initial":run.initial,"times":ts,"slabs":run.slabs().iter().map(|s|serde_json::json!({"times":s.times,"certificate":s.certificate,"power":s.power})).collect::<Vec<_>>() })
+    );
+}
+#[test]
+fn integrated_query_workspace_portfolio() {
+    use QueryWorkspaceRoute as R;
+    warm();
+    println!(
+        "QUERY_STORAGE {}",
+        serde_json::json!({"workspace_bytes":std::mem::size_of::<QueryWorkspace>(),"query_inline_bytes":std::mem::size_of::<Query>(),"scope":"static sizes, not peak stack"})
+    );
+    for case in ["stable", "stiff", "nonlinear", "vector4", "vector8"] {
+        let (src, x, z, branch, solver) = certificate_fixture(case);
+        let projection = workspace_projection(solver);
+        let epoch = EvolutionEpoch {
+            start: 0.,
+            end: 0.125,
+            incoming_x_error: Some(0.),
+        };
+        let baseline = EvolutionRoute::Workspace5 {
+            projection,
+            certificate: de::SlabWorkspaceRoute::Refined,
+            storage: CertificateStorage::Local,
+        };
+        for grid_kind in ["sparse", "dense"] {
+            let grid = if grid_kind == "sparse" {
+                vec![0.03125, 0.0625, 0.09375]
+            } else {
+                (1..64).map(|i| i as f64 / 512.).collect::<Vec<_>>()
+            };
+            let ((base, a), alloc) = measure(|| {
+                evolve_epoch_audited(
+                    &src,
+                    &x,
+                    &z,
+                    &branch,
+                    epoch,
+                    &opts(),
+                    policy(),
+                    baseline,
+                    &grid,
+                )
+            });
+            let base = base.unwrap();
+            assert!(base.global_qualified);
+            println!(
+                "QUERY_EPOCH {}",
+                serde_json::json!({"case":case,"grid":grid_kind,"candidate":"legacy","allocation":alloc,"qualified":base.global_qualified,"slabs":base.slabs().len(),"accepted":base.accepted.len(),"queries":base.queries.len(),"max_physical_error":base.max_physical_error,"audit":a})
+            );
+            for (name, route) in [
+                ("fixed_rows", R::FixedRows),
+                ("stream_pairs", R::StreamPairs),
+                ("cursor_pairs", R::CursorPairs),
+            ] {
+                let solver = EvolutionRoute::WorkspaceQuery5 {
+                    projection,
+                    certificate: de::SlabWorkspaceRoute::Refined,
+                    storage: CertificateStorage::Local,
+                    query: route,
+                };
+                let ((run, a2), allocation) = measure(|| {
+                    evolve_epoch_audited(
+                        &src,
+                        &x,
+                        &z,
+                        &branch,
+                        epoch,
+                        &opts(),
+                        policy(),
+                        solver,
+                        &grid,
+                    )
+                });
+                let run = run.unwrap();
+                assert!(
+                    run.global_qualified,
+                    "{case} {grid_kind} {name} {:?}",
+                    run.reason
+                );
+                assert_eq!(run.driver().t, base.driver().t);
+                assert_eq!(run.driver().y, base.driver().y);
+                same(&run.initial, &base.initial);
+                same(&run.slabs(), &base.slabs());
+                same(&run.accepted, &base.accepted);
+                same(&run.queries, &base.queries);
+                same(&run.work, &base.work);
+                same(&a2, &a);
+                assert_eq!(run.max_physical_error, base.max_physical_error);
+                println!(
+                    "QUERY_EPOCH {}",
+                    serde_json::json!({"case":case,"grid":grid_kind,"candidate":name,"allocation":allocation,"qualified":run.global_qualified,"slabs":run.slabs().len(),"accepted":run.accepted.len(),"queries":run.queries.len(),"max_physical_error":run.max_physical_error,"audit":a2})
+                );
+            }
+            if grid_kind == "sparse" {
+                query_replay_case(case, &base);
+            }
+        }
+    }
+    // Actual mass DAE, with a raw algebraic coordinate and original raw residual.
+    let (src, x, z, branch, _) = certificate_fixture("stable");
+    let mass = evolve_epoch(
+        &src,
+        &x,
+        &z,
+        &branch,
+        EvolutionEpoch {
+            start: 0.,
+            end: 0.125,
+            incoming_x_error: Some(0.),
+        },
+        &opts(),
+        policy(),
+        EvolutionRoute::Mass,
+        &[],
+    )
+    .unwrap();
+    assert!(mass.global_qualified, "mass {:?}", mass.reason);
+    query_replay_case("mass", &mass);
+    // Real guarded Robertson run, committed transitions, and final terminal
+    // conserved interval. Reuse full L1 affine-lift query semantics.
+    let modes = graph(
+        "alternating",
+        EvolutionRoute::BoundedAffine5,
+        ConservationRoute::Integral4,
+    );
+    let chain = evolve_conserved_chain(
+        &modes,
+        0,
+        initial(2f64.powi(-26)),
+        [0., 0.002],
+        &opts(),
+        policy(),
+        pm(MultiGuardRoute::Correlated),
+        chain_limits(),
+        SimplexGapRoute::AffineDual,
+    )
+    .unwrap();
+    assert!(chain.transitions().iter().any(|e| e.committed));
+    let terminal = chain
+        .epochs()
+        .last()
+        .unwrap()
+        .terminal()
+        .expect("qualified conserved terminal");
+    assert!(
+        terminal
+            .slabs()
+            .iter()
+            .all(|s| s.certificate.as_ref().unwrap().conservation.is_some())
+    );
+    query_replay_case("conserved", terminal);
+    println!(
+        "QUERY_CHAIN {}",
+        serde_json::json!({"transitions":chain.transitions().len(),"committed":chain.transitions().iter().filter(|e|e.committed).count(),"terminal_slabs":terminal.slabs().len(),"stop":format!("{:?}",chain.stop())})
+    );
+    // Unknown incoming physical radius must remain None, not zero or stale.
+    let (src, x, z, branch, solver) = certificate_fixture("stable");
+    let run = evolve_epoch(
+        &src,
+        &x,
+        &z,
+        &branch,
+        EvolutionEpoch {
+            start: 0.,
+            end: 0.125,
+            incoming_x_error: None,
+        },
+        &opts(),
+        policy(),
+        solver,
+        &[],
+    )
+    .unwrap();
+    let mut out = run.query(0.).unwrap();
+    let mut w = QueryWorkspace::new();
+    run.query_into(0.0625, R::CursorPairs, &mut w, &mut out)
+        .unwrap();
+    same(&out, &run.query(0.0625).unwrap());
+    assert!(out.physical_error_upper.is_none());
+    println!(
+        "QUERY_UNRESOLVED {}",
+        serde_json::json!({"physical_error":out.physical_error_upper,"qualified":out.projection.qualified})
+    );
+}
