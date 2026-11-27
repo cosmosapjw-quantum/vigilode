@@ -9,12 +9,15 @@ pub enum SecantGoalRoute {
     Scaled4,
     Scaled16,
     Shifted4,
+    Scaled8,
+    Shifted8,
 }
 impl SecantGoalRoute {
     fn cells(self) -> usize {
         match self {
             Self::WholeHorner => 1,
             Self::Scaled16 => 16,
+            Self::Scaled8 | Self::Shifted8 => 8,
             _ => 4,
         }
     }
@@ -22,10 +25,13 @@ impl SecantGoalRoute {
         !matches!(self, Self::WholeHorner | Self::Sub4Horner)
     }
     fn diagonal(self) -> bool {
-        matches!(self, Self::Diagonal4 | Self::Scaled4 | Self::Scaled16)
+        matches!(
+            self,
+            Self::Diagonal4 | Self::Scaled4 | Self::Scaled8 | Self::Scaled16
+        )
     }
     fn scale(self) -> f64 {
-        if matches!(self, Self::Scaled4 | Self::Scaled16) {
+        if matches!(self, Self::Scaled4 | Self::Scaled8 | Self::Scaled16) {
             65536.
         } else {
             1.
@@ -187,7 +193,7 @@ impl SlabReplayRun {
                 .ok_or_else(|| bad("secant certificate"))?;
             power(&s, n, &mut rows[..n])?;
             let mut perturb = [0.; 32];
-            if route == SecantGoalRoute::Shifted4 {
+            if matches!(route, SecantGoalRoute::Shifted4 | SecantGoalRoute::Shifted8) {
                 perturb[0] = if k % 2 == 0 {
                     1. / 1048576.
                 } else {

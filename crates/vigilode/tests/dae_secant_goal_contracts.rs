@@ -1333,6 +1333,43 @@ fn signed_goal_actual_portfolio() {
             "SIGNED_PHYSICAL {}",
             serde_json::json!({"case":case,"end":end,"qualified":pr.global_qualified(),"reason":pr.reason(),"first":first,"slabs":pr.slabs_len(),"driver_success":pr.driver().is_success()})
         );
+        if pr.global_qualified() {
+            let y = pr.accepted(pr.accepted_len() - 1).unwrap();
+            let mut w = SecantGoalWorkspace::new();
+            let mut out = Iv::point(0.).unwrap();
+            for k in [
+                SecantGoalRoute::WholeHorner,
+                SecantGoalRoute::Sub4Bernstein,
+                SecantGoalRoute::Diagonal4,
+                SecantGoalRoute::Scaled4,
+                SecantGoalRoute::Scaled8,
+                SecantGoalRoute::Scaled16,
+                SecantGoalRoute::Shifted4,
+                SecantGoalRoute::Shifted8,
+            ] {
+                let old = out;
+                let start = std::time::Instant::now();
+                let (r, a) = measure(|| pr.secant_goal_into(&c, k, &mut w, &mut out));
+                let ns = start.elapsed().as_nanos();
+                match r {
+                    Ok(v) => {
+                        assert_eq!(a.requests(), 0);
+                        assert_eq!(out.as_pair(), v.signed_error);
+                        println!(
+                            "SIGNED_DIRECT {}",
+                            serde_json::json!({"case":case,"end":end,"candidate":k,"qualified":true,"allocation":a,"work":v,"terminal":y.state(),"weights":c,"ns":ns})
+                        );
+                    }
+                    Err(e) => {
+                        assert_eq!(out, old);
+                        println!(
+                            "SIGNED_DIRECT {}",
+                            serde_json::json!({"case":case,"end":end,"candidate":k,"qualified":false,"allocation":a,"reason":e.to_string()})
+                        );
+                    }
+                }
+            }
+        }
         for absolute in [1e-8, 1e-9, 1e-10] {
             for plan in plans {
                 let start = std::time::Instant::now();

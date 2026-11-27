@@ -11,8 +11,41 @@ pub enum GoalBudgetPlan {
     Structured12,
     Structured20,
     StructuredBudgeted,
+    SignedPortfolio,
+    SignedRefined,
 }
 impl GoalBudgetPlan {
+    fn signed(self) -> bool {
+        matches!(self, Self::SignedPortfolio | Self::SignedRefined)
+    }
+    fn secant_routes(self) -> &'static [SecantGoalRoute] {
+        use SecantGoalRoute::*;
+        match self {
+            // Activate earlier source-bound diagonal/scaled/perturbed routes
+            // on the real budget gate; keep every previous comparison arm.
+            Self::SignedPortfolio => &[
+                WholeHorner,
+                Sub4Bernstein,
+                Diagonal4,
+                Scaled4,
+                Shifted4,
+                Sub4Horner,
+                Scaled16,
+            ],
+            Self::SignedRefined => &[
+                Sub4Bernstein,
+                Scaled8,
+                Shifted8,
+                WholeHorner,
+                Diagonal4,
+                Scaled4,
+                Shifted4,
+                Sub4Horner,
+                Scaled16,
+            ],
+            _ => &[WholeHorner, Sub4Horner, Sub4Bernstein, Scaled16],
+        }
+    }
     fn structured(self) -> Option<AdjointTaylorRoute> {
         match self {
             Self::Structured12 => Some(AdjointTaylorRoute::Fixed12),
@@ -120,6 +153,7 @@ pub fn evolve_epoch_goal_budget(
     let nominal = 64. * (atol + opts.rtol * scale) * norm;
     let mut mult = if budget.plan == GoalBudgetPlan::Fixed
         || budget.plan.structured().is_some()
+        || budget.plan.signed()
         || (budget.plan == GoalBudgetPlan::CostAware && budget.absolute < nominal)
     {
         1.
@@ -229,12 +263,7 @@ pub fn evolve_epoch_goal_budget(
                         {
                             let workspace =
                                 scratch.get_or_insert_with(|| Box::new(SecantGoalWorkspace::new()));
-                            for route in [
-                                SecantGoalRoute::WholeHorner,
-                                SecantGoalRoute::Sub4Horner,
-                                SecantGoalRoute::Sub4Bernstein,
-                                SecantGoalRoute::Scaled16,
-                            ] {
+                            for &route in budget.plan.secant_routes() {
                                 if matches!(
                                     budget.plan,
                                     GoalBudgetPlan::CostAware | GoalBudgetPlan::TieredCost
