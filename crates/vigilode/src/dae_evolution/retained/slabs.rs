@@ -753,9 +753,40 @@ pub fn evolve_epoch_slab_replay_audited(
     retention: RetainedOutputRoute,
     replay: SlabReplayRoute,
 ) -> (CoreResult<SlabReplayRun>, NativeResourceAudit) {
+    evolve_epoch_slab_replay_planned(
+        src,
+        x,
+        z,
+        branch,
+        epoch,
+        opts,
+        policy,
+        route,
+        grid,
+        retention,
+        replay,
+        EnginePlan::Legacy,
+    )
+}
+#[allow(clippy::too_many_arguments)]
+pub fn evolve_epoch_slab_replay_planned(
+    src: &DaeSource,
+    x: &[f64],
+    z: &[f64],
+    branch: &[[f64; 2]],
+    epoch: EvolutionEpoch,
+    opts: &Options,
+    policy: EvolutionPolicy,
+    route: EvolutionRoute,
+    grid: &[f64],
+    retention: RetainedOutputRoute,
+    replay: SlabReplayRoute,
+    plan: EnginePlan,
+) -> (CoreResult<SlabReplayRun>, NativeResourceAudit) {
     let a = Arc::new(Mutex::new(NativeResourceAudit::default()));
     let mut build = RetainedBuild::new(retention);
     build.slab_plan = Some(replay);
+    build.engine_plan = plan;
     let result = if route.query_workspace().is_none()
         || !route
             .workspace()

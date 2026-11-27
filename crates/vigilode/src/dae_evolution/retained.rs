@@ -453,6 +453,7 @@ pub(super) struct RetainedBuild {
     accepted: usize,
     queries: usize,
     pub(super) slab_plan: Option<SlabReplayRoute>,
+    pub(super) engine_plan: EnginePlan,
     slab_arena: Option<SlabArena>,
 }
 impl RetainedBuild {
@@ -463,6 +464,7 @@ impl RetainedBuild {
             accepted: 0,
             queries: 0,
             slab_plan: None,
+            engine_plan: EnginePlan::Legacy,
             slab_arena: None,
         }
     }

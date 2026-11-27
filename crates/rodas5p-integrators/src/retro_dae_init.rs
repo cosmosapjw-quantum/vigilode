@@ -417,6 +417,40 @@ impl DaeSource {
     pub fn time_into(&self, t: f64, y: &[f64], out: &mut [f64]) -> CoreResult<()> {
         self.point_into(t, y, SourceEvalKind::Time, out, &mut [0.; 32])
     }
+    /// One source jet per differential equation; identical rounded f_t
+    /// and f_z values and FMA order to the separate time/Jacobian callbacks.
+    /// Original projection remains the authority for z and z_t.
+    pub fn reduced_scalar_time_into(
+        &self,
+        t: f64,
+        x: &[f64],
+        z0: f64,
+        zt: f64,
+        out: &mut [f64],
+    ) -> CoreResult<()> {
+        let nx = self.nx();
+        let n = nx + 1;
+        if self.nz() != 1 || x.len() != nx || out.len() != nx || !zt.is_finite() {
+            return Err(bad("reduced scalar time shape"));
+        }
+        let t = p(t)?;
+        let mut y = [z(); 32];
+        let mut row = [z(); 33];
+        let mut staged = [0.; 32];
+        for (o, &v) in y[..nx].iter_mut().zip(x) {
+            *o = p(v)?;
+        }
+        y[nx] = p(z0)?;
+        for (i, eq) in self.f.iter().enumerate() {
+            evaluate_row_bounded(eq, t, &y[..n], &mut row[..=n])?;
+            staged[i] = mid(row[n]).mul_add(zt, mid(row[0]));
+            if !staged[i].is_finite() {
+                return Err(bad("nonfinite reduced scalar time"));
+            }
+        }
+        out.copy_from_slice(&staged[..nx]);
+        Ok(())
+    }
     pub fn rhs_values(&self, t: f64, y: &[f64]) -> CoreResult<Vec<f64>> {
         if y.len() != self.nx() + self.nz() {
             return Err(bad("state shape"));

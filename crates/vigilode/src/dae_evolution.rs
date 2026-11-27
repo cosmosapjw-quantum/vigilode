@@ -702,11 +702,29 @@ impl Engine {
     }
 }
 fn reduced_problem(e: &Engine) -> Problem {
-    let nx = e.src.nx();
+    reduced_problem_captured::<Engine, false>(e.clone())
+}
+fn reduced_problem_planned(e: &Engine, plan: EnginePlan) -> Problem {
+    match plan {
+        EnginePlan::Legacy => reduced_problem(e),
+        EnginePlan::Shared | EnginePlan::SharedBounded => {
+            reduced_problem_captured::<Arc<Engine>, false>(Arc::new(e.clone()))
+        }
+        EnginePlan::SharedFused => {
+            reduced_problem_captured::<Arc<Engine>, true>(Arc::new(e.clone()))
+        }
+    }
+}
+fn reduced_problem_captured<E, const FUSED: bool>(e: E) -> Problem
+where
+    E: std::borrow::Borrow<Engine> + Clone + Send + Sync + 'static,
+{
+    let nx = e.borrow().src.nx();
     let a = e.clone();
     let b = e.clone();
-    let c = e.clone();
+    let c = e;
     Problem::new(nx, move |t, x, out| {
+        let a = a.borrow();
         if a.vector_callback() {
             out.copy_from_slice(a.fixed_vector(t, x)?.xdot());
         } else if a.scalar_callback() {
@@ -717,6 +735,7 @@ fn reduced_problem(e: &Engine) -> Problem {
         Ok(())
     })
     .jacobian(Jacobian::dense(move |t, x, out| {
+        let b = b.borrow();
         if b.vector_callback() {
             out.copy_from_slice(b.fixed_vector(t, x)?.reduced_jacobian());
         } else if b.scalar_callback() {
@@ -730,12 +749,19 @@ fn reduced_problem(e: &Engine) -> Problem {
         Ok(())
     }))
     .time_derivative(move |t, x, out| {
+        let c = c.borrow();
         if c.vector_callback() {
             out.copy_from_slice(c.fixed_vector(t, x)?.reduced_time());
             return Ok(());
         }
         if c.scalar_callback() {
             let r = c.fixed_scalar(t, x)?;
+            if FUSED {
+                return c
+                    .src
+                    .reduced_scalar_time_into(t, x, r.z(), r.zt(), out)
+                    .map_err(|e| CallbackError::Fatal(e.to_string()));
+            }
             let n = nx + 1;
             let mut y = [0.; 32];
             y[..nx].copy_from_slice(x);
@@ -774,13 +800,35 @@ fn reduced_problem(e: &Engine) -> Problem {
         Ok(())
     })
 }
-/// Explicit setup/driver candidate; RED initially delegates the legacy implementation.
+/// Opt-in ownership and source evaluation candidates. No state cache.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub enum EnginePlan {
     Legacy,
     Shared,
     SharedBounded,
     SharedFused,
+}
+#[allow(clippy::too_many_arguments)]
+fn planned_initial(
+    src: &DaeSource,
+    t: f64,
+    x: &[f64],
+    z: &[f64],
+    branch: &[[f64; 2]],
+    policy: InitPolicy,
+    route: InitRoute,
+    audit: &Option<AuditHandle>,
+    plan: EnginePlan,
+) -> CoreResult<InitReport> {
+    if matches!(plan, EnginePlan::SharedBounded | EnginePlan::SharedFused)
+        && route == InitRoute::Reuse
+        && src.nz() == 1
+    {
+        let (r, w) = src.initialize_scalar_reuse_audited(t, x, z, branch, policy);
+        update_audit(audit, |a| a.initialization.record(&w, r.is_ok()));
+        return r.map(|v| v.to_owned_report());
+    }
+    audited_init(src, t, x, z, branch, policy, route, audit)
 }
 #[allow(clippy::too_many_arguments)]
 pub fn initialize_reduced_problem_planned(
@@ -791,9 +839,41 @@ pub fn initialize_reduced_problem_planned(
     branch: &[[f64; 2]],
     policy: EvolutionPolicy,
     route: EvolutionRoute,
-    _plan: EnginePlan,
+    plan: EnginePlan,
 ) -> CoreResult<crate::polynomial_events::InitializedDae> {
-    initialize_reduced_problem(src, t, x, z, branch, policy, route)
+    if matches!(
+        route,
+        EvolutionRoute::Mass | EvolutionRoute::WarpDirect | EvolutionRoute::WarpFolded
+    ) {
+        return Err(bad("direct reduced client route"));
+    }
+    let report = planned_initial(src, t, x, z, branch, policy.init, route.init(), &None, plan)?;
+    let e = Engine {
+        src: src.clone(),
+        branch: branch.to_vec(),
+        seed: report.z.clone(),
+        policy,
+        route,
+        warp: None,
+        work: Arc::new(Mutex::new(ProjectionWork::default())),
+        conservation: None,
+        audit: None,
+        certificate_workspace: None,
+    };
+    // Direct client consumes the Engine, so shared capture needs no
+    // additional deep clone of its already owned source.
+    let problem = match plan {
+        EnginePlan::Legacy => reduced_problem(&e),
+        EnginePlan::Shared | EnginePlan::SharedBounded => {
+            reduced_problem_captured::<Arc<Engine>, false>(Arc::new(e))
+        }
+        EnginePlan::SharedFused => reduced_problem_captured::<Arc<Engine>, true>(Arc::new(e)),
+    };
+    Ok(crate::polynomial_events::InitializedDae {
+        problem,
+        initial_state: x.to_vec(),
+        report,
+    })
 }
 /// Prepare the same reduced callbacks used by evolve_epoch, from an
 /// original-source certified initialization. WARP setup needs an epoch
@@ -1772,7 +1852,20 @@ fn evolve_epoch_authority_retained(
     {
         return Err(bad("spectral route requires general slab authority"));
     }
-    let initial = audited_init(src, start, x, z, branch, policy.init, route.init(), &audit)?;
+    let engine_plan = retained
+        .as_ref()
+        .map_or(EnginePlan::Legacy, |r| r.engine_plan);
+    let initial = planned_initial(
+        src,
+        start,
+        x,
+        z,
+        branch,
+        policy.init,
+        route.init(),
+        &audit,
+        engine_plan,
+    )?;
     let warp = match route {
         EvolutionRoute::WarpDirect | EvolutionRoute::WarpFolded => {
             let mode = if route == EvolutionRoute::WarpDirect {
@@ -1816,7 +1909,7 @@ fn evolve_epoch_authority_retained(
         };
         (a.problem, a.initial_state)
     } else {
-        let p = reduced_problem(&e);
+        let p = reduced_problem_planned(&e, engine_plan);
         (p, x.to_vec())
     };
     update_audit(&audit, |a| a.driver_invoked = true);
