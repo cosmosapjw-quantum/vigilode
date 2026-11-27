@@ -1435,7 +1435,73 @@ pub struct ScalarReuseProjection {
     tangent_residual: f64,
     work: InitWork,
 }
+fn replace_vec<T: Copy>(out: &mut Vec<T>, values: &[T]) {
+    out.clear();
+    out.extend_from_slice(values);
+}
+fn replace_rows(out: &mut Vec<Vec<f64>>, flat: &[f64], width: usize) {
+    let rows = flat.len() / width;
+    out.resize_with(rows, Vec::new);
+    for (row, values) in out.iter_mut().zip(flat.chunks_exact(width)) {
+        replace_vec(row, values);
+    }
+}
 impl ScalarReuseProjection {
+    pub fn state_error_upper(&self) -> f64 {
+        self.state_error
+    }
+    pub fn residual_upper(&self) -> f64 {
+        self.residual
+    }
+    /// Materialize exactly the same diagnostic fields as to_owned_report,
+    /// reusing the caller's vector/row/string capacities when available.
+    pub fn write_report_into(&self, out: &mut InitReport) {
+        out.route = self.route;
+        out.mode = self.mode;
+        out.t = self.t;
+        replace_vec(&mut out.x, &self.x[..self.nx]);
+        replace_vec(&mut out.original_z, &[self.seed]);
+        replace_vec(&mut out.z, &[self.center]);
+        out.correction_upper = self.correction;
+        replace_vec(&mut out.branch, &[self.branch]);
+        replace_vec(&mut out.root_box, &[self.root.as_pair()]);
+        out.branch_authority.clear();
+        out.branch_authority.push_str(
+            if matches!(
+                self.route,
+                InitRoute::BoundedSturmScalar | InitRoute::BoundedSturmNewtonScalar
+            ) {
+                "bounded exact square-free Sturm count + certified root bracket"
+            } else if matches!(
+                self.route,
+                InitRoute::BoundedAffineScalar | InitRoute::BoundedAffineIntervalScalar
+            ) {
+                "directed frozen affine root enclosure"
+            } else {
+                "whole-branch contraction + local self-map"
+            },
+        );
+        out.affine_root = None;
+        out.original_residual_upper = self.original_residual;
+        out.residual_upper = self.residual;
+        out.state_error_upper = self.state_error;
+        out.exact_center_consistency = self.residual == 0.;
+        out.branch_defect_upper = self.branch_defect;
+        out.local_defect_upper = self.local_defect;
+        out.inverse_norm_upper = self.inverse_norm;
+        out.condition_upper = self.condition;
+        out.rank = 1;
+        replace_vec(&mut out.xdot, self.xdot());
+        replace_vec(&mut out.zdot, &[self.sol[self.nx + 1]]);
+        replace_vec(&mut out.zt, &[self.sol[0]]);
+        replace_rows(&mut out.zx_columns, &self.sol[1..=self.nx], 1);
+        replace_rows(&mut out.reduced_jacobian, self.reduced_jacobian(), self.nx);
+        out.derivative_error_upper = self.derivative_error;
+        out.tangent_residual_upper = self.tangent_residual;
+        out.work = self.work.clone();
+        out.qualified = true;
+    }
+
     pub fn z(&self) -> f64 {
         self.center
     }
@@ -2373,6 +2439,58 @@ pub struct BoundedVectorProjection {
     work: InitWork,
 }
 impl BoundedVectorProjection {
+    pub fn state_error_upper(&self) -> f64 {
+        self.state_error
+    }
+    pub fn residual_upper(&self) -> f64 {
+        self.residual
+    }
+    /// Same report as to_owned_report; reuse all caller-owned buffers.
+    pub fn write_report_into(&self, out: &mut InitReport) {
+        out.route = self.route;
+        out.mode = self.mode;
+        out.t = self.t;
+        replace_vec(&mut out.x, &self.x[..self.nx]);
+        replace_vec(&mut out.original_z, &self.seed[..self.nz]);
+        replace_vec(&mut out.z, self.z());
+        out.correction_upper = self.correction;
+        out.branch.clear();
+        out.branch
+            .extend(self.branch[..self.nz].iter().map(|v| v.as_pair()));
+        out.root_box.clear();
+        out.root_box
+            .extend(self.root[..self.nz].iter().map(|v| v.as_pair()));
+        out.branch_authority.clear();
+        out.branch_authority
+            .push_str("whole-branch contraction + local self-map");
+        out.affine_root = None;
+        out.original_residual_upper = self.original_residual;
+        out.residual_upper = self.residual;
+        out.state_error_upper = self.state_error;
+        out.exact_center_consistency = self.residual == 0.;
+        out.branch_defect_upper = Some(self.branch_defect);
+        out.local_defect_upper = self.local_defect;
+        out.inverse_norm_upper = self.inverse_norm;
+        out.condition_upper = self.condition;
+        out.rank = self.nz;
+        replace_vec(&mut out.xdot, self.xdot());
+        replace_vec(
+            &mut out.zdot,
+            &self.sol[(self.nx + 1) * self.nz..(self.nx + 2) * self.nz],
+        );
+        replace_vec(&mut out.zt, &self.sol[..self.nz]);
+        replace_rows(
+            &mut out.zx_columns,
+            &self.sol[self.nz..(self.nx + 1) * self.nz],
+            self.nz,
+        );
+        replace_rows(&mut out.reduced_jacobian, self.reduced_jacobian(), self.nx);
+        out.derivative_error_upper = self.derivative_error;
+        out.tangent_residual_upper = self.tangent_residual;
+        out.work = self.work.clone();
+        out.qualified = true;
+    }
+
     pub fn z(&self) -> &[f64] {
         &self.center[..self.nz]
     }

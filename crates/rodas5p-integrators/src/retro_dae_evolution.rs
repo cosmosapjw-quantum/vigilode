@@ -3279,6 +3279,64 @@ pub fn query_x_error(
     add_up(ideal, e)
 }
 
+/// Evaluate retained interval pairs with the identical directed Horner
+/// operation order as query_x_error/conservation_query_full. The fixed
+/// row candidate stages coefficients; streaming reads each pair directly.
+pub fn query_error_from_pairs(
+    power: &[Vec<[f64; 2]>],
+    times: [f64; 2],
+    t: f64,
+    state: &[f64],
+    ideal: f64,
+    conserved: bool,
+    stream: bool,
+) -> CoreResult<f64> {
+    if !t.is_finite()
+        || t < times[0]
+        || t > times[1]
+        || power.is_empty()
+        || (if conserved {
+            power.len() != 2 || state.len() != 3
+        } else {
+            state.len() != power.len()
+        })
+        || power.iter().any(|r| r.is_empty() || r.len() > 5)
+    {
+        return Err(bad("query pair shape"));
+    }
+    let h = p(times[1])?.sub(p(times[0])?)?;
+    let u = p(t)?.sub(p(times[0])?)?.div(h)?;
+    let u = Iv::new(u.lo.max(0.), u.hi.min(1.))?;
+    let row = |v: &[[f64; 2]]| -> CoreResult<Iv> {
+        if stream {
+            v.iter()
+                .rev()
+                .try_fold(zero(), |s, b| s.mul(u)?.add(Iv::new(b[0], b[1])?))
+        } else {
+            let mut a = [zero(); 5];
+            for (o, b) in a.iter_mut().zip(v) {
+                *o = Iv::new(b[0], b[1])?;
+            }
+            eval(&a[..v.len()], u)
+        }
+    };
+    let correction = if conserved {
+        let a = row(&power[0])?;
+        let b = row(&power[1])?;
+        let lift = p(1.)?.sub(a)?.sub(b)?;
+        [a, b, lift]
+            .iter()
+            .zip(state)
+            .try_fold(0_f64, |s, (&a, &b)| {
+                Ok::<f64, CoreError>(s.max(a.sub(p(b)?)?.mag()))
+            })?
+    } else {
+        power.iter().zip(state).try_fold(0_f64, |m, (v, &x)| {
+            Ok::<f64, CoreError>(m.max(row(v)?.sub(p(x)?)?.mag()))
+        })?
+    };
+    add_up(ideal, correction)
+}
 /// Physical differential derivative enclosure on an already certified slab.
 /// Only valid when the certificate comes from this source and this slab.
 pub fn threshold_velocity(src: &DaeSource, c: &SlabCertificate) -> CoreResult<Iv> {

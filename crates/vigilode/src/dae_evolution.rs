@@ -896,29 +896,375 @@ fn projected(
         physical_error_upper,
     })
 }
-/// Explicit candidate: RED compatibility path initially owns every query.
+/// Explicit query algorithms. Cursor is an index hint, never a cached
+/// state, projection or certificate. Each call solves the original source.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub enum QueryWorkspaceRoute {
     FixedRows,
     StreamPairs,
     CursorPairs,
 }
-pub struct QueryWorkspace;
+#[derive(Clone, Copy, Debug, Default, Serialize)]
+pub struct QueryWorkspaceWork {
+    pub dense_into: usize,
+    pub binary_searches: usize,
+    pub cursor_hits: usize,
+    pub pair_rows: usize,
+    pub projection_calls: usize,
+}
+pub struct QueryWorkspace {
+    vector: rodas5p_integrators::retro_dae_init::VectorProjectionWorkspace,
+    cursor: Option<usize>,
+    work: QueryWorkspaceWork,
+}
 impl QueryWorkspace {
     pub const fn new() -> Self {
-        Self
+        Self {
+            vector: rodas5p_integrators::retro_dae_init::VectorProjectionWorkspace::new(),
+            cursor: None,
+            work: QueryWorkspaceWork {
+                dense_into: 0,
+                binary_searches: 0,
+                cursor_hits: 0,
+                pair_rows: 0,
+                projection_calls: 0,
+            },
+        }
+    }
+    pub fn work(&self) -> QueryWorkspaceWork {
+        self.work
+    }
+    pub fn reset_cursor(&mut self) {
+        self.cursor = None;
+    }
+    fn locate(&mut self, slabs: &[SlabRecord], t: f64, route: QueryWorkspaceRoute) -> usize {
+        if route == QueryWorkspaceRoute::CursorPairs {
+            let valid = |i: usize| {
+                i < slabs.len() && slabs[i].times[1] >= t && (i == 0 || slabs[i - 1].times[1] < t)
+            };
+            if let Some(i) = self.cursor {
+                if valid(i) {
+                    self.work.cursor_hits += 1;
+                    return i;
+                }
+                if let Some(j) = i.checked_add(1).filter(|&j| valid(j)) {
+                    self.work.cursor_hits += 1;
+                    return j;
+                }
+            }
+        }
+        self.work.binary_searches += 1;
+        slabs.partition_point(|a| a.times[1] < t)
     }
 }
+impl Default for QueryWorkspace {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+enum QueryProjection {
+    Scalar(ScalarReuseProjection),
+    Vector(rodas5p_integrators::retro_dae_init::BoundedVectorProjection),
+}
+impl QueryProjection {
+    fn work(&self) -> &InitWork {
+        match self {
+            Self::Scalar(r) => r.work(),
+            Self::Vector(r) => r.work(),
+        }
+    }
+    fn state_error(&self) -> f64 {
+        match self {
+            Self::Scalar(r) => r.state_error_upper(),
+            Self::Vector(r) => r.state_error_upper(),
+        }
+    }
+    fn residual(&self) -> f64 {
+        match self {
+            Self::Scalar(r) => r.residual_upper(),
+            Self::Vector(r) => r.residual_upper(),
+        }
+    }
+    fn state_z(&self, out: &mut [f64]) {
+        match self {
+            Self::Scalar(r) => out[0] = r.z(),
+            Self::Vector(r) => out.copy_from_slice(r.z()),
+        }
+    }
+    fn owned(&self) -> InitReport {
+        match self {
+            Self::Scalar(r) => r.to_owned_report(),
+            Self::Vector(r) => r.to_owned_report(),
+        }
+    }
+    fn write(&self, out: &mut InitReport) {
+        match self {
+            Self::Scalar(r) => r.write_report_into(out),
+            Self::Vector(r) => r.write_report_into(out),
+        }
+    }
+}
+struct FixedQuery {
+    t: f64,
+    raw: [f64; 32],
+    state: [f64; 32],
+    nr: usize,
+    n: usize,
+    projection: QueryProjection,
+    raw_constraint_upper: Option<f64>,
+    physical_error_upper: Option<f64>,
+}
+impl FixedQuery {
+    fn owned(self) -> Query {
+        Query {
+            t: self.t,
+            raw: self.raw[..self.nr].to_vec(),
+            state: self.state[..self.n].to_vec(),
+            raw_constraint_upper: self.raw_constraint_upper,
+            projected_constraint_upper: self.projection.residual(),
+            projection: self.projection.owned(),
+            physical_error_upper: self.physical_error_upper,
+        }
+    }
+    fn write(self, out: &mut Query) {
+        out.t = self.t;
+        out.raw.clear();
+        out.raw.extend_from_slice(&self.raw[..self.nr]);
+        out.state.clear();
+        out.state.extend_from_slice(&self.state[..self.n]);
+        out.raw_constraint_upper = self.raw_constraint_upper;
+        out.projected_constraint_upper = self.projection.residual();
+        out.physical_error_upper = self.physical_error_upper;
+        self.projection.write(&mut out.projection);
+    }
+}
+impl Engine {
+    fn query_projection(
+        &self,
+        t: f64,
+        x: &[f64],
+        seed: &[f64],
+        w: &mut QueryWorkspace,
+    ) -> CoreResult<QueryProjection> {
+        use rodas5p_integrators::retro_dae_init::InitMode;
+        let nz = self.src.nz();
+        let init = self.route.init();
+        if self.warp.is_some()
+            || seed.len() != nz
+            || self.branch.len() != nz
+            || self
+                .branch
+                .iter()
+                .any(|b| !b[0].is_finite() || !b[1].is_finite() || b[0] >= b[1])
+        {
+            return Err(bad("query workspace branch/route unsupported"));
+        }
+        let mut z = [0.; 32];
+        for i in 0..nz {
+            z[i] = seed[i].clamp(self.branch[i][0], self.branch[i][1]);
+        }
+        let policy = InitPolicy {
+            mode: InitMode::ProjectAlgebraic,
+            ..self.policy.init
+        };
+        let (r, receipt) = match init {
+            InitRoute::Reuse
+            | InitRoute::BoundedPreparedScalar
+            | InitRoute::BoundedAffineScalar
+            | InitRoute::BoundedSturmScalar
+            | InitRoute::BoundedSturmNewtonScalar
+                if nz == 1 =>
+            {
+                let (r, a) = match init {
+                    InitRoute::Reuse => self.src.initialize_scalar_reuse_audited(
+                        t,
+                        x,
+                        &z[..1],
+                        &self.branch,
+                        policy,
+                    ),
+                    InitRoute::BoundedPreparedScalar => {
+                        self.src.initialize_scalar_bounded_prepared_audited(
+                            t,
+                            x,
+                            &z[..1],
+                            &self.branch,
+                            policy,
+                        )
+                    }
+                    InitRoute::BoundedAffineScalar => {
+                        self.src.initialize_scalar_bounded_affine_audited(
+                            t,
+                            x,
+                            &z[..1],
+                            &self.branch,
+                            policy,
+                        )
+                    }
+                    _ => self.src.initialize_scalar_bounded_sturm_audited(
+                        t,
+                        x,
+                        &z[..1],
+                        &self.branch,
+                        policy,
+                        init == InitRoute::BoundedSturmNewtonScalar,
+                    ),
+                };
+                (r.map(QueryProjection::Scalar), a)
+            }
+            InitRoute::BoundedVector
+            | InitRoute::BoundedVectorRefined
+            | InitRoute::BoundedVectorPivot
+            | InitRoute::BoundedVectorEquilibrated => {
+                let (r, a) = if matches!(
+                    init,
+                    InitRoute::BoundedVectorPivot | InitRoute::BoundedVectorEquilibrated
+                ) {
+                    self.src.initialize_pivoted_vector_audited(
+                        t,
+                        x,
+                        &z[..nz],
+                        &self.branch,
+                        policy,
+                        init == InitRoute::BoundedVectorEquilibrated,
+                        &mut w.vector,
+                    )
+                } else {
+                    self.src.initialize_bounded_vector_audited(
+                        t,
+                        x,
+                        &z[..nz],
+                        &self.branch,
+                        policy,
+                        init == InitRoute::BoundedVectorRefined,
+                        &mut w.vector,
+                    )
+                };
+                (r.map(QueryProjection::Vector), a)
+            }
+            _ => return Err(bad("query workspace projection route unsupported")),
+        };
+        w.work.projection_calls += 1;
+        update_audit(&self.audit, |a| {
+            a.point_projection.record(&receipt, r.is_ok())
+        });
+        let mut work = self.work.lock().map_err(|_| bad("work lock"))?;
+        if let Ok(v) = &r {
+            work.add(v.work(), false);
+        } else {
+            work.calls += 1;
+            work.refused += 1;
+        }
+        r
+    }
+}
+fn fixed_query(
+    e: &Engine,
+    s: &Solution,
+    t: f64,
+    accepted: Option<&[f64]>,
+    slabs: &[SlabRecord],
+    route: QueryWorkspaceRoute,
+    w: &mut QueryWorkspace,
+) -> CoreResult<FixedQuery> {
+    w.work = QueryWorkspaceWork::default();
+    let nx = e.src.nx();
+    let nz = e.src.nz();
+    let n = nx + nz;
+    let mass = e.route == EvolutionRoute::Mass;
+    let nr = if mass { n } else { nx };
+    if !t.is_finite() || t < s.t[0] || t > *s.t.last().ok_or_else(|| bad("query empty driver"))? {
+        return Err(bad("query outside driver"));
+    }
+    let mut raw = [0.; 32];
+    if let Some(v) = accepted {
+        if v.len() != nr {
+            return Err(bad("raw shape"));
+        }
+        raw[..nr].copy_from_slice(v);
+    } else {
+        s.at_into(t, &mut raw[..nr])
+            .ok_or_else(|| bad("query outside driver"))?;
+        w.work.dense_into += 1;
+    }
+    let x = &raw[..nx];
+    let seed = if mass { &raw[nx..nr] } else { &e.seed };
+    let projection = e.query_projection(t, x, seed, w)?;
+    let mut state = [0.; 32];
+    state[..nx].copy_from_slice(x);
+    projection.state_z(&mut state[nx..n]);
+    let raw_constraint_upper = if mass {
+        Some(e.src.constraint_upper(t, &raw[..nr])?)
+    } else {
+        None
+    };
+    let mut physical_error_upper = None;
+    let k = w.locate(slabs, t, route);
+    if let Some(a) = slabs.get(k)
+        && let Some(c) = a.certificate.as_ref().filter(|c| c.global_qualified)
+        && t >= a.times[0]
+        && t <= a.times[1]
+        && x.iter()
+            .zip(&c.x_range)
+            .all(|(&x, b)| b[0] <= x && x <= b[1])
+    {
+        let conserved = c.conservation.is_some();
+        let ideal = c.whole_x_error.expect("qualified");
+        let v = if conserved { &state[..n] } else { x };
+        let ex = de::query_error_from_pairs(
+            &a.power[..nx],
+            a.times,
+            t,
+            v,
+            ideal,
+            conserved,
+            route != QueryWorkspaceRoute::FixedRows,
+        )?;
+        w.work.pair_rows += nx;
+        physical_error_upper = Some(if conserved {
+            ex
+        } else {
+            ex.max(add_up(
+                projection.state_error(),
+                mul_up(c.zx_norm_upper, ex)?,
+            )?)
+        });
+    }
+    w.cursor = Some(k);
+    Ok(FixedQuery {
+        t,
+        raw,
+        state,
+        nr,
+        n,
+        projection,
+        raw_constraint_upper,
+        physical_error_upper,
+    })
+}
 impl EvolutionRun {
+    /// Complete original-source query into retained output. On Err the
+    /// output is unchanged; workspace and attempt counters may change.
+    /// A warmed output of matching shape/capacity needs no heap requests.
     pub fn query_into(
         &self,
         t: f64,
-        _route: QueryWorkspaceRoute,
-        _scratch: &mut QueryWorkspace,
+        route: QueryWorkspaceRoute,
+        w: &mut QueryWorkspace,
         out: &mut Query,
     ) -> CoreResult<()> {
-        *out = self.query(t)?;
+        fixed_query(&self.engine, &self.driver, t, None, &self.slabs, route, w)?.write(out);
         Ok(())
+    }
+    /// Fresh owning result through the same bounded proof. Retained output
+    /// arrays still allocate; this is not the no-allocation interface.
+    pub fn query_owned_workspace(
+        &self,
+        t: f64,
+        route: QueryWorkspaceRoute,
+        w: &mut QueryWorkspace,
+    ) -> CoreResult<Query> {
+        Ok(fixed_query(&self.engine, &self.driver, t, None, &self.slabs, route, w)?.owned())
     }
     pub fn driver(&self) -> &Solution {
         &self.driver
