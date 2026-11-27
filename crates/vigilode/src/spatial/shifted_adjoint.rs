@@ -161,6 +161,7 @@ fn directed_residual(
     x: &[f64],
     r: &mut [Iv],
 ) -> CoreResult<(f64, f64, f64)> {
+    rodas5p_integrators::affine_event_certificate::check_affine_event_arithmetic()?;
     let n = g.dimension();
     if !z.is_finite() || z <= 0. || b.len() != n || x.len() != n || r.len() != n {
         return Err(err("residual shape/clock"));
@@ -233,7 +234,12 @@ impl StageLinearSystem for Client {
     }
     fn solve_in_place(&mut self, b: &mut [f64], c: &mut WorkCounters) -> CoreResult<()> {
         self.report.lock().unwrap().solves += 1;
-        let r = self.w.candidate(b, c)?;
+        // The native driver has charged this stage solve before calling us.
+        // GMRES counts its own solve too; retain all other work on both Ok/Err.
+        let charged = c.linear_solves;
+        let result = self.w.candidate(b, c);
+        c.linear_solves = charged;
+        let r = result?;
         b.copy_from_slice(&self.w.x);
         let mut w = self.report.lock().unwrap();
         w.returned += 1;

@@ -1131,6 +1131,8 @@ fn shifted_stage_actual_native_adjoint() {
                     };
                     if complete {
                         assert!(err.unwrap() <= 1e-6);
+                        assert_eq!(work.solves as u64, r.observed.counters.linear_solves);
+                        assert_eq!(work.returned, work.solves);
                     }
                     println!(
                         "SHIFT_IVP {}",

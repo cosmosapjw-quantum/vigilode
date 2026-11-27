@@ -101,7 +101,7 @@ pub fn evolve_epoch_goal_budget(
     } else {
         64.
     };
-    let mut scratch = Box::new(SecantGoalWorkspace::new());
+    let mut scratch: Option<Box<SecantGoalWorkspace>> = None;
     loop {
         let mut o = opts.clone();
         o.rtol *= mult;
@@ -160,6 +160,8 @@ pub fn evolve_epoch_goal_budget(
                         rec.state_bound = Some(rad);
                         bound = Some(Iv::new(-rad, rad)?);
                         if rad > budget.absolute && budget.plan != GoalBudgetPlan::StateReplay {
+                            let workspace =
+                                scratch.get_or_insert_with(|| Box::new(SecantGoalWorkspace::new()));
                             for route in [
                                 SecantGoalRoute::WholeHorner,
                                 SecantGoalRoute::Sub4Horner,
@@ -167,7 +169,7 @@ pub fn evolve_epoch_goal_budget(
                                 SecantGoalRoute::Scaled16,
                             ] {
                                 let mut iv = Iv::point(0.)?;
-                                match r.secant_goal_into(goal, route, &mut scratch, &mut iv) {
+                                match r.secant_goal_into(goal, route, workspace, &mut iv) {
                                     Ok(work) => {
                                         rec.certificates.push(GoalCertificateAttempt {
                                             route,
