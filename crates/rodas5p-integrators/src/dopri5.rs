@@ -168,7 +168,7 @@ pub struct Dopri5SpectralDiagnosis {
 /// `step_into` itself allocates no memory on a successful trial. The caller
 /// owns endpoint and embedded-error buffers. Its public trials always compute
 /// their initial derivative, so changing callbacks cannot reuse stale data.
-#[derive(Debug, Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
 pub enum DopriStageKernel {
     #[default]
     Rows,
@@ -180,6 +180,7 @@ pub struct DopriStageWork {
     pub error_writes: u64,
     pub linear_products: u64,
 }
+#[derive(Debug)]
 pub struct Dopri5Workspace {
     n: usize,
     stages: Vec<f64>,
