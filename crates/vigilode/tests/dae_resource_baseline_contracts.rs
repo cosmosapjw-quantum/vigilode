@@ -7700,3 +7700,38 @@ fn slab_replay_stack_smoke() {
         serde_json::json!({"stack":std::env::var("RUST_MIN_STACK").ok(),"qualified":true})
     );
 }
+
+#[test]
+fn shared_engine_actual_setup_reduces_alloc() {
+    warm();
+    let (src, x, z, b, route) = slab_campaign_fixture("vector8");
+    let (a, old) = measure(|| initialize_reduced_problem(&src, 0., &x, &z, &b, policy(), route));
+    let (r, new) = measure(|| {
+        initialize_reduced_problem_planned(
+            &src,
+            0.,
+            &x,
+            &z,
+            &b,
+            policy(),
+            route,
+            EnginePlan::Shared,
+        )
+    });
+    let a = a.unwrap();
+    let r = r.unwrap();
+    same_serialized(&a.report, &r.report);
+    let old_solution =
+        vigilode::Rodas5p::solve(&a.problem, (0., 0.125), &a.initial_state, &opts()).unwrap();
+    let new_solution =
+        vigilode::Rodas5p::solve(&r.problem, (0., 0.125), &r.initial_state, &opts()).unwrap();
+    same_serialized(&old_solution, &new_solution);
+    println!(
+        "ENGINE_RED_GREEN {}",
+        serde_json::json!({"legacy":old,"shared":new})
+    );
+    assert!(
+        new.requests() < old.requests(),
+        "shared callback ownership must remove real setup allocations"
+    );
+}

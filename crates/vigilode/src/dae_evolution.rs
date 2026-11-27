@@ -774,6 +774,27 @@ fn reduced_problem(e: &Engine) -> Problem {
         Ok(())
     })
 }
+/// Explicit setup/driver candidate; RED initially delegates the legacy implementation.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum EnginePlan {
+    Legacy,
+    Shared,
+    SharedBounded,
+    SharedFused,
+}
+#[allow(clippy::too_many_arguments)]
+pub fn initialize_reduced_problem_planned(
+    src: &DaeSource,
+    t: f64,
+    x: &[f64],
+    z: &[f64],
+    branch: &[[f64; 2]],
+    policy: EvolutionPolicy,
+    route: EvolutionRoute,
+    _plan: EnginePlan,
+) -> CoreResult<crate::polynomial_events::InitializedDae> {
+    initialize_reduced_problem(src, t, x, z, branch, policy, route)
+}
 /// Prepare the same reduced callbacks used by evolve_epoch, from an
 /// original-source certified initialization. WARP setup needs an epoch
 /// window and is not supported by this direct client constructor.
