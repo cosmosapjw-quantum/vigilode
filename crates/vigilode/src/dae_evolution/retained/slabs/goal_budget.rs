@@ -8,6 +8,19 @@ pub enum GoalBudgetPlan {
     Predictive,
     CostAware,
     TieredCost,
+    Structured12,
+    Structured20,
+    StructuredBudgeted,
+}
+impl GoalBudgetPlan {
+    fn structured(self) -> Option<AdjointTaylorRoute> {
+        match self {
+            Self::Structured12 => Some(AdjointTaylorRoute::Fixed12),
+            Self::Structured20 => Some(AdjointTaylorRoute::Fixed20),
+            Self::StructuredBudgeted => Some(AdjointTaylorRoute::Budgeted),
+            _ => None,
+        }
+    }
 }
 #[derive(Clone, Copy, Debug, Serialize)]
 pub struct GoalBudgetPolicy {
@@ -30,6 +43,10 @@ pub struct GoalBudgetAttempt {
     pub state_bound: Option<f64>,
     pub terminal_state: Option<Vec<f64>>,
     pub certificates: Vec<GoalCertificateAttempt>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub structured_work: Option<AdjointTaylorWork>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub structured_refusal: Option<String>,
     pub enclosure: Option<[f64; 2]>,
     pub accepted: bool,
     pub reason: Option<String>,
@@ -102,6 +119,7 @@ pub fn evolve_epoch_goal_budget(
     let scale = x.iter().chain(z).map(|v| v.abs()).fold(0., f64::max);
     let nominal = 64. * (atol + opts.rtol * scale) * norm;
     let mut mult = if budget.plan == GoalBudgetPlan::Fixed
+        || budget.plan.structured().is_some()
         || (budget.plan == GoalBudgetPlan::CostAware && budget.absolute < nominal)
     {
         1.
@@ -148,6 +166,8 @@ pub fn evolve_epoch_goal_budget(
             state_bound: None,
             terminal_state: None,
             certificates: vec![],
+            structured_work: None,
+            structured_refusal: None,
             enclosure: None,
             accepted: false,
             reason: None,
@@ -175,7 +195,38 @@ pub fn evolve_epoch_goal_budget(
                         rec.physical_qualified = true;
                         rec.state_bound = Some(rad);
                         bound = Some(Iv::new(-rad, rad)?);
-                        if rad > budget.absolute && budget.plan != GoalBudgetPlan::StateReplay {
+                        if rad > budget.absolute {
+                            if let Some(route) = budget.plan.structured() {
+                                // Proposal budget only. Admission uses the complete interval
+                                // including Taylor truncation, rounding and physical endpoint.
+                                let scale = x.iter().try_fold(1., |s, &v| add_up(s, v.abs()))?;
+                                let mut iv = Iv::point(0.)?;
+                                match r.homogeneous_goal_into(
+                                    goal,
+                                    route,
+                                    budget.absolute / 4. / scale,
+                                    &mut iv,
+                                ) {
+                                    Ok(work) => {
+                                        rec.structured_work = Some(work);
+                                        let b = bound.unwrap();
+                                        match Iv::new(b.lo.max(iv.lo), b.hi.min(iv.hi)) {
+                                            Ok(q) => bound = Some(q),
+                                            Err(_) => {
+                                                bound = None;
+                                                rec.reason = Some(
+                                                    "disjoint independent goal certificates".into(),
+                                                );
+                                            }
+                                        }
+                                    }
+                                    Err(e) => rec.structured_refusal = Some(e.to_string()),
+                                }
+                            }
+                        }
+                        if bound.is_some_and(|b| b.mag() > budget.absolute)
+                            && budget.plan != GoalBudgetPlan::StateReplay
+                        {
                             let workspace =
                                 scratch.get_or_insert_with(|| Box::new(SecantGoalWorkspace::new()));
                             for route in [

@@ -11,6 +11,13 @@ pub enum ResidualPlan {
     FusedEdges,
     FusedDiagonal,
     Hybrid,
+    CompactDiagonal,
+    CompactHybrid,
+}
+impl ResidualPlan {
+    fn compact(self) -> bool {
+        matches!(self, Self::CompactDiagonal | Self::CompactHybrid)
+    }
 }
 #[derive(Clone, Copy, Debug, Default, Serialize)]
 pub struct ResidualReceipt {
@@ -32,11 +39,17 @@ struct Row {
     exit: Iv,
     diagonal: f64,
 }
+#[derive(Clone, Copy)]
+struct CompactDiagonal {
+    exit: Iv,
+    diagonal: f64,
+}
 pub struct ResidualWorkspace {
     grid: DiffusionGrid,
     plan: ResidualPlan,
     z: Option<f64>,
     rows: Vec<Row>,
+    compact: Vec<CompactDiagonal>,
     q: f64,
     diag_defect: f64,
     scratch: Vec<Iv>,
@@ -64,7 +77,7 @@ impl ResidualWorkspace {
         if n == 0 || n > MAX_N {
             return Err(err("residual dimension cap"));
         }
-        let mut rows = if plan == ResidualPlan::Legacy {
+        let mut rows = if plan == ResidualPlan::Legacy || plan.compact() {
             vec![]
         } else {
             vec![
@@ -103,11 +116,38 @@ impl ResidualWorkspace {
                 q = q.max(exit.hi);
             }
         }
+        // Each Cartesian grid has one exact represented exit rate;
+        // every longitude on a spherical ring has the same exit rate.
+        // Derive these from the authoritative represented row, not from
+        // a rounded ideal mesh or area-symmetry identity.
+        let mut compact = Vec::new();
+        if plan.compact() {
+            let groups = match &*g.geometry {
+                Geometry::Cartesian { .. } => 1,
+                Geometry::Sphere(rings) => rings.len(),
+            };
+            compact = Vec::with_capacity(groups);
+            for r in 0..groups {
+                let i = r * g.width;
+                let mut exit = Z;
+                for (j, a) in g.represented_row(i).ok_or_else(|| err("compact row"))? {
+                    if j >= n || !a.is_finite() || a < 0. {
+                        return Err(err("compact source rate"));
+                    }
+                    if i != j && a != 0. {
+                        exit = exit.add(Iv::point(a)?)?;
+                    }
+                }
+                q = q.max(exit.hi);
+                compact.push(CompactDiagonal { exit, diagonal: 0. });
+            }
+        }
         Ok(Self {
             grid: g.clone(),
             plan,
             z: None,
             rows,
+            compact,
             q,
             diag_defect: 0.,
             scratch: vec![Z; n],
@@ -130,6 +170,11 @@ impl ResidualWorkspace {
                 r.diagonal = d.lo;
                 self.diag_defect = self.diag_defect.max(sub_up(d.hi, d.lo)?);
             }
+        }
+        for r in &mut self.compact {
+            let d = r.exit.add(Iv::point(z)?)?;
+            r.diagonal = d.lo;
+            self.diag_defect = self.diag_defect.max(sub_up(d.hi, d.lo)?);
         }
         self.z = Some(z);
         Ok(())
@@ -185,6 +230,64 @@ impl ResidualWorkspace {
             }
             rsum += v.abs();
         }
+        self.finish_fused(z, rhs, n, rsum, xsum, fmas, diag)
+    }
+    fn compact_fused(&self, z: f64, b: &[f64], x: &[f64], rhs: f64) -> CoreResult<ResidualReceipt> {
+        let mut rsum = 0.;
+        let mut xsum = 0.;
+        let mut fmas = 0_u64;
+        for (i, &c) in x.iter().enumerate() {
+            let row = self
+                .grid
+                .represented_row(i)
+                .ok_or_else(|| err("compact row"))?;
+            let (group, north, south) = match &*self.grid.geometry {
+                Geometry::Cartesian { .. } => (0, row[2].1, row[3].1),
+                Geometry::Sphere(rings) => {
+                    let r = i / self.grid.width;
+                    (
+                        r,
+                        if r > 0 { rings[r - 1].south } else { 0. },
+                        if r + 1 < rings.len() {
+                            rings[r + 1].north
+                        } else {
+                            0.
+                        },
+                    )
+                }
+            };
+            xsum += c.abs();
+            let mut v = (-self.compact[group].diagonal).mul_add(c, b[i]);
+            fmas += 1;
+            // Cartesian directions are reciprocal; the sphere must read
+            // the *neighbor's* meridional rate. The two opposite periodic
+            // edges are kept even when both target the same cell.
+            for (k, (j, a)) in row.into_iter().enumerate() {
+                let rate = match k {
+                    2 => north,
+                    3 => south,
+                    _ => a,
+                };
+                if j != i && rate != 0. {
+                    v = rate.mul_add(x[j], v);
+                    fmas += 1;
+                }
+            }
+            rsum += v.abs();
+        }
+        self.finish_fused(z, rhs, x.len(), rsum, xsum, fmas, true)
+    }
+    #[allow(clippy::too_many_arguments)]
+    fn finish_fused(
+        &self,
+        z: f64,
+        rhs: f64,
+        n: usize,
+        rsum: f64,
+        xsum: f64,
+        fmas: u64,
+        diag: bool,
+    ) -> CoreResult<ResidualReceipt> {
         let xnorm = norm_bound(xsum, n)?;
         let rnorm = norm_bound(rsum, n)?;
         // Sum of exact term magnitudes across all rows. Each original
@@ -245,7 +348,30 @@ impl ResidualWorkspace {
         ) {
             return self.fused(z, b, x, rhs, self.plan == ResidualPlan::FusedDiagonal);
         }
+        if self.plan == ResidualPlan::CompactDiagonal {
+            return self.compact_fused(z, b, x, rhs);
+        }
         let mut attempt = ResidualReceipt::default();
+        if self.plan == ResidualPlan::CompactHybrid {
+            match self.compact_fused(z, b, x, rhs) {
+                Ok(r) if r.admitted => return Ok(r),
+                Ok(r) => attempt = r,
+                Err(_) => attempt.fast_checks = 1,
+            }
+            let (rho, error, legacy_rhs) =
+                directed_residual(&self.grid, z, b, x, &mut self.scratch)?;
+            return Ok(ResidualReceipt {
+                residual_l1: finite(rho)?,
+                error_l1: finite(error)?,
+                rhs_l1: legacy_rhs,
+                admitted: rho <= allowed(legacy_rhs)?,
+                interval_checks: 1,
+                fast_checks: attempt.fast_checks,
+                fallbacks: 1,
+                fmas: attempt.fmas,
+                rounding_upper: attempt.rounding_upper,
+            });
+        }
         if self.plan == ResidualPlan::Hybrid {
             match self.fused(z, b, x, rhs, true) {
                 Ok(r) if r.admitted => return Ok(r),

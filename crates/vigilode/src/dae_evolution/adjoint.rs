@@ -44,6 +44,19 @@ pub struct TerminalAdjointProblem {
 }
 impl EvolutionRun {
     pub fn terminal_adjoint(&self, weights: &[f64]) -> CoreResult<TerminalAdjointProblem> {
+        self.terminal_adjoint_impl(weights, false)
+    }
+    pub(super) fn homogeneous_terminal_adjoint(
+        &self,
+        weights: &[f64],
+    ) -> CoreResult<TerminalAdjointProblem> {
+        self.terminal_adjoint_impl(weights, true)
+    }
+    fn terminal_adjoint_impl(
+        &self,
+        weights: &[f64],
+        homogeneous: bool,
+    ) -> CoreResult<TerminalAdjointProblem> {
         if !self.global_qualified
             || self.engine.conservation.is_some()
             || self.engine.warp.is_some()
@@ -64,7 +77,11 @@ impl EvolutionRun {
             return Err(bad("adjoint duration not exactly represented"));
         }
         Ok(TerminalAdjointProblem {
-            model: ConstantTerminalAdjoint::from_source(&self.engine.src, weights)?,
+            model: if homogeneous {
+                ConstantTerminalAdjoint::from_homogeneous_source(&self.engine.src, weights)?
+            } else {
+                ConstantTerminalAdjoint::from_source(&self.engine.src, weights)?
+            },
             duration: h.lo,
         })
     }

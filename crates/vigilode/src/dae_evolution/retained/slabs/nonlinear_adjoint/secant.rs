@@ -87,6 +87,54 @@ fn power(s: &CompactSlabView<'_>, n: usize, out: &mut [[Iv; 5]]) -> CoreResult<(
     Ok(())
 }
 impl SlabReplayRun {
+    /// Exact terminal goal difference for a homogeneous constant reduced
+    /// source, using the retained physical endpoint (not its projected gradient).
+    /// Initial differential state is exact under adjoint_admission.
+    /// No certificate is returned for forcing, nonlinear or unqualified epochs.
+    /// Output is unchanged on refusal.
+    pub fn homogeneous_goal_into(
+        &self,
+        weights: &[f64],
+        route: AdjointTaylorRoute,
+        gradient_budget: f64,
+        out: &mut Iv,
+    ) -> CoreResult<AdjointTaylorWork> {
+        let e = self.adjoint_admission(weights)?;
+        let nx = e.src.nx();
+        let initial = self.initial();
+        let start = self
+            .accepted(0)
+            .ok_or_else(|| bad("homogeneous initial endpoint"))?;
+        let end = self
+            .accepted(self.accepted_len().saturating_sub(1))
+            .ok_or_else(|| bad("homogeneous terminal endpoint"))?;
+        if !initial.qualified
+            || initial.x.len() != nx
+            || start.state().len() != weights.len()
+            || end.state().len() != weights.len()
+            || start.state()[..nx] != initial.x[..]
+            || start.t() != initial.t
+            || self.driver().t.last() != Some(&end.t())
+            || self.accepted_len() != self.slabs_len() + 1
+        {
+            return Err(bad("homogeneous retained endpoint authority"));
+        }
+        let model = self.inner.run.homogeneous_terminal_adjoint(weights)?;
+        let mut gradient = [Z; 32];
+        let work = model.enclose_into(route, gradient_budget, &mut gradient[..nx])?;
+        let mut goal = Z;
+        for (&g, &x) in gradient[..nx].iter().zip(&initial.x) {
+            goal = goal.add(g.scale(x)?)?;
+        }
+        // Preserve the actual physical observation even if its algebraic
+        // reconstruction is not exactly on the homogeneous graph.
+        for (&c, &y) in weights.iter().zip(end.state()) {
+            goal = goal.sub(Iv::point(c)?.scale(y)?)?;
+        }
+        *out = goal;
+        Ok(work)
+    }
+
     /// Actual signed error of a terminal linear observation of [x,z] on the
     /// retained numerical endpoint. Uses source-averaged derivatives on the
     /// full straight segment and includes residual, initial, seam and endpoint

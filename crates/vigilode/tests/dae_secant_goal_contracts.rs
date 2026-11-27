@@ -1129,19 +1129,124 @@ fn structured_homogeneous_goal_red_green() {
     let (src, x, z, b, c) = growth_fixture();
     let r = run(&src, &x, &z, &b, Some(0.));
     assert!(r.global_qualified());
-    let q = r.accepted(r.accepted_len()-1).unwrap();
-    let truth = (8.*q.t()).exp()/1024. - q.state()[0];
-    for route in [AdjointTaylorRoute::Fixed12, AdjointTaylorRoute::Fixed20, AdjointTaylorRoute::Budgeted] {
+    let q = r.accepted(r.accepted_len() - 1).unwrap();
+    let truth = (8. * q.t()).exp() / 1024. - q.state()[0];
+    for route in [
+        AdjointTaylorRoute::Fixed12,
+        AdjointTaylorRoute::Fixed20,
+        AdjointTaylorRoute::Budgeted,
+    ] {
         let mut iv = Iv::point(123.).unwrap();
         let (work, alloc) = measure(|| r.homogeneous_goal_into(&c, route, 1e-12, &mut iv));
         let work = work.unwrap();
         assert_eq!(alloc.requests(), 0);
-        assert!(iv.lo <= truth+1e-15 && iv.hi >= truth-1e-15 && iv.hi-iv.lo < 1e-8);
-        println!("STRUCT_CERT {} {}", serde_json::to_string(&work).unwrap(), serde_json::to_string(&iv.as_pair()).unwrap());
+        assert!(iv.lo <= truth + 1e-15 && iv.hi >= truth - 1e-15 && iv.hi - iv.lo < 1e-8);
+        println!(
+            "STRUCT_CERT {} {}",
+            serde_json::to_string(&work).unwrap(),
+            serde_json::to_string(&iv.as_pair()).unwrap()
+        );
     }
     let (src, x, z, b, c) = fixture(2);
     let r = run(&src, &x, &z, &b, Some(0.));
     let mut iv = Iv::point(123.).unwrap();
-    assert!(r.homogeneous_goal_into(&c, AdjointTaylorRoute::Fixed20, 1e-12, &mut iv).is_err());
-    assert_eq!(iv.as_pair(), [123.,123.]);
+    assert!(
+        r.homogeneous_goal_into(&c, AdjointTaylorRoute::Fixed20, 1e-12, &mut iv)
+            .is_err()
+    );
+    assert_eq!(iv.as_pair(), [123., 123.]);
+}
+
+#[test]
+fn structured_goal_actual_portfolio() {
+    let opts = Options {
+        rtol: 1e-10,
+        atol: Atol::Scalar(1e-13),
+        dense_output: true,
+        interior_error: InteriorError::Off,
+        max_steps: 4096,
+        ..Default::default()
+    };
+    let policy = EvolutionPolicy {
+        init: InitPolicy {
+            mode: InitMode::ProjectAlgebraic,
+            state_tol: 1e-11,
+            residual_tol: 1e-11,
+            derivative_tol: 1e-6,
+            ..Default::default()
+        },
+        tube_radius: 1e-3,
+        global_tol: 1e-3,
+        green: true,
+    };
+    let route = EvolutionRoute::WorkspaceQuery5 {
+        projection: WorkspaceProjection::PivotedVector,
+        certificate: de::SlabWorkspaceRoute::Refined,
+        storage: CertificateStorage::Local,
+        query: QueryWorkspaceRoute::StreamPairs,
+    };
+    let retention = RetainedOutputRoute {
+        queries: QueryArenaLayout::Shared,
+        native: NativeRetention::BorrowedRows,
+    };
+    let plans = [
+        GoalBudgetPlan::Fixed,
+        GoalBudgetPlan::Structured12,
+        GoalBudgetPlan::Structured20,
+        GoalBudgetPlan::StructuredBudgeted,
+    ];
+    for (case, end) in [
+        ("growth2", 0.75),
+        ("growth2", 1.),
+        ("clock2", 0.5),
+        ("coupled_clock", 2.),
+    ] {
+        let (src, x, z, b, c) = match case {
+            "growth2" => growth_fixture(),
+            "clock2" => fixture(2),
+            _ => coupled_clock_fixture(),
+        };
+        for absolute in [1e-8, 1e-9, 1e-10] {
+            for plan in plans {
+                let start = std::time::Instant::now();
+                let (r, a) = measure(|| {
+                    evolve_epoch_goal_budget(
+                        &src,
+                        &x,
+                        &z,
+                        &b,
+                        EvolutionEpoch {
+                            start: 0.,
+                            end,
+                            incoming_x_error: Some(0.),
+                        },
+                        &opts,
+                        policy,
+                        route,
+                        &[],
+                        retention,
+                        &c,
+                        GoalBudgetPolicy { absolute, plan },
+                    )
+                    .unwrap()
+                });
+                let ns = start.elapsed().as_nanos();
+                let last = r.attempts.last().unwrap();
+                assert_eq!(r.run.is_some(), last.accepted);
+                if case == "growth2" && plan != GoalBudgetPlan::Fixed {
+                    assert!(last.physical_qualified && last.structured_work.is_some());
+                    if plan == GoalBudgetPlan::Structured20 {
+                        assert!(last.accepted && last.certificates.is_empty());
+                    }
+                }
+                if case != "growth2" {
+                    assert!(last.structured_work.is_none());
+                }
+                println!(
+                    "STRUCT_GOAL {}",
+                    serde_json::json!({"case":case,"end":end,"absolute":absolute,"plan":plan,"qualified":last.accepted,"attempt":last,"weights":c,"allocation":a,"rhs":r.total_rhs(),"steps":r.total_steps(),"ns":ns})
+                );
+            }
+        }
+    }
 }
