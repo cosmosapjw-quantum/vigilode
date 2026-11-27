@@ -9006,3 +9006,47 @@ fn native_stage_split_scratch_resources() {
         }
     }
 }
+
+#[test]
+fn scalar_integral_actual_one_exponential() {
+    warm();
+    let (src, x, z, b, route, goal) = nonlinear_adjoint_fixture("quadratic");
+    let (r, _) = evolve_epoch_slab_replay_planned(
+        &src,
+        &x,
+        &z,
+        &b,
+        EvolutionEpoch {
+            start: 0.,
+            end: 0.125,
+            incoming_x_error: Some(0.),
+        },
+        &opts(),
+        policy(),
+        route,
+        &[],
+        engine_retention(),
+        SlabReplayRoute::Flat,
+        EnginePlan::SharedFused,
+    );
+    let r = r.unwrap();
+    assert!(r.global_qualified());
+    let mut w = NonlinearAdjointWorkspace::new();
+    let mut v = [Iv { lo: 0., hi: 0. }];
+    let a = r
+        .scalar_adjoint_into(&goal, ScalarAdjointRoute::Repeated16, &mut w, &mut v)
+        .unwrap();
+    let b = r
+        .scalar_adjoint_into(&goal, ScalarAdjointRoute::IntegralGuard16, &mut w, &mut v)
+        .unwrap();
+    assert!(v[0].lo <= 1. && v[0].hi >= 1.);
+    println!(
+        "SCALAR_RED_GREEN repeated={} integral={} width={}",
+        a.exponentials, b.exponentials, b.width_upper
+    );
+    assert!(a.exponentials > 1);
+    assert_eq!(
+        b.exponentials, 1,
+        "all scalar coefficient integrals require only one exponential"
+    );
+}

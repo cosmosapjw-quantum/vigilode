@@ -119,3 +119,47 @@ fn component_kernel_retries_and_partial_identity() {
         );
     }
 }
+
+#[test]
+fn blocked_stage_recurrence_actual_writes() {
+    let y = std::array::from_fn::<_, 31, _>(|i| (i as f64 - 16.) / 64.);
+    let rhs = |t: f64, y: &[f64], out: &mut [f64]| {
+        for (i, (v, x)) in out.iter_mut().zip(y).enumerate() {
+            *v = -((i % 4) as f64 + 1.) * x + t;
+        }
+        Ok(())
+    };
+    let mut prev = None;
+    for k in [
+        DopriStageKernel::Rows,
+        DopriStageKernel::Block4,
+        DopriStageKernel::Block8,
+        DopriStageKernel::Block16,
+        DopriStageKernel::Block32,
+    ] {
+        let mut w = Dopri5Workspace::new_with_kernel(y.len(), k).unwrap();
+        let mut a = [0.; 31];
+        let mut e = [0.; 31];
+        w.step_into(
+            &rhs,
+            0.,
+            &y,
+            0.001,
+            &mut a,
+            &mut e,
+            &mut WorkCounters::default(),
+        )
+        .unwrap();
+        let b = (a.map(f64::to_bits), e.map(f64::to_bits));
+        if let Some(p) = prev {
+            assert_eq!(b, p);
+        } else {
+            prev = Some(b);
+        }
+        println!("BLOCK_RED_GREEN {:?} {:?}", k, w.stage_work());
+        if k != DopriStageKernel::Rows {
+            assert_eq!(w.stage_work().state_writes, 6 * 31);
+            assert_eq!(w.stage_work().error_writes, 31);
+        }
+    }
+}

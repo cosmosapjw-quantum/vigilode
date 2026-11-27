@@ -173,6 +173,10 @@ pub enum DopriStageKernel {
     #[default]
     Rows,
     Components,
+    Block4,
+    Block8,
+    Block16,
+    Block32,
 }
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
 pub struct DopriStageWork {

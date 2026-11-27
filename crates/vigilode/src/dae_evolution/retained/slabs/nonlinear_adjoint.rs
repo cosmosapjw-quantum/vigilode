@@ -244,6 +244,28 @@ fn advance(
     w.max_cell_tail = w.max_cell_tail.max(tail);
     Ok(())
 }
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum ScalarAdjointRoute {
+    Repeated16,
+    IntegralGuard16,
+    Direct16,
+    DirectBare16,
+    Adaptive,
+    FlowRatio,
+}
+#[derive(Clone, Copy, Debug, Default, Serialize)]
+pub struct ScalarAdjointWork {
+    pub source_rows: usize,
+    pub cells: usize,
+    pub exponentials: usize,
+    pub root_passes: usize,
+    pub column_solves: usize,
+    pub refinement_sweeps: usize,
+    pub divisions: usize,
+    pub split_evaluations: usize,
+    pub cap_leaves: usize,
+    pub width_upper: f64,
+}
 impl SlabReplayRun {
     fn adjoint_admission(&self, weights: &[f64]) -> CoreResult<&Engine> {
         let r = &self.inner.run;
@@ -340,6 +362,26 @@ impl SlabReplayRun {
         }
         out.copy_from_slice(&v[..n]);
         Ok(work)
+    }
+    /// RED compatibility delegate, intentionally not optimized.
+    pub fn scalar_adjoint_into(
+        &self,
+        weights: &[f64],
+        _route: ScalarAdjointRoute,
+        w: &mut NonlinearAdjointWorkspace,
+        out: &mut [Iv],
+    ) -> CoreResult<ScalarAdjointWork> {
+        let r = self.nonlinear_adjoint_into(weights, NonlinearAdjointRoute::ScalarExp16, w, out)?;
+        Ok(ScalarAdjointWork {
+            source_rows: r.schur.source_rows,
+            cells: r.cells,
+            exponentials: r.scalar_exponentials,
+            root_passes: r.schur.root_passes,
+            column_solves: r.schur.column_solves,
+            refinement_sweeps: r.schur.refinement_sweeps,
+            width_upper: r.width_upper,
+            ..Default::default()
+        })
     }
     /// Numerical proposal using the original projection/Jacobian on the
     /// native dense path. It is not the certificate. Detach work/audit so
