@@ -1,0 +1,64 @@
+{
+  "assertions": {
+    "adjoint_enclosure_corners": 44,
+    "adjoint_numeric_corners": 24,
+    "dopri_sample_corners": 22712,
+    "primal_physical_corners": 368
+  },
+  "dopri_rows": 16,
+  "numeric_errors": [
+    {
+      "candidate": "Rows",
+      "case": "quadratic",
+      "error_upper": 3.375077994860476e-14
+    },
+    {
+      "candidate": "Components",
+      "case": "quadratic",
+      "error_upper": 3.375077994860476e-14
+    },
+    {
+      "candidate": "Rows",
+      "case": "quartic",
+      "error_upper": 1.827118943591606e-11
+    },
+    {
+      "candidate": "Components",
+      "case": "quartic",
+      "error_upper": 1.827118943591606e-11
+    },
+    {
+      "candidate": "Rows",
+      "case": "logistic",
+      "error_upper": 4.496725408111849e-12
+    },
+    {
+      "candidate": "Components",
+      "case": "logistic",
+      "error_upper": 4.496725408111849e-12
+    },
+    {
+      "candidate": "Rows",
+      "case": "coupled",
+      "error_upper": 3.419486915845482e-14
+    },
+    {
+      "candidate": "Components",
+      "case": "coupled",
+      "error_upper": 3.419486915845482e-14
+    },
+    {
+      "candidate": "Rows",
+      "case": "affine",
+      "error_upper": 2.5601608862802805e-13
+    },
+    {
+      "candidate": "Components",
+      "case": "affine",
+      "error_upper": 2.5601608862802805e-13
+    }
+  ],
+  "qualified_adjoint": 19,
+  "scope": "Independent exact Fraction rational/log/exponential enclosures on actual primal queries, continuous gradients and numerical DOPRI samples; bitwise adaptive replay asserted in Rust. Not independent blinded validation.",
+  "split_rows": 30
+}

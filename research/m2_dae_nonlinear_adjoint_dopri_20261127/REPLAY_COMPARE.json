@@ -1,0 +1,1246 @@
+{
+  "ADJOINT_FD": {
+    "changed": [],
+    "count": 4,
+    "exact": 4,
+    "excluded_keys": [],
+    "logical": 4
+  },
+  "ADJOINT_MODEL": {
+    "changed": [],
+    "count": 4,
+    "exact": 4,
+    "excluded_keys": [],
+    "logical": 4
+  },
+  "ADJOINT_ODE": {
+    "changed": [
+      {
+        "after": {
+          "median_ns": 64466,
+          "samples_ns": [
+            62722,
+            63233,
+            64466,
+            64516,
+            65067
+          ]
+        },
+        "before": {
+          "median_ns": 64792,
+          "samples_ns": [
+            64351,
+            64622,
+            64792,
+            65473,
+            69831
+          ]
+        },
+        "candidate": "RodasAdjoint",
+        "case": "stiff"
+      },
+      {
+        "after": {
+          "median_ns": 48204,
+          "samples_ns": [
+            48094,
+            48164,
+            48204,
+            48384,
+            55168
+          ]
+        },
+        "before": {
+          "median_ns": 45986,
+          "samples_ns": [
+            45686,
+            45726,
+            45986,
+            46107,
+            46487
+          ]
+        },
+        "candidate": "DopriAdjoint",
+        "case": "stiff"
+      },
+      {
+        "after": {
+          "median_ns": 48735,
+          "samples_ns": [
+            48525,
+            48534,
+            48735,
+            48765,
+            48816
+          ]
+        },
+        "before": {
+          "median_ns": 46197,
+          "samples_ns": [
+            45796,
+            45856,
+            46197,
+            46638,
+            63489
+          ]
+        },
+        "candidate": "DopriForwardBlock",
+        "case": "stiff"
+      },
+      {
+        "after": {
+          "median_ns": 63464,
+          "samples_ns": [
+            62401,
+            62723,
+            63464,
+            63514,
+            64045
+          ]
+        },
+        "before": {
+          "median_ns": 64481,
+          "samples_ns": [
+            64201,
+            64361,
+            64481,
+            65273,
+            65343
+          ]
+        },
+        "candidate": "RodasForwardColumns",
+        "case": "stiff"
+      },
+      {
+        "after": {
+          "median_ns": 26712,
+          "samples_ns": [
+            26262,
+            26412,
+            26712,
+            28235,
+            31020
+          ]
+        },
+        "before": {
+          "median_ns": 26880,
+          "samples_ns": [
+            26630,
+            26781,
+            26880,
+            27482,
+            29255
+          ]
+        },
+        "candidate": "RodasAdjoint",
+        "case": "mixed_rates"
+      },
+      {
+        "after": {
+          "median_ns": 18686,
+          "samples_ns": [
+            18567,
+            18636,
+            18686,
+            18807,
+            19408
+          ]
+        },
+        "before": {
+          "median_ns": 17232,
+          "samples_ns": [
+            17112,
+            17152,
+            17232,
+            17373,
+            17994
+          ]
+        },
+        "candidate": "DopriAdjoint",
+        "case": "mixed_rates"
+      },
+      {
+        "after": {
+          "median_ns": 36882,
+          "samples_ns": [
+            36501,
+            36681,
+            36882,
+            36882,
+            37223
+          ]
+        },
+        "before": {
+          "median_ns": 35657,
+          "samples_ns": [
+            35436,
+            35477,
+            35657,
+            35848,
+            43952
+          ]
+        },
+        "candidate": "DopriForwardBlock",
+        "case": "mixed_rates"
+      },
+      {
+        "after": {
+          "median_ns": 47353,
+          "samples_ns": [
+            47262,
+            47342,
+            47353,
+            47443,
+            48544
+          ]
+        },
+        "before": {
+          "median_ns": 48532,
+          "samples_ns": [
+            48471,
+            48491,
+            48532,
+            48742,
+            49543
+          ]
+        },
+        "candidate": "RodasForwardColumns",
+        "case": "mixed_rates"
+      },
+      {
+        "after": {
+          "median_ns": 11713,
+          "samples_ns": [
+            11603,
+            11643,
+            11713,
+            12013,
+            14167
+          ]
+        },
+        "before": {
+          "median_ns": 11652,
+          "samples_ns": [
+            11462,
+            11481,
+            11652,
+            11933,
+            13185
+          ]
+        },
+        "candidate": "RodasAdjoint",
+        "case": "diag4"
+      },
+      {
+        "after": {
+          "median_ns": 7845,
+          "samples_ns": [
+            7735,
+            7785,
+            7845,
+            7886,
+            8697
+          ]
+        },
+        "before": {
+          "median_ns": 7565,
+          "samples_ns": [
+            7434,
+            7484,
+            7565,
+            7634,
+            8256
+          ]
+        },
+        "candidate": "DopriAdjoint",
+        "case": "diag4"
+      },
+      {
+        "after": {
+          "median_ns": 17995,
+          "samples_ns": [
+            17724,
+            17755,
+            17995,
+            18045,
+            18536
+          ]
+        },
+        "before": {
+          "median_ns": 17964,
+          "samples_ns": [
+            17874,
+            17904,
+            17964,
+            18144,
+            18495
+          ]
+        },
+        "candidate": "DopriForwardBlock",
+        "case": "diag4"
+      },
+      {
+        "after": {
+          "median_ns": 36291,
+          "samples_ns": [
+            36040,
+            36131,
+            36291,
+            36461,
+            37703
+          ]
+        },
+        "before": {
+          "median_ns": 35728,
+          "samples_ns": [
+            35457,
+            35556,
+            35728,
+            35807,
+            36959
+          ]
+        },
+        "candidate": "RodasForwardColumns",
+        "case": "diag4"
+      },
+      {
+        "after": {
+          "median_ns": 36481,
+          "samples_ns": [
+            35780,
+            36000,
+            36481,
+            36772,
+            52002
+          ]
+        },
+        "before": {
+          "median_ns": 37230,
+          "samples_ns": [
+            36469,
+            37059,
+            37230,
+            37510,
+            38793
+          ]
+        },
+        "candidate": "RodasAdjoint",
+        "case": "diag8"
+      },
+      {
+        "after": {
+          "median_ns": 27914,
+          "samples_ns": [
+            27835,
+            27844,
+            27914,
+            28175,
+            28777
+          ]
+        },
+        "before": {
+          "median_ns": 28544,
+          "samples_ns": [
+            28464,
+            28483,
+            28544,
+            28804,
+            29355
+          ]
+        },
+        "candidate": "DopriAdjoint",
+        "case": "diag8"
+      },
+      {
+        "after": {
+          "median_ns": 160694,
+          "samples_ns": [
+            160372,
+            160644,
+            160694,
+            161364,
+            167276
+          ]
+        },
+        "before": {
+          "median_ns": 168206,
+          "samples_ns": [
+            167655,
+            167926,
+            168206,
+            168496,
+            172976
+          ]
+        },
+        "candidate": "DopriForwardBlock",
+        "case": "diag8"
+      },
+      {
+        "after": {
+          "median_ns": 192606,
+          "samples_ns": [
+            191253,
+            191924,
+            192606,
+            192796,
+            196463
+          ]
+        },
+        "before": {
+          "median_ns": 197351,
+          "samples_ns": [
+            196279,
+            196860,
+            197351,
+            198643,
+            200507
+          ]
+        },
+        "candidate": "RodasForwardColumns",
+        "case": "diag8"
+      }
+    ],
+    "count": 16,
+    "exact": 0,
+    "excluded_keys": [
+      "median_ns",
+      "samples_ns"
+    ],
+    "logical": 16
+  },
+  "ADJOINT_REFUSAL": {
+    "changed": [],
+    "count": 1,
+    "exact": 1,
+    "excluded_keys": [],
+    "logical": 1
+  },
+  "ADJOINT_TAYLOR": {
+    "changed": [],
+    "count": 12,
+    "exact": 12,
+    "excluded_keys": [],
+    "logical": 12
+  },
+  "ENGINE_EPOCH": {
+    "changed": [],
+    "count": 28,
+    "exact": 28,
+    "excluded_keys": [],
+    "logical": 28
+  },
+  "NATIVE_ODE": {
+    "changed": [],
+    "count": 18,
+    "exact": 18,
+    "excluded_keys": [],
+    "logical": 18
+  },
+  "NATIVE_PACKET": {
+    "changed": [],
+    "count": 37,
+    "exact": 37,
+    "excluded_keys": [],
+    "logical": 37
+  },
+  "NATIVE_REFUSAL": {
+    "changed": [],
+    "count": 1,
+    "exact": 1,
+    "excluded_keys": [],
+    "logical": 1
+  },
+  "NATIVE_STAGE": {
+    "changed": [
+      {
+        "after": {
+          "allocation": {
+            "alloc": 195,
+            "dealloc": 99,
+            "dealloc_bytes": 12948,
+            "realloc": 14,
+            "requested_bytes": 156168,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 138092,
+            "peak_delta": 139530
+          }
+        },
+        "before": {
+          "allocation": {
+            "alloc": 195,
+            "dealloc": 99,
+            "dealloc_bytes": 35812,
+            "realloc": 14,
+            "requested_bytes": 179032,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 138092,
+            "peak_delta": 139530
+          }
+        },
+        "candidate": "Triangular",
+        "case": "stiff"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 195,
+            "dealloc": 99,
+            "dealloc_bytes": 12948,
+            "realloc": 14,
+            "requested_bytes": 156168,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 138092,
+            "peak_delta": 139530
+          }
+        },
+        "before": {
+          "allocation": {
+            "alloc": 195,
+            "dealloc": 99,
+            "dealloc_bytes": 35812,
+            "realloc": 14,
+            "requested_bytes": 179032,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 138092,
+            "peak_delta": 139530
+          }
+        },
+        "candidate": "Reciprocal",
+        "case": "stiff"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 196,
+            "dealloc": 100,
+            "dealloc_bytes": 35820,
+            "realloc": 14,
+            "requested_bytes": 179040,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 138092,
+            "peak_delta": 139530
+          }
+        },
+        "before": {
+          "allocation": {
+            "alloc": 195,
+            "dealloc": 99,
+            "dealloc_bytes": 35812,
+            "realloc": 14,
+            "requested_bytes": 179032,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 138092,
+            "peak_delta": 139530
+          }
+        },
+        "candidate": "GoalUniform",
+        "case": "stiff"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 196,
+            "dealloc": 100,
+            "dealloc_bytes": 35820,
+            "realloc": 14,
+            "requested_bytes": 179040,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 138092,
+            "peak_delta": 139530
+          }
+        },
+        "before": {
+          "allocation": {
+            "alloc": 195,
+            "dealloc": 99,
+            "dealloc_bytes": 35812,
+            "realloc": 14,
+            "requested_bytes": 179032,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 138092,
+            "peak_delta": 139530
+          }
+        },
+        "candidate": "GoalAdjoint",
+        "case": "stiff"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 192,
+            "dealloc": 116,
+            "dealloc_bytes": 13936,
+            "realloc": 11,
+            "requested_bytes": 113787,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 95131,
+            "peak_delta": 97261
+          }
+        },
+        "before": {
+          "allocation": {
+            "alloc": 192,
+            "dealloc": 116,
+            "dealloc_bytes": 36800,
+            "realloc": 11,
+            "requested_bytes": 136651,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 95131,
+            "peak_delta": 97261
+          }
+        },
+        "candidate": "Triangular",
+        "case": "mixed_rates"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 192,
+            "dealloc": 116,
+            "dealloc_bytes": 13936,
+            "realloc": 11,
+            "requested_bytes": 113787,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 95131,
+            "peak_delta": 97261
+          }
+        },
+        "before": {
+          "allocation": {
+            "alloc": 192,
+            "dealloc": 116,
+            "dealloc_bytes": 36800,
+            "realloc": 11,
+            "requested_bytes": 136651,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 95131,
+            "peak_delta": 97261
+          }
+        },
+        "candidate": "Reciprocal",
+        "case": "mixed_rates"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 193,
+            "dealloc": 117,
+            "dealloc_bytes": 36808,
+            "realloc": 11,
+            "requested_bytes": 136659,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 95131,
+            "peak_delta": 97261
+          }
+        },
+        "before": {
+          "allocation": {
+            "alloc": 192,
+            "dealloc": 116,
+            "dealloc_bytes": 36800,
+            "realloc": 11,
+            "requested_bytes": 136651,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 95131,
+            "peak_delta": 97261
+          }
+        },
+        "candidate": "GoalUniform",
+        "case": "mixed_rates"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 193,
+            "dealloc": 117,
+            "dealloc_bytes": 36808,
+            "realloc": 11,
+            "requested_bytes": 136659,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 95131,
+            "peak_delta": 97261
+          }
+        },
+        "before": {
+          "allocation": {
+            "alloc": 192,
+            "dealloc": 116,
+            "dealloc_bytes": 36800,
+            "realloc": 11,
+            "requested_bytes": 136651,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 95131,
+            "peak_delta": 97261
+          }
+        },
+        "candidate": "GoalAdjoint",
+        "case": "mixed_rates"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 203,
+            "dealloc": 138,
+            "dealloc_bytes": 15424,
+            "realloc": 6,
+            "requested_bytes": 78164,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 60884,
+            "peak_delta": 63910
+          }
+        },
+        "before": {
+          "allocation": {
+            "alloc": 203,
+            "dealloc": 138,
+            "dealloc_bytes": 38288,
+            "realloc": 6,
+            "requested_bytes": 101028,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 60884,
+            "peak_delta": 63910
+          }
+        },
+        "candidate": "Triangular",
+        "case": "diag4"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 203,
+            "dealloc": 138,
+            "dealloc_bytes": 15424,
+            "realloc": 6,
+            "requested_bytes": 78164,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 60884,
+            "peak_delta": 63910
+          }
+        },
+        "before": {
+          "allocation": {
+            "alloc": 203,
+            "dealloc": 138,
+            "dealloc_bytes": 38288,
+            "realloc": 6,
+            "requested_bytes": 101028,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 60884,
+            "peak_delta": 63910
+          }
+        },
+        "candidate": "Reciprocal",
+        "case": "diag4"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 204,
+            "dealloc": 139,
+            "dealloc_bytes": 38296,
+            "realloc": 6,
+            "requested_bytes": 101036,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 60884,
+            "peak_delta": 63910
+          }
+        },
+        "before": {
+          "allocation": {
+            "alloc": 203,
+            "dealloc": 138,
+            "dealloc_bytes": 38288,
+            "realloc": 6,
+            "requested_bytes": 101028,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 60884,
+            "peak_delta": 63910
+          }
+        },
+        "candidate": "GoalUniform",
+        "case": "diag4"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 204,
+            "dealloc": 139,
+            "dealloc_bytes": 38296,
+            "realloc": 6,
+            "requested_bytes": 101036,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 60884,
+            "peak_delta": 63910
+          }
+        },
+        "before": {
+          "allocation": {
+            "alloc": 203,
+            "dealloc": 138,
+            "dealloc_bytes": 38288,
+            "realloc": 6,
+            "requested_bytes": 101028,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 60884,
+            "peak_delta": 63910
+          }
+        },
+        "candidate": "GoalAdjoint",
+        "case": "diag4"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 285,
+            "dealloc": 190,
+            "dealloc_bytes": 18944,
+            "realloc": 6,
+            "requested_bytes": 129926,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 107302,
+            "peak_delta": 112664
+          }
+        },
+        "before": {
+          "allocation": {
+            "alloc": 285,
+            "dealloc": 190,
+            "dealloc_bytes": 41808,
+            "realloc": 6,
+            "requested_bytes": 152790,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 107302,
+            "peak_delta": 112664
+          }
+        },
+        "candidate": "Triangular",
+        "case": "diag8"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 285,
+            "dealloc": 190,
+            "dealloc_bytes": 18944,
+            "realloc": 6,
+            "requested_bytes": 129926,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 107302,
+            "peak_delta": 112664
+          }
+        },
+        "before": {
+          "allocation": {
+            "alloc": 285,
+            "dealloc": 190,
+            "dealloc_bytes": 41808,
+            "realloc": 6,
+            "requested_bytes": 152790,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 107302,
+            "peak_delta": 112664
+          }
+        },
+        "candidate": "Reciprocal",
+        "case": "diag8"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 286,
+            "dealloc": 191,
+            "dealloc_bytes": 41816,
+            "realloc": 6,
+            "requested_bytes": 152798,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 107302,
+            "peak_delta": 112664
+          }
+        },
+        "before": {
+          "allocation": {
+            "alloc": 285,
+            "dealloc": 190,
+            "dealloc_bytes": 41808,
+            "realloc": 6,
+            "requested_bytes": 152790,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 107302,
+            "peak_delta": 112664
+          }
+        },
+        "candidate": "GoalUniform",
+        "case": "diag8"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 286,
+            "dealloc": 191,
+            "dealloc_bytes": 41816,
+            "realloc": 6,
+            "requested_bytes": 152798,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 107302,
+            "peak_delta": 112664
+          }
+        },
+        "before": {
+          "allocation": {
+            "alloc": 285,
+            "dealloc": 190,
+            "dealloc_bytes": 41808,
+            "realloc": 6,
+            "requested_bytes": 152790,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 107302,
+            "peak_delta": 112664
+          }
+        },
+        "candidate": "GoalAdjoint",
+        "case": "diag8"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 219,
+            "dealloc": 150,
+            "dealloc_bytes": 15952,
+            "realloc": 4,
+            "requested_bytes": 72026,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 55434,
+            "peak_delta": 58988
+          }
+        },
+        "before": {
+          "allocation": {
+            "alloc": 219,
+            "dealloc": 150,
+            "dealloc_bytes": 38816,
+            "realloc": 4,
+            "requested_bytes": 94890,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 55434,
+            "peak_delta": 58988
+          }
+        },
+        "candidate": "Triangular",
+        "case": "chain_weak"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 219,
+            "dealloc": 150,
+            "dealloc_bytes": 15952,
+            "realloc": 4,
+            "requested_bytes": 72026,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 55434,
+            "peak_delta": 58988
+          }
+        },
+        "before": {
+          "allocation": {
+            "alloc": 219,
+            "dealloc": 150,
+            "dealloc_bytes": 38816,
+            "realloc": 4,
+            "requested_bytes": 94890,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 55434,
+            "peak_delta": 58988
+          }
+        },
+        "candidate": "Reciprocal",
+        "case": "chain_weak"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 221,
+            "dealloc": 151,
+            "dealloc_bytes": 38824,
+            "realloc": 5,
+            "requested_bytes": 99195,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 58707,
+            "peak_delta": 62261
+          }
+        },
+        "before": {
+          "allocation": {
+            "alloc": 220,
+            "dealloc": 150,
+            "dealloc_bytes": 38816,
+            "realloc": 5,
+            "requested_bytes": 99187,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 58707,
+            "peak_delta": 62261
+          }
+        },
+        "candidate": "GoalUniform",
+        "case": "chain_weak"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 221,
+            "dealloc": 151,
+            "dealloc_bytes": 38824,
+            "realloc": 5,
+            "requested_bytes": 99195,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 58707,
+            "peak_delta": 62261
+          }
+        },
+        "before": {
+          "allocation": {
+            "alloc": 220,
+            "dealloc": 150,
+            "dealloc_bytes": 38816,
+            "realloc": 5,
+            "requested_bytes": 99187,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 58707,
+            "peak_delta": 62261
+          }
+        },
+        "candidate": "GoalAdjoint",
+        "case": "chain_weak"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 343,
+            "dealloc": 218,
+            "dealloc_bytes": 20176,
+            "realloc": 11,
+            "requested_bytes": 211534,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 172958,
+            "peak_delta": 179552
+          }
+        },
+        "before": {
+          "allocation": {
+            "alloc": 343,
+            "dealloc": 218,
+            "dealloc_bytes": 43040,
+            "realloc": 11,
+            "requested_bytes": 234398,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 172958,
+            "peak_delta": 179552
+          }
+        },
+        "candidate": "Triangular",
+        "case": "chain_stiff"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 343,
+            "dealloc": 218,
+            "dealloc_bytes": 20176,
+            "realloc": 11,
+            "requested_bytes": 211534,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 172958,
+            "peak_delta": 179552
+          }
+        },
+        "before": {
+          "allocation": {
+            "alloc": 343,
+            "dealloc": 218,
+            "dealloc_bytes": 43040,
+            "realloc": 11,
+            "requested_bytes": 234398,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 172958,
+            "peak_delta": 179552
+          }
+        },
+        "candidate": "Reciprocal",
+        "case": "chain_stiff"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 344,
+            "dealloc": 219,
+            "dealloc_bytes": 43048,
+            "realloc": 11,
+            "requested_bytes": 234406,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 172958,
+            "peak_delta": 179552
+          }
+        },
+        "before": {
+          "allocation": {
+            "alloc": 343,
+            "dealloc": 218,
+            "dealloc_bytes": 43040,
+            "realloc": 11,
+            "requested_bytes": 234398,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 172958,
+            "peak_delta": 179552
+          }
+        },
+        "candidate": "GoalUniform",
+        "case": "chain_stiff"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 344,
+            "dealloc": 219,
+            "dealloc_bytes": 43048,
+            "realloc": 11,
+            "requested_bytes": 234406,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 172958,
+            "peak_delta": 179552
+          }
+        },
+        "before": {
+          "allocation": {
+            "alloc": 343,
+            "dealloc": 218,
+            "dealloc_bytes": 43040,
+            "realloc": 11,
+            "requested_bytes": 234398,
+            "zeroed": 9
+          },
+          "heap": {
+            "end_delta": 172958,
+            "peak_delta": 179552
+          }
+        },
+        "candidate": "GoalAdjoint",
+        "case": "chain_stiff"
+      }
+    ],
+    "count": 36,
+    "exact": 12,
+    "excluded_keys": [
+      "allocation",
+      "heap"
+    ],
+    "logical": 36
+  },
+  "NATIVE_STATE": {
+    "changed": [],
+    "count": 36,
+    "exact": 36,
+    "excluded_keys": [],
+    "logical": 36
+  },
+  "ODE_COMPARE": {
+    "changed": [],
+    "count": 15,
+    "exact": 15,
+    "excluded_keys": [],
+    "logical": 15
+  }
+}

@@ -1,0 +1,583 @@
+{
+  "adjoint": {
+    "candidates": {
+      "Contracted16": {
+        "bytes": 0,
+        "qualified": 5,
+        "requests": 0,
+        "rows": 5
+      },
+      "ScalarExp16": {
+        "bytes": 102,
+        "qualified": 4,
+        "requests": 3,
+        "rows": 5
+      },
+      "Sub4": {
+        "bytes": 0,
+        "qualified": 5,
+        "requests": 0,
+        "rows": 5
+      },
+      "Whole": {
+        "bytes": 0,
+        "qualified": 5,
+        "requests": 0,
+        "rows": 5
+      }
+    },
+    "pareto_count": 17,
+    "pareto_covered": 17,
+    "proposals": {
+      "mutation": 750,
+      "structure": 1298
+    },
+    "rows": 20,
+    "strata": [
+      {
+        "covered": 2,
+        "group": [
+          "affine"
+        ],
+        "pareto": [
+          {
+            "candidate": "Whole",
+            "case": "affine",
+            "objectives": [
+              0,
+              0,
+              118,
+              494,
+              2.1930221256582366e-11,
+              290527
+            ]
+          },
+          {
+            "candidate": "ScalarExp16",
+            "case": "affine",
+            "objectives": [
+              0,
+              0,
+              5574,
+              928,
+              8.050743231791113e-16,
+              6583233
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "Whole"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "coupled"
+        ],
+        "pareto": [
+          {
+            "candidate": "Whole",
+            "case": "coupled",
+            "objectives": [
+              0,
+              0,
+              20,
+              25,
+              0.015671272709332662,
+              29748
+            ]
+          },
+          {
+            "candidate": "Sub4",
+            "case": "coupled",
+            "objectives": [
+              0,
+              0,
+              68,
+              76,
+              0.013371734881205244,
+              116598
+            ]
+          },
+          {
+            "candidate": "Contracted16",
+            "case": "coupled",
+            "objectives": [
+              0,
+              0,
+              780,
+              240,
+              9.56873263513458e-06,
+              762337
+            ]
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "Whole"
+      },
+      {
+        "covered": 4,
+        "group": [
+          "logistic"
+        ],
+        "pareto": [
+          {
+            "candidate": "Whole",
+            "case": "logistic",
+            "objectives": [
+              0,
+              0,
+              10,
+              21,
+              0.0017279328438368768,
+              18366
+            ]
+          },
+          {
+            "candidate": "Sub4",
+            "case": "logistic",
+            "objectives": [
+              0,
+              0,
+              34,
+              72,
+              0.0002989901706643705,
+              76840
+            ]
+          },
+          {
+            "candidate": "Contracted16",
+            "case": "logistic",
+            "objectives": [
+              0,
+              0,
+              390,
+              240,
+              7.413827671709505e-05,
+              409830
+            ]
+          },
+          {
+            "candidate": "ScalarExp16",
+            "case": "logistic",
+            "objectives": [
+              0,
+              0,
+              390,
+              64,
+              6.869666696929233e-05,
+              518983
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "Whole"
+      },
+      {
+        "covered": 4,
+        "group": [
+          "quadratic"
+        ],
+        "pareto": [
+          {
+            "candidate": "Whole",
+            "case": "quadratic",
+            "objectives": [
+              0,
+              0,
+              10,
+              18,
+              0.0139206131918711,
+              18306
+            ]
+          },
+          {
+            "candidate": "Sub4",
+            "case": "quadratic",
+            "objectives": [
+              0,
+              0,
+              34,
+              60,
+              0.011883038062085238,
+              76850
+            ]
+          },
+          {
+            "candidate": "Contracted16",
+            "case": "quadratic",
+            "objectives": [
+              0,
+              0,
+              390,
+              192,
+              9.096273545172728e-06,
+              479345
+            ]
+          },
+          {
+            "candidate": "ScalarExp16",
+            "case": "quadratic",
+            "objectives": [
+              0,
+              0,
+              390,
+              64,
+              9.096273827724488e-06,
+              597545
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "Whole"
+      },
+      {
+        "covered": 4,
+        "group": [
+          "quartic"
+        ],
+        "pareto": [
+          {
+            "candidate": "Whole",
+            "case": "quartic",
+            "objectives": [
+              0,
+              0,
+              14,
+              30,
+              0.09768525967561725,
+              31913
+            ]
+          },
+          {
+            "candidate": "Sub4",
+            "case": "quartic",
+            "objectives": [
+              0,
+              0,
+              50,
+              88,
+              0.06359277831857346,
+              130835
+            ]
+          },
+          {
+            "candidate": "Contracted16",
+            "case": "quartic",
+            "objectives": [
+              0,
+              0,
+              582,
+              336,
+              0.00016330780833895275,
+              1079376
+            ]
+          },
+          {
+            "candidate": "ScalarExp16",
+            "case": "quartic",
+            "objectives": [
+              0,
+              0,
+              582,
+              96,
+              0.00016330780899487252,
+              1244979
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "Whole"
+      }
+    ],
+    "unique": 20
+  },
+  "dopri": {
+    "candidates": {
+      "Components": {
+        "bytes": 118008,
+        "qualified": 8,
+        "requests": 387,
+        "rows": 8
+      },
+      "Rows": {
+        "bytes": 118008,
+        "qualified": 8,
+        "requests": 387,
+        "rows": 8
+      }
+    },
+    "pareto_count": 14,
+    "pareto_covered": 14,
+    "proposals": {
+      "mutation": 584,
+      "structure": 1464
+    },
+    "rows": 16,
+    "strata": [
+      {
+        "covered": 1,
+        "group": [
+          "affine"
+        ],
+        "pareto": [
+          {
+            "candidate": "Components",
+            "case": "affine",
+            "objectives": [
+              47,
+              2861,
+              7,
+              499,
+              7.668936721159382e-10,
+              2733372,
+              37942
+            ]
+          }
+        ],
+        "qualified": 2,
+        "resource_first": "Components"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "coupled"
+        ],
+        "pareto": [
+          {
+            "candidate": "Rows",
+            "case": "coupled",
+            "objectives": [
+              49,
+              3909,
+              66,
+              25,
+              2.678320528322805e-13,
+              954312,
+              230665
+            ]
+          },
+          {
+            "candidate": "Components",
+            "case": "coupled",
+            "objectives": [
+              49,
+              3909,
+              14,
+              25,
+              2.678320528322805e-13,
+              948961,
+              230683
+            ]
+          }
+        ],
+        "qualified": 2,
+        "resource_first": "Components"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "logistic"
+        ],
+        "pareto": [
+          {
+            "candidate": "Rows",
+            "case": "logistic",
+            "objectives": [
+              49,
+              3629,
+              33,
+              25,
+              2.1247517847719713e-11,
+              173047,
+              48082
+            ]
+          },
+          {
+            "candidate": "Components",
+            "case": "logistic",
+            "objectives": [
+              49,
+              3629,
+              7,
+              25,
+              2.1247517847719713e-11,
+              173458,
+              48365
+            ]
+          }
+        ],
+        "qualified": 2,
+        "resource_first": "Components"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "pure_linear256"
+        ],
+        "pareto": [
+          {
+            "candidate": "Rows",
+            "case": "pure_linear256",
+            "objectives": [
+              48,
+              74517,
+              8448,
+              37,
+              5.697957495002389e-10,
+              36742,
+              2323
+            ]
+          },
+          {
+            "candidate": "Components",
+            "case": "pure_linear256",
+            "objectives": [
+              48,
+              74517,
+              1792,
+              37,
+              5.697957495002389e-10,
+              59987,
+              4811
+            ]
+          }
+        ],
+        "qualified": 2,
+        "resource_first": "Components"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "pure_linear64"
+        ],
+        "pareto": [
+          {
+            "candidate": "Rows",
+            "case": "pure_linear64",
+            "objectives": [
+              48,
+              20757,
+              2112,
+              37,
+              5.697957495002389e-10,
+              12795,
+              695
+            ]
+          },
+          {
+            "candidate": "Components",
+            "case": "pure_linear64",
+            "objectives": [
+              48,
+              20757,
+              448,
+              37,
+              5.697957495002389e-10,
+              18807,
+              1350
+            ]
+          }
+        ],
+        "qualified": 2,
+        "resource_first": "Components"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "pure_logistic8"
+        ],
+        "pareto": [
+          {
+            "candidate": "Rows",
+            "case": "pure_logistic8",
+            "objectives": [
+              49,
+              5589,
+              264,
+              25,
+              2.1247517847719713e-11,
+              3707,
+              173
+            ]
+          },
+          {
+            "candidate": "Components",
+            "case": "pure_logistic8",
+            "objectives": [
+              49,
+              5589,
+              56,
+              25,
+              2.1247517847719713e-11,
+              4018,
+              226
+            ]
+          }
+        ],
+        "qualified": 2,
+        "resource_first": "Components"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "quadratic"
+        ],
+        "pareto": [
+          {
+            "candidate": "Components",
+            "case": "quadratic",
+            "objectives": [
+              49,
+              3629,
+              7,
+              25,
+              1.4170088713516549e-14,
+              234868,
+              64527
+            ]
+          }
+        ],
+        "qualified": 2,
+        "resource_first": "Components"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "quartic"
+        ],
+        "pareto": [
+          {
+            "candidate": "Rows",
+            "case": "quartic",
+            "objectives": [
+              48,
+              3117,
+              33,
+              31,
+              1.5353788412247082e-10,
+              641801,
+              140821
+            ]
+          },
+          {
+            "candidate": "Components",
+            "case": "quartic",
+            "objectives": [
+              48,
+              3117,
+              7,
+              31,
+              1.5353788412247082e-10,
+              644087,
+              142449
+            ]
+          }
+        ],
+        "qualified": 2,
+        "resource_first": "Components"
+      }
+    ],
+    "unique": 16
+  },
+  "scope": "finite measured replay; true-gradient enclosure and sampled ODE error separate; timing included; no default promotion"
+}
