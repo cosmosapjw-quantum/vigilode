@@ -1,0 +1,411 @@
+{
+  "checks": [
+    "RED101 GREEN0",
+    "60 warm certificate zeroheap /60 owned six alloc",
+    "45 qualified epochs, native packets and projection receipts identical per fixture",
+    "independent checks INDEPENDENT_CHECKS.json",
+    "32 regression pass5 ignored",
+    "1120 immediate predecessor exact; older Sturm logical match with epoch allocation delta",
+    "three isolated stack smoke pass",
+    "source hashes/rustfmt/diff check"
+  ],
+  "claim_id": "M2-03d.5b.12",
+  "cleanup": {
+    "compressed_bytes": 296846,
+    "raw_bytes_removed": 5154855
+  },
+  "command": [
+    "cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "--release",
+    "-p",
+    "vigilode",
+    "--features",
+    "polynomial-events",
+    "--test",
+    "dae_resource_baseline_contracts",
+    "integrated_certificate_workspace_portfolio",
+    "--",
+    "--exact",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "declared_results": [
+    "SELECTION.json",
+    "TIMING_COMPARE.json",
+    "INDEPENDENT_CHECKS.json",
+    "REPLAY_COMPARE.json",
+    "STURM_REPLAY_COMPARE.json",
+    "RESOURCE_COMPARE.json",
+    "MODULE_ACTIVATION_LEDGER.json",
+    "MODULE_CANDIDATE_INVENTORY.json"
+  ],
+  "environment": {
+    "hardware": "AMD Ryzen9 5900X x86_64 remote host",
+    "software": [
+      {
+        "name": "rustc",
+        "version": "rustc 1.94.1 (e408947bf 2026-03-25)"
+      },
+      {
+        "name": "cargo",
+        "version": "cargo 1.94.1 (29ea6fb6a 2026-03-24)"
+      },
+      {
+        "name": "MathHarness General",
+        "version": "3.1.0 verified154 files"
+      }
+    ],
+    "timing_affinity": "cpu=0"
+  },
+  "input_artifacts": [
+    {
+      "current_sha256": "aa0d2aa3009e6ac1251f16e69c5f1e2fbe53d8192bb79187ba6eb1eab71b6d96",
+      "path": "crates/rodas5p-integrators/src/retro_dae_evolution.rs",
+      "sha256": "aa0d2aa3009e6ac1251f16e69c5f1e2fbe53d8192bb79187ba6eb1eab71b6d96",
+      "source_commit": "222e489c829b483183f95d3cdcc789cfd094015d",
+      "verified_git_blob_sha256": "aa0d2aa3009e6ac1251f16e69c5f1e2fbe53d8192bb79187ba6eb1eab71b6d96"
+    },
+    {
+      "current_sha256": "270d1f839db69c585b085b6f947e4314378a8230ec3568bd4cae1767d5a1b1de",
+      "path": "crates/vigilode/src/dae_evolution.rs",
+      "sha256": "270d1f839db69c585b085b6f947e4314378a8230ec3568bd4cae1767d5a1b1de",
+      "source_commit": "222e489c829b483183f95d3cdcc789cfd094015d",
+      "verified_git_blob_sha256": "270d1f839db69c585b085b6f947e4314378a8230ec3568bd4cae1767d5a1b1de"
+    },
+    {
+      "current_sha256": "21b98e2b59d7ff351ea14784815094f1d08e0847a1c46a57ab0a3db3c8bcc2e6",
+      "path": "crates/vigilode/tests/dae_resource_baseline_contracts.rs",
+      "sha256": "21b98e2b59d7ff351ea14784815094f1d08e0847a1c46a57ab0a3db3c8bcc2e6",
+      "source_commit": "222e489c829b483183f95d3cdcc789cfd094015d",
+      "verified_git_blob_sha256": "21b98e2b59d7ff351ea14784815094f1d08e0847a1c46a57ab0a3db3c8bcc2e6"
+    },
+    {
+      "current_sha256": "dc8b2b302413040e9e9f68e18e153fff8ebfc53eb901c081b7abbfdf3a984ec4",
+      "path": "research/m2_dae_certificate_workspace_20261127/PREREGISTRATION.md",
+      "sha256": "dc8b2b302413040e9e9f68e18e153fff8ebfc53eb901c081b7abbfdf3a984ec4",
+      "source_commit": "222e489c829b483183f95d3cdcc789cfd094015d",
+      "verified_git_blob_sha256": "dc8b2b302413040e9e9f68e18e153fff8ebfc53eb901c081b7abbfdf3a984ec4"
+    },
+    {
+      "current_sha256": "ab3b14550d64eb27c5da2c1feb2358c0cbe41d9eb622affcdde42b1820de4603",
+      "path": "research/m2_dae_certificate_workspace_20261127/guide.py",
+      "sha256": "ab3b14550d64eb27c5da2c1feb2358c0cbe41d9eb622affcdde42b1820de4603",
+      "source_commit": "2dd64b039e17f9e3d6c98c077495317ed0e03e19",
+      "verified_git_blob_sha256": "ab3b14550d64eb27c5da2c1feb2358c0cbe41d9eb622affcdde42b1820de4603"
+    },
+    {
+      "current_sha256": "b4cbd66c46a006adc18dca36cb30326e46445525a42109f59e00ae95916a9863",
+      "path": "research/m2_dae_certificate_workspace_20261127/CANDIDATES.json",
+      "sha256": "b4cbd66c46a006adc18dca36cb30326e46445525a42109f59e00ae95916a9863",
+      "source_commit": "2dd64b039e17f9e3d6c98c077495317ed0e03e19",
+      "verified_git_blob_sha256": "b4cbd66c46a006adc18dca36cb30326e46445525a42109f59e00ae95916a9863"
+    },
+    {
+      "current_sha256": "6e108b2ad404a2a27ef7d979f547c8c2fe6e07d0512c69c49b665bb5a922ba5b",
+      "path": "research/m2_dae_certificate_workspace_20261127/HARNESS_ROUTES.json",
+      "sha256": "6e108b2ad404a2a27ef7d979f547c8c2fe6e07d0512c69c49b665bb5a922ba5b",
+      "source_commit": "2dd64b039e17f9e3d6c98c077495317ed0e03e19",
+      "verified_git_blob_sha256": "6e108b2ad404a2a27ef7d979f547c8c2fe6e07d0512c69c49b665bb5a922ba5b"
+    },
+    {
+      "current_sha256": "ae117f0acb3df221412817687221a13609a462de510f3eb6073bf3680d3cf1f3",
+      "path": "research/m2_dae_certificate_workspace_20261127/LITERATURE.md",
+      "sha256": "ae117f0acb3df221412817687221a13609a462de510f3eb6073bf3680d3cf1f3",
+      "source_commit": "2dd64b039e17f9e3d6c98c077495317ed0e03e19",
+      "verified_git_blob_sha256": "ae117f0acb3df221412817687221a13609a462de510f3eb6073bf3680d3cf1f3"
+    }
+  ],
+  "mathematics": {
+    "assertion_tested": "actual slab RED88->GREEN0; 75 point/45 epochs and608 native certificates; 60 warm zeroheap and60 fresh retained six-allocation certificates; exact independent graph/transport/selected residual and endpoint checks; 120 measured candidates,36 Pareto;1120 old records exact",
+    "bounds": {
+      "calls_per_sample": 8,
+      "cases": 5,
+      "epochs": 45,
+      "native_receipts": 608,
+      "point_rows": 75,
+      "stack_smoke_bytes": [
+        524288,
+        1048576,
+        2097152
+      ],
+      "timing_samples": 7
+    },
+    "coefficient_domain": "directed binary64; independent Fraction graph, analytic IVP and Green enclosures",
+    "conventions": "original whole branch contraction/selfmap, bounded Bernstein and physical bootstrap; packed monotone certified lane upper, retained reports",
+    "non_claims": [
+      "whole driver zeroheap",
+      "true peak stack",
+      "whole-driver elapsed benchmark",
+      "independent nonlinear IVP",
+      "full VG1",
+      "default promotion",
+      "holdout",
+      "complete semantic module reachability"
+    ]
+  },
+  "outputs": [
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/BINARY.sha256",
+      "sha256": "9974f9283e6f2ce59b6642b15afdf685aa39ae2f6ca9b679da5a1763299e0830"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/INDEPENDENT_CHECKS.json",
+      "sha256": "60b8d55e8393e4b21cb99322911139819fab3281b73a29380fc0b63cfd30d820"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/MODULE_ACTIVATION_LEDGER.json",
+      "sha256": "393b54ddbd515b1c4f60c6bcd96940dcffc409306239d46b80e1a82efa01e2f1"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/MODULE_CANDIDATE_INVENTORY.json",
+      "sha256": "75e98a8ed40626cfd2ad6456a066a0e9b57ae38703aaf112f38c4936c838df20"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/RAW_LOG_CLEANUP.json",
+      "sha256": "4a472aa5e0a278668ff33d13a1edb5c8ce90549af6929437773d31a99da24071"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/REPLAY_COMPARE.json",
+      "sha256": "ab60072c2a43e308edbbb86818a15cd0ab59099754f8b487228341c37861ab13"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/RESOURCE_COMPARE.json",
+      "sha256": "15d00dd70dfddac4849ad7b6022e9a32a7a54c1d1af6a603cb8ce039233246ed"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/SELECTION.json",
+      "sha256": "7de2b6bb171f4cd905ae610501b9c10fb329714fa5e08cd19706fccff89c5dc3"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/STURM_REPLAY_COMPARE.json",
+      "sha256": "ccf4ace0cad87b3158cc0ab366cb27d10d26dbc628a0534fe4360ff468ef6acf"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/TIMING_AFFINITY.txt",
+      "sha256": "6d8aa9f391e114ab6ad47b702606147ccd30711e340cc14e9aba7c13cdee741f"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/TIMING_COMPARE.json",
+      "sha256": "39de5835446d6dfda51f1b5cfd9df3782a8ce511908cbc61085c17af71ad3753"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/allocator.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/allocator.log.gz",
+      "sha256": "372bfed149ed3bfffcd5d5dddcbd849d59da252b65d2e3e15741b2942f2d2009"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/components.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/components.log.gz",
+      "sha256": "cec634bc3808f7c8f1bbd641580f214b7c7ee2a42c1c2de94b763626beb21ce4"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/green.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/green.log.gz",
+      "sha256": "94beb2158fafc071e78b58c252d4eb096de9f0949017af3683a2da6f3dd99c5f"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/green_final.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/green_final.log.gz",
+      "sha256": "9cb279f51dd64bf82e37644f4ca6f61a3d15558bf24cadc82a7c2e96b8880345"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/harness.log.gz",
+      "sha256": "a01163ee65e6f48fd5723901efccb15b74b416e0b3a92ca229e5785d6a21665a"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/inventory.py",
+      "sha256": "56cd8084025356bdd0f51b37f7c881980b5958d693b844a834ff1bcec6e87190"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/native.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/native.log.gz",
+      "sha256": "7fb796c1719b674839947905608eccd917b63d568d965f0ccd9f3ef39a0971e6"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/portfolio.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/portfolio.log.gz",
+      "sha256": "f3dc39e934b48effbd895032e5cc2442a874e94bb3f1e256297db57c43d94c21"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/profile.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/profile.log.gz",
+      "sha256": "359a1f4f10db4f342d5d94cae9405fe47ceb0e16428bae10a762368a66638967"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/red.exit",
+      "sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/red.log.gz",
+      "sha256": "4442b18f7ab5e9d3bd7c9a1a2e3ed5bb6a4d1d51940fc9e0bc8eb5140c594df6"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/regression.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/regression.log.gz",
+      "sha256": "8d87e76cc39afdeec6fa7517b229adcc536a93dd0da2b49b44a1e2d57bdc9372"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/selection.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/selection.log.gz",
+      "sha256": "bda3d95b357619451a74bab4ed7365241fdd321772c5e336e3e2e60530bd6528"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/stack_1048576.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/stack_1048576.log.gz",
+      "sha256": "9e3176be7e9836047ad4d571439440d91e334503037ff7802987d0bcb5095080"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/stack_2097152.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/stack_2097152.log.gz",
+      "sha256": "9dbd2d1dff6a948145dbf9a686326d56575cc304940b48f72596a96145374eb3"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/stack_524288.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/stack_524288.log.gz",
+      "sha256": "c5ffebabe07496988cd65cd507f443393b1fb66778ab71e3b4c9825faa24bb75"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/sturm_replay.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/sturm_replay.log.gz",
+      "sha256": "3136382ae269134b163b9c974e906036b2ba81a6b20d9766f815ee9b8ff56632"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/vector.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/vector.log.gz",
+      "sha256": "bcbf0c9fb6a03d60e3e61b8009a5ce5df4281a605a6dc9acb487954d9da04ad6"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/verify.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/verify.log.gz",
+      "sha256": "19f39cb2a3e8ebf3bc9a4bf27ced0658cf419dc710ab4fa8476ee2060c8cdb6e"
+    },
+    {
+      "kind": "result",
+      "path": "research/m2_dae_certificate_workspace_20261127/verify.py",
+      "sha256": "3d3c06247f783941c20bf7f1512d379c2a7d569932f396a022c24857b45a473d"
+    }
+  ],
+  "randomness": {
+    "generator": "Python random.Random finite measured replay",
+    "seeds": [
+      1729,
+      97531
+    ],
+    "used": true
+  },
+  "repository": {
+    "commit": "222e489c829b483183f95d3cdcc789cfd094015d",
+    "guide_commit": "2dd64b039e17f9e3d6c98c077495317ed0e03e19",
+    "tracked_dirty": false,
+    "untracked_evidence": true
+  },
+  "residual_risks": [
+    "structured fixture domain",
+    "104000B scratch and persistent owner cost",
+    "whole driver/query output allocations",
+    "historical Sturm allocation delta not causally isolated",
+    "true peak stack/whole-driver timing/holdout",
+    "lexical module inventory"
+  ],
+  "result": "implementation-verified scoped; formal M2/full VG1 OPEN",
+  "run": {
+    "exit_status": 0,
+    "runtime_seconds": null,
+    "status": "completed",
+    "timing_note": "per-test logs retain elapsed, isolated certificate timing recorded separately"
+  },
+  "schema_version": 2
+}
