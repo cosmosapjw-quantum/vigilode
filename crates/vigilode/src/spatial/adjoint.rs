@@ -151,6 +151,10 @@ pub enum SpatialAdjointRoute {
     Poisson18,
     /// Uniformization with a directed Poisson tail order.
     PoissonAdaptive,
+    /// Wider Poisson subcells (experimental).
+    PoissonWide,
+    /// Wider Poisson subcells with decay-weighted tail (experimental).
+    PoissonWideDecay,
     /// Approximate eigenmode proposal with original transpose residual.
     ModeResidual,
 }

@@ -3,11 +3,13 @@
 //! proposals along the interpolated primal path.
 use super::*;
 mod scalar;
+mod secant;
 use rodas5p_core::directed::{div_up, exp_interval, sub_up};
 use rodas5p_integrators::{
     AdaptiveStepConfig, Dopri5Config, DopriStageKernel, OutputSchedule,
     integrate_dopri5_observed_with_kernel,
 };
+pub use secant::*;
 use std::cell::RefCell;
 const Z: Iv = Iv { lo: 0., hi: 0. };
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]

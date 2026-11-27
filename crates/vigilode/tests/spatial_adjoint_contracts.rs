@@ -703,3 +703,42 @@ fn spherical_transpose_gather_actual_portfolio() {
         }
     }
 }
+
+#[test]
+fn wide_poisson_actual_fewer_cells() {
+    let g = DiffusionGrid::periodic_box([16, 8], [16., 8.], [32., 16.]).unwrap();
+    let n = g.dimension();
+    let y = (0..n)
+        .map(|i| ((17 * i % 29) as f64 - 14.) / 32.)
+        .collect::<Vec<_>>();
+    let mut c = vec![0.; n];
+    c[0] = 0.5;
+    c[n / 2] = -0.25;
+    let mut w = SpatialAdjointWorkspace::new(&g).unwrap();
+    let mut out = vec![Iv { lo: 0., hi: 0. }; n];
+    let a = w
+        .certify_into(
+            &c,
+            &y,
+            &y,
+            DURATION,
+            SpatialAdjointRoute::PoissonAdaptive,
+            &mut out,
+        )
+        .unwrap();
+    let b = w
+        .certify_into(
+            &c,
+            &y,
+            &y,
+            DURATION,
+            SpatialAdjointRoute::PoissonWide,
+            &mut out,
+        )
+        .unwrap();
+    println!(
+        "WIDE_RED_GREEN old={} new={} actions={}/{}",
+        a.cells, b.cells, a.actions, b.actions
+    );
+    assert!(b.cells < a.cells && b.actions < a.actions && b.width_upper <= 1e-6);
+}
