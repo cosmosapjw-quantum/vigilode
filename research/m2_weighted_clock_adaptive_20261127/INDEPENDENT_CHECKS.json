@@ -1,0 +1,170 @@
+{
+  "direct": {
+    "Budgeted": {
+      "actions": 49459,
+      "adaptive": [
+        86,
+        33,
+        652
+      ],
+      "cells": 11040,
+      "rows": 25,
+      "zeroheap": 25
+    },
+    "BudgetedEconomy": {
+      "actions": 40457,
+      "adaptive": [
+        119,
+        300,
+        352
+      ],
+      "cells": 8508,
+      "rows": 25,
+      "zeroheap": 25
+    },
+    "Scaled16": {
+      "actions": 52673,
+      "adaptive": [
+        0,
+        0,
+        0
+      ],
+      "cells": 12336,
+      "rows": 25,
+      "zeroheap": 25
+    },
+    "Scaled4": {
+      "actions": 16398,
+      "adaptive": [
+        0,
+        0,
+        0
+      ],
+      "cells": 3084,
+      "rows": 25,
+      "zeroheap": 25
+    },
+    "Scaled8": {
+      "actions": 29508,
+      "adaptive": [
+        0,
+        0,
+        0
+      ],
+      "cells": 6168,
+      "rows": 25,
+      "zeroheap": 25
+    }
+  },
+  "goal": {
+    "AdaptiveSigned": {
+      "accepted": 7,
+      "actions": 12057,
+      "certificates": 18,
+      "physical": 9,
+      "rows": 12
+    },
+    "EconomySigned": {
+      "accepted": 7,
+      "actions": 11376,
+      "certificates": 19,
+      "physical": 9,
+      "rows": 12
+    },
+    "Fixed": {
+      "accepted": 7,
+      "actions": 12184,
+      "certificates": 27,
+      "physical": 9,
+      "rows": 12
+    },
+    "SignedRefined": {
+      "accepted": 7,
+      "actions": 17269,
+      "certificates": 33,
+      "physical": 9,
+      "rows": 12
+    },
+    "WeightedAdaptiveSigned": {
+      "accepted": 7,
+      "actions": 21583,
+      "certificates": 18,
+      "physical": 9,
+      "rows": 9
+    }
+  },
+  "max_sample_error_over_bound": 0.9556569205308811,
+  "method": "Exact binary64 inputs as Fractions, rational positive atanh series and geometric tail, 3 points per slab; sample checks do not prove continuous tube beyond analytic bound.",
+  "native_replay": 28,
+  "refusals": [
+    {
+      "candidate": "Sup4",
+      "case": "coupled_clock",
+      "end": 3.0,
+      "index": 56,
+      "reason": "invalid numerical input: DAE evolution: weighted clock positivity/contraction not proved",
+      "times": [
+        2.749094784504146,
+        2.8329646013283973
+      ]
+    },
+    {
+      "candidate": "Mean4",
+      "case": "coupled_clock",
+      "end": 3.0,
+      "index": 56,
+      "reason": "invalid numerical input: DAE evolution: weighted clock positivity/contraction not proved",
+      "times": [
+        2.749094784504146,
+        2.8329646013283973
+      ]
+    },
+    {
+      "candidate": "Hybrid4",
+      "case": "coupled_clock",
+      "end": 3.0,
+      "index": 56,
+      "reason": "invalid numerical input: DAE evolution: weighted clock positivity/contraction not proved",
+      "times": [
+        2.749094784504146,
+        2.8329646013283973
+      ]
+    }
+  ],
+  "sample_coordinate_bounds": 11268,
+  "spatial_replay": 240,
+  "tube": {
+    "Flat": {
+      "qualified": 5,
+      "rows": 7,
+      "slabs": 0,
+      "warm_zero": 0
+    },
+    "Hybrid4": {
+      "qualified": 6,
+      "rows": 7,
+      "slabs": 234,
+      "warm_zero": 234
+    },
+    "Mean4": {
+      "qualified": 6,
+      "rows": 7,
+      "slabs": 234,
+      "warm_zero": 234
+    },
+    "Mean8": {
+      "qualified": 7,
+      "rows": 7,
+      "slabs": 237,
+      "warm_zero": 237
+    },
+    "Sup4": {
+      "qualified": 6,
+      "rows": 7,
+      "slabs": 234,
+      "warm_zero": 234
+    }
+  },
+  "tube_runs": 35,
+  "weighted_slabs": 939
+}
