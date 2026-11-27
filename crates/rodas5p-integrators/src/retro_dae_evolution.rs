@@ -2765,8 +2765,8 @@ pub fn certify_slab_with_residual(
     }
     Ok(out)
 }
-/// Explicit workspace candidate; the RED compatibility implementation
-/// deliberately retains the owning proof.
+/// Explicit candidate, not a change to the legacy general or conservation
+/// proof. Every candidate uses the original source interval defect.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub enum SlabWorkspaceRoute {
     Pivot,
@@ -2774,12 +2774,159 @@ pub enum SlabWorkspaceRoute {
     Refined,
     PackedGreen,
 }
-pub struct SlabCertificateWorkspace;
+#[derive(Clone, Copy, Debug, Default, Serialize)]
+pub struct SlabWorkspaceWork {
+    pub source_rows: usize,
+    pub inverse_calls: usize,
+    pub local_trials: usize,
+    pub column_solves: usize,
+    pub refinement: di::AttemptCount,
+    pub directed_green_calls: usize,
+    pub packed_green_calls: usize,
+}
+/// Scratch only. Does not retain a source-specific inverse or certificate.
+/// The active prefixes are overwritten on each invocation.
+pub struct SlabCertificateWorkspace {
+    jac: [[Iv; 33]; 32],
+    other: [[Iv; 33]; 32],
+    values: [Iv; 32],
+    a: [f64; 1024],
+    c: [f64; 1024],
+    defect: [Iv; 1024],
+    local_defect: [Iv; 1024],
+    zx: [Iv; 256],
+    inverse: GuardInverseWorkspace,
+    work: SlabWorkspaceWork,
+}
 impl SlabCertificateWorkspace {
     pub const fn new() -> Self {
-        Self
+        const Z: Iv = Iv { lo: 0., hi: 0. };
+        Self {
+            jac: [[Z; 33]; 32],
+            other: [[Z; 33]; 32],
+            values: [Z; 32],
+            a: [0.; 1024],
+            c: [0.; 1024],
+            defect: [Z; 1024],
+            local_defect: [Z; 1024],
+            zx: [Z; 256],
+            inverse: GuardInverseWorkspace::new(),
+            work: SlabWorkspaceWork {
+                source_rows: 0,
+                inverse_calls: 0,
+                local_trials: 0,
+                column_solves: 0,
+                refinement: di::AttemptCount {
+                    started: 0,
+                    returned: 0,
+                },
+                directed_green_calls: 0,
+                packed_green_calls: 0,
+            },
+        }
+    }
+    pub fn work(&self) -> SlabWorkspaceWork {
+        self.work
     }
 }
+impl Default for SlabCertificateWorkspace {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+impl SlabCertificate {
+    /// Reserve the six retained output arrays once. This object is not a
+    /// qualified certificate until the proof has succeeded.
+    pub fn workspace_output(nx: usize, nz: usize) -> CoreResult<Self> {
+        if nx == 0 || nz == 0 || nx.checked_add(nz).is_none_or(|n| n > 32) {
+            return Err(bad("certificate output shape"));
+        }
+        Ok(Self {
+            times: [0.; 2],
+            tube_radius: 0.,
+            x_range: Vec::with_capacity(nx),
+            z_range: Vec::with_capacity(nz),
+            branch_root_box: Vec::with_capacity(nz),
+            self_map_box: Vec::with_capacity(nz),
+            self_map_center: Vec::with_capacity(nz),
+            preconditioner: Vec::with_capacity(nz * nz),
+            branch_defect: 0.,
+            condition_upper: 0.,
+            original_g_upper: 0.,
+            residual_variant: None,
+            picard_endpoint: None,
+            linear_ls_endpoint: None,
+            complex_endpoint: None,
+            aperiodic_endpoint: None,
+            algebraic_defect: 0.,
+            differential_defect: 0.,
+            normalized_reduced_defect: 0.,
+            reduced_mu_upper: 0.,
+            zx_norm_upper: 0.,
+            incoming: 0.,
+            outgoing: None,
+            whole_x_error: None,
+            whole_z_error: None,
+            green_used: false,
+            global_qualified: false,
+            global_reason: None,
+            conservation: None,
+        })
+    }
+}
+fn slab_fixed_image(
+    cg: &[Iv],
+    zc: &[f64],
+    local: &[Iv],
+    e: &[Iv],
+    out: &mut [Iv],
+) -> CoreResult<()> {
+    let n = zc.len();
+    let mut delta = [zero(); 32];
+    for i in 0..n {
+        delta[i] = local[i].sub(p(zc[i])?)?;
+    }
+    for i in 0..n {
+        out[i] = p(zc[i])?
+            .sub(cg[i])?
+            .add(guard_dot(&e[i * n..(i + 1) * n], &delta[..n])?)?;
+    }
+    Ok(())
+}
+/// Upper Green factors are monotone in the nonnegative damping argument.
+/// The packed lane evaluates the existing certified table at the left
+/// endpoint. For the other candidate, keep Hybrid's original upper bounds,
+/// without reconstructing the legacy RetroTable owner each slab.
+fn slab_workspace_green(
+    mu: f64,
+    h: Iv,
+    ein: f64,
+    rnorm: f64,
+    route: SlabWorkspaceRoute,
+    work: &mut SlabWorkspaceWork,
+) -> CoreResult<f64> {
+    let u = h.scale(-mu)?;
+    let u = Iv::new(u.lo.max(0.), u.hi)?;
+    if u.hi > 16384. {
+        return Err(bad("workspace Green argument cap"));
+    }
+    let d = Dictionary::get()?;
+    let (gain, ph) = if route == SlabWorkspaceRoute::PackedGreen {
+        let v = d.phi_all_fast(u.lo)?;
+        work.packed_green_calls += 1;
+        (v[0].hi.min(1.), v[1].hi)
+    } else {
+        let gain = d.phi(u, 0, RealMode::Hybrid)?.hi.min(1.);
+        let ph = d.phi(u, 1, RealMode::Hybrid)?.hi;
+        work.directed_green_calls += 2;
+        (gain, ph)
+    };
+    add_up(mul_up(gain, ein)?, mul_up(ph, rnorm)?)
+}
+/// Prove into caller-owned retained storage. Hard failures leave out
+/// unchanged; scratch may be modified. Successful fixed-shape warmed
+/// calls allocate no new output or scratch. Unresolved/rejected physical
+/// bootstrap reasons remain ordinary owning diagnostics.
 #[allow(clippy::too_many_arguments)]
 pub fn certify_slab_workspace_into(
     src: &DaeSource,
@@ -2790,12 +2937,328 @@ pub fn certify_slab_workspace_into(
     incoming: Option<f64>,
     green: bool,
     condition_cap: f64,
-    _route: SlabWorkspaceRoute,
-    _workspace: &mut SlabCertificateWorkspace,
+    route: SlabWorkspaceRoute,
+    w: &mut SlabCertificateWorkspace,
     out: &mut SlabCertificate,
 ) -> CoreResult<()> {
-    *out = certify_slab(src, times, y, branch, tube, incoming, green, condition_cap)?;
+    crate::affine_event_certificate::check_affine_event_arithmetic()?;
+    w.work = SlabWorkspaceWork::default();
+    let nx = src.nx();
+    let nz = src.nz();
+    let n = nx + nz;
+    let m = nz * nz;
+    if y.len() != n
+        || branch.len() != nz
+        || y.iter().any(|v| v.is_empty() || v.len() > 5)
+        || !tube.is_finite()
+        || tube <= 0.
+        || !condition_cap.is_finite()
+        || condition_cap <= 0.
+        || incoming.is_some_and(|v| !v.is_finite() || v < 0.)
+    {
+        return Err(bad("slab shape"));
+    }
+    for v in y.iter().flatten() {
+        Iv::new(v.lo, v.hi)?;
+    }
+    let t = Iv::new(times[0], times[1])?;
+    let h = p(times[1])?.sub(p(times[0])?)?;
+    if h.lo <= 0. {
+        return Err(bad("clock"));
+    }
+    let mut ranges = [zero(); 32];
+    let mut b = [zero(); 32];
+    let mut all = [zero(); 32];
+    let mut center = [zero(); 32];
+    let mut zc = [0.; 32];
+    let mut fix = [zero(); 32];
+    for (v, row) in ranges[..n].iter_mut().zip(y) {
+        *v = range(row)?;
+    }
+    for i in 0..nz {
+        b[i] = Iv::new(branch[i][0], branch[i][1])?;
+    }
+    if !di::subset(&ranges[nx..n], &b[..nz]) {
+        return Err(bad("algebraic polynomial leaves branch"));
+    }
+    for i in 0..nx {
+        all[i] = ranges[i].add(Iv::new(-tube, tube)?)?;
+        center[i] = p(di::mid(all[i]))?;
+        fix[i] = all[i];
+    }
+    for i in 0..nz {
+        all[nx + i] = b[i];
+        zc[i] = di::mid(ranges[nx + i]);
+        center[nx + i] = p(zc[i])?;
+        fix[nx + i] = center[nx + i];
+    }
+    guard_source_rows(
+        &src.g,
+        p(di::mid(t))?,
+        &center[..n],
+        &mut w.values[..nz],
+        &mut w.other[..nz],
+    )?;
+    w.work.source_rows += nz;
+    for i in 0..nz {
+        for j in 0..nz {
+            w.a[i * nz + j] = di::mid(w.other[i][1 + nx + j]);
+        }
+    }
+    w.work.inverse_calls += 1;
+    w.inverse.invert_pivoted(
+        nz,
+        &w.a[..m],
+        &mut w.c[..m],
+        route == SlabWorkspaceRoute::Equilibrated,
+    )?;
+    let c = GuardMatrix::new(nz, &w.c[..m])?;
+    guard_source_rows(&src.g, t, &all[..n], &mut w.values[..nz], &mut w.jac[..nz])?;
+    w.work.source_rows += nz;
+    let q = guard_defect_into(c, &w.jac[..nz], nx, &mut w.defect[..m])?;
+    let gap = sub_down(1., q)?;
+    if gap <= 0. {
+        return Err(bad("uniform branch contraction not proved"));
+    }
+    guard_source_rows(
+        &src.g,
+        t,
+        &fix[..n],
+        &mut w.values[..nz],
+        &mut w.other[..nz],
+    )?;
+    w.work.source_rows += nz;
+    let mut cg = [zero(); 32];
+    for (i, o) in cg[..nz].iter_mut().enumerate() {
+        *o = c
+            .row(i)
+            .iter()
+            .zip(&w.values[..nz])
+            .try_fold(zero(), |s, (&a, &v)| s.add(v.scale(a)?))?;
+    }
+    let mut local = b;
+    let mut root = [zero(); 32];
+    slab_fixed_image(
+        &cg[..nz],
+        &zc[..nz],
+        &local[..nz],
+        &w.defect[..m],
+        &mut root[..nz],
+    )?;
+    if !di::subset(&root[..nz], &local[..nz]) {
+        let eta = di::norm(&cg[..nz]);
+        let mut admitted = false;
+        for factor in [1.25, 2., 4., 8., 16., 32.] {
+            w.work.local_trials += 1;
+            let rad = mul_up(factor, eta)?;
+            for i in 0..nz {
+                local[i] = p(zc[i])?.add(Iv::new(-rad, rad)?)?;
+            }
+            if !di::subset(&local[..nz], &b[..nz]) {
+                continue;
+            }
+            let mut box_y = all;
+            box_y[nx..n].copy_from_slice(&local[..nz]);
+            guard_source_rows(
+                &src.g,
+                t,
+                &box_y[..n],
+                &mut w.values[..nz],
+                &mut w.other[..nz],
+            )?;
+            w.work.source_rows += nz;
+            guard_defect_into(c, &w.other[..nz], nx, &mut w.local_defect[..m])?;
+            slab_fixed_image(
+                &cg[..nz],
+                &zc[..nz],
+                &local[..nz],
+                &w.local_defect[..m],
+                &mut root[..nz],
+            )?;
+            if di::subset(&root[..nz], &local[..nz]) {
+                admitted = true;
+                break;
+            }
+        }
+        if !admitted {
+            return Err(bad("uniform self-map leaves branch"));
+        }
+    }
+    let mut cnorm = 0_f64;
+    let mut jnorm = 0_f64;
+    for i in 0..nz {
+        cnorm = cnorm.max(c.row(i).iter().try_fold(0., |s, v| add_up(s, v.abs()))?);
+        jnorm = jnorm.max(guard_row_norm(&w.jac[i][1 + nx..=n])?);
+    }
+    let condition_upper = mul_up(div_up(cnorm, gap)?, jnorm)?;
+    if condition_upper > condition_cap {
+        return Err(bad("uniform condition cap"));
+    }
+    let residual = slab_residual_bounds(src, times, y, &w.c[..m], SlabResidualRoute::Bernstein)?;
+    let az = div_up(residual.preconditioned_g_upper, gap)?;
+    let dx = residual.differential_defect;
+    guard_source_rows(
+        &src.f,
+        t,
+        &all[..n],
+        &mut w.values[..nx],
+        &mut w.other[..nx],
+    )?;
+    w.work.source_rows += nx;
+    let mut fz = 0_f64;
+    for row in &w.other[..nx] {
+        fz = fz.max(guard_row_norm(&row[1 + nx..=n])?);
+    }
+    let rnorm = add_up(dx, mul_up(h.hi, mul_up(fz, az)?)?)?;
+    let refine = if route == SlabWorkspaceRoute::Refined {
+        GuardColumnRefinement::AdaptiveGaussSeidel2
+    } else {
+        GuardColumnRefinement::None
+    };
+    let mut rhs = [zero(); 32];
+    let mut sol = [zero(); 32];
+    for k in 0..nx {
+        for i in 0..nz {
+            rhs[i] = -w.jac[i][k + 1];
+        }
+        w.work.column_solves += 1;
+        guard_solve_into(
+            c,
+            &rhs[..nz],
+            q,
+            gap,
+            &mut sol[..nz],
+            &w.defect[..m],
+            refine,
+            &mut w.work.refinement,
+        )?;
+        for i in 0..nz {
+            w.zx[i * nx + k] = sol[i];
+        }
+    }
+    let mut lip = 0_f64;
+    for row in w.zx[..nx * nz].chunks_exact(nx) {
+        lip = lip.max(guard_row_norm(row)?);
+    }
+    let mut mu = f64::NEG_INFINITY;
+    for (i, row) in w.other[..nx].iter().enumerate() {
+        let mut sum = 0.;
+        for k in 0..nx {
+            let v = (0..nz).try_fold(row[k + 1], |s, l| {
+                s.add(row[1 + nx + l].mul(w.zx[l * nx + k])?)
+            })?;
+            sum = add_up(sum, if i == k { v.hi } else { v.mag() })?;
+        }
+        mu = mu.max(sum);
+    }
+    // Stage all fallible physical decisions before committing the report.
+    let mut outgoing = None;
+    let mut whole_x = None;
+    let mut whole_z = None;
+    let mut used = false;
+    let mut qualified = false;
+    let mut reason = None;
+    if let Some(ein) = incoming {
+        let propagate = (|| -> CoreResult<(f64, bool)> {
+            if green && mu < 0. {
+                Ok((
+                    slab_workspace_green(mu, h, ein, rnorm, route, &mut w.work)?,
+                    true,
+                ))
+            } else {
+                let g = if mu > 0. {
+                    exp_interval(mul_up(mu, h.hi)?)?.hi
+                } else {
+                    1.
+                };
+                Ok((mul_up(g, add_up(ein, rnorm)?)?, false))
+            }
+        })();
+        match propagate {
+            Ok((e, u)) => {
+                let r = e.max(ein);
+                outgoing = Some(e);
+                whole_x = Some(r);
+                whole_z = Some(add_up(az, mul_up(lip, r)?)?);
+                used = u;
+                qualified = r < tube;
+                if !qualified {
+                    reason = Some("physical bootstrap tube exceeded".into());
+                }
+            }
+            Err(e) => reason = Some(e.to_string()),
+        }
+    } else {
+        reason = Some("prior physical tube unresolved".into());
+    }
+    out.times = times;
+    out.tube_radius = tube;
+    out.x_range.clear();
+    out.x_range.extend(all[..nx].iter().map(|v| v.as_pair()));
+    out.z_range.clear();
+    out.z_range
+        .extend(ranges[nx..n].iter().map(|v| v.as_pair()));
+    out.branch_root_box.clear();
+    out.branch_root_box
+        .extend(root[..nz].iter().map(|v| v.as_pair()));
+    out.self_map_box.clear();
+    out.self_map_box
+        .extend(local[..nz].iter().map(|v| v.as_pair()));
+    out.self_map_center.clear();
+    out.self_map_center.extend_from_slice(&zc[..nz]);
+    out.preconditioner.clear();
+    out.preconditioner.extend_from_slice(&w.c[..m]);
+    out.branch_defect = q;
+    out.condition_upper = condition_upper;
+    out.original_g_upper = residual.original_g_upper;
+    out.residual_variant = None;
+    out.picard_endpoint = None;
+    out.linear_ls_endpoint = None;
+    out.complex_endpoint = None;
+    out.aperiodic_endpoint = None;
+    out.conservation = None;
+    out.algebraic_defect = az;
+    out.differential_defect = dx;
+    out.normalized_reduced_defect = rnorm;
+    out.reduced_mu_upper = mu;
+    out.zx_norm_upper = lip;
+    out.incoming = incoming.unwrap_or(0.);
+    out.outgoing = outgoing;
+    out.whole_x_error = whole_x;
+    out.whole_z_error = whole_z;
+    out.green_used = used;
+    out.global_qualified = qualified;
+    out.global_reason = reason;
     Ok(())
+}
+#[allow(clippy::too_many_arguments)]
+pub fn certify_slab_workspace(
+    src: &DaeSource,
+    times: [f64; 2],
+    y: &[Poly],
+    branch: &[[f64; 2]],
+    tube: f64,
+    incoming: Option<f64>,
+    green: bool,
+    condition_cap: f64,
+    route: SlabWorkspaceRoute,
+    w: &mut SlabCertificateWorkspace,
+) -> CoreResult<SlabCertificate> {
+    let mut out = SlabCertificate::workspace_output(src.nx(), src.nz())?;
+    certify_slab_workspace_into(
+        src,
+        times,
+        y,
+        branch,
+        tube,
+        incoming,
+        green,
+        condition_cap,
+        route,
+        w,
+        &mut out,
+    )?;
+    Ok(out)
 }
 /// Rounded query correction to the ideal polynomial is charged explicitly.
 pub fn query_x_error(
