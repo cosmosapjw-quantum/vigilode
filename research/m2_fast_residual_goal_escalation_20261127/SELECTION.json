@@ -1,0 +1,3061 @@
+{
+  "goal": {
+    "candidates": {
+      "CostAware": {
+        "bytes": 6162111,
+        "qualified": 8,
+        "requests": 7720,
+        "rows": 18
+      },
+      "Fixed": {
+        "bytes": 15343536,
+        "qualified": 8,
+        "requests": 49527,
+        "rows": 18
+      },
+      "TieredCost": {
+        "bytes": 6351772,
+        "qualified": 8,
+        "requests": 8432,
+        "rows": 18
+      }
+    },
+    "pareto_count": 9,
+    "pareto_covered": 9,
+    "proposals": {
+      "mutation": 242,
+      "structure": 1806
+    },
+    "rows": 54,
+    "strata": [
+      {
+        "covered": 2,
+        "group": [
+          "clock2@0.5",
+          "loose"
+        ],
+        "pareto": [
+          {
+            "budget": "loose",
+            "candidate": "Fixed",
+            "objectives": [
+              44351,
+              10424687,
+              9934663,
+              134,
+              17,
+              0,
+              1.158366680673947e-09
+            ],
+            "problem": "clock2@0.5"
+          },
+          {
+            "budget": "loose",
+            "candidate": "TieredCost",
+            "objectives": [
+              197,
+              148167,
+              9210674,
+              79,
+              10,
+              198,
+              7.549851574864437e-09
+            ],
+            "problem": "clock2@0.5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "TieredCost"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "clock2@0.5",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "budget": "middle",
+            "candidate": "Fixed",
+            "objectives": [
+              204,
+              161277,
+              16736843,
+              134,
+              17,
+              586,
+              2.019659847536043e-10
+            ],
+            "problem": "clock2@0.5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "Fixed"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "clock2@0.5",
+          "tight"
+        ],
+        "pareto": [
+          {
+            "budget": "tight",
+            "candidate": "TieredCost",
+            "objectives": [
+              204,
+              161277,
+              34139235,
+              134,
+              17,
+              1421,
+              6.218321073248952e-11
+            ],
+            "problem": "clock2@0.5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "TieredCost"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "clock8@0.5",
+          "loose"
+        ],
+        "pareto": [
+          {
+            "budget": "loose",
+            "candidate": "Fixed",
+            "objectives": [
+              401,
+              289547,
+              152193811,
+              189,
+              24,
+              883,
+              1.0978694552268644e-09
+            ],
+            "problem": "clock8@0.5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "Fixed"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "clock8@0.5",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "budget": "middle",
+            "candidate": "TieredCost",
+            "objectives": [
+              401,
+              289547,
+              247761938,
+              189,
+              24,
+              2123,
+              3.278846571211893e-10
+            ],
+            "problem": "clock8@0.5"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "TieredCost"
+      },
+      {
+        "covered": 0,
+        "group": [
+          "clock8@0.5",
+          "tight"
+        ],
+        "pareto": [],
+        "qualified": 0,
+        "resource_first": null
+      },
+      {
+        "covered": 1,
+        "group": [
+          "coupled_clock@1.0",
+          "loose"
+        ],
+        "pareto": [
+          {
+            "budget": "loose",
+            "candidate": "Fixed",
+            "objectives": [
+              256,
+              196226,
+              22328312,
+              238,
+              30,
+              727,
+              3.5402641738692722e-09
+            ],
+            "problem": "coupled_clock@1.0"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "Fixed"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "coupled_clock@1.0",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "budget": "middle",
+            "candidate": "CostAware",
+            "objectives": [
+              256,
+              196226,
+              27996282,
+              238,
+              30,
+              1276,
+              3.939591447997063e-10
+            ],
+            "problem": "coupled_clock@1.0"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "CostAware"
+      },
+      {
+        "covered": 0,
+        "group": [
+          "coupled_clock@1.0",
+          "tight"
+        ],
+        "pareto": [],
+        "qualified": 0,
+        "resource_first": null
+      },
+      {
+        "covered": 0,
+        "group": [
+          "coupled_clock@2.0",
+          "loose"
+        ],
+        "pareto": [],
+        "qualified": 0,
+        "resource_first": null
+      },
+      {
+        "covered": 0,
+        "group": [
+          "coupled_clock@2.0",
+          "middle"
+        ],
+        "pareto": [],
+        "qualified": 0,
+        "resource_first": null
+      },
+      {
+        "covered": 0,
+        "group": [
+          "coupled_clock@2.0",
+          "tight"
+        ],
+        "pareto": [],
+        "qualified": 0,
+        "resource_first": null
+      },
+      {
+        "covered": 1,
+        "group": [
+          "growth2@0.75",
+          "loose"
+        ],
+        "pareto": [
+          {
+            "budget": "loose",
+            "candidate": "Fixed",
+            "objectives": [
+              299,
+              385478,
+              177886395,
+              832,
+              104,
+              14886,
+              2.748813152959479e-09
+            ],
+            "problem": "growth2@0.75"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "Fixed"
+      },
+      {
+        "covered": 0,
+        "group": [
+          "growth2@0.75",
+          "middle"
+        ],
+        "pareto": [],
+        "qualified": 0,
+        "resource_first": null
+      },
+      {
+        "covered": 0,
+        "group": [
+          "growth2@0.75",
+          "tight"
+        ],
+        "pareto": [],
+        "qualified": 0,
+        "resource_first": null
+      },
+      {
+        "covered": 0,
+        "group": [
+          "growth2@1.0",
+          "loose"
+        ],
+        "pareto": [],
+        "qualified": 0,
+        "resource_first": null
+      },
+      {
+        "covered": 0,
+        "group": [
+          "growth2@1.0",
+          "middle"
+        ],
+        "pareto": [],
+        "qualified": 0,
+        "resource_first": null
+      },
+      {
+        "covered": 0,
+        "group": [
+          "growth2@1.0",
+          "tight"
+        ],
+        "pareto": [],
+        "qualified": 0,
+        "resource_first": null
+      }
+    ],
+    "unique": 54
+  },
+  "native": {
+    "candidates": {
+      "Dopri": {
+        "bytes": 239715,
+        "qualified": 7,
+        "requests": 119,
+        "rows": 7
+      },
+      "FusedDiagonal": {
+        "bytes": 969764,
+        "qualified": 7,
+        "requests": 475,
+        "rows": 7
+      },
+      "FusedEdges": {
+        "bytes": 969764,
+        "qualified": 7,
+        "requests": 475,
+        "rows": 7
+      },
+      "Hybrid": {
+        "bytes": 969764,
+        "qualified": 7,
+        "requests": 475,
+        "rows": 7
+      },
+      "Legacy": {
+        "bytes": 493764,
+        "qualified": 7,
+        "requests": 468,
+        "rows": 7
+      },
+      "PackedInterval": {
+        "bytes": 969764,
+        "qualified": 7,
+        "requests": 475,
+        "rows": 7
+      },
+      "Paired": {
+        "bytes": 610100,
+        "qualified": 7,
+        "requests": 813,
+        "rows": 7
+      }
+    },
+    "pareto_count": 28,
+    "pareto_covered": 28,
+    "proposals": {
+      "mutation": 204,
+      "structure": 1844
+    },
+    "rows": 49,
+    "strata": [
+      {
+        "covered": 4,
+        "group": [
+          "box2"
+        ],
+        "pareto": [
+          {
+            "candidate": "Dopri",
+            "case": "box2",
+            "objectives": [
+              17,
+              14581,
+              1767400,
+              1111,
+              0,
+              1.8799980669448324e-11
+            ]
+          },
+          {
+            "candidate": "Paired",
+            "case": "box2",
+            "objectives": [
+              81,
+              36974,
+              2695633,
+              678,
+              0,
+              5.461972020504025e-13
+            ]
+          },
+          {
+            "candidate": "Legacy",
+            "case": "box2",
+            "objectives": [
+              74,
+              32332,
+              41945855,
+              678,
+              0,
+              5.461972020504025e-13
+            ]
+          },
+          {
+            "candidate": "Hybrid",
+            "case": "box2",
+            "objectives": [
+              75,
+              61004,
+              4582879,
+              678,
+              0,
+              5.461972020504025e-13
+            ]
+          }
+        ],
+        "qualified": 7,
+        "resource_first": "Dopri"
+      },
+      {
+        "covered": 4,
+        "group": [
+          "box2_strong"
+        ],
+        "pareto": [
+          {
+            "candidate": "Dopri",
+            "case": "box2_strong",
+            "objectives": [
+              17,
+              3829,
+              1397405,
+              6211,
+              0,
+              4.349396537373096e-11
+            ]
+          },
+          {
+            "candidate": "Paired",
+            "case": "box2_strong",
+            "objectives": [
+              81,
+              12414,
+              450166,
+              684,
+              0,
+              3.2742905609062234e-14
+            ]
+          },
+          {
+            "candidate": "Legacy",
+            "case": "box2_strong",
+            "objectives": [
+              74,
+              11612,
+              5751695,
+              684,
+              0,
+              3.2742905609062234e-14
+            ]
+          },
+          {
+            "candidate": "Hybrid",
+            "case": "box2_strong",
+            "objectives": [
+              75,
+              18780,
+              857190,
+              684,
+              0,
+              3.2742905609062234e-14
+            ]
+          }
+        ],
+        "qualified": 7,
+        "resource_first": "Dopri"
+      },
+      {
+        "covered": 4,
+        "group": [
+          "box3"
+        ],
+        "pareto": [
+          {
+            "candidate": "Dopri",
+            "case": "box3",
+            "objectives": [
+              17,
+              28917,
+              2026688,
+              565,
+              0,
+              1.234136328288199e-10
+            ]
+          },
+          {
+            "candidate": "Paired",
+            "case": "box3",
+            "objectives": [
+              78,
+              68710,
+              5036952,
+              526,
+              0,
+              1.2431136849067048e-12
+            ]
+          },
+          {
+            "candidate": "Legacy",
+            "case": "box3",
+            "objectives": [
+              71,
+              58948,
+              88618892,
+              526,
+              0,
+              1.2431136849067048e-12
+            ]
+          },
+          {
+            "candidate": "Hybrid",
+            "case": "box3",
+            "objectives": [
+              72,
+              116292,
+              8039482,
+              526,
+              0,
+              1.2431136849067048e-12
+            ]
+          }
+        ],
+        "qualified": 7,
+        "resource_first": "Dopri"
+      },
+      {
+        "covered": 4,
+        "group": [
+          "sphere1024"
+        ],
+        "pareto": [
+          {
+            "candidate": "Dopri",
+            "case": "sphere1024",
+            "objectives": [
+              17,
+              114933,
+              3459790,
+              673,
+              0,
+              9.144949554562576e-11
+            ]
+          },
+          {
+            "candidate": "Paired",
+            "case": "sphere1024",
+            "objectives": [
+              74,
+              276974,
+              11163142,
+              717,
+              0,
+              8.081868507758827e-13
+            ]
+          },
+          {
+            "candidate": "Legacy",
+            "case": "sphere1024",
+            "objectives": [
+              63,
+              228812,
+              157534357,
+              470,
+              0,
+              6.763157742173398e-12
+            ]
+          },
+          {
+            "candidate": "Hybrid",
+            "case": "sphere1024",
+            "objectives": [
+              64,
+              458188,
+              15948381,
+              470,
+              0,
+              6.763157742173398e-12
+            ]
+          }
+        ],
+        "qualified": 7,
+        "resource_first": "Dopri"
+      },
+      {
+        "covered": 4,
+        "group": [
+          "sphere128"
+        ],
+        "pareto": [
+          {
+            "candidate": "Dopri",
+            "case": "sphere128",
+            "objectives": [
+              17,
+              14581,
+              657916,
+              457,
+              0,
+              1.8158509071386497e-10
+            ]
+          },
+          {
+            "candidate": "Paired",
+            "case": "sphere128",
+            "objectives": [
+              72,
+              37742,
+              2161301,
+              526,
+              0,
+              2.898035977860758e-12
+            ]
+          },
+          {
+            "candidate": "Legacy",
+            "case": "sphere128",
+            "objectives": [
+              62,
+              32204,
+              27069040,
+              431,
+              0,
+              5.734506619559099e-12
+            ]
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "sphere128",
+            "objectives": [
+              63,
+              60876,
+              2934121,
+              431,
+              0,
+              5.734506619559099e-12
+            ]
+          }
+        ],
+        "qualified": 7,
+        "resource_first": "Dopri"
+      },
+      {
+        "covered": 4,
+        "group": [
+          "sphere512"
+        ],
+        "pareto": [
+          {
+            "candidate": "Dopri",
+            "case": "sphere512",
+            "objectives": [
+              17,
+              57589,
+              3730648,
+              703,
+              0,
+              1.6833095767970763e-10
+            ]
+          },
+          {
+            "candidate": "Paired",
+            "case": "sphere512",
+            "objectives": [
+              73,
+              139886,
+              10532415,
+              701,
+              0,
+              1.657916859354458e-12
+            ]
+          },
+          {
+            "candidate": "Legacy",
+            "case": "sphere512",
+            "objectives": [
+              62,
+              116044,
+              136387510,
+              510,
+              0,
+              5.897365928930753e-12
+            ]
+          },
+          {
+            "candidate": "Hybrid",
+            "case": "sphere512",
+            "objectives": [
+              63,
+              230732,
+              12759880,
+              510,
+              0,
+              5.897365928930753e-12
+            ]
+          }
+        ],
+        "qualified": 7,
+        "resource_first": "Dopri"
+      },
+      {
+        "covered": 4,
+        "group": [
+          "sphere_odd"
+        ],
+        "pareto": [
+          {
+            "candidate": "Dopri",
+            "case": "sphere_odd",
+            "objectives": [
+              17,
+              5285,
+              178706,
+              253,
+              0,
+              6.079638320555247e-10
+            ]
+          },
+          {
+            "candidate": "Paired",
+            "case": "sphere_odd",
+            "objectives": [
+              354,
+              37400,
+              476014,
+              272,
+              0,
+              1.5515297380197524e-11
+            ]
+          },
+          {
+            "candidate": "Legacy",
+            "case": "sphere_odd",
+            "objectives": [
+              62,
+              13812,
+              5632250,
+              240,
+              0,
+              2.0874982298302314e-11
+            ]
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "sphere_odd",
+            "objectives": [
+              63,
+              23892,
+              734990,
+              240,
+              0,
+              2.0874982298302314e-11
+            ]
+          }
+        ],
+        "qualified": 7,
+        "resource_first": "Dopri"
+      }
+    ],
+    "unique": 49
+  },
+  "residual": {
+    "candidates": {
+      "FusedDiagonal": {
+        "bytes": 0,
+        "qualified": 36,
+        "requests": 0,
+        "rows": 40
+      },
+      "FusedEdges": {
+        "bytes": 0,
+        "qualified": 36,
+        "requests": 0,
+        "rows": 40
+      },
+      "Hybrid": {
+        "bytes": 0,
+        "qualified": 40,
+        "requests": 0,
+        "rows": 40
+      },
+      "Legacy": {
+        "bytes": 0,
+        "qualified": 40,
+        "requests": 0,
+        "rows": 40
+      },
+      "PackedInterval": {
+        "bytes": 0,
+        "qualified": 40,
+        "requests": 0,
+        "rows": 40
+      }
+    },
+    "pareto_count": 76,
+    "pareto_covered": 76,
+    "proposals": {
+      "mutation": 132,
+      "structure": 1916
+    },
+    "rows": 200,
+    "strata": [
+      {
+        "covered": 1,
+        "group": [
+          "box2",
+          "cancellation"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "box2",
+            "objectives": [
+              0,
+              0,
+              52108,
+              0.0
+            ],
+            "scenario": "cancellation"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "PackedInterval"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "box2",
+          "large"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "box2",
+            "objectives": [
+              0,
+              0,
+              53704,
+              8.365370961665159e+226
+            ],
+            "scenario": "large"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "box2",
+            "objectives": [
+              0,
+              0,
+              3484,
+              8.994236430544999e+227
+            ],
+            "scenario": "large"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "box2",
+          "nominal"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "box2",
+            "objectives": [
+              0,
+              0,
+              55424,
+              1.2545520178264269e-14
+            ],
+            "scenario": "nominal"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "box2",
+            "objectives": [
+              0,
+              0,
+              3179,
+              1.3488627718312347e-13
+            ],
+            "scenario": "nominal"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "box2",
+          "perturbed"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "box2",
+            "objectives": [
+              0,
+              0,
+              54100,
+              0.003173828125012275
+            ],
+            "scenario": "perturbed"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "box2",
+            "objectives": [
+              0,
+              0,
+              3386,
+              0.003173828125134712
+            ],
+            "scenario": "perturbed"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "box2",
+          "subnormal"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "box2",
+            "objectives": [
+              0,
+              0,
+              44594,
+              1.27588e-318
+            ],
+            "scenario": "subnormal"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "box2",
+            "objectives": [
+              0,
+              0,
+              3151,
+              1.279754e-318
+            ],
+            "scenario": "subnormal"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "box2_strong",
+          "cancellation"
+        ],
+        "pareto": [
+          {
+            "candidate": "Legacy",
+            "case": "box2_strong",
+            "objectives": [
+              0,
+              0,
+              12522,
+              0.0
+            ],
+            "scenario": "cancellation"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "Legacy"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "box2_strong",
+          "large"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "box2_strong",
+            "objectives": [
+              0,
+              0,
+              11481,
+              4.117909378253314e+226
+            ],
+            "scenario": "large"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "box2_strong",
+            "objectives": [
+              0,
+              0,
+              1230,
+              7.241042895467933e+227
+            ],
+            "scenario": "large"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "box2_strong",
+          "nominal"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "box2_strong",
+            "objectives": [
+              0,
+              0,
+              12547,
+              6.175615574477433e-15
+            ],
+            "scenario": "nominal"
+          },
+          {
+            "candidate": "Hybrid",
+            "case": "box2_strong",
+            "objectives": [
+              0,
+              0,
+              806,
+              1.0859368959614853e-13
+            ],
+            "scenario": "nominal"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Hybrid"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "box2_strong",
+          "perturbed"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "box2_strong",
+            "objectives": [
+              0,
+              0,
+              12060,
+              0.023681640625006176
+            ],
+            "scenario": "perturbed"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "box2_strong",
+            "objectives": [
+              0,
+              0,
+              1038,
+              0.023681640625108535
+            ],
+            "scenario": "perturbed"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "box2_strong",
+          "subnormal"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "box2_strong",
+            "objectives": [
+              0,
+              0,
+              10606,
+              2.22754e-318
+            ],
+            "scenario": "subnormal"
+          },
+          {
+            "candidate": "Hybrid",
+            "case": "box2_strong",
+            "objectives": [
+              0,
+              0,
+              918,
+              2.22856e-318
+            ],
+            "scenario": "subnormal"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Hybrid"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "box3",
+          "cancellation"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "box3",
+            "objectives": [
+              0,
+              0,
+              148915,
+              0.0
+            ],
+            "scenario": "cancellation"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "PackedInterval"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "box3",
+          "large"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "box3",
+            "objectives": [
+              0,
+              0,
+              155511,
+              1.7662332166451318e+227
+            ],
+            "scenario": "large"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "box3",
+            "objectives": [
+              0,
+              0,
+              7751,
+              1.4932914898694418e+228
+            ],
+            "scenario": "large"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "box3",
+          "nominal"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "box3",
+            "objectives": [
+              0,
+              0,
+              155271,
+              2.648814327599336e-14
+            ],
+            "scenario": "nominal"
+          },
+          {
+            "candidate": "Hybrid",
+            "case": "box3",
+            "objectives": [
+              0,
+              0,
+              6532,
+              2.2394844895746618e-13
+            ],
+            "scenario": "nominal"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Hybrid"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "box3",
+          "perturbed"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "box3",
+            "objectives": [
+              0,
+              0,
+              155762,
+              0.001098632812526176
+            ],
+            "scenario": "perturbed"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "box3",
+            "objectives": [
+              0,
+              0,
+              7654,
+              0.0010986328127235933
+            ],
+            "scenario": "perturbed"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "box3",
+          "subnormal"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "box3",
+            "objectives": [
+              0,
+              0,
+              122291,
+              5.95033e-319
+            ],
+            "scenario": "subnormal"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "box3",
+            "objectives": [
+              0,
+              0,
+              7037,
+              5.98585e-319
+            ],
+            "scenario": "subnormal"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "duplicate",
+          "cancellation"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "duplicate",
+            "objectives": [
+              0,
+              0,
+              4583,
+              0.0
+            ],
+            "scenario": "cancellation"
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "PackedInterval"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "duplicate",
+          "large"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "duplicate",
+            "objectives": [
+              0,
+              0,
+              4713,
+              1.6627794188873985e+225
+            ],
+            "scenario": "large"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "duplicate",
+            "objectives": [
+              0,
+              0,
+              452,
+              4.3050451348471385e+226
+            ],
+            "scenario": "large"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "duplicate",
+          "nominal"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "duplicate",
+            "objectives": [
+              0,
+              0,
+              4577,
+              2.49366499671666e-16
+            ],
+            "scenario": "nominal"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "duplicate",
+            "objectives": [
+              0,
+              0,
+              454,
+              6.4562624724071405e-15
+            ],
+            "scenario": "nominal"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "duplicate",
+          "perturbed"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "duplicate",
+            "objectives": [
+              0,
+              0,
+              4593,
+              0.00027084350585948776
+            ],
+            "scenario": "perturbed"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "duplicate",
+            "objectives": [
+              0,
+              0,
+              450,
+              0.0002708435058657019
+            ],
+            "scenario": "perturbed"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "duplicate",
+          "subnormal"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "duplicate",
+            "objectives": [
+              0,
+              0,
+              3983,
+              2.05e-321
+            ],
+            "scenario": "subnormal"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "duplicate",
+            "objectives": [
+              0,
+              0,
+              462,
+              2.17e-321
+            ],
+            "scenario": "subnormal"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "sphere1024",
+          "cancellation"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "sphere1024",
+            "objectives": [
+              0,
+              0,
+              412544,
+              350.71439493284635
+            ],
+            "scenario": "cancellation"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "sphere1024",
+            "objectives": [
+              0,
+              0,
+              24297,
+              350.7143949357411
+            ],
+            "scenario": "cancellation"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "sphere1024",
+          "large"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "sphere1024",
+            "objectives": [
+              0,
+              0,
+              456330,
+              5.044820280547484e+227
+            ],
+            "scenario": "large"
+          },
+          {
+            "candidate": "Hybrid",
+            "case": "sphere1024",
+            "objectives": [
+              0,
+              0,
+              23619,
+              1.8413085589083167e+229
+            ],
+            "scenario": "large"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Hybrid"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "sphere1024",
+          "nominal"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "sphere1024",
+            "objectives": [
+              0,
+              0,
+              468876,
+              7.565700901413124e-14
+            ],
+            "scenario": "nominal"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "sphere1024",
+            "objectives": [
+              0,
+              0,
+              23817,
+              2.7614045791935583e-12
+            ],
+            "scenario": "nominal"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "sphere1024",
+          "perturbed"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "sphere1024",
+            "objectives": [
+              0,
+              0,
+              476437,
+              0.000264096475566265
+            ],
+            "scenario": "perturbed"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "sphere1024",
+            "objectives": [
+              0,
+              0,
+              24227,
+              0.00026409647825213084
+            ],
+            "scenario": "perturbed"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "sphere1024",
+          "subnormal"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "sphere1024",
+            "objectives": [
+              0,
+              0,
+              351292,
+              7.29656e-319
+            ],
+            "scenario": "subnormal"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "sphere1024",
+            "objectives": [
+              0,
+              0,
+              23567,
+              7.61874e-319
+            ],
+            "scenario": "subnormal"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "sphere128",
+          "cancellation"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              51954,
+              340.2360867261513
+            ],
+            "scenario": "cancellation"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              3131,
+              340.2360867262491
+            ],
+            "scenario": "cancellation"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "sphere128",
+          "large"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              53594,
+              5.553355108661909e+226
+            ],
+            "scenario": "large"
+          },
+          {
+            "candidate": "Hybrid",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              3077,
+              1.0250149815574929e+228
+            ],
+            "scenario": "large"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Hybrid"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "sphere128",
+          "nominal"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              54065,
+              8.32834896289129e-15
+            ],
+            "scenario": "nominal"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              3361,
+              1.537211702037061e-13
+            ],
+            "scenario": "nominal"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "sphere128",
+          "perturbed"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              54940,
+              0.0002763321358752173
+            ],
+            "scenario": "perturbed"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              2809,
+              0.0002763321360203729
+            ],
+            "scenario": "perturbed"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "sphere128",
+          "subnormal"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              41997,
+              5.9253e-320
+            ],
+            "scenario": "subnormal"
+          },
+          {
+            "candidate": "Hybrid",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              3203,
+              6.335e-320
+            ],
+            "scenario": "subnormal"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Hybrid"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "sphere512",
+          "cancellation"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              208267,
+              701.4287898656629
+            ],
+            "scenario": "cancellation"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              12227,
+              701.4287898671347
+            ],
+            "scenario": "cancellation"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "sphere512",
+          "large"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              230713,
+              2.540794921663409e+227
+            ],
+            "scenario": "large"
+          },
+          {
+            "candidate": "Hybrid",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              11556,
+              9.237487423738668e+228
+            ],
+            "scenario": "large"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Hybrid"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "sphere512",
+          "nominal"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              232905,
+              3.810422048780814e-14
+            ],
+            "scenario": "nominal"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              11937,
+              1.385343045778184e-12
+            ],
+            "scenario": "nominal"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "sphere512",
+          "perturbed"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              234307,
+              0.00027593188023017573
+            ],
+            "scenario": "perturbed"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              14333,
+              0.0002759318815773122
+            ],
+            "scenario": "perturbed"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "sphere512",
+          "subnormal"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              175005,
+              4.53266e-319
+            ],
+            "scenario": "subnormal"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              11892,
+              4.6943e-319
+            ],
+            "scenario": "subnormal"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "sphere_odd",
+          "cancellation"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "sphere_odd",
+            "objectives": [
+              0,
+              0,
+              16295,
+              69.74915131152305
+            ],
+            "scenario": "cancellation"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "sphere_odd",
+            "objectives": [
+              0,
+              0,
+              1268,
+              69.74915131152777
+            ],
+            "scenario": "cancellation"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "sphere_odd",
+          "large"
+        ],
+        "pareto": [
+          {
+            "candidate": "PackedInterval",
+            "case": "sphere_odd",
+            "objectives": [
+              0,
+              0,
+              16812,
+              3.578737426890044e+226
+            ],
+            "scenario": "large"
+          },
+          {
+            "candidate": "Hybrid",
+            "case": "sphere_odd",
+            "objectives": [
+              0,
+              0,
+              1022,
+              2.8298119247490935e+227
+            ],
+            "scenario": "large"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Hybrid"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "sphere_odd",
+          "nominal"
+        ],
+        "pareto": [
+          {
+            "candidate": "Legacy",
+            "case": "sphere_odd",
+            "objectives": [
+              0,
+              0,
+              18104,
+              5.367021116876048e-15
+            ],
+            "scenario": "nominal"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "sphere_odd",
+            "objectives": [
+              0,
+              0,
+              1230,
+              4.2438599274700786e-14
+            ],
+            "scenario": "nominal"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "sphere_odd",
+          "perturbed"
+        ],
+        "pareto": [
+          {
+            "candidate": "Legacy",
+            "case": "sphere_odd",
+            "objectives": [
+              0,
+              0,
+              17272,
+              0.00025521249856653473
+            ],
+            "scenario": "perturbed"
+          },
+          {
+            "candidate": "FusedDiagonal",
+            "case": "sphere_odd",
+            "objectives": [
+              0,
+              0,
+              1086,
+              0.0002552124986033762
+            ],
+            "scenario": "perturbed"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FusedDiagonal"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "sphere_odd",
+          "subnormal"
+        ],
+        "pareto": [
+          {
+            "candidate": "Legacy",
+            "case": "sphere_odd",
+            "objectives": [
+              0,
+              0,
+              14226,
+              6.536e-321
+            ],
+            "scenario": "subnormal"
+          },
+          {
+            "candidate": "Hybrid",
+            "case": "sphere_odd",
+            "objectives": [
+              0,
+              0,
+              1231,
+              8.063e-321
+            ],
+            "scenario": "subnormal"
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Hybrid"
+      }
+    ],
+    "unique": 200
+  },
+  "scope": "measured finite replay; no automatic promotion",
+  "time_first": {
+    "goal": [
+      {
+        "candidate": "TieredCost",
+        "group": [
+          "clock2@0.5",
+          "loose"
+        ]
+      },
+      {
+        "candidate": "Fixed",
+        "group": [
+          "clock2@0.5",
+          "middle"
+        ]
+      },
+      {
+        "candidate": "TieredCost",
+        "group": [
+          "clock2@0.5",
+          "tight"
+        ]
+      },
+      {
+        "candidate": "Fixed",
+        "group": [
+          "clock8@0.5",
+          "loose"
+        ]
+      },
+      {
+        "candidate": "TieredCost",
+        "group": [
+          "clock8@0.5",
+          "middle"
+        ]
+      },
+      {
+        "candidate": "Fixed",
+        "group": [
+          "coupled_clock@1.0",
+          "loose"
+        ]
+      },
+      {
+        "candidate": "CostAware",
+        "group": [
+          "coupled_clock@1.0",
+          "middle"
+        ]
+      },
+      {
+        "candidate": "Fixed",
+        "group": [
+          "growth2@0.75",
+          "loose"
+        ]
+      }
+    ],
+    "native": [
+      {
+        "candidate": "Dopri",
+        "group": [
+          "box2"
+        ]
+      },
+      {
+        "candidate": "Paired",
+        "group": [
+          "box2_strong"
+        ]
+      },
+      {
+        "candidate": "Dopri",
+        "group": [
+          "box3"
+        ]
+      },
+      {
+        "candidate": "Dopri",
+        "group": [
+          "sphere1024"
+        ]
+      },
+      {
+        "candidate": "Dopri",
+        "group": [
+          "sphere128"
+        ]
+      },
+      {
+        "candidate": "Dopri",
+        "group": [
+          "sphere512"
+        ]
+      },
+      {
+        "candidate": "Dopri",
+        "group": [
+          "sphere_odd"
+        ]
+      }
+    ],
+    "residual": [
+      {
+        "candidate": "PackedInterval",
+        "group": [
+          "box2",
+          "cancellation"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "box2",
+          "large"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "box2",
+          "nominal"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "box2",
+          "perturbed"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "box2",
+          "subnormal"
+        ]
+      },
+      {
+        "candidate": "Legacy",
+        "group": [
+          "box2_strong",
+          "cancellation"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "box2_strong",
+          "large"
+        ]
+      },
+      {
+        "candidate": "Hybrid",
+        "group": [
+          "box2_strong",
+          "nominal"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "box2_strong",
+          "perturbed"
+        ]
+      },
+      {
+        "candidate": "Hybrid",
+        "group": [
+          "box2_strong",
+          "subnormal"
+        ]
+      },
+      {
+        "candidate": "PackedInterval",
+        "group": [
+          "box3",
+          "cancellation"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "box3",
+          "large"
+        ]
+      },
+      {
+        "candidate": "Hybrid",
+        "group": [
+          "box3",
+          "nominal"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "box3",
+          "perturbed"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "box3",
+          "subnormal"
+        ]
+      },
+      {
+        "candidate": "PackedInterval",
+        "group": [
+          "duplicate",
+          "cancellation"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "duplicate",
+          "large"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "duplicate",
+          "nominal"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "duplicate",
+          "perturbed"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "duplicate",
+          "subnormal"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "sphere1024",
+          "cancellation"
+        ]
+      },
+      {
+        "candidate": "Hybrid",
+        "group": [
+          "sphere1024",
+          "large"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "sphere1024",
+          "nominal"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "sphere1024",
+          "perturbed"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "sphere1024",
+          "subnormal"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "sphere128",
+          "cancellation"
+        ]
+      },
+      {
+        "candidate": "Hybrid",
+        "group": [
+          "sphere128",
+          "large"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "sphere128",
+          "nominal"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "sphere128",
+          "perturbed"
+        ]
+      },
+      {
+        "candidate": "Hybrid",
+        "group": [
+          "sphere128",
+          "subnormal"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "sphere512",
+          "cancellation"
+        ]
+      },
+      {
+        "candidate": "Hybrid",
+        "group": [
+          "sphere512",
+          "large"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "sphere512",
+          "nominal"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "sphere512",
+          "perturbed"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "sphere512",
+          "subnormal"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "sphere_odd",
+          "cancellation"
+        ]
+      },
+      {
+        "candidate": "Hybrid",
+        "group": [
+          "sphere_odd",
+          "large"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "sphere_odd",
+          "nominal"
+        ]
+      },
+      {
+        "candidate": "FusedDiagonal",
+        "group": [
+          "sphere_odd",
+          "perturbed"
+        ]
+      },
+      {
+        "candidate": "Hybrid",
+        "group": [
+          "sphere_odd",
+          "subnormal"
+        ]
+      }
+    ],
+    "trigger_box_fixed": [
+      {
+        "candidate": "TriggeredIdentity",
+        "group": [
+          "box2",
+          4.0
+        ]
+      },
+      {
+        "candidate": "TriggeredIdentity",
+        "group": [
+          "box2",
+          4096.0
+        ]
+      }
+    ],
+    "trigger_box_ivp": [
+      {
+        "candidate": "TriggeredIdentity",
+        "group": [
+          "box2"
+        ]
+      }
+    ],
+    "trigger_sphere_fixed": [
+      {
+        "candidate": "TriggeredLongitude",
+        "group": [
+          "sphere128",
+          4.0
+        ]
+      },
+      {
+        "candidate": "EarlyLongitude",
+        "group": [
+          "sphere128",
+          4096.0
+        ]
+      },
+      {
+        "candidate": "TriggeredLongitude",
+        "group": [
+          "sphere512",
+          4.0
+        ]
+      },
+      {
+        "candidate": "TriggeredLongitude",
+        "group": [
+          "sphere512",
+          4096.0
+        ]
+      }
+    ],
+    "trigger_sphere_ivp": [
+      {
+        "candidate": "EarlyIdentity",
+        "group": [
+          "sphere128"
+        ]
+      },
+      {
+        "candidate": "TriggeredLongitude",
+        "group": [
+          "sphere512"
+        ]
+      }
+    ]
+  },
+  "trigger_box_fixed": {
+    "candidates": {
+      "EarlyIdentity": {
+        "bytes": 0,
+        "qualified": 2,
+        "requests": 0,
+        "rows": 2
+      },
+      "TriggeredIdentity": {
+        "bytes": 0,
+        "qualified": 2,
+        "requests": 0,
+        "rows": 2
+      }
+    },
+    "pareto_count": 4,
+    "pareto_covered": 4,
+    "proposals": {
+      "mutation": 1027,
+      "structure": 1021
+    },
+    "rows": 4,
+    "strata": [
+      {
+        "covered": 2,
+        "group": [
+          "box2",
+          4.0
+        ],
+        "pareto": [
+          {
+            "candidate": "EarlyIdentity",
+            "case": "box2",
+            "objectives": [
+              0,
+              0,
+              463310,
+              41,
+              41,
+              2.949755933219153e-10
+            ],
+            "shift": 4.0
+          },
+          {
+            "candidate": "TriggeredIdentity",
+            "case": "box2",
+            "objectives": [
+              0,
+              0,
+              355648,
+              41,
+              2,
+              2.950384106947465e-10
+            ],
+            "shift": 4.0
+          }
+        ],
+        "qualified": 2,
+        "resource_first": "TriggeredIdentity"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "box2",
+          4096.0
+        ],
+        "pareto": [
+          {
+            "candidate": "EarlyIdentity",
+            "case": "box2",
+            "objectives": [
+              0,
+              0,
+              156304,
+              11,
+              11,
+              2.417768034566347e-13
+            ],
+            "shift": 4096.0
+          },
+          {
+            "candidate": "TriggeredIdentity",
+            "case": "box2",
+            "objectives": [
+              0,
+              0,
+              146896,
+              11,
+              1,
+              2.4177680742178957e-13
+            ],
+            "shift": 4096.0
+          }
+        ],
+        "qualified": 2,
+        "resource_first": "TriggeredIdentity"
+      }
+    ],
+    "unique": 4
+  },
+  "trigger_box_ivp": {
+    "candidates": {
+      "EarlyIdentity": {
+        "bytes": 126308,
+        "qualified": 1,
+        "requests": 136,
+        "rows": 1
+      },
+      "TriggeredIdentity": {
+        "bytes": 130476,
+        "qualified": 1,
+        "requests": 144,
+        "rows": 1
+      }
+    },
+    "pareto_count": 2,
+    "pareto_covered": 2,
+    "proposals": {
+      "mutation": 1397,
+      "structure": 651
+    },
+    "rows": 2,
+    "strata": [
+      {
+        "covered": 2,
+        "group": [
+          "box2"
+        ],
+        "pareto": [
+          {
+            "candidate": "EarlyIdentity",
+            "case": "box2",
+            "objectives": [
+              136,
+              126308,
+              102067434,
+              678,
+              4049,
+              5.461889621138916e-13
+            ]
+          },
+          {
+            "candidate": "TriggeredIdentity",
+            "case": "box2",
+            "objectives": [
+              144,
+              130476,
+              99877822,
+              678,
+              4132,
+              5.462037072634374e-13
+            ]
+          }
+        ],
+        "qualified": 2,
+        "resource_first": "EarlyIdentity"
+      }
+    ],
+    "unique": 2
+  },
+  "trigger_sphere_fixed": {
+    "candidates": {
+      "EarlyIdentity": {
+        "bytes": 0,
+        "qualified": 4,
+        "requests": 0,
+        "rows": 4
+      },
+      "EarlyLongitude": {
+        "bytes": 0,
+        "qualified": 4,
+        "requests": 0,
+        "rows": 4
+      },
+      "TriggeredIdentity": {
+        "bytes": 0,
+        "qualified": 4,
+        "requests": 0,
+        "rows": 4
+      },
+      "TriggeredLongitude": {
+        "bytes": 0,
+        "qualified": 4,
+        "requests": 0,
+        "rows": 4
+      }
+    },
+    "pareto_count": 8,
+    "pareto_covered": 8,
+    "proposals": {
+      "mutation": 1014,
+      "structure": 1034
+    },
+    "rows": 16,
+    "strata": [
+      {
+        "covered": 3,
+        "group": [
+          "sphere128",
+          4.0
+        ],
+        "pareto": [
+          {
+            "candidate": "TriggeredIdentity",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              467449,
+              54,
+              2,
+              1.445424504777559e-10
+            ],
+            "shift": 4.0
+          },
+          {
+            "candidate": "EarlyLongitude",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              313489,
+              23,
+              23,
+              1.7952939602875004e-10
+            ],
+            "shift": 4.0
+          },
+          {
+            "candidate": "TriggeredLongitude",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              261080,
+              23,
+              1,
+              1.7953586383681e-10
+            ],
+            "shift": 4.0
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "TriggeredLongitude"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "sphere128",
+          4096.0
+        ],
+        "pareto": [
+          {
+            "candidate": "EarlyLongitude",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              114175,
+              3,
+              3,
+              5.021813689282081e-13
+            ],
+            "shift": 4096.0
+          },
+          {
+            "candidate": "TriggeredLongitude",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              120626,
+              4,
+              1,
+              3.9756564595657497e-16
+            ],
+            "shift": 4096.0
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "EarlyLongitude"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "sphere512",
+          4.0
+        ],
+        "pareto": [
+          {
+            "candidate": "TriggeredLongitude",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              1096069,
+              27,
+              1,
+              9.561179739396847e-10
+            ],
+            "shift": 4.0
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "TriggeredLongitude"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "sphere512",
+          4096.0
+        ],
+        "pareto": [
+          {
+            "candidate": "EarlyLongitude",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              536868,
+              4,
+              4,
+              4.167420280155589e-15
+            ],
+            "shift": 4096.0
+          },
+          {
+            "candidate": "TriggeredLongitude",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              524585,
+              4,
+              1,
+              4.168079822755666e-15
+            ],
+            "shift": 4096.0
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "TriggeredLongitude"
+      }
+    ],
+    "unique": 16
+  },
+  "trigger_sphere_ivp": {
+    "candidates": {
+      "EarlyIdentity": {
+        "bytes": 556744,
+        "qualified": 2,
+        "requests": 272,
+        "rows": 2
+      },
+      "EarlyLongitude": {
+        "bytes": 558024,
+        "qualified": 2,
+        "requests": 277,
+        "rows": 2
+      },
+      "TriggeredIdentity": {
+        "bytes": 571528,
+        "qualified": 2,
+        "requests": 303,
+        "rows": 2
+      },
+      "TriggeredLongitude": {
+        "bytes": 562440,
+        "qualified": 2,
+        "requests": 305,
+        "rows": 2
+      }
+    },
+    "pareto_count": 6,
+    "pareto_covered": 6,
+    "proposals": {
+      "mutation": 955,
+      "structure": 1093
+    },
+    "rows": 8,
+    "strata": [
+      {
+        "covered": 3,
+        "group": [
+          "sphere128"
+        ],
+        "pareto": [
+          {
+            "candidate": "EarlyIdentity",
+            "case": "sphere128",
+            "objectives": [
+              136,
+              126308,
+              61847021,
+              431,
+              2328,
+              5.731335545045013e-12
+            ]
+          },
+          {
+            "candidate": "EarlyLongitude",
+            "case": "sphere128",
+            "objectives": [
+              138,
+              126692,
+              64084175,
+              431,
+              1527,
+              5.7342255943559906e-12
+            ]
+          },
+          {
+            "candidate": "TriggeredLongitude",
+            "case": "sphere128",
+            "objectives": [
+              152,
+              128900,
+              62428635,
+              431,
+              1647,
+              5.7344511084078675e-12
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "EarlyIdentity"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "sphere512"
+        ],
+        "pareto": [
+          {
+            "candidate": "EarlyIdentity",
+            "case": "sphere512",
+            "objectives": [
+              136,
+              430436,
+              297488240,
+              510,
+              3357,
+              6.05470534820185e-12
+            ]
+          },
+          {
+            "candidate": "EarlyLongitude",
+            "case": "sphere512",
+            "objectives": [
+              139,
+              431332,
+              239382632,
+              510,
+              1781,
+              5.897331234461234e-12
+            ]
+          },
+          {
+            "candidate": "TriggeredLongitude",
+            "case": "sphere512",
+            "objectives": [
+              153,
+              433540,
+              171582665,
+              510,
+              1897,
+              5.897178578795348e-12
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "EarlyIdentity"
+      }
+    ],
+    "unique": 8
+  }
+}
