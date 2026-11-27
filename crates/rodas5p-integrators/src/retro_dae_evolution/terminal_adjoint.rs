@@ -10,6 +10,26 @@ pub struct ConstantTerminalAdjoint {
     goal: [f64; 32],
 }
 impl ConstantTerminalAdjoint {
+    /// Exact homogeneous autonomous affine source: f,g are sums of
+    /// constant-coefficient linear state factors. No numerical sampling.
+    pub fn from_homogeneous_source(src: &DaeSource, weights: &[f64]) -> CoreResult<Self> {
+        for eq in src.f.iter().chain(&src.g) {
+            for term in eq.terms() {
+                if term.coefficient == 0. {
+                    continue;
+                }
+                if term.factors.len() != 1
+                    || term.factors[0].constant != 0.
+                    || term.factors[0].time != 0.
+                {
+                    return Err(bad(
+                        "native stage requires homogeneous autonomous affine source",
+                    ));
+                }
+            }
+        }
+        Self::from_source(src, weights)
+    }
     pub fn dimension(&self) -> usize {
         self.n
     }

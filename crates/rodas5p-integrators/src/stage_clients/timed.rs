@@ -174,6 +174,9 @@ impl<C: StageLinearSystem> StageLinearSystem for TimedStageClient<C> {
         result
     }
 
+    fn begin_attempt(&mut self, t: f64, y: &[f64], h: f64) -> CoreResult<()> {
+        self.inner.begin_attempt(t, y, h)
+    }
     fn factor(&mut self, inv_h_gamma: f64, counters: &mut WorkCounters) -> CoreResult<()> {
         let start = Instant::now();
         let result = self.inner.factor(inv_h_gamma, counters);

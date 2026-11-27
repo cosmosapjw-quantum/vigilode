@@ -772,20 +772,8 @@ pub fn evolve_epoch_slab_replay_audited(
         EnginePlan::Legacy,
     )
 }
-/// Explicit stage candidates. RED delegates the old native driver.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
-pub enum NativeStagePlan {
-    Legacy,
-    ReuseLu,
-    Triangular,
-    Reciprocal,
-    GoalUniform,
-    GoalAdjoint,
-}
-#[derive(Clone, Copy, Debug, Default, Serialize)]
-pub struct NativeStageWork {
-    pub source_jacobian_skips: usize,
-}
+/// Original source, original RODAS5P native stage and original physical
+/// slab proof. Explicit candidates only; no implicit fallback or promotion.
 #[allow(clippy::too_many_arguments)]
 pub fn evolve_epoch_slab_stage_planned(
     src: &DaeSource,
@@ -798,14 +786,62 @@ pub fn evolve_epoch_slab_stage_planned(
     route: EvolutionRoute,
     grid: &[f64],
     retention: RetainedOutputRoute,
-    _stage: NativeStagePlan,
-    _goal: &[f64],
+    stage: NativeStagePlan,
+    goal: &[f64],
 ) -> (
     CoreResult<SlabReplayRun>,
     NativeResourceAudit,
     NativeStageWork,
 ) {
-    let (r, a) = evolve_epoch_slab_replay_planned(
+    if stage == NativeStagePlan::Legacy {
+        let (r, a) = evolve_epoch_slab_replay_planned(
+            src,
+            x,
+            z,
+            branch,
+            epoch,
+            opts,
+            policy,
+            route,
+            grid,
+            retention,
+            SlabReplayRoute::Flat,
+            EnginePlan::SharedFused,
+        );
+        return (r, a, NativeStageWork::default());
+    }
+    if route.query_workspace().is_none()
+        || !route
+            .workspace()
+            .is_some_and(|(_, s)| s == CertificateStorage::Local)
+        || retention.native == NativeRetention::Owned
+        || opts.interior_error != crate::InteriorError::Off
+    {
+        return (
+            Err(bad(
+                "native stage requires flat general bounded reduced epoch and InteriorError::Off",
+            )),
+            NativeResourceAudit::default(),
+            NativeStageWork::default(),
+        );
+    }
+    let request = match super::super::native_stage::StageRequest::new(src, stage, goal) {
+        Ok(v) => v,
+        Err(e) => {
+            return (
+                Err(e),
+                NativeResourceAudit::default(),
+                NativeStageWork::default(),
+            );
+        }
+    };
+    let work = request.work.clone();
+    let a = Arc::new(Mutex::new(NativeResourceAudit::default()));
+    let mut build = RetainedBuild::new(retention);
+    build.slab_plan = Some(SlabReplayRoute::Flat);
+    build.engine_plan = EnginePlan::SharedFused;
+    build.stage_request = Some(request);
+    let result = evolve_epoch_authority_retained(
         src,
         x,
         z,
@@ -815,11 +851,20 @@ pub fn evolve_epoch_slab_stage_planned(
         policy,
         route,
         grid,
-        retention,
-        SlabReplayRoute::Flat,
-        EnginePlan::SharedFused,
+        None,
+        None,
+        Some(a.clone()),
+        Some(&mut build),
     );
-    (r, a, NativeStageWork::default())
+    let audit = a.lock().expect("native audit lock").clone();
+    let w = *work.lock().expect("native stage work");
+    (
+        result.map(|run| SlabReplayRun {
+            inner: RetainedEvolutionRun { run, build },
+        }),
+        audit,
+        w,
+    )
 }
 #[allow(clippy::too_many_arguments)]
 pub fn evolve_epoch_slab_replay_planned(

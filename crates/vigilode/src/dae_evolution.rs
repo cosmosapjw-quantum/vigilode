@@ -26,6 +26,8 @@ mod retained;
 pub use retained::*;
 mod adjoint;
 pub use adjoint::*;
+mod native_stage;
+pub use native_stage::*;
 fn bad(s: impl ToString) -> CoreError {
     CoreError::InvalidInput(format!("DAE client: {}", s.to_string()))
 }
@@ -1918,6 +1920,9 @@ fn evolve_epoch_authority_retained(
     let driver = if let Some(scan) = scan.as_deref_mut() {
         let mut inspect = |proposal: crate::solve::DenseProposal<'_>| scan.inspect(&e, proposal);
         Rodas5p::solve_dense_controlled(&p, (start, end), &y, opts, &mut inspect).map_err(bad)?
+    } else if let Some(request) = retained.as_ref().and_then(|r| r.stage_request.as_ref()) {
+        Rodas5p::solve_dense_stage_client(&p, (start, end), &y, opts, request.client(src.nx())?)
+            .map_err(bad)?
     } else {
         Rodas5p::solve(&p, (start, end), &y, opts).map_err(bad)?
     };

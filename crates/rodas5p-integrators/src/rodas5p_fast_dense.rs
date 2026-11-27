@@ -528,6 +528,39 @@ pub struct Rodas5pFastDenseResult {
     pub banded: Option<BandedWork>,
 }
 
+/// Native dense output with an explicit stage client. The original
+/// controller, eight-stage attempt and accepted dense sink are unchanged.
+/// The W-filtered interior path is deliberately not supported here because
+/// its ninth backsolve has a different client contract.
+pub fn integrate_rodas5p_fast_client_dense_observed(
+    problem: &OdeProblem,
+    client: Box<dyn crate::StageLinearSystem>,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    atol_vector: &[f64],
+) -> CoreResult<Rodas5pFastDenseResult> {
+    let output = span_schedule(t_span)?;
+    let mut sink = DenseSink::new(FastInteriorControl::Off, t_span.0, y0)?;
+    let scalar;
+    let atol = if atol_vector.is_empty() {
+        scalar = vec![adaptive.atol; problem.dimension];
+        &scalar[..]
+    } else {
+        atol_vector
+    };
+    let (mut fast, partial, _client) = crate::rodas5p_fast::integrate_client(
+        problem, client, t_span, y0, adaptive, &output, atol, &mut sink,
+    )?;
+    fast.driver = "rodas5p-fast-client-dense-v1";
+    Ok(Rodas5pFastDenseResult {
+        fast,
+        segments: sink.segments,
+        interior: sink.interior,
+        partial,
+        banded: None,
+    })
+}
 fn span_schedule((t0, t1): (f64, f64)) -> CoreResult<OutputSchedule> {
     OutputSchedule::new(if t1 > t0 { vec![t0, t1] } else { vec![t0] })
 }

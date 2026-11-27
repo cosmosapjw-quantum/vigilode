@@ -523,7 +523,8 @@ pub use rodas5p_fast_dense::{
     FastDenseSegments, FastInteriorControl, FastInteriorWork, RODAS5P_FAST_BANDED_DENSE_DRIVER_ID,
     RODAS5P_FAST_DENSE_DRIVER_ID, Rodas5pFastDenseResult,
     integrate_rodas5p_fast_banded_dense_observed,
-    integrate_rodas5p_fast_banded_dense_observed_with_atol, integrate_rodas5p_fast_dense_observed,
+    integrate_rodas5p_fast_banded_dense_observed_with_atol,
+    integrate_rodas5p_fast_client_dense_observed, integrate_rodas5p_fast_dense_observed,
     integrate_rodas5p_fast_dense_observed_with_atol, integrate_rodas5p_fast_dense_with_control,
 };
 pub use rodas5p_fast_small::{

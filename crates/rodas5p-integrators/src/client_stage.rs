@@ -47,6 +47,13 @@ pub trait StageLinearSystem: Send {
         counters: &mut WorkCounters,
     ) -> CoreResult<()>;
 
+    /// Optional per-attempt context, even on a retry reusing a Jacobian.
+    /// The original represented clock, state and proposed step are supplied.
+    /// Default clients do nothing; this is not a new RHS or Jacobian call.
+    fn begin_attempt(&mut self, _t: f64, _y: &[f64], _h: f64) -> CoreResult<()> {
+        Ok(())
+    }
+
     /// Factor or prepare `W = I/(h gamma) - J` for
     /// `inv_h_gamma = 1/(h gamma)` (the driver's unscaled convention),
     /// charging its own factorization counters.

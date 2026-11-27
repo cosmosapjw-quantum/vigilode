@@ -1412,6 +1412,9 @@ impl Workspace {
                 )?;
             }
         }
+        if let Some(client) = self.client.as_mut() {
+            client_of(client).begin_attempt(t, y, h)?;
+        }
         self.factor(h, counters)?;
         for i in 0..s {
             if i == 0 {
@@ -2457,7 +2460,7 @@ pub fn integrate_rodas5p_fast_client_observed_with_atol_and_control(
 /// The client run of [`integrate_rodas5p_fast_client_observed_with_atol`]
 /// under `sink`.
 #[allow(clippy::too_many_arguments)]
-fn integrate_client<S: StepSink>(
+pub(crate) fn integrate_client<S: StepSink>(
     problem: &OdeProblem,
     client: Box<dyn StageLinearSystem>,
     t_span: (f64, f64),

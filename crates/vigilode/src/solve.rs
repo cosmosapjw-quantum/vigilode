@@ -428,6 +428,7 @@ impl Rodas5p {
             None,
             #[cfg(feature = "polynomial-events")]
             None,
+            None,
         )
     }
 
@@ -452,6 +453,32 @@ impl Rodas5p {
             None,
             None,
             Some(accept),
+            None,
+        )
+    }
+
+    #[cfg(feature = "polynomial-events")]
+    pub(crate) fn solve_dense_stage_client(
+        problem: &Problem,
+        span: (f64, f64),
+        y: &[f64],
+        opts: &Options,
+        client: Box<dyn rodas5p_integrators::StageLinearSystem>,
+    ) -> Result<Solution, SolveError> {
+        Self::solve_with_clients_and_events(
+            problem,
+            span,
+            y,
+            opts,
+            &[],
+            None,
+            crate::MfStageSolvePolicy::Shipped,
+            BandedStagePolicy::Shipped,
+            None,
+            None,
+            None,
+            None,
+            Some(client),
         )
     }
 
@@ -471,6 +498,7 @@ impl Rodas5p {
             &mut crate::polynomial_events::PolyTransaction<'_>,
         >,
         #[cfg(feature = "polynomial-events")] mut dense_accept: Option<&mut DenseControl<'_>>,
+        mut native_dense_client: Option<Box<dyn rodas5p_integrators::StageLinearSystem>>,
     ) -> Result<Solution, SolveError> {
         let atol = validate(problem, t_span, y0, opts)?;
         let mut adaptive = AdaptiveStepConfig {
@@ -611,6 +639,21 @@ impl Rodas5p {
         {
             return Err(SolveError::InvalidInput(
                 "controlled native dense route required".into(),
+            ));
+        }
+        if native_dense_client.is_some()
+            && (!matches!(plan, Plan::FastDense { band: None })
+                || opts.interior_error != InteriorError::Off
+                || separable.is_some()
+                || !problem.events.is_empty()
+                || event_policy.is_some())
+        {
+            return Err(SolveError::InvalidInput("native dense stage client requires identity mass, no band/events, and InteriorError::Off".into()));
+        }
+        #[cfg(feature = "polynomial-events")]
+        if native_dense_client.is_some() && (poly.is_some() || dense_accept.is_some()) {
+            return Err(SolveError::InvalidInput(
+                "native dense stage client excludes controlled event path".into(),
             ));
         }
         let mut transaction =
@@ -808,7 +851,18 @@ impl Rodas5p {
                 let has_poly = poly.is_some() || dense_accept.is_some();
                 #[cfg(not(feature = "polynomial-events"))]
                 let has_poly = false;
-                let (entry_point, result) = if transaction.is_some() || has_poly {
+                let (entry_point, result) = if let Some(client) = native_dense_client.take() {
+                    let av = match &atol {
+                        AtolSpec::Scalar(_) => &[][..],
+                        AtolSpec::Vector(v) => v.as_slice(),
+                    };
+                    (
+                        "integrate_rodas5p_fast_client_dense_observed",
+                        rodas5p_integrators::integrate_rodas5p_fast_client_dense_observed(
+                            &ode, client, t_span, y0, &adaptive, av,
+                        ),
+                    )
+                } else if transaction.is_some() || has_poly {
                     let mut accept = |segments: &rodas5p_integrators::FastDenseSegments| {
                         #[cfg(feature = "polynomial-events")]
                         if let Some(tx) = poly.as_deref_mut() {
@@ -1782,6 +1836,7 @@ impl Rodas5p {
             None,
             #[cfg(feature = "polynomial-events")]
             None,
+            None,
         )
     }
     /// Integrate a single declared polynomial event with exact root isolation
@@ -1810,6 +1865,7 @@ impl Rodas5p {
             None,
             None,
             Some(&mut tx),
+            None,
             None,
         )?;
         Ok(crate::polynomial_events::PolynomialEventRun {
