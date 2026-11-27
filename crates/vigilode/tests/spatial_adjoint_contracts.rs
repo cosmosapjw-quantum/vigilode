@@ -596,3 +596,110 @@ fn spatial_adjoint_transaction_and_degenerate_edges() {
         serde_json::json!({"duplicate_neighbors":true,"polar_two_rings":true,"zero_time":true,"zero_diffusion":true,"transactional_refusal":true})
     );
 }
+
+#[test]
+fn spherical_transpose_gather_actual_portfolio() {
+    let opts = Options {
+        rtol: 1e-9,
+        atol: Atol::Scalar(1e-11),
+        h0: 0.001,
+        dense_output: false,
+        ..Options::default()
+    };
+    for (nt, np) in [(4, 8), (8, 16), (16, 32), (32, 64)] {
+        let g = DiffusionGrid::sphere(nt, np, 1., 0.01).unwrap();
+        let n = g.dimension();
+        let c = (0..n)
+            .map(|i| ((i * 17 % 31) as f64 - 15.) / 32.)
+            .collect::<Vec<_>>();
+        let mut reference = vec![Iv::point(0.).unwrap(); n];
+        // Exact directed scatter on the declared original row edges.
+        for (i, &v) in c.iter().enumerate() {
+            for (j, a) in g.represented_row(i).unwrap() {
+                if i != j && a != 0. {
+                    let term = Iv::point(v).unwrap().scale(a).unwrap();
+                    reference[i] = reference[i].sub(term).unwrap();
+                    reference[j] = reference[j].add(term).unwrap();
+                }
+            }
+        }
+        let mut out = vec![0.; n];
+        let mut samples: [Vec<u128>; 2] = std::array::from_fn(|_| vec![]);
+        let mut receipts = Vec::new();
+        let apply = |k: usize, out: &mut [f64]| {
+            if k == 0 {
+                g.apply_transpose(&c, out)
+            } else {
+                g.apply_transpose_gather(&c, out)
+            }
+        };
+        for k in 0..2 {
+            let (r, a) = measure(|| apply(k, &mut out));
+            r.unwrap();
+            assert_eq!(a.requests(), 0);
+            let err = max_error(&reference, &out);
+            assert!(err <= 1e-10);
+            receipts.push((a, err, out.clone()));
+        }
+        for rep in 0..7 {
+            for j in 0..2 {
+                let k = (rep + j) % 2;
+                let s = std::time::Instant::now();
+                for _ in 0..2048 {
+                    apply(k, &mut out).unwrap();
+                    black_box(&out);
+                }
+                samples[k].push(s.elapsed().as_nanos() / 2048);
+            }
+        }
+        let case = format!("sphere_{nt}x{np}");
+        println!(
+            "GATHER_GRID {}",
+            serde_json::json!({"case":case,"n":n,"weights":c,"rows":(0..n).map(|i|g.represented_row(i).unwrap()).collect::<Vec<_>>()})
+        );
+        for (k, (allocation, error, values)) in receipts.into_iter().enumerate() {
+            samples[k].sort_unstable();
+            println!(
+                "GATHER_KERNEL {}",
+                serde_json::json!({"case":case,"candidate":["Scatter","Gather"][k],"qualified":true,"allocation":allocation,"error_upper":error,"values":values,"median_ns":samples[k][3],"samples_ns":samples[k]})
+            );
+        }
+        if nt <= 8 {
+            let p = [g.adjoint_problem(), g.adjoint_problem_gather()];
+            let mut w = SpatialAdjointWorkspace::new(&g).unwrap();
+            let mut exact = vec![Iv::point(0.).unwrap(); n];
+            w.certify_into(
+                &c,
+                &c,
+                &c,
+                DURATION,
+                SpatialAdjointRoute::PoissonAdaptive,
+                &mut exact,
+            )
+            .unwrap();
+            let mut rows = vec![];
+            let mut timing: [Vec<u128>; 2] = std::array::from_fn(|_| vec![]);
+            for k in 0..2 {
+                let (r, a) = measure(|| native(&g, &p[k], &c, &opts, NativeRoute::Dopri, true));
+                let e = max_error(&exact, &r.values);
+                assert!(e <= 1e-6);
+                rows.push((r, a, e));
+            }
+            for rep in 0..7 {
+                for j in 0..2 {
+                    let k = (rep + j) % 2;
+                    let start = std::time::Instant::now();
+                    black_box(native(&g, &p[k], &c, &opts, NativeRoute::Dopri, true));
+                    timing[k].push(start.elapsed().as_nanos());
+                }
+            }
+            for (k, (r, allocation, e)) in rows.into_iter().enumerate() {
+                timing[k].sort_unstable();
+                println!(
+                    "GATHER_IVP {}",
+                    serde_json::json!({"case":case,"candidate":["Scatter","Gather"][k],"qualified":true,"allocation":allocation,"run":r,"error_upper":e,"median_ns":timing[k][3],"samples_ns":timing[k]})
+                );
+            }
+        }
+    }
+}

@@ -84,6 +84,55 @@ impl DiffusionGrid {
         }
         Ok(())
     }
+    /// Opt-in row-contiguous evaluation of the represented Euclidean transpose.
+    /// At a spherical cell, incoming meridional rates belong to the adjacent
+    /// rings, not the local ring. No exact area-symmetry assumption is made.
+    pub fn apply_transpose_gather(&self, v: &[f64], out: &mut [f64]) -> Result<(), CallbackError> {
+        if v.len() != self.dimension || out.len() != self.dimension {
+            return Err(CallbackError::Fatal("diffusion transpose shape".into()));
+        }
+        let Geometry::Sphere(rings) = &*self.geometry else {
+            return self.apply(v, out, SpatialRows::Serial);
+        };
+        let w = self.width;
+        for (r, o) in out.chunks_mut(w).enumerate() {
+            let ring = &rings[r];
+            let cur = &v[r * w..(r + 1) * w];
+            let rn = r.saturating_sub(1);
+            let rs = (r + 1).min(rings.len() - 1);
+            let vn = &v[rn * w..(rn + 1) * w];
+            let vs = &v[rs * w..(rs + 1) * w];
+            let incoming_n = if r > 0 { rings[rn].south } else { 0. };
+            let incoming_s = if r + 1 < rings.len() {
+                rings[rs].north
+            } else {
+                0.
+            };
+            for (x, dst) in o.iter_mut().enumerate() {
+                let c = cur[x];
+                let xm = if x == 0 { w - 1 } else { x - 1 };
+                let xp = if x + 1 == w { 0 } else { x + 1 };
+                let lon = ring.azimuth * ((cur[xm] - c) + (cur[xp] - c));
+                *dst = lon
+                    + (incoming_n * vn[x] - ring.north * c)
+                    + (incoming_s * vs[x] - ring.south * c);
+            }
+        }
+        Ok(())
+    }
+    /// Numerical adjoint problem with the alternative contiguous transpose
+    /// callback. Use the original-source certificate for endpoint authority.
+    pub fn adjoint_problem_gather(&self) -> Problem {
+        let r = self.clone();
+        let j = self.clone();
+        Problem::new(self.dimension, move |_, u, o| {
+            r.apply_transpose_gather(u, o)
+        })
+        .jacobian(Jacobian::jvp(move |_, _, v, o| {
+            j.apply_transpose_gather(v, o)
+        }))
+        .autonomous()
+    }
     /// Reverse-clock continuous adjoint ODE of the semidiscrete problem.
     pub fn adjoint_problem(&self) -> Problem {
         let r = self.clone();
