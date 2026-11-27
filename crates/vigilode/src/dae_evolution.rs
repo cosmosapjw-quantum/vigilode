@@ -26,6 +26,18 @@ fn bad(s: impl ToString) -> CoreError {
     CoreError::InvalidInput(format!("DAE client: {}", s.to_string()))
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum WorkspaceProjection {
+    Reuse,
+    Affine,
+    Sturm,
+    PivotedVector,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum CertificateStorage {
+    Local,
+    Reusable,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub enum EvolutionRoute {
     Mass,
     Reduced3,
@@ -59,10 +71,23 @@ pub enum EvolutionRoute {
     Reduced5Aperiodic,
     Reduced5AperiodicCentered,
     Reduced5AperiodicInterval,
+    /// Retains the same native driver and public reports; only general slab
+    /// proof scratch and the selected original-source projection vary.
+    Workspace5 {
+        projection: WorkspaceProjection,
+        certificate: de::SlabWorkspaceRoute,
+        storage: CertificateStorage,
+    },
 }
 impl EvolutionRoute {
     fn init(self) -> InitRoute {
         match self {
+            Self::Workspace5 { projection, .. } => match projection {
+                WorkspaceProjection::Reuse => InitRoute::Reuse,
+                WorkspaceProjection::Affine => InitRoute::BoundedAffineScalar,
+                WorkspaceProjection::Sturm => InitRoute::BoundedSturmScalar,
+                WorkspaceProjection::PivotedVector => InitRoute::BoundedVectorPivot,
+            },
             Self::Prepared5 => InitRoute::PreparedBatch,
             Self::BoundedVector5 => InitRoute::BoundedVector,
             Self::BoundedVectorPivot5 => InitRoute::BoundedVectorPivot,
@@ -114,6 +139,18 @@ impl EvolutionRoute {
             Self::Reduced5AperiodicCentered => Some(de::AperiodicEndpointRoute::CenteredStream),
             Self::Reduced5AperiodicInterval => Some(de::AperiodicEndpointRoute::IntervalStream),
             _ => None,
+        }
+    }
+    fn workspace(self) -> Option<(de::SlabWorkspaceRoute, CertificateStorage)> {
+        if let Self::Workspace5 {
+            certificate,
+            storage,
+            ..
+        } = self
+        {
+            Some((certificate, storage))
+        } else {
+            None
         }
     }
     fn nodes(self) -> usize {
@@ -269,6 +306,7 @@ struct Engine {
     work: Arc<Mutex<ProjectionWork>>,
     conservation: Option<(de::RobertsonModel, de::ConservationRoute)>,
     audit: Option<AuditHandle>,
+    certificate_workspace: Option<Arc<Mutex<de::SlabCertificateWorkspace>>>,
 }
 impl Engine {
     fn certify(
@@ -288,6 +326,41 @@ impl Engine {
                 self.policy.init.condition_cap,
                 *route,
             )
+        } else if let Some((route, storage)) = self.route.workspace() {
+            match storage {
+                CertificateStorage::Local => de::certify_slab_workspace(
+                    &self.src,
+                    times,
+                    power,
+                    &self.branch,
+                    self.policy.tube_radius,
+                    incoming,
+                    self.policy.green,
+                    self.policy.init.condition_cap,
+                    route,
+                    &mut de::SlabCertificateWorkspace::new(),
+                ),
+                CertificateStorage::Reusable => {
+                    let mut w = self
+                        .certificate_workspace
+                        .as_ref()
+                        .ok_or_else(|| bad("certificate workspace missing"))?
+                        .lock()
+                        .map_err(|_| bad("certificate workspace lock"))?;
+                    de::certify_slab_workspace(
+                        &self.src,
+                        times,
+                        power,
+                        &self.branch,
+                        self.policy.tube_radius,
+                        incoming,
+                        self.policy.green,
+                        self.policy.init.condition_cap,
+                        route,
+                        &mut w,
+                    )
+                }
+            }
         } else if let Some(route) = self.route.aperiodic() {
             de::certify_slab_with_aperiodic(
                 &self.src,
@@ -473,6 +546,12 @@ impl Engine {
                 | EvolutionRoute::Reduced5Aperiodic
                 | EvolutionRoute::Reduced5AperiodicCentered
                 | EvolutionRoute::Reduced5AperiodicInterval
+                | EvolutionRoute::Workspace5 {
+                    projection: WorkspaceProjection::Reuse
+                        | WorkspaceProjection::Affine
+                        | WorkspaceProjection::Sturm,
+                    ..
+                }
         ) && self.src.nz() == 1
             && self.warp.is_none()
     }
@@ -483,8 +562,8 @@ impl Engine {
         policy.mode = rodas5p_integrators::retro_dae_init::InitMode::ProjectAlgebraic;
         let seed = [self.seed[0].clamp(self.branch[0][0], self.branch[0][1])];
         let (r, receipt) = if matches!(
-            self.route,
-            EvolutionRoute::BoundedSturm5 | EvolutionRoute::BoundedSturmNewton5
+            self.route.init(),
+            InitRoute::BoundedSturmScalar | InitRoute::BoundedSturmNewtonScalar
         ) {
             self.src.initialize_scalar_bounded_sturm_audited(
                 t,
@@ -494,10 +573,7 @@ impl Engine {
                 policy,
                 self.route == EvolutionRoute::BoundedSturmNewton5,
             )
-        } else if matches!(
-            self.route,
-            EvolutionRoute::BoundedAffine5 | EvolutionRoute::BoundedAffinePicard5
-        ) {
+        } else if self.route.init() == InitRoute::BoundedAffineScalar {
             self.src
                 .initialize_scalar_bounded_affine_audited(t, x, &seed, &self.branch, policy)
         } else if matches!(
@@ -532,6 +608,10 @@ impl Engine {
                 | EvolutionRoute::BoundedVectorRefined5
                 | EvolutionRoute::BoundedVectorPivot5
                 | EvolutionRoute::BoundedVectorEquilibrated5
+                | EvolutionRoute::Workspace5 {
+                    projection: WorkspaceProjection::PivotedVector,
+                    ..
+                }
         )
     }
     fn fixed_vector(
@@ -547,8 +627,8 @@ impl Engine {
         policy.mode = rodas5p_integrators::retro_dae_init::InitMode::ProjectAlgebraic;
         let mut workspace = rodas5p_integrators::retro_dae_init::VectorProjectionWorkspace::new();
         let (r, receipt) = if matches!(
-            self.route,
-            EvolutionRoute::BoundedVectorPivot5 | EvolutionRoute::BoundedVectorEquilibrated5
+            self.route.init(),
+            InitRoute::BoundedVectorPivot | InitRoute::BoundedVectorEquilibrated
         ) {
             self.src.initialize_pivoted_vector_audited(
                 t,
@@ -693,6 +773,7 @@ pub fn initialize_reduced_problem(
         work: Arc::new(Mutex::new(ProjectionWork::default())),
         conservation: None,
         audit: None,
+        certificate_workspace: None,
     };
     Ok(crate::polynomial_events::InitializedDae {
         problem: reduced_problem(&e),
@@ -1017,7 +1098,8 @@ fn evolve_epoch_authority(
             || route.picard().is_some()
             || route.linear_ls().is_some()
             || route.complex().is_some()
-            || route.aperiodic().is_some())
+            || route.aperiodic().is_some()
+            || route.workspace().is_some())
     {
         return Err(bad("spectral route requires general slab authority"));
     }
@@ -1045,6 +1127,14 @@ fn evolve_epoch_authority(
         work: Arc::new(Mutex::new(ProjectionWork::default())),
         conservation,
         audit: audit.clone(),
+        certificate_workspace: if route
+            .workspace()
+            .is_some_and(|(_, s)| s == CertificateStorage::Reusable)
+        {
+            Some(Arc::new(Mutex::new(de::SlabCertificateWorkspace::new())))
+        } else {
+            None
+        },
     };
     let (p, y) = if route == EvolutionRoute::Mass {
         let a = if audit.is_some() {
