@@ -277,3 +277,6 @@ pub use separable::{
 
 mod portfolio;
 pub use portfolio::{EndpointRequest, adaptive_endpoint, adaptive_stage};
+
+mod adjoint;
+pub use adjoint::{SpatialAdjointRoute, SpatialAdjointWork, SpatialAdjointWorkspace};
