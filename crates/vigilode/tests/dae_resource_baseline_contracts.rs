@@ -5897,3 +5897,330 @@ fn certificate_workspace_actual_slab_noalloc() {
         "repeated actual general slab proof into preallocated output"
     );
 }
+
+fn workspace_projection(route: EvolutionRoute) -> WorkspaceProjection {
+    match route {
+        EvolutionRoute::BoundedAffine5 => WorkspaceProjection::Affine,
+        EvolutionRoute::BoundedSturm5 => WorkspaceProjection::Sturm,
+        EvolutionRoute::BoundedVectorPivot5 => WorkspaceProjection::PivotedVector,
+        _ => WorkspaceProjection::Reuse,
+    }
+}
+#[test]
+fn integrated_certificate_workspace_portfolio() {
+    use de::SlabWorkspaceRoute as R;
+    warm();
+    let routes = [R::Pivot, R::Equilibrated, R::Refined, R::PackedGreen];
+    println!(
+        "CERT_STORAGE {}",
+        serde_json::json!({"workspace_bytes":std::mem::size_of::<de::SlabCertificateWorkspace>(),"certificate_inline_bytes":std::mem::size_of::<de::SlabCertificate>(),"scope":"static Rust object size, not peak stack"})
+    );
+    for case in ["stable", "stiff", "nonlinear", "vector4", "vector8"] {
+        let (src, x, z, branch, solver) = certificate_fixture(case);
+        let epoch = EvolutionEpoch {
+            start: 0.,
+            end: 0.125,
+            incoming_x_error: Some(0.),
+        };
+        let grid = [0.03125, 0.0625, 0.09375];
+        let ((base, a), alloc) = measure(|| {
+            evolve_epoch_audited(
+                &src,
+                &x,
+                &z,
+                &branch,
+                epoch,
+                &opts(),
+                policy(),
+                solver,
+                &grid,
+            )
+        });
+        let base = base.unwrap();
+        assert!(base.global_qualified);
+        println!(
+            "CERT_EPOCH {}",
+            serde_json::json!({"case":case,"candidate":"legacy","storage":"legacy","allocation":alloc,"qualified":base.global_qualified,"slabs":base.slabs().len(),"max_physical_error":base.max_physical_error,"outgoing":base.slabs().last().unwrap().certificate.as_ref().unwrap().outgoing,"audit":a})
+        );
+        let mut w = de::SlabCertificateWorkspace::new();
+        let mut out = de::SlabCertificate::workspace_output(src.nx(), src.nz()).unwrap();
+        let mut timing = vec![];
+        for (pos, k) in [
+            ("first", 0),
+            ("middle", base.slabs().len() / 2),
+            ("last", base.slabs().len() - 1),
+        ] {
+            let s = &base.slabs()[k];
+            let old = s.certificate.as_ref().unwrap();
+            let y = power(s);
+            let (r, allocation) = measure(|| {
+                de::certify_slab(
+                    &src,
+                    s.times,
+                    &y,
+                    &branch,
+                    policy().tube_radius,
+                    Some(old.incoming),
+                    policy().green,
+                    policy().init.condition_cap,
+                )
+            });
+            let r = r.unwrap();
+            same(&r, old);
+            println!(
+                "CERT_POINT {}",
+                serde_json::json!({"case":case,"position":pos,"candidate":"legacy","allocation":allocation,"qualified":r.global_qualified,"certificate":r,"work":null,"power":s.power})
+            );
+            for route in routes {
+                let (r, allocation) = measure(|| {
+                    de::certify_slab_workspace_into(
+                        &src,
+                        s.times,
+                        &y,
+                        &branch,
+                        policy().tube_radius,
+                        Some(old.incoming),
+                        policy().green,
+                        policy().init.condition_cap,
+                        route,
+                        &mut w,
+                        &mut out,
+                    )
+                });
+                r.unwrap();
+                assert!(
+                    out.global_qualified,
+                    "{case} {pos} {route:?} {:?}",
+                    out.global_reason
+                );
+                assert_eq!(allocation.requests(), 0);
+                assert_eq!(allocation.requested_bytes, 0);
+                assert_eq!(out.times, old.times);
+                assert_eq!(out.x_range, old.x_range);
+                assert_eq!(out.z_range, old.z_range);
+                assert_eq!(out.self_map_center, old.self_map_center);
+                assert!(
+                    out.whole_x_error.unwrap() <= policy().global_tol
+                        && out.whole_z_error.unwrap() <= policy().global_tol
+                );
+                let (own, oa) = measure(|| {
+                    de::certify_slab_workspace(
+                        &src,
+                        s.times,
+                        &y,
+                        &branch,
+                        policy().tube_radius,
+                        Some(old.incoming),
+                        policy().green,
+                        policy().init.condition_cap,
+                        route,
+                        &mut w,
+                    )
+                });
+                same(&own.unwrap(), &out);
+                assert_eq!(oa.requests(), 6);
+                println!(
+                    "CERT_POINT {}",
+                    serde_json::json!({"case":case,"position":pos,"candidate":route,"allocation":allocation,"owned_allocation":oa,"qualified":out.global_qualified,"certificate":out,"work":w.work(),"power":s.power})
+                );
+            }
+            // Timings exclude setup and serialization. Repeated same native
+            // input; rotate the order of five candidates, 7*8 calls each.
+            let mut ts = [
+                Vec::<u128>::new(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+                Vec::new(),
+            ];
+            for rep in 0..7 {
+                for j in 0..5 {
+                    let i = (j + rep) % 5;
+                    let start = std::time::Instant::now();
+                    for _ in 0..8 {
+                        if i == 0 {
+                            black_box(
+                                de::certify_slab(
+                                    &src,
+                                    s.times,
+                                    &y,
+                                    &branch,
+                                    policy().tube_radius,
+                                    Some(old.incoming),
+                                    policy().green,
+                                    policy().init.condition_cap,
+                                )
+                                .unwrap(),
+                            );
+                        } else {
+                            de::certify_slab_workspace_into(
+                                &src,
+                                s.times,
+                                &y,
+                                &branch,
+                                policy().tube_radius,
+                                Some(old.incoming),
+                                policy().green,
+                                policy().init.condition_cap,
+                                routes[i - 1],
+                                &mut w,
+                                &mut out,
+                            )
+                            .unwrap();
+                            black_box(&out);
+                        }
+                    }
+                    ts[i].push(start.elapsed().as_nanos() / 8);
+                }
+            }
+            for (i, v) in ts.iter_mut().enumerate() {
+                v.sort_unstable();
+                let candidate = if i == 0 {
+                    "legacy".to_string()
+                } else {
+                    format!("{:?}", routes[i - 1])
+                };
+                timing.push(serde_json::json!({"case":case,"position":pos,"candidate":candidate,"median_ns":v[3],"samples_ns":v,"calls_per_sample":8,"scope":"legacy fresh owner vs workspace preallocated output"}));
+            }
+        }
+        for row in timing {
+            println!("CERT_TIMING {}", row);
+        }
+        for route in routes {
+            for storage in [CertificateStorage::Local, CertificateStorage::Reusable] {
+                let candidate = EvolutionRoute::Workspace5 {
+                    projection: workspace_projection(solver),
+                    certificate: route,
+                    storage,
+                };
+                let ((r, a), allocation) = measure(|| {
+                    evolve_epoch_audited(
+                        &src,
+                        &x,
+                        &z,
+                        &branch,
+                        epoch,
+                        &opts(),
+                        policy(),
+                        candidate,
+                        &grid,
+                    )
+                });
+                let r = r.unwrap();
+                assert!(r.global_qualified, "{case} {candidate:?} {:?}", r.reason);
+                assert_eq!(r.driver().t, base.driver().t);
+                assert_eq!(r.driver().y, base.driver().y);
+                assert_eq!(r.slabs().len(), base.slabs().len());
+                assert_eq!(r.accepted.len(), base.accepted.len());
+                assert_eq!(r.queries.len(), base.queries.len());
+                same(&r.initial, &base.initial);
+                for (q, b) in r
+                    .accepted
+                    .iter()
+                    .chain(&r.queries)
+                    .zip(base.accepted.iter().chain(&base.queries))
+                {
+                    assert_eq!(q.raw, b.raw);
+                    assert_eq!(q.state, b.state);
+                    same(&q.projection, &b.projection);
+                    assert!(q.physical_error_upper.is_some());
+                }
+                for (s, b) in r.slabs().iter().zip(base.slabs()) {
+                    assert_eq!(s.power, b.power);
+                    same(&s.native, &b.native);
+                    let c = s.certificate.as_ref().unwrap();
+                    assert!(c.global_qualified);
+                    assert_eq!(c.x_range, b.certificate.as_ref().unwrap().x_range);
+                    assert_eq!(c.z_range, b.certificate.as_ref().unwrap().z_range);
+                    println!(
+                        "CERT_NATIVE {}",
+                        serde_json::json!({"case":case,"candidate":route,"storage":storage,"times":s.times,"power":s.power,"certificate":c})
+                    );
+                }
+                println!(
+                    "CERT_EPOCH {}",
+                    serde_json::json!({"case":case,"candidate":route,"storage":storage,"allocation":allocation,"qualified":r.global_qualified,"slabs":r.slabs().len(),"max_physical_error":r.max_physical_error,"outgoing":r.slabs().last().unwrap().certificate.as_ref().unwrap().outgoing,"audit":a})
+                );
+            }
+        }
+        // Hard error is transactional. Unknown incoming is a returned but
+        // not globally qualified certificate, and must clear prior success.
+        let s = &base.slabs()[0];
+        let y = power(s);
+        let before = serde_json::to_value(&out).unwrap();
+        assert!(
+            de::certify_slab_workspace_into(
+                &src,
+                [1., 0.],
+                &y,
+                &branch,
+                policy().tube_radius,
+                Some(0.),
+                true,
+                policy().init.condition_cap,
+                R::Pivot,
+                &mut w,
+                &mut out
+            )
+            .is_err()
+        );
+        assert_eq!(serde_json::to_value(&out).unwrap(), before);
+        de::certify_slab_workspace_into(
+            &src,
+            s.times,
+            &y,
+            &branch,
+            policy().tube_radius,
+            None,
+            true,
+            policy().init.condition_cap,
+            R::Pivot,
+            &mut w,
+            &mut out,
+        )
+        .unwrap();
+        assert!(
+            !out.global_qualified
+                && out.outgoing.is_none()
+                && out.whole_x_error.is_none()
+                && out.whole_z_error.is_none()
+        );
+        assert_eq!(
+            out.global_reason.as_deref(),
+            Some("prior physical tube unresolved")
+        );
+        println!(
+            "CERT_EDGE {}",
+            serde_json::json!({"case":case,"transactional":true,"unresolved":true})
+        );
+    }
+}
+#[test]
+fn certificate_workspace_stack_smoke() {
+    // Deliberately avoid the larger driver warm-up. This tests the isolated
+    // general certificate under libtest's configured thread stack budget.
+    let (src, _, _, branch, _) = certificate_fixture("stable");
+    let iv = |v| Iv::point(v).unwrap();
+    let y = vec![vec![iv(0.25)], vec![iv(-0.125)], vec![iv(0.125)]];
+    let mut w = de::SlabCertificateWorkspace::new();
+    let mut out = de::SlabCertificate::workspace_output(2, 1).unwrap();
+    de::certify_slab_workspace_into(
+        &src,
+        [0., 0.0001],
+        &y,
+        &branch,
+        policy().tube_radius,
+        Some(0.),
+        true,
+        policy().init.condition_cap,
+        de::SlabWorkspaceRoute::PackedGreen,
+        &mut w,
+        &mut out,
+    )
+    .unwrap();
+    assert!(out.global_qualified);
+    println!(
+        "STACK_SMOKE {}",
+        serde_json::json!({"workspace_bytes":std::mem::size_of::<de::SlabCertificateWorkspace>(),"rust_min_stack":std::env::var("RUST_MIN_STACK").ok(),"qualified":out.global_qualified})
+    );
+}
