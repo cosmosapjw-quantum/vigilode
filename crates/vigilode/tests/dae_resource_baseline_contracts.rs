@@ -6376,7 +6376,7 @@ fn query_replay_case(case: &str, run: &EvolutionRun) {
         v.sort_unstable();
         println!(
             "QUERY_TIMING {}",
-            serde_json::json!({"case":case,"candidate":["legacy","fresh_fixed","fixed_rows","stream_pairs","cursor_pairs"][i],"median_ns":v[3],"samples_ns":v,"calls_per_sample":4*clocks.len()})
+            serde_json::json!({"case":case,"candidate":(["legacy","fresh_fixed","fixed_rows","stream_pairs","cursor_pairs"][i]),"median_ns":v[3],"samples_ns":v,"calls_per_sample":4*clocks.len()})
         );
     }
     // For independent exact state/error checks, retain every distinct reference.
