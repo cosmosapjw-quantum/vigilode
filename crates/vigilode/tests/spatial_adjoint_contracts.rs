@@ -25,3 +25,574 @@ fn actual_mass_goal_uses_no_time_integration() {
     assert!(r.width_upper <= 1e-12);
     println!("SPATIAL_RED_GREEN {:?}", r);
 }
+
+use serde::Serialize;
+use std::{
+    alloc::{GlobalAlloc, Layout, System},
+    cell::Cell,
+    hint::black_box,
+};
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+struct Counts {
+    alloc: u64,
+    zeroed: u64,
+    realloc: u64,
+    requested_bytes: u64,
+    dealloc: u64,
+    dealloc_bytes: u64,
+}
+impl Counts {
+    fn requests(self) -> u64 {
+        self.alloc + self.zeroed + self.realloc
+    }
+    fn add(&mut self, o: Self) {
+        self.alloc += o.alloc;
+        self.zeroed += o.zeroed;
+        self.realloc += o.realloc;
+        self.requested_bytes += o.requested_bytes;
+        self.dealloc += o.dealloc;
+        self.dealloc_bytes += o.dealloc_bytes;
+    }
+}
+thread_local! {
+    static TRACK:Cell<bool>=const{Cell::new(false)};
+    static COUNT:Cell<Counts>=const{Cell::new(Counts{alloc:0,zeroed:0,realloc:0,requested_bytes:0,dealloc:0,dealloc_bytes:0})};
+}
+// Separate peak-delta measurement; preserve the original Counts schema
+// and all historical allocator replay records.
+thread_local! {
+    static LIVE_DELTA:Cell<Option<(i64,i64)>>=const{Cell::new(None)};
+}
+fn live_delta(change: i64) {
+    let _ = LIVE_DELTA.try_with(|v| {
+        if let Some((cur, peak)) = v.get() {
+            let next = cur + change;
+            v.set(Some((next, peak.max(next))));
+        }
+    });
+}
+fn record(kind: u8, bytes: usize) {
+    if TRACK.try_with(Cell::get).unwrap_or(false) {
+        let _ = COUNT.try_with(|v| {
+            let mut c = v.get();
+            match kind {
+                0 => {
+                    c.alloc += 1;
+                    c.requested_bytes += bytes as u64;
+                }
+                1 => {
+                    c.zeroed += 1;
+                    c.requested_bytes += bytes as u64;
+                }
+                2 => {
+                    c.realloc += 1;
+                    c.requested_bytes += bytes as u64;
+                }
+                _ => {
+                    c.dealloc += 1;
+                    c.dealloc_bytes += bytes as u64;
+                }
+            }
+            v.set(c);
+        });
+    }
+}
+struct CountingAllocator;
+unsafe impl GlobalAlloc for CountingAllocator {
+    unsafe fn alloc(&self, l: Layout) -> *mut u8 {
+        record(0, l.size());
+        let p = unsafe { System.alloc(l) };
+        if !p.is_null() {
+            live_delta(l.size() as i64);
+        }
+        p
+    }
+    unsafe fn alloc_zeroed(&self, l: Layout) -> *mut u8 {
+        record(1, l.size());
+        let p = unsafe { System.alloc_zeroed(l) };
+        if !p.is_null() {
+            live_delta(l.size() as i64);
+        }
+        p
+    }
+    unsafe fn realloc(&self, p: *mut u8, l: Layout, n: usize) -> *mut u8 {
+        record(2, n);
+        let p = unsafe { System.realloc(p, l, n) };
+        if !p.is_null() {
+            live_delta(n as i64 - l.size() as i64);
+        }
+        p
+    }
+    unsafe fn dealloc(&self, p: *mut u8, l: Layout) {
+        record(3, l.size());
+        live_delta(-(l.size() as i64));
+        unsafe { System.dealloc(p, l) }
+    }
+}
+#[global_allocator]
+static ALLOC: CountingAllocator = CountingAllocator;
+struct Tracking;
+impl Drop for Tracking {
+    fn drop(&mut self) {
+        TRACK.with(|v| v.set(false));
+    }
+}
+fn measure<T>(f: impl FnOnce() -> T) -> (T, Counts) {
+    assert!(!TRACK.with(Cell::get));
+    COUNT.with(|v| v.set(Counts::default()));
+    TRACK.with(|v| v.set(true));
+    let guard = Tracking;
+    let r = f();
+    drop(guard);
+    (r, COUNT.with(Cell::get))
+}
+#[derive(Clone, Copy, Debug, Serialize)]
+struct LiveHeap {
+    end_delta: i64,
+    peak_delta: i64,
+}
+fn measure_live<T>(f: impl FnOnce() -> T) -> (T, Counts, LiveHeap) {
+    assert!(LIVE_DELTA.with(Cell::get).is_none());
+    LIVE_DELTA.with(|v| v.set(Some((0, 0))));
+    let (r, a) = measure(f);
+    let (end_delta, peak_delta) = LIVE_DELTA.with(|v| v.replace(None).unwrap());
+    (
+        r,
+        a,
+        LiveHeap {
+            end_delta,
+            peak_delta,
+        },
+    )
+}
+
+use vigilode::spatial::{BoxTransform, SpatialRows};
+use vigilode::{Atol, Dopri5, Options, Problem, Rodas5p, VigilODE};
+const DURATION: f64 = 0.125;
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+enum NativeRoute {
+    Dopri,
+    Rodas,
+    Paired,
+    Complex,
+}
+#[derive(Debug, Serialize)]
+struct NativeReceipt {
+    values: Vec<f64>,
+    rhs: u64,
+    jvp: u64,
+    linear_solves: u64,
+    linear_iterations: u64,
+    accepted: usize,
+    rejected: usize,
+}
+fn native(
+    g: &DiffusionGrid,
+    p: &Problem,
+    initial: &[f64],
+    o: &Options,
+    route: NativeRoute,
+    adjoint: bool,
+) -> NativeReceipt {
+    if route == NativeRoute::Dopri {
+        let r = Dopri5::solve(p, (0., DURATION), initial, o)
+            .unwrap()
+            .ensure_success()
+            .unwrap();
+        return NativeReceipt {
+            values: r.final_state,
+            rhs: r.stats.counters.rhs_calls,
+            jvp: 0,
+            linear_solves: 0,
+            linear_iterations: 0,
+            accepted: r.stats.accepted_steps,
+            rejected: r.stats.rejected_steps,
+        };
+    }
+    let r = if route == NativeRoute::Rodas {
+        Rodas5p::solve(p, (0., DURATION), initial, o)
+            .unwrap()
+            .ensure_success()
+            .unwrap()
+    } else {
+        // In exact reversible FV arithmetic L^T=D L D^-1. Represented
+        // spherical area weights may not be an exact similarity: numerical
+        // candidate only, checked independently against original L^T.
+        let v = if adjoint {
+            initial
+                .iter()
+                .enumerate()
+                .map(|(i, &c)| c / g.cell_measure(i).unwrap())
+                .collect::<Vec<_>>()
+        } else {
+            initial.to_vec()
+        };
+        let stages =
+            g.separable_stages(0.)
+                .unwrap()
+                .with_box_transform(if route == NativeRoute::Paired {
+                    BoxTransform::PairedReal
+                } else {
+                    BoxTransform::Complex
+                });
+        VigilODE::solve_separable(
+            &g.problem(SpatialRows::Serial),
+            (0., DURATION),
+            &v,
+            o,
+            &stages,
+        )
+        .unwrap()
+        .ensure_success()
+        .unwrap()
+    };
+    let mut values = r.final_state().unwrap().to_vec();
+    if adjoint && matches!(route, NativeRoute::Paired | NativeRoute::Complex) {
+        for (i, v) in values.iter_mut().enumerate() {
+            *v *= g.cell_measure(i).unwrap();
+        }
+    }
+    NativeReceipt {
+        values,
+        rhs: r.stats.counters.rhs_calls,
+        jvp: r.stats.counters.jvp_calls,
+        linear_solves: r.stats.counters.linear_solves,
+        linear_iterations: r.stats.counters.linear_iterations,
+        accepted: r.stats.accepted_steps,
+        rejected: r.stats.rejected_steps,
+    }
+}
+fn fixtures() -> Vec<(&'static str, DiffusionGrid, usize)> {
+    vec![
+        (
+            "box2_small",
+            DiffusionGrid::periodic_box([8, 4], [8., 4.], [0.125, 0.25]).unwrap(),
+            8,
+        ),
+        (
+            "box2_medium",
+            DiffusionGrid::periodic_box([16, 8], [16., 8.], [0.125, 0.25]).unwrap(),
+            16,
+        ),
+        (
+            "box3_small",
+            DiffusionGrid::periodic_box([4, 4, 4], [4., 4., 4.], [0.125, 0.25, 0.0625]).unwrap(),
+            4,
+        ),
+        (
+            "box3_medium",
+            DiffusionGrid::periodic_box([8, 4, 4], [8., 4., 4.], [0.125, 0.25, 0.0625]).unwrap(),
+            8,
+        ),
+        (
+            "sphere_small",
+            DiffusionGrid::sphere(4, 8, 1., 0.01).unwrap(),
+            8,
+        ),
+        (
+            "sphere_medium",
+            DiffusionGrid::sphere(8, 16, 1., 0.01).unwrap(),
+            16,
+        ),
+    ]
+}
+fn max_error(v: &[Iv], x: &[f64]) -> f64 {
+    v.iter()
+        .zip(x)
+        .map(|(a, &b)| a.sub(Iv::point(b).unwrap()).unwrap().mag())
+        .fold(0., f64::max)
+}
+#[test]
+fn spatial_vector_adjoint_portfolio() {
+    let opts = Options {
+        rtol: 1e-9,
+        atol: Atol::Scalar(1e-11),
+        h0: 0.001,
+        dense_output: false,
+        ..Options::default()
+    };
+    let plans = [
+        SpatialAdjointRoute::Taylor18,
+        SpatialAdjointRoute::Poisson18,
+        SpatialAdjointRoute::PoissonAdaptive,
+        SpatialAdjointRoute::ModeResidual,
+    ];
+    let natives = [
+        NativeRoute::Dopri,
+        NativeRoute::Rodas,
+        NativeRoute::Paired,
+        NativeRoute::Complex,
+    ];
+    for (case, g, width) in fixtures() {
+        let n = g.dimension();
+        let y = (0..n)
+            .map(|i| ((17 * i % 29) as f64 - 14.) / 32.)
+            .collect::<Vec<_>>();
+        let rows = (0..n)
+            .map(|i| g.represented_row(i).unwrap())
+            .collect::<Vec<_>>();
+        let mass = (0..n)
+            .map(|i| g.cell_measure(i).unwrap())
+            .collect::<Vec<_>>();
+        let mut u = vec![0.; n];
+        let mut f = vec![0.; n];
+        let mut t = vec![0.; n];
+        // Check original forward callback independently by exact represented
+        // basis rows and transpose bilinear identity (rounded implementation).
+        let mut basis_max = 0_f64;
+        for j in 0..n {
+            u[j] = 1.;
+            g.apply(&u, &mut f, SpatialRows::Serial).unwrap();
+            g.apply_transpose(&u, &mut t).unwrap();
+            for i in 0..n {
+                let a = rows[i]
+                    .iter()
+                    .filter(|&&(k, _)| k != i)
+                    .try_fold(Iv::point(0.).unwrap(), |s, &(k, r)| {
+                        if j == k {
+                            s.add(Iv::point(r)?)
+                        } else if j == i {
+                            s.sub(Iv::point(r)?)
+                        } else {
+                            Ok(s)
+                        }
+                    })
+                    .unwrap();
+                let b = rows[j]
+                    .iter()
+                    .filter(|&&(k, _)| k != j)
+                    .try_fold(Iv::point(0.).unwrap(), |s, &(k, r)| {
+                        if i == k {
+                            s.add(Iv::point(r)?)
+                        } else if i == j {
+                            s.sub(Iv::point(r)?)
+                        } else {
+                            Ok(s)
+                        }
+                    })
+                    .unwrap();
+                let e = a
+                    .sub(Iv::point(f[i]).unwrap())
+                    .unwrap()
+                    .mag()
+                    .max(b.sub(Iv::point(t[i]).unwrap()).unwrap().mag());
+                basis_max = basis_max.max(e);
+            }
+            u[j] = 0.;
+        }
+        assert!(basis_max <= 1e-12);
+        let (work, setup) = measure(|| SpatialAdjointWorkspace::new(&g));
+        let mut w = work.unwrap();
+        println!(
+            "SPATIAL_GRID {}",
+            serde_json::json!({"case":case,"n":n,"width":width,"duration":DURATION,"rows":rows,"mass":mass,"initial":y,"setup":setup,"basis_comparison_upper":basis_max})
+        );
+        let p = g.problem(SpatialRows::Serial);
+        let adj = g.adjoint_problem();
+        let mut primals = Vec::new();
+        for route in natives {
+            let (r, allocation) = measure(|| native(&g, &p, &y, &opts, route, false));
+            primals.push((r, allocation));
+        }
+        let mut primal_times: [Vec<u128>; 4] = std::array::from_fn(|_| vec![]);
+        for rep in 0..5 {
+            for j in 0..4 {
+                let i = (rep + j) % 4;
+                let start = std::time::Instant::now();
+                black_box(native(&g, &p, &y, &opts, natives[i], false));
+                primal_times[i].push(start.elapsed().as_nanos());
+            }
+        }
+        for (i, (r, a)) in primals.iter().enumerate() {
+            primal_times[i].sort_unstable();
+            println!(
+                "SPATIAL_PRIMAL {}",
+                serde_json::json!({"case":case,"candidate":natives[i],"allocation":a,"run":r,"median_ns":primal_times[i][2],"samples_ns":primal_times[i]})
+            );
+        }
+        for goal_name in ["mass", "alternating", "local"] {
+            let c = match goal_name {
+                "mass" => mass.clone(),
+                "alternating" => mass
+                    .iter()
+                    .enumerate()
+                    .map(|(i, &a)| if i % width % 2 == 0 { a } else { -a })
+                    .collect(),
+                _ => {
+                    let mut a = vec![0.; n];
+                    a[0] = 0.5;
+                    a[n / 2] = -0.25;
+                    a[n - 1] = 0.125;
+                    a
+                }
+            };
+            println!(
+                "SPATIAL_GOAL {}",
+                serde_json::json!({"case":case,"goal":goal_name,"weights":c})
+            );
+            let (r, a) = measure(|| g.apply_transpose(&c, &mut t));
+            r.unwrap();
+            assert_eq!(a.requests(), 0);
+            let mut receipts = Vec::new();
+            let mut gradient = vec![Iv::point(0.).unwrap(); n];
+            let mut exact_reference = gradient.clone();
+            for plan in plans {
+                let (r, allocation) = measure(|| {
+                    w.certify_into(&c, &y, &primals[0].0.values, DURATION, plan, &mut gradient)
+                });
+                let r = r.unwrap();
+                assert_eq!(allocation.requests(), 0);
+                let qualified = r.width_upper <= 1e-6;
+                if plan != SpatialAdjointRoute::ModeResidual {
+                    assert!(qualified, "{case} {goal_name} {plan:?} {:?}", r);
+                }
+                if plan == SpatialAdjointRoute::PoissonAdaptive {
+                    exact_reference.copy_from_slice(&gradient);
+                }
+                receipts.push((r, allocation, gradient.clone(), qualified));
+            }
+            let mut times: [Vec<u128>; 4] = std::array::from_fn(|_| vec![]);
+            for rep in 0..5 {
+                for j in 0..4 {
+                    let i = (rep + j) % 4;
+                    let start = std::time::Instant::now();
+                    black_box(
+                        w.certify_into(
+                            &c,
+                            &y,
+                            &primals[0].0.values,
+                            DURATION,
+                            plans[i],
+                            &mut gradient,
+                        )
+                        .unwrap(),
+                    );
+                    times[i].push(start.elapsed().as_nanos());
+                }
+            }
+            for (i, (r, a, v, qualified)) in receipts.iter().enumerate() {
+                times[i].sort_unstable();
+                println!(
+                    "SPATIAL_CERT {}",
+                    serde_json::json!({"case":case,"goal":goal_name,"candidate":plans[i],"qualified":qualified,"allocation":a,"work":r,"enclosure":v.iter().map(|v|v.as_pair()).collect::<Vec<_>>(),"median_ns":times[i][2],"samples_ns":times[i]})
+                );
+            }
+            // The actual represented endpoint error is certified from the
+            // true dual and the stored primal vector, not numerical solver
+            // local LTE or an analytic continuum PDE mode assumption.
+            for (i, (r, _)) in primals.iter().enumerate() {
+                let a = w
+                    .certify_into(
+                        &c,
+                        &y,
+                        &r.values,
+                        DURATION,
+                        SpatialAdjointRoute::PoissonAdaptive,
+                        &mut gradient,
+                    )
+                    .unwrap();
+                assert!(
+                    a.signed_goal_error.iter().all(|x| x.abs() <= 1e-6),
+                    "{case} {goal_name} {:?}",
+                    a.signed_goal_error
+                );
+                println!(
+                    "SPATIAL_QOI {}",
+                    serde_json::json!({"case":case,"goal":goal_name,"candidate":natives[i],"error":a.signed_goal_error})
+                );
+            }
+            let mut numerics = Vec::new();
+            for route in natives {
+                let (r, a) = measure(|| native(&g, &adj, &c, &opts, route, true));
+                let err = max_error(&exact_reference, &r.values);
+                assert!(err <= 1e-6, "{case} {goal_name} {route:?} {err}");
+                numerics.push((r, a, err));
+            }
+            let mut nt: [Vec<u128>; 4] = std::array::from_fn(|_| vec![]);
+            for rep in 0..5 {
+                for j in 0..4 {
+                    let i = (rep + j) % 4;
+                    let start = std::time::Instant::now();
+                    black_box(native(&g, &adj, &c, &opts, natives[i], true));
+                    nt[i].push(start.elapsed().as_nanos());
+                }
+            }
+            for (i, (r, a, e)) in numerics.iter().enumerate() {
+                nt[i].sort_unstable();
+                println!(
+                    "SPATIAL_NUMERIC {}",
+                    serde_json::json!({"case":case,"goal":goal_name,"candidate":natives[i],"qualified":true,"allocation":a,"run":r,"error_upper":e,"median_ns":nt[i][2],"samples_ns":nt[i]})
+                );
+            }
+            if matches!(case, "box2_small" | "box3_small") {
+                // All rates and diagonal sums here are exact dyadics.
+                // Reuse the existing dense nonnormal action certificate
+                // on the identical represented operator, not a fitted A.
+                let mut a = vec![vec![0.; n]; n];
+                for (i, row) in rows.iter().enumerate() {
+                    for &(j, r) in row {
+                        if i != j {
+                            a[j][i] += r;
+                            a[i][i] -= r;
+                        }
+                    }
+                }
+                let (r, alloc) = measure(|| {
+                    rodas5p_core::nonnormal_certificate::certify_exp_action(
+                        &a,
+                        &c,
+                        DURATION,
+                        None,
+                        24,
+                        Some(&numerics[0].0.values),
+                    )
+                });
+                let r = r.unwrap();
+                assert!(r.error_upper <= 1e-6);
+                println!(
+                    "SPATIAL_DENSE {}",
+                    serde_json::json!({"case":case,"goal":goal_name,"allocation":alloc,"certificate":r})
+                );
+            }
+        }
+    }
+}
+#[test]
+fn spatial_adjoint_transaction_and_degenerate_edges() {
+    // Two-cell axes have duplicated neighbors. Zero-diffusivity and
+    // zero-time paths must preserve exact states, even at signed goals.
+    for g in [
+        DiffusionGrid::periodic_box([2, 2, 2], [2., 2., 2.], [0.125, 0.25, 0.0625]).unwrap(),
+        DiffusionGrid::sphere(2, 2, 1., 0.01).unwrap(),
+        DiffusionGrid::sphere(2, 2, 1., 0.).unwrap(),
+    ] {
+        let n = g.dimension();
+        let c = (0..n).map(|i| i as f64 - 2.).collect::<Vec<_>>();
+        let mut w = SpatialAdjointWorkspace::new(&g).unwrap();
+        let mut out = vec![Iv { lo: -7., hi: 7. }; n];
+        for plan in [
+            SpatialAdjointRoute::Taylor18,
+            SpatialAdjointRoute::Poisson18,
+            SpatialAdjointRoute::PoissonAdaptive,
+            SpatialAdjointRoute::ModeResidual,
+        ] {
+            let before = out.clone();
+            assert!(w.certify_into(&c, &c, &c, -1., plan, &mut out).is_err());
+            assert_eq!(out, before);
+            let r = w.certify_into(&c, &c, &c, 0., plan, &mut out).unwrap();
+            assert_eq!(r.actions, 0);
+            assert_eq!(r.width_upper, 0.);
+            assert!(out.iter().zip(&c).all(|(v, &c)| v.lo == c && v.hi == c));
+            let (r, a) = measure(|| w.certify_into(&c, &c, &c, DURATION, plan, &mut out));
+            assert!(r.is_ok());
+            assert_eq!(a.requests(), 0);
+        }
+        let mut t = vec![0.; n];
+        g.apply_transpose(&c, &mut t).unwrap();
+        assert!(t.iter().sum::<f64>().abs() <= 1e-12);
+    }
+    println!(
+        "SPATIAL_EDGE {}",
+        serde_json::json!({"duplicate_neighbors":true,"polar_two_rings":true,"zero_time":true,"zero_diffusion":true,"transactional_refusal":true})
+    );
+}

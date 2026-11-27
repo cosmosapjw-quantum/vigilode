@@ -23,6 +23,7 @@ fn dot(v: &[Iv], u: &[f64]) -> CoreResult<Iv> {
 /// Original row as positive directed edges. Diagonal is the negative exact
 /// sum of non-self rates. Duplicated periodic neighbors are intentional.
 impl DiffusionGrid {
+    /// Return all six represented neighbor edges; ignore self edges.
     pub fn represented_row(&self, i: usize) -> Option<[(usize, f64); 6]> {
         if i >= self.dimension {
             return None;
@@ -93,21 +94,35 @@ impl DiffusionGrid {
     }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+/// Explicit, non-promoted semidiscrete adjoint enclosure routes.
 pub enum SpatialAdjointRoute {
+    /// Direct degree-18 Taylor action.
     Taylor18,
+    /// Degree-18 uniformization.
     Poisson18,
+    /// Uniformization with a directed Poisson tail order.
     PoissonAdaptive,
+    /// Approximate eigenmode proposal with original transpose residual.
     ModeResidual,
 }
 #[derive(Clone, Copy, Debug, Default, Serialize)]
+/// Resource and directed goal-error receipt for one successful action.
 pub struct SpatialAdjointWork {
+    /// Number of time cells (zero for a mode identity).
     pub cells: usize,
+    /// Sparse represented transpose or transition actions.
     pub actions: usize,
+    /// Maximum series order.
     pub max_order: usize,
+    /// Accumulated l1 truncation or mode-residual error.
     pub l1_tail_upper: f64,
+    /// Nonpositive rate proposal for the mode route.
     pub mode_rate: f64,
+    /// Maximum component enclosure width.
     pub width_upper: f64,
+    /// Outward interval of the exact semidiscrete terminal goal.
     pub exact_goal: [f64; 2],
+    /// Exact goal minus the represented numerical terminal goal.
     pub signed_goal_error: [f64; 2],
 }
 #[derive(Clone)]
@@ -117,6 +132,7 @@ struct Row {
     p: [Iv; 6],
     stay: Iv,
 }
+/// Source-bound reusable sparse rates and caller-owned work storage.
 pub struct SpatialAdjointWorkspace {
     grid: DiffusionGrid,
     rows: Vec<Row>,
@@ -154,6 +170,7 @@ fn tail_after(m: f64, p: usize) -> CoreResult<f64> {
     div_up(t, sub_down(1., div_up(m, (p + 2) as f64)?)?)
 }
 impl SpatialAdjointWorkspace {
+    /// Prepare the represented source and reusable work buffers.
     pub fn new(grid: &DiffusionGrid) -> CoreResult<Self> {
         rodas5p_integrators::affine_event_certificate::check_affine_event_arithmetic()?;
         let n = grid.dimension();
