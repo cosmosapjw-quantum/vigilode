@@ -1,0 +1,565 @@
+{
+  "epoch": {
+    "candidates": {
+      "flat_component": {
+        "bytes": 939702,
+        "qualified": 14,
+        "requests": 4444,
+        "rows": 14
+      },
+      "flat_rows": {
+        "bytes": 939702,
+        "qualified": 14,
+        "requests": 4444,
+        "rows": 14
+      },
+      "legacy": {
+        "bytes": 1205516,
+        "qualified": 14,
+        "requests": 7598,
+        "rows": 14
+      },
+      "reuse_component": {
+        "bytes": 953452,
+        "qualified": 14,
+        "requests": 6496,
+        "rows": 14
+      },
+      "reuse_rows": {
+        "bytes": 953452,
+        "qualified": 14,
+        "requests": 6496,
+        "rows": 14
+      }
+    },
+    "pareto_count": 28,
+    "pareto_covered": 28,
+    "proposals": {
+      "mutation": 337,
+      "structure": 1711
+    },
+    "rows": 70,
+    "strata": [
+      {
+        "covered": 2,
+        "group": [
+          "mixed_rates",
+          "dense"
+        ],
+        "pareto": [
+          {
+            "candidate": "flat_rows",
+            "case": "mixed_rates",
+            "grid": "dense",
+            "objectives": [
+              328,
+              109771,
+              98989,
+              95131,
+              9773,
+              6.665555664970057e-07
+            ]
+          },
+          {
+            "candidate": "flat_component",
+            "case": "mixed_rates",
+            "grid": "dense",
+            "objectives": [
+              328,
+              109771,
+              98989,
+              95131,
+              9773,
+              6.665555664970057e-07
+            ]
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "flat_component"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "mixed_rates",
+          "sparse"
+        ],
+        "pareto": [
+          {
+            "candidate": "flat_rows",
+            "case": "mixed_rates",
+            "grid": "sparse",
+            "objectives": [
+              328,
+              82411,
+              71629,
+              67771,
+              9773,
+              6.665555664970057e-07
+            ]
+          },
+          {
+            "candidate": "flat_component",
+            "case": "mixed_rates",
+            "grid": "sparse",
+            "objectives": [
+              328,
+              82411,
+              71629,
+              67771,
+              9773,
+              6.665555664970057e-07
+            ]
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "flat_component"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "nonlinear",
+          "dense"
+        ],
+        "pareto": [
+          {
+            "candidate": "flat_rows",
+            "case": "nonlinear",
+            "grid": "dense",
+            "objectives": [
+              194,
+              49510,
+              46512,
+              42969,
+              1446,
+              4.2670585063430524e-09
+            ]
+          },
+          {
+            "candidate": "flat_component",
+            "case": "nonlinear",
+            "grid": "dense",
+            "objectives": [
+              194,
+              49510,
+              46512,
+              42969,
+              1446,
+              4.2670585063430524e-09
+            ]
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "flat_component"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "nonlinear",
+          "sparse"
+        ],
+        "pareto": [
+          {
+            "candidate": "flat_rows",
+            "case": "nonlinear",
+            "grid": "sparse",
+            "objectives": [
+              194,
+              25030,
+              22032,
+              18489,
+              1446,
+              4.2670585063430524e-09
+            ]
+          },
+          {
+            "candidate": "flat_component",
+            "case": "nonlinear",
+            "grid": "sparse",
+            "objectives": [
+              194,
+              25030,
+              22032,
+              18489,
+              1446,
+              4.2670585063430524e-09
+            ]
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "flat_component"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "quadratic_flow",
+          "dense"
+        ],
+        "pareto": [
+          {
+            "candidate": "flat_rows",
+            "case": "quadratic_flow",
+            "grid": "dense",
+            "objectives": [
+              180,
+              44692,
+              41998,
+              39031,
+              964,
+              1.7500197044646642e-12
+            ]
+          },
+          {
+            "candidate": "flat_component",
+            "case": "quadratic_flow",
+            "grid": "dense",
+            "objectives": [
+              180,
+              44692,
+              41998,
+              39031,
+              964,
+              1.7500197044646642e-12
+            ]
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "flat_component"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "quadratic_flow",
+          "sparse"
+        ],
+        "pareto": [
+          {
+            "candidate": "flat_rows",
+            "case": "quadratic_flow",
+            "grid": "sparse",
+            "objectives": [
+              180,
+              20212,
+              17518,
+              14551,
+              964,
+              1.7500197044646642e-12
+            ]
+          },
+          {
+            "candidate": "flat_component",
+            "case": "quadratic_flow",
+            "grid": "sparse",
+            "objectives": [
+              180,
+              20212,
+              17518,
+              14551,
+              964,
+              1.7500197044646642e-12
+            ]
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "flat_component"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "stable",
+          "dense"
+        ],
+        "pareto": [
+          {
+            "candidate": "flat_rows",
+            "case": "stable",
+            "grid": "dense",
+            "objectives": [
+              291,
+              53698,
+              47300,
+              43346,
+              1348,
+              2.829895907180623e-09
+            ]
+          },
+          {
+            "candidate": "flat_component",
+            "case": "stable",
+            "grid": "dense",
+            "objectives": [
+              291,
+              53698,
+              47300,
+              43346,
+              1348,
+              2.829895907180623e-09
+            ]
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "flat_component"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "stable",
+          "sparse"
+        ],
+        "pareto": [
+          {
+            "candidate": "flat_rows",
+            "case": "stable",
+            "grid": "sparse",
+            "objectives": [
+              291,
+              26338,
+              19940,
+              15986,
+              1348,
+              2.829895907180623e-09
+            ]
+          },
+          {
+            "candidate": "flat_component",
+            "case": "stable",
+            "grid": "sparse",
+            "objectives": [
+              291,
+              26338,
+              19940,
+              15986,
+              1348,
+              2.829895907180623e-09
+            ]
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "flat_component"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "stiff",
+          "dense"
+        ],
+        "pareto": [
+          {
+            "candidate": "flat_rows",
+            "case": "stiff",
+            "grid": "dense",
+            "objectives": [
+              239,
+              148320,
+              140682,
+              138092,
+              13978,
+              4.3510002918425796e-07
+            ]
+          },
+          {
+            "candidate": "flat_component",
+            "case": "stiff",
+            "grid": "dense",
+            "objectives": [
+              239,
+              148320,
+              140682,
+              138092,
+              13978,
+              4.3510002918425796e-07
+            ]
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "flat_component"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "stiff",
+          "sparse"
+        ],
+        "pareto": [
+          {
+            "candidate": "flat_rows",
+            "case": "stiff",
+            "grid": "sparse",
+            "objectives": [
+              239,
+              123840,
+              116202,
+              113612,
+              13978,
+              4.3510002918425796e-07
+            ]
+          },
+          {
+            "candidate": "flat_component",
+            "case": "stiff",
+            "grid": "sparse",
+            "objectives": [
+              239,
+              123840,
+              116202,
+              113612,
+              13978,
+              4.3510002918425796e-07
+            ]
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "flat_component"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "vector4",
+          "dense"
+        ],
+        "pareto": [
+          {
+            "candidate": "flat_rows",
+            "case": "vector4",
+            "grid": "dense",
+            "objectives": [
+              373,
+              68530,
+              65236,
+              54658,
+              3076,
+              3.4682837491635075e-12
+            ]
+          },
+          {
+            "candidate": "flat_component",
+            "case": "vector4",
+            "grid": "dense",
+            "objectives": [
+              373,
+              68530,
+              65236,
+              54658,
+              3076,
+              3.4682837491635075e-12
+            ]
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "flat_component"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "vector4",
+          "sparse"
+        ],
+        "pareto": [
+          {
+            "candidate": "flat_rows",
+            "case": "vector4",
+            "grid": "sparse",
+            "objectives": [
+              373,
+              33970,
+              30676,
+              20098,
+              3076,
+              3.4682837491635075e-12
+            ]
+          },
+          {
+            "candidate": "flat_component",
+            "case": "vector4",
+            "grid": "sparse",
+            "objectives": [
+              373,
+              33970,
+              30676,
+              20098,
+              3076,
+              3.4682837491635075e-12
+            ]
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "flat_component"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "vector8",
+          "dense"
+        ],
+        "pareto": [
+          {
+            "candidate": "flat_rows",
+            "case": "vector8",
+            "grid": "dense",
+            "objectives": [
+              617,
+              100690,
+              96372,
+              76258,
+              6788,
+              6.941656641905468e-12
+            ]
+          },
+          {
+            "candidate": "flat_component",
+            "case": "vector8",
+            "grid": "dense",
+            "objectives": [
+              617,
+              100690,
+              96372,
+              76258,
+              6788,
+              6.941656641905468e-12
+            ]
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "flat_component"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "vector8",
+          "sparse"
+        ],
+        "pareto": [
+          {
+            "candidate": "flat_rows",
+            "case": "vector8",
+            "grid": "sparse",
+            "objectives": [
+              617,
+              52690,
+              48372,
+              28258,
+              6788,
+              6.941656641905468e-12
+            ]
+          },
+          {
+            "candidate": "flat_component",
+            "case": "vector8",
+            "grid": "sparse",
+            "objectives": [
+              617,
+              52690,
+              48372,
+              28258,
+              6788,
+              6.941656641905468e-12
+            ]
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "flat_component"
+      }
+    ],
+    "unique": 70
+  },
+  "scope": "finite measured replay; no independent blinded holdout, peak stack or default promotion"
+}

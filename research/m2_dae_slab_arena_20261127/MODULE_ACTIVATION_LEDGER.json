@@ -1,0 +1,900 @@
+{
+  "schema_version": 1,
+  "base": "081733aa9bbb1885b53770cd1d8e0a98de879b96",
+  "observed_at_commit": "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c",
+  "scope": "Focused cumulative module ledger with actual source paths, not complete semantic reachability.",
+  "policy": "each subsequent node inspect and activate at least one applicable previously unused/underused module as an actual evaluated candidate; preserve its authority, test results and failures; distinguish static candidate, execution, qualification, selection and production promotion; never force an inapplicable module into a numerical path",
+  "modules": [
+    {
+      "symbol": "IntervalEvalWorkspace",
+      "status": "ACTIVATED_SHARED_KERNEL",
+      "candidate_or_evidence": "scalar projection shared source fill; public interval_into remains a transactional adapter; prior exact tests rerun; shared original-source vector evaluation in VectorProjectionWorkspace.",
+      "baseline_source_references": [
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_dae_init.rs:203:pub struct IntervalEvalWorkspace {",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_dae_init.rs:207:impl IntervalEvalWorkspace {",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_dae_init.rs:216:impl Default for IntervalEvalWorkspace {",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_dae_init.rs:324:        work: &mut IntervalEvalWorkspace,"
+      ],
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:203:pub struct IntervalEvalWorkspace {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:207:impl IntervalEvalWorkspace {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:216:impl Default for IntervalEvalWorkspace {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:324:        work: &mut IntervalEvalWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:342:        work: &mut IntervalEvalWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:1395:impl IntervalEvalWorkspace {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:2120:        let mut work = IntervalEvalWorkspace::new();",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:2121:        let mut point = IntervalEvalWorkspace::new();",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:2551:    point: IntervalEvalWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:2552:    eval: IntervalEvalWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:2562:            point: IntervalEvalWorkspace::new(),",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:2563:            eval: IntervalEvalWorkspace::new(),",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:2582:    w: &mut IntervalEvalWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:2597:fn vector_row(w: &IntervalEvalWorkspace, n: usize, i: usize) -> &[Iv] {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:2693:    j: &IntervalEvalWorkspace,"
+      ],
+      "previous_status": "ACTIVATED_SHARED_KERNEL",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:203:pub struct IntervalEvalWorkspace {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:207:impl IntervalEvalWorkspace {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:216:impl Default for IntervalEvalWorkspace {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:324:        work: &mut IntervalEvalWorkspace,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:342:        work: &mut IntervalEvalWorkspace,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:1395:impl IntervalEvalWorkspace {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:2120:        let mut work = IntervalEvalWorkspace::new();",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:2121:        let mut point = IntervalEvalWorkspace::new();",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:2551:    point: IntervalEvalWorkspace,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:2552:    eval: IntervalEvalWorkspace,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:2562:            point: IntervalEvalWorkspace::new(),",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:2563:            eval: IntervalEvalWorkspace::new(),",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:2582:    w: &mut IntervalEvalWorkspace,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:2597:fn vector_row(w: &IntervalEvalWorkspace, n: usize, i: usize) -> &[Iv] {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:2693:    j: &IntervalEvalWorkspace,"
+      ]
+    },
+    {
+      "symbol": "initialize_scalar_reuse_audited",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "candidate_or_evidence": "was live in reduced callbacks; actual reconstruction and caller-output candidates now use it; shared fixed scalar core also used by BoundedPreparedScalar with original midpoint residual and actual native callbacks/reconstruction.",
+      "baseline_source_references": [
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_dae_init.rs:1380:    pub fn initialize_scalar_reuse_audited(",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/vigilode/src/dae_evolution.rs:306:                .initialize_scalar_reuse_audited(t, x, &seed, &self.branch, policy);"
+      ],
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:981:                src.initialize_scalar_reuse_audited(t, &v[..x.len()], &guess, branch, policy)",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:2001:    pub fn initialize_scalar_reuse_audited(",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:614:                .initialize_scalar_reuse_audited(t, x, &seed, &self.branch, policy)",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:1158:                    InitRoute::Reuse => self.src.initialize_scalar_reuse_audited("
+      ],
+      "previous_status": "ACTIVATED_ADDITIONAL_PATH",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:918:                src.initialize_scalar_reuse_audited(t, &v[..x.len()], &guess, branch, policy)",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:2001:    pub fn initialize_scalar_reuse_audited(",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:614:                .initialize_scalar_reuse_audited(t, x, &seed, &self.branch, policy)",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:1158:                    InitRoute::Reuse => self.src.initialize_scalar_reuse_audited("
+      ]
+    },
+    {
+      "symbol": "GuardInverseWorkspace",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "candidate_or_evidence": "was live in bounded guard preconditioner; now proposes affine constraint graph before exact identity and branch verification; reused for bounded vector Newton and certified derivative columns in BoundedVector5/BoundedVectorRefined5.; reused and extended with pivoted and row-equilibrated bounded inverse, original left defect q<1, strict-dominant API retained.; reused in actual general SlabCertificateWorkspace for every source midpoint inverse.",
+      "baseline_source_references": [
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1145:pub struct GuardInverseWorkspace {",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1149:impl GuardInverseWorkspace {",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1245:impl Default for GuardInverseWorkspace {",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2009:            let r = GuardInverseWorkspace::new().invert(",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_dae_evolution.rs:4276:        let mut ws = GuardInverseWorkspace::new();"
+      ],
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2902:    inverse: GuardInverseWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2917:            inverse: GuardInverseWorkspace::new(),",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:3737:pub struct GuardInverseWorkspace {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:3741:impl GuardInverseWorkspace {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:3902:impl Default for GuardInverseWorkspace {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:4540:        GuardInverseWorkspace::new().invert(nz, &center[..nz * nz], &mut inv[..nz * nz])?;",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:4837:            let r = GuardInverseWorkspace::new().invert(",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:7133:        let mut ws = GuardInverseWorkspace::new();",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:2553:    inverse: crate::retro_dae_evolution::GuardInverseWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:2564:            inverse: crate::retro_dae_evolution::GuardInverseWorkspace::new(),"
+      ],
+      "previous_status": "ACTIVATED_ADDITIONAL_PATH",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2839:    inverse: GuardInverseWorkspace,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2854:            inverse: GuardInverseWorkspace::new(),",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:3660:pub struct GuardInverseWorkspace {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:3664:impl GuardInverseWorkspace {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:3825:impl Default for GuardInverseWorkspace {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:4463:        GuardInverseWorkspace::new().invert(nz, &center[..nz * nz], &mut inv[..nz * nz])?;",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:4760:            let r = GuardInverseWorkspace::new().invert(",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:7056:        let mut ws = GuardInverseWorkspace::new();",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:2553:    inverse: crate::retro_dae_evolution::GuardInverseWorkspace,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:2564:            inverse: crate::retro_dae_evolution::GuardInverseWorkspace::new(),"
+      ]
+    },
+    {
+      "symbol": "legendre_product",
+      "status": "ACTIVATED_EXECUTED_COMBINED_CANDIDATE_PARETO",
+      "candidate_or_evidence": "Actual Dictionary::legendre_product called by bounded LegendreCentered/HybridCentered source residual kernel, actual Reduced5Legendre and BoundedPreparedLegendre5 native epochs (12/45 dictionary center product calls). Pure centered residual not Pareto on this corpus; table-based HybridInterval on oscillatory stratum Pareto; combined bounded-prepared hybrid on two actual epochs Pareto by resource counts. No default promotion.",
+      "baseline_source_references": [
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-core/src/retro_dictionary.rs:790:    pub fn legendre_product(&self, a: &[f64], b: &[f64]) -> CoreResult<[Iv; 17]> {"
+      ],
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/retro_dictionary.rs:790:    pub fn legendre_product(&self, a: &[f64], b: &[f64]) -> CoreResult<[Iv; 17]> {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:279:        out.a = d.legendre_product(&ac[..a.len], &bc[..b.len])?;"
+      ],
+      "previous_status": "ACTIVATED_EXECUTED_COMBINED_CANDIDATE_PARETO",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/retro_dictionary.rs:790:    pub fn legendre_product(&self, a: &[f64], b: &[f64]) -> CoreResult<[Iv; 17]> {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:279:        out.a = d.legendre_product(&ac[..a.len], &bc[..b.len])?;"
+      ]
+    },
+    {
+      "symbol": "normal_equations",
+      "status": "ACTIVATED_EXECUTED_COMPETITOR",
+      "candidate_or_evidence": "Original Legendre::normal_equations used in source_linear_ls_endpoint and actual Reduced5NormalLs epochs, 18 measured manufactured normal-equation solves, 14 actual native certified slabs. BoundedNormal and QR alternatives, rational response analytic comparator; finite epoch Pareto includes normal and bounded, bounded has fewer allocations. No default promotion.",
+      "baseline_source_references": [
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-core/src/retro_dictionary.rs:339:    pub fn normal_equations(&self, z: f64) -> CoreResult<(DenseMatrix, Vec<f64>)> {"
+      ],
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/retro_dictionary.rs:339:    pub fn normal_equations(&self, z: f64) -> CoreResult<(DenseMatrix, Vec<f64>)> {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1878:            let (a, b) = l.normal_equations(zm)?;"
+      ],
+      "previous_status": "ACTIVATED_EXECUTED_COMPETITOR",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/retro_dictionary.rs:339:    pub fn normal_equations(&self, z: f64) -> CoreResult<(DenseMatrix, Vec<f64>)> {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1815:            let (a, b) = l.normal_equations(zm)?;"
+      ]
+    },
+    {
+      "symbol": "complex_phi",
+      "status": "ACTIVATED_EXECUTED_COMPETITOR",
+      "candidate_or_evidence": "Original Dictionary::complex_phi called by source_complex_endpoint DictionaryDirected in 8 isolated cases including Taylor and recurrence regimes and 6 actual Reduced5ComplexDictionary epochs (32 native slabs). Numerical proposal independently certified against directed complex response including polynomial forcing. New ScaledRecurrence candidate often better; no default promotion.",
+      "baseline_source_references": [
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-core/src/retro_dictionary.rs:802:    pub fn complex_phi(&self, re: f64, im: f64) -> CoreResult<ComplexCandidate> {"
+      ],
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/retro_dictionary.rs:802:    pub fn complex_phi(&self, re: f64, im: f64) -> CoreResult<ComplexCandidate> {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2171:        let d = Dictionary::get()?.complex_phi(di::mid(z[0]), di::mid(z[1]))?;"
+      ],
+      "previous_status": "ACTIVATED_EXECUTED_COMPETITOR",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/retro_dictionary.rs:802:    pub fn complex_phi(&self, re: f64, im: f64) -> CoreResult<ComplexCandidate> {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2108:        let d = Dictionary::get()?.complex_phi(di::mid(z[0]), di::mid(z[1]))?;"
+      ]
+    },
+    {
+      "symbol": "ordered_picard",
+      "status": "ACTIVATED_EXECUTED_COMPETITOR",
+      "candidate_or_evidence": "Actual source_picard_endpoint OrderedWords calls existing ordered_picard; 14 isolated measured source-bound endpoint comparisons, two actual Reduced5OrderedPicard epochs x1452 ordered word actions. Valid original-source endpoint candidate; not Pareto selected for isolated manufactured/noncommuting or epoch strata where recurrence dominates. No default promotion.",
+      "baseline_source_references": [
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_foundation.rs:559:pub fn ordered_picard(a: &[DenseMatrix; 3], y: &[f64]) -> CoreResult<PicardReport> {"
+      ],
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1627:        let r = crate::retro_foundation::ordered_picard(&matrices, &initial[..n])?;",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_foundation.rs:559:pub fn ordered_picard(a: &[DenseMatrix; 3], y: &[f64]) -> CoreResult<PicardReport> {"
+      ],
+      "previous_status": "ACTIVATED_EXECUTED_COMPETITOR",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1564:        let r = crate::retro_foundation::ordered_picard(&matrices, &initial[..n])?;",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_foundation.rs:559:pub fn ordered_picard(a: &[DenseMatrix; 3], y: &[f64]) -> CoreResult<PicardReport> {"
+      ]
+    },
+    {
+      "symbol": "Aperiodic",
+      "status": "ACTIVATED_EXECUTED_COMPETITOR",
+      "candidate_or_evidence": "Existing Aperiodic::new and solve used for source-owned enclosed transitions. Actual Reduced5Aperiodic epochs, eight native slabs, four nonuniform cells each. 24 measured Sequential and 24 measured two-thread OrderedScan isolated source transport cases. Discrete rounded transition receipt separated from independent physical transition enclosure. Direct centered and interval streaming mutations compared, zero heap in calling-thread measurements, no worker allocations or walltime claims.",
+      "baseline_source_references": [
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_foundation.rs:379:pub struct Aperiodic {",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_foundation.rs:399:impl Aperiodic {"
+      ],
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2456:            let owner = crate::retro_foundation::Aperiodic::new(g)?;",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_foundation.rs:379:pub struct Aperiodic {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_foundation.rs:399:impl Aperiodic {"
+      ],
+      "previous_status": "ACTIVATED_EXECUTED_COMPETITOR",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2393:            let owner = crate::retro_foundation::Aperiodic::new(g)?;",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_foundation.rs:379:pub struct Aperiodic {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_foundation.rs:399:impl Aperiodic {"
+      ]
+    },
+    {
+      "symbol": "nilpotent_green",
+      "status": "ALREADY_LIVE_OTHER_PATH",
+      "candidate_or_evidence": "retro_physical_event native carrier; test reset/reconstruction integration only if structural nilpotency proven",
+      "baseline_source_references": [
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_foundation.rs:622:pub fn nilpotent_green(",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_physical_event.rs:14:    retro_foundation::nilpotent_green,",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_physical_event.rs:634:        nilpotent_green("
+      ],
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_foundation.rs:622:pub fn nilpotent_green(",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_physical_event.rs:14:    retro_foundation::nilpotent_green,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_physical_event.rs:634:        nilpotent_green("
+      ],
+      "previous_status": "ALREADY_LIVE_OTHER_PATH",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_foundation.rs:622:pub fn nilpotent_green(",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_physical_event.rs:14:    retro_foundation::nilpotent_green,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_physical_event.rs:634:        nilpotent_green("
+      ]
+    },
+    {
+      "symbol": "TensorPencil",
+      "status": "ALREADY_LIVE_OTHER_PATH",
+      "candidate_or_evidence": "WARP seed candidate; retain exact full-source projection guard",
+      "baseline_source_references": [
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_dae_evolution.rs:12:    retro_foundation::{PencilTerm, QuotientMode, TensorPencil},",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_dae_evolution.rs:356:        let mut pencil = TensorPencil::new(",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_foundation.rs:710:pub struct TensorPencil {",
+        "081733aa9bbb1885b53770cd1d8e0a98de879b96:crates/rodas5p-integrators/src/retro_foundation.rs:720:impl TensorPencil {"
+      ],
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:12:    retro_foundation::{PencilTerm, QuotientMode, TensorPencil},",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:698:        let mut pencil = TensorPencil::new(",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_foundation.rs:710:pub struct TensorPencil {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_foundation.rs:720:impl TensorPencil {"
+      ],
+      "previous_status": "ALREADY_LIVE_OTHER_PATH",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:12:    retro_foundation::{PencilTerm, QuotientMode, TensorPencil},",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:635:        let mut pencil = TensorPencil::new(",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_foundation.rs:710:pub struct TensorPencil {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_foundation.rs:720:impl TensorPencil {"
+      ]
+    },
+    {
+      "symbol": "ScalarReconstructionWorkspace",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "candidate_or_evidence": "Bounded prepared scalar fixed and previous-node candidates 60 successful noheap reconstruction calls; owning BoundedPrepared5 actual atlas path.; BoundedAffineScalar now used in actual BoundedAffine5 reconstruction and 48 caller-owned fixed/previous-node candidates, all 0 requests.; reused for 36 bounded caller-owned nonlinear scalar Sturm reconstruction candidates, all zero heap.; now reused together in actual compact epoch slab loop; 109 warmed slab replays and all three component boundaries zero heap.",
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:889:pub struct ScalarReconstructionWorkspace {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:893:impl ScalarReconstructionWorkspace {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:901:impl Default for ScalarReconstructionWorkspace {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:918:    scratch: &mut ScalarReconstructionWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1014:    scratch: &mut ScalarReconstructionWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1051:    scratch: &mut ScalarReconstructionWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1087:    scratch: &mut ScalarReconstructionWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1124:    scratch: &mut ScalarReconstructionWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1398:        let mut scratch = ScalarReconstructionWorkspace::new();",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained/slabs.rs:5:    ReconstructionSeedRoute as Seed, ScalarReconstructionWorkspace, VectorReconstructionWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained/slabs.rs:22:    scalar: ScalarReconstructionWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained/slabs.rs:47:            scalar: ScalarReconstructionWorkspace::new(),"
+      ],
+      "previous_status": "ACTIVATED_ADDITIONAL_PATH",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:826:pub struct ScalarReconstructionWorkspace {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:830:impl ScalarReconstructionWorkspace {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:838:impl Default for ScalarReconstructionWorkspace {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:855:    scratch: &mut ScalarReconstructionWorkspace,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:951:    scratch: &mut ScalarReconstructionWorkspace,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:988:    scratch: &mut ScalarReconstructionWorkspace,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1024:    scratch: &mut ScalarReconstructionWorkspace,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1061:    scratch: &mut ScalarReconstructionWorkspace,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1335:        let mut scratch = ScalarReconstructionWorkspace::new();"
+      ]
+    },
+    {
+      "symbol": "products",
+      "status": "ACTIVATED_TABLE_DIRECT_INTERVAL",
+      "candidate_or_evidence": "Existing dictionary product table directly used for interval Legendre coefficients and directed centered correction. HybridInterval Pareto on oscillatory fixture. Symbol search broad; exact activation is legendre_mul in retro_dae_evolution.rs.",
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-cli/src/r4_studies.rs:434:    // degrees, products and coefficient setups as the certified arm, and",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-cli/src/r4_studies.rs:536:        // The full path charges its formal dense products, (2L - 1) (8n)^3",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/binary_scaling.rs:9:/// so the callers' products propagate it.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/complex_shift_jet.rs:156:    /// Interval products in directed complex residuals (4 per entry).",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/complex_shift_jet.rs:165:    /// pairs + residual products + n^2. Not measured FLOPs/cost.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/complex_shift_jet.rs:200:    /// Interval products forming `c0 b + sum_i w_i u_i` (4 per entry).",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/directed.rs:577:        // Subnormal products move outward unconditionally.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/leja_action.rs:112:/// The largest Newton degree (operator products per block column).",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/leja_action.rs:156:        // Four vector allocations: grid, log products, taken flags, output.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/leja_action.rs:320:    /// Newton degree: operator products per block column.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/leja_action.rs:592:        // while interval products decrease from 128*q*(q+1)/2 to 128*q.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/leja_action.rs:2552:                // Outward replay covers coefficient products/sums, column",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/leja_action.rs:3820:            \"refused interval products must retain attempted work\"",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/low_rank_bordered.rs:146:        // Constructor capacities ensure that all products below fit usize.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/matrix_functions.rs:92:        // of two, so no extra products are needed.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/polynomial_action.rs:1947:/// Runs degree selection and predicts vector products without allocating heap memory.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/polynomial_action.rs:2380:/// Computes degree, scale, block width, vector products, and truncation bound",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/polynomial_action/router.rs:10://! one with fewer operator vector products wins, ties to Chebyshev; with none",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/polynomial_action/router.rs:356:    /// Preflight compares vector products, degree limit, and vector-independent error before executing.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/polynomial_router.rs:14://! before matrix products. Prior PY02 campaign ABSTAIN remains unchanged.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/retro_dictionary.rs:425:    pub fn products(&self) -> &[ProductEntry] {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/shared_shift_policy.rs:62:/// directed matrix-entry products of residual certificates and witnesses.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/taylor_phi.rs:29://! the `s m` products is not bounded, so the status is",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/taylor_phi.rs:110:/// Work of one action: `scaling_steps * degree` products of the",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/taylor_phi.rs:118:    /// Scalar multiply-adds of those products (dense).",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/taylor_phi.rs:230:    let mut products = 0_u64;",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/taylor_phi.rs:240:            products += 1;",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/taylor_phi.rs:261:                \"{TAYLOR_ROUNDING_NOT_BOUNDED}: {} products of the augmented matrix and the rounding of h A are not bounded\",",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/taylor_phi.rs:262:                products",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/taylor_phi.rs:273:            augmented_vector_products: products,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/taylor_phi.rs:274:            multiply_adds: products * (size * size) as u64,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/work.rs:105:    /// (RVJ DAG node SAFE-RECYCLE); the refresh products themselves are in",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/affine_event_certificate.rs:35:/// output products detect DAZ and FTZ. This is an arithmetic probe, not a",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/affine_event_certificate.rs:234:    /// Original represented dense H and stage rows; not rounded dot products.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/audit2_stage_certificate_research.rs:284:/// subnormal products and quotients a larger one (audit 2026-09-30 found",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/causal_majorant.rs:15://!   products for `L = ceil(log2 s)`);",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/fourier_path_certificate.rs:670:/// The lambda = 1 right side times `h`, enclosed (noncyclic products).",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/homotopy_policy.rs:206:/// only roundings are the mantissa products and the final scaling. The direct form overflowed",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/outward_certificate.rs:1517:/// multiply and add of the products.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/outward_certificate.rs:1542:/// components on `execution`. The products skip zero terms in the same",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/outward_certificate.rs:1543:/// order as the full `(sn) x (sn)` products, so the bound is bit for bit",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/packet_work.rs:37:    /// Directed spectral-power recurrence products in outward moment replay.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/packet_work.rs:80:    /// frequency products, charged before each attempted interval operation.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/packet_work.rs:211:    /// Explicitly zero by design (no online Jacobian-vector products).",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/problem.rs:949:        // products in `jacobian_matvecs` (audit F-048, F-022).",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:282:    for t in d.products() {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:468:/// Inputs are actual native endpoint/stage rows, not rounded dot products.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2256:    products: &mut usize,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2307:                        *products += 1;",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_foundation.rs:472:                // products, compute block starts sequentially, then local",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_temporal.rs:7://! products modulo z^m +/- alpha reconstruct the low band exactly.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_temporal.rs:268:/// prefix products P_j=G_j ... G_0 are enclosed directly, never assembled",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/rodas5p_fast.rs:8://! 27% in unvectorized dense matrix-vector products (a diagnostic residual",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/rodas5p_lagged.rs:295:    /// GMRES products `W x` that are not Arnoldi columns: the explicit",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/rodas5p_lagged.rs:774:        let products = op.applications.load(Ordering::Relaxed);",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/rodas5p_lagged.rs:779:        let uncharged_products = products - (counters.linear_matvecs - counted_products_before);",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/rodas5p_lagged.rs:788:            products - (physical_products_after - physical_products_before);",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/rodas5p_lagged.rs:799:        self.work.operator_applications += products;",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/rodas5p_lagged.rs:801:            self.work.jvp_applications += products;",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/rodas5p_lagged.rs:806:        self.work.residual_applications += products - column_products;",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/routing.rs:82:    /// products are zero).",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/routing.rs:90:    /// Jacobian in `jacobian_builds`, band and dense products in",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/routing.rs:91:    /// `jacobian_matvecs`, JVP products in `jvp_calls` / `jvp_vectors`.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/source_owned_graph_schur.rs:342:        let mut products = 0;",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/source_owned_graph_schur.rs:349:            products += self.scan_into(&z, &mut col);",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/source_owned_graph_schur.rs:379:            t.affine_pair_compositions += products;",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/stage_target.rs:111:    /// `P^s = 0` exactly, checked by boolean matrix products; this is the",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-krylov/src/gcrodr.rs:423:    /// Operator products of the REV-01c refresh after this cycle's update",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-krylov/src/gcrodr.rs:452:    /// `(charged products, recycle rank, residual)` at the start of the",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-krylov/src/gcrodr.rs:485:    /// each `u_j` is applied once (charged as refresh products) and, if",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-krylov/src/secant_preconditioner.rs:314:        // 1. a = S^T r (r_rank inner products)",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-krylov/src/shared_basis.rs:11://! Reusing `Q` and `Z` reduces the total number of Jacobian-vector products (JVPs)",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-krylov/src/shared_basis.rs:17:/// Callback type for Jacobian-vector products in shared basis solves.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-krylov/src/shared_basis.rs:41:    /// Number of new Jacobian-vector products evaluated during this solve call.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode-bench/src/model.rs:142:    /// Jacobian-vector products (Diffsol assembles its Jacobian from these).",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode-bench/src/source_identity.rs:31:            // Build products and Git internals are not source inputs.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode-coupled/src/rhs_homotopy.rs:1241:                    // Normalize both vectors before forming dot products.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/coloring.rs:123:/// Recover the nonzeros (row-major, pattern order) from compressed products",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/records.rs:1171:    /// products are zero).",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/records.rs:1184:    /// Jacobian in `jacobian_builds`, band and dense products in",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/records.rs:1185:    /// `jacobian_matvecs`, JVP products in `jvp_calls` / `jvp_vectors`.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/selection.rs:300:    /// Model-supplied Jacobian-vector products.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/selection/adapters.rs:62:    /// Jacobian-vector products.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/selection/frontend.rs:1388:    /// Jacobian-vector products.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/spatial.rs:179:    /// Cell area or volume for the discrete mass and energy inner products.",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/work_model.rs:83:    /// Orthogonalization inner products (dot products)."
+      ],
+      "previous_status": "ACTIVATED_TABLE_DIRECT_INTERVAL",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-cli/src/r4_studies.rs:434:    // degrees, products and coefficient setups as the certified arm, and",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-cli/src/r4_studies.rs:536:        // The full path charges its formal dense products, (2L - 1) (8n)^3",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/binary_scaling.rs:9:/// so the callers' products propagate it.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/complex_shift_jet.rs:156:    /// Interval products in directed complex residuals (4 per entry).",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/complex_shift_jet.rs:165:    /// pairs + residual products + n^2. Not measured FLOPs/cost.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/complex_shift_jet.rs:200:    /// Interval products forming `c0 b + sum_i w_i u_i` (4 per entry).",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/directed.rs:577:        // Subnormal products move outward unconditionally.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/leja_action.rs:112:/// The largest Newton degree (operator products per block column).",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/leja_action.rs:156:        // Four vector allocations: grid, log products, taken flags, output.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/leja_action.rs:320:    /// Newton degree: operator products per block column.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/leja_action.rs:592:        // while interval products decrease from 128*q*(q+1)/2 to 128*q.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/leja_action.rs:2552:                // Outward replay covers coefficient products/sums, column",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/leja_action.rs:3820:            \"refused interval products must retain attempted work\"",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/low_rank_bordered.rs:146:        // Constructor capacities ensure that all products below fit usize.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/matrix_functions.rs:92:        // of two, so no extra products are needed.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/polynomial_action.rs:1947:/// Runs degree selection and predicts vector products without allocating heap memory.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/polynomial_action.rs:2380:/// Computes degree, scale, block width, vector products, and truncation bound",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/polynomial_action/router.rs:10://! one with fewer operator vector products wins, ties to Chebyshev; with none",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/polynomial_action/router.rs:356:    /// Preflight compares vector products, degree limit, and vector-independent error before executing.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/polynomial_router.rs:14://! before matrix products. Prior PY02 campaign ABSTAIN remains unchanged.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/retro_dictionary.rs:425:    pub fn products(&self) -> &[ProductEntry] {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/shared_shift_policy.rs:62:/// directed matrix-entry products of residual certificates and witnesses.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/taylor_phi.rs:29://! the `s m` products is not bounded, so the status is",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/taylor_phi.rs:110:/// Work of one action: `scaling_steps * degree` products of the",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/taylor_phi.rs:118:    /// Scalar multiply-adds of those products (dense).",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/taylor_phi.rs:230:    let mut products = 0_u64;",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/taylor_phi.rs:240:            products += 1;",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/taylor_phi.rs:261:                \"{TAYLOR_ROUNDING_NOT_BOUNDED}: {} products of the augmented matrix and the rounding of h A are not bounded\",",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/taylor_phi.rs:262:                products",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/taylor_phi.rs:273:            augmented_vector_products: products,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/taylor_phi.rs:274:            multiply_adds: products * (size * size) as u64,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/work.rs:105:    /// (RVJ DAG node SAFE-RECYCLE); the refresh products themselves are in",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/affine_event_certificate.rs:35:/// output products detect DAZ and FTZ. This is an arithmetic probe, not a",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/affine_event_certificate.rs:234:    /// Original represented dense H and stage rows; not rounded dot products.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/audit2_stage_certificate_research.rs:284:/// subnormal products and quotients a larger one (audit 2026-09-30 found",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/causal_majorant.rs:15://!   products for `L = ceil(log2 s)`);",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/fourier_path_certificate.rs:670:/// The lambda = 1 right side times `h`, enclosed (noncyclic products).",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/homotopy_policy.rs:206:/// only roundings are the mantissa products and the final scaling. The direct form overflowed",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/outward_certificate.rs:1517:/// multiply and add of the products.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/outward_certificate.rs:1542:/// components on `execution`. The products skip zero terms in the same",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/outward_certificate.rs:1543:/// order as the full `(sn) x (sn)` products, so the bound is bit for bit",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/packet_work.rs:37:    /// Directed spectral-power recurrence products in outward moment replay.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/packet_work.rs:80:    /// frequency products, charged before each attempted interval operation.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/packet_work.rs:211:    /// Explicitly zero by design (no online Jacobian-vector products).",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/problem.rs:949:        // products in `jacobian_matvecs` (audit F-048, F-022).",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:282:    for t in d.products() {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:468:/// Inputs are actual native endpoint/stage rows, not rounded dot products.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2193:    products: &mut usize,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2244:                        *products += 1;",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_foundation.rs:472:                // products, compute block starts sequentially, then local",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_temporal.rs:7://! products modulo z^m +/- alpha reconstruct the low band exactly.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_temporal.rs:268:/// prefix products P_j=G_j ... G_0 are enclosed directly, never assembled",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/rodas5p_fast.rs:8://! 27% in unvectorized dense matrix-vector products (a diagnostic residual",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/rodas5p_lagged.rs:295:    /// GMRES products `W x` that are not Arnoldi columns: the explicit",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/rodas5p_lagged.rs:774:        let products = op.applications.load(Ordering::Relaxed);",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/rodas5p_lagged.rs:779:        let uncharged_products = products - (counters.linear_matvecs - counted_products_before);",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/rodas5p_lagged.rs:788:            products - (physical_products_after - physical_products_before);",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/rodas5p_lagged.rs:799:        self.work.operator_applications += products;",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/rodas5p_lagged.rs:801:            self.work.jvp_applications += products;",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/rodas5p_lagged.rs:806:        self.work.residual_applications += products - column_products;",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/routing.rs:82:    /// products are zero).",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/routing.rs:90:    /// Jacobian in `jacobian_builds`, band and dense products in",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/routing.rs:91:    /// `jacobian_matvecs`, JVP products in `jvp_calls` / `jvp_vectors`.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/source_owned_graph_schur.rs:342:        let mut products = 0;",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/source_owned_graph_schur.rs:349:            products += self.scan_into(&z, &mut col);",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/source_owned_graph_schur.rs:379:            t.affine_pair_compositions += products;",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/stage_target.rs:111:    /// `P^s = 0` exactly, checked by boolean matrix products; this is the",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-krylov/src/gcrodr.rs:423:    /// Operator products of the REV-01c refresh after this cycle's update",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-krylov/src/gcrodr.rs:452:    /// `(charged products, recycle rank, residual)` at the start of the",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-krylov/src/gcrodr.rs:485:    /// each `u_j` is applied once (charged as refresh products) and, if",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-krylov/src/secant_preconditioner.rs:314:        // 1. a = S^T r (r_rank inner products)",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-krylov/src/shared_basis.rs:11://! Reusing `Q` and `Z` reduces the total number of Jacobian-vector products (JVPs)",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-krylov/src/shared_basis.rs:17:/// Callback type for Jacobian-vector products in shared basis solves.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-krylov/src/shared_basis.rs:41:    /// Number of new Jacobian-vector products evaluated during this solve call.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode-bench/src/model.rs:142:    /// Jacobian-vector products (Diffsol assembles its Jacobian from these).",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode-bench/src/source_identity.rs:31:            // Build products and Git internals are not source inputs.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode-coupled/src/rhs_homotopy.rs:1241:                    // Normalize both vectors before forming dot products.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/coloring.rs:123:/// Recover the nonzeros (row-major, pattern order) from compressed products",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/records.rs:1171:    /// products are zero).",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/records.rs:1184:    /// Jacobian in `jacobian_builds`, band and dense products in",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/records.rs:1185:    /// `jacobian_matvecs`, JVP products in `jvp_calls` / `jvp_vectors`.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/selection.rs:300:    /// Model-supplied Jacobian-vector products.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/selection/adapters.rs:62:    /// Jacobian-vector products.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/selection/frontend.rs:1388:    /// Jacobian-vector products.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/spatial.rs:179:    /// Cell area or volume for the discrete mass and energy inner products.",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/work_model.rs:83:    /// Orthogonalization inner products (dot products)."
+      ]
+    },
+    {
+      "symbol": "picard_words",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "candidate_or_evidence": "Existing dictionary word table consumed by ordered_picard in actual general DAE endpoint certificate; preserve word route as genuine comparison, not simulated.",
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/retro_dictionary.rs:428:    pub fn picard_words(&self) -> &[PicardWord] {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_foundation.rs:588:        for (v, word) in cur.iter().zip(&d.picard_words()[k..k + cur.len()]) {"
+      ],
+      "previous_status": "ACTIVATED_ADDITIONAL_PATH",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/retro_dictionary.rs:428:    pub fn picard_words(&self) -> &[PicardWord] {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_foundation.rs:588:        for (v, word) in cur.iter().zip(&d.picard_words()[k..k + cur.len()]) {"
+      ]
+    },
+    {
+      "symbol": "VectorProjectionWorkspace",
+      "status": "ACTIVATED_NEW_WORKSPACE",
+      "candidate_or_evidence": "Actual vector callback and dictionary-node projection, 18 zeroheap point cases, 36 zeroheap caller-owned reconstruction cases, 6 bounded vector epochs. Original branch proof retained.; extended actual nondominant vector projection and caller-owned reconstruction at algebraic dimensions 2,4,8, including nonlinear row-scaled fixture.; now reused in actual QueryWorkspace full source projection.",
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1156:    projection: di::VectorProjectionWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1163:            projection: di::VectorProjectionWorkspace::new(),",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:982:                    &mut VectorProjectionWorkspace::new(),",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:2550:pub struct VectorProjectionWorkspace {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:2559:impl VectorProjectionWorkspace {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:2572:impl Default for VectorProjectionWorkspace {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:2601:    w: &mut VectorProjectionWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:2647:    w: &VectorProjectionWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:2724:        scratch: &mut VectorProjectionWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:2745:        scratch: &mut VectorProjectionWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:2765:        w: &mut VectorProjectionWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:659:        let mut workspace = rodas5p_integrators::retro_dae_init::VectorProjectionWorkspace::new();",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:996:    vector: rodas5p_integrators::retro_dae_init::VectorProjectionWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:1002:            vector: rodas5p_integrators::retro_dae_init::VectorProjectionWorkspace::new(),",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:1022:    ) -> Option<&mut rodas5p_integrators::retro_dae_init::VectorProjectionWorkspace>;",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:1030:    ) -> Option<&mut rodas5p_integrators::retro_dae_init::VectorProjectionWorkspace> {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:1040:    ) -> Option<&mut rodas5p_integrators::retro_dae_init::VectorProjectionWorkspace> {"
+      ],
+      "previous_status": "ACTIVATED_NEW_WORKSPACE",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1093:    projection: di::VectorProjectionWorkspace,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1100:            projection: di::VectorProjectionWorkspace::new(),",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:982:                    &mut VectorProjectionWorkspace::new(),",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:2550:pub struct VectorProjectionWorkspace {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:2559:impl VectorProjectionWorkspace {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:2572:impl Default for VectorProjectionWorkspace {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:2601:    w: &mut VectorProjectionWorkspace,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:2647:    w: &VectorProjectionWorkspace,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:2724:        scratch: &mut VectorProjectionWorkspace,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:2745:        scratch: &mut VectorProjectionWorkspace,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:2765:        w: &mut VectorProjectionWorkspace,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:659:        let mut workspace = rodas5p_integrators::retro_dae_init::VectorProjectionWorkspace::new();",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:996:    vector: rodas5p_integrators::retro_dae_init::VectorProjectionWorkspace,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:1002:            vector: rodas5p_integrators::retro_dae_init::VectorProjectionWorkspace::new(),",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:1022:    ) -> Option<&mut rodas5p_integrators::retro_dae_init::VectorProjectionWorkspace>;",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:1030:    ) -> Option<&mut rodas5p_integrators::retro_dae_init::VectorProjectionWorkspace> {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:1040:    ) -> Option<&mut rodas5p_integrators::retro_dae_init::VectorProjectionWorkspace> {"
+      ]
+    },
+    {
+      "symbol": "endpoint_response",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "candidate_or_evidence": "Dictionary rational LS endpoint used for consistency with exact normal minimizer and explicit analytic scalar comparator; not the physical exponential.",
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/retro_dictionary.rs:320:    pub fn endpoint_response(&self, z: f64) -> CoreResult<Iv> {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1845:    let exact_response = l.endpoint_response(zm)?;"
+      ],
+      "previous_status": "ACTIVATED_ADDITIONAL_PATH",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/retro_dictionary.rs:320:    pub fn endpoint_response(&self, z: f64) -> CoreResult<Iv> {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1782:    let exact_response = l.endpoint_response(zm)?;"
+      ]
+    },
+    {
+      "symbol": "RootDyadic",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "candidate_or_evidence": "Reused exact frozen coefficient arithmetic in bounded signed primitive Sturm chain, 18 successful zeroheap point cases and actual BoundedSturm5/BoundedSturmNewton5 epochs. Refuse integer capacity overflow and non-squarefree polynomial.",
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:1660:struct RootDyadic {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:1664:impl RootDyadic {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:1727:fn frozen_dyadic(eq: &DeclaredPolynomial, t: f64, x: &[f64]) -> Option<[RootDyadic; 5]> {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:1728:    let q = RootDyadic::from_f64;",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:1729:    let mut sum = [RootDyadic::ZERO; 5];",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:1731:        let mut poly = [RootDyadic::ZERO; 5];",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:1736:            let mut a = RootDyadic::ZERO;",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:1744:            let mut next = [RootDyadic::ZERO; 5];",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:1799:    fn from_dyadic(d: [RootDyadic; 5]) -> Option<Self> {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:1848:            let a = RootDyadic::new(v, 0)",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:1849:                .and_then(RootDyadic::interval)",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:1856:            let x = RootDyadic::from_f64(x)?;",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:1860:                .try_fold(RootDyadic::ZERO, |s, &v| {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:1861:                    s.mul(x)?.add(RootDyadic::new(v, 0)?)",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:1943:        derivative[i - 1] = RootDyadic::new(poly.a[i], 0)",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:1944:            .and_then(RootDyadic::interval)"
+      ],
+      "previous_status": "ACTIVATED_ADDITIONAL_PATH",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:1660:struct RootDyadic {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:1664:impl RootDyadic {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:1727:fn frozen_dyadic(eq: &DeclaredPolynomial, t: f64, x: &[f64]) -> Option<[RootDyadic; 5]> {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:1728:    let q = RootDyadic::from_f64;",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:1729:    let mut sum = [RootDyadic::ZERO; 5];",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:1731:        let mut poly = [RootDyadic::ZERO; 5];",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:1736:            let mut a = RootDyadic::ZERO;",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:1744:            let mut next = [RootDyadic::ZERO; 5];",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:1799:    fn from_dyadic(d: [RootDyadic; 5]) -> Option<Self> {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:1848:            let a = RootDyadic::new(v, 0)",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:1849:                .and_then(RootDyadic::interval)",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:1856:            let x = RootDyadic::from_f64(x)?;",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:1860:                .try_fold(RootDyadic::ZERO, |s, &v| {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:1861:                    s.mul(x)?.add(RootDyadic::new(v, 0)?)",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:1943:        derivative[i - 1] = RootDyadic::new(poly.a[i], 0)",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:1944:            .and_then(RootDyadic::interval)"
+      ]
+    },
+    {
+      "symbol": "SmallSturmPoly",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "candidate_or_evidence": "Checked i128 primitive signed pseudo-remainder chain and exact/certified endpoint variation; bounded isolation with Newton mutation. Actual callback, reconstruction, and epoch measured.",
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:1770:struct SmallSturmPoly {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:1774:impl SmallSturmPoly {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:1878:fn sturm_variation(chain: &[SmallSturmPoly], x: f64) -> CoreResult<usize> {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:1895:    poly: SmallSturmPoly,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:1903:    let mut chain = [SmallSturmPoly::ZERO; 5];",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:2155:                    .and_then(SmallSturmPoly::from_dyadic)"
+      ],
+      "previous_status": "ACTIVATED_NEW_KERNEL",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:1770:struct SmallSturmPoly {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:1774:impl SmallSturmPoly {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:1878:fn sturm_variation(chain: &[SmallSturmPoly], x: f64) -> CoreResult<usize> {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:1895:    poly: SmallSturmPoly,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:1903:    let mut chain = [SmallSturmPoly::ZERO; 5];",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:2155:                    .and_then(SmallSturmPoly::from_dyadic)"
+      ]
+    },
+    {
+      "symbol": "interval_matrix_transition",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "candidate_or_evidence": "Direct normalized polynomial matrix time-coefficient recurrence on each represented aperiodic cell, analytic ordered-integral tail, exact-zero termination, original source extraction. Actual native slab endpoint and measured streaming competitors.",
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2251:fn interval_matrix_transition(",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2413:        let (v, e) = interval_matrix_transition("
+      ],
+      "previous_status": "ACTIVATED_NEW_KERNEL",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2188:fn interval_matrix_transition(",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2350:        let (v, e) = interval_matrix_transition("
+      ]
+    },
+    {
+      "symbol": "phi_all_fast",
+      "status": "ACTIVATED_EXECUTED_COMPETITOR",
+      "candidate_or_evidence": "Former packed evaluation used by batch wrapper and tests; actual source slab Green PackedGreen route now directly uses certified lane bounds. Six isolated dissipative slab calls and 124 actual native Green slabs across both storage choices; measured isolated packed path faster on stable/stiff, slightly wider bound. No default promotion.",
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-core/src/retro_dictionary.rs:761:    pub fn phi_all_fast(&self, x: f64) -> CoreResult<[Iv; 9]> {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:3019:        let v = d.phi_all_fast(u.lo)?;",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_foundation.rs:979:    dictionary_batch_into(x, out, exec, |d, x| d.phi_all_fast(x))"
+      ],
+      "previous_status": "ACTIVATED_EXECUTED_COMPETITOR",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-core/src/retro_dictionary.rs:761:    pub fn phi_all_fast(&self, x: f64) -> CoreResult<[Iv; 9]> {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2956:        let v = d.phi_all_fast(u.lo)?;",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_foundation.rs:979:    dictionary_batch_into(x, out, exec, |d, x| d.phi_all_fast(x))"
+      ]
+    },
+    {
+      "symbol": "guard_solve_into",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "candidate_or_evidence": "Prior guard interval linear kernel now used in general slab derivative column proof, optional AdaptiveGaussSeidel2 actually returned 18 sweeps in measured isolated cases. Original physical authority retained.",
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:3229:        guard_solve_into(",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:4143:fn guard_solve_into(",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:4606:        guard_solve_into(",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:4708:        guard_solve_into(c, rhs, q, gap, &mut staged[..nz], defect, refinement, work)?;",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:4898:                guard_solve_into(",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:7003:                guard_solve_into("
+      ],
+      "previous_status": "ACTIVATED_ADDITIONAL_PATH",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:3166:        guard_solve_into(",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:4066:fn guard_solve_into(",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:4529:        guard_solve_into(",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:4631:        guard_solve_into(c, rhs, q, gap, &mut staged[..nz], defect, refinement, work)?;",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:4821:                guard_solve_into(",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:6926:                guard_solve_into("
+      ]
+    },
+    {
+      "symbol": "SlabCertificateWorkspace",
+      "status": "ACTIVATED_NEW_WORKSPACE",
+      "candidate_or_evidence": "Caller-owned warm report and fixed scratch 60/60 noheap, fresh retained owner six allocations, actual Workspace5 integrated 40 epochs and 608 slab receipts. Local and shared reusable storage alternatives.; now reused together in actual compact epoch slab loop; 109 warmed slab replays and all three component boundaries zero heap.",
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2893:pub struct SlabCertificateWorkspace {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2905:impl SlabCertificateWorkspace {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2936:impl Default for SlabCertificateWorkspace {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:3045:    w: &mut SlabCertificateWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:3349:    w: &mut SlabCertificateWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:330:    certificate_workspace: Option<Arc<Mutex<de::SlabCertificateWorkspace>>>,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:362:                    &mut de::SlabCertificateWorkspace::new(),",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:1782:            Some(Arc::new(Mutex::new(de::SlabCertificateWorkspace::new())))",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained/slabs.rs:26:    proof: de::SlabCertificateWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained/slabs.rs:51:            proof: de::SlabCertificateWorkspace::new(),"
+      ],
+      "previous_status": "ACTIVATED_NEW_WORKSPACE",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2830:pub struct SlabCertificateWorkspace {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2842:impl SlabCertificateWorkspace {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2873:impl Default for SlabCertificateWorkspace {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:2982:    w: &mut SlabCertificateWorkspace,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:3286:    w: &mut SlabCertificateWorkspace,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:330:    certificate_workspace: Option<Arc<Mutex<de::SlabCertificateWorkspace>>>,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:362:                    &mut de::SlabCertificateWorkspace::new(),",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:1758:            Some(Arc::new(Mutex::new(de::SlabCertificateWorkspace::new())))"
+      ]
+    },
+    {
+      "symbol": "at_into",
+      "status": "ACTIVATED_EXECUTED_COMPETITOR",
+      "candidate_or_evidence": "Solution::at_into was declaration-only in prior vigilode/src; activated in actual fixed_query native dense path including mass and real conserved reset terminal, 84 isolated raw_into positive checks and actual opt-in grid collection.; actual compact epoch collection uses scalar-only or vector query scratch without dropping projection evidence.",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:1269:        s.at_into(t, &mut raw[..nr])",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/solution.rs:679:    pub fn at_into(&self, t: f64, out: &mut [f64]) -> Option<()> {"
+      ],
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:1281:        s.at_into(t, &mut raw[..nr])",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/solution.rs:679:    pub fn at_into(&self, t: f64, out: &mut [f64]) -> Option<()> {"
+      ],
+      "previous_status": "ACTIVATED_EXECUTED_COMPETITOR"
+    },
+    {
+      "symbol": "write_report_into",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "candidate_or_evidence": "New fixed scalar/vector report materialization into retained buffers; full InitReport identity on all measured queries.",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:1458:    pub fn write_report_into(&self, out: &mut InitReport) {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_init.rs:2449:    pub fn write_report_into(&self, out: &mut InitReport) {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:1081:            Self::Scalar(r) => r.write_report_into(out),",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:1082:            Self::Vector(r) => r.write_report_into(out),"
+      ],
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:1458:    pub fn write_report_into(&self, out: &mut InitReport) {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_init.rs:2449:    pub fn write_report_into(&self, out: &mut InitReport) {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:1081:            Self::Scalar(r) => r.write_report_into(out),",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:1082:            Self::Vector(r) => r.write_report_into(out),"
+      ],
+      "previous_status": "ACTIVATED_NEW_KERNEL"
+    },
+    {
+      "symbol": "query_error_from_pairs",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "candidate_or_evidence": "New fixed-row and stream-pair original interval Horner candidates; exact legacy physical bound and conserved affine lift preserved.",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:3326:pub fn query_error_from_pairs(",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:1297:        let ex = de::query_error_from_pairs("
+      ],
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:3389:pub fn query_error_from_pairs(",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:1320:            de::query_error_from_pairs("
+      ],
+      "previous_status": "ACTIVATED_NEW_KERNEL"
+    },
+    {
+      "symbol": "represented_component",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "candidate_or_evidence": "Existing fast source-owned physical-event adapter was already used in other event clients but not DAE slab retention; actual BorrowedComponent calls it and reuses original directed retro_physical_event::power for every component. 20 compact epochs and 304 slab packets, no changed physical proof.",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:552:            crate::retro_physical_event::power(&s.represented_component(k, i)?).map(|p| p.to_vec())",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_event_poly.rs:355:            let p = component(&s.represented_component(k, i)?)?;",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_physical_event.rs:384:            .map(|i| power(&path.segments.represented_component(k, i)?))",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_physical_event.rs:405:            let packet = path.segments.represented_component(k, 0)?;",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/rodas5p_fast_dense.rs:218:    pub fn represented_component("
+      ],
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:603:        *v = crate::retro_physical_event::power(&s.represented_component(k, i)?)?;",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:615:            crate::retro_physical_event::power(&s.represented_component(k, i)?).map(|p| p.to_vec())",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_event_poly.rs:355:            let p = component(&s.represented_component(k, i)?)?;",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_physical_event.rs:384:            .map(|i| power(&path.segments.represented_component(k, i)?))",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_physical_event.rs:405:            let packet = path.segments.represented_component(k, 0)?;",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/rodas5p_fast_dense.rs:218:    pub fn represented_component("
+      ],
+      "previous_status": "ACTIVATED_ADDITIONAL_PATH"
+    },
+    {
+      "symbol": "dense_power_rows",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "candidate_or_evidence": "New borrowed stage-row variant with same directed order and immutable driver identity. Actual BorrowedRows candidate, 20 compact epochs and 304 slabs.",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/rodas5p-integrators/src/retro_dae_evolution.rs:516:pub fn dense_power_rows(",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:1447:        de::dense_power_rows(self.y0, self.y1, &self.stages, self.basis)"
+      ],
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:516:pub fn dense_power_rows(",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:1471:        de::dense_power_rows(self.y0, self.y1, &self.stages, self.basis)"
+      ],
+      "previous_status": "ACTIVATED_NEW_KERNEL"
+    },
+    {
+      "symbol": "QueryArena",
+      "status": "ACTIVATED_NEW_WORKSPACE",
+      "candidate_or_evidence": "Lossless fixed-stride Packed/Shared report arena, original authority strings and all InitWork retained; 60 actual compact epochs and 296 isolated append/read pairs noheap.",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution/retained.rs:149:pub struct QueryArena {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution/retained.rs:160:impl QueryArena {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution/retained.rs:306:    arena: &'a QueryArena,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution/retained.rs:449:    arena: Option<QueryArena>,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution/retained.rs:517:        let arena = QueryArena::new(self.route.queries, nx, nz, nr, &e.branch, cap)?;",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution/retained.rs:672:            .map_or(0, QueryArena::capacity_bytes)"
+      ],
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained.rs:152:pub struct QueryArena {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained.rs:163:impl QueryArena {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained.rs:309:    arena: &'a QueryArena,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained.rs:452:    arena: Option<QueryArena>,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained.rs:524:        let arena = QueryArena::new(self.route.queries, nx, nz, nr, &e.branch, cap)?;",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained.rs:697:            .map_or(0, QueryArena::capacity_bytes)"
+      ],
+      "previous_status": "ACTIVATED_NEW_WORKSPACE"
+    },
+    {
+      "symbol": "ScalarQueryWorkspace",
+      "status": "ACTIVATED_NEW_WORKSPACE",
+      "candidate_or_evidence": "Split cursor/work from unused vector scratch, 56B vs 95320B static size; actual scalar compact query collection and five scalar replay cases. Not true stack peak.",
+      "previous_source_references": [
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:947:pub struct ScalarQueryWorkspace {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:951:impl ScalarQueryWorkspace {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:990:impl Default for ScalarQueryWorkspace {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:997:    scalar: ScalarQueryWorkspace,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:1003:            scalar: ScalarQueryWorkspace::new(),",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:1019:    fn scalar(&mut self) -> &mut ScalarQueryWorkspace;",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:1024:impl QueryScratch for ScalarQueryWorkspace {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:1025:    fn scalar(&mut self) -> &mut ScalarQueryWorkspace {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:1035:    fn scalar(&mut self) -> &mut ScalarQueryWorkspace {",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:1358:        w: &mut ScalarQueryWorkspace,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution.rs:1368:        w: &mut ScalarQueryWorkspace,",
+        "2f1c55c7f2d6fc991c617466bb2cf286474c9b2d:crates/vigilode/src/dae_evolution/retained.rs:520:            self.collect_with(out, e, grid, route, &mut ScalarQueryWorkspace::new())"
+      ],
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:947:pub struct ScalarQueryWorkspace {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:951:impl ScalarQueryWorkspace {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:990:impl Default for ScalarQueryWorkspace {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:997:    scalar: ScalarQueryWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:1003:            scalar: ScalarQueryWorkspace::new(),",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:1019:    fn scalar(&mut self) -> &mut ScalarQueryWorkspace;",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:1024:impl QueryScratch for ScalarQueryWorkspace {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:1025:    fn scalar(&mut self) -> &mut ScalarQueryWorkspace {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:1035:    fn scalar(&mut self) -> &mut ScalarQueryWorkspace {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:1382:        w: &mut ScalarQueryWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:1392:        w: &mut ScalarQueryWorkspace,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained.rs:527:            self.collect_with(out, e, grid, route, &mut ScalarQueryWorkspace::new())"
+      ],
+      "previous_status": "ACTIVATED_NEW_WORKSPACE"
+    },
+    {
+      "symbol": "reconstruct_scalar_reuse_into",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "candidate_or_evidence": "Previously caller-owned reconstruction adapter exercised separately. Now called from SlabReplayWorkspace in real compact native epochs, fixed node seed and original audited projection.",
+      "previous_source_references": [
+        "de368cf2144d53b3ccc214b337f62329769fe53a:crates/rodas5p-integrators/src/retro_dae_evolution.rs:940:pub fn reconstruct_scalar_reuse_into("
+      ],
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1003:pub fn reconstruct_scalar_reuse_into(",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained/slabs.rs:90:            InitRoute::Reuse if self.nz == 1 => de::reconstruct_scalar_reuse_into("
+      ]
+    },
+    {
+      "symbol": "reconstruct_scalar_bounded_affine_into",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "candidate_or_evidence": "Actual compact native stiff scalar slab replay.",
+      "previous_source_references": [
+        "de368cf2144d53b3ccc214b337f62329769fe53a:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1013:pub fn reconstruct_scalar_bounded_affine_into("
+      ],
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1076:pub fn reconstruct_scalar_bounded_affine_into(",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained/slabs.rs:119:                de::reconstruct_scalar_bounded_affine_into("
+      ]
+    },
+    {
+      "symbol": "reconstruct_scalar_bounded_sturm_into",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "candidate_or_evidence": "Actual compact native quartic and quadratic source slab replay.",
+      "previous_source_references": [
+        "de368cf2144d53b3ccc214b337f62329769fe53a:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1049:pub fn reconstruct_scalar_bounded_sturm_into("
+      ],
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1112:pub fn reconstruct_scalar_bounded_sturm_into(",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained/slabs.rs:134:                de::reconstruct_scalar_bounded_sturm_into("
+      ]
+    },
+    {
+      "symbol": "reconstruct_pivoted_vector_into",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "candidate_or_evidence": "Actual compact native vector4/8 slab replay, preserving original fixed seed and receipt.",
+      "previous_source_references": [
+        "de368cf2144d53b3ccc214b337f62329769fe53a:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1240:pub fn reconstruct_pivoted_vector_into("
+      ],
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:1303:pub fn reconstruct_pivoted_vector_into(",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained/slabs.rs:150:                de::reconstruct_pivoted_vector_into("
+      ]
+    },
+    {
+      "symbol": "dense_power_components_into",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "candidate_or_evidence": "Existing represented_component/physical event directed power now writes into caller-owned rows, actual native compact component route.",
+      "previous_source_references": [],
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/rodas5p-integrators/src/retro_dae_evolution.rs:592:pub fn dense_power_components_into(",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained/slabs.rs:66:        de::dense_power_components_into(f, k, &mut self.power[..self.nx])?;"
+      ]
+    },
+    {
+      "symbol": "SlabReplayWorkspace",
+      "status": "ACTIVATED_NEW_WORKSPACE",
+      "candidate_or_evidence": "Reusable original-source dense/reconstruction/certificate scratch. 109 warm actual slab replays x3 boundaries zero heap.",
+      "previous_source_references": [],
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained/slabs.rs:17:pub struct SlabReplayWorkspace<'a> {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained/slabs.rs:29:impl<'a> SlabReplayWorkspace<'a> {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained/slabs.rs:529:            let mut w = SlabReplayWorkspace::new(e.src.nx(), 1, None)?;",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained/slabs.rs:543:        let mut w = SlabReplayWorkspace::new(e.src.nx(), e.src.nz(), Some(&mut vector))?;",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained/slabs.rs:551:        w: &mut SlabReplayWorkspace<'_>,"
+      ]
+    },
+    {
+      "symbol": "SlabArena",
+      "status": "ACTIVATED_NEW_WORKSPACE",
+      "candidate_or_evidence": "Lossless flat numerical slab power and six certificate array payloads, actual query directly uses flat ranges/rows, legacy restoration identity.",
+      "previous_source_references": [],
+      "current_source_references": [
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution.rs:1263:    arena: Option<&retained::SlabArena>,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained.rs:7:pub(super) use slabs::SlabArena;",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained.rs:456:    slab_arena: Option<SlabArena>,",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained/slabs.rs:242:pub(in crate::dae_evolution) struct SlabArena {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained/slabs.rs:280:impl SlabArena {",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained/slabs.rs:522:            self.slab_arena = Some(SlabArena::new(",
+        "3b79ce52bf018b8e52937b7c6fa000e7e0ab5d2c:crates/vigilode/src/dae_evolution/retained/slabs.rs:719:            SlabArena::capacity_bytes,"
+      ]
+    }
+  ],
+  "previous_ledger_commit": "de368cf2144d53b3ccc214b337f62329769fe53a"
+}
