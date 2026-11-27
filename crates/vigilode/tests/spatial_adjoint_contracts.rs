@@ -661,7 +661,7 @@ fn spherical_transpose_gather_actual_portfolio() {
             samples[k].sort_unstable();
             println!(
                 "GATHER_KERNEL {}",
-                serde_json::json!({"case":case,"candidate":["Scatter","Gather"][k],"qualified":true,"allocation":allocation,"error_upper":error,"values":values,"median_ns":samples[k][3],"samples_ns":samples[k]})
+                serde_json::json!({"case":case,"candidate":(["Scatter","Gather"][k]),"qualified":true,"allocation":allocation,"error_upper":error,"values":values,"median_ns":samples[k][3],"samples_ns":samples[k]})
             );
         }
         if nt <= 8 {
@@ -697,7 +697,7 @@ fn spherical_transpose_gather_actual_portfolio() {
                 timing[k].sort_unstable();
                 println!(
                     "GATHER_IVP {}",
-                    serde_json::json!({"case":case,"candidate":["Scatter","Gather"][k],"qualified":true,"allocation":allocation,"run":r,"error_upper":e,"median_ns":timing[k][3],"samples_ns":timing[k]})
+                    serde_json::json!({"case":case,"candidate":(["Scatter","Gather"][k]),"qualified":true,"allocation":allocation,"run":r,"error_upper":e,"median_ns":timing[k][3],"samples_ns":timing[k]})
                 );
             }
         }
