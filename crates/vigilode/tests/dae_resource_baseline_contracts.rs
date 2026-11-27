@@ -7287,3 +7287,416 @@ fn compact_slab_driver_profile() {
         );
     }
 }
+
+fn slab_campaign_init(route: EvolutionRoute) -> InitRoute {
+    match route {
+        EvolutionRoute::WorkspaceQuery5 {
+            projection: WorkspaceProjection::Reuse,
+            ..
+        } => InitRoute::Reuse,
+        EvolutionRoute::WorkspaceQuery5 {
+            projection: WorkspaceProjection::Affine,
+            ..
+        } => InitRoute::BoundedAffineScalar,
+        EvolutionRoute::WorkspaceQuery5 {
+            projection: WorkspaceProjection::Sturm,
+            ..
+        } => InitRoute::BoundedSturmScalar,
+        _ => InitRoute::BoundedVectorPivot,
+    }
+}
+#[test]
+fn slab_replay_arena_portfolio() {
+    warm();
+    use SlabReplayRoute as R;
+    let designs = [
+        ("reuse_rows", R::ReuseOwned, NativeRetention::BorrowedRows),
+        (
+            "reuse_component",
+            R::ReuseOwned,
+            NativeRetention::BorrowedComponent,
+        ),
+        ("flat_rows", R::Flat, NativeRetention::BorrowedRows),
+        (
+            "flat_component",
+            R::Flat,
+            NativeRetention::BorrowedComponent,
+        ),
+    ];
+    for case in [
+        "stable",
+        "stiff",
+        "nonlinear",
+        "vector4",
+        "vector8",
+        "mixed_rates",
+        "quadratic_flow",
+    ] {
+        let (src, x, z, b, route) = slab_campaign_fixture(case);
+        let epoch = EvolutionEpoch {
+            start: 0.,
+            end: 0.125,
+            incoming_x_error: Some(0.),
+        };
+        let retention = RetainedOutputRoute {
+            queries: QueryArenaLayout::Shared,
+            native: NativeRetention::BorrowedRows,
+        };
+        for grid_kind in ["sparse", "dense"] {
+            let grid = if grid_kind == "sparse" {
+                vec![0.03125, 0.0625, 0.09375]
+            } else {
+                (1..64).map(|i| i as f64 / 512.).collect::<Vec<_>>()
+            };
+            let ((base, audit), allocation, heap) = measure_live(|| {
+                evolve_epoch_retained_audited(
+                    &src,
+                    &x,
+                    &z,
+                    &b,
+                    epoch,
+                    &opts(),
+                    policy(),
+                    route,
+                    &grid,
+                    retention,
+                )
+            });
+            let base = base.unwrap();
+            assert!(base.global_qualified());
+            let base = base.materialize().unwrap();
+            let cap = base
+                .slabs()
+                .iter()
+                .map(owned_slab_numeric_bytes)
+                .sum::<usize>();
+            println!(
+                "SLAB_EPOCH {}",
+                serde_json::json!({"case":case,"grid":grid_kind,"candidate":"legacy","qualified":true,"allocation":allocation,"heap":heap,"slab_numeric_bytes":cap,"slabs":base.slabs().len(),"accepted":base.accepted.len(),"queries":base.queries.len(),"max_physical_error":base.max_physical_error,"audit":audit})
+            );
+            for (name, replay, native) in designs {
+                let rr = RetainedOutputRoute {
+                    native,
+                    ..retention
+                };
+                let ((r, a), allocation, heap) = measure_live(|| {
+                    evolve_epoch_slab_replay_audited(
+                        &src,
+                        &x,
+                        &z,
+                        &b,
+                        epoch,
+                        &opts(),
+                        policy(),
+                        route,
+                        &grid,
+                        rr,
+                        replay,
+                    )
+                });
+                let r = r.unwrap();
+                assert!(r.global_qualified(), "{case} {name} {:?}", r.reason());
+                same_serialized(&a, &audit);
+                same_serialized(r.work(), &base.work);
+                assert_eq!(r.max_physical_error(), base.max_physical_error);
+                assert_eq!(r.slabs_len(), base.slabs().len());
+                assert_eq!(r.accepted_len(), base.accepted.len());
+                assert_eq!(r.query_len(), base.queries.len());
+                let bytes = r.slab_numeric_capacity_bytes();
+                let mut view_counts = Counts::default();
+                for k in 0..r.slabs_len() {
+                    let (v, a) = measure(|| r.slab(k));
+                    let v = v.unwrap();
+                    assert_eq!(a.requests(), 0);
+                    same_serialized(&v, &base.slabs()[k]);
+                    view_counts.add(a);
+                }
+                let mut q = base.accepted[0].clone();
+                for k in 0..r.accepted_len() {
+                    let (_, a) = measure(|| r.accepted(k).unwrap().write_into(&mut q));
+                    assert_eq!(a.requests(), 0);
+                    same_serialized(&q, &base.accepted[k]);
+                }
+                for k in 0..r.query_len() {
+                    let (_, a) = measure(|| r.retained_query(k).unwrap().write_into(&mut q));
+                    assert_eq!(a.requests(), 0);
+                    same_serialized(&q, &base.queries[k]);
+                }
+                assert!(r.slab(r.slabs_len()).is_err());
+                let (restored, restore) = measure(|| r.materialize());
+                let restored = restored.unwrap();
+                same_serialized(&restored, &base);
+                println!(
+                    "SLAB_EPOCH {}",
+                    serde_json::json!({"case":case,"grid":grid_kind,"candidate":name,"qualified":true,"allocation":allocation,"heap":heap,"slab_numeric_bytes":bytes,"slabs":restored.slabs().len(),"accepted":restored.accepted.len(),"queries":restored.queries.len(),"max_physical_error":restored.max_physical_error,"audit":a,"restore_allocation":restore,"view_allocation":view_counts})
+                );
+            }
+            if grid_kind == "sparse" {
+                let mut vector = de::VectorReconstructionWorkspace::new();
+                let mut w = SlabReplayWorkspace::new(
+                    src.nx(),
+                    src.nz(),
+                    if src.nz() > 1 {
+                        Some(&mut vector)
+                    } else {
+                        None
+                    },
+                )
+                .unwrap();
+                let mut counts = [Counts::default(); 3];
+                for (k, s) in base.slabs().iter().enumerate() {
+                    let v = base.native_packet_view(k).unwrap();
+                    let (r, a) = measure(|| w.dense_rows(v));
+                    r.unwrap();
+                    assert_eq!(a.requests(), 0);
+                    counts[0].add(a);
+                    let mut receipt = ProjectionAttemptWork::default();
+                    let (r, a) = measure(|| {
+                        w.reconstruct(
+                            &src,
+                            s.times,
+                            &base.initial.z,
+                            &b,
+                            policy().init,
+                            slab_campaign_init(route),
+                            &mut receipt,
+                        )
+                    });
+                    r.unwrap();
+                    assert_eq!(a.requests(), 0);
+                    counts[1].add(a);
+                    let c = s.certificate.as_ref().unwrap();
+                    let (r, a) = measure(|| {
+                        w.certify(
+                            &src,
+                            s.times,
+                            &b,
+                            policy(),
+                            Some(c.incoming),
+                            de::SlabWorkspaceRoute::Refined,
+                        )
+                    });
+                    r.unwrap();
+                    assert_eq!(a.requests(), 0);
+                    counts[2].add(a);
+                    same_serialized(w.certificate().unwrap(), c);
+                    assert_eq!(
+                        w.power()
+                            .unwrap()
+                            .iter()
+                            .map(|r| r.iter().map(|v| v.as_pair()).collect::<Vec<_>>())
+                            .collect::<Vec<_>>(),
+                        s.power
+                    );
+                }
+                let v = base.native_packet_view(0).unwrap();
+                w.dense_rows(v).unwrap();
+                let mut receipt = ProjectionAttemptWork::default();
+                assert!(
+                    w.reconstruct(
+                        &src,
+                        [1., 0.],
+                        &[],
+                        &b,
+                        policy().init,
+                        slab_campaign_init(route),
+                        &mut receipt
+                    )
+                    .is_err()
+                );
+                assert!(w.power().is_none() && w.certificate().is_none());
+                assert!(
+                    w.certify(
+                        &src,
+                        [0., 0.125],
+                        &b,
+                        policy(),
+                        Some(0.),
+                        de::SlabWorkspaceRoute::Refined
+                    )
+                    .is_err()
+                );
+                println!(
+                    "SLAB_WARM {}",
+                    serde_json::json!({"case":case,"slabs":base.slabs().len(),"allocation":counts,"workspace_inline_bytes":std::mem::size_of_val(&w),"transactional":true})
+                );
+            }
+            if case == "mixed_rates" || case == "quadratic_flow" {
+                // Exact independent analytic verifier consumes all retained queries.
+                println!(
+                    "SLAB_ANALYTIC {}",
+                    serde_json::json!({"case":case,"grid":grid_kind,"queries":base.accepted.iter().chain(&base.queries).collect::<Vec<_>>() })
+                );
+            }
+            let mut times: [Vec<u128>; 5] = std::array::from_fn(|_| vec![]);
+            for rep in 0..5 {
+                for j in 0..5 {
+                    let i = (j + rep) % 5;
+                    let start = std::time::Instant::now();
+                    if i == 0 {
+                        let r = evolve_epoch_retained_audited(
+                            &src,
+                            &x,
+                            &z,
+                            &b,
+                            epoch,
+                            &opts(),
+                            policy(),
+                            route,
+                            &grid,
+                            retention,
+                        );
+                        black_box(r.0.unwrap());
+                    } else {
+                        let (_, replay, native) = designs[i - 1];
+                        let r = evolve_epoch_slab_replay_audited(
+                            &src,
+                            &x,
+                            &z,
+                            &b,
+                            epoch,
+                            &opts(),
+                            policy(),
+                            route,
+                            &grid,
+                            RetainedOutputRoute {
+                                native,
+                                ..retention
+                            },
+                            replay,
+                        );
+                        black_box(r.0.unwrap());
+                    }
+                    times[i].push(start.elapsed().as_nanos());
+                }
+            }
+            for (i, v) in times.iter_mut().enumerate() {
+                v.sort_unstable();
+                let name = if i == 0 { "legacy" } else { designs[i - 1].0 };
+                println!(
+                    "SLAB_TIMING {}",
+                    serde_json::json!({"case":case,"grid":grid_kind,"candidate":name,"median_ns":v[2],"samples_ns":v,"scope":"whole audited epoch plus drop, restoration excluded"})
+                );
+            }
+        }
+    }
+    let (src, x, z, b, route) = slab_campaign_fixture("stable");
+    let retention = RetainedOutputRoute {
+        queries: QueryArenaLayout::Shared,
+        native: NativeRetention::BorrowedRows,
+    };
+    for (name, incoming, o) in [
+        ("unresolved", None, opts()),
+        (
+            "budget",
+            Some(0.),
+            Options {
+                max_steps: 1,
+                ..opts()
+            },
+        ),
+    ] {
+        let epoch = EvolutionEpoch {
+            start: 0.,
+            end: 0.125,
+            incoming_x_error: incoming,
+        };
+        let (base, a) = evolve_epoch_retained_audited(
+            &src,
+            &x,
+            &z,
+            &b,
+            epoch,
+            &o,
+            policy(),
+            route,
+            &[0.0625],
+            retention,
+        );
+        let (r, c) = evolve_epoch_slab_replay_audited(
+            &src,
+            &x,
+            &z,
+            &b,
+            epoch,
+            &o,
+            policy(),
+            route,
+            &[0.0625],
+            retention,
+            R::Flat,
+        );
+        let r = r.unwrap();
+        assert!(!r.global_qualified());
+        same_serialized(&a, &c);
+        same_serialized(
+            &r.materialize().unwrap(),
+            &base.unwrap().materialize().unwrap(),
+        );
+        println!(
+            "SLAB_EDGE {}",
+            serde_json::json!({"case":name,"qualified":false,"identity":true})
+        );
+    }
+    // The old guarded/reset domain remains independently exercised.
+    let mut modes = graph(
+        "alternating",
+        EvolutionRoute::BoundedAffine5,
+        ConservationRoute::Integral4,
+    );
+    for t in &mut modes[0].transitions {
+        t.target = 1;
+    }
+    modes[1].guards.clear();
+    modes[1].transitions.clear();
+    let chain = evolve_conserved_chain(
+        &modes,
+        0,
+        initial(2f64.powi(-26)),
+        [0., 0.002],
+        &opts(),
+        policy(),
+        pm(MultiGuardRoute::Correlated),
+        chain_limits(),
+        SimplexGapRoute::AffineDual,
+    )
+    .unwrap();
+    assert_eq!(
+        chain.transitions().iter().filter(|e| e.committed).count(),
+        1
+    );
+    println!(
+        "SLAB_CHAIN {}",
+        serde_json::json!({"committed":1,"terminal_slabs":chain.epochs().last().unwrap().terminal().unwrap().slabs().len(),"stop":format!("{:?}",chain.stop()),"scope":"legacy conserved authority regression only"})
+    );
+}
+#[test]
+fn slab_replay_stack_smoke() {
+    let (src, x, z, b, route) = slab_campaign_fixture("quadratic_flow");
+    let epoch = EvolutionEpoch {
+        start: 0.,
+        end: 0.125,
+        incoming_x_error: Some(0.),
+    };
+    let (r, _) = evolve_epoch_slab_replay_audited(
+        &src,
+        &x,
+        &z,
+        &b,
+        epoch,
+        &opts(),
+        policy(),
+        route,
+        &[0.0625],
+        RetainedOutputRoute {
+            queries: QueryArenaLayout::Shared,
+            native: NativeRetention::BorrowedRows,
+        },
+        SlabReplayRoute::Flat,
+    );
+    assert!(r.unwrap().global_qualified());
+    println!(
+        "SLAB_STACK {}",
+        serde_json::json!({"stack":std::env::var("RUST_MIN_STACK").ok(),"qualified":true})
+    );
+}
