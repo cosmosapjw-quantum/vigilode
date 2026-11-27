@@ -443,3 +443,326 @@ impl<'a> RetainedQueryView<'a> {
         q
     }
 }
+
+pub(super) struct RetainedBuild {
+    route: RetainedOutputRoute,
+    arena: Option<QueryArena>,
+    accepted: usize,
+    queries: usize,
+}
+impl RetainedBuild {
+    fn new(route: RetainedOutputRoute) -> Self {
+        Self {
+            route,
+            arena: None,
+            accepted: 0,
+            queries: 0,
+        }
+    }
+    pub(super) fn native(
+        &self,
+        s: &Solution,
+        k: usize,
+    ) -> CoreResult<(NativePacket, Vec<Vec<Iv>>)> {
+        if self.route.native == NativeRetention::Owned {
+            let p = packet(s, k)?;
+            let y = p.power()?;
+            return Ok((p, y));
+        }
+        let v = native_packet_view(s, k)?;
+        let power = match self.route.native {
+            NativeRetention::BorrowedRows => v.power()?,
+            NativeRetention::BorrowedComponent => {
+                let Some(Extension::Fast(f)) = &s.extension else {
+                    return Err(bad("component native retention requires fast dense driver"));
+                };
+                de::dense_power_components(f, k)?
+            }
+            _ => unreachable!(),
+        };
+        // Private placeholder only; not exposed as a legacy SlabRecord.
+        // The immutable driver remains the sole native packet authority.
+        Ok((
+            NativePacket {
+                basis: v.basis,
+                coefficients: vec![],
+                y0: vec![],
+                y1: vec![],
+                stages: vec![],
+            },
+            power,
+        ))
+    }
+    #[inline(never)]
+    pub(super) fn collect(
+        &mut self,
+        out: &mut EvolutionRun,
+        e: &Engine,
+        grid: &[f64],
+        route: QueryWorkspaceRoute,
+    ) -> CoreResult<()> {
+        let nx = e.src.nx();
+        let nz = e.src.nz();
+        let nr = if e.route == EvolutionRoute::Mass {
+            nx + nz
+        } else {
+            nx
+        };
+        let cap = out
+            .driver
+            .t
+            .len()
+            .checked_add(grid.len())
+            .ok_or_else(|| bad("retained report count overflow"))?;
+        let arena = QueryArena::new(self.route.queries, nx, nz, nr, &e.branch, cap)?;
+        self.arena = Some(arena);
+        if e.scalar_callback() || (e.route == EvolutionRoute::Mass && nz == 1) {
+            self.collect_with(out, e, grid, route, &mut ScalarQueryWorkspace::new())
+        } else {
+            self.collect_vector(out, e, grid, route)
+        }
+    }
+    #[inline(never)]
+    fn collect_vector(
+        &mut self,
+        out: &mut EvolutionRun,
+        e: &Engine,
+        grid: &[f64],
+        route: QueryWorkspaceRoute,
+    ) -> CoreResult<()> {
+        self.collect_with(out, e, grid, route, &mut QueryWorkspace::new())
+    }
+    fn collect_with(
+        &mut self,
+        out: &mut EvolutionRun,
+        e: &Engine,
+        grid: &[f64],
+        route: QueryWorkspaceRoute,
+        w: &mut impl QueryScratch,
+    ) -> CoreResult<()> {
+        let mut stage: Option<Query> = None;
+        let arena = self.arena.as_mut().expect("arena reserved");
+        for (&t, y) in out.driver.t.iter().zip(&out.driver.y) {
+            match fixed_query(e, &out.driver, t, Some(y), &out.slabs, route, w) {
+                Ok(v) => {
+                    if let Some(q) = &mut stage {
+                        v.write(q);
+                    } else {
+                        stage = Some(v.owned());
+                    }
+                    arena.push(stage.as_ref().unwrap())?;
+                    self.accepted += 1;
+                }
+                Err(err) => {
+                    out.reason = Some(err.to_string());
+                    break;
+                }
+            }
+        }
+        for &t in grid {
+            match fixed_query(e, &out.driver, t, None, &out.slabs, route, w) {
+                Ok(v) => {
+                    if let Some(q) = &mut stage {
+                        v.write(q);
+                    } else {
+                        stage = Some(v.owned());
+                    }
+                    arena.push(stage.as_ref().unwrap())?;
+                    self.queries += 1;
+                }
+                Err(err) => {
+                    out.reason = Some(err.to_string());
+                    break;
+                }
+            }
+        }
+        Ok(())
+    }
+    pub(super) fn counts(&self) -> (usize, usize) {
+        (self.accepted, self.queries)
+    }
+    pub(super) fn max_error(&self, mx: f64) -> Option<f64> {
+        self.arena
+            .as_ref()?
+            .headers
+            .iter()
+            .try_fold(mx, |m, h| h.physical_error_upper.map(|v| m.max(v)))
+    }
+}
+/// Borrowed slab view, with a complete native packet and original
+/// power/certificate; no owned native rows are constructed.
+#[derive(Serialize)]
+pub struct RetainedSlabView<'a> {
+    pub times: [f64; 2],
+    pub native: NativePacketView<'a>,
+    pub power: &'a [Vec<[f64; 2]>],
+    pub certificate: Option<&'a SlabCertificate>,
+    pub reason: Option<&'a str>,
+}
+/// Separate retained-output API. The legacy EvolutionRun is only returned
+/// after complete materialization; private placeholders are never exposed.
+pub struct RetainedEvolutionRun {
+    run: EvolutionRun,
+    build: RetainedBuild,
+}
+impl RetainedEvolutionRun {
+    pub fn driver(&self) -> &Solution {
+        self.run.driver()
+    }
+    pub fn initial(&self) -> &InitReport {
+        &self.run.initial
+    }
+    pub fn work(&self) -> &ProjectionWork {
+        &self.run.work
+    }
+    pub fn global_qualified(&self) -> bool {
+        self.run.global_qualified
+    }
+    pub fn branch_qualified(&self) -> bool {
+        self.run.branch_qualified
+    }
+    pub fn pointwise_qualified(&self) -> bool {
+        self.run.pointwise_qualified
+    }
+    pub fn max_physical_error(&self) -> Option<f64> {
+        self.run.max_physical_error
+    }
+    pub fn reason(&self) -> Option<&str> {
+        self.run.reason.as_deref()
+    }
+    pub fn accepted_len(&self) -> usize {
+        self.build.accepted
+    }
+    pub fn query_len(&self) -> usize {
+        self.build.queries
+    }
+    pub fn slabs_len(&self) -> usize {
+        self.run.slabs.len()
+    }
+    pub fn accepted(&self, k: usize) -> Option<RetainedQueryView<'_>> {
+        if k >= self.accepted_len() {
+            return None;
+        }
+        self.build.arena.as_ref()?.get(k)
+    }
+    pub fn retained_query(&self, k: usize) -> Option<RetainedQueryView<'_>> {
+        if k >= self.query_len() {
+            return None;
+        }
+        self.build.arena.as_ref()?.get(self.accepted_len() + k)
+    }
+    pub fn slab(&self, k: usize) -> CoreResult<RetainedSlabView<'_>> {
+        let a = self
+            .run
+            .slabs
+            .get(k)
+            .ok_or_else(|| bad("retained slab index"))?;
+        Ok(RetainedSlabView {
+            times: a.times,
+            native: native_packet_view(&self.run.driver, k)?,
+            power: &a.power,
+            certificate: a.certificate.as_ref(),
+            reason: a.reason.as_deref(),
+        })
+    }
+    pub fn query_arena_bytes(&self) -> usize {
+        self.build
+            .arena
+            .as_ref()
+            .map_or(0, QueryArena::capacity_bytes)
+    }
+    /// Heap capacity of duplicated native packet arrays only, not the
+    /// driver itself or slab certificate storage.
+    pub fn native_copy_bytes(&self) -> usize {
+        self.run
+            .slabs
+            .iter()
+            .map(|s| native_copy_bytes(&s.native))
+            .sum()
+    }
+    pub fn materialize(mut self) -> CoreResult<EvolutionRun> {
+        if let Some(arena) = self.build.arena.take() {
+            self.run.accepted = (0..self.build.accepted)
+                .map(|i| arena.get(i).unwrap().to_owned_query())
+                .collect();
+            self.run.queries = (self.build.accepted..arena.len())
+                .map(|i| arena.get(i).unwrap().to_owned_query())
+                .collect();
+        }
+        if self.build.route.native != NativeRetention::Owned {
+            for k in 0..self.run.slabs.len() {
+                self.run.slabs[k].native =
+                    native_packet_view(&self.run.driver, k)?.to_owned_packet();
+            }
+        }
+        Ok(self.run)
+    }
+}
+pub fn native_copy_bytes(s: &NativePacket) -> usize {
+    8 * (s.coefficients.capacity()
+        + s.y0.capacity()
+        + s.y1.capacity()
+        + s.stages.iter().map(Vec::capacity).sum::<usize>())
+        + std::mem::size_of::<Vec<f64>>() * s.stages.capacity()
+}
+/// Compare owned output capacity to an arena; excludes allocator metadata,
+/// driver, original certificate, and inline container itself.
+pub fn owned_query_bytes(q: &Query) -> usize {
+    let r = &q.projection;
+    8 * (q.raw.capacity()
+        + q.state.capacity()
+        + r.x.capacity()
+        + r.original_z.capacity()
+        + r.z.capacity()
+        + r.xdot.capacity()
+        + r.zdot.capacity()
+        + r.zt.capacity()
+        + r.zx_columns
+            .iter()
+            .chain(&r.reduced_jacobian)
+            .map(Vec::capacity)
+            .sum::<usize>())
+        + 16 * (r.branch.capacity() + r.root_box.capacity())
+        + r.branch_authority.capacity()
+        + std::mem::size_of::<Vec<f64>>()
+            * (r.zx_columns.capacity() + r.reduced_jacobian.capacity())
+}
+#[allow(clippy::too_many_arguments)]
+pub fn evolve_epoch_retained_audited(
+    src: &DaeSource,
+    x: &[f64],
+    z: &[f64],
+    branch: &[[f64; 2]],
+    epoch: EvolutionEpoch,
+    opts: &Options,
+    policy: EvolutionPolicy,
+    route: EvolutionRoute,
+    grid: &[f64],
+    retention: RetainedOutputRoute,
+) -> (CoreResult<RetainedEvolutionRun>, NativeResourceAudit) {
+    let a = Arc::new(Mutex::new(NativeResourceAudit::default()));
+    let mut build = RetainedBuild::new(retention);
+    // Separate API is admitted only for the explicit bounded query route.
+    // Do not reinterpret an arbitrary existing owning projection.
+    let r = if route.query_workspace().is_none() {
+        Err(bad("retained epoch requires WorkspaceQuery5"))
+    } else {
+        evolve_epoch_authority_retained(
+            src,
+            x,
+            z,
+            branch,
+            epoch,
+            opts,
+            policy,
+            route,
+            grid,
+            None,
+            None,
+            Some(a.clone()),
+            Some(&mut build),
+        )
+    };
+    let receipt = a.lock().expect("native audit lock").clone();
+    (r.map(|run| RetainedEvolutionRun { run, build }), receipt)
+}

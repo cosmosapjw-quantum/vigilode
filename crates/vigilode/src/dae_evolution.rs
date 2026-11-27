@@ -1657,9 +1657,41 @@ fn evolve_epoch_authority(
     policy: EvolutionPolicy,
     route: EvolutionRoute,
     grid: &[f64],
+    scan: Option<&mut dyn EpochObserver>,
+    conservation: Option<(de::RobertsonModel, de::ConservationRoute)>,
+    audit: Option<AuditHandle>,
+) -> CoreResult<EvolutionRun> {
+    evolve_epoch_authority_retained(
+        src,
+        x,
+        z,
+        branch,
+        epoch,
+        opts,
+        policy,
+        route,
+        grid,
+        scan,
+        conservation,
+        audit,
+        None,
+    )
+}
+#[allow(clippy::too_many_arguments)]
+fn evolve_epoch_authority_retained(
+    src: &DaeSource,
+    x: &[f64],
+    z: &[f64],
+    branch: &[[f64; 2]],
+    epoch: EvolutionEpoch,
+    opts: &Options,
+    policy: EvolutionPolicy,
+    route: EvolutionRoute,
+    grid: &[f64],
     mut scan: Option<&mut dyn EpochObserver>,
     conservation: Option<(de::RobertsonModel, de::ConservationRoute)>,
     audit: Option<AuditHandle>,
+    mut retained: Option<&mut retained::RetainedBuild>,
 ) -> CoreResult<EvolutionRun> {
     let EvolutionEpoch {
         start,
@@ -1787,10 +1819,18 @@ fn evolve_epoch_authority(
         return Ok(out);
     }
     let mut incoming = incoming_x_error;
+    if retained.is_some() {
+        out.slabs.reserve_exact(out.driver.t.len() - 1);
+    }
     for k in 0..out.driver.t.len() - 1 {
         let times = [out.driver.t[k], out.driver.t[k + 1]];
-        let native = packet(&out.driver, k)?;
-        let mut p = native.power()?;
+        let (native, mut p) = if let Some(r) = retained.as_ref() {
+            r.native(&out.driver, k)?
+        } else {
+            let native = packet(&out.driver, k)?;
+            let p = native.power()?;
+            (native, p)
+        };
         if route != EvolutionRoute::Mass {
             let (a, w) = match e.reconstruct(times, &p, false) {
                 Ok(v) => v,
@@ -1838,7 +1878,16 @@ fn evolve_epoch_authority(
         });
     }
     out.branch_qualified = out.slabs.iter().all(|s| s.certificate.is_some());
-    if let Some(route) = route.query_workspace() {
+    if let Some(r) = retained.as_mut() {
+        r.collect(
+            &mut out,
+            &e,
+            grid,
+            route
+                .query_workspace()
+                .ok_or_else(|| bad("retained query route"))?,
+        )?;
+    } else if let Some(route) = route.query_workspace() {
         collect_workspace_queries(&mut out, &e, grid, route);
     } else {
         for (&t, y) in out.driver.t.iter().zip(&out.driver.y) {
@@ -1860,8 +1909,10 @@ fn evolve_epoch_authority(
             }
         }
     }
-    out.pointwise_qualified =
-        out.accepted.len() == out.driver.t.len() && out.queries.len() == grid.len();
+    let (na, nq) = retained
+        .as_ref()
+        .map_or((out.accepted.len(), out.queries.len()), |r| r.counts());
+    out.pointwise_qualified = na == out.driver.t.len() && nq == grid.len();
     if out.branch_qualified
         && out.pointwise_qualified
         && incoming.is_some()
@@ -1877,7 +1928,12 @@ fn evolve_epoch_authority(
                 .max(c.whole_x_error.unwrap())
                 .max(c.whole_z_error.unwrap());
         }
-        if route.query_workspace().is_some() {
+        if let Some(r) = retained.as_ref() {
+            if let Some(q) = r.max_error(mx) {
+                out.max_physical_error = Some(q);
+                out.global_qualified = q <= policy.global_tol;
+            }
+        } else if route.query_workspace().is_some() {
             if let Some(q) = out
                 .accepted
                 .iter()
