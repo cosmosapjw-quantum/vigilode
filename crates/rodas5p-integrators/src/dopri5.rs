@@ -168,7 +168,18 @@ pub struct Dopri5SpectralDiagnosis {
 /// `step_into` itself allocates no memory on a successful trial. The caller
 /// owns endpoint and embedded-error buffers. Its public trials always compute
 /// their initial derivative, so changing callbacks cannot reuse stale data.
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+pub enum DopriStageKernel {
+    #[default]
+    Rows,
+    Components,
+}
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+pub struct DopriStageWork {
+    pub state_writes: u64,
+    pub error_writes: u64,
+    pub linear_products: u64,
+}
 pub struct Dopri5Workspace {
     n: usize,
     stages: Vec<f64>,
@@ -176,6 +187,8 @@ pub struct Dopri5Workspace {
     stage_prev_endpoint: Vec<f64>,
     first_valid: bool,
     last_diagnosis: Option<Dopri5SpectralDiagnosis>,
+    kernel: DopriStageKernel,
+    stage_work: DopriStageWork,
 }
 
 struct TrialFailure {
@@ -195,6 +208,9 @@ impl TrialFailure {
 
 impl Dopri5Workspace {
     pub fn new(dimension: usize) -> CoreResult<Self> {
+        Self::new_with_kernel(dimension, DopriStageKernel::Rows)
+    }
+    pub fn new_with_kernel(dimension: usize, kernel: DopriStageKernel) -> CoreResult<Self> {
         if dimension == 0 || dimension.checked_mul(7).is_none() {
             return Err(CoreError::Dimension(
                 "DOPRI5 requires a positive representable dimension".into(),
@@ -207,9 +223,17 @@ impl Dopri5Workspace {
             stage_prev_endpoint: vec![0.0; dimension],
             first_valid: false,
             last_diagnosis: None,
+            kernel,
+            stage_work: DopriStageWork::default(),
         })
     }
 
+    pub fn stage_work(&self) -> DopriStageWork {
+        self.stage_work
+    }
+    pub fn stage_kernel(&self) -> DopriStageKernel {
+        self.kernel
+    }
     pub fn dimension(&self) -> usize {
         self.n
     }
@@ -307,11 +331,14 @@ impl Dopri5Workspace {
                 self.stage_prev_endpoint.copy_from_slice(&self.stage_state);
             }
             self.stage_state.copy_from_slice(y);
+            self.stage_work.state_writes += self.n as u64;
             // Unit-stride state updates permit vectorization without assuming
             // that different state components of the RHS are independent.
             for (previous, &coefficient) in DOPRI5_A[stage].iter().enumerate().take(stage) {
                 if coefficient != 0.0 {
                     let derivative = &self.stages[previous * self.n..(previous + 1) * self.n];
+                    self.stage_work.state_writes += self.n as u64;
+                    self.stage_work.linear_products += self.n as u64;
                     if tiny_step {
                         for (value, &k) in self.stage_state.iter_mut().zip(derivative) {
                             *value += coefficient * (h * k);
@@ -345,9 +372,12 @@ impl Dopri5Workspace {
         // The seventh stage is evaluated at exactly the fifth-order output.
         endpoint.copy_from_slice(&self.stage_state);
         error.fill(0.0);
+        self.stage_work.error_writes += self.n as u64;
         for (stage, &coefficient) in ERROR_WEIGHTS.iter().enumerate() {
             if coefficient != 0.0 {
                 let derivative = &self.stages[stage * self.n..(stage + 1) * self.n];
+                self.stage_work.error_writes += self.n as u64;
+                self.stage_work.linear_products += self.n as u64;
                 if tiny_step {
                     for (value, &k) in error.iter_mut().zip(derivative) {
                         *value += coefficient * (h * k);
