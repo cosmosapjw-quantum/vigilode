@@ -78,16 +78,26 @@ pub enum EvolutionRoute {
         certificate: de::SlabWorkspaceRoute,
         storage: CertificateStorage,
     },
+    /// Explicit opt-in: keep retained reports, eliminate transient query
+    /// ownership and reuse one bounded query workspace during collection.
+    WorkspaceQuery5 {
+        projection: WorkspaceProjection,
+        certificate: de::SlabWorkspaceRoute,
+        storage: CertificateStorage,
+        query: QueryWorkspaceRoute,
+    },
 }
 impl EvolutionRoute {
     fn init(self) -> InitRoute {
         match self {
-            Self::Workspace5 { projection, .. } => match projection {
-                WorkspaceProjection::Reuse => InitRoute::Reuse,
-                WorkspaceProjection::Affine => InitRoute::BoundedAffineScalar,
-                WorkspaceProjection::Sturm => InitRoute::BoundedSturmScalar,
-                WorkspaceProjection::PivotedVector => InitRoute::BoundedVectorPivot,
-            },
+            Self::Workspace5 { projection, .. } | Self::WorkspaceQuery5 { projection, .. } => {
+                match projection {
+                    WorkspaceProjection::Reuse => InitRoute::Reuse,
+                    WorkspaceProjection::Affine => InitRoute::BoundedAffineScalar,
+                    WorkspaceProjection::Sturm => InitRoute::BoundedSturmScalar,
+                    WorkspaceProjection::PivotedVector => InitRoute::BoundedVectorPivot,
+                }
+            }
             Self::Prepared5 => InitRoute::PreparedBatch,
             Self::BoundedVector5 => InitRoute::BoundedVector,
             Self::BoundedVectorPivot5 => InitRoute::BoundedVectorPivot,
@@ -142,15 +152,24 @@ impl EvolutionRoute {
         }
     }
     fn workspace(self) -> Option<(de::SlabWorkspaceRoute, CertificateStorage)> {
-        if let Self::Workspace5 {
-            certificate,
-            storage,
-            ..
-        } = self
-        {
-            Some((certificate, storage))
-        } else {
-            None
+        match self {
+            Self::Workspace5 {
+                certificate,
+                storage,
+                ..
+            }
+            | Self::WorkspaceQuery5 {
+                certificate,
+                storage,
+                ..
+            } => Some((certificate, storage)),
+            _ => None,
+        }
+    }
+    fn query_workspace(self) -> Option<QueryWorkspaceRoute> {
+        match self {
+            Self::WorkspaceQuery5 { query, .. } => Some(query),
+            _ => None,
         }
     }
     fn nodes(self) -> usize {
@@ -552,6 +571,12 @@ impl Engine {
                         | WorkspaceProjection::Sturm,
                     ..
                 }
+                | EvolutionRoute::WorkspaceQuery5 {
+                    projection: WorkspaceProjection::Reuse
+                        | WorkspaceProjection::Affine
+                        | WorkspaceProjection::Sturm,
+                    ..
+                }
         ) && self.src.nz() == 1
             && self.warp.is_none()
     }
@@ -609,6 +634,10 @@ impl Engine {
                 | EvolutionRoute::BoundedVectorPivot5
                 | EvolutionRoute::BoundedVectorEquilibrated5
                 | EvolutionRoute::Workspace5 {
+                    projection: WorkspaceProjection::PivotedVector,
+                    ..
+                }
+                | EvolutionRoute::WorkspaceQuery5 {
                     projection: WorkspaceProjection::PivotedVector,
                     ..
                 }
@@ -1276,11 +1305,44 @@ impl EvolutionRun {
     /// Fresh original-source projection, retaining no cached algebraic answer.
     /// Physical bound is available only when the containing slab is proved.
     pub fn query(&self, t: f64) -> CoreResult<Query> {
+        if let Some(route) = self.route.query_workspace() {
+            return self.query_owned_workspace(t, route, &mut QueryWorkspace::new());
+        }
         let y = self
             .driver
             .at(t)
             .ok_or_else(|| bad("query outside driver"))?;
         projected(&self.engine, &self.driver, t, y, &self.slabs)
+    }
+}
+// Keep this allocation/large-frame boundary out of the legacy driver.
+// One scratch instance and exact output reserves for all retained queries.
+fn collect_workspace_queries(
+    out: &mut EvolutionRun,
+    e: &Engine,
+    grid: &[f64],
+    route: QueryWorkspaceRoute,
+) {
+    let mut w = QueryWorkspace::new();
+    out.accepted.reserve_exact(out.driver.t.len());
+    out.queries.reserve_exact(grid.len());
+    for (&t, y) in out.driver.t.iter().zip(&out.driver.y) {
+        match fixed_query(e, &out.driver, t, Some(y), &out.slabs, route, &mut w) {
+            Ok(v) => out.accepted.push(v.owned()),
+            Err(err) => {
+                out.reason = Some(err.to_string());
+                break;
+            }
+        }
+    }
+    for &t in grid {
+        match fixed_query(e, &out.driver, t, None, &out.slabs, route, &mut w) {
+            Ok(v) => out.queries.push(v.owned()),
+            Err(err) => {
+                out.reason = Some(err.to_string());
+                break;
+            }
+        }
     }
 }
 fn packet(s: &Solution, k: usize) -> CoreResult<NativePacket> {
@@ -1615,21 +1677,25 @@ fn evolve_epoch_authority(
         });
     }
     out.branch_qualified = out.slabs.iter().all(|s| s.certificate.is_some());
-    for (&t, y) in out.driver.t.iter().zip(&out.driver.y) {
-        match projected(&e, &out.driver, t, y.clone(), &out.slabs) {
-            Ok(v) => out.accepted.push(v),
-            Err(err) => {
-                out.reason = Some(err.to_string());
-                break;
+    if let Some(route) = route.query_workspace() {
+        collect_workspace_queries(&mut out, &e, grid, route);
+    } else {
+        for (&t, y) in out.driver.t.iter().zip(&out.driver.y) {
+            match projected(&e, &out.driver, t, y.clone(), &out.slabs) {
+                Ok(v) => out.accepted.push(v),
+                Err(err) => {
+                    out.reason = Some(err.to_string());
+                    break;
+                }
             }
         }
-    }
-    for &t in grid {
-        match out.query(t) {
-            Ok(v) => out.queries.push(v),
-            Err(err) => {
-                out.reason = Some(err.to_string());
-                break;
+        for &t in grid {
+            match out.query(t) {
+                Ok(v) => out.queries.push(v),
+                Err(err) => {
+                    out.reason = Some(err.to_string());
+                    break;
+                }
             }
         }
     }
@@ -1650,16 +1716,28 @@ fn evolve_epoch_authority(
                 .max(c.whole_x_error.unwrap())
                 .max(c.whole_z_error.unwrap());
         }
-        let qs = out
-            .accepted
-            .iter()
-            .chain(&out.queries)
-            .map(|q| q.physical_error_upper)
-            .collect::<Option<Vec<_>>>();
-        if let Some(q) = qs {
-            mx = q.into_iter().fold(mx, f64::max);
-            out.max_physical_error = Some(mx);
-            out.global_qualified = mx <= policy.global_tol;
+        if route.query_workspace().is_some() {
+            if let Some(q) = out
+                .accepted
+                .iter()
+                .chain(&out.queries)
+                .try_fold(mx, |m, q| q.physical_error_upper.map(|v| m.max(v)))
+            {
+                out.max_physical_error = Some(q);
+                out.global_qualified = q <= policy.global_tol;
+            }
+        } else {
+            let qs = out
+                .accepted
+                .iter()
+                .chain(&out.queries)
+                .map(|q| q.physical_error_upper)
+                .collect::<Option<Vec<_>>>();
+            if let Some(q) = qs {
+                mx = q.into_iter().fold(mx, f64::max);
+                out.max_physical_error = Some(mx);
+                out.global_qualified = mx <= policy.global_tol;
+            }
         }
     }
     out.work = e.work.lock().map_err(|_| bad("work lock"))?.clone();
