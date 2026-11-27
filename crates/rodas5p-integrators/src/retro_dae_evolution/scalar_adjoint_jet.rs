@@ -8,7 +8,7 @@ pub struct ScalarJetWork {
     pub divisions: usize,
     pub quadratic_seed_uses: usize,
 }
-#[derive(Clone, Copy, Debug, Serialize)]
+#[derive(Clone, Copy, Debug)]
 pub struct ScalarAdjointJet {
     pub coefficient: Iv,
     pub goal: Iv,
