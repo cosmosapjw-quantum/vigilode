@@ -1,0 +1,73 @@
+{
+  "abstract_routes": 64,
+  "designs": {
+    "ivp": {
+      "fields": [
+        "case",
+        "candidate"
+      ],
+      "uct_proposals": [
+        {
+          "candidate": "Gather",
+          "case": "sphere_4x8"
+        },
+        {
+          "candidate": "Scatter",
+          "case": "sphere_8x16"
+        },
+        {
+          "candidate": "Gather",
+          "case": "sphere_8x16"
+        },
+        {
+          "candidate": "Scatter",
+          "case": "sphere_4x8"
+        }
+      ]
+    },
+    "kernel": {
+      "fields": [
+        "case",
+        "candidate"
+      ],
+      "uct_proposals": [
+        {
+          "candidate": "Scatter",
+          "case": "sphere_4x8"
+        },
+        {
+          "candidate": "Scatter",
+          "case": "sphere_32x64"
+        },
+        {
+          "candidate": "Scatter",
+          "case": "sphere_8x16"
+        },
+        {
+          "candidate": "Gather",
+          "case": "sphere_16x32"
+        },
+        {
+          "candidate": "Gather",
+          "case": "sphere_4x8"
+        },
+        {
+          "candidate": "Scatter",
+          "case": "sphere_16x32"
+        },
+        {
+          "candidate": "Gather",
+          "case": "sphere_8x16"
+        },
+        {
+          "candidate": "Gather",
+          "case": "sphere_32x64"
+        }
+      ]
+    }
+  },
+  "manifest_files": 154,
+  "mutation_edges": {
+    "Gather": "Scatter"
+  }
+}
