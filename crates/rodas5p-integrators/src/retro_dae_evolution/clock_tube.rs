@@ -165,6 +165,11 @@ impl<'a> ClockTubeCarry<'a> {
         scratch: &mut SlabCertificateWorkspace,
         out: &mut SlabCertificate,
     ) -> CoreResult<ClockTubeWork> {
+        // A refused call must never leave a stale qualified report.
+        out.global_qualified = false;
+        out.outgoing = None;
+        out.whole_x_error = None;
+        out.whole_z_error = None;
         if !self.valid {
             return Err(bad("weighted clock carry invalid"));
         }
@@ -185,6 +190,12 @@ impl<'a> ClockTubeCarry<'a> {
             scratch,
             out,
         )?;
+        // The local zero-incoming proof establishes the branch, not this
+        // epoch's global authority. Clear it before any fallible weighted work.
+        out.global_qualified = false;
+        out.outgoing = None;
+        out.whole_x_error = None;
+        out.whole_z_error = None;
         let w = self.plan.weight();
         let h = p(times[1])?.sub(p(times[0])?)?;
         let u = ScratchPoly::new(&y[0])?;

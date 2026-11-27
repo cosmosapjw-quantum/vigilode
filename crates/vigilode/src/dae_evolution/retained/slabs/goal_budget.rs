@@ -13,10 +13,20 @@ pub enum GoalBudgetPlan {
     StructuredBudgeted,
     SignedPortfolio,
     SignedRefined,
+    AdaptiveSigned,
+    EconomySigned,
+    WeightedAdaptiveSigned,
 }
 impl GoalBudgetPlan {
     fn signed(self) -> bool {
-        matches!(self, Self::SignedPortfolio | Self::SignedRefined)
+        matches!(
+            self,
+            Self::SignedPortfolio
+                | Self::SignedRefined
+                | Self::AdaptiveSigned
+                | Self::EconomySigned
+                | Self::WeightedAdaptiveSigned
+        )
     }
     fn secant_routes(self) -> &'static [SecantGoalRoute] {
         use SecantGoalRoute::*;
@@ -42,6 +52,14 @@ impl GoalBudgetPlan {
                 Shifted4,
                 Sub4Horner,
                 Scaled16,
+            ],
+            Self::AdaptiveSigned => &[Sub4Bernstein, Budgeted, Scaled16, WholeHorner, Sub4Horner],
+            Self::EconomySigned | Self::WeightedAdaptiveSigned => &[
+                Sub4Bernstein,
+                BudgetedEconomy,
+                Scaled16,
+                WholeHorner,
+                Sub4Horner,
             ],
             _ => &[WholeHorner, Sub4Horner, Sub4Bernstein, Scaled16],
         }
@@ -188,7 +206,11 @@ pub fn evolve_epoch_goal_budget(
             route,
             grid,
             retention,
-            SlabReplayRoute::Flat,
+            if budget.plan == GoalBudgetPlan::WeightedAdaptiveSigned {
+                SlabReplayRoute::ClockWeighted(de::ClockTubePlan::Mean4)
+            } else {
+                SlabReplayRoute::Flat
+            },
             EnginePlan::SharedFused,
         );
         let mut rec = GoalBudgetAttempt {
@@ -276,7 +298,18 @@ pub fn evolve_epoch_goal_budget(
                                     continue;
                                 }
                                 let mut iv = Iv::point(0.)?;
-                                match r.secant_goal_into(goal, route, workspace, &mut iv) {
+                                let result = if route.adaptive() {
+                                    r.secant_goal_budgeted_into(
+                                        goal,
+                                        route,
+                                        budget.absolute,
+                                        workspace,
+                                        &mut iv,
+                                    )
+                                } else {
+                                    r.secant_goal_into(goal, route, workspace, &mut iv)
+                                };
+                                match result {
                                     Ok(work) => {
                                         rec.certificates.push(GoalCertificateAttempt {
                                             route,

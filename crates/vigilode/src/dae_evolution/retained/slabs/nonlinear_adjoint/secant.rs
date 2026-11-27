@@ -11,8 +11,13 @@ pub enum SecantGoalRoute {
     Shifted4,
     Scaled8,
     Shifted8,
+    Budgeted,
+    BudgetedEconomy,
 }
 impl SecantGoalRoute {
+    pub(in crate::dae_evolution) fn adaptive(self) -> bool {
+        matches!(self, Self::Budgeted | Self::BudgetedEconomy)
+    }
     fn cells(self) -> usize {
         match self {
             Self::WholeHorner => 1,
@@ -27,11 +32,19 @@ impl SecantGoalRoute {
     fn diagonal(self) -> bool {
         matches!(
             self,
-            Self::Diagonal4 | Self::Scaled4 | Self::Scaled8 | Self::Scaled16
+            Self::Diagonal4
+                | Self::Scaled4
+                | Self::Scaled8
+                | Self::Scaled16
+                | Self::Budgeted
+                | Self::BudgetedEconomy
         )
     }
     fn scale(self) -> f64 {
-        if matches!(self, Self::Scaled4 | Self::Scaled8 | Self::Scaled16) {
+        if matches!(
+            self,
+            Self::Scaled4 | Self::Scaled8 | Self::Scaled16 | Self::Budgeted | Self::BudgetedEconomy
+        ) {
             65536.
         } else {
             1.
@@ -53,6 +66,8 @@ pub struct SecantGoalWork {
     pub integrated: [f64; 2],
     pub signed_error: [f64; 2],
     pub width_upper: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub adaptive_cells: Option<[usize; 3]>,
 }
 pub struct SecantGoalWorkspace {
     kernel: de::SecantCellWorkspace,
@@ -153,6 +168,33 @@ impl SlabReplayRun {
         w: &mut SecantGoalWorkspace,
         out: &mut Iv,
     ) -> CoreResult<SecantGoalWork> {
+        self.secant_goal_impl(weights, route, None, w, out)
+    }
+    /// Per-slab refinement proposal from actual retained normalized defect
+    /// and current covector scale. The outward signed transport, not the
+    /// heuristic, determines the resulting certificate.
+    pub fn secant_goal_budgeted_into(
+        &self,
+        weights: &[f64],
+        route: SecantGoalRoute,
+        absolute: f64,
+        w: &mut SecantGoalWorkspace,
+        out: &mut Iv,
+    ) -> CoreResult<SecantGoalWork> {
+        self.secant_goal_impl(weights, route, Some(absolute), w, out)
+    }
+    fn secant_goal_impl(
+        &self,
+        weights: &[f64],
+        route: SecantGoalRoute,
+        budget: Option<f64>,
+        w: &mut SecantGoalWorkspace,
+        out: &mut Iv,
+    ) -> CoreResult<SecantGoalWork> {
+        if route.adaptive() != budget.is_some() || budget.is_some_and(|b| !b.is_finite() || b <= 0.)
+        {
+            return Err(bad("secant adaptive budget contract"));
+        }
         let e = self.adjoint_admission(weights)?;
         let src = &e.src;
         let nx = src.nx();
@@ -171,6 +213,7 @@ impl SlabReplayRun {
         }
         let mut work = SecantGoalWork {
             scale: route.scale(),
+            adaptive_cells: budget.map(|_| [0; 3]),
             ..Default::default()
         };
         let mut v = [Z; 32];
@@ -235,7 +278,28 @@ impl SlabReplayRun {
                     seams = seams.add(v[i].mul(end[i].sub(next_start[i])?)?)?;
                 }
             }
-            let cells = route.cells();
+            let cells = if let Some(budget) = budget {
+                // Proposals only. Use dyadic subdivisions and retain the
+                // same verified cell kernel; every chosen partition covers [0,1].
+                let covector = v[..nx].iter().map(|x| x.mag()).sum::<f64>();
+                let ratio = (*cert.normalized_reduced_defect * covector) / (budget / m as f64);
+                let (a, b) = if route == SecantGoalRoute::BudgetedEconomy {
+                    (8., 64.)
+                } else {
+                    (1., 8.)
+                };
+                let index = if ratio <= a {
+                    0
+                } else if ratio <= b {
+                    1
+                } else {
+                    2
+                };
+                work.adaptive_cells.as_mut().unwrap()[index] += 1;
+                4usize << index
+            } else {
+                route.cells()
+            };
             for j in (0..cells).rev() {
                 let theta = Iv::new(j as f64 / cells as f64, (j + 1) as f64 / cells as f64)?;
                 let (_, _, box_y) =

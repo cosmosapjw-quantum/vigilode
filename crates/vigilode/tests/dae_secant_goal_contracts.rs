@@ -1473,3 +1473,282 @@ fn weighted_clock_actual_contract() {
     assert_eq!(old.driver().y, new.driver().y);
     assert!(new.max_physical_error().unwrap() < 1e-3);
 }
+
+fn weighted_settings() -> (
+    Options,
+    EvolutionPolicy,
+    EvolutionRoute,
+    RetainedOutputRoute,
+) {
+    (
+        Options {
+            rtol: 1e-10,
+            atol: Atol::Scalar(1e-13),
+            dense_output: true,
+            interior_error: InteriorError::Off,
+            max_steps: 4096,
+            ..Default::default()
+        },
+        EvolutionPolicy {
+            init: InitPolicy {
+                mode: InitMode::ProjectAlgebraic,
+                state_tol: 1e-11,
+                residual_tol: 1e-11,
+                derivative_tol: 1e-6,
+                ..Default::default()
+            },
+            tube_radius: 1e-3,
+            global_tol: 1e-3,
+            green: true,
+        },
+        EvolutionRoute::WorkspaceQuery5 {
+            projection: WorkspaceProjection::PivotedVector,
+            certificate: de::SlabWorkspaceRoute::Refined,
+            storage: CertificateStorage::Local,
+            query: QueryWorkspaceRoute::StreamPairs,
+        },
+        RetainedOutputRoute {
+            queries: QueryArenaLayout::Shared,
+            native: NativeRetention::BorrowedRows,
+        },
+    )
+}
+#[test]
+fn weighted_clock_actual_portfolio() {
+    use de::{ClockTubeCarry as Carry, ClockTubePlan as P};
+    let (opts, policy, route, retention) = weighted_settings();
+    let plans = [P::Sup4, P::Mean4, P::Mean8, P::Hybrid4];
+    for case in ["clock2", "coupled_clock"] {
+        let (src, x, z, b, c) = if case == "clock2" {
+            fixture(2)
+        } else {
+            coupled_clock_fixture()
+        };
+        assert!(Carry::new(&src, P::Mean4, 0., &x, Some(1e-12)).is_err());
+        assert!(Carry::new(&src, P::Mean4, -0.1, &x, Some(0.)).is_err());
+        for end in [0.5, 1., 2., 3.] {
+            // The existing clock2 branch ends at z=0.75; only the coupled
+            // fixture has a source branch containing its T=3 trajectory.
+            if case == "clock2" && end == 3. {
+                continue;
+            }
+            let epoch = EvolutionEpoch {
+                start: 0.,
+                end,
+                incoming_x_error: Some(0.),
+            };
+            let call = |replay| {
+                evolve_epoch_slab_replay_planned(
+                    &src,
+                    &x,
+                    &z,
+                    &b,
+                    epoch,
+                    &opts,
+                    policy,
+                    route,
+                    &[],
+                    retention,
+                    replay,
+                    EnginePlan::SharedFused,
+                )
+            };
+            let ((old, audit), alloc) = measure(|| call(SlabReplayRoute::Flat));
+            let old = old.unwrap();
+            println!(
+                "TUBE_RUN {}",
+                serde_json::json!({"case":case,"end":end,"candidate":"Flat","qualified":old.global_qualified(),"bound":old.max_physical_error(),"allocation":alloc,"rhs":audit.stats.as_ref().map(|s|s.counters.rhs_calls),"slabs":old.slabs_len()})
+            );
+            for plan in plans {
+                let ((r, audit), alloc) = measure(|| call(SlabReplayRoute::ClockWeighted(plan)));
+                let r = r.unwrap();
+                assert_eq!(r.driver().t, old.driver().t);
+                assert_eq!(r.driver().y, old.driver().y);
+                if end <= 2. || plan == P::Mean8 {
+                    assert!(
+                        r.global_qualified(),
+                        "{case} {end} {plan:?} {:?}",
+                        r.reason()
+                    );
+                } else {
+                    assert!(!r.global_qualified());
+                }
+                let mut carry = Carry::new(&src, plan, 0., &x, Some(0.)).unwrap();
+                let mut scratch = de::SlabCertificateWorkspace::new();
+                let mut out = de::SlabCertificate::workspace_output(2, 2).unwrap();
+                let mut qualified_slabs = 0;
+                let mut total = 0;
+                for k in 0..old.slabs_len() {
+                    let sl = old.slab(k).unwrap();
+                    let rows: Vec<Vec<Iv>> = match sl.power {
+                        RetainedPowerRows::Owned(a) => a
+                            .iter()
+                            .map(|r| r.iter().map(|p| Iv::new(p[0], p[1]).unwrap()).collect())
+                            .collect(),
+                        RetainedPowerRows::Flat(a) => a
+                            .iter()
+                            .map(|r| r.iter().map(|p| Iv::new(p[0], p[1]).unwrap()).collect())
+                            .collect(),
+                    };
+                    let (v, a) = measure(|| {
+                        carry.certify_into(
+                            sl.times,
+                            &rows,
+                            &b,
+                            policy.tube_radius,
+                            policy.green,
+                            policy.init.condition_cap,
+                            de::SlabWorkspaceRoute::Refined,
+                            &mut scratch,
+                            &mut out,
+                        )
+                    });
+                    let actual = r.slab(k).unwrap();
+                    match v {
+                        Ok(work) => {
+                            let ac = actual.certificate.as_ref().unwrap();
+                            assert_eq!(out.global_qualified, *ac.global_qualified);
+                            assert_eq!(out.whole_x_error, *ac.whole_x_error);
+                            assert_eq!(out.whole_z_error, *ac.whole_z_error);
+                            assert_eq!(out.outgoing, *ac.outgoing);
+                            assert!(out.global_qualified);
+                            qualified_slabs += 1;
+                            total += a.requests();
+                            let power: Vec<Vec<[f64; 2]>> = rows
+                                .iter()
+                                .map(|r| r.iter().map(|v| v.as_pair()).collect())
+                                .collect();
+                            println!(
+                                "TUBE_SLAB {}",
+                                serde_json::json!({"case":case,"end":end,"candidate":plan,"index":k,"times":sl.times,"power":power,"work":work,"allocation":a,"x_error":out.whole_x_error,"z_error":out.whole_z_error})
+                            );
+                        }
+                        Err(e) => {
+                            assert!(!out.global_qualified && out.whole_x_error.is_none());
+                            assert!(actual.certificate.is_none());
+                            assert!(!r.global_qualified());
+                            assert!(
+                                carry
+                                    .certify_into(
+                                        sl.times,
+                                        &rows,
+                                        &b,
+                                        policy.tube_radius,
+                                        policy.green,
+                                        policy.init.condition_cap,
+                                        de::SlabWorkspaceRoute::Refined,
+                                        &mut scratch,
+                                        &mut out
+                                    )
+                                    .is_err()
+                            );
+                            assert!(!out.global_qualified);
+                            println!(
+                                "TUBE_REFUSAL {}",
+                                serde_json::json!({"case":case,"end":end,"candidate":plan,"index":k,"times":sl.times,"reason":e.to_string()})
+                            );
+                            break;
+                        }
+                    }
+                }
+                assert_eq!(total, 0, "{case} {plan:?} successful local allocation");
+                let terminal = r.accepted(r.accepted_len() - 1).unwrap();
+                println!(
+                    "TUBE_RUN {}",
+                    serde_json::json!({"case":case,"end":end,"candidate":plan,"qualified":r.global_qualified(),"bound":r.max_physical_error(),"allocation":alloc,"rhs":audit.stats.as_ref().map(|s|s.counters.rhs_calls),"slabs":r.slabs_len(),"qualified_slabs":qualified_slabs,"warm_allocations":total,"terminal":terminal.state(),"terminal_bound":terminal.physical_error_upper()})
+                );
+                if r.global_qualified() {
+                    let mut sw = SecantGoalWorkspace::new();
+                    let mut iv = Iv::point(0.).unwrap();
+                    for candidate in [
+                        SecantGoalRoute::Scaled4,
+                        SecantGoalRoute::Scaled8,
+                        SecantGoalRoute::Scaled16,
+                        SecantGoalRoute::Budgeted,
+                        SecantGoalRoute::BudgetedEconomy,
+                    ] {
+                        let (v, a) = measure(|| match candidate {
+                            SecantGoalRoute::Budgeted | SecantGoalRoute::BudgetedEconomy => {
+                                r.secant_goal_budgeted_into(&c, candidate, 1e-10, &mut sw, &mut iv)
+                            }
+                            _ => r.secant_goal_into(&c, candidate, &mut sw, &mut iv),
+                        });
+                        let work = v.unwrap();
+                        assert_eq!(a.requests(), 0);
+                        if let Some(d) = work.adaptive_cells {
+                            assert_eq!(d.iter().sum::<usize>(), work.slabs);
+                            assert_eq!(d[0] * 4 + d[1] * 8 + d[2] * 16, work.cells);
+                        }
+                        println!(
+                            "TUBE_ADJOINT {}",
+                            serde_json::json!({"case":case,"end":end,"candidate":plan,"route":candidate,"work":work,"allocation":a,"terminal":terminal.state(),"weights":c})
+                        );
+                    }
+                }
+            }
+        }
+    }
+    let (src, x, _, _, _) = growth_fixture();
+    assert!(Carry::new(&src, P::Mean4, 0., &x, Some(0.)).is_err());
+    let (src, x, _, _, _) = fixture(8);
+    assert!(Carry::new(&src, P::Mean4, 0., &x, Some(0.)).is_err());
+}
+#[test]
+fn adaptive_signed_actual_portfolio() {
+    let (opts, policy, route, retention) = weighted_settings();
+    for (case, end) in [
+        ("clock2", 0.5),
+        ("clock8", 0.5),
+        ("coupled_clock", 1.),
+        ("coupled_clock", 2.),
+    ] {
+        let (src, x, z, b, c) = if case == "coupled_clock" {
+            coupled_clock_fixture()
+        } else {
+            fixture(if case == "clock8" { 8 } else { 2 })
+        };
+        for absolute in [1e-8, 1e-9, 1e-10] {
+            for plan in [
+                GoalBudgetPlan::Fixed,
+                GoalBudgetPlan::SignedRefined,
+                GoalBudgetPlan::AdaptiveSigned,
+                GoalBudgetPlan::EconomySigned,
+                GoalBudgetPlan::WeightedAdaptiveSigned,
+            ] {
+                if case == "clock8" && plan == GoalBudgetPlan::WeightedAdaptiveSigned {
+                    continue;
+                }
+                let (r, a) = measure(|| {
+                    evolve_epoch_goal_budget(
+                        &src,
+                        &x,
+                        &z,
+                        &b,
+                        EvolutionEpoch {
+                            start: 0.,
+                            end,
+                            incoming_x_error: Some(0.),
+                        },
+                        &opts,
+                        policy,
+                        route,
+                        &[],
+                        retention,
+                        &c,
+                        GoalBudgetPolicy { absolute, plan },
+                    )
+                    .unwrap()
+                });
+                let last = r.attempts.last().unwrap();
+                assert_eq!(r.run.is_some(), last.accepted);
+                if last.accepted {
+                    assert!(last.physical_qualified);
+                }
+                println!(
+                    "ADAPTIVE_GOAL {}",
+                    serde_json::json!({"case":case,"end":end,"absolute":absolute,"plan":plan,"qualified":last.accepted,"attempt":last,"weights":c,"allocation":a,"rhs":r.total_rhs(),"steps":r.total_steps()})
+                );
+            }
+        }
+    }
+}
