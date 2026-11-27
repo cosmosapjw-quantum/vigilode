@@ -13,10 +13,18 @@ pub enum ResidualPlan {
     Hybrid,
     CompactDiagonal,
     CompactHybrid,
+    RingLocalDiagonal,
+    RingLocalHybrid,
 }
 impl ResidualPlan {
     fn compact(self) -> bool {
-        matches!(self, Self::CompactDiagonal | Self::CompactHybrid)
+        matches!(
+            self,
+            Self::CompactDiagonal
+                | Self::CompactHybrid
+                | Self::RingLocalDiagonal
+                | Self::RingLocalHybrid
+        )
     }
 }
 #[derive(Clone, Copy, Debug, Default, Serialize)]
@@ -150,7 +158,11 @@ impl ResidualWorkspace {
             compact,
             q,
             diag_defect: 0.,
-            scratch: vec![Z; n],
+            scratch: if plan == ResidualPlan::RingLocalDiagonal {
+                Vec::new()
+            } else {
+                vec![Z; n]
+            },
         })
     }
     pub fn prepare(&mut self, z: f64) -> CoreResult<()> {
@@ -277,6 +289,90 @@ impl ResidualWorkspace {
         }
         self.finish_fused(z, rhs, x.len(), rsum, xsum, fmas, true)
     }
+    // Same represented incoming edges and FMA order as compact_fused.
+    // Only line boundaries require longitude wrapping. Transverse neighbor
+    // slices are selected once per line; no per-cell div/mod or edge arrays.
+    fn ring_local_fused(
+        &self,
+        z: f64,
+        b: &[f64],
+        x: &[f64],
+        rhs: f64,
+    ) -> CoreResult<ResidualReceipt> {
+        let w = self.grid.width;
+        let mut rsum = 0.;
+        let mut xsum = 0.;
+        let mut fmas = 0_u64;
+        let mut line = |r: usize, group: usize, lon: f64, neighbors: &[(usize, f64)]| {
+            let start = r * w;
+            let cur = &x[start..start + w];
+            let rhs_line = &b[start..start + w];
+            let diag = -self.compact[group].diagonal;
+            // At most four transverse neighbors; zero rate and self edges omitted.
+            let mut slices = [(&x[0..w], 0.); 4];
+            let mut count = 0;
+            for &(j, a) in neighbors {
+                if j != r && a != 0. {
+                    slices[count] = (&x[j * w..(j + 1) * w], a);
+                    count += 1;
+                }
+            }
+            fmas += (w * (1 + count + if lon != 0. { 2 } else { 0 })) as u64;
+            for i in 0..w {
+                let c = cur[i];
+                let mut v = diag.mul_add(c, rhs_line[i]);
+                if lon != 0. {
+                    let west = if i == 0 { w - 1 } else { i - 1 };
+                    let east = if i + 1 == w { 0 } else { i + 1 };
+                    v = lon.mul_add(cur[west], v);
+                    v = lon.mul_add(cur[east], v);
+                }
+                for &(nbr, rate) in &slices[..count] {
+                    v = rate.mul_add(nbr[i], v);
+                }
+                xsum += c.abs();
+                rsum += v.abs();
+            }
+        };
+        match &*self.grid.geometry {
+            Geometry::Cartesian { ny, nz, rates, .. } => {
+                for k in 0..*nz {
+                    let km = if k == 0 { nz - 1 } else { k - 1 };
+                    let kp = if k + 1 == *nz { 0 } else { k + 1 };
+                    for j in 0..*ny {
+                        let jm = if j == 0 { ny - 1 } else { j - 1 };
+                        let jp = if j + 1 == *ny { 0 } else { j + 1 };
+                        let r = k * ny + j;
+                        line(
+                            r,
+                            0,
+                            rates[0],
+                            &[
+                                (k * ny + jm, rates[1]),
+                                (k * ny + jp, rates[1]),
+                                (km * ny + j, rates[2]),
+                                (kp * ny + j, rates[2]),
+                            ],
+                        );
+                    }
+                }
+            }
+            Geometry::Sphere(rings) => {
+                for (r, ring) in rings.iter().enumerate() {
+                    let rn = r.saturating_sub(1);
+                    let rs = (r + 1).min(rings.len() - 1);
+                    line(
+                        r,
+                        r,
+                        ring.azimuth,
+                        &[(rn, rings[rn].south), (rs, rings[rs].north)],
+                    );
+                }
+            }
+        }
+        self.finish_fused(z, rhs, x.len(), rsum, xsum, fmas, true)
+    }
+
     #[allow(clippy::too_many_arguments)]
     fn finish_fused(
         &self,
@@ -351,9 +447,20 @@ impl ResidualWorkspace {
         if self.plan == ResidualPlan::CompactDiagonal {
             return self.compact_fused(z, b, x, rhs);
         }
+        if self.plan == ResidualPlan::RingLocalDiagonal {
+            return self.ring_local_fused(z, b, x, rhs);
+        }
         let mut attempt = ResidualReceipt::default();
-        if self.plan == ResidualPlan::CompactHybrid {
-            match self.compact_fused(z, b, x, rhs) {
+        if matches!(
+            self.plan,
+            ResidualPlan::CompactHybrid | ResidualPlan::RingLocalHybrid
+        ) {
+            let result = if self.plan == ResidualPlan::RingLocalHybrid {
+                self.ring_local_fused(z, b, x, rhs)
+            } else {
+                self.compact_fused(z, b, x, rhs)
+            };
+            match result {
                 Ok(r) if r.admitted => return Ok(r),
                 Ok(r) => attempt = r,
                 Err(_) => attempt.fast_checks = 1,

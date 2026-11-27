@@ -1250,3 +1250,125 @@ fn structured_goal_actual_portfolio() {
         }
     }
 }
+
+#[test]
+fn signed_goal_actual_portfolio() {
+    let opts = Options {
+        rtol: 1e-10,
+        atol: Atol::Scalar(1e-13),
+        dense_output: true,
+        interior_error: InteriorError::Off,
+        max_steps: 4096,
+        ..Default::default()
+    };
+    let policy = EvolutionPolicy {
+        init: InitPolicy {
+            mode: InitMode::ProjectAlgebraic,
+            state_tol: 1e-11,
+            residual_tol: 1e-11,
+            derivative_tol: 1e-6,
+            ..Default::default()
+        },
+        tube_radius: 1e-3,
+        global_tol: 1e-3,
+        green: true,
+    };
+    let route = EvolutionRoute::WorkspaceQuery5 {
+        projection: WorkspaceProjection::PivotedVector,
+        certificate: de::SlabWorkspaceRoute::Refined,
+        storage: CertificateStorage::Local,
+        query: QueryWorkspaceRoute::StreamPairs,
+    };
+    let retention = RetainedOutputRoute {
+        queries: QueryArenaLayout::Shared,
+        native: NativeRetention::BorrowedRows,
+    };
+    let plans = [
+        GoalBudgetPlan::Fixed,
+        GoalBudgetPlan::SignedPortfolio,
+        GoalBudgetPlan::SignedRefined,
+    ];
+    for (case, end) in [
+        ("clock2", 0.5),
+        ("clock8", 0.5),
+        ("coupled_clock", 1.),
+        ("coupled_clock", 2.),
+    ] {
+        let (src, x, z, b, c) = match case {
+            "clock8" => fixture(8),
+            "clock2" => fixture(2),
+            _ => coupled_clock_fixture(),
+        };
+        // Inspect the actual physical slab replay without altering admission.
+        let (pr, _) = evolve_epoch_slab_replay_planned(
+            &src,
+            &x,
+            &z,
+            &b,
+            EvolutionEpoch {
+                start: 0.,
+                end,
+                incoming_x_error: Some(0.),
+            },
+            &opts,
+            policy,
+            route,
+            &[],
+            retention,
+            SlabReplayRoute::Flat,
+            EnginePlan::SharedFused,
+        );
+        let pr = pr.unwrap();
+        let mut first = None;
+        for k in 0..pr.slabs_len() {
+            let s = pr.slab(k).unwrap();
+            if s.certificate.as_ref().is_none_or(|c| !*c.global_qualified) {
+                first = Some(
+                    serde_json::json!({"index":k,"times":s.times,"reason":s.reason,"certificate":s.certificate}),
+                );
+                break;
+            }
+        }
+        println!(
+            "SIGNED_PHYSICAL {}",
+            serde_json::json!({"case":case,"end":end,"qualified":pr.global_qualified(),"reason":pr.reason(),"first":first,"slabs":pr.slabs_len(),"driver_success":pr.driver().is_success()})
+        );
+        for absolute in [1e-8, 1e-9, 1e-10] {
+            for plan in plans {
+                let start = std::time::Instant::now();
+                let (r, a) = measure(|| {
+                    evolve_epoch_goal_budget(
+                        &src,
+                        &x,
+                        &z,
+                        &b,
+                        EvolutionEpoch {
+                            start: 0.,
+                            end,
+                            incoming_x_error: Some(0.),
+                        },
+                        &opts,
+                        policy,
+                        route,
+                        &[],
+                        retention,
+                        &c,
+                        GoalBudgetPolicy { absolute, plan },
+                    )
+                    .unwrap()
+                });
+                let ns = start.elapsed().as_nanos();
+                let last = r.attempts.last().unwrap();
+                assert_eq!(r.run.is_some(), last.accepted);
+                if !last.physical_qualified {
+                    assert!(!last.accepted);
+                    assert!(last.certificates.is_empty());
+                }
+                println!(
+                    "SIGNED_GOAL {}",
+                    serde_json::json!({"case":case,"end":end,"absolute":absolute,"plan":plan,"qualified":last.accepted,"attempt":last,"weights":c,"allocation":a,"rhs":r.total_rhs(),"steps":r.total_steps(),"ns":ns})
+                );
+            }
+        }
+    }
+}
