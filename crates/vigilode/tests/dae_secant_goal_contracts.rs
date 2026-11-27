@@ -1409,3 +1409,67 @@ fn signed_goal_actual_portfolio() {
         }
     }
 }
+
+#[test]
+fn weighted_clock_actual_contract() {
+    let (src, x, z, b, _) = coupled_clock_fixture();
+    let opts = Options {
+        rtol: 1e-10,
+        atol: Atol::Scalar(1e-13),
+        dense_output: true,
+        interior_error: InteriorError::Off,
+        max_steps: 4096,
+        ..Default::default()
+    };
+    let policy = EvolutionPolicy {
+        init: InitPolicy {
+            mode: InitMode::ProjectAlgebraic,
+            state_tol: 1e-11,
+            residual_tol: 1e-11,
+            derivative_tol: 1e-6,
+            ..Default::default()
+        },
+        tube_radius: 1e-3,
+        global_tol: 1e-3,
+        green: true,
+    };
+    let route = EvolutionRoute::WorkspaceQuery5 {
+        projection: WorkspaceProjection::PivotedVector,
+        certificate: de::SlabWorkspaceRoute::Refined,
+        storage: CertificateStorage::Local,
+        query: QueryWorkspaceRoute::StreamPairs,
+    };
+    let retention = RetainedOutputRoute {
+        queries: QueryArenaLayout::Shared,
+        native: NativeRetention::BorrowedRows,
+    };
+    let call = |replay| {
+        evolve_epoch_slab_replay_planned(
+            &src,
+            &x,
+            &z,
+            &b,
+            EvolutionEpoch {
+                start: 0.,
+                end: 2.,
+                incoming_x_error: Some(0.),
+            },
+            &opts,
+            policy,
+            route,
+            &[],
+            retention,
+            replay,
+            EnginePlan::SharedFused,
+        )
+        .0
+        .unwrap()
+    };
+    let old = call(SlabReplayRoute::Flat);
+    assert!(!old.global_qualified());
+    let new = call(SlabReplayRoute::ClockWeighted(de::ClockTubePlan::Mean4));
+    assert!(new.global_qualified(), "{:?}", new.reason());
+    assert_eq!(old.driver().t, new.driver().t);
+    assert_eq!(old.driver().y, new.driver().y);
+    assert!(new.max_physical_error().unwrap() < 1e-3);
+}
