@@ -12,7 +12,8 @@ use rodas5p_integrators::{
 };
 use rodas5p_krylov::{
     CapacityGrowth, GmresCapacity, GmresConfig, GmresMonitorDecision, GmresWorkspace,
-    solve_gmres_into, solve_gmres_into_right_monitored,
+    solve_gmres_into, solve_gmres_into_right_flexible_triggered_monitored,
+    solve_gmres_into_right_monitored,
 };
 use serde::Serialize;
 use std::sync::{Arc, Mutex};
@@ -31,6 +32,8 @@ pub enum ShiftedAdjointRoute {
     EarlyIdentity,
     EarlyLongitude,
     FourierTranspose,
+    TriggeredIdentity,
+    TriggeredLongitude,
 }
 #[derive(Clone, Copy, Debug, Default, Serialize)]
 pub struct ShiftedAdjointReport {
@@ -48,6 +51,8 @@ pub struct ShiftedAdjointReport {
     pub prefix_solves: u64,
     #[serde(skip_serializing_if = "zero_count")]
     pub seed_accepts: u64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub residual_profile: Option<ResidualProfile>,
 }
 fn zero_count(x: &u64) -> bool {
     *x == 0
@@ -69,7 +74,16 @@ impl Preconditioner for Right<'_> {
 }
 impl ShiftedAdjointRoute {
     fn early(self) -> bool {
-        matches!(self, Self::EarlyIdentity | Self::EarlyLongitude)
+        matches!(
+            self,
+            Self::EarlyIdentity
+                | Self::EarlyLongitude
+                | Self::TriggeredIdentity
+                | Self::TriggeredLongitude
+        )
+    }
+    fn triggered(self) -> bool {
+        matches!(self, Self::TriggeredIdentity | Self::TriggeredLongitude)
     }
     fn direct(self) -> bool {
         self == Self::FourierTranspose
@@ -88,9 +102,28 @@ pub struct ShiftedAdjointWorkspace {
     seed: Vec<f64>,
     probe: Vec<f64>,
     fourier: Option<Box<super::separable::TransposeKernel>>,
+    residual: Option<Box<ResidualWorkspace>>,
 }
 impl ShiftedAdjointWorkspace {
     pub fn new(grid: &DiffusionGrid, route: ShiftedAdjointRoute) -> CoreResult<Self> {
+        Self::new_impl(grid, route, None)
+    }
+    /// Opt-in original-source residual algorithm for direct Fourier stages.
+    pub fn new_with_residual(
+        grid: &DiffusionGrid,
+        route: ShiftedAdjointRoute,
+        plan: ResidualPlan,
+    ) -> CoreResult<Self> {
+        if !route.direct() {
+            return Err(err("residual policy requires direct Fourier"));
+        }
+        Self::new_impl(grid, route, Some(plan))
+    }
+    fn new_impl(
+        grid: &DiffusionGrid,
+        route: ShiftedAdjointRoute,
+        residual: Option<ResidualPlan>,
+    ) -> CoreResult<Self> {
         rodas5p_integrators::affine_event_certificate::check_affine_event_arithmetic()?;
         let n = grid.dimension();
         let columns = (if route == ShiftedAdjointRoute::ShortIdentity {
@@ -115,6 +148,7 @@ impl ShiftedAdjointWorkspace {
             ShiftedAdjointRoute::Longitude
                 | ShiftedAdjointRoute::Meridional
                 | ShiftedAdjointRoute::EarlyLongitude
+                | ShiftedAdjointRoute::TriggeredLongitude
         ) {
             None
         } else {
@@ -141,7 +175,11 @@ impl ShiftedAdjointWorkspace {
             },
             z: None,
             x: vec![0.; n],
-            res: vec![Z; n],
+            res: if residual.is_none() {
+                vec![Z; n]
+            } else {
+                Vec::new()
+            },
             seed: if route.early() {
                 vec![0.; n]
             } else {
@@ -153,6 +191,9 @@ impl ShiftedAdjointWorkspace {
                 Vec::new()
             },
             fourier,
+            residual: residual
+                .map(|p| ResidualWorkspace::new(grid, p).map(Box::new))
+                .transpose()?,
         })
     }
     pub fn prepare(&mut self, z: f64) -> CoreResult<()> {
@@ -166,6 +207,9 @@ impl ShiftedAdjointWorkspace {
         if let Some(k) = self.fourier.as_mut() {
             k.prepare(z)?;
         }
+        if let Some(r) = self.residual.as_mut() {
+            r.prepare(z)?;
+        }
         self.z = Some(z);
         Ok(())
     }
@@ -178,8 +222,35 @@ impl ShiftedAdjointWorkspace {
         let g = &self.grid;
         if let Some(k) = self.fourier.as_mut() {
             self.x.copy_from_slice(b);
+            let start = self.residual.as_ref().map(|_| std::time::Instant::now());
             k.solve(&mut self.x);
             c.direct_solve_calls += 1;
+            if let Some(r) = self.residual.as_mut() {
+                let solve_ns = elapsed_ns(start.unwrap());
+                let start = std::time::Instant::now();
+                let a = r.evaluate(b, &self.x)?;
+                let certificate_ns = elapsed_ns(start);
+                if !a.admitted {
+                    return Err(err("transpose Fourier residual exceeds stage budget"));
+                }
+                c.linear_solves += 1;
+                return Ok(ShiftedAdjointReport {
+                    residual_l1: a.residual_l1,
+                    error_l1: a.error_l1,
+                    rhs_l1: a.rhs_l1,
+                    directed_checks: a.interval_checks,
+                    residual_profile: Some(ResidualProfile {
+                        solve_ns,
+                        certificate_ns,
+                        fast_checks: a.fast_checks,
+                        interval_checks: a.interval_checks,
+                        fallbacks: a.fallbacks,
+                        fmas: a.fmas,
+                        max_rounding: a.rounding_upper,
+                    }),
+                    ..Default::default()
+                });
+            }
             let (rho, upper, rhs) = directed_residual(g, z, b, &self.x, &mut self.res)?;
             if rho > add_up(mul_up(1e-10, rhs)?, 1e-13)? {
                 return Err(err("transpose Fourier residual exceeds stage budget"));
@@ -251,17 +322,34 @@ impl ShiftedAdjointWorkspace {
                 }
                 Ok(GmresMonitorDecision::Continue)
             };
-            let r = solve_gmres_into_right_monitored(
-                &op,
-                &Right(pc),
-                b,
-                &self.seed,
-                &self.config,
-                &mut self.x,
-                &mut self.gmres,
-                c,
-                &mut monitor,
-            )?;
+            let r = if self.route.triggered() {
+                let projected = allowed / (2. * (n as f64).sqrt());
+                solve_gmres_into_right_flexible_triggered_monitored(
+                    &op,
+                    &Right(pc),
+                    b,
+                    &self.seed,
+                    &self.config,
+                    projected,
+                    self.capacity,
+                    &mut self.x,
+                    &mut self.gmres,
+                    c,
+                    &mut monitor,
+                )?
+            } else {
+                solve_gmres_into_right_monitored(
+                    &op,
+                    &Right(pc),
+                    b,
+                    &self.seed,
+                    &self.config,
+                    &mut self.x,
+                    &mut self.gmres,
+                    c,
+                    &mut monitor,
+                )?
+            };
             if !r.accepted {
                 return Err(err("monitored original residual target exhausted"));
             }
@@ -277,6 +365,7 @@ impl ShiftedAdjointWorkspace {
                 directed_checks: checks,
                 prefix_solves: r.least_squares_solves,
                 seed_accepts: 0,
+                ..Default::default()
             });
         }
         let r = solve_gmres_into(
@@ -382,6 +471,33 @@ pub struct ShiftedNativeWork {
     pub prefix_solves: u64,
     #[serde(skip_serializing_if = "zero_count")]
     pub seed_accepts: u64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub residual_profile: Option<ResidualProfile>,
+}
+/// Opt-in profiling, successful returned stage solves only.
+#[derive(Clone, Copy, Debug, Default, Serialize)]
+pub struct ResidualProfile {
+    pub solve_ns: u64,
+    pub certificate_ns: u64,
+    pub fast_checks: u64,
+    pub interval_checks: u64,
+    pub fallbacks: u64,
+    pub fmas: u64,
+    pub max_rounding: f64,
+}
+fn elapsed_ns(t: std::time::Instant) -> u64 {
+    t.elapsed().as_nanos().min(u64::MAX as u128) as u64
+}
+impl ResidualProfile {
+    fn add(&mut self, r: Self) {
+        self.solve_ns = self.solve_ns.saturating_add(r.solve_ns);
+        self.certificate_ns = self.certificate_ns.saturating_add(r.certificate_ns);
+        self.fast_checks += r.fast_checks;
+        self.interval_checks += r.interval_checks;
+        self.fallbacks += r.fallbacks;
+        self.fmas += r.fmas;
+        self.max_rounding = self.max_rounding.max(r.max_rounding);
+    }
 }
 struct Client {
     w: ShiftedAdjointWorkspace,
@@ -425,6 +541,11 @@ impl StageLinearSystem for Client {
         w.directed_checks += r.directed_checks;
         w.prefix_solves += r.prefix_solves;
         w.seed_accepts += r.seed_accepts;
+        if let Some(p) = r.residual_profile {
+            w.residual_profile
+                .get_or_insert_with(Default::default)
+                .add(p);
+        }
         Ok(())
     }
 }
@@ -436,6 +557,32 @@ pub fn solve_spatial_adjoint_shifted(
     initial: &[f64],
     adaptive: &AdaptiveStepConfig,
     route: ShiftedAdjointRoute,
+) -> CoreResult<(Rodas5pFastResult, ShiftedNativeWork)> {
+    solve_spatial_adjoint_impl(grid, span, initial, adaptive, route, None)
+}
+pub fn solve_spatial_adjoint_shifted_with_residual(
+    grid: &DiffusionGrid,
+    span: (f64, f64),
+    initial: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    plan: ResidualPlan,
+) -> CoreResult<(Rodas5pFastResult, ShiftedNativeWork)> {
+    solve_spatial_adjoint_impl(
+        grid,
+        span,
+        initial,
+        adaptive,
+        ShiftedAdjointRoute::FourierTranspose,
+        Some(plan),
+    )
+}
+fn solve_spatial_adjoint_impl(
+    grid: &DiffusionGrid,
+    span: (f64, f64),
+    initial: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    route: ShiftedAdjointRoute,
+    residual: Option<ResidualPlan>,
 ) -> CoreResult<(Rodas5pFastResult, ShiftedNativeWork)> {
     let g = grid.clone();
     let j = grid.clone();
@@ -459,7 +606,7 @@ pub fn solve_spatial_adjoint_shifted(
     )?;
     let report = Arc::new(Mutex::new(ShiftedNativeWork::default()));
     let client = Client {
-        w: ShiftedAdjointWorkspace::new(grid, route)?,
+        w: ShiftedAdjointWorkspace::new_impl(grid, route, residual)?,
         report: report.clone(),
     };
     let out = OutputSchedule::new(vec![span.0, span.1])?;

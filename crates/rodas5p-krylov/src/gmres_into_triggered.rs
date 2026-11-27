@@ -18,21 +18,51 @@ use rodas5p_core::{
     PreconditionerSide, WorkCounters, safe_l2,
 };
 
+enum ProjectionBuffer {
+    Inline([f64; 33], usize),
+    Heap(Vec<f64>),
+}
+impl ProjectionBuffer {
+    fn new(n: usize) -> Self {
+        if n <= 33 {
+            Self::Inline([0.; 33], n)
+        } else {
+            Self::Heap(vec![0.; n])
+        }
+    }
+}
+impl std::ops::Deref for ProjectionBuffer {
+    type Target = [f64];
+    fn deref(&self) -> &[f64] {
+        match self {
+            Self::Inline(a, n) => &a[..*n],
+            Self::Heap(v) => v,
+        }
+    }
+}
+impl std::ops::DerefMut for ProjectionBuffer {
+    fn deref_mut(&mut self) -> &mut [f64] {
+        match self {
+            Self::Inline(a, n) => &mut a[..*n],
+            Self::Heap(v) => v,
+        }
+    }
+}
 struct ProjectedGivens {
-    cosine: Vec<f64>,
-    sine: Vec<f64>,
-    rotated_rhs: Vec<f64>,
-    column: Vec<f64>,
+    cosine: ProjectionBuffer,
+    sine: ProjectionBuffer,
+    rotated_rhs: ProjectionBuffer,
+    column: ProjectionBuffer,
 }
 impl ProjectedGivens {
     fn new(columns: usize, beta: f64) -> Self {
-        let mut rotated_rhs = vec![0.0; columns + 1];
+        let mut rotated_rhs = ProjectionBuffer::new(columns + 1);
         rotated_rhs[0] = beta;
         Self {
-            cosine: vec![0.0; columns],
-            sine: vec![0.0; columns],
+            cosine: ProjectionBuffer::new(columns),
+            sine: ProjectionBuffer::new(columns),
             rotated_rhs,
-            column: vec![0.0; columns + 1],
+            column: ProjectionBuffer::new(columns + 1),
         }
     }
     fn update(&mut self, h: &DenseMatrix, j: usize) -> CoreResult<f64> {
