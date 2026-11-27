@@ -23,6 +23,10 @@ pub enum ShiftedAdjointRoute {
     Identity,
     Longitude,
     Meridional,
+    ShortIdentity,
+    EarlyIdentity,
+    EarlyLongitude,
+    FourierTranspose,
 }
 #[derive(Clone, Copy, Debug, Default, Serialize)]
 pub struct ShiftedAdjointReport {
@@ -52,7 +56,12 @@ impl ShiftedAdjointWorkspace {
         let mut gmres = GmresWorkspace::with_ls_workspace();
         gmres.set_givens_least_squares(true);
         gmres.reserve(n, columns)?;
-        let line = if route == ShiftedAdjointRoute::Identity {
+        let line = if !matches!(
+            route,
+            ShiftedAdjointRoute::Longitude
+                | ShiftedAdjointRoute::Meridional
+                | ShiftedAdjointRoute::EarlyLongitude
+        ) {
             None
         } else {
             Some(

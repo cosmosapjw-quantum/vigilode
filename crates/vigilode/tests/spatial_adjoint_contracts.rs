@@ -1147,3 +1147,38 @@ fn shifted_stage_actual_native_adjoint() {
         }
     }
 }
+
+#[test]
+fn early_shifted_native_removes_unnecessary_columns() {
+    use rodas5p_core::WorkCounters;
+    use vigilode::spatial::{ShiftedAdjointRoute as R, ShiftedAdjointWorkspace as W};
+    let g = DiffusionGrid::sphere(4, 8, 1., 0.16).unwrap();
+    let n = g.dimension();
+    let b = vec![0.125; n];
+    let mut v = vec![0.; n];
+    let mut a = W::new(&g, R::Identity).unwrap();
+    let mut e = W::new(&g, R::EarlyIdentity).unwrap();
+    let mut f = W::new(&g, R::FourierTranspose).unwrap();
+    a.prepare(4096.).unwrap();
+    e.prepare(4096.).unwrap();
+    f.prepare(4096.).unwrap();
+    let base = a
+        .solve_into(&b, &mut v, &mut WorkCounters::default())
+        .unwrap();
+    let fast = e
+        .solve_into(&b, &mut v, &mut WorkCounters::default())
+        .unwrap();
+    let direct = f
+        .solve_into(&b, &mut v, &mut WorkCounters::default())
+        .unwrap();
+    println!(
+        "EARLY_RED_GREEN baseline={} early={} Fourier={}",
+        base.iterations, fast.iterations, direct.iterations
+    );
+    assert!(
+        fast.iterations < base.iterations
+            && direct.iterations == 0
+            && fast.error_l1 <= 1e-8
+            && direct.error_l1 <= 1e-8
+    );
+}
