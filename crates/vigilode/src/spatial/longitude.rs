@@ -10,6 +10,7 @@ struct RingFactor {
     alpha: f64,
     rho: f64,
     inverse_closure: f64,
+    gain: f64,
 }
 
 impl RingFactor {
@@ -38,12 +39,18 @@ impl RingFactor {
             alpha,
             rho,
             inverse_closure: 1.0 / closure,
+            gain: 1.,
         })
     }
 
     fn solve(&self, rhs: &[f64], out: &mut [f64]) {
         if self.rho == 0.0 {
             out.copy_from_slice(rhs);
+            if self.gain != 1. {
+                for v in out {
+                    *v *= self.gain;
+                }
+            }
             return;
         }
         let recurrence = |last: f64, value: f64| self.alpha * value + self.rho * last;
@@ -56,6 +63,11 @@ impl RingFactor {
         for z in out.iter_mut().rev() {
             last = recurrence(last, *z);
             *z = last;
+        }
+        if self.gain != 1. {
+            for v in out {
+                *v *= self.gain;
+            }
         }
     }
 }
@@ -102,6 +114,45 @@ impl DiffusionGrid {
 }
 
 impl LongitudeLinePreconditioner {
+    /// Refactor in existing storage. The owner supplies the same grid.
+    /// Optional meridional block diagonal is the original outgoing rate.
+    pub(crate) fn refactor_shifted(
+        &mut self,
+        grid: &DiffusionGrid,
+        z: f64,
+        meridional: bool,
+    ) -> CoreResult<()> {
+        let Geometry::Sphere(rings) = &*grid.geometry else {
+            return Err(CoreError::InvalidInput(
+                "longitude refactor geometry".into(),
+            ));
+        };
+        if !z.is_finite() || z <= 0. || self.width != grid.width || self.rings.len() != rings.len()
+        {
+            return Err(CoreError::InvalidInput(
+                "longitude refactor shape/shift".into(),
+            ));
+        }
+        let factor = |r: &super::Ring| {
+            let d = if meridional { z + r.north + r.south } else { z };
+            let mut f = RingFactor::new(r.azimuth / d, self.width)
+                .map_err(|e| CoreError::LinearSolve(e.to_string()))?;
+            f.gain = z / d;
+            if !d.is_finite() || !f.gain.is_finite() || f.gain <= 0. {
+                return Err(CoreError::LinearSolve("longitude diagonal overflow".into()));
+            }
+            Ok(f)
+        };
+        // Validate all factors before replacing; no temporary heap.
+        for r in rings {
+            factor(r)?;
+        }
+        for (f, r) in self.rings.iter_mut().zip(rings) {
+            *f = factor(r)?;
+        }
+        Ok(())
+    }
+
     /// Write the left-preconditioned vector into `out`. The two slices have grid dimension.
     pub fn apply(&self, rhs: &[f64], out: &mut [f64]) -> CoreResult<()> {
         if rhs.len() != self.dimension() || out.len() != self.dimension() {
