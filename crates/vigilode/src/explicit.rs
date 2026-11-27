@@ -7,6 +7,7 @@
 use std::cell::{Cell, RefCell};
 
 use rodas5p_core::{CoreError, WorkCounters};
+pub use rodas5p_integrators::DopriStageKernel;
 use rodas5p_integrators::{
     AdaptiveStepConfig, AffineErrorNorm, Dopri5Config, Dopri5StopReason, OutputSchedule,
     integrate_dopri5_dense_observed, integrate_dopri5_dense_observed_with_norm,
@@ -227,7 +228,16 @@ impl Dopri5 {
         opts: &Options,
         times: &[f64],
     ) -> Result<ExplicitSolution, ExplicitSolveError> {
-        Self::solve_impl(problem, t_span, y0, opts, times, false, None)
+        Self::solve_impl(
+            problem,
+            t_span,
+            y0,
+            opts,
+            times,
+            false,
+            None,
+            DopriStageKernel::Rows,
+        )
     }
 
     /// Sample a quartic continuous extension of accepted DOPRI5 steps.
@@ -245,7 +255,16 @@ impl Dopri5 {
         opts: &Options,
         times: &[f64],
     ) -> Result<ExplicitSolution, ExplicitSolveError> {
-        Self::solve_impl(problem, t_span, y0, opts, times, true, None)
+        Self::solve_impl(
+            problem,
+            t_span,
+            y0,
+            opts,
+            times,
+            true,
+            None,
+            DopriStageKernel::Rows,
+        )
     }
 
     /// Control the embedded error in the declared affine physical state.
@@ -261,7 +280,16 @@ impl Dopri5 {
         times: &[f64],
         norm: &AffineErrorNorm,
     ) -> Result<ExplicitSolution, ExplicitSolveError> {
-        Self::solve_impl(problem, t_span, y0, opts, times, false, Some(norm))
+        Self::solve_impl(
+            problem,
+            t_span,
+            y0,
+            opts,
+            times,
+            false,
+            Some(norm),
+            DopriStageKernel::Rows,
+        )
     }
 
     /// Combine dense observations with affine physical embedded-error control.
@@ -275,9 +303,29 @@ impl Dopri5 {
         times: &[f64],
         norm: &AffineErrorNorm,
     ) -> Result<ExplicitSolution, ExplicitSolveError> {
-        Self::solve_impl(problem, t_span, y0, opts, times, true, Some(norm))
+        Self::solve_impl(
+            problem,
+            t_span,
+            y0,
+            opts,
+            times,
+            true,
+            Some(norm),
+            DopriStageKernel::Rows,
+        )
     }
 
+    /// Explicit opt-in accumulation kernel; unchanged output and callback guards.
+    pub fn solve_dense_observed_with_kernel(
+        problem: &Problem,
+        t_span: (f64, f64),
+        y0: &[f64],
+        opts: &Options,
+        times: &[f64],
+        kernel: DopriStageKernel,
+    ) -> Result<ExplicitSolution, ExplicitSolveError> {
+        Self::solve_impl(problem, t_span, y0, opts, times, true, None, kernel)
+    }
     fn solve_impl(
         problem: &Problem,
         t_span: (f64, f64),
@@ -286,6 +334,7 @@ impl Dopri5 {
         times: &[f64],
         dense: bool,
         norm: Option<&AffineErrorNorm>,
+        kernel: DopriStageKernel,
     ) -> Result<ExplicitSolution, ExplicitSolveError> {
         let config = validate(problem, t_span, y0, opts)?;
         let schedule = OutputSchedule::new(times.to_vec())
@@ -338,15 +387,28 @@ impl Dopri5 {
                 }
             }
         };
-        let raw_result = match (dense, norm) {
-            (false, None) => integrate_dopri5_observed(&rhs, t_span, y0, &config, &schedule),
-            (true, None) => integrate_dopri5_dense_observed(&rhs, t_span, y0, &config, &schedule),
-            (false, Some(norm)) => {
-                integrate_dopri5_observed_with_norm(&rhs, t_span, y0, &config, &schedule, norm)
+        let raw_result = if kernel != DopriStageKernel::Rows {
+            if norm.is_some() || !dense {
+                return Err(ExplicitSolveError::InvalidInput(
+                    "component kernel requires dense observations and original norm".into(),
+                ));
             }
-            (true, Some(norm)) => integrate_dopri5_dense_observed_with_norm(
-                &rhs, t_span, y0, &config, &schedule, norm,
-            ),
+            rodas5p_integrators::integrate_dopri5_dense_observed_with_kernel(
+                &rhs, t_span, y0, &config, &schedule, kernel,
+            )
+        } else {
+            match (dense, norm) {
+                (false, None) => integrate_dopri5_observed(&rhs, t_span, y0, &config, &schedule),
+                (true, None) => {
+                    integrate_dopri5_dense_observed(&rhs, t_span, y0, &config, &schedule)
+                }
+                (false, Some(norm)) => {
+                    integrate_dopri5_observed_with_norm(&rhs, t_span, y0, &config, &schedule, norm)
+                }
+                (true, Some(norm)) => integrate_dopri5_dense_observed_with_norm(
+                    &rhs, t_span, y0, &config, &schedule, norm,
+                ),
+            }
         };
         let mut result = raw_result.map_err(|e| match e {
             CoreError::InvalidInput(_) | CoreError::Dimension(_) => {

@@ -20,7 +20,9 @@ use rodas5p_core::{
 use serde::Serialize;
 type Iv = Interval;
 type Poly = Vec<Iv>;
+mod schur_adjoint;
 mod terminal_adjoint;
+pub use schur_adjoint::{SchurAdjointWork, SchurAdjointWorkspace};
 pub use terminal_adjoint::ConstantTerminalAdjoint;
 fn bad(s: &str) -> CoreError {
     CoreError::InvalidInput(format!("DAE evolution: {s}"))

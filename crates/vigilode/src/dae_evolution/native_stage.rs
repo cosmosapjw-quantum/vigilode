@@ -351,7 +351,7 @@ impl StageRequest {
             self.plan,
             NativeStagePlan::GoalUniform | NativeStagePlan::GoalAdjoint
         ) {
-            Some(StageDefectWorkspace::new(model.clone())?)
+            Some(Box::new(StageDefectWorkspace::new(model.clone())?))
         } else {
             None
         };
@@ -371,7 +371,7 @@ struct SourceTriangleClient {
     model: HomogeneousStageModel,
     diag: [f64; N],
     reciprocal: [f64; N],
-    target: Option<StageDefectWorkspace>,
+    target: Option<Box<StageDefectWorkspace>>,
     ready: bool,
     work: Arc<Mutex<NativeStageWork>>,
 }
