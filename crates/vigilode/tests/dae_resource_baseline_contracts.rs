@@ -8219,3 +8219,357 @@ fn native_stage_triangular_skips_actual_jacobian() {
         "native source-bound triangular stage must remove actual Jacobian projection calls"
     );
 }
+
+fn native_stage_fixture(
+    case: &str,
+) -> (DaeSource, Vec<f64>, Vec<f64>, Vec<[f64; 2]>, EvolutionRoute) {
+    if case == "chain_weak" || case == "chain_stiff" {
+        let (n, rate, coupling) = if case == "chain_weak" {
+            (4, 1., 2f64.powi(-18))
+        } else {
+            (8, 32., 8.)
+        };
+        let f = (0..n)
+            .map(|i| {
+                let mut row = vec![tr(-rate, vec![F::component(i, 0.)])];
+                if i > 0 {
+                    row.push(tr(coupling, vec![F::component(i - 1, 0.)]));
+                }
+                p(row)
+            })
+            .collect();
+        let mut g = vec![tr(1., vec![F::component(n, 0.)])];
+        for i in 0..n {
+            g.push(tr(-1., vec![F::component(i, 0.)]));
+        }
+        let src = DaeSource::new(f, vec![p(g)]).unwrap();
+        (
+            src,
+            vec![1. / 64.; n],
+            vec![n as f64 / 64.],
+            vec![[-2., 2.]],
+            EvolutionRoute::WorkspaceQuery5 {
+                projection: WorkspaceProjection::Reuse,
+                certificate: de::SlabWorkspaceRoute::Refined,
+                storage: CertificateStorage::Local,
+                query: QueryWorkspaceRoute::StreamPairs,
+            },
+        )
+    } else if case == "diag4" {
+        diag_adjoint_fixture(4)
+    } else if case == "diag8" {
+        diag_adjoint_fixture(8)
+    } else {
+        slab_campaign_fixture(case)
+    }
+}
+fn native_goal(case: &str, n: usize) -> Vec<f64> {
+    let mut v = vec![0.; n + 1];
+    if case == "chain_weak" {
+        v[0] = 1.;
+    } else if case == "mixed_rates" {
+        v[1] = 1.;
+    } else {
+        v[n] = 1.;
+    }
+    v
+}
+#[test]
+fn native_stage_goal_portfolio() {
+    warm();
+    let table = rodas5p_core::rodas5p_coefficients().unwrap();
+    println!(
+        "NATIVE_TABLEAU {}",
+        serde_json::json!({"gamma":table.gamma,"a":table.a.as_slice(),"c":table.c_matrix.as_slice(),"b":table.b_code})
+    );
+    let cases = [
+        "stiff",
+        "mixed_rates",
+        "diag4",
+        "diag8",
+        "chain_weak",
+        "chain_stiff",
+    ];
+    let plans = [
+        NativeStagePlan::Legacy,
+        NativeStagePlan::ReuseLu,
+        NativeStagePlan::Triangular,
+        NativeStagePlan::Reciprocal,
+        NativeStagePlan::GoalUniform,
+        NativeStagePlan::GoalAdjoint,
+    ];
+    let grid = (1..64).map(|i| i as f64 / 512.).collect::<Vec<_>>();
+    let sample = (0..=16).map(|i| i as f64 / 128.).collect::<Vec<_>>();
+    let epoch = EvolutionEpoch {
+        start: 0.,
+        end: 0.125,
+        incoming_x_error: Some(0.),
+    };
+    for case in cases {
+        let (src, x, z, b, route) = native_stage_fixture(case);
+        let n = src.nx();
+        let goal = native_goal(case, n);
+        let (model, construction) = measure(|| HomogeneousStageModel::from_source(&src, &goal));
+        let model = model.unwrap();
+        assert_eq!(construction.requests(), 0);
+        println!(
+            "NATIVE_MODEL {}",
+            serde_json::json!({"case":case,"n":n,"matrix":model.matrix(),"goal":model.goal(),"initial":x,"construction":construction})
+        );
+        let mut replay = StageDefectWorkspace::new(model.clone()).unwrap();
+        let mut baseline = None;
+        for plan in plans {
+            let ((r, a, w), allocation, heap) = measure_live(|| {
+                evolve_epoch_slab_stage_planned(
+                    &src,
+                    &x,
+                    &z,
+                    &b,
+                    epoch,
+                    &opts(),
+                    policy(),
+                    route,
+                    &grid,
+                    engine_retention(),
+                    plan,
+                    &goal,
+                )
+            });
+            let r = match r {
+                Ok(r) => r,
+                Err(e) => {
+                    println!(
+                        "NATIVE_STAGE {}",
+                        serde_json::json!({"case":case,"candidate":plan,"qualified":false,"allocation":allocation,"heap":heap,"reason":e.to_string(),"point_calls":a.point_projection.calls.started,"factorizations":0,"rhs":0,"linear_solves":0,"max_physical_error":null,"work":w})
+                    );
+                    continue;
+                }
+            };
+            let st = &r.driver().stats;
+            let qualified = r.global_qualified();
+            println!(
+                "NATIVE_STAGE {}",
+                serde_json::json!({"case":case,"candidate":plan,"qualified":qualified,"allocation":allocation,"heap":heap,"reason":r.reason(),"point_calls":a.point_projection.calls.started,"factorizations":st.counters.direct_factorizations,"rhs":st.counters.rhs_calls,"linear_solves":st.counters.linear_solves,"logical_jacobian_builds":st.counters.jacobian_builds,"attempts":st.attempts,"accepted":st.accepted_steps,"rejected":st.rejected_steps,"max_physical_error":r.max_physical_error(),"work":w})
+            );
+            if !qualified {
+                continue;
+            }
+            if plan == NativeStagePlan::Legacy {
+                baseline = Some((
+                    r.driver().t.clone(),
+                    r.driver().y.clone(),
+                    a.point_projection.calls.started,
+                    r.max_physical_error(),
+                ));
+            }
+            if plan == NativeStagePlan::ReuseLu {
+                let base = baseline.as_ref().unwrap();
+                assert_eq!(r.driver().t, base.0);
+                assert_eq!(r.driver().y, base.1);
+                assert_eq!(a.point_projection.calls.started, base.2);
+                assert_eq!(r.max_physical_error(), base.3);
+            }
+            if !matches!(plan, NativeStagePlan::Legacy | NativeStagePlan::ReuseLu) {
+                assert_eq!(st.counters.direct_factorizations, 0);
+                assert_eq!(w.source_jacobian_skips as u64, st.counters.jacobian_builds);
+            }
+            if matches!(
+                plan,
+                NativeStagePlan::GoalUniform | NativeStagePlan::GoalAdjoint
+            ) {
+                assert!(
+                    w.completed_certified_attempts >= st.accepted_steps
+                        && w.completed_certified_attempts <= st.attempts
+                );
+                assert!(w.max_stage_error_upper <= 1e-9 && w.max_goal_error_upper <= 1e-10);
+                if plan == NativeStagePlan::GoalUniform {
+                    assert!(w.max_goal_uniform_upper <= 1e-10);
+                }
+            }
+            // First step starts at exactly zero; its represented end equals
+            // the actual h, so no ambiguity from subtracting stored clocks.
+            let v = r.slab(0).unwrap();
+            let h = v.times[1];
+            assert_eq!(v.times[0], 0.);
+            let (q, alloc) = measure(|| replay.replay_into(v.native.y0, h, &v.native.stages));
+            let q = q.unwrap();
+            assert_eq!(alloc.requests(), 0);
+            println!(
+                "NATIVE_PACKET {}",
+                serde_json::json!({"case":case,"candidate":plan,"h":h,"y0":v.native.y0,"stages":v.native.stages,"receipt":q,"allocation":alloc})
+            );
+            let raw = r.materialize().unwrap();
+            let queries = raw
+                .accepted
+                .iter()
+                .chain(&raw.queries)
+                .map(
+                    |q| serde_json::json!({"t":q.t,"state":q.state,"error":q.physical_error_upper}),
+                )
+                .collect::<Vec<_>>();
+            println!(
+                "NATIVE_STATE {}",
+                serde_json::json!({"case":case,"candidate":plan,"queries":queries})
+            );
+            if plan == NativeStagePlan::Legacy {
+                let values = sample
+                    .iter()
+                    .map(|&t| raw.driver().at(t).unwrap())
+                    .collect::<Vec<_>>();
+                // Same common sample accuracy, different retained output
+                // contracts. Forward comparator is not slab authority.
+                let prep = initialize_reduced_problem_planned(
+                    &src,
+                    0.,
+                    &x,
+                    &z,
+                    &b,
+                    policy(),
+                    route,
+                    EnginePlan::SharedFused,
+                )
+                .unwrap();
+                let (rr, alloc) = measure(|| {
+                    vigilode::Rodas5p::solve(
+                        &prep.problem,
+                        (0., 0.125),
+                        &prep.initial_state,
+                        &opts(),
+                    )
+                });
+                let rr = rr.unwrap();
+                assert_eq!(raw.driver().t, rr.t);
+                assert_eq!(raw.driver().y, rr.y);
+                println!(
+                    "NATIVE_ODE {}",
+                    serde_json::json!({"case":case,"candidate":"Rodas5p","qualified":rr.is_success(),"allocation":alloc,"rhs":rr.stats.counters.rhs_calls,"steps":rr.stats.accepted_steps,"times":sample,"values":values})
+                );
+                let mut o = opts();
+                o.dense_output = false;
+                for cand in ["DopriLanding", "DopriDense"] {
+                    let (rr, allocation) = measure(|| {
+                        if cand == "DopriLanding" {
+                            vigilode::Dopri5::solve_observed(
+                                &prep.problem,
+                                (0., 0.125),
+                                &prep.initial_state,
+                                &o,
+                                &sample,
+                            )
+                        } else {
+                            vigilode::Dopri5::solve_dense_observed(
+                                &prep.problem,
+                                (0., 0.125),
+                                &prep.initial_state,
+                                &o,
+                                &sample,
+                            )
+                        }
+                    });
+                    let rr = rr.unwrap().ensure_success().unwrap();
+                    assert_eq!(rr.t, sample);
+                    println!(
+                        "NATIVE_ODE {}",
+                        serde_json::json!({"case":case,"candidate":cand,"qualified":true,"allocation":allocation,"rhs":rr.stats.counters.rhs_calls,"steps":rr.stats.accepted_steps,"times":rr.t,"values":rr.y})
+                    );
+                }
+                if case == "chain_weak" {
+                    let v = raw.native_packet_view(0).unwrap();
+                    let mut rows = v.stages.map(|r| r.to_vec());
+                    rows[7][n - 1] += 2f64.powi(-32);
+                    let slices = rows.each_ref().map(Vec::as_slice);
+                    let (q, a) = measure(|| replay.replay_into(v.y0, raw.driver().t[1], &slices));
+                    let q = q.unwrap();
+                    assert_eq!(a.requests(), 0);
+                    assert!(
+                        q.max_stage_error_upper > 1e-10
+                            && q.endpoint_goal_error_upper < q.uniform_goal_upper
+                    );
+                    println!(
+                        "NATIVE_PACKET {}",
+                        serde_json::json!({"case":case,"candidate":"perturbed","h":raw.driver().t[1],"y0":v.y0,"stages":slices,"receipt":q,"allocation":a})
+                    );
+                }
+            }
+        }
+        let mut timings: [Vec<u128>; 6] = std::array::from_fn(|_| vec![]);
+        for rep in 0..5 {
+            for j in 0..6 {
+                let i = (j + rep) % 6;
+                let start = std::time::Instant::now();
+                let (r, _, _) = evolve_epoch_slab_stage_planned(
+                    &src,
+                    &x,
+                    &z,
+                    &b,
+                    epoch,
+                    &opts(),
+                    policy(),
+                    route,
+                    &grid,
+                    engine_retention(),
+                    plans[i],
+                    &goal,
+                );
+                if r.as_ref().is_ok_and(|r| r.global_qualified()) {
+                    black_box(r);
+                    timings[i].push(start.elapsed().as_nanos());
+                }
+            }
+        }
+        for (i, v) in timings.iter_mut().enumerate() {
+            v.sort_unstable();
+            if !v.is_empty() {
+                println!(
+                    "NATIVE_TIMING {}",
+                    serde_json::json!({"case":case,"candidate":plans[i],"median_ns":v[v.len()/2],"samples_ns":v,"scope":"whole native dense certified compact epoch plus drop, restoration excluded"})
+                );
+            }
+        }
+    }
+    // Explicitly unsupported model / dense interior / nonfinite goal.
+    for case in ["quadratic_flow", "stable"] {
+        let (src, x, z, b, route) = slab_campaign_fixture(case);
+        let goal = vec![1.; src.nx() + src.nz()];
+        assert!(HomogeneousStageModel::from_source(&src, &goal).is_err());
+        let (r, a, _) = evolve_epoch_slab_stage_planned(
+            &src,
+            &x,
+            &z,
+            &b,
+            epoch,
+            &opts(),
+            policy(),
+            route,
+            &[],
+            engine_retention(),
+            NativeStagePlan::GoalAdjoint,
+            &goal,
+        );
+        assert!(r.is_err() && !a.driver_invoked);
+    }
+    let (src, x, z, b, route) = native_stage_fixture("chain_weak");
+    let goal = native_goal("chain_weak", src.nx());
+    let mut o = opts();
+    o.interior_error = InteriorError::WFilteredEnforce;
+    let (r, a, _) = evolve_epoch_slab_stage_planned(
+        &src,
+        &x,
+        &z,
+        &b,
+        epoch,
+        &o,
+        policy(),
+        route,
+        &[],
+        engine_retention(),
+        NativeStagePlan::Triangular,
+        &goal,
+    );
+    assert!(r.is_err() && !a.driver_invoked);
+    assert!(HomogeneousStageModel::from_source(&src, &[f64::NAN; 5]).is_err());
+    println!(
+        "NATIVE_REFUSAL {}",
+        serde_json::json!({"nonlinear":true,"clock":true,"wfiltered":true,"nonfinite":true})
+    );
+}

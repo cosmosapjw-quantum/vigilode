@@ -858,6 +858,7 @@ pub fn evolve_epoch_slab_stage_planned(
     );
     let audit = a.lock().expect("native audit lock").clone();
     let w = *work.lock().expect("native stage work");
+    build.stage_request = None;
     (
         result.map(|run| SlabReplayRun {
             inner: RetainedEvolutionRun { run, build },
