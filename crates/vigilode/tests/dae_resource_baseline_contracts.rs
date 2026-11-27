@@ -34,6 +34,19 @@ thread_local! {
     static TRACK:Cell<bool>=const{Cell::new(false)};
     static COUNT:Cell<Counts>=const{Cell::new(Counts{alloc:0,zeroed:0,realloc:0,requested_bytes:0,dealloc:0,dealloc_bytes:0})};
 }
+// Separate peak-delta measurement; preserve the original Counts schema
+// and all historical allocator replay records.
+thread_local! {
+    static LIVE_DELTA:Cell<Option<(i64,i64)>>=const{Cell::new(None)};
+}
+fn live_delta(change: i64) {
+    let _ = LIVE_DELTA.try_with(|v| {
+        if let Some((cur, peak)) = v.get() {
+            let next = cur + change;
+            v.set(Some((next, peak.max(next))));
+        }
+    });
+}
 fn record(kind: u8, bytes: usize) {
     if TRACK.try_with(Cell::get).unwrap_or(false) {
         let _ = COUNT.try_with(|v| {
@@ -64,18 +77,31 @@ struct CountingAllocator;
 unsafe impl GlobalAlloc for CountingAllocator {
     unsafe fn alloc(&self, l: Layout) -> *mut u8 {
         record(0, l.size());
-        unsafe { System.alloc(l) }
+        let p = unsafe { System.alloc(l) };
+        if !p.is_null() {
+            live_delta(l.size() as i64);
+        }
+        p
     }
     unsafe fn alloc_zeroed(&self, l: Layout) -> *mut u8 {
         record(1, l.size());
-        unsafe { System.alloc_zeroed(l) }
+        let p = unsafe { System.alloc_zeroed(l) };
+        if !p.is_null() {
+            live_delta(l.size() as i64);
+        }
+        p
     }
     unsafe fn realloc(&self, p: *mut u8, l: Layout, n: usize) -> *mut u8 {
         record(2, n);
-        unsafe { System.realloc(p, l, n) }
+        let p = unsafe { System.realloc(p, l, n) };
+        if !p.is_null() {
+            live_delta(n as i64 - l.size() as i64);
+        }
+        p
     }
     unsafe fn dealloc(&self, p: *mut u8, l: Layout) {
         record(3, l.size());
+        live_delta(-(l.size() as i64));
         unsafe { System.dealloc(p, l) }
     }
 }
@@ -95,6 +121,25 @@ fn measure<T>(f: impl FnOnce() -> T) -> (T, Counts) {
     let r = f();
     drop(guard);
     (r, COUNT.with(Cell::get))
+}
+#[derive(Clone, Copy, Debug, Serialize)]
+struct LiveHeap {
+    end_delta: i64,
+    peak_delta: i64,
+}
+fn measure_live<T>(f: impl FnOnce() -> T) -> (T, Counts, LiveHeap) {
+    assert!(LIVE_DELTA.with(Cell::get).is_none());
+    LIVE_DELTA.with(|v| v.set(Some((0, 0))));
+    let (r, a) = measure(f);
+    let (end_delta, peak_delta) = LIVE_DELTA.with(|v| v.replace(None).unwrap());
+    (
+        r,
+        a,
+        LiveHeap {
+            end_delta,
+            peak_delta,
+        },
+    )
 }
 #[derive(Default, Serialize)]
 struct QueryWork {
@@ -6606,5 +6651,424 @@ fn native_packet_borrowed_view_noalloc() {
         a.requests(),
         0,
         "native packet read must borrow the actual driver data"
+    );
+}
+
+fn retained_route(case: &str) -> (DaeSource, Vec<f64>, Vec<f64>, Vec<[f64; 2]>, EvolutionRoute) {
+    let (src, x, z, b, solver) = certificate_fixture(case);
+    (
+        src,
+        x,
+        z,
+        b,
+        EvolutionRoute::WorkspaceQuery5 {
+            projection: workspace_projection(solver),
+            certificate: de::SlabWorkspaceRoute::Refined,
+            storage: CertificateStorage::Local,
+            query: QueryWorkspaceRoute::StreamPairs,
+        },
+    )
+}
+fn same_serialized<T: Serialize, U: Serialize>(a: &T, b: &U) {
+    assert_eq!(
+        serde_json::to_string(a).unwrap(),
+        serde_json::to_string(b).unwrap()
+    );
+}
+fn arena_replay(case: &str, r: &EvolutionRun) {
+    let count = r.accepted.len() + r.queries.len();
+    assert!(count > 0);
+    let q = &r.accepted[0];
+    let nx = q.projection.x.len();
+    let nz = q.projection.z.len();
+    let nr = q.raw.len();
+    for layout in [QueryArenaLayout::Packed, QueryArenaLayout::Shared] {
+        let mut arena = QueryArena::new(layout, nx, nz, nr, &q.projection.branch, count).unwrap();
+        let mut total = Counts::default();
+        for q in r.accepted.iter().chain(&r.queries) {
+            let (v, a) = measure(|| arena.push(q));
+            v.unwrap();
+            assert_eq!(a.requests(), 0);
+            total.add(a);
+        }
+        let mut out = q.clone();
+        let mut read = Counts::default();
+        for (i, q) in r.accepted.iter().chain(&r.queries).enumerate() {
+            let (v, a) = measure(|| arena.get(i).unwrap());
+            assert_eq!(a.requests(), 0);
+            assert_eq!(
+                v.raw().iter().map(|x| x.to_bits()).collect::<Vec<_>>(),
+                q.raw.iter().map(|x| x.to_bits()).collect::<Vec<_>>()
+            );
+            assert_eq!(
+                v.state().iter().map(|x| x.to_bits()).collect::<Vec<_>>(),
+                q.state.iter().map(|x| x.to_bits()).collect::<Vec<_>>()
+            );
+            let (_, a) = measure(|| v.write_into(&mut out));
+            assert_eq!(a.requests(), 0);
+            read.add(a);
+            same_serialized(&out, q);
+            same_serialized(&v.to_owned_query(), q);
+        }
+        let before = arena.get(0).unwrap().to_owned_query();
+        assert!(arena.push(q).is_err());
+        assert_eq!(arena.len(), count);
+        same_serialized(&arena.get(0).unwrap().to_owned_query(), &before);
+        assert!(arena.get(count).is_none());
+        let mut tiny = QueryArena::new(layout, nx, nz, nr, &q.projection.branch, 2).unwrap();
+        let mut invalid = q.clone();
+        invalid.projection.zx_columns.clear();
+        assert!(tiny.push(&invalid).is_err());
+        assert!(tiny.is_empty());
+        invalid = q.clone();
+        invalid.projection.branch_authority = "unrecognized".into();
+        assert!(tiny.push(&invalid).is_err());
+        assert!(tiny.is_empty());
+        if layout == QueryArenaLayout::Shared {
+            invalid = q.clone();
+            invalid.projection.x[0] = f64::from_bits(invalid.projection.x[0].to_bits() ^ 1);
+            assert!(tiny.push(&invalid).is_err());
+            assert!(tiny.is_empty());
+        }
+        tiny.push(q).unwrap();
+        same_serialized(&tiny.get(0).unwrap().to_owned_query(), q);
+        println!(
+            "ARENA_REPLAY {}",
+            serde_json::json!({"case":case,"layout":layout,"count":count,"nx":nx,"nz":nz,"nr":nr,"stride":arena.words_per_query(),"capacity_bytes":arena.capacity_bytes(),"owned_bytes":r.accepted.capacity()*std::mem::size_of::<Query>()+r.queries.capacity()*std::mem::size_of::<Query>()+r.accepted.iter().chain(&r.queries).map(owned_query_bytes).sum::<usize>(),"append_allocation":total,"read_allocation":read,"qualified":true})
+        );
+    }
+    for k in [0, r.slabs().len() / 2, r.slabs().len() - 1] {
+        let (v, a) = measure(|| r.native_packet_view(k));
+        let v = v.unwrap();
+        assert_eq!(a.requests(), 0);
+        same_serialized(&v, &r.slabs()[k].native);
+        same_serialized(&v.to_owned_packet(), &r.slabs()[k].native);
+        let p = v.power().unwrap();
+        let b = de::dense_power(
+            &r.slabs()[k].native.y0,
+            &r.slabs()[k].native.y1,
+            &r.slabs()[k].native.stages,
+            r.slabs()[k].native.basis,
+        )
+        .unwrap();
+        assert_eq!(
+            p.iter()
+                .flatten()
+                .map(|v| (v.lo.to_bits(), v.hi.to_bits()))
+                .collect::<Vec<_>>(),
+            b.iter()
+                .flatten()
+                .map(|v| (v.lo.to_bits(), v.hi.to_bits()))
+                .collect::<Vec<_>>()
+        );
+        println!(
+            "NATIVE_VIEW {}",
+            serde_json::json!({"case":case,"slab":k,"allocation":a,"basis":v.basis,"packet":v,"power":p.iter().map(|row|row.iter().map(|v|v.as_pair()).collect::<Vec<_>>()).collect::<Vec<_>>() })
+        );
+    }
+    assert!(r.native_packet_view(r.slabs().len()).is_err());
+    let mut out = r.query(q.t).unwrap();
+    let mut small = ScalarQueryWorkspace::new();
+    let (v, a) = measure(|| {
+        r.query_scalar_into(q.t, QueryWorkspaceRoute::StreamPairs, &mut small, &mut out)
+    });
+    if nz == 1 {
+        v.unwrap();
+        same_serialized(&out, &r.query(q.t).unwrap());
+        assert_eq!(a.requests(), 0);
+    } else {
+        assert!(v.is_err());
+        same_serialized(&out, &r.query(q.t).unwrap());
+    }
+    println!(
+        "SCALAR_SCRATCH {}",
+        serde_json::json!({"case":case,"scalar":nz==1,"allocation":a,"workspace_bytes":std::mem::size_of::<ScalarQueryWorkspace>(),"legacy_workspace_bytes":std::mem::size_of::<QueryWorkspace>()})
+    );
+}
+#[test]
+fn retained_output_arena_portfolio() {
+    warm();
+    let (v, _, m) = measure_live(|| vec![0u8; 4096]);
+    assert!(m.peak_delta >= 4096 && m.end_delta >= 4096);
+    drop(v);
+    println!(
+        "LIVE_CONTROL {}",
+        serde_json::json!({"peak":m.peak_delta,"end":m.end_delta})
+    );
+    let designs = [
+        (
+            "packed_owned",
+            RetainedOutputRoute {
+                queries: QueryArenaLayout::Packed,
+                native: NativeRetention::Owned,
+            },
+        ),
+        (
+            "shared_owned",
+            RetainedOutputRoute {
+                queries: QueryArenaLayout::Shared,
+                native: NativeRetention::Owned,
+            },
+        ),
+        (
+            "packed_rows",
+            RetainedOutputRoute {
+                queries: QueryArenaLayout::Packed,
+                native: NativeRetention::BorrowedRows,
+            },
+        ),
+        (
+            "shared_rows",
+            RetainedOutputRoute {
+                queries: QueryArenaLayout::Shared,
+                native: NativeRetention::BorrowedRows,
+            },
+        ),
+        (
+            "packed_component",
+            RetainedOutputRoute {
+                queries: QueryArenaLayout::Packed,
+                native: NativeRetention::BorrowedComponent,
+            },
+        ),
+        (
+            "shared_component",
+            RetainedOutputRoute {
+                queries: QueryArenaLayout::Shared,
+                native: NativeRetention::BorrowedComponent,
+            },
+        ),
+    ];
+    for case in ["stable", "stiff", "nonlinear", "vector4", "vector8"] {
+        let (src, x, z, b, route) = retained_route(case);
+        let epoch = EvolutionEpoch {
+            start: 0.,
+            end: 0.125,
+            incoming_x_error: Some(0.),
+        };
+        for grid_kind in ["sparse", "dense"] {
+            let grid = if grid_kind == "sparse" {
+                vec![0.03125, 0.0625, 0.09375]
+            } else {
+                (1..64).map(|i| i as f64 / 512.).collect::<Vec<_>>()
+            };
+            let ((base, audit), allocation, heap) = measure_live(|| {
+                evolve_epoch_audited(&src, &x, &z, &b, epoch, &opts(), policy(), route, &grid)
+            });
+            let base = base.unwrap();
+            assert!(base.global_qualified);
+            let qbytes = (base.accepted.capacity() + base.queries.capacity())
+                * std::mem::size_of::<Query>()
+                + base
+                    .accepted
+                    .iter()
+                    .chain(&base.queries)
+                    .map(owned_query_bytes)
+                    .sum::<usize>();
+            let nbytes = base
+                .slabs()
+                .iter()
+                .map(|s| native_copy_bytes(&s.native))
+                .sum::<usize>();
+            println!(
+                "ARENA_EPOCH {}",
+                serde_json::json!({"case":case,"grid":grid_kind,"candidate":"legacy","qualified":true,"allocation":allocation,"heap":heap,"query_bytes":qbytes,"native_bytes":nbytes,"slabs":base.slabs().len(),"accepted":base.accepted.len(),"queries":base.queries.len(),"max_physical_error":base.max_physical_error,"audit":audit})
+            );
+            for (name, design) in designs {
+                let ((r, a), allocation, heap) = measure_live(|| {
+                    evolve_epoch_retained_audited(
+                        &src,
+                        &x,
+                        &z,
+                        &b,
+                        epoch,
+                        &opts(),
+                        policy(),
+                        route,
+                        &grid,
+                        design,
+                    )
+                });
+                let r = r.unwrap();
+                assert!(
+                    r.global_qualified(),
+                    "{case} {grid_kind} {name} {:?}",
+                    r.reason()
+                );
+                assert_eq!(r.driver().t, base.driver().t);
+                assert_eq!(r.driver().y, base.driver().y);
+                assert_eq!(r.accepted_len(), base.accepted.len());
+                assert_eq!(r.query_len(), base.queries.len());
+                assert_eq!(r.slabs_len(), base.slabs().len());
+                assert_eq!(r.max_physical_error(), base.max_physical_error);
+                same_serialized(&a, &audit);
+                same_serialized(r.work(), &base.work);
+                let qb = r.query_arena_bytes();
+                let nb = r.native_copy_bytes();
+                if design.native != NativeRetention::Owned {
+                    assert_eq!(nb, 0);
+                }
+                let mut out = base.accepted[0].clone();
+                for i in 0..r.accepted_len() {
+                    let (v, a) = measure(|| r.accepted(i).unwrap());
+                    assert_eq!(a.requests(), 0);
+                    let (_, a) = measure(|| v.write_into(&mut out));
+                    assert_eq!(a.requests(), 0);
+                    same_serialized(&out, &base.accepted[i]);
+                }
+                for i in 0..r.query_len() {
+                    let (_, a) = measure(|| r.retained_query(i).unwrap().write_into(&mut out));
+                    assert_eq!(a.requests(), 0);
+                    same_serialized(&out, &base.queries[i]);
+                }
+                for k in 0..r.slabs_len() {
+                    let (v, a) = measure(|| r.slab(k));
+                    assert_eq!(a.requests(), 0);
+                    same_serialized(&v.unwrap(), &base.slabs()[k]);
+                }
+                let (m, restore) = measure(|| r.materialize());
+                let m = m.unwrap();
+                same_serialized(&m, &base);
+                println!(
+                    "ARENA_EPOCH {}",
+                    serde_json::json!({"case":case,"grid":grid_kind,"candidate":name,"qualified":true,"allocation":allocation,"heap":heap,"query_bytes":qb,"native_bytes":nb,"restore_allocation":restore,"slabs":m.slabs().len(),"accepted":m.accepted.len(),"queries":m.queries.len(),"max_physical_error":m.max_physical_error,"audit":a})
+                );
+            }
+            let mut timings: [Vec<u128>; 7] = std::array::from_fn(|_| vec![]);
+            // Whole epoch, including retained output ownership and drop,
+            // excluding independent reconstruction comparison and serialization.
+            for rep in 0..5 {
+                for j in 0..7 {
+                    let i = (j + rep) % 7;
+                    let start = std::time::Instant::now();
+                    if i == 0 {
+                        let r = evolve_epoch_audited(
+                            &src,
+                            &x,
+                            &z,
+                            &b,
+                            epoch,
+                            &opts(),
+                            policy(),
+                            route,
+                            &grid,
+                        );
+                        black_box(r.0.unwrap());
+                    } else {
+                        let r = evolve_epoch_retained_audited(
+                            &src,
+                            &x,
+                            &z,
+                            &b,
+                            epoch,
+                            &opts(),
+                            policy(),
+                            route,
+                            &grid,
+                            designs[i - 1].1,
+                        );
+                        black_box(r.0.unwrap());
+                    }
+                    timings[i].push(start.elapsed().as_nanos());
+                }
+            }
+            for (i, v) in timings.iter_mut().enumerate() {
+                v.sort_unstable();
+                let candidate = if i == 0 { "legacy" } else { designs[i - 1].0 };
+                println!(
+                    "ARENA_TIMING {}",
+                    serde_json::json!({"case":case,"grid":grid_kind,"candidate":candidate,"median_ns":v[2],"samples_ns":v,"scope":"whole epoch+drop, audited, no restoration"})
+                );
+            }
+            if grid_kind == "sparse" {
+                arena_replay(case, &base);
+            }
+        }
+    }
+    let (src, x, z, b, _) = retained_route("stable");
+    let mass = evolve_epoch(
+        &src,
+        &x,
+        &z,
+        &b,
+        EvolutionEpoch {
+            start: 0.,
+            end: 0.125,
+            incoming_x_error: Some(0.),
+        },
+        &opts(),
+        policy(),
+        EvolutionRoute::Mass,
+        &[],
+    )
+    .unwrap();
+    assert!(mass.global_qualified);
+    arena_replay("mass", &mass);
+    let mut modes = graph(
+        "alternating",
+        EvolutionRoute::BoundedAffine5,
+        ConservationRoute::Integral4,
+    );
+    for t in &mut modes[0].transitions {
+        t.target = 1;
+    }
+    modes[1].guards.clear();
+    modes[1].transitions.clear();
+    let chain = evolve_conserved_chain(
+        &modes,
+        0,
+        initial(2f64.powi(-26)),
+        [0., 0.002],
+        &opts(),
+        policy(),
+        pm(MultiGuardRoute::Correlated),
+        chain_limits(),
+        SimplexGapRoute::AffineDual,
+    )
+    .unwrap();
+    assert_eq!(
+        chain.transitions().iter().filter(|e| e.committed).count(),
+        1
+    );
+    let terminal = chain.epochs().last().unwrap().terminal().unwrap();
+    arena_replay("conserved", terminal);
+    println!(
+        "ARENA_CHAIN {}",
+        serde_json::json!({"committed":1,"slabs":terminal.slabs().len(),"stop":format!("{:?}",chain.stop())})
+    );
+    // Unresolved physical incoming radius must survive exact full restoration.
+    let (src, x, z, b, route) = retained_route("stable");
+    let epoch = EvolutionEpoch {
+        start: 0.,
+        end: 0.125,
+        incoming_x_error: None,
+    };
+    let (base, a) =
+        evolve_epoch_audited(&src, &x, &z, &b, epoch, &opts(), policy(), route, &[0.0625]);
+    let (r, c) = evolve_epoch_retained_audited(
+        &src,
+        &x,
+        &z,
+        &b,
+        epoch,
+        &opts(),
+        policy(),
+        route,
+        &[0.0625],
+        designs[3].1,
+    );
+    let r = r.unwrap();
+    assert!(
+        !r.global_qualified()
+            && r.retained_query(0)
+                .unwrap()
+                .physical_error_upper()
+                .is_none()
+    );
+    same_serialized(&a, &c);
+    same_serialized(&r.materialize().unwrap(), &base.unwrap());
+    println!(
+        "ARENA_UNRESOLVED {}",
+        serde_json::json!({"physical_error":null,"qualified":false})
     );
 }
