@@ -1,0 +1,98 @@
+{
+  "adjoint_models": 4,
+  "assertions": {
+    "finite_difference": 30,
+    "forward_sample": 1632,
+    "ode_gradient": 120,
+    "reference_gradient": 30,
+    "taylor_gradient": 90
+  },
+  "engine_rows": 28,
+  "forward_ode_rows": 15,
+  "independent_gradient_errors": [
+    {
+      "candidate": "RodasAdjoint",
+      "case": "stiff",
+      "error_upper": 3.932361471678811e-15
+    },
+    {
+      "candidate": "DopriAdjoint",
+      "case": "stiff",
+      "error_upper": 2.5601608862802805e-13
+    },
+    {
+      "candidate": "DopriForwardBlock",
+      "case": "stiff",
+      "error_upper": 2.5601608862802805e-13
+    },
+    {
+      "candidate": "RodasForwardColumns",
+      "case": "stiff",
+      "error_upper": 3.932361471678811e-15
+    },
+    {
+      "candidate": "RodasAdjoint",
+      "case": "mixed_rates",
+      "error_upper": 7.286097029982832e-15
+    },
+    {
+      "candidate": "DopriAdjoint",
+      "case": "mixed_rates",
+      "error_upper": 3.4791986821974065e-13
+    },
+    {
+      "candidate": "DopriForwardBlock",
+      "case": "mixed_rates",
+      "error_upper": 1.397735915769437e-14
+    },
+    {
+      "candidate": "RodasForwardColumns",
+      "case": "mixed_rates",
+      "error_upper": 1.8592969780407473e-14
+    },
+    {
+      "candidate": "RodasAdjoint",
+      "case": "diag4",
+      "error_upper": 1.4011080502553632e-13
+    },
+    {
+      "candidate": "DopriAdjoint",
+      "case": "diag4",
+      "error_upper": 1.2047252744130341e-11
+    },
+    {
+      "candidate": "DopriForwardBlock",
+      "case": "diag4",
+      "error_upper": 2.3144153919863706e-11
+    },
+    {
+      "candidate": "RodasForwardColumns",
+      "case": "diag4",
+      "error_upper": 1.471052100806748e-13
+    },
+    {
+      "candidate": "RodasAdjoint",
+      "case": "diag8",
+      "error_upper": 2.3743362256976255e-13
+    },
+    {
+      "candidate": "DopriAdjoint",
+      "case": "diag8",
+      "error_upper": 1.8980884858106432e-11
+    },
+    {
+      "candidate": "DopriForwardBlock",
+      "case": "diag8",
+      "error_upper": 5.335166885481311e-11
+    },
+    {
+      "candidate": "RodasForwardColumns",
+      "case": "diag8",
+      "error_upper": 2.875046809803571e-13
+    }
+  ],
+  "initial_audit_equal": 28,
+  "ode_gradient_rows": 16,
+  "scope": "Exact Fraction alternating exponential enclosures; constant source affine Schur gradient, numerical comparator and original physical-source finite differences. Not discrete solver derivative or general nonlinear adjoint.",
+  "taylor_rows": 12
+}

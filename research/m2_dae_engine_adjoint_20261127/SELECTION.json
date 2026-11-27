@@ -1,0 +1,978 @@
+{
+  "adjoint_ode": {
+    "candidates": {
+      "DopriAdjoint": {
+        "bytes": 37140,
+        "qualified": 4,
+        "requests": 88,
+        "rows": 4
+      },
+      "DopriForwardBlock": {
+        "bytes": 45540,
+        "qualified": 4,
+        "requests": 88,
+        "rows": 4
+      },
+      "RodasAdjoint": {
+        "bytes": 46448,
+        "qualified": 4,
+        "requests": 208,
+        "rows": 4
+      },
+      "RodasForwardColumns": {
+        "bytes": 89010,
+        "qualified": 4,
+        "requests": 736,
+        "rows": 4
+      }
+    },
+    "pareto_count": 11,
+    "pareto_covered": 11,
+    "proposals": {
+      "mutation": 856,
+      "structure": 1192
+    },
+    "rows": 16,
+    "strata": [
+      {
+        "covered": 2,
+        "group": [
+          "diag4"
+        ],
+        "pareto": [
+          {
+            "candidate": "RodasAdjoint",
+            "case": "diag4",
+            "objectives": [
+              52,
+              11574,
+              320,
+              80,
+              1.412203687323199e-13
+            ]
+          },
+          {
+            "candidate": "DopriAdjoint",
+            "case": "diag4",
+            "objectives": [
+              22,
+              9317,
+              340,
+              0,
+              1.2048362307837124e-11
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "DopriAdjoint"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "diag8"
+        ],
+        "pareto": [
+          {
+            "candidate": "RodasAdjoint",
+            "case": "diag8",
+            "objectives": [
+              52,
+              13078,
+              1088,
+              136,
+              2.398081733190338e-13
+            ]
+          },
+          {
+            "candidate": "DopriAdjoint",
+            "case": "diag8",
+            "objectives": [
+              22,
+              9829,
+              1160,
+              0,
+              1.8983259408855702e-11
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "DopriAdjoint"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "mixed_rates"
+        ],
+        "pareto": [
+          {
+            "candidate": "RodasAdjoint",
+            "case": "mixed_rates",
+            "objectives": [
+              52,
+              11014,
+              640,
+              320,
+              2.120525977034049e-14
+            ]
+          },
+          {
+            "candidate": "DopriAdjoint",
+            "case": "mixed_rates",
+            "objectives": [
+              22,
+              9061,
+              686,
+              0,
+              3.494210129573183e-13
+            ]
+          },
+          {
+            "candidate": "DopriForwardBlock",
+            "case": "mixed_rates",
+            "objectives": [
+              22,
+              9301,
+              2212,
+              0,
+              2.2426505097428162e-14
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "DopriAdjoint"
+      },
+      {
+        "covered": 4,
+        "group": [
+          "stiff"
+        ],
+        "pareto": [
+          {
+            "candidate": "RodasAdjoint",
+            "case": "stiff",
+            "objectives": [
+              52,
+              10782,
+              1023,
+              1024,
+              2.9733390771204127e-12
+            ]
+          },
+          {
+            "candidate": "DopriAdjoint",
+            "case": "stiff",
+            "objectives": [
+              22,
+              8933,
+              1111,
+              0,
+              3.225422804276762e-12
+            ]
+          },
+          {
+            "candidate": "DopriForwardBlock",
+            "case": "stiff",
+            "objectives": [
+              22,
+              8933,
+              1111,
+              0,
+              3.225422804276762e-12
+            ]
+          },
+          {
+            "candidate": "RodasForwardColumns",
+            "case": "stiff",
+            "objectives": [
+              52,
+              10782,
+              1023,
+              1024,
+              2.9733390771204127e-12
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "DopriAdjoint"
+      }
+    ],
+    "unique": 16
+  },
+  "engine": {
+    "candidates": {
+      "Legacy": {
+        "bytes": 575211,
+        "qualified": 7,
+        "requests": 2222,
+        "rows": 7
+      },
+      "Shared": {
+        "bytes": 552003,
+        "qualified": 7,
+        "requests": 1775,
+        "rows": 7
+      },
+      "SharedBounded": {
+        "bytes": 545555,
+        "qualified": 7,
+        "requests": 1613,
+        "rows": 7
+      },
+      "SharedFused": {
+        "bytes": 545555,
+        "qualified": 7,
+        "requests": 1613,
+        "rows": 7
+      }
+    },
+    "pareto_count": 19,
+    "pareto_covered": 19,
+    "proposals": {
+      "mutation": 690,
+      "structure": 1358
+    },
+    "rows": 28,
+    "strata": [
+      {
+        "covered": 2,
+        "group": [
+          "mixed_rates"
+        ],
+        "pareto": [
+          {
+            "candidate": "SharedBounded",
+            "case": "mixed_rates",
+            "objectives": [
+              210,
+              104683,
+              97125,
+              95131,
+              40,
+              6.665555664970057e-07
+            ]
+          },
+          {
+            "candidate": "SharedFused",
+            "case": "mixed_rates",
+            "objectives": [
+              210,
+              104683,
+              97125,
+              95131,
+              40,
+              6.665555664970057e-07
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "SharedBounded"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "nonlinear"
+        ],
+        "pareto": [
+          {
+            "candidate": "Shared",
+            "case": "nonlinear",
+            "objectives": [
+              165,
+              47758,
+              44760,
+              42969,
+              34,
+              4.2670585063430524e-09
+            ]
+          },
+          {
+            "candidate": "SharedBounded",
+            "case": "nonlinear",
+            "objectives": [
+              165,
+              47758,
+              44760,
+              42969,
+              34,
+              4.2670585063430524e-09
+            ]
+          },
+          {
+            "candidate": "SharedFused",
+            "case": "nonlinear",
+            "objectives": [
+              165,
+              47758,
+              44760,
+              42969,
+              34,
+              4.2670585063430524e-09
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "Shared"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "quadratic_flow"
+        ],
+        "pareto": [
+          {
+            "candidate": "Shared",
+            "case": "quadratic_flow",
+            "objectives": [
+              155,
+              43228,
+              40534,
+              39031,
+              32,
+              1.7500197044646642e-12
+            ]
+          },
+          {
+            "candidate": "SharedBounded",
+            "case": "quadratic_flow",
+            "objectives": [
+              155,
+              43228,
+              40534,
+              39031,
+              32,
+              1.7500197044646642e-12
+            ]
+          },
+          {
+            "candidate": "SharedFused",
+            "case": "quadratic_flow",
+            "objectives": [
+              155,
+              43228,
+              40534,
+              39031,
+              32,
+              1.7500197044646642e-12
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "Shared"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "stable"
+        ],
+        "pareto": [
+          {
+            "candidate": "SharedBounded",
+            "case": "stable",
+            "objectives": [
+              175,
+              48562,
+              45388,
+              43346,
+              39,
+              2.829895907180623e-09
+            ]
+          },
+          {
+            "candidate": "SharedFused",
+            "case": "stable",
+            "objectives": [
+              175,
+              48562,
+              45388,
+              43346,
+              39,
+              2.829895907180623e-09
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "SharedBounded"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "stiff"
+        ],
+        "pareto": [
+          {
+            "candidate": "Shared",
+            "case": "stiff",
+            "objectives": [
+              216,
+              147032,
+              139394,
+              138092,
+              31,
+              4.3510002918425796e-07
+            ]
+          },
+          {
+            "candidate": "SharedBounded",
+            "case": "stiff",
+            "objectives": [
+              216,
+              147032,
+              139394,
+              138092,
+              31,
+              4.3510002918425796e-07
+            ]
+          },
+          {
+            "candidate": "SharedFused",
+            "case": "stiff",
+            "objectives": [
+              216,
+              147032,
+              139394,
+              138092,
+              31,
+              4.3510002918425796e-07
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "Shared"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "vector4"
+        ],
+        "pareto": [
+          {
+            "candidate": "Shared",
+            "case": "vector4",
+            "objectives": [
+              272,
+              63370,
+              60076,
+              54658,
+              70,
+              3.4682837491635075e-12
+            ]
+          },
+          {
+            "candidate": "SharedBounded",
+            "case": "vector4",
+            "objectives": [
+              272,
+              63370,
+              60076,
+              54658,
+              70,
+              3.4682837491635075e-12
+            ]
+          },
+          {
+            "candidate": "SharedFused",
+            "case": "vector4",
+            "objectives": [
+              272,
+              63370,
+              60076,
+              54658,
+              70,
+              3.4682837491635075e-12
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "Shared"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "vector8"
+        ],
+        "pareto": [
+          {
+            "candidate": "Shared",
+            "case": "vector8",
+            "objectives": [
+              420,
+              90922,
+              86604,
+              76258,
+              118,
+              6.941656641905468e-12
+            ]
+          },
+          {
+            "candidate": "SharedBounded",
+            "case": "vector8",
+            "objectives": [
+              420,
+              90922,
+              86604,
+              76258,
+              118,
+              6.941656641905468e-12
+            ]
+          },
+          {
+            "candidate": "SharedFused",
+            "case": "vector8",
+            "objectives": [
+              420,
+              90922,
+              86604,
+              76258,
+              118,
+              6.941656641905468e-12
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "Shared"
+      }
+    ],
+    "unique": 28
+  },
+  "forward_ode": {
+    "candidates": {
+      "DopriDense": {
+        "bytes": 18153,
+        "qualified": 5,
+        "requests": 237,
+        "rows": 5
+      },
+      "DopriLanding": {
+        "bytes": 15017,
+        "qualified": 5,
+        "requests": 185,
+        "rows": 5
+      },
+      "Rodas5p": {
+        "bytes": 53526,
+        "qualified": 5,
+        "requests": 406,
+        "rows": 5
+      }
+    },
+    "pareto_count": 15,
+    "pareto_covered": 15,
+    "proposals": {
+      "mutation": 587,
+      "structure": 1461
+    },
+    "rows": 15,
+    "strata": [
+      {
+        "covered": 3,
+        "group": [
+          "diag4"
+        ],
+        "pareto": [
+          {
+            "candidate": "Rodas5p",
+            "case": "diag4",
+            "objectives": [
+              64,
+              7806,
+              48,
+              6,
+              5.0430390926004836e-11
+            ]
+          },
+          {
+            "candidate": "DopriLanding",
+            "case": "diag4",
+            "objectives": [
+              37,
+              3189,
+              109,
+              18,
+              3.895843012532841e-14
+            ]
+          },
+          {
+            "candidate": "DopriDense",
+            "case": "diag4",
+            "objectives": [
+              47,
+              3701,
+              43,
+              7,
+              5.668405008389659e-11
+            ]
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "DopriLanding"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "diag8"
+        ],
+        "pareto": [
+          {
+            "candidate": "Rodas5p",
+            "case": "diag8",
+            "objectives": [
+              66,
+              13886,
+              64,
+              8,
+              5.7310118887762846e-11
+            ]
+          },
+          {
+            "candidate": "DopriLanding",
+            "case": "diag8",
+            "objectives": [
+              37,
+              4117,
+              109,
+              18,
+              1.5939577989944694e-12
+            ]
+          },
+          {
+            "candidate": "DopriDense",
+            "case": "diag8",
+            "objectives": [
+              47,
+              4821,
+              67,
+              11,
+              5.657363479638293e-11
+            ]
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "DopriLanding"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "mixed_rates"
+        ],
+        "pareto": [
+          {
+            "candidate": "Rodas5p",
+            "case": "mixed_rates",
+            "objectives": [
+              92,
+              13710,
+              232,
+              29,
+              3.360392240598196e-10
+            ]
+          },
+          {
+            "candidate": "DopriLanding",
+            "case": "mixed_rates",
+            "objectives": [
+              37,
+              2725,
+              295,
+              49,
+              2.0532363097570897e-10
+            ]
+          },
+          {
+            "candidate": "DopriDense",
+            "case": "mixed_rates",
+            "objectives": [
+              47,
+              3141,
+              247,
+              41,
+              4.068010347424298e-10
+            ]
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "DopriLanding"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "quadratic_flow"
+        ],
+        "pareto": [
+          {
+            "candidate": "Rodas5p",
+            "case": "quadratic_flow",
+            "objectives": [
+              60,
+              3038,
+              32,
+              4,
+              1.0257159704929464e-13
+            ]
+          },
+          {
+            "candidate": "DopriLanding",
+            "case": "quadratic_flow",
+            "objectives": [
+              37,
+              2493,
+              109,
+              18,
+              1.734723475976807e-18
+            ]
+          },
+          {
+            "candidate": "DopriDense",
+            "case": "quadratic_flow",
+            "objectives": [
+              49,
+              3629,
+              25,
+              4,
+              1.4170088713516549e-14
+            ]
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "DopriLanding"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "stiff"
+        ],
+        "pareto": [
+          {
+            "candidate": "Rodas5p",
+            "case": "stiff",
+            "objectives": [
+              124,
+              15086,
+              464,
+              58,
+              4.368669439478735e-10
+            ]
+          },
+          {
+            "candidate": "DopriLanding",
+            "case": "stiff",
+            "objectives": [
+              37,
+              2493,
+              553,
+              92,
+              7.245047464130862e-10
+            ]
+          },
+          {
+            "candidate": "DopriDense",
+            "case": "stiff",
+            "objectives": [
+              47,
+              2861,
+              499,
+              83,
+              7.668936721159382e-10
+            ]
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "DopriLanding"
+      }
+    ],
+    "unique": 15
+  },
+  "scope": "finite measured replay; numerical adjoint solver output checked by independent directed Taylor enclosure; forward ODE sampled error not slab qualification",
+  "taylor": {
+    "candidates": {
+      "Budgeted": {
+        "bytes": 0,
+        "qualified": 4,
+        "requests": 0,
+        "rows": 4
+      },
+      "Fixed12": {
+        "bytes": 0,
+        "qualified": 4,
+        "requests": 0,
+        "rows": 4
+      },
+      "Fixed20": {
+        "bytes": 0,
+        "qualified": 4,
+        "requests": 0,
+        "rows": 4
+      }
+    },
+    "pareto_count": 11,
+    "pareto_covered": 11,
+    "proposals": {
+      "mutation": 682,
+      "structure": 1366
+    },
+    "rows": 12,
+    "strata": [
+      {
+        "covered": 3,
+        "group": [
+          "diag4"
+        ],
+        "pareto": [
+          {
+            "candidate": "Fixed12",
+            "case": "diag4",
+            "objectives": [
+              0,
+              0,
+              12,
+              48,
+              6.59472476627343e-14
+            ]
+          },
+          {
+            "candidate": "Fixed20",
+            "case": "diag4",
+            "objectives": [
+              0,
+              0,
+              20,
+              80,
+              2.220446049250313e-15
+            ]
+          },
+          {
+            "candidate": "Budgeted",
+            "case": "diag4",
+            "objectives": [
+              0,
+              0,
+              9,
+              36,
+              8.873902723749438e-10
+            ]
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "Budgeted"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "diag8"
+        ],
+        "pareto": [
+          {
+            "candidate": "Fixed12",
+            "case": "diag8",
+            "objectives": [
+              0,
+              0,
+              24,
+              192,
+              1.7008616737257398e-13
+            ]
+          },
+          {
+            "candidate": "Fixed20",
+            "case": "diag8",
+            "objectives": [
+              0,
+              0,
+              40,
+              320,
+              5.440092820663267e-15
+            ]
+          },
+          {
+            "candidate": "Budgeted",
+            "case": "diag8",
+            "objectives": [
+              0,
+              0,
+              19,
+              152,
+              9.001298040267613e-10
+            ]
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "Budgeted"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "mixed_rates"
+        ],
+        "pareto": [
+          {
+            "candidate": "Fixed12",
+            "case": "mixed_rates",
+            "objectives": [
+              0,
+              0,
+              192,
+              576,
+              2.609024107869118e-14
+            ]
+          },
+          {
+            "candidate": "Budgeted",
+            "case": "mixed_rates",
+            "objectives": [
+              0,
+              0,
+              137,
+              411,
+              5.497743375999786e-10
+            ]
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "Budgeted"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "stiff"
+        ],
+        "pareto": [
+          {
+            "candidate": "Fixed12",
+            "case": "stiff",
+            "objectives": [
+              0,
+              0,
+              192,
+              192,
+              1.8844261632892934e-10
+            ]
+          },
+          {
+            "candidate": "Fixed20",
+            "case": "stiff",
+            "objectives": [
+              0,
+              0,
+              320,
+              320,
+              5.93881356852205e-12
+            ]
+          },
+          {
+            "candidate": "Budgeted",
+            "case": "stiff",
+            "objectives": [
+              0,
+              0,
+              162,
+              162,
+              5.871999648673909e-10
+            ]
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "Budgeted"
+      }
+    ],
+    "unique": 12
+  }
+}
