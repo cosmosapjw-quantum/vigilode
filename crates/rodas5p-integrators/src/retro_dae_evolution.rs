@@ -2765,6 +2765,38 @@ pub fn certify_slab_with_residual(
     }
     Ok(out)
 }
+/// Explicit workspace candidate; the RED compatibility implementation
+/// deliberately retains the owning proof.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum SlabWorkspaceRoute {
+    Pivot,
+    Equilibrated,
+    Refined,
+    PackedGreen,
+}
+pub struct SlabCertificateWorkspace;
+impl SlabCertificateWorkspace {
+    pub const fn new() -> Self {
+        Self
+    }
+}
+#[allow(clippy::too_many_arguments)]
+pub fn certify_slab_workspace_into(
+    src: &DaeSource,
+    times: [f64; 2],
+    y: &[Poly],
+    branch: &[[f64; 2]],
+    tube: f64,
+    incoming: Option<f64>,
+    green: bool,
+    condition_cap: f64,
+    _route: SlabWorkspaceRoute,
+    _workspace: &mut SlabCertificateWorkspace,
+    out: &mut SlabCertificate,
+) -> CoreResult<()> {
+    *out = certify_slab(src, times, y, branch, tube, incoming, green, condition_cap)?;
+    Ok(())
+}
 /// Rounded query correction to the ideal polynomial is charged explicitly.
 pub fn query_x_error(
     power: &[Poly],

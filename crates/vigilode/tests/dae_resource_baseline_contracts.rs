@@ -5682,3 +5682,218 @@ fn source_aperiodic_portfolio() {
         .is_err()
     );
 }
+
+fn certificate_fixture(
+    case: &str,
+) -> (DaeSource, Vec<f64>, Vec<f64>, Vec<[f64; 2]>, EvolutionRoute) {
+    match case {
+        "stable" => (
+            aperiodic_fixture("stable"),
+            vec![0.25, -0.125],
+            vec![0.125],
+            vec![[-2., 2.]],
+            EvolutionRoute::Reduced5,
+        ),
+        "stiff" => {
+            let src = DaeSource::new(
+                vec![p(vec![tr(-64., vec![F::component(0, 0.)])])],
+                vec![p(vec![
+                    tr(1., vec![F::component(1, 0.)]),
+                    tr(-1., vec![F::component(0, 0.)]),
+                ])],
+            )
+            .unwrap();
+            (
+                src,
+                vec![1.],
+                vec![1.],
+                vec![[-2., 2.]],
+                EvolutionRoute::BoundedAffine5,
+            )
+        }
+        "nonlinear" => (
+            nonlinear_power_fixture(4),
+            vec![0.],
+            vec![0.5],
+            vec![[0.4375, 0.59375]],
+            EvolutionRoute::BoundedSturm5,
+        ),
+        "vector4" => (
+            scaled_nondominant_source(4, true),
+            vec![0.],
+            vec![0.; 4],
+            vec![[-1., 1.]; 4],
+            EvolutionRoute::BoundedVectorPivot5,
+        ),
+        "vector8" => (
+            scaled_nondominant_source(8, true),
+            vec![0.],
+            vec![0.; 8],
+            vec![[-1., 1.]; 8],
+            EvolutionRoute::BoundedVectorPivot5,
+        ),
+        _ => panic!("fixture"),
+    }
+}
+fn certificate_init_route(route: EvolutionRoute) -> InitRoute {
+    match route {
+        EvolutionRoute::BoundedAffine5 => InitRoute::BoundedAffineScalar,
+        EvolutionRoute::BoundedSturm5 => InitRoute::BoundedSturmScalar,
+        EvolutionRoute::BoundedVectorPivot5 => InitRoute::BoundedVectorPivot,
+        _ => InitRoute::Reuse,
+    }
+}
+#[test]
+fn integrated_certificate_baseline_profile() {
+    warm();
+    for case in ["stable", "stiff", "nonlinear", "vector4", "vector8"] {
+        let (src, x, z, branch, solver) = certificate_fixture(case);
+        let epoch = EvolutionEpoch {
+            start: 0.,
+            end: 0.125,
+            incoming_x_error: Some(0.),
+        };
+        let grid = [0.03125, 0.0625, 0.09375];
+        let ((run, a), alloc) = measure(|| {
+            evolve_epoch_audited(
+                &src,
+                &x,
+                &z,
+                &branch,
+                epoch,
+                &opts(),
+                policy(),
+                solver,
+                &grid,
+            )
+        });
+        let run = run.unwrap();
+        assert!(run.global_qualified, "{case} {:?}", run.reason);
+        let (prepared, setup) =
+            measure(|| initialize_reduced_problem(&src, 0., &x, &z, &branch, policy(), solver));
+        let prepared = prepared.unwrap();
+        let (driver, solve) = measure(|| {
+            vigilode::Rodas5p::solve(
+                &prepared.problem,
+                (0., 0.125),
+                &prepared.initial_state,
+                &opts(),
+            )
+        });
+        let driver = driver.unwrap();
+        assert_eq!(driver.t, run.driver().t);
+        assert_eq!(driver.y, run.driver().y);
+        let mut components = std::collections::BTreeMap::<&str, Counts>::new();
+        for s in run.slabs() {
+            let c = s.certificate.as_ref().unwrap();
+            let (xp, ap) = measure(|| {
+                de::dense_power(&s.native.y0, &s.native.y1, &s.native.stages, s.native.basis)
+            });
+            let xp = xp.unwrap();
+            let (zr, ar) = measure(|| {
+                de::reconstruct(
+                    &src,
+                    s.times,
+                    &xp,
+                    &prepared.report.z,
+                    &branch,
+                    policy().init,
+                    certificate_init_route(solver),
+                    None,
+                    5,
+                )
+            });
+            let mut full = xp;
+            full.extend(zr.unwrap().0);
+            same(
+                &full
+                    .iter()
+                    .map(|row| row.iter().map(|v| v.as_pair()).collect::<Vec<_>>())
+                    .collect::<Vec<_>>(),
+                &s.power,
+            );
+            let (r, ac) = measure(|| {
+                de::certify_slab(
+                    &src,
+                    s.times,
+                    &full,
+                    &branch,
+                    policy().tube_radius,
+                    Some(c.incoming),
+                    policy().green,
+                    policy().init.condition_cap,
+                )
+            });
+            same(&r.unwrap(), c);
+            for (k, v) in [
+                ("dense_power", ap),
+                ("reconstruct", ar),
+                ("certificate", ac),
+            ] {
+                components.entry(k).or_default().add(v);
+            }
+        }
+        for &t in run.driver().t.iter().chain(&grid) {
+            let (q, aq) = measure(|| run.query(t));
+            assert!(q.unwrap().physical_error_upper.is_some());
+            components.entry("query_with_owner").or_default().add(aq);
+        }
+        println!(
+            "DRIVER_PROFILE {}",
+            serde_json::json!({"case":case,"solver":solver,"whole":alloc,"isolated_setup":setup,"isolated_solve":solve,"components":components,"slabs":run.slabs().len(),"accepted":run.accepted.len(),"queries":run.queries.len(),"audit":a,"scope":"exact native component replay; not additive whole-epoch allocation trace"})
+        );
+    }
+}
+#[test]
+fn certificate_workspace_actual_slab_noalloc() {
+    warm();
+    let (src, x, z, branch, solver) = certificate_fixture("stable");
+    let run = evolve_epoch(
+        &src,
+        &x,
+        &z,
+        &branch,
+        EvolutionEpoch {
+            start: 0.,
+            end: 0.125,
+            incoming_x_error: Some(0.),
+        },
+        &opts(),
+        policy(),
+        solver,
+        &[],
+    )
+    .unwrap();
+    assert!(run.global_qualified);
+    let s = run.slabs().last().unwrap();
+    let old = s.certificate.as_ref().unwrap();
+    let full = power(s);
+    let mut out = old.clone();
+    let mut w = de::SlabCertificateWorkspace::new();
+    let (r, alloc) = measure(|| {
+        de::certify_slab_workspace_into(
+            &src,
+            s.times,
+            &full,
+            &branch,
+            policy().tube_radius,
+            Some(old.incoming),
+            policy().green,
+            policy().init.condition_cap,
+            de::SlabWorkspaceRoute::Pivot,
+            &mut w,
+            &mut out,
+        )
+    });
+    r.unwrap();
+    same(&out, old);
+    println!(
+        "CERT_RED_GREEN {}",
+        serde_json::json!({"allocation":alloc,"whole_x":out.whole_x_error,"whole_z":out.whole_z_error,"outgoing":out.outgoing})
+    );
+    assert_eq!(
+        alloc.requests(),
+        0,
+        "repeated actual general slab proof into preallocated output"
+    );
+}
