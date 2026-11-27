@@ -2,7 +2,10 @@
 //! compact layout; every report is produced by the original certified query.
 //! All stored values are binary64 copies or bit-checked aliases.
 use super::*;
+mod slabs;
 use rodas5p_integrators::retro_dae_init::InitMode;
+pub(super) use slabs::SlabArena;
+pub use slabs::*;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub enum QueryArenaLayout {
@@ -449,6 +452,8 @@ pub(super) struct RetainedBuild {
     arena: Option<QueryArena>,
     accepted: usize,
     queries: usize,
+    pub(super) slab_plan: Option<SlabReplayRoute>,
+    slab_arena: Option<SlabArena>,
 }
 impl RetainedBuild {
     fn new(route: RetainedOutputRoute) -> Self {
@@ -457,6 +462,8 @@ impl RetainedBuild {
             arena: None,
             accepted: 0,
             queries: 0,
+            slab_plan: None,
+            slab_arena: None,
         }
     }
     pub(super) fn native(
@@ -543,7 +550,16 @@ impl RetainedBuild {
         let mut stage: Option<Query> = None;
         let arena = self.arena.as_mut().expect("arena reserved");
         for (&t, y) in out.driver.t.iter().zip(&out.driver.y) {
-            match fixed_query(e, &out.driver, t, Some(y), &out.slabs, route, w) {
+            match fixed_query_with_arena(
+                e,
+                &out.driver,
+                t,
+                Some(y),
+                &out.slabs,
+                route,
+                w,
+                self.slab_arena.as_ref(),
+            ) {
                 Ok(v) => {
                     if let Some(q) = &mut stage {
                         v.write(q);
@@ -560,7 +576,16 @@ impl RetainedBuild {
             }
         }
         for &t in grid {
-            match fixed_query(e, &out.driver, t, None, &out.slabs, route, w) {
+            match fixed_query_with_arena(
+                e,
+                &out.driver,
+                t,
+                None,
+                &out.slabs,
+                route,
+                w,
+                self.slab_arena.as_ref(),
+            ) {
                 Ok(v) => {
                     if let Some(q) = &mut stage {
                         v.write(q);

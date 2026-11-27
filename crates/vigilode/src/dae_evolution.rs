@@ -1250,6 +1250,18 @@ fn fixed_query(
     route: QueryWorkspaceRoute,
     w: &mut impl QueryScratch,
 ) -> CoreResult<FixedQuery> {
+    fixed_query_with_arena(e, s, t, accepted, slabs, route, w, None)
+}
+fn fixed_query_with_arena(
+    e: &Engine,
+    s: &Solution,
+    t: f64,
+    accepted: Option<&[f64]>,
+    slabs: &[SlabRecord],
+    route: QueryWorkspaceRoute,
+    w: &mut impl QueryScratch,
+    arena: Option<&retained::SlabArena>,
+) -> CoreResult<FixedQuery> {
     w.scalar().work = QueryWorkspaceWork::default();
     let nx = e.src.nx();
     let nz = e.src.nz();
@@ -1288,21 +1300,33 @@ fn fixed_query(
         && t >= a.times[0]
         && t <= a.times[1]
         && x.iter()
-            .zip(&c.x_range)
+            .zip(arena.map_or(c.x_range.as_slice(), |v| v.x_range(k)))
             .all(|(&x, b)| b[0] <= x && x <= b[1])
     {
         let conserved = c.conservation.is_some();
         let ideal = c.whole_x_error.expect("qualified");
         let v = if conserved { &state[..n] } else { x };
-        let ex = de::query_error_from_pairs(
-            &a.power[..nx],
-            a.times,
-            t,
-            v,
-            ideal,
-            conserved,
-            route != QueryWorkspaceRoute::FixedRows,
-        )?;
+        let ex = if let Some(arena) = arena {
+            de::query_error_from_pair_rows(
+                &arena.power(k)[..nx],
+                a.times,
+                t,
+                v,
+                ideal,
+                conserved,
+                route != QueryWorkspaceRoute::FixedRows,
+            )?
+        } else {
+            de::query_error_from_pairs(
+                &a.power[..nx],
+                a.times,
+                t,
+                v,
+                ideal,
+                conserved,
+                route != QueryWorkspaceRoute::FixedRows,
+            )?
+        };
         w.scalar().work.pair_rows += nx;
         physical_error_upper = Some(if conserved {
             ex
@@ -1822,60 +1846,64 @@ fn evolve_epoch_authority_retained(
     if retained.is_some() {
         out.slabs.reserve_exact(out.driver.t.len() - 1);
     }
-    for k in 0..out.driver.t.len() - 1 {
-        let times = [out.driver.t[k], out.driver.t[k + 1]];
-        let (native, mut p) = if let Some(r) = retained.as_ref() {
-            r.native(&out.driver, k)?
-        } else {
-            let native = packet(&out.driver, k)?;
-            let p = native.power()?;
-            (native, p)
-        };
-        if route != EvolutionRoute::Mass {
-            let (a, w) = match e.reconstruct(times, &p, false) {
-                Ok(v) => v,
+    if let Some(r) = retained.as_mut().filter(|r| r.slab_plan.is_some()) {
+        incoming = r.replay_slabs(&mut out, &e, incoming)?;
+    } else {
+        for k in 0..out.driver.t.len() - 1 {
+            let times = [out.driver.t[k], out.driver.t[k + 1]];
+            let (native, mut p) = if let Some(r) = retained.as_ref() {
+                r.native(&out.driver, k)?
+            } else {
+                let native = packet(&out.driver, k)?;
+                let p = native.power()?;
+                (native, p)
+            };
+            if route != EvolutionRoute::Mass {
+                let (a, w) = match e.reconstruct(times, &p, false) {
+                    Ok(v) => v,
+                    Err(err) => {
+                        out.slabs.push(SlabRecord {
+                            times,
+                            native,
+                            power: vec![],
+                            certificate: None,
+                            reason: Some(err.to_string()),
+                        });
+                        incoming = None;
+                        continue;
+                    }
+                };
+                for w in &w {
+                    e.work
+                        .lock()
+                        .map_err(|_| bad("work lock"))?
+                        .add(w, e.warp.is_some());
+                }
+                p.extend(a);
+            }
+            let power = p
+                .iter()
+                .map(|a| a.iter().map(|v| v.as_pair()).collect())
+                .collect();
+            let r = e.certify(times, &p, incoming, false);
+            let (certificate, reason) = match r {
+                Ok(c) => {
+                    incoming = if c.global_qualified { c.outgoing } else { None };
+                    (Some(c), None)
+                }
                 Err(err) => {
-                    out.slabs.push(SlabRecord {
-                        times,
-                        native,
-                        power: vec![],
-                        certificate: None,
-                        reason: Some(err.to_string()),
-                    });
                     incoming = None;
-                    continue;
+                    (None, Some(err.to_string()))
                 }
             };
-            for w in &w {
-                e.work
-                    .lock()
-                    .map_err(|_| bad("work lock"))?
-                    .add(w, e.warp.is_some());
-            }
-            p.extend(a);
+            out.slabs.push(SlabRecord {
+                times,
+                native,
+                power,
+                certificate,
+                reason,
+            });
         }
-        let power = p
-            .iter()
-            .map(|a| a.iter().map(|v| v.as_pair()).collect())
-            .collect();
-        let r = e.certify(times, &p, incoming, false);
-        let (certificate, reason) = match r {
-            Ok(c) => {
-                incoming = if c.global_qualified { c.outgoing } else { None };
-                (Some(c), None)
-            }
-            Err(err) => {
-                incoming = None;
-                (None, Some(err.to_string()))
-            }
-        };
-        out.slabs.push(SlabRecord {
-            times,
-            native,
-            power,
-            certificate,
-            reason,
-        });
     }
     out.branch_qualified = out.slabs.iter().all(|s| s.certificate.is_some());
     if let Some(r) = retained.as_mut() {
