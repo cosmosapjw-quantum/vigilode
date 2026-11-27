@@ -1,0 +1,848 @@
+{
+  "arena": {
+    "candidates": {
+      "Packed": {
+        "bytes": 0,
+        "qualified": 7,
+        "requests": 0,
+        "rows": 7
+      },
+      "Shared": {
+        "bytes": 0,
+        "qualified": 7,
+        "requests": 0,
+        "rows": 7
+      }
+    },
+    "pareto_count": 7,
+    "pareto_covered": 7,
+    "proposals": {
+      "mutation": 590,
+      "structure": 1458
+    },
+    "rows": 14,
+    "strata": [
+      {
+        "covered": 1,
+        "group": [
+          "conserved"
+        ],
+        "pareto": [
+          {
+            "case": "conserved",
+            "layout": "Shared",
+            "objectives": [
+              0,
+              0,
+              21448
+            ]
+          }
+        ],
+        "qualified": 2,
+        "resource_first": "Shared"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "mass"
+        ],
+        "pareto": [
+          {
+            "case": "mass",
+            "layout": "Shared",
+            "objectives": [
+              0,
+              0,
+              2416
+            ]
+          }
+        ],
+        "qualified": 2,
+        "resource_first": "Shared"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "nonlinear"
+        ],
+        "pareto": [
+          {
+            "case": "nonlinear",
+            "layout": "Shared",
+            "objectives": [
+              0,
+              0,
+              4096
+            ]
+          }
+        ],
+        "qualified": 2,
+        "resource_first": "Shared"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "stable"
+        ],
+        "pareto": [
+          {
+            "case": "stable",
+            "layout": "Shared",
+            "objectives": [
+              0,
+              0,
+              3664
+            ]
+          }
+        ],
+        "qualified": 2,
+        "resource_first": "Shared"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "stiff"
+        ],
+        "pareto": [
+          {
+            "case": "stiff",
+            "layout": "Shared",
+            "objectives": [
+              0,
+              0,
+              25312
+            ]
+          }
+        ],
+        "qualified": 2,
+        "resource_first": "Shared"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "vector4"
+        ],
+        "pareto": [
+          {
+            "case": "vector4",
+            "layout": "Shared",
+            "objectives": [
+              0,
+              0,
+              4672
+            ]
+          }
+        ],
+        "qualified": 2,
+        "resource_first": "Shared"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "vector8"
+        ],
+        "pareto": [
+          {
+            "case": "vector8",
+            "layout": "Shared",
+            "objectives": [
+              0,
+              0,
+              6528
+            ]
+          }
+        ],
+        "qualified": 2,
+        "resource_first": "Shared"
+      }
+    ],
+    "unique": 14
+  },
+  "epoch": {
+    "candidates": {
+      "legacy": {
+        "bytes": 1405504,
+        "qualified": 10,
+        "requests": 14818,
+        "rows": 10
+      },
+      "packed_component": {
+        "bytes": 905424,
+        "qualified": 10,
+        "requests": 5586,
+        "rows": 10
+      },
+      "packed_owned": {
+        "bytes": 976592,
+        "qualified": 10,
+        "requests": 7410,
+        "rows": 10
+      },
+      "packed_rows": {
+        "bytes": 905424,
+        "qualified": 10,
+        "requests": 5586,
+        "rows": 10
+      },
+      "shared_component": {
+        "bytes": 866768,
+        "qualified": 10,
+        "requests": 5596,
+        "rows": 10
+      },
+      "shared_owned": {
+        "bytes": 937936,
+        "qualified": 10,
+        "requests": 7420,
+        "rows": 10
+      },
+      "shared_rows": {
+        "bytes": 866768,
+        "qualified": 10,
+        "requests": 5596,
+        "rows": 10
+      }
+    },
+    "pareto_count": 40,
+    "pareto_covered": 40,
+    "proposals": {
+      "mutation": 437,
+      "structure": 1611
+    },
+    "rows": 70,
+    "strata": [
+      {
+        "covered": 4,
+        "group": [
+          "nonlinear",
+          "dense"
+        ],
+        "pareto": [
+          {
+            "candidate": "packed_rows",
+            "case": "nonlinear",
+            "grid": "dense",
+            "objectives": [
+              264,
+              59008,
+              49578,
+              46035,
+              31360,
+              4.2670585063430524e-09
+            ]
+          },
+          {
+            "candidate": "shared_rows",
+            "case": "nonlinear",
+            "grid": "dense",
+            "objectives": [
+              265,
+              56224,
+              46794,
+              43251,
+              28576,
+              4.2670585063430524e-09
+            ]
+          },
+          {
+            "candidate": "packed_component",
+            "case": "nonlinear",
+            "grid": "dense",
+            "objectives": [
+              264,
+              59008,
+              49578,
+              46035,
+              31360,
+              4.2670585063430524e-09
+            ]
+          },
+          {
+            "candidate": "shared_component",
+            "case": "nonlinear",
+            "grid": "dense",
+            "objectives": [
+              265,
+              56224,
+              46794,
+              43251,
+              28576,
+              4.2670585063430524e-09
+            ]
+          }
+        ],
+        "qualified": 7,
+        "resource_first": "packed_component"
+      },
+      {
+        "covered": 4,
+        "group": [
+          "nonlinear",
+          "sparse"
+        ],
+        "pareto": [
+          {
+            "candidate": "packed_rows",
+            "case": "nonlinear",
+            "grid": "sparse",
+            "objectives": [
+              264,
+              32128,
+              22698,
+              19155,
+              4480,
+              4.2670585063430524e-09
+            ]
+          },
+          {
+            "candidate": "shared_rows",
+            "case": "nonlinear",
+            "grid": "sparse",
+            "objectives": [
+              265,
+              31744,
+              22314,
+              18771,
+              4096,
+              4.2670585063430524e-09
+            ]
+          },
+          {
+            "candidate": "packed_component",
+            "case": "nonlinear",
+            "grid": "sparse",
+            "objectives": [
+              264,
+              32128,
+              22698,
+              19155,
+              4480,
+              4.2670585063430524e-09
+            ]
+          },
+          {
+            "candidate": "shared_component",
+            "case": "nonlinear",
+            "grid": "sparse",
+            "objectives": [
+              265,
+              31744,
+              22314,
+              18771,
+              4096,
+              4.2670585063430524e-09
+            ]
+          }
+        ],
+        "qualified": 7,
+        "resource_first": "packed_component"
+      },
+      {
+        "covered": 4,
+        "group": [
+          "stable",
+          "dense"
+        ],
+        "pareto": [
+          {
+            "candidate": "packed_rows",
+            "case": "stable",
+            "grid": "dense",
+            "objectives": [
+              340,
+              62166,
+              51376,
+              47422,
+              34816,
+              2.829895907180623e-09
+            ]
+          },
+          {
+            "candidate": "shared_rows",
+            "case": "stable",
+            "grid": "dense",
+            "objectives": [
+              341,
+              58374,
+              47584,
+              43630,
+              31024,
+              2.829895907180623e-09
+            ]
+          },
+          {
+            "candidate": "packed_component",
+            "case": "stable",
+            "grid": "dense",
+            "objectives": [
+              340,
+              62166,
+              51376,
+              47422,
+              34816,
+              2.829895907180623e-09
+            ]
+          },
+          {
+            "candidate": "shared_component",
+            "case": "stable",
+            "grid": "dense",
+            "objectives": [
+              341,
+              58374,
+              47584,
+              43630,
+              31024,
+              2.829895907180623e-09
+            ]
+          }
+        ],
+        "qualified": 7,
+        "resource_first": "packed_component"
+      },
+      {
+        "covered": 4,
+        "group": [
+          "stable",
+          "sparse"
+        ],
+        "pareto": [
+          {
+            "candidate": "packed_rows",
+            "case": "stable",
+            "grid": "sparse",
+            "objectives": [
+              340,
+              31446,
+              20656,
+              16702,
+              4096,
+              2.829895907180623e-09
+            ]
+          },
+          {
+            "candidate": "shared_rows",
+            "case": "stable",
+            "grid": "sparse",
+            "objectives": [
+              341,
+              31014,
+              20224,
+              16270,
+              3664,
+              2.829895907180623e-09
+            ]
+          },
+          {
+            "candidate": "packed_component",
+            "case": "stable",
+            "grid": "sparse",
+            "objectives": [
+              340,
+              31446,
+              20656,
+              16702,
+              4096,
+              2.829895907180623e-09
+            ]
+          },
+          {
+            "candidate": "shared_component",
+            "case": "stable",
+            "grid": "sparse",
+            "objectives": [
+              341,
+              31014,
+              20224,
+              16270,
+              3664,
+              2.829895907180623e-09
+            ]
+          }
+        ],
+        "qualified": 7,
+        "resource_first": "packed_component"
+      },
+      {
+        "covered": 4,
+        "group": [
+          "stiff",
+          "dense"
+        ],
+        "pareto": [
+          {
+            "candidate": "packed_rows",
+            "case": "stiff",
+            "grid": "dense",
+            "objectives": [
+              1037,
+              220582,
+              148272,
+              145682,
+              54656,
+              4.3510002918425796e-07
+            ]
+          },
+          {
+            "candidate": "shared_rows",
+            "case": "stiff",
+            "grid": "dense",
+            "objectives": [
+              1038,
+              215718,
+              143408,
+              140818,
+              49792,
+              4.3510002918425796e-07
+            ]
+          },
+          {
+            "candidate": "packed_component",
+            "case": "stiff",
+            "grid": "dense",
+            "objectives": [
+              1037,
+              220582,
+              148272,
+              145682,
+              54656,
+              4.3510002918425796e-07
+            ]
+          },
+          {
+            "candidate": "shared_component",
+            "case": "stiff",
+            "grid": "dense",
+            "objectives": [
+              1038,
+              215718,
+              143408,
+              140818,
+              49792,
+              4.3510002918425796e-07
+            ]
+          }
+        ],
+        "qualified": 7,
+        "resource_first": "packed_component"
+      },
+      {
+        "covered": 4,
+        "group": [
+          "stiff",
+          "sparse"
+        ],
+        "pareto": [
+          {
+            "candidate": "packed_rows",
+            "case": "stiff",
+            "grid": "sparse",
+            "objectives": [
+              1037,
+              193702,
+              121392,
+              118802,
+              27776,
+              4.3510002918425796e-07
+            ]
+          },
+          {
+            "candidate": "shared_rows",
+            "case": "stiff",
+            "grid": "sparse",
+            "objectives": [
+              1038,
+              191238,
+              118928,
+              116338,
+              25312,
+              4.3510002918425796e-07
+            ]
+          },
+          {
+            "candidate": "packed_component",
+            "case": "stiff",
+            "grid": "sparse",
+            "objectives": [
+              1037,
+              193702,
+              121392,
+              118802,
+              27776,
+              4.3510002918425796e-07
+            ]
+          },
+          {
+            "candidate": "shared_component",
+            "case": "stiff",
+            "grid": "sparse",
+            "objectives": [
+              1038,
+              191238,
+              118928,
+              116338,
+              25312,
+              4.3510002918425796e-07
+            ]
+          }
+        ],
+        "qualified": 7,
+        "resource_first": "packed_component"
+      },
+      {
+        "covered": 4,
+        "group": [
+          "vector4",
+          "dense"
+        ],
+        "pareto": [
+          {
+            "candidate": "packed_rows",
+            "case": "vector4",
+            "grid": "dense",
+            "objectives": [
+              440,
+              82166,
+              73264,
+              62686,
+              46784,
+              3.4682837491635075e-12
+            ]
+          },
+          {
+            "candidate": "shared_rows",
+            "case": "vector4",
+            "grid": "dense",
+            "objectives": [
+              441,
+              74614,
+              65712,
+              55134,
+              39232,
+              3.4682837491635075e-12
+            ]
+          },
+          {
+            "candidate": "packed_component",
+            "case": "vector4",
+            "grid": "dense",
+            "objectives": [
+              440,
+              82166,
+              73264,
+              62686,
+              46784,
+              3.4682837491635075e-12
+            ]
+          },
+          {
+            "candidate": "shared_component",
+            "case": "vector4",
+            "grid": "dense",
+            "objectives": [
+              441,
+              74614,
+              65712,
+              55134,
+              39232,
+              3.4682837491635075e-12
+            ]
+          }
+        ],
+        "qualified": 7,
+        "resource_first": "packed_component"
+      },
+      {
+        "covered": 4,
+        "group": [
+          "vector4",
+          "sparse"
+        ],
+        "pareto": [
+          {
+            "candidate": "packed_rows",
+            "case": "vector4",
+            "grid": "sparse",
+            "objectives": [
+              440,
+              40886,
+              31984,
+              21406,
+              5504,
+              3.4682837491635075e-12
+            ]
+          },
+          {
+            "candidate": "shared_rows",
+            "case": "vector4",
+            "grid": "sparse",
+            "objectives": [
+              441,
+              40054,
+              31152,
+              20574,
+              4672,
+              3.4682837491635075e-12
+            ]
+          },
+          {
+            "candidate": "packed_component",
+            "case": "vector4",
+            "grid": "sparse",
+            "objectives": [
+              440,
+              40886,
+              31984,
+              21406,
+              5504,
+              3.4682837491635075e-12
+            ]
+          },
+          {
+            "candidate": "shared_component",
+            "case": "vector4",
+            "grid": "sparse",
+            "objectives": [
+              441,
+              40054,
+              31152,
+              20574,
+              4672,
+              3.4682837491635075e-12
+            ]
+          }
+        ],
+        "qualified": 7,
+        "resource_first": "packed_component"
+      },
+      {
+        "covered": 4,
+        "group": [
+          "vector8",
+          "dense"
+        ],
+        "pareto": [
+          {
+            "candidate": "packed_rows",
+            "case": "vector8",
+            "grid": "dense",
+            "objectives": [
+              712,
+              121910,
+              111248,
+              91134,
+              68544,
+              6.941656641905468e-12
+            ]
+          },
+          {
+            "candidate": "shared_rows",
+            "case": "vector8",
+            "grid": "dense",
+            "objectives": [
+              713,
+              107894,
+              97232,
+              77118,
+              54528,
+              6.941656641905468e-12
+            ]
+          },
+          {
+            "candidate": "packed_component",
+            "case": "vector8",
+            "grid": "dense",
+            "objectives": [
+              712,
+              121910,
+              111248,
+              91134,
+              68544,
+              6.941656641905468e-12
+            ]
+          },
+          {
+            "candidate": "shared_component",
+            "case": "vector8",
+            "grid": "dense",
+            "objectives": [
+              713,
+              107894,
+              97232,
+              77118,
+              54528,
+              6.941656641905468e-12
+            ]
+          }
+        ],
+        "qualified": 7,
+        "resource_first": "packed_component"
+      },
+      {
+        "covered": 4,
+        "group": [
+          "vector8",
+          "sparse"
+        ],
+        "pareto": [
+          {
+            "candidate": "packed_rows",
+            "case": "vector8",
+            "grid": "sparse",
+            "objectives": [
+              712,
+              61430,
+              50768,
+              30654,
+              8064,
+              6.941656641905468e-12
+            ]
+          },
+          {
+            "candidate": "shared_rows",
+            "case": "vector8",
+            "grid": "sparse",
+            "objectives": [
+              713,
+              59894,
+              49232,
+              29118,
+              6528,
+              6.941656641905468e-12
+            ]
+          },
+          {
+            "candidate": "packed_component",
+            "case": "vector8",
+            "grid": "sparse",
+            "objectives": [
+              712,
+              61430,
+              50768,
+              30654,
+              8064,
+              6.941656641905468e-12
+            ]
+          },
+          {
+            "candidate": "shared_component",
+            "case": "vector8",
+            "grid": "sparse",
+            "objectives": [
+              713,
+              59894,
+              49232,
+              29118,
+              6528,
+              6.941656641905468e-12
+            ]
+          }
+        ],
+        "qualified": 7,
+        "resource_first": "packed_component"
+      }
+    ],
+    "unique": 70
+  },
+  "scope": "finite measured replay; caller-thread live heap delta is not RSS or peak stack; no promotion"
+}
