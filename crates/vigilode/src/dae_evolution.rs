@@ -1301,9 +1301,9 @@ impl EvolutionRun {
     pub fn slabs(&self) -> &[SlabRecord] {
         &self.slabs
     }
-    /// RED compatibility implementation of full native packet access.
-    pub fn native_packet_view(&self, k: usize) -> CoreResult<NativePacket> {
-        packet(&self.driver, k)
+    /// Borrow exact represented inputs from the immutable native driver.
+    pub fn native_packet_view(&self, k: usize) -> CoreResult<NativePacketView<'_>> {
+        native_packet_view(&self.driver, k)
     }
 
     /// Fresh original-source projection, retaining no cached algebraic answer.
@@ -1346,6 +1346,89 @@ fn collect_workspace_queries(
                 out.reason = Some(err.to_string());
                 break;
             }
+        }
+    }
+}
+/// Exact native packet with borrowed endpoint/stage rows. Serialization
+/// has the same field layout as NativePacket; no approximate compression.
+#[derive(Clone, Copy, Debug, Serialize)]
+pub struct NativePacketView<'a> {
+    pub basis: DenseBasis,
+    pub coefficients: &'a [f64],
+    pub y0: &'a [f64],
+    pub y1: &'a [f64],
+    pub stages: [&'a [f64]; 8],
+}
+impl NativePacketView<'_> {
+    pub fn to_owned_packet(&self) -> NativePacket {
+        NativePacket {
+            basis: self.basis,
+            coefficients: self.coefficients.to_vec(),
+            y0: self.y0.to_vec(),
+            y1: self.y1.to_vec(),
+            stages: self.stages.iter().map(|r| r.to_vec()).collect(),
+        }
+    }
+    pub fn power(&self) -> CoreResult<Vec<Vec<Iv>>> {
+        de::dense_power_rows(self.y0, self.y1, &self.stages, self.basis)
+    }
+}
+fn same_f64_bits(a: &[f64], b: &[f64]) -> bool {
+    a.len() == b.len() && a.iter().zip(b).all(|(a, b)| a.to_bits() == b.to_bits())
+}
+fn native_packet_view(s: &Solution, k: usize) -> CoreResult<NativePacketView<'_>> {
+    let next = k.checked_add(1).ok_or_else(|| bad("native view index"))?;
+    let t0 = *s.t.get(k).ok_or_else(|| bad("native view index"))?;
+    let t1 = *s.t.get(next).ok_or_else(|| bad("native view index"))?;
+    let y0 = s.y.get(k).ok_or_else(|| bad("native view state"))?;
+    let y1 = s.y.get(next).ok_or_else(|| bad("native view state"))?;
+    match s
+        .extension
+        .as_ref()
+        .ok_or_else(|| bad("native dense store missing"))?
+    {
+        Extension::Sequential(v) => {
+            let a = v.get(k).ok_or_else(|| bad("sequential view index"))?;
+            if a.t_old.to_bits() != t0.to_bits()
+                || a.t_new.to_bits() != t1.to_bits()
+                || !same_f64_bits(&a.y_old, y0)
+                || !same_f64_bits(&a.y_new, y1)
+                || a.stages.len() != 8
+                || a.stages.iter().any(|v| v.len() != y0.len())
+            {
+                return Err(bad("sequential view identity"));
+            }
+            let basis = DenseBasis::SequentialD;
+            Ok(NativePacketView {
+                basis,
+                coefficients: basis.coefficients()?.as_slice(),
+                y0: &a.y_old,
+                y1: &a.y_new,
+                stages: std::array::from_fn(|i| a.stages[i].as_slice()),
+            })
+        }
+        Extension::Fast(v) => {
+            if k >= v.len()
+                || v.t_old(k).to_bits() != t0.to_bits()
+                || v.t_new(k).to_bits() != t1.to_bits()
+                || !same_f64_bits(v.state(k), y0)
+                || !same_f64_bits(v.state(next), y1)
+            {
+                return Err(bad("fast view identity"));
+            }
+            let n = v.dimension();
+            let rows = v.stage_rows(k);
+            if n == 0 || rows.len() != 8 * n {
+                return Err(bad("fast view stage shape"));
+            }
+            let basis = DenseBasis::FastH;
+            Ok(NativePacketView {
+                basis,
+                coefficients: basis.coefficients()?.as_slice(),
+                y0: v.state(k),
+                y1: v.state(next),
+                stages: std::array::from_fn(|i| &rows[i * n..(i + 1) * n]),
+            })
         }
     }
 }

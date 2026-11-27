@@ -512,6 +512,47 @@ pub fn dense_power(
         })
         .collect()
 }
+/// Same represented power coefficients without owning native stage rows.
+pub fn dense_power_rows(
+    y0: &[f64],
+    y1: &[f64],
+    stages: &[&[f64]],
+    basis: DenseBasis,
+) -> CoreResult<Vec<Poly>> {
+    let n = y0.len();
+    if n == 0 || y1.len() != n || stages.len() != 8 || stages.iter().any(|v| v.len() != n) {
+        return Err(bad("dense packet shape"));
+    }
+    let h = basis.coefficients()?;
+    (0..n)
+        .map(|i| {
+            let mut d = [zero(); 3];
+            for (k, v) in d.iter_mut().enumerate() {
+                for (j, u) in stages.iter().enumerate() {
+                    *v = v.add(p(h[(k, j)])?.scale(u[i])?)?;
+                }
+            }
+            let a = p(y0[i])?;
+            let b = p(y1[i])?;
+            Ok(vec![
+                a,
+                b.sub(a)?.add(d[0])?,
+                d[1].sub(d[0])?,
+                d[2].sub(d[1])?,
+                -d[2],
+            ])
+        })
+        .collect()
+}
+/// Reuse the existing original physical-event component adapter and
+/// directed coefficient kernel on the actual fast native store.
+pub fn dense_power_components(s: &crate::FastDenseSegments, k: usize) -> CoreResult<Vec<Poly>> {
+    (0..s.dimension())
+        .map(|i| {
+            crate::retro_physical_event::power(&s.represented_component(k, i)?).map(|p| p.to_vec())
+        })
+        .collect()
+}
 fn is_zero(v: &f64) -> bool {
     *v == 0.
 }

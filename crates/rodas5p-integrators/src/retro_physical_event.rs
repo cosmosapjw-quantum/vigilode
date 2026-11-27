@@ -284,7 +284,7 @@ pub struct PhysicalReport {
     pub proofs: Vec<SlabProof>,
     pub native_counters: WorkCounters,
 }
-fn power(packet: &ac::RepresentedAffineSegment) -> CoreResult<[Iv; 5]> {
+pub(crate) fn power(packet: &ac::RepresentedAffineSegment) -> CoreResult<[Iv; 5]> {
     let (h, u) = packet.exact_inputs();
     let mut d = [z(); 3];
     for i in 0..3 {
