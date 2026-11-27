@@ -17,6 +17,8 @@ use rodas5p_krylov::{
 use serde::Serialize;
 use std::sync::{Arc, Mutex};
 const Z: Iv = Iv { lo: 0., hi: 0. };
+mod residual;
+pub use residual::*;
 fn err(s: &str) -> CoreError {
     CoreError::LinearSolve(format!("shifted adjoint: {s}"))
 }

@@ -889,3 +889,62 @@ fn cost_aware_actual_portfolio() {
         .is_err()
     );
 }
+
+#[test]
+fn tiered_goal_uses_intermediate_tolerance() {
+    let (src, x, z, b, c) = fixture(2);
+    let opts = Options {
+        rtol: 1e-10,
+        atol: Atol::Scalar(1e-13),
+        dense_output: true,
+        interior_error: InteriorError::Off,
+        max_steps: 4096,
+        ..Default::default()
+    };
+    let policy = EvolutionPolicy {
+        init: InitPolicy {
+            mode: InitMode::ProjectAlgebraic,
+            state_tol: 1e-11,
+            residual_tol: 1e-11,
+            derivative_tol: 1e-6,
+            ..Default::default()
+        },
+        tube_radius: 1e-3,
+        global_tol: 1e-3,
+        green: true,
+    };
+    let route = EvolutionRoute::WorkspaceQuery5 {
+        projection: WorkspaceProjection::PivotedVector,
+        certificate: de::SlabWorkspaceRoute::Refined,
+        storage: CertificateStorage::Local,
+        query: QueryWorkspaceRoute::StreamPairs,
+    };
+    let r = evolve_epoch_goal_budget(
+        &src,
+        &x,
+        &z,
+        &b,
+        EvolutionEpoch {
+            start: 0.,
+            end: 0.125,
+            incoming_x_error: Some(0.),
+        },
+        &opts,
+        policy,
+        route,
+        &[],
+        RetainedOutputRoute {
+            queries: QueryArenaLayout::Shared,
+            native: NativeRetention::BorrowedRows,
+        },
+        &c,
+        GoalBudgetPolicy {
+            absolute: 1e-9,
+            plan: GoalBudgetPlan::TieredCost,
+        },
+    )
+    .unwrap();
+    println!("TIER_RED_GREEN multiplier={}", r.attempts[0].multiplier);
+    assert_eq!(r.attempts[0].multiplier, 8.);
+    assert!(r.run.is_some());
+}

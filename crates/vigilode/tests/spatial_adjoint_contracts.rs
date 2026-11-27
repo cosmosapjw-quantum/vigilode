@@ -1451,3 +1451,23 @@ fn early_native_adjoint_portfolio() {
         }
     }
 }
+
+#[test]
+fn fused_residual_fast_and_fallback() {
+    use vigilode::spatial::{ResidualPlan as P, ResidualWorkspace as W};
+    let g = DiffusionGrid::periodic_box([8, 4], [8., 4.], [4096., 2048.]).unwrap();
+    let n = g.dimension();
+    let x = vec![1.; n];
+    let b = vec![4096.; n];
+    let mut w = W::new(&g, P::Hybrid).unwrap();
+    w.prepare(4096.).unwrap();
+    let a = w.evaluate(&b, &x).unwrap();
+    println!("RESIDUAL_RED_GREEN {:?}", a);
+    assert!(a.admitted && a.fast_checks == 1 && a.interval_checks == 0);
+    let z = 2f64.powi(-20);
+    w.prepare(z).unwrap();
+    let b = vec![z; n];
+    let a = w.evaluate(&b, &x).unwrap();
+    println!("FALLBACK_RED_GREEN {:?}", a);
+    assert!(a.admitted && a.fast_checks == 1 && a.interval_checks == 1 && a.fallbacks == 1);
+}

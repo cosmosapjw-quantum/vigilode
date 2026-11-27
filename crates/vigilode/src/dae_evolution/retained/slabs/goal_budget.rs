@@ -7,6 +7,7 @@ pub enum GoalBudgetPlan {
     SecantReplay,
     Predictive,
     CostAware,
+    TieredCost,
 }
 #[derive(Clone, Copy, Debug, Serialize)]
 pub struct GoalBudgetPolicy {
