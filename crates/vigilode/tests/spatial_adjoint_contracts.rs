@@ -742,3 +742,166 @@ fn wide_poisson_actual_fewer_cells() {
     );
     assert!(b.cells < a.cells && b.actions < a.actions && b.width_upper <= 1e-6);
 }
+#[test]
+fn stiff_spatial_adjoint_actual_portfolio() {
+    let opts = Options {
+        rtol: 1e-9,
+        atol: Atol::Scalar(1e-11),
+        h0: 0.001,
+        dense_output: false,
+        ..Options::default()
+    };
+    let plans = [
+        SpatialAdjointRoute::PoissonAdaptive,
+        SpatialAdjointRoute::PoissonWide,
+        SpatialAdjointRoute::PoissonWideDecay,
+    ];
+    for (case, g) in [
+        (
+            "stiff2",
+            DiffusionGrid::periodic_box([16, 8], [16., 8.], [32., 16.]).unwrap(),
+        ),
+        (
+            "stiff3",
+            DiffusionGrid::periodic_box([8, 8, 4], [8., 8., 4.], [32., 16., 8.]).unwrap(),
+        ),
+        (
+            "sphere512",
+            DiffusionGrid::sphere(16, 32, 1., 0.04).unwrap(),
+        ),
+        ("sphere128", DiffusionGrid::sphere(8, 16, 1., 0.16).unwrap()),
+    ] {
+        let n = g.dimension();
+        let y = (0..n)
+            .map(|i| ((17 * i % 29) as f64 - 14.) / 32.)
+            .collect::<Vec<_>>();
+        let mut c = vec![0.; n];
+        c[0] = 0.5;
+        c[n / 2] = -0.25;
+        c[n - 1] = 0.125;
+        let rows = (0..n)
+            .map(|i| g.represented_row(i).unwrap())
+            .collect::<Vec<_>>();
+        let mut w = SpatialAdjointWorkspace::new(&g).unwrap();
+        let mut reference = vec![Iv::point(0.).unwrap(); n];
+        let q = g
+            .separable_stages(0.)
+            .unwrap()
+            .spectral_bounds()
+            .radius_bound;
+        println!(
+            "STIFF_GRID {}",
+            serde_json::json!({"case":case,"n":n,"rows":rows,"initial":y,"goal":c,"duration":DURATION,"spectral_radius_bound_proposal":q})
+        );
+        // Baseline actual numerical result, all certificate candidates share
+        // its original represented endpoint. No continuum exactness claim.
+        let p = g.problem(SpatialRows::Serial);
+        let adj = g.adjoint_problem();
+        let gather = g.adjoint_problem_gather();
+        let mut primals = vec![];
+        let mut numerics = vec![];
+        let native_routes = [
+            NativeRoute::Dopri,
+            NativeRoute::Rodas,
+            NativeRoute::Paired,
+            NativeRoute::Complex,
+        ];
+        for route in native_routes {
+            // Large native Krylov is separately deferred to keep this
+            // bounded campaign on the same shared host. No extrapolation.
+            if route == NativeRoute::Rodas && n > 128 {
+                continue;
+            }
+            let (r, a) = measure(|| native(&g, &p, &y, &opts, route, false));
+            let mut ts = vec![];
+            for _ in 0..3 {
+                let s = std::time::Instant::now();
+                black_box(native(&g, &p, &y, &opts, route, false));
+                ts.push(s.elapsed().as_nanos());
+            }
+            ts.sort_unstable();
+            println!(
+                "STIFF_PRIMAL {}",
+                serde_json::json!({"case":case,"candidate":route,"qualified":true,"allocation":a,"run":r,"median_ns":ts[1],"samples_ns":ts})
+            );
+            primals.push((route, r));
+            let (r, a) = measure(|| native(&g, &adj, &c, &opts, route, true));
+            let mut ts = vec![];
+            for _ in 0..3 {
+                let s = std::time::Instant::now();
+                black_box(native(&g, &adj, &c, &opts, route, true));
+                ts.push(s.elapsed().as_nanos());
+            }
+            ts.sort_unstable();
+            numerics.push((format!("{route:?}"), r, a, ts));
+        }
+        if case.starts_with("sphere") {
+            let (r, a) = measure(|| native(&g, &gather, &c, &opts, NativeRoute::Dopri, true));
+            let mut ts = vec![];
+            for _ in 0..3 {
+                let s = std::time::Instant::now();
+                black_box(native(&g, &gather, &c, &opts, NativeRoute::Dopri, true));
+                ts.push(s.elapsed().as_nanos());
+            }
+            ts.sort_unstable();
+            numerics.push(("GatherDopri".to_string(), r, a, ts));
+        }
+        let mut reports = vec![];
+        let mut out = reference.clone();
+        for plan in plans {
+            let (r, a) =
+                measure(|| w.certify_into(&c, &y, &primals[0].1.values, DURATION, plan, &mut out));
+            let r = r.unwrap();
+            assert_eq!(a.requests(), 0);
+            assert!(r.width_upper <= 1e-6);
+            if plan == SpatialAdjointRoute::PoissonAdaptive {
+                reference.copy_from_slice(&out);
+            }
+            reports.push((r, a, out.clone()));
+        }
+        let mut timing: [Vec<u128>; 3] = std::array::from_fn(|_| vec![]);
+        for rep in 0..5 {
+            for j in 0..3 {
+                let i = (rep + j) % 3;
+                let s = std::time::Instant::now();
+                black_box(
+                    w.certify_into(&c, &y, &primals[0].1.values, DURATION, plans[i], &mut out)
+                        .unwrap(),
+                );
+                timing[i].push(s.elapsed().as_nanos());
+            }
+        }
+        for (i, (r, a, v)) in reports.into_iter().enumerate() {
+            timing[i].sort_unstable();
+            println!(
+                "STIFF_CERT {}",
+                serde_json::json!({"case":case,"candidate":plans[i],"qualified":true,"allocation":a,"work":r,"enclosure":v.iter().map(|v|v.as_pair()).collect::<Vec<_>>(),"median_ns":timing[i][2],"samples_ns":timing[i]})
+            );
+        }
+        for (route, r, a, ts) in numerics {
+            let e = max_error(&reference, &r.values);
+            assert!(e <= 1e-6);
+            println!(
+                "STIFF_NUMERIC {}",
+                serde_json::json!({"case":case,"candidate":route,"qualified":true,"allocation":a,"run":r,"error_upper":e,"median_ns":ts[1],"samples_ns":ts})
+            );
+        }
+        for (route, r) in primals {
+            let q = w
+                .certify_into(
+                    &c,
+                    &y,
+                    &r.values,
+                    DURATION,
+                    SpatialAdjointRoute::PoissonAdaptive,
+                    &mut out,
+                )
+                .unwrap();
+            assert!(q.signed_goal_error.iter().all(|v| v.abs() <= 1e-6));
+            println!(
+                "STIFF_QOI {}",
+                serde_json::json!({"case":case,"candidate":route,"error":q.signed_goal_error})
+            );
+        }
+    }
+}

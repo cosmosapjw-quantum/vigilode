@@ -123,3 +123,280 @@ fn actual_nonlinear_secant_goal_residual() {
     assert!(out.lo <= exact - numeric + 1e-15 && out.hi >= exact - numeric - 1e-15);
     println!("SECANT_RED_GREEN {:?}", a);
 }
+use serde::Serialize;
+use std::{
+    alloc::{GlobalAlloc, Layout, System},
+    cell::Cell,
+    hint::black_box,
+};
+#[derive(Clone, Copy, Debug, Default, Serialize)]
+struct Counts {
+    alloc: u64,
+    zeroed: u64,
+    realloc: u64,
+    requested_bytes: u64,
+}
+impl Counts {
+    fn requests(self) -> u64 {
+        self.alloc + self.zeroed + self.realloc
+    }
+}
+thread_local! {
+ static TRACK:Cell<bool>=const{Cell::new(false)};
+ static COUNT:Cell<Counts>=const{Cell::new(Counts{alloc:0,zeroed:0,realloc:0,requested_bytes:0})};
+}
+fn record(k: usize, n: usize) {
+    if TRACK.try_with(Cell::get).unwrap_or(false) {
+        let _ = COUNT.try_with(|v| {
+            let mut a = v.get();
+            match k {
+                0 => a.alloc += 1,
+                1 => a.zeroed += 1,
+                _ => a.realloc += 1,
+            }
+            a.requested_bytes += n as u64;
+            v.set(a);
+        });
+    }
+}
+struct Counting;
+unsafe impl GlobalAlloc for Counting {
+    unsafe fn alloc(&self, l: Layout) -> *mut u8 {
+        record(0, l.size());
+        unsafe { System.alloc(l) }
+    }
+    unsafe fn alloc_zeroed(&self, l: Layout) -> *mut u8 {
+        record(1, l.size());
+        unsafe { System.alloc_zeroed(l) }
+    }
+    unsafe fn realloc(&self, p: *mut u8, l: Layout, n: usize) -> *mut u8 {
+        record(2, n);
+        unsafe { System.realloc(p, l, n) }
+    }
+    unsafe fn dealloc(&self, p: *mut u8, l: Layout) {
+        unsafe { System.dealloc(p, l) }
+    }
+}
+#[global_allocator]
+static ALLOC: Counting = Counting;
+struct Guard;
+impl Drop for Guard {
+    fn drop(&mut self) {
+        TRACK.with(|v| v.set(false));
+    }
+}
+fn measure<T>(f: impl FnOnce() -> T) -> (T, Counts) {
+    assert!(!TRACK.with(Cell::get));
+    COUNT.with(|v| v.set(Counts::default()));
+    TRACK.with(|v| v.set(true));
+    let g = Guard;
+    let r = f();
+    drop(g);
+    (r, COUNT.with(Cell::get))
+}
+fn other_fixture(case: &str) -> (DaeSource, Vec<f64>, Vec<f64>, Vec<[f64; 2]>, Vec<f64>) {
+    if case == "mixed_inverse" {
+        let f = vec![
+            p(vec![tr(
+                -1.,
+                vec![F::clock(0.), F::component(2, 0.), F::component(2, 0.)],
+            )]),
+            p(vec![tr(1., vec![F::clock(0.), F::component(2, 0.)])]),
+        ];
+        let g = vec![
+            p(vec![
+                tr(1., vec![F::component(2, 0.)]),
+                tr(-1., vec![F::component(0, 0.)]),
+                tr(0.125, vec![F::component(3, 0.)]),
+                tr(-0.125, vec![F::component(1, 0.)]),
+            ]),
+            p(vec![
+                tr(1., vec![F::component(3, 0.)]),
+                tr(-1., vec![F::component(1, 0.)]),
+            ]),
+        ];
+        return (
+            DaeSource::new(f, g).unwrap(),
+            vec![0.25, 0.0625],
+            vec![0.25, 0.0625],
+            vec![[-0.5, 0.75]; 2],
+            vec![0., 1., 0.5, 0.],
+        );
+    }
+    let f = vec![
+        p(vec![tr(0.125, vec![F::component(2, 0.)])]),
+        p(vec![tr(1., vec![F::component(0, 0.)])]),
+    ];
+    let g = vec![
+        p(vec![
+            tr(1., vec![F::component(2, 0.), F::component(2, 0.)]),
+            tr(-1., vec![F::component(0, 0.)]),
+            tr(-0.25, vec![]),
+        ]),
+        p(vec![
+            tr(1., vec![F::component(3, 0.)]),
+            tr(-1., vec![F::component(1, 0.)]),
+        ]),
+    ];
+    (
+        DaeSource::new(f, g).unwrap(),
+        vec![0., 0.0625],
+        vec![0.5, 0.0625],
+        vec![[0.4375, 0.625], [-0.25, 0.5]],
+        vec![0., 1., 1., 0.],
+    )
+}
+#[test]
+fn secant_actual_portfolio() {
+    let (_, positive) = measure(|| black_box(vec![7_f64; 32]));
+    assert!(positive.requests() > 0);
+    let (_, negative) = measure(|| black_box([7_f64; 32]));
+    assert_eq!(negative.requests(), 0);
+    let plans = [
+        SecantGoalRoute::WholeHorner,
+        SecantGoalRoute::Sub4Horner,
+        SecantGoalRoute::Sub4Bernstein,
+        SecantGoalRoute::Diagonal4,
+        SecantGoalRoute::Scaled4,
+        SecantGoalRoute::Scaled16,
+        SecantGoalRoute::Shifted4,
+    ];
+    for (case, n) in [
+        ("clock2", 2),
+        ("clock4", 4),
+        ("clock8", 8),
+        ("mixed_inverse", 2),
+        ("quadratic", 2),
+    ] {
+        let (src, x, z, b, goal) = if case.starts_with("clock") {
+            fixture(n)
+        } else {
+            other_fixture(case)
+        };
+        let r = run(&src, &x, &z, &b, Some(0.));
+        assert!(r.global_qualified(), "{case}: {:?}", r.reason());
+        let q = r.accepted(r.accepted_len() - 1).unwrap();
+        let y = q.state().to_vec();
+        println!(
+            "SECANT_PRIMAL {}",
+            serde_json::json!({"case":case,"n":n,"terminal":y,"weights":goal,"slabs":r.slabs_len(),"error":q.physical_error_upper(),"initial":x})
+        );
+        let mut w = SecantGoalWorkspace::new();
+        let mut out = Iv { lo: 0., hi: 0. };
+        let before_work = serde_json::to_string(r.work()).unwrap();
+        let mut rows: Vec<Option<(SecantGoalWork, Counts)>> = vec![];
+        for k in plans {
+            let before = out;
+            let (v, a) = measure(|| r.secant_goal_into(&goal, k, &mut w, &mut out));
+            match v {
+                Ok(v) => {
+                    assert_eq!(a.requests(), 0);
+                    assert_eq!(a.requested_bytes, 0);
+                    assert_eq!(out.as_pair(), v.signed_error);
+                    let neg = goal.iter().map(|x| -x).collect::<Vec<_>>();
+                    let negwork = r.secant_goal_into(&neg, k, &mut w, &mut out).unwrap();
+                    println!(
+                        "SECANT_SIGN {}",
+                        serde_json::json!({"case":case,"candidate":k,"error":negwork.signed_error})
+                    );
+                    rows.push(Some((v, a)));
+                }
+                Err(e) => {
+                    assert_eq!(out, before);
+                    assert!(
+                        case == "mixed_inverse"
+                            && matches!(
+                                k,
+                                SecantGoalRoute::Diagonal4
+                                    | SecantGoalRoute::Scaled4
+                                    | SecantGoalRoute::Scaled16
+                            ),
+                        "{case} {k:?} {e}"
+                    );
+                    println!(
+                        "SECANT_GOAL {}",
+                        serde_json::json!({"case":case,"candidate":k,"qualified":false,"reason":e.to_string(),"allocation":a})
+                    );
+                    rows.push(None);
+                }
+            }
+        }
+        let mut timing: [Vec<u128>; 7] = std::array::from_fn(|_| vec![]);
+        for rep in 0..5 {
+            for j in 0..7 {
+                let i = (rep + j) % 7;
+                if rows[i].is_none() {
+                    continue;
+                }
+                let s = std::time::Instant::now();
+                black_box(
+                    r.secant_goal_into(&goal, plans[i], &mut w, &mut out)
+                        .unwrap(),
+                );
+                timing[i].push(s.elapsed().as_nanos());
+            }
+        }
+        for (i, v) in rows.into_iter().enumerate() {
+            if let Some((work, a)) = v {
+                timing[i].sort_unstable();
+                println!(
+                    "SECANT_GOAL {}",
+                    serde_json::json!({"case":case,"candidate":plans[i],"qualified":work.width_upper<=1e-6,"allocation":a,"work":work,"median_ns":timing[i][2],"samples_ns":timing[i]})
+                );
+            }
+        }
+        let mut scratch = NonlinearAdjointWorkspace::new();
+        let mut grad = [Iv { lo: 0., hi: 0. }; 32];
+        for k in [
+            NonlinearAdjointRoute::Whole,
+            NonlinearAdjointRoute::Sub4,
+            NonlinearAdjointRoute::Contracted16,
+        ] {
+            let (v, a) =
+                measure(|| r.nonlinear_adjoint_into(&goal, k, &mut scratch, &mut grad[..n]));
+            let v = v.unwrap();
+            assert_eq!(a.requests(), 0);
+            println!(
+                "SECANT_GRADIENT {}",
+                serde_json::json!({"case":case,"candidate":k,"qualified":v.width_upper<=0.1,"allocation":a,"work":v,"enclosure":grad[..n].iter().map(|v|v.as_pair()).collect::<Vec<_>>()})
+            );
+        }
+        let o = Options {
+            rtol: 1e-10,
+            atol: Atol::Scalar(1e-12),
+            dense_output: false,
+            ..Options::default()
+        };
+        for k in [
+            vigilode::DopriStageKernel::Rows,
+            vigilode::DopriStageKernel::Block32,
+        ] {
+            let (v, a) = measure(|| r.nonlinear_adjoint_dopri(&goal, &o, k));
+            let v = v.unwrap();
+            println!(
+                "SECANT_NUMERIC {}",
+                serde_json::json!({"case":case,"candidate":k,"proposal":v,"allocation":a})
+            );
+        }
+        assert_eq!(serde_json::to_string(r.work()).unwrap(), before_work);
+        for i in 0..r.accepted_len() {
+            let q = r.accepted(i).unwrap();
+            println!(
+                "SECANT_QUERY {}",
+                serde_json::json!({"case":case,"t":q.t(),"state":q.state(),"error":q.physical_error_upper()})
+            );
+        }
+    }
+    let (src, x, z, b, c) = fixture(2);
+    let r = run(&src, &x, &z, &b, Some(1e-12));
+    let mut w = SecantGoalWorkspace::new();
+    let mut out = Iv { lo: -7., hi: 7. };
+    for k in plans {
+        assert!(r.secant_goal_into(&c, k, &mut w, &mut out).is_err());
+        assert_eq!(out.as_pair(), [-7., 7.]);
+    }
+    println!(
+        "SECANT_EDGE {}",
+        serde_json::json!({"nonzero_incoming_refused":true,"unchanged_output":true})
+    );
+}
