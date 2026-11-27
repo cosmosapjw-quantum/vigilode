@@ -1,0 +1,326 @@
+{
+  "ivp": [
+    {
+      "allocation": {
+        "alloc": 10,
+        "dealloc": 14,
+        "dealloc_bytes": 3541,
+        "realloc": 2,
+        "requested_bytes": 3829,
+        "zeroed": 5
+      },
+      "candidate": "Scatter",
+      "case": "sphere_4x8",
+      "error_upper": 7.426836923229985e-13,
+      "median_ns": 13685,
+      "qualified": true,
+      "run": {
+        "accepted": 4,
+        "jvp": 0,
+        "linear_iterations": 0,
+        "linear_solves": 0,
+        "rejected": 0,
+        "rhs": 25
+      },
+      "samples_ns": [
+        10419,
+        10689,
+        11200,
+        13685,
+        17362,
+        17723,
+        18394
+      ]
+    },
+    {
+      "allocation": {
+        "alloc": 10,
+        "dealloc": 14,
+        "dealloc_bytes": 3541,
+        "realloc": 2,
+        "requested_bytes": 3829,
+        "zeroed": 5
+      },
+      "candidate": "Gather",
+      "case": "sphere_4x8",
+      "error_upper": 7.426836923229985e-13,
+      "median_ns": 5440,
+      "qualified": true,
+      "run": {
+        "accepted": 4,
+        "jvp": 0,
+        "linear_iterations": 0,
+        "linear_solves": 0,
+        "rejected": 0,
+        "rhs": 25
+      },
+      "samples_ns": [
+        5099,
+        5289,
+        5320,
+        5440,
+        5591,
+        8545,
+        8936
+      ]
+    },
+    {
+      "allocation": {
+        "alloc": 10,
+        "dealloc": 14,
+        "dealloc_bytes": 13525,
+        "realloc": 2,
+        "requested_bytes": 14581,
+        "zeroed": 5
+      },
+      "candidate": "Scatter",
+      "case": "sphere_8x16",
+      "error_upper": 2.047489955359083e-11,
+      "median_ns": 140928,
+      "qualified": true,
+      "run": {
+        "accepted": 16,
+        "jvp": 0,
+        "linear_iterations": 0,
+        "linear_solves": 0,
+        "rejected": 0,
+        "rhs": 97
+      },
+      "samples_ns": [
+        140566,
+        140818,
+        140927,
+        140928,
+        141097,
+        148451,
+        148902
+      ]
+    },
+    {
+      "allocation": {
+        "alloc": 10,
+        "dealloc": 14,
+        "dealloc_bytes": 13525,
+        "realloc": 2,
+        "requested_bytes": 14581,
+        "zeroed": 5
+      },
+      "candidate": "Gather",
+      "case": "sphere_8x16",
+      "error_upper": 2.04748440424396e-11,
+      "median_ns": 54489,
+      "qualified": true,
+      "run": {
+        "accepted": 16,
+        "jvp": 0,
+        "linear_iterations": 0,
+        "linear_solves": 0,
+        "rejected": 0,
+        "rhs": 97
+      },
+      "samples_ns": [
+        53979,
+        54430,
+        54450,
+        54489,
+        54520,
+        54560,
+        55421
+      ]
+    }
+  ],
+  "kernel": [
+    {
+      "allocation": {
+        "alloc": 0,
+        "dealloc": 0,
+        "dealloc_bytes": 0,
+        "realloc": 0,
+        "requested_bytes": 0,
+        "zeroed": 0
+      },
+      "candidate": "Scatter",
+      "case": "sphere_4x8",
+      "error_upper": 8.326672684688674e-17,
+      "median_ns": 261,
+      "qualified": true,
+      "samples_ns": [
+        258,
+        258,
+        260,
+        261,
+        263,
+        267,
+        277
+      ]
+    },
+    {
+      "allocation": {
+        "alloc": 0,
+        "dealloc": 0,
+        "dealloc_bytes": 0,
+        "realloc": 0,
+        "requested_bytes": 0,
+        "zeroed": 0
+      },
+      "candidate": "Gather",
+      "case": "sphere_4x8",
+      "error_upper": 5.551115123125783e-17,
+      "median_ns": 44,
+      "qualified": true,
+      "samples_ns": [
+        43,
+        43,
+        43,
+        44,
+        44,
+        44,
+        44
+      ]
+    },
+    {
+      "allocation": {
+        "alloc": 0,
+        "dealloc": 0,
+        "dealloc_bytes": 0,
+        "realloc": 0,
+        "requested_bytes": 0,
+        "zeroed": 0
+      },
+      "candidate": "Scatter",
+      "case": "sphere_8x16",
+      "error_upper": 8.881784197001252e-16,
+      "median_ns": 1068,
+      "qualified": true,
+      "samples_ns": [
+        1053,
+        1053,
+        1065,
+        1068,
+        1069,
+        1070,
+        1075
+      ]
+    },
+    {
+      "allocation": {
+        "alloc": 0,
+        "dealloc": 0,
+        "dealloc_bytes": 0,
+        "realloc": 0,
+        "requested_bytes": 0,
+        "zeroed": 0
+      },
+      "candidate": "Gather",
+      "case": "sphere_8x16",
+      "error_upper": 8.881784197001252e-16,
+      "median_ns": 158,
+      "qualified": true,
+      "samples_ns": [
+        154,
+        154,
+        154,
+        158,
+        158,
+        158,
+        169
+      ]
+    },
+    {
+      "allocation": {
+        "alloc": 0,
+        "dealloc": 0,
+        "dealloc_bytes": 0,
+        "realloc": 0,
+        "requested_bytes": 0,
+        "zeroed": 0
+      },
+      "candidate": "Scatter",
+      "case": "sphere_16x32",
+      "error_upper": 1.4210854715202004e-14,
+      "median_ns": 4310,
+      "qualified": true,
+      "samples_ns": [
+        4290,
+        4301,
+        4304,
+        4310,
+        4310,
+        4345,
+        4347
+      ]
+    },
+    {
+      "allocation": {
+        "alloc": 0,
+        "dealloc": 0,
+        "dealloc_bytes": 0,
+        "realloc": 0,
+        "requested_bytes": 0,
+        "zeroed": 0
+      },
+      "candidate": "Gather",
+      "case": "sphere_16x32",
+      "error_upper": 1.4210854715202004e-14,
+      "median_ns": 597,
+      "qualified": true,
+      "samples_ns": [
+        586,
+        586,
+        590,
+        597,
+        601,
+        605,
+        724
+      ]
+    },
+    {
+      "allocation": {
+        "alloc": 0,
+        "dealloc": 0,
+        "dealloc_bytes": 0,
+        "realloc": 0,
+        "requested_bytes": 0,
+        "zeroed": 0
+      },
+      "candidate": "Scatter",
+      "case": "sphere_32x64",
+      "error_upper": 2.2737367544323206e-13,
+      "median_ns": 17213,
+      "qualified": true,
+      "samples_ns": [
+        17089,
+        17147,
+        17186,
+        17213,
+        17315,
+        17332,
+        17421
+      ]
+    },
+    {
+      "allocation": {
+        "alloc": 0,
+        "dealloc": 0,
+        "dealloc_bytes": 0,
+        "realloc": 0,
+        "requested_bytes": 0,
+        "zeroed": 0
+      },
+      "candidate": "Gather",
+      "case": "sphere_32x64",
+      "error_upper": 2.2737367544323206e-13,
+      "median_ns": 2240,
+      "qualified": true,
+      "samples_ns": [
+        2217,
+        2234,
+        2238,
+        2240,
+        2244,
+        2247,
+        2269
+      ]
+    }
+  ]
+}

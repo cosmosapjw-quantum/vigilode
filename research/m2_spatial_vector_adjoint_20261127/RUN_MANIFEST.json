@@ -1,0 +1,311 @@
+{
+  "base_commit": "7974e331ca7c2d09ddeced01575fd046356ffbe2",
+  "checks": [
+    "RED101 expected and GREEN0",
+    "72 directed certs valid,64 width qualified,72 warm zeroheap",
+    "24 primal and72 adjoint native endpoints,72 signed goal errors",
+    "6 dense comparator diagnostics",
+    "8 gather callback noheap and4 actual gather IVP",
+    "38280 exact Fraction assertions",
+    "271 logical prior spatial records,103 exact,168 timing only",
+    "4 final focused pass;41 regression pass4 ignored",
+    "180 measured designs99 Pareto covered",
+    "rustfmt and diff clean"
+  ],
+  "claim_id": "M2-03d.5b.20",
+  "cleanup": {
+    "compressed_bytes": 235448,
+    "duplicate_historical_source_bytes_removed": 12574,
+    "raw_bytes_removed": 1597038
+  },
+  "commands_file": "REPRODUCE.md",
+  "environment": {
+    "hardware": "AMD Ryzen9 5900X x86_64 nonexclusive remote host",
+    "software": [
+      {
+        "name": "rustc",
+        "version": "rustc 1.94.1 (e408947bf 2026-03-25)"
+      },
+      {
+        "name": "cargo",
+        "version": "cargo 1.94.1 (29ea6fb6a 2026-03-24)"
+      },
+      {
+        "name": "MathHarness General",
+        "version": "3.1.0 verified154 files"
+      }
+    ],
+    "timing_affinity": "cpu=0"
+  },
+  "exit_codes": {
+    "final_portfolio": 0,
+    "gather_compile_failure": 101,
+    "gather_selection": 0,
+    "green": 0,
+    "portfolio": 0,
+    "red": 101,
+    "regression": 0,
+    "selection": 0,
+    "verify": 0,
+    "verify_gather": 0
+  },
+  "final_executed_commit": "449e508c21460eb248c23ebad056d86fc5c7fe04",
+  "initial_executed_commit": "8c7820a7ba36d86a8f4458428220041d1d5ee103",
+  "input_artifacts": [
+    {
+      "current_sha256": "fcaa2a27c44a8abb3eea6a144636d6a7da10fdd908893188701c7709bdafcdad",
+      "path": "crates/vigilode/src/spatial.rs",
+      "sha256": "fcaa2a27c44a8abb3eea6a144636d6a7da10fdd908893188701c7709bdafcdad",
+      "source_commit": "8c7820a7ba36d86a8f4458428220041d1d5ee103",
+      "verified_git_blob_sha256": "fcaa2a27c44a8abb3eea6a144636d6a7da10fdd908893188701c7709bdafcdad"
+    },
+    {
+      "current_sha256": "a1e3092f0f42af67f983517e27f2ef12d2e78a915750f274b76d4bfac4a51bc6",
+      "path": "crates/vigilode/src/spatial/adjoint.rs",
+      "sha256": "56ac679a5872c7b2aa5dea78a2323b42b7d48092822c9de282f368041f676519",
+      "source_commit": "8c7820a7ba36d86a8f4458428220041d1d5ee103",
+      "verified_git_blob_sha256": "56ac679a5872c7b2aa5dea78a2323b42b7d48092822c9de282f368041f676519"
+    },
+    {
+      "current_sha256": "c0fe46b1b1587e887ba3cd6e645d11714368aa0ce41c7a0855130b3dc9e83b80",
+      "path": "crates/vigilode/tests/spatial_adjoint_contracts.rs",
+      "sha256": "137ef2d67e30059c0c4d6d91ca33ca7f82807369a1d47eb1ac9dcc94a0338e02",
+      "source_commit": "8c7820a7ba36d86a8f4458428220041d1d5ee103",
+      "verified_git_blob_sha256": "137ef2d67e30059c0c4d6d91ca33ca7f82807369a1d47eb1ac9dcc94a0338e02"
+    },
+    {
+      "current_sha256": "44b6a2c7dbd9846baa3da6d4ce571ce7221f9b251ed6227c38659e4f1db86ace",
+      "path": "research/m2_spatial_vector_adjoint_20261127/PREREGISTRATION.md",
+      "sha256": "44b6a2c7dbd9846baa3da6d4ce571ce7221f9b251ed6227c38659e4f1db86ace",
+      "source_commit": "8c7820a7ba36d86a8f4458428220041d1d5ee103",
+      "verified_git_blob_sha256": "44b6a2c7dbd9846baa3da6d4ce571ce7221f9b251ed6227c38659e4f1db86ace"
+    },
+    {
+      "current_sha256": "88c285a7b31a21a88e4bd8bf925c78cc41aea1331832321671c5f0db996f691a",
+      "path": "research/m2_spatial_vector_adjoint_20261127/guide.py",
+      "sha256": "88c285a7b31a21a88e4bd8bf925c78cc41aea1331832321671c5f0db996f691a",
+      "source_commit": "7fc78b38bfba66a07a7789bdcd60a6065ecd07df",
+      "verified_git_blob_sha256": "88c285a7b31a21a88e4bd8bf925c78cc41aea1331832321671c5f0db996f691a"
+    },
+    {
+      "current_sha256": "7f1f4c6ce3a92d5838fb52791047dc7470492bfa84effcf4ed082298e282198c",
+      "path": "research/m2_spatial_vector_adjoint_20261127/CANDIDATES.json",
+      "sha256": "7f1f4c6ce3a92d5838fb52791047dc7470492bfa84effcf4ed082298e282198c",
+      "source_commit": "7fc78b38bfba66a07a7789bdcd60a6065ecd07df",
+      "verified_git_blob_sha256": "7f1f4c6ce3a92d5838fb52791047dc7470492bfa84effcf4ed082298e282198c"
+    },
+    {
+      "current_sha256": "645c8a0af94d398f0905b9dc7975ff4f176850f5cc61ae07d47778fc09e2038a",
+      "path": "research/m2_spatial_vector_adjoint_20261127/HARNESS_ROUTES.json",
+      "sha256": "645c8a0af94d398f0905b9dc7975ff4f176850f5cc61ae07d47778fc09e2038a",
+      "source_commit": "7fc78b38bfba66a07a7789bdcd60a6065ecd07df",
+      "verified_git_blob_sha256": "645c8a0af94d398f0905b9dc7975ff4f176850f5cc61ae07d47778fc09e2038a"
+    },
+    {
+      "current_sha256": "d993926cb0eb07b951b38117297b81b99f1519605981777a234cbd769685729e",
+      "path": "research/m2_spatial_vector_adjoint_20261127/LITERATURE.md",
+      "sha256": "d993926cb0eb07b951b38117297b81b99f1519605981777a234cbd769685729e",
+      "source_commit": "7fc78b38bfba66a07a7789bdcd60a6065ecd07df",
+      "verified_git_blob_sha256": "d993926cb0eb07b951b38117297b81b99f1519605981777a234cbd769685729e"
+    },
+    {
+      "current_sha256": "a1e3092f0f42af67f983517e27f2ef12d2e78a915750f274b76d4bfac4a51bc6",
+      "path": "crates/vigilode/src/spatial/adjoint.rs",
+      "sha256": "a1e3092f0f42af67f983517e27f2ef12d2e78a915750f274b76d4bfac4a51bc6",
+      "source_commit": "994fc2ea547d6f7feb4f11f378a7aefddbb177a4",
+      "verified_git_blob_sha256": "a1e3092f0f42af67f983517e27f2ef12d2e78a915750f274b76d4bfac4a51bc6"
+    },
+    {
+      "current_sha256": "c0fe46b1b1587e887ba3cd6e645d11714368aa0ce41c7a0855130b3dc9e83b80",
+      "path": "crates/vigilode/tests/spatial_adjoint_contracts.rs",
+      "sha256": "9a62d297f7f340f2cb5c5848f41f9418429a798e4dd335e4eb0d4856b9146eee",
+      "source_commit": "994fc2ea547d6f7feb4f11f378a7aefddbb177a4",
+      "verified_git_blob_sha256": "9a62d297f7f340f2cb5c5848f41f9418429a798e4dd335e4eb0d4856b9146eee"
+    },
+    {
+      "current_sha256": "bab69839643421fa6fd7959c523b2aad130a0dd877b8ef699d9c46cc7e11c5b9",
+      "path": "research/m2_spatial_vector_adjoint_20261127/GATHER_CONTRACT.md",
+      "sha256": "bab69839643421fa6fd7959c523b2aad130a0dd877b8ef699d9c46cc7e11c5b9",
+      "source_commit": "994fc2ea547d6f7feb4f11f378a7aefddbb177a4",
+      "verified_git_blob_sha256": "bab69839643421fa6fd7959c523b2aad130a0dd877b8ef699d9c46cc7e11c5b9"
+    },
+    {
+      "current_sha256": "78b6df58609457036e0363958f793bc62048f383f53f0b2d7934326b3878a0e0",
+      "path": "research/m2_spatial_vector_adjoint_20261127/gather_guide.py",
+      "sha256": "78b6df58609457036e0363958f793bc62048f383f53f0b2d7934326b3878a0e0",
+      "source_commit": "7d5c86c18808dfae2502978c616332e590ac52c5",
+      "verified_git_blob_sha256": "78b6df58609457036e0363958f793bc62048f383f53f0b2d7934326b3878a0e0"
+    },
+    {
+      "current_sha256": "aea8ebcdfa43ac448a2e4395ae233152c771a8b79245ae84010c8ad21ad734d7",
+      "path": "research/m2_spatial_vector_adjoint_20261127/GATHER_ROUTES.json",
+      "sha256": "aea8ebcdfa43ac448a2e4395ae233152c771a8b79245ae84010c8ad21ad734d7",
+      "source_commit": "7d5c86c18808dfae2502978c616332e590ac52c5",
+      "verified_git_blob_sha256": "aea8ebcdfa43ac448a2e4395ae233152c771a8b79245ae84010c8ad21ad734d7"
+    },
+    {
+      "current_sha256": "5170d3a98f2a1a91568b74db413acd0937c6e7ae5dcacab52549738ec37a558c",
+      "path": "research/m2_spatial_vector_adjoint_20261127/GATHER_CANDIDATES.json",
+      "sha256": "5170d3a98f2a1a91568b74db413acd0937c6e7ae5dcacab52549738ec37a558c",
+      "source_commit": "7d5c86c18808dfae2502978c616332e590ac52c5",
+      "verified_git_blob_sha256": "5170d3a98f2a1a91568b74db413acd0937c6e7ae5dcacab52549738ec37a558c"
+    },
+    {
+      "current_sha256": "817361160be73ce707f3679d51d358b6f0c749e0ff0fcb3cef90427b83bcc4bb",
+      "path": "research/m2_spatial_vector_adjoint_20261127/verify.py",
+      "sha256": "817361160be73ce707f3679d51d358b6f0c749e0ff0fcb3cef90427b83bcc4bb",
+      "source_commit": "7d5c86c18808dfae2502978c616332e590ac52c5",
+      "verified_git_blob_sha256": "817361160be73ce707f3679d51d358b6f0c749e0ff0fcb3cef90427b83bcc4bb"
+    },
+    {
+      "current_sha256": "3dab1b8145e62b9ef2e3f7458f8f09cb968bb4926a596b0c3c6ee53f1e29060d",
+      "path": "research/m2_spatial_vector_adjoint_20261127/verify_gather.py",
+      "sha256": "3dab1b8145e62b9ef2e3f7458f8f09cb968bb4926a596b0c3c6ee53f1e29060d",
+      "source_commit": "7d5c86c18808dfae2502978c616332e590ac52c5",
+      "verified_git_blob_sha256": "3dab1b8145e62b9ef2e3f7458f8f09cb968bb4926a596b0c3c6ee53f1e29060d"
+    },
+    {
+      "current_sha256": "a1e3092f0f42af67f983517e27f2ef12d2e78a915750f274b76d4bfac4a51bc6",
+      "path": "crates/vigilode/src/spatial/adjoint.rs",
+      "sha256": "a1e3092f0f42af67f983517e27f2ef12d2e78a915750f274b76d4bfac4a51bc6",
+      "source_commit": "449e508c21460eb248c23ebad056d86fc5c7fe04",
+      "verified_git_blob_sha256": "a1e3092f0f42af67f983517e27f2ef12d2e78a915750f274b76d4bfac4a51bc6"
+    },
+    {
+      "current_sha256": "fcaa2a27c44a8abb3eea6a144636d6a7da10fdd908893188701c7709bdafcdad",
+      "path": "crates/vigilode/src/spatial.rs",
+      "sha256": "fcaa2a27c44a8abb3eea6a144636d6a7da10fdd908893188701c7709bdafcdad",
+      "source_commit": "449e508c21460eb248c23ebad056d86fc5c7fe04",
+      "verified_git_blob_sha256": "fcaa2a27c44a8abb3eea6a144636d6a7da10fdd908893188701c7709bdafcdad"
+    },
+    {
+      "current_sha256": "c0fe46b1b1587e887ba3cd6e645d11714368aa0ce41c7a0855130b3dc9e83b80",
+      "path": "crates/vigilode/tests/spatial_adjoint_contracts.rs",
+      "sha256": "c0fe46b1b1587e887ba3cd6e645d11714368aa0ce41c7a0855130b3dc9e83b80",
+      "source_commit": "449e508c21460eb248c23ebad056d86fc5c7fe04",
+      "verified_git_blob_sha256": "c0fe46b1b1587e887ba3cd6e645d11714368aa0ce41c7a0855130b3dc9e83b80"
+    },
+    {
+      "current_sha256": "44b6a2c7dbd9846baa3da6d4ce571ce7221f9b251ed6227c38659e4f1db86ace",
+      "path": "research/m2_spatial_vector_adjoint_20261127/PREREGISTRATION.md",
+      "sha256": "44b6a2c7dbd9846baa3da6d4ce571ce7221f9b251ed6227c38659e4f1db86ace",
+      "source_commit": "449e508c21460eb248c23ebad056d86fc5c7fe04",
+      "verified_git_blob_sha256": "44b6a2c7dbd9846baa3da6d4ce571ce7221f9b251ed6227c38659e4f1db86ace"
+    },
+    {
+      "current_sha256": "bab69839643421fa6fd7959c523b2aad130a0dd877b8ef699d9c46cc7e11c5b9",
+      "path": "research/m2_spatial_vector_adjoint_20261127/GATHER_CONTRACT.md",
+      "sha256": "bab69839643421fa6fd7959c523b2aad130a0dd877b8ef699d9c46cc7e11c5b9",
+      "source_commit": "449e508c21460eb248c23ebad056d86fc5c7fe04",
+      "verified_git_blob_sha256": "bab69839643421fa6fd7959c523b2aad130a0dd877b8ef699d9c46cc7e11c5b9"
+    }
+  ],
+  "limitations": [
+    "semidiscrete linear diffusion only; no continuum or sphere photon error",
+    "no full driver zeroheap",
+    "general nonlinear vector secant deferred",
+    "no stiff or large full IVP timing",
+    "no full workspace or independent subagent review",
+    "shared host timing",
+    "manifest schema validator not run"
+  ],
+  "logs": [
+    {
+      "archive": "final_portfolio.log.gz",
+      "archive_bytes": 147494,
+      "archive_sha256": "330e47e60ee2ecfaf9f3920633fbdd84123a5f1655df08a6330a923d96417c76",
+      "raw_bytes": 1014222,
+      "raw_name": "final_portfolio.log",
+      "raw_sha256": "ca6af5e0abcf1862466994c3936e77a5a5c2ac55c47dbd8eeb72f02b3c4e723d"
+    },
+    {
+      "archive": "gather_compile_failure.log.gz",
+      "archive_bytes": 549,
+      "archive_sha256": "394e3f0999f0b8a0e8da40e0edf494dabd1ac640614005efef9fcbd6605c43a0",
+      "raw_bytes": 1222,
+      "raw_name": "gather_compile_failure.log",
+      "raw_sha256": "f3d49e387a385e8cd165d1eaa09a1c42cbb030ec60a00843be5133255d481acc"
+    },
+    {
+      "archive": "gather_harness.log.gz",
+      "archive_bytes": 63,
+      "archive_sha256": "c2f4bdc1b5ecb76e663808a6b81424120add8d0b4e622448b0b0bdc2338c6a8b",
+      "raw_bytes": 47,
+      "raw_name": "gather_harness.log",
+      "raw_sha256": "2cf4535bceac96ceee4bcee56d60b0948cef01c8c156003f72c70a692d6f88a2"
+    },
+    {
+      "archive": "gather_selection.log.gz",
+      "archive_bytes": 216,
+      "archive_sha256": "8e96db16cbb1ef9cb21db371ae01686486d233bedfcc926a5182167a43afd95d",
+      "raw_bytes": 551,
+      "raw_name": "gather_selection.log",
+      "raw_sha256": "b210f7791a3ea40dee75615441bac87ae5ae6fc392eb46dab7f33a4227dc8474"
+    },
+    {
+      "archive": "green.log.gz",
+      "archive_bytes": 1191,
+      "archive_sha256": "c3c52921aad5b4bffef73e12fd0f3eacb91a2ce4e974e36d255afd17a12dabf1",
+      "raw_bytes": 4326,
+      "raw_name": "green.log",
+      "raw_sha256": "fe96561f8a9c07310e276fda2266adc5781f23bbb2b7c4af5756605d9cb9ace6"
+    },
+    {
+      "archive": "harness.log.gz",
+      "archive_bytes": 76,
+      "archive_sha256": "3f1a9be2a8c212177ce4d525985a85bf26026af5e009c1c4dfbd142c6996a9af",
+      "raw_bytes": 67,
+      "raw_name": "harness.log",
+      "raw_sha256": "0667301025613f32c4d70cbf5c87273bd19ca57c74396eecba31140c5b55a145"
+    },
+    {
+      "archive": "portfolio.log.gz",
+      "archive_bytes": 78724,
+      "archive_sha256": "0c11c2bca0a7d4e5ca8a5556a5cbef4552fbd31c783a8128e781fd803aab0258",
+      "raw_bytes": 547245,
+      "raw_name": "portfolio.log",
+      "raw_sha256": "cc85336bad7655ab0a912f173f68ba716649d91c782abd44f160f59ee9fbd5f2"
+    },
+    {
+      "archive": "red.log.gz",
+      "archive_bytes": 1339,
+      "archive_sha256": "7e734128df87af2d15d08c040f5674d0b7e48e1b05202bc42e204a7156ab16f2",
+      "raw_bytes": 4628,
+      "raw_name": "red.log",
+      "raw_sha256": "aa8a42312fd48eb09884c122731cc3cd8a8b2c0b8dab142aa1a26731b59a00f5"
+    },
+    {
+      "archive": "regression.log.gz",
+      "archive_bytes": 4721,
+      "archive_sha256": "3b40fd3369b276953290b1073a66a7a3295243b97dae1be609a7958372379597",
+      "raw_bytes": 19791,
+      "raw_name": "regression.log",
+      "raw_sha256": "89228fc3204f6343064e29e47ad8bd1bc29da1303f430c909cd4306a43f1370c"
+    },
+    {
+      "archive": "selection.log.gz",
+      "archive_bytes": 608,
+      "archive_sha256": "9127682adc73743e916dbcb98d3584bdae5f72c5be541574963a39cb61d6869d",
+      "raw_bytes": 4002,
+      "raw_name": "selection.log",
+      "raw_sha256": "bb37d661df37ac3d1de93dc6e1ce0789e97aafdaa42799a62d4a5ca109b1d6ec"
+    },
+    {
+      "archive": "verify.log.gz",
+      "archive_bytes": 362,
+      "archive_sha256": "d64942f52d0b842a027ac0cd43b4cecd6ab5ed1cfca8b63d09138d08afd4901c",
+      "raw_bytes": 842,
+      "raw_name": "verify.log",
+      "raw_sha256": "bde2bb3141c1f5c65adf86654ca284d0eeea1bd7f360ab506639b67fbc82a225"
+    },
+    {
+      "archive": "verify_gather.log.gz",
+      "archive_bytes": 105,
+      "archive_sha256": "c776331c91c2a5f92d5d5c566789907f5672b3a1b43136e2c773d727df99688e",
+      "raw_bytes": 95,
+      "raw_name": "verify_gather.log",
+      "raw_sha256": "0fca93e693fe3011dddcc863de41aabfc92a7431cad93148cff375f2f9173814"
+    }
+  ],
+  "schema_version": 2
+}
