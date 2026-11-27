@@ -1,0 +1,62 @@
+{
+  "assertions": {
+    "analytic_ivp_corner": 576,
+    "nonlinear_ivp_queries": 12,
+    "physical_query_bound": 84,
+    "projection_root_and_error": 408,
+    "raw_mass_residual": 12,
+    "source_residual": 84,
+    "state_identity": 84
+  },
+  "chain": {
+    "committed": 1,
+    "stop": "Horizon",
+    "terminal_slabs": 46,
+    "transitions": 1
+  },
+  "edges": [
+    {
+      "case": "stable",
+      "raw_into_zero": 12,
+      "transactional": true
+    },
+    {
+      "case": "stiff",
+      "raw_into_zero": 12,
+      "transactional": true
+    },
+    {
+      "case": "nonlinear",
+      "raw_into_zero": 12,
+      "transactional": true
+    },
+    {
+      "case": "vector4",
+      "raw_into_zero": 12,
+      "transactional": true
+    },
+    {
+      "case": "vector8",
+      "raw_into_zero": 12,
+      "transactional": true
+    },
+    {
+      "case": "mass",
+      "raw_into_zero": 12,
+      "transactional": true
+    },
+    {
+      "case": "conserved",
+      "raw_into_zero": 12,
+      "transactional": true
+    }
+  ],
+  "epoch_rows": 40,
+  "exact_query_groups": 84,
+  "point_rows": 420,
+  "scope": "Exact Fraction graph/residual and interval-polynomial query radius checks; analytic IVP corners stable, stiff, vector and mass; quartic nonlinear implicit flow via rational log bounds and monotonic bisection. Conserved chain uses source graph and original retained L1 certificate, not independent Robertson IVP.",
+  "unresolved": {
+    "physical_error": null,
+    "qualified": true
+  }
+}

@@ -1,0 +1,12 @@
+# Reproduce
+Locked offline release Rust/cargo on the authorized remote x86_64 host. Exact RED_SHA.txt, GREEN_SHA.txt, EXEC_SHA.txt, GUIDE_SHA.txt and failure SHA/input files bind revision and measured inputs. Tests use the calling-thread counting allocator.
+```sh
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts query_workspace_actual_query_noalloc -- --exact --nocapture --test-threads=1
+taskset -c 0 cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts integrated_query_workspace_portfolio -- --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts allocator_positive_and_zero_control -- --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts component_replay -- --ignored --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts guard_affine_graph_native_portfolio -- --ignored --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_resource_baseline_contracts guard_affine_graph_vector_portfolio -- --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_general_guard_contracts --test dae_multi_guard_contracts --test dae_pending_guard_contracts --test dae_reduced_callback_contracts --test dae_interval_scratch_contracts --test dae_scalar_affine_contracts --test dae_conserved_chain_contracts -- --nocapture --test-threads=1
+```
+guide.py generate verifies original MathHarness ZIP and manifest. guide.py select/verify.py accept raw or gzip logs. Replayed numerical identity is checked inside Rust before emitting reference query records. Python independently checks exact source graph and original physical query inequalities, analytic IVP where available, including quartic implicit time equation. Conserved fixture after one committed reset uses original L1 certificate, not independent Robertson IVP. Timing scope is a pinned caller, mixed-order sequence, warm versus fresh owner; not entire epoch speed. Failure logs are kept separately.
