@@ -8573,3 +8573,436 @@ fn native_stage_goal_portfolio() {
         serde_json::json!({"nonlinear":true,"clock":true,"wfiltered":true,"nonfinite":true})
     );
 }
+
+fn nonlinear_adjoint_fixture(
+    case: &str,
+) -> (
+    DaeSource,
+    Vec<f64>,
+    Vec<f64>,
+    Vec<[f64; 2]>,
+    EvolutionRoute,
+    Vec<f64>,
+) {
+    let (src, x, z, b, route) = match case {
+        "quadratic" => slab_campaign_fixture("quadratic_flow"),
+        "quartic" => slab_campaign_fixture("nonlinear"),
+        "affine" => slab_campaign_fixture("stiff"),
+        "logistic" => {
+            let src = DaeSource::new(
+                vec![p(vec![tr(
+                    -1.,
+                    vec![F::component(1, 0.), F::component(1, 0.)],
+                )])],
+                vec![p(vec![
+                    tr(1., vec![F::component(1, 0.)]),
+                    tr(-1., vec![F::component(0, 0.)]),
+                ])],
+            )
+            .unwrap();
+            (
+                src,
+                vec![0.25],
+                vec![0.25],
+                vec![[-1., 1.]],
+                EvolutionRoute::WorkspaceQuery5 {
+                    projection: WorkspaceProjection::Affine,
+                    certificate: de::SlabWorkspaceRoute::Refined,
+                    storage: CertificateStorage::Local,
+                    query: QueryWorkspaceRoute::StreamPairs,
+                },
+            )
+        }
+        "coupled" => {
+            let src = DaeSource::new(
+                vec![
+                    p(vec![tr(0.125, vec![F::component(2, 0.)])]),
+                    p(vec![tr(1., vec![F::component(0, 0.)])]),
+                ],
+                vec![
+                    p(vec![
+                        tr(1., vec![F::component(2, 0.), F::component(2, 0.)]),
+                        tr(-1., vec![F::component(0, 0.)]),
+                        tr(-0.25, vec![]),
+                    ]),
+                    p(vec![
+                        tr(1., vec![F::component(3, 0.)]),
+                        tr(-1., vec![F::component(1, 0.)]),
+                    ]),
+                ],
+            )
+            .unwrap();
+            (
+                src,
+                vec![0., 0.0625],
+                vec![0.5, 0.0625],
+                vec![[0.4375, 0.625], [-0.25, 0.5]],
+                EvolutionRoute::WorkspaceQuery5 {
+                    projection: WorkspaceProjection::PivotedVector,
+                    certificate: de::SlabWorkspaceRoute::Refined,
+                    storage: CertificateStorage::Local,
+                    query: QueryWorkspaceRoute::StreamPairs,
+                },
+            )
+        }
+        _ => panic!("adjoint fixture"),
+    };
+    let w = if case == "coupled" {
+        vec![0., 1., 1., 0.]
+    } else {
+        vec![0., 1.]
+    };
+    (src, x, z, b, route, w)
+}
+#[test]
+fn nonlinear_schur_adjoint_actual_portfolio() {
+    warm();
+    use vigilode::DopriStageKernel as K;
+    let mut o = opts();
+    o.dense_output = false;
+    o.rtol = 1e-10;
+    o.atol = Atol::Scalar(1e-12);
+    let epoch = EvolutionEpoch {
+        start: 0.,
+        end: 0.125,
+        incoming_x_error: Some(0.),
+    };
+    for case in ["quadratic", "quartic", "logistic", "coupled", "affine"] {
+        let (src, x, z, b, route, goal) = nonlinear_adjoint_fixture(case);
+        let (r, _) = evolve_epoch_slab_replay_planned(
+            &src,
+            &x,
+            &z,
+            &b,
+            epoch,
+            &opts(),
+            policy(),
+            route,
+            &[0.0625],
+            engine_retention(),
+            SlabReplayRoute::Flat,
+            EnginePlan::SharedFused,
+        );
+        let r = r.unwrap();
+        assert!(r.global_qualified(), "{case} {:?}", r.reason());
+        let n = src.nx();
+        let mut w = NonlinearAdjointWorkspace::new();
+        let mut v = [Iv { lo: 0., hi: 0. }; 32];
+        let work_before = serde_json::to_string(r.work()).unwrap();
+        let mut baseline = None;
+        for kernel in [K::Rows, K::Components] {
+            let (q, allocation) = measure(|| r.nonlinear_adjoint_dopri(&goal, &o, kernel));
+            let q = q.unwrap();
+            if let Some(p) = &baseline {
+                same_serialized(&q, p);
+            } else {
+                baseline = Some(q.clone());
+            }
+            println!(
+                "NL_NUMERIC {}",
+                serde_json::json!({"case":case,"candidate":kernel,"proposal":q,"allocation":allocation,"primal_slabs":r.slabs_len()})
+            );
+        }
+        let num = baseline.unwrap();
+        for candidate in [
+            NonlinearAdjointRoute::Whole,
+            NonlinearAdjointRoute::Sub4,
+            NonlinearAdjointRoute::Contracted16,
+            NonlinearAdjointRoute::ScalarExp16,
+        ] {
+            let before = v;
+            let (q, allocation) =
+                measure(|| r.nonlinear_adjoint_into(&goal, candidate, &mut w, &mut v[..n]));
+            match q {
+                Ok(work) => {
+                    assert_eq!(allocation.requests(), 0);
+                    assert_eq!(allocation.requested_bytes, 0);
+                    let err = v[..n]
+                        .iter()
+                        .zip(&num.gradient)
+                        .map(|(a, &b)| a.sub(Iv::point(b).unwrap()).unwrap().mag())
+                        .fold(0_f64, f64::max);
+                    let mut timing = vec![];
+                    for _ in 0..5 {
+                        let s = std::time::Instant::now();
+                        black_box(
+                            r.nonlinear_adjoint_into(&goal, candidate, &mut w, &mut v[..n])
+                                .unwrap(),
+                        );
+                        timing.push(s.elapsed().as_nanos());
+                    }
+                    timing.sort_unstable();
+                    println!(
+                        "NL_ADJOINT {}",
+                        serde_json::json!({"case":case,"candidate":candidate,"qualified":work.width_upper<=0.1,"allocation":allocation,"work":work,"enclosure":v[..n].iter().map(|v|v.as_pair()).collect::<Vec<_>>(),"proposal_error_upper":err,"median_ns":timing[2],"samples_ns":timing,"primal_error":r.max_physical_error()})
+                    );
+                    assert!(work.width_upper <= 0.1, "{case} {candidate:?} {:?}", work);
+                }
+                Err(e) => {
+                    assert_eq!(v, before);
+                    println!(
+                        "NL_ADJOINT {}",
+                        serde_json::json!({"case":case,"candidate":candidate,"qualified":false,"reason":e.to_string(),"allocation":allocation})
+                    );
+                    assert!(
+                        candidate == NonlinearAdjointRoute::ScalarExp16 && n != 1,
+                        "unexpected refusal {case} {candidate:?} {e}"
+                    );
+                }
+            }
+        }
+        assert_eq!(serde_json::to_string(r.work()).unwrap(), work_before);
+        let before = v;
+        assert!(
+            r.nonlinear_adjoint_into(
+                &[f64::NAN],
+                NonlinearAdjointRoute::Whole,
+                &mut w,
+                &mut v[..n]
+            )
+            .is_err()
+        );
+        assert_eq!(v, before);
+        let (bad_run, _) = evolve_epoch_slab_replay_planned(
+            &src,
+            &x,
+            &z,
+            &b,
+            EvolutionEpoch {
+                incoming_x_error: Some(1e-12),
+                ..epoch
+            },
+            &opts(),
+            policy(),
+            route,
+            &[],
+            engine_retention(),
+            SlabReplayRoute::Flat,
+            EnginePlan::SharedFused,
+        );
+        assert!(
+            bad_run
+                .unwrap()
+                .nonlinear_adjoint_into(&goal, NonlinearAdjointRoute::Whole, &mut w, &mut v[..n])
+                .is_err()
+        );
+        assert_eq!(v, before);
+        let r = r.materialize().unwrap();
+        println!(
+            "NL_PRIMAL {}",
+            serde_json::json!({"case":case,"qualified":r.global_qualified,"queries":r.accepted.iter().chain(&r.queries).map(|q|serde_json::json!({"t":q.t,"state":q.state,"error":q.physical_error_upper})).collect::<Vec<_>>() })
+        );
+    }
+}
+#[test]
+fn dopri_stage_kernel_actual_portfolio() {
+    warm();
+    use rodas5p_core::{CoreError, WorkCounters};
+    use rodas5p_integrators::Dopri5Workspace;
+    use vigilode::DopriStageKernel as K;
+    let mut o = opts();
+    o.dense_output = false;
+    let sample = (0..=16).map(|i| i as f64 / 128.).collect::<Vec<_>>();
+    for case in [
+        "quadratic",
+        "quartic",
+        "logistic",
+        "coupled",
+        "affine",
+        "pure_linear64",
+        "pure_logistic8",
+        "pure_linear256",
+    ] {
+        let (p, x) = if case.starts_with("pure") {
+            let n = if case == "pure_linear64" {
+                64
+            } else if case == "pure_linear256" {
+                256
+            } else {
+                8
+            };
+            let nonlinear = case == "pure_logistic8";
+            (
+                vigilode::Problem::new(n, move |t, x, out| {
+                    for (v, &x) in out.iter_mut().zip(x) {
+                        *v = if nonlinear { -x * x } else { -2. * x + t };
+                    }
+                    Ok(())
+                }),
+                vec![0.25; n],
+            )
+        } else {
+            let (src, x, z, b, route, _) = nonlinear_adjoint_fixture(case);
+            let p = initialize_reduced_problem_planned(
+                &src,
+                0.,
+                &x,
+                &z,
+                &b,
+                policy(),
+                route,
+                EnginePlan::SharedFused,
+            )
+            .unwrap();
+            (p.problem, p.initial_state)
+        };
+        let rhs = |t: f64, y: &[f64], out: &mut [f64]| {
+            (p.rhs_fn())(t, y, out).map_err(|e| CoreError::InvalidInput(e.to_string()))
+        };
+        let n = x.len();
+        let mut old = None;
+        let mut old_step = None;
+        for candidate in [K::Rows, K::Components] {
+            let mut w = Dopri5Workspace::new_with_kernel(n, candidate).unwrap();
+            let mut y = vec![0.; n];
+            let mut e = vec![0.; n];
+            let mut counters = WorkCounters::default();
+            let (q, allocation) =
+                measure(|| w.step_into(&rhs, 0., &x, 0.001, &mut y, &mut e, &mut counters));
+            q.unwrap();
+            assert_eq!(allocation.requests(), 0);
+            let work = w.stage_work();
+            let bits = (
+                y.iter().map(|x| x.to_bits()).collect::<Vec<_>>(),
+                e.iter().map(|x| x.to_bits()).collect::<Vec<_>>(),
+            );
+            if let Some(b) = &old_step {
+                assert_eq!(&bits, b);
+            } else {
+                old_step = Some(bits);
+            }
+            let (r, alloc) = measure(|| {
+                vigilode::Dopri5::solve_dense_observed_with_kernel(
+                    &p,
+                    (0., 0.125),
+                    &x,
+                    &o,
+                    &sample,
+                    candidate,
+                )
+            });
+            let r = r.unwrap().ensure_success().unwrap();
+            if let Some(b) = &old {
+                same_serialized(&r, b);
+            } else {
+                old = Some(r.clone());
+            }
+            let mut timing = vec![];
+            for _ in 0..5 {
+                let s = std::time::Instant::now();
+                black_box(
+                    vigilode::Dopri5::solve_dense_observed_with_kernel(
+                        &p,
+                        (0., 0.125),
+                        &x,
+                        &o,
+                        &sample,
+                        candidate,
+                    )
+                    .unwrap(),
+                );
+                timing.push(s.elapsed().as_nanos());
+            }
+            timing.sort_unstable();
+            let reps = if case.starts_with("pure") { 2048 } else { 128 };
+            let mut step_times = vec![];
+            for _ in 0..5 {
+                let s = std::time::Instant::now();
+                for _ in 0..reps {
+                    w.step_into(&rhs, 0., &x, 0.001, &mut y, &mut e, &mut counters)
+                        .unwrap();
+                    black_box(&y);
+                }
+                step_times.push(s.elapsed().as_nanos() / reps);
+            }
+            step_times.sort_unstable();
+            println!(
+                "DOPRI_KERNEL {}",
+                serde_json::json!({"case":case,"candidate":candidate,"qualified":true,"n":n,"allocation":alloc,"fixed_allocation":allocation,"fixed_work":work,"rhs":r.stats.counters.rhs_calls,"attempts":r.stats.attempts,"steps":r.stats.accepted_steps,"rejected":r.stats.rejected_steps,"fsal":r.stats.fsal_reuses,"median_ns":timing[2],"samples_ns":timing,"fixed_median_ns":step_times[2],"fixed_samples_ns":step_times,"times":r.t,"values":r.y})
+            );
+        }
+    }
+    // Preserve tiny-step ordering, actual FSAL/retry and failure semantics.
+    let rhs = |_t: f64, _y: &[f64], o: &mut [f64]| {
+        o[0] = 1e300;
+        Ok(())
+    };
+    let mut bits = None;
+    for k in [K::Rows, K::Components] {
+        let mut w = Dopri5Workspace::new_with_kernel(1, k).unwrap();
+        let mut y = [0.];
+        let mut e = [0.];
+        w.step_into(
+            &rhs,
+            0.,
+            &[0.],
+            1e-310,
+            &mut y,
+            &mut e,
+            &mut WorkCounters::default(),
+        )
+        .unwrap();
+        let v = [y[0].to_bits(), e[0].to_bits()];
+        if let Some(a) = bits {
+            assert_eq!(a, v);
+        } else {
+            bits = Some(v);
+        }
+    }
+    println!(
+        "DOPRI_EDGE {}",
+        serde_json::json!({"tiny_step_identity":true})
+    );
+}
+#[test]
+fn native_stage_split_scratch_resources() {
+    warm();
+    for case in [
+        "stiff",
+        "mixed_rates",
+        "diag4",
+        "diag8",
+        "chain_weak",
+        "chain_stiff",
+    ] {
+        let (src, x, z, b, route) = native_stage_fixture(case);
+        let goal = native_goal(case, src.nx());
+        let epoch = EvolutionEpoch {
+            start: 0.,
+            end: 0.125,
+            incoming_x_error: Some(0.),
+        };
+        let grid = (1..64).map(|i| i as f64 / 512.).collect::<Vec<_>>();
+        for candidate in [
+            NativeStagePlan::Legacy,
+            NativeStagePlan::Triangular,
+            NativeStagePlan::Reciprocal,
+            NativeStagePlan::GoalUniform,
+            NativeStagePlan::GoalAdjoint,
+        ] {
+            let ((r, a, w), allocation, heap) = measure_live(|| {
+                evolve_epoch_slab_stage_planned(
+                    &src,
+                    &x,
+                    &z,
+                    &b,
+                    epoch,
+                    &opts(),
+                    policy(),
+                    route,
+                    &grid,
+                    engine_retention(),
+                    candidate,
+                    &goal,
+                )
+            });
+            let r = r.unwrap();
+            assert!(r.global_qualified());
+            let st = &r.driver().stats;
+            println!(
+                "SPLIT_STAGE {}",
+                serde_json::json!({"case":case,"candidate":candidate,"qualified":true,"allocation":allocation,"heap":heap,"point_calls":a.point_projection.calls.started,"factorizations":st.counters.direct_factorizations,"rhs":st.counters.rhs_calls,"linear_solves":st.counters.linear_solves,"attempts":st.attempts,"accepted":st.accepted_steps,"max_physical_error":r.max_physical_error(),"work":w})
+            );
+        }
+    }
+}
