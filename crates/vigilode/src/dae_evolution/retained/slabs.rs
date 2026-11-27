@@ -649,6 +649,10 @@ pub struct SlabReplayRun {
     inner: RetainedEvolutionRun,
 }
 impl SlabReplayRun {
+    pub fn terminal_adjoint(&self, weights: &[f64]) -> CoreResult<TerminalAdjointProblem> {
+        self.inner.run.terminal_adjoint(weights)
+    }
+
     pub fn driver(&self) -> &Solution {
         self.inner.driver()
     }

@@ -24,6 +24,8 @@ use std::sync::{Arc, Mutex};
 type Iv = Interval;
 mod retained;
 pub use retained::*;
+mod adjoint;
+pub use adjoint::*;
 fn bad(s: impl ToString) -> CoreError {
     CoreError::InvalidInput(format!("DAE client: {}", s.to_string()))
 }

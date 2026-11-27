@@ -7735,3 +7735,432 @@ fn shared_engine_actual_setup_reduces_alloc() {
         "shared callback ownership must remove real setup allocations"
     );
 }
+
+fn engine_cases() -> [&'static str; 7] {
+    [
+        "stable",
+        "stiff",
+        "nonlinear",
+        "vector4",
+        "vector8",
+        "mixed_rates",
+        "quadratic_flow",
+    ]
+}
+fn diag_adjoint_fixture(
+    n: usize,
+) -> (DaeSource, Vec<f64>, Vec<f64>, Vec<[f64; 2]>, EvolutionRoute) {
+    let mut g = vec![tr(1., vec![F::component(n, 0.)])];
+    for i in 0..n {
+        g.push(tr(-1., vec![F::component(i, 0.)]));
+    }
+    let src = DaeSource::new(
+        (0..n)
+            .map(|i| p(vec![tr(-((i + 1) as f64), vec![F::component(i, 0.)])]))
+            .collect(),
+        vec![p(g)],
+    )
+    .unwrap();
+    (
+        src,
+        vec![1. / 64.; n],
+        vec![n as f64 / 64.],
+        vec![[-2., 2.]],
+        EvolutionRoute::WorkspaceQuery5 {
+            projection: WorkspaceProjection::Reuse,
+            certificate: de::SlabWorkspaceRoute::Refined,
+            storage: CertificateStorage::Local,
+            query: QueryWorkspaceRoute::StreamPairs,
+        },
+    )
+}
+fn engine_retention() -> RetainedOutputRoute {
+    RetainedOutputRoute {
+        queries: QueryArenaLayout::Shared,
+        native: NativeRetention::BorrowedRows,
+    }
+}
+#[test]
+fn shared_engine_portfolio() {
+    warm();
+    let plans = [
+        EnginePlan::Legacy,
+        EnginePlan::Shared,
+        EnginePlan::SharedBounded,
+        EnginePlan::SharedFused,
+    ];
+    for case in engine_cases() {
+        let (src, x, z, b, route) = slab_campaign_fixture(case);
+        let epoch = EvolutionEpoch {
+            start: 0.,
+            end: 0.125,
+            incoming_x_error: Some(0.),
+        };
+        let grid = (1..64).map(|i| i as f64 / 512.).collect::<Vec<_>>();
+        let (base, audit) = evolve_epoch_slab_replay_audited(
+            &src,
+            &x,
+            &z,
+            &b,
+            epoch,
+            &opts(),
+            policy(),
+            route,
+            &grid,
+            engine_retention(),
+            SlabReplayRoute::Flat,
+        );
+        let base = base.unwrap().materialize().unwrap();
+        assert!(base.global_qualified);
+        let prepared = initialize_reduced_problem(&src, 0., &x, &z, &b, policy(), route).unwrap();
+        for plan in plans {
+            let (r, setup) = measure(|| {
+                initialize_reduced_problem_planned(&src, 0., &x, &z, &b, policy(), route, plan)
+            });
+            let r = r.unwrap();
+            same_serialized(&r.report, &prepared.report);
+            let ((r2, a), allocation, heap) = measure_live(|| {
+                evolve_epoch_slab_replay_planned(
+                    &src,
+                    &x,
+                    &z,
+                    &b,
+                    epoch,
+                    &opts(),
+                    policy(),
+                    route,
+                    &grid,
+                    engine_retention(),
+                    SlabReplayRoute::Flat,
+                    plan,
+                )
+            });
+            let r2 = r2.unwrap();
+            assert!(r2.global_qualified(), "{case} {plan:?} {:?}", r2.reason());
+            let r2 = r2.materialize().unwrap();
+            same_serialized(&r2, &base);
+            // Initial source work is separately recorded; a different
+            // bounded algorithm may change its receipt, not trajectory work.
+            let mut actual = serde_json::to_value(&a).unwrap();
+            let mut expected = serde_json::to_value(&audit).unwrap();
+            let ai = actual.as_object_mut().unwrap().remove("initialization");
+            let bi = expected.as_object_mut().unwrap().remove("initialization");
+            assert_eq!(actual, expected);
+            let mut callbacks = [Counts::default(); 3];
+            for &t in &[0., 0.0625, 0.125] {
+                let raw = base.driver().at(t).unwrap();
+                let nx = src.nx();
+                let mut f = [0.; 32];
+                let mut j = [0.; 1024];
+                let mut ft = [0.; 32];
+                let (rr, aa) = measure(|| (r.problem.rhs_fn())(t, &raw, &mut f[..nx]));
+                rr.unwrap();
+                callbacks[0].add(aa);
+                let vigilode::Jacobian::Dense(jac) = r.problem.jacobian_provider() else {
+                    panic!("dense")
+                };
+                let (rr, aa) = measure(|| jac(t, &raw, &mut j[..nx * nx]));
+                rr.unwrap();
+                callbacks[1].add(aa);
+                let (rr, aa) =
+                    measure(|| (r.problem.time_derivative_fn().unwrap())(t, &raw, &mut ft[..nx]));
+                rr.unwrap();
+                callbacks[2].add(aa);
+                let mut bf = [0.; 32];
+                let mut bj = [0.; 1024];
+                let mut bt = [0.; 32];
+                (prepared.problem.rhs_fn())(t, &raw, &mut bf[..nx]).unwrap();
+                let vigilode::Jacobian::Dense(bjac) = prepared.problem.jacobian_provider() else {
+                    panic!("dense")
+                };
+                bjac(t, &raw, &mut bj[..nx * nx]).unwrap();
+                (prepared.problem.time_derivative_fn().unwrap())(t, &raw, &mut bt[..nx]).unwrap();
+                assert_eq!(f.map(f64::to_bits), bf.map(f64::to_bits));
+                assert_eq!(j.map(f64::to_bits), bj.map(f64::to_bits));
+                assert_eq!(ft.map(f64::to_bits), bt.map(f64::to_bits));
+            }
+            assert!(callbacks.iter().all(|a| a.requests() == 0));
+            println!(
+                "ENGINE_EPOCH {}",
+                serde_json::json!({"case":case,"candidate":plan,"qualified":true,"allocation":allocation,"heap":heap,"setup":setup,"slabs":r2.slabs().len(),"max_physical_error":r2.max_physical_error,"audit":a,"initial_audit_equal":ai==bi,"callbacks":callbacks})
+            );
+        }
+        let mut timings: [Vec<u128>; 4] = std::array::from_fn(|_| vec![]);
+        for rep in 0..5 {
+            for j in 0..4 {
+                let i = (j + rep) % 4;
+                let start = std::time::Instant::now();
+                let r = evolve_epoch_slab_replay_planned(
+                    &src,
+                    &x,
+                    &z,
+                    &b,
+                    epoch,
+                    &opts(),
+                    policy(),
+                    route,
+                    &grid,
+                    engine_retention(),
+                    SlabReplayRoute::Flat,
+                    plans[i],
+                );
+                black_box(r.0.unwrap());
+                timings[i].push(start.elapsed().as_nanos());
+            }
+        }
+        for (i, v) in timings.iter_mut().enumerate() {
+            v.sort_unstable();
+            println!(
+                "ENGINE_TIMING {}",
+                serde_json::json!({"case":case,"candidate":plans[i],"median_ns":v[2],"samples_ns":v,"scope":"whole audited flat epoch plus drop, restoration excluded"})
+            );
+        }
+    }
+}
+#[test]
+fn terminal_adjoint_native_portfolio() {
+    warm();
+    let mut o = opts();
+    o.dense_output = false;
+    o.rtol = 1e-10;
+    o.atol = Atol::Scalar(1e-12);
+    for case in ["stiff", "mixed_rates", "diag4", "diag8"] {
+        let (src, x, z, b, route) = match case {
+            "diag4" => diag_adjoint_fixture(4),
+            "diag8" => diag_adjoint_fixture(8),
+            _ => slab_campaign_fixture(case),
+        };
+        let epoch = EvolutionEpoch {
+            start: 0.,
+            end: 0.125,
+            incoming_x_error: Some(0.),
+        };
+        let (run, _) = evolve_epoch_slab_replay_planned(
+            &src,
+            &x,
+            &z,
+            &b,
+            epoch,
+            &opts(),
+            policy(),
+            route,
+            &[0.0625],
+            engine_retention(),
+            SlabReplayRoute::Flat,
+            EnginePlan::SharedFused,
+        );
+        let run = run.unwrap();
+        assert!(run.global_qualified(), "{case} {:?}", run.reason());
+        let n = src.nx();
+        let mut w = vec![0.; n + 1];
+        if case == "mixed_rates" {
+            w[1] = 1.;
+        } else {
+            w[n] = 1.;
+        }
+        let (problem, construction) = measure(|| run.terminal_adjoint(&w));
+        let problem = problem.unwrap();
+        assert_eq!(construction.requests(), 0);
+        let mut enclosure = [Iv { lo: 0., hi: 0. }; 32];
+        let cert = problem
+            .enclose_into(AdjointTaylorRoute::Fixed20, 1e-9, &mut enclosure[..n])
+            .unwrap();
+        assert!(cert.width_upper <= 1e-9, "{case} {:?}", cert);
+        let exact = enclosure[..n].to_vec();
+        println!(
+            "ADJOINT_MODEL {}",
+            serde_json::json!({"case":case,"dimension":n,"matrix":problem.matrix(),"terminal":problem.terminal_gradient(),"duration":problem.duration(),"construction":construction,"reference":exact.iter().map(|v|v.as_pair()).collect::<Vec<_>>() })
+        );
+        for candidate in [
+            AdjointTaylorRoute::Fixed12,
+            AdjointTaylorRoute::Fixed20,
+            AdjointTaylorRoute::Budgeted,
+        ] {
+            let (r, allocation) =
+                measure(|| problem.enclose_into(candidate, 1e-9, &mut enclosure[..n]));
+            let work = r.unwrap();
+            assert_eq!(allocation.requests(), 0);
+            assert_eq!(allocation.requested_bytes, 0);
+            assert!(work.width_upper <= 1e-8, "{case} {candidate:?} {:?}", work);
+            if candidate == AdjointTaylorRoute::Budgeted {
+                assert!(work.truncation_upper <= 1e-9);
+            }
+            for (a, b) in enclosure[..n].iter().zip(&exact) {
+                assert!(a.lo <= b.hi && b.lo <= a.hi);
+            }
+            println!(
+                "ADJOINT_TAYLOR {}",
+                serde_json::json!({"case":case,"candidate":candidate,"qualified":true,"allocation":allocation,"work":work,"enclosure":enclosure[..n].iter().map(|v|v.as_pair()).collect::<Vec<_>>() })
+            );
+        }
+        let before = enclosure;
+        assert!(
+            problem
+                .enclose_into(AdjointTaylorRoute::Budgeted, 0., &mut enclosure[..n])
+                .is_err()
+        );
+        assert_eq!(enclosure, before);
+        let mut numerical = vec![];
+        for candidate in [
+            GradientRoute::RodasAdjoint,
+            GradientRoute::DopriAdjoint,
+            GradientRoute::DopriForwardBlock,
+            GradientRoute::RodasForwardColumns,
+        ] {
+            let (r, allocation, heap) = measure_live(|| problem.integrate(candidate, &o));
+            let r = r.unwrap();
+            let err = problem.numerical_error_upper(&r.values, &exact).unwrap();
+            assert!(err <= 1e-8, "{case} {candidate:?} {err}");
+            let mut timing = vec![];
+            for _ in 0..5 {
+                let s = std::time::Instant::now();
+                black_box(problem.integrate(candidate, &o).unwrap());
+                timing.push(s.elapsed().as_nanos());
+            }
+            timing.sort_unstable();
+            println!(
+                "ADJOINT_ODE {}",
+                serde_json::json!({"case":case,"candidate":candidate,"qualified":true,"allocation":allocation,"heap":heap,"error_upper":err,"gradient":r,"median_ns":timing[2],"samples_ns":timing})
+            );
+            numerical.push(r);
+        }
+        // Independent numerical finite-difference check on actual original
+        // reduced-source forward solve, with consistent algebraic z0 via
+        // the original initialization; branch is wide in these fixtures.
+        let h = 2f64.powi(-15);
+        let mut fd = vec![];
+        for j in 0..n {
+            let mut goals = [0.; 2];
+            for (k, sign) in [-1., 1.].iter().enumerate() {
+                let mut xx = x.clone();
+                xx[j] += sign * h;
+                let prep = initialize_reduced_problem_planned(
+                    &src,
+                    0.,
+                    &xx,
+                    &z,
+                    &b,
+                    policy(),
+                    route,
+                    EnginePlan::SharedFused,
+                )
+                .unwrap();
+                let s =
+                    vigilode::Dopri5::solve(&prep.problem, (0., 0.125), &prep.initial_state, &o)
+                        .unwrap()
+                        .ensure_success()
+                        .unwrap();
+                let r = src
+                    .initialize(
+                        0.125,
+                        &s.final_state,
+                        &prep.report.z,
+                        &b,
+                        policy().init,
+                        slab_campaign_init(route),
+                    )
+                    .unwrap();
+                goals[k] = w[..n]
+                    .iter()
+                    .zip(&s.final_state)
+                    .chain(w[n..].iter().zip(&r.z))
+                    .fold(0., |s, (&a, &b)| a.mul_add(b, s));
+            }
+            let v = (goals[1] - goals[0]) / (2. * h);
+            assert!((v - numerical[1].values[j]).abs() <= 2e-6);
+            fd.push(v);
+        }
+        println!(
+            "ADJOINT_FD {}",
+            serde_json::json!({"case":case,"gradient":fd,"step":h})
+        );
+    }
+    let (src, x, z, b, route) = slab_campaign_fixture("quadratic_flow");
+    let (run, _) = evolve_epoch_slab_replay_planned(
+        &src,
+        &x,
+        &z,
+        &b,
+        EvolutionEpoch {
+            start: 0.,
+            end: 0.125,
+            incoming_x_error: Some(0.),
+        },
+        &opts(),
+        policy(),
+        route,
+        &[],
+        engine_retention(),
+        SlabReplayRoute::Flat,
+        EnginePlan::SharedFused,
+    );
+    let run = run.unwrap();
+    assert!(run.global_qualified());
+    assert!(run.terminal_adjoint(&[0., 1.]).is_err());
+    assert!(ConstantTerminalAdjoint::from_source(&src, &[f64::NAN, 1.]).is_err());
+    println!(
+        "ADJOINT_REFUSAL {}",
+        serde_json::json!({"nonlinear":true,"nonfinite":true})
+    );
+}
+#[test]
+fn reduced_source_ode_comparator() {
+    warm();
+    let grid = (0..=16).map(|i| i as f64 / 128.).collect::<Vec<_>>();
+    let mut o = opts();
+    o.dense_output = false;
+    for case in ["stiff", "mixed_rates", "quadratic_flow", "diag4", "diag8"] {
+        let (src, x, z, b, route) = match case {
+            "diag4" => diag_adjoint_fixture(4),
+            "diag8" => diag_adjoint_fixture(8),
+            _ => slab_campaign_fixture(case),
+        };
+        let p = initialize_reduced_problem_planned(
+            &src,
+            0.,
+            &x,
+            &z,
+            &b,
+            policy(),
+            route,
+            EnginePlan::SharedFused,
+        )
+        .unwrap();
+        let (r, allocation) = measure(|| {
+            vigilode::Rodas5p::solve(&p.problem, (0., 0.125), &p.initial_state, &opts())
+        });
+        let r = r.unwrap().ensure_success().unwrap();
+        let values = grid.iter().map(|&t| r.at(t).unwrap()).collect::<Vec<_>>();
+        println!(
+            "ODE_COMPARE {}",
+            serde_json::json!({"case":case,"candidate":"Rodas5p","qualified":true,"allocation":allocation,"rhs":r.stats.counters.rhs_calls,"steps":r.stats.accepted_steps,"times":grid,"values":values,"scope":"retained dense native; numerical comparator only"})
+        );
+        for candidate in ["DopriLanding", "DopriDense"] {
+            let (r, allocation) = measure(|| {
+                if candidate == "DopriLanding" {
+                    vigilode::Dopri5::solve_observed(
+                        &p.problem,
+                        (0., 0.125),
+                        &p.initial_state,
+                        &o,
+                        &grid,
+                    )
+                } else {
+                    vigilode::Dopri5::solve_dense_observed(
+                        &p.problem,
+                        (0., 0.125),
+                        &p.initial_state,
+                        &o,
+                        &grid,
+                    )
+                }
+            });
+            let r = r.unwrap().ensure_success().unwrap();
+            assert_eq!(r.t, grid);
+            println!(
+                "ODE_COMPARE {}",
+                serde_json::json!({"case":case,"candidate":candidate,"qualified":true,"allocation":allocation,"rhs":r.stats.counters.rhs_calls,"steps":r.stats.accepted_steps,"times":r.t,"values":r.y,"scope":"sampled reduced numerical output; no slab certificate"})
+            );
+        }
+    }
+}
