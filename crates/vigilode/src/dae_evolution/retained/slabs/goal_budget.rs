@@ -97,7 +97,12 @@ pub fn evolve_epoch_goal_budget(
         budget,
     };
     let norm = goal.iter().try_fold(0., |s, v| add_up(s, v.abs()))?;
-    let mut mult = if budget.plan == GoalBudgetPlan::Fixed {
+    // Dimensionful comparison in goal units; not a certified error model.
+    let scale = x.iter().chain(z).map(|v| v.abs()).fold(0., f64::max);
+    let nominal = 64. * (atol + opts.rtol * scale) * norm;
+    let mut mult = if budget.plan == GoalBudgetPlan::Fixed
+        || (budget.plan == GoalBudgetPlan::CostAware && budget.absolute < nominal)
+    {
         1.
     } else {
         64.
@@ -169,6 +174,15 @@ pub fn evolve_epoch_goal_budget(
                                 SecantGoalRoute::Sub4Bernstein,
                                 SecantGoalRoute::Scaled16,
                             ] {
+                                if budget.plan == GoalBudgetPlan::CostAware
+                                    && mult > 1.
+                                    && matches!(
+                                        route,
+                                        SecantGoalRoute::Sub4Horner | SecantGoalRoute::Scaled16
+                                    )
+                                {
+                                    continue;
+                                }
                                 let mut iv = Iv::point(0.)?;
                                 match r.secant_goal_into(goal, route, workspace, &mut iv) {
                                     Ok(work) => {
@@ -188,7 +202,12 @@ pub fn evolve_epoch_goal_budget(
                                                 break;
                                             }
                                         }
-                                        if bound.unwrap().mag() <= budget.absolute {
+                                        let b = bound.unwrap();
+                                        if b.mag() <= budget.absolute
+                                            || (budget.plan == GoalBudgetPlan::CostAware
+                                                && (b.lo > budget.absolute
+                                                    || b.hi < -budget.absolute))
+                                        {
                                             break;
                                         }
                                     }
@@ -239,6 +258,8 @@ pub fn evolve_epoch_goal_budget(
                 2.
             };
             (mult / factor).max(1.)
+        } else if budget.plan == GoalBudgetPlan::CostAware {
+            1.
         } else {
             (mult / 8.).max(1.)
         };

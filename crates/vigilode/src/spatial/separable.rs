@@ -501,6 +501,25 @@ impl Kernel {
     }
 }
 
+/// Reuse the primal modal factors to solve the actual transpose. This
+/// is a source-bound numerical proposal; its directed residual is checked
+/// by the shifted-adjoint client before it can be returned.
+pub(super) struct TransposeKernel(Kernel);
+impl TransposeKernel {
+    pub(super) fn new(grid: &DiffusionGrid) -> Self {
+        Self(Kernel::new(grid, BoxTransform::PairedReal, None))
+    }
+    pub(super) fn prepare(&mut self, z: f64) -> CoreResult<()> {
+        self.0.prepare(z, 0.)
+    }
+    pub(super) fn solve(&mut self, b: &mut [f64]) {
+        match &mut self.0 {
+            Kernel::Sphere(k) => k.solve_orientation(b, true),
+            Kernel::Box(k) => k.solve(b),
+        }
+    }
+}
+
 /// Mode-wise Thomas factors of the sphere's stage matrices. Spectra are mode-major:
 /// `spectra[m * nt + r]` is mode `m` of ring `r`, so every Thomas sweep is contiguous.
 struct SphereKernel {
@@ -583,6 +602,9 @@ impl SphereKernel {
     }
 
     fn solve(&mut self, b: &mut [f64]) {
+        self.solve_orientation(b, false);
+    }
+    fn solve_orientation(&mut self, b: &mut [f64], transpose: bool) {
         let (nt, np, modes) = (self.nt, self.np, self.modes);
         let pairs = nt / 2;
         // Two real rings per complex line: z = u + i v.
@@ -624,14 +646,29 @@ impl SphereKernel {
             let col = &mut self.spectra[base..base + nt];
             let mult = &self.mult[base..base + nt];
             let pivot = &self.pivot[base..base + nt];
-            for r in 1..nt {
-                let prev = col[r - 1];
-                col[r] -= prev * mult[r];
-            }
-            col[nt - 1] /= pivot[nt - 1];
-            for r in (0..nt - 1).rev() {
-                let next = col[r + 1];
-                col[r] = (col[r] + next * self.south[r]) / pivot[r];
+            if transpose {
+                // W=L_unit U, so W^T=U^T L_unit^T.
+                // Original U has upper entries -south[r], and L_unit
+                // has lower entries mult[r]. No area similarity.
+                col[0] /= pivot[0];
+                for r in 1..nt {
+                    let prev = col[r - 1];
+                    col[r] = (col[r] + prev * self.south[r - 1]) / pivot[r];
+                }
+                for r in (0..nt - 1).rev() {
+                    let next = col[r + 1];
+                    col[r] -= next * mult[r + 1];
+                }
+            } else {
+                for r in 1..nt {
+                    let prev = col[r - 1];
+                    col[r] -= prev * mult[r];
+                }
+                col[nt - 1] /= pivot[nt - 1];
+                for r in (0..nt - 1).rev() {
+                    let next = col[r + 1];
+                    col[r] = (col[r] + next * self.south[r]) / pivot[r];
+                }
             }
         }
         // Rebuild Z = U + i V from the Hermitian half spectra, invert, split.

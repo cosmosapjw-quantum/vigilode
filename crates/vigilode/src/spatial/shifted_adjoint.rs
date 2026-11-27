@@ -2,7 +2,8 @@
 #![allow(missing_docs)]
 use super::*;
 use rodas5p_core::{
-    ClosureOperator, CoreError, CoreResult, IdentityPreconditioner, Preconditioner, WorkCounters,
+    ApplyCategory, ClosureOperator, CoreError, CoreResult, IdentityPreconditioner, Preconditioner,
+    PreconditionerSide, WorkCounters, apply_counted,
     directed::{Interval as Iv, add_up, div_up, mul_up},
 };
 use rodas5p_integrators::{
@@ -10,7 +11,8 @@ use rodas5p_integrators::{
     integrate_rodas5p_fast_client_observed_with_atol,
 };
 use rodas5p_krylov::{
-    CapacityGrowth, GmresCapacity, GmresConfig, GmresWorkspace, solve_gmres_into,
+    CapacityGrowth, GmresCapacity, GmresConfig, GmresMonitorDecision, GmresWorkspace,
+    solve_gmres_into, solve_gmres_into_right_monitored,
 };
 use serde::Serialize;
 use std::sync::{Arc, Mutex};
@@ -36,6 +38,40 @@ pub struct ShiftedAdjointReport {
     pub iterations: u64,
     pub matvecs: u64,
     pub pc_apps: u64,
+    #[serde(skip_serializing_if = "zero_count")]
+    pub screen_checks: u64,
+    #[serde(skip_serializing_if = "zero_count")]
+    pub directed_checks: u64,
+    #[serde(skip_serializing_if = "zero_count")]
+    pub prefix_solves: u64,
+    #[serde(skip_serializing_if = "zero_count")]
+    pub seed_accepts: u64,
+}
+fn zero_count(x: &u64) -> bool {
+    *x == 0
+}
+struct Right<'a>(&'a dyn Preconditioner);
+impl Preconditioner for Right<'_> {
+    fn dimension(&self) -> usize {
+        self.0.dimension()
+    }
+    fn apply(&self, x: &[f64], y: &mut [f64]) -> CoreResult<()> {
+        self.0.apply(x, y)
+    }
+    fn is_identity(&self) -> bool {
+        self.0.is_identity()
+    }
+    fn side(&self) -> PreconditionerSide {
+        PreconditionerSide::Right
+    }
+}
+impl ShiftedAdjointRoute {
+    fn early(self) -> bool {
+        matches!(self, Self::EarlyIdentity | Self::EarlyLongitude)
+    }
+    fn direct(self) -> bool {
+        self == Self::FourierTranspose
+    }
 }
 pub struct ShiftedAdjointWorkspace {
     grid: DiffusionGrid,
@@ -47,15 +83,31 @@ pub struct ShiftedAdjointWorkspace {
     z: Option<f64>,
     x: Vec<f64>,
     res: Vec<Iv>,
+    seed: Vec<f64>,
+    probe: Vec<f64>,
+    fourier: Option<Box<super::separable::TransposeKernel>>,
 }
 impl ShiftedAdjointWorkspace {
     pub fn new(grid: &DiffusionGrid, route: ShiftedAdjointRoute) -> CoreResult<Self> {
         rodas5p_integrators::affine_event_certificate::check_affine_event_arithmetic()?;
         let n = grid.dimension();
-        let columns = 32.min(n);
-        let mut gmres = GmresWorkspace::with_ls_workspace();
-        gmres.set_givens_least_squares(true);
-        gmres.reserve(n, columns)?;
+        let columns = (if route == ShiftedAdjointRoute::ShortIdentity {
+            8
+        } else {
+            32
+        })
+        .min(n);
+        let mut gmres = GmresWorkspace::default();
+        if !route.direct() {
+            gmres = GmresWorkspace::with_ls_workspace();
+            gmres.set_givens_least_squares(true);
+            gmres.reserve(n, columns)?;
+        }
+        let fourier = if route.direct() {
+            Some(Box::new(super::separable::TransposeKernel::new(grid)))
+        } else {
+            None
+        };
         let line = if !matches!(
             route,
             ShiftedAdjointRoute::Longitude
@@ -88,6 +140,17 @@ impl ShiftedAdjointWorkspace {
             z: None,
             x: vec![0.; n],
             res: vec![Z; n],
+            seed: if route.early() {
+                vec![0.; n]
+            } else {
+                Vec::new()
+            },
+            probe: if route.early() {
+                vec![0.; n]
+            } else {
+                Vec::new()
+            },
+            fourier,
         })
     }
     pub fn prepare(&mut self, z: f64) -> CoreResult<()> {
@@ -97,6 +160,9 @@ impl ShiftedAdjointWorkspace {
         }
         if let Some(pc) = self.line.as_mut() {
             pc.refactor_shifted(&self.grid, z, self.route == ShiftedAdjointRoute::Meridional)?;
+        }
+        if let Some(k) = self.fourier.as_mut() {
+            k.prepare(z)?;
         }
         self.z = Some(z);
         Ok(())
@@ -108,6 +174,23 @@ impl ShiftedAdjointWorkspace {
             return Err(err("rhs shape/nonfinite"));
         }
         let g = &self.grid;
+        if let Some(k) = self.fourier.as_mut() {
+            self.x.copy_from_slice(b);
+            k.solve(&mut self.x);
+            c.direct_solve_calls += 1;
+            let (rho, upper, rhs) = directed_residual(g, z, b, &self.x, &mut self.res)?;
+            if rho > add_up(mul_up(1e-10, rhs)?, 1e-13)? {
+                return Err(err("transpose Fourier residual exceeds stage budget"));
+            }
+            c.linear_solves += 1;
+            return Ok(ShiftedAdjointReport {
+                residual_l1: rho,
+                error_l1: upper,
+                rhs_l1: rhs,
+                directed_checks: 1,
+                ..Default::default()
+            });
+        }
         let op = ClosureOperator::new(n, |v: &[f64], out: &mut [f64]| {
             g.apply_transpose_gather(v, out)
                 .map_err(|e| err(&e.to_string()))?;
@@ -121,6 +204,79 @@ impl ShiftedAdjointWorkspace {
             Some(l) => l,
             None => &identity,
         };
+        if self.route.early() {
+            let before = *c;
+            let rhs = b.iter().try_fold(0., |s, x| add_up(s, x.abs()))?;
+            let allowed = add_up(mul_up(1e-10, rhs)?, 1e-13)?;
+            for (x, &v) in self.seed.iter_mut().zip(b) {
+                *x = v / z;
+            }
+            // An approximate inverse-shift seed is only a proposal. Its
+            // exact original residual may already meet the target.
+            let mut checks = 1u64;
+            let mut screens = 0u64;
+            let seed = directed_residual(g, z, b, &self.seed, &mut self.res)?;
+            if seed.0 <= allowed {
+                self.x.copy_from_slice(&self.seed);
+                c.linear_solves += 1;
+                return Ok(ShiftedAdjointReport {
+                    residual_l1: seed.0,
+                    error_l1: seed.1,
+                    rhs_l1: rhs,
+                    directed_checks: checks,
+                    seed_accepts: 1,
+                    ..Default::default()
+                });
+            }
+            let mut receipt = None;
+            let mut monitor = |_column: u64, v: &[f64], c: &mut WorkCounters| {
+                screens += 1;
+                apply_counted(&op, v, &mut self.probe, c, ApplyCategory::Diagnostic)?;
+                let proposal = b
+                    .iter()
+                    .zip(&self.probe)
+                    .map(|(&b, &a)| (b - a).abs())
+                    .sum::<f64>();
+                // This screen can decline a good candidate, but cannot admit
+                // a bad one. The directed original-source gate is authority.
+                if proposal <= 0.75 * allowed {
+                    checks += 1;
+                    let r = directed_residual(g, z, b, v, &mut self.res)?;
+                    if r.0 <= allowed {
+                        receipt = Some(r);
+                        return Ok(GmresMonitorDecision::Accept);
+                    }
+                }
+                Ok(GmresMonitorDecision::Continue)
+            };
+            let r = solve_gmres_into_right_monitored(
+                &op,
+                &Right(pc),
+                b,
+                &self.seed,
+                &self.config,
+                &mut self.x,
+                &mut self.gmres,
+                c,
+                &mut monitor,
+            )?;
+            if !r.accepted {
+                return Err(err("monitored original residual target exhausted"));
+            }
+            let (rho, upper, _) = receipt.ok_or_else(|| err("missing monitored certificate"))?;
+            return Ok(ShiftedAdjointReport {
+                residual_l1: rho,
+                error_l1: upper,
+                rhs_l1: rhs,
+                iterations: r.iterations,
+                matvecs: c.linear_matvecs - before.linear_matvecs,
+                pc_apps: c.preconditioner_apps - before.preconditioner_apps,
+                screen_checks: screens,
+                directed_checks: checks,
+                prefix_solves: r.least_squares_solves,
+                seed_accepts: 0,
+            });
+        }
         let r = solve_gmres_into(
             &op,
             pc,
@@ -146,6 +302,7 @@ impl ShiftedAdjointWorkspace {
             iterations: r.iterations,
             matvecs: r.matvecs,
             pc_apps: r.preconditioner_apps,
+            ..Default::default()
         })
     }
     pub fn solve_into(
@@ -215,6 +372,14 @@ pub struct ShiftedNativeWork {
     pub returned: usize,
     pub max_error_l1: f64,
     pub max_residual_l1: f64,
+    #[serde(skip_serializing_if = "zero_count")]
+    pub screen_checks: u64,
+    #[serde(skip_serializing_if = "zero_count")]
+    pub directed_checks: u64,
+    #[serde(skip_serializing_if = "zero_count")]
+    pub prefix_solves: u64,
+    #[serde(skip_serializing_if = "zero_count")]
+    pub seed_accepts: u64,
 }
 struct Client {
     w: ShiftedAdjointWorkspace,
@@ -236,7 +401,7 @@ impl StageLinearSystem for Client {
     }
     fn factor(&mut self, z: f64, c: &mut WorkCounters) -> CoreResult<()> {
         self.report.lock().unwrap().preparations += 1;
-        if self.w.line.is_some() {
+        if self.w.line.is_some() || self.w.route.direct() {
             c.direct_factorizations += 1;
         }
         self.w.prepare(z)
@@ -254,6 +419,10 @@ impl StageLinearSystem for Client {
         w.returned += 1;
         w.max_error_l1 = w.max_error_l1.max(r.error_l1);
         w.max_residual_l1 = w.max_residual_l1.max(r.residual_l1);
+        w.screen_checks += r.screen_checks;
+        w.directed_checks += r.directed_checks;
+        w.prefix_solves += r.prefix_solves;
+        w.seed_accepts += r.seed_accepts;
         Ok(())
     }
 }
