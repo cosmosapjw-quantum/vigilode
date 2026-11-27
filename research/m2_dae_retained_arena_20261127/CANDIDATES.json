@@ -1,0 +1,849 @@
+{
+  "abstract_routes": 64,
+  "designs": {
+    "arena": {
+      "fields": [
+        "case",
+        "layout"
+      ],
+      "fixed_design": [
+        {
+          "case": "stable",
+          "layout": "Packed"
+        },
+        {
+          "case": "stable",
+          "layout": "Shared"
+        },
+        {
+          "case": "stiff",
+          "layout": "Packed"
+        },
+        {
+          "case": "stiff",
+          "layout": "Shared"
+        },
+        {
+          "case": "nonlinear",
+          "layout": "Packed"
+        },
+        {
+          "case": "nonlinear",
+          "layout": "Shared"
+        },
+        {
+          "case": "vector4",
+          "layout": "Packed"
+        },
+        {
+          "case": "vector4",
+          "layout": "Shared"
+        },
+        {
+          "case": "vector8",
+          "layout": "Packed"
+        },
+        {
+          "case": "vector8",
+          "layout": "Shared"
+        },
+        {
+          "case": "mass",
+          "layout": "Packed"
+        },
+        {
+          "case": "mass",
+          "layout": "Shared"
+        },
+        {
+          "case": "conserved",
+          "layout": "Packed"
+        },
+        {
+          "case": "conserved",
+          "layout": "Shared"
+        }
+      ],
+      "uct_proposals": [
+        {
+          "case": "stable",
+          "layout": "Shared"
+        },
+        {
+          "case": "nonlinear",
+          "layout": "Shared"
+        },
+        {
+          "case": "vector4",
+          "layout": "Packed"
+        },
+        {
+          "case": "stiff",
+          "layout": "Shared"
+        },
+        {
+          "case": "vector8",
+          "layout": "Shared"
+        },
+        {
+          "case": "conserved",
+          "layout": "Shared"
+        },
+        {
+          "case": "mass",
+          "layout": "Packed"
+        },
+        {
+          "case": "vector4",
+          "layout": "Shared"
+        },
+        {
+          "case": "vector8",
+          "layout": "Packed"
+        },
+        {
+          "case": "mass",
+          "layout": "Shared"
+        },
+        {
+          "case": "stable",
+          "layout": "Packed"
+        },
+        {
+          "case": "nonlinear",
+          "layout": "Packed"
+        },
+        {
+          "case": "conserved",
+          "layout": "Packed"
+        },
+        {
+          "case": "stiff",
+          "layout": "Packed"
+        }
+      ]
+    },
+    "epoch": {
+      "fields": [
+        "case",
+        "grid",
+        "candidate"
+      ],
+      "fixed_design": [
+        {
+          "candidate": "legacy",
+          "case": "stable",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_owned",
+          "case": "stable",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_owned",
+          "case": "stable",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_rows",
+          "case": "stable",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_rows",
+          "case": "stable",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_component",
+          "case": "stable",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_component",
+          "case": "stable",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "legacy",
+          "case": "stable",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_owned",
+          "case": "stable",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_owned",
+          "case": "stable",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_rows",
+          "case": "stable",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_rows",
+          "case": "stable",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_component",
+          "case": "stable",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_component",
+          "case": "stable",
+          "grid": "dense"
+        },
+        {
+          "candidate": "legacy",
+          "case": "stiff",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_owned",
+          "case": "stiff",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_owned",
+          "case": "stiff",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_rows",
+          "case": "stiff",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_rows",
+          "case": "stiff",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_component",
+          "case": "stiff",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_component",
+          "case": "stiff",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "legacy",
+          "case": "stiff",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_owned",
+          "case": "stiff",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_owned",
+          "case": "stiff",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_rows",
+          "case": "stiff",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_rows",
+          "case": "stiff",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_component",
+          "case": "stiff",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_component",
+          "case": "stiff",
+          "grid": "dense"
+        },
+        {
+          "candidate": "legacy",
+          "case": "nonlinear",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_owned",
+          "case": "nonlinear",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_owned",
+          "case": "nonlinear",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_rows",
+          "case": "nonlinear",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_rows",
+          "case": "nonlinear",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_component",
+          "case": "nonlinear",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_component",
+          "case": "nonlinear",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "legacy",
+          "case": "nonlinear",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_owned",
+          "case": "nonlinear",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_owned",
+          "case": "nonlinear",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_rows",
+          "case": "nonlinear",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_rows",
+          "case": "nonlinear",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_component",
+          "case": "nonlinear",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_component",
+          "case": "nonlinear",
+          "grid": "dense"
+        },
+        {
+          "candidate": "legacy",
+          "case": "vector4",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_owned",
+          "case": "vector4",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_owned",
+          "case": "vector4",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_rows",
+          "case": "vector4",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_rows",
+          "case": "vector4",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_component",
+          "case": "vector4",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_component",
+          "case": "vector4",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "legacy",
+          "case": "vector4",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_owned",
+          "case": "vector4",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_owned",
+          "case": "vector4",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_rows",
+          "case": "vector4",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_rows",
+          "case": "vector4",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_component",
+          "case": "vector4",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_component",
+          "case": "vector4",
+          "grid": "dense"
+        },
+        {
+          "candidate": "legacy",
+          "case": "vector8",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_owned",
+          "case": "vector8",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_owned",
+          "case": "vector8",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_rows",
+          "case": "vector8",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_rows",
+          "case": "vector8",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_component",
+          "case": "vector8",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_component",
+          "case": "vector8",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "legacy",
+          "case": "vector8",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_owned",
+          "case": "vector8",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_owned",
+          "case": "vector8",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_rows",
+          "case": "vector8",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_rows",
+          "case": "vector8",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_component",
+          "case": "vector8",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_component",
+          "case": "vector8",
+          "grid": "dense"
+        }
+      ],
+      "uct_proposals": [
+        {
+          "candidate": "shared_component",
+          "case": "stable",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_component",
+          "case": "nonlinear",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_rows",
+          "case": "stiff",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_rows",
+          "case": "vector8",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_owned",
+          "case": "vector4",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_rows",
+          "case": "vector4",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_rows",
+          "case": "stable",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_owned",
+          "case": "vector8",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_rows",
+          "case": "nonlinear",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_rows",
+          "case": "stiff",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "legacy",
+          "case": "nonlinear",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "legacy",
+          "case": "stable",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_owned",
+          "case": "vector8",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "legacy",
+          "case": "stiff",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_rows",
+          "case": "vector4",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_rows",
+          "case": "stable",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_owned",
+          "case": "nonlinear",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_component",
+          "case": "vector4",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_rows",
+          "case": "stiff",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_rows",
+          "case": "vector8",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_rows",
+          "case": "stiff",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_rows",
+          "case": "vector8",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_component",
+          "case": "nonlinear",
+          "grid": "dense"
+        },
+        {
+          "candidate": "legacy",
+          "case": "vector4",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_owned",
+          "case": "stable",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_owned",
+          "case": "stable",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_owned",
+          "case": "nonlinear",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_owned",
+          "case": "stiff",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_component",
+          "case": "vector8",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_component",
+          "case": "vector4",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_owned",
+          "case": "vector4",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_owned",
+          "case": "vector8",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_rows",
+          "case": "nonlinear",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "legacy",
+          "case": "stiff",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_component",
+          "case": "stable",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_owned",
+          "case": "stable",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_owned",
+          "case": "vector8",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_component",
+          "case": "stiff",
+          "grid": "dense"
+        },
+        {
+          "candidate": "legacy",
+          "case": "vector4",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_owned",
+          "case": "nonlinear",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_component",
+          "case": "vector4",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_rows",
+          "case": "nonlinear",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_rows",
+          "case": "stable",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_owned",
+          "case": "stiff",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "legacy",
+          "case": "vector8",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_component",
+          "case": "stable",
+          "grid": "dense"
+        },
+        {
+          "candidate": "legacy",
+          "case": "nonlinear",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_owned",
+          "case": "vector4",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_owned",
+          "case": "stiff",
+          "grid": "dense"
+        },
+        {
+          "candidate": "legacy",
+          "case": "vector8",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_rows",
+          "case": "nonlinear",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_rows",
+          "case": "vector4",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_component",
+          "case": "vector8",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_owned",
+          "case": "stiff",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_owned",
+          "case": "stable",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_rows",
+          "case": "vector4",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_rows",
+          "case": "vector8",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_component",
+          "case": "stiff",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_component",
+          "case": "stable",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_component",
+          "case": "nonlinear",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_component",
+          "case": "vector4",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_rows",
+          "case": "stable",
+          "grid": "dense"
+        },
+        {
+          "candidate": "shared_component",
+          "case": "nonlinear",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_component",
+          "case": "vector8",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "shared_component",
+          "case": "stiff",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "legacy",
+          "case": "stable",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_component",
+          "case": "vector8",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_owned",
+          "case": "vector4",
+          "grid": "sparse"
+        },
+        {
+          "candidate": "packed_component",
+          "case": "stiff",
+          "grid": "dense"
+        },
+        {
+          "candidate": "packed_owned",
+          "case": "nonlinear",
+          "grid": "sparse"
+        }
+      ]
+    }
+  },
+  "manifest_files": 154,
+  "mutation_edges": {
+    "Shared": "Packed",
+    "packed_component": "packed_rows",
+    "packed_owned": "legacy",
+    "packed_rows": "packed_owned",
+    "shared_component": "shared_rows",
+    "shared_owned": "packed_owned",
+    "shared_rows": "packed_rows"
+  },
+  "scope": "finite measured candidate designs; no online promotion"
+}
