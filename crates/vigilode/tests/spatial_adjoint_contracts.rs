@@ -2300,3 +2300,32 @@ fn ring_local_native_actual_portfolio() {
         }
     }
 }
+
+#[test]
+fn reusable_spatial_native_contract() {
+    use rodas5p_integrators::AdaptiveStepConfig;
+    use vigilode::spatial::{
+        ResidualPlan, SpatialAdjointDriverWorkspace, solve_spatial_adjoint_shifted_with_residual,
+    };
+    let g = DiffusionGrid::sphere(8, 16, 1., 0.04).unwrap();
+    let a = AdaptiveStepConfig {
+        rtol: 1e-8,
+        atol: 1e-10,
+        initial_step: 0.001,
+        max_attempts: 4096,
+        ..Default::default()
+    };
+    let mut y = vec![0.; g.dimension()];
+    y[0] = 0.5;
+    let plan = ResidualPlan::RingLocalHybrid;
+    let mut w = SpatialAdjointDriverWorkspace::new(&g, (0., DURATION), plan).unwrap();
+    let ((old, _), before) = measure(|| {
+        solve_spatial_adjoint_shifted_with_residual(&g, (0., DURATION), &y, &a, plan).unwrap()
+    });
+    w.solve(&y, &a).unwrap();
+    let ((new, _), after) = measure(|| w.solve(&y, &a).unwrap());
+    assert!(new.observed.success);
+    assert_eq!(old.observed.y, new.observed.y);
+    assert_eq!(old.observed.counters, new.observed.counters);
+    assert!(after.requested_bytes < before.requested_bytes);
+}

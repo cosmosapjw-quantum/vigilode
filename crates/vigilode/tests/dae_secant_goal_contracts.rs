@@ -1752,3 +1752,42 @@ fn adaptive_signed_actual_portfolio() {
         }
     }
 }
+
+#[test]
+fn triangular_goal_actual_contract() {
+    let (src, x, z, b, c) = fixture(8);
+    let (opts, policy, route, retention) = weighted_settings();
+    let call = |plan| {
+        evolve_epoch_goal_budget(
+            &src,
+            &x,
+            &z,
+            &b,
+            EvolutionEpoch {
+                start: 0.,
+                end: 0.5,
+                incoming_x_error: Some(0.),
+            },
+            &opts,
+            policy,
+            route,
+            &[],
+            retention,
+            &c,
+            GoalBudgetPolicy {
+                absolute: 1e-10,
+                plan,
+            },
+        )
+        .unwrap()
+    };
+    let old = call(GoalBudgetPlan::Fixed);
+    assert!(!old.attempts.last().unwrap().accepted);
+    let new = call(GoalBudgetPlan::TriangularAdaptive);
+    assert!(new.attempts.last().unwrap().accepted);
+    assert_eq!(old.total_rhs(), new.total_rhs());
+    assert_eq!(
+        old.attempts.last().unwrap().terminal_state,
+        new.attempts.last().unwrap().terminal_state
+    );
+}
