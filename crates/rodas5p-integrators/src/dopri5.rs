@@ -184,6 +184,74 @@ pub struct DopriStageWork {
     pub error_writes: u64,
     pub linear_products: u64,
 }
+// Bounded scratch with contiguous derivative lanes and one destination write
+// per component. Logical destination writes do not count local scratch stores.
+#[inline]
+fn block_accumulate<const B: usize>(
+    base: Option<&[f64]>,
+    out: &mut [f64],
+    stages: &[f64],
+    coeff: &[f64],
+    h: f64,
+    tiny: bool,
+) {
+    let n = out.len();
+    let mut weights = [0.; 7];
+    for (i, &c) in coeff.iter().enumerate() {
+        weights[i] = h * c;
+    }
+    let mut offset = 0;
+    while offset < n {
+        let len = B.min(n - offset);
+        let mut v = [0.; B];
+        if let Some(y) = base {
+            v[..len].copy_from_slice(&y[offset..offset + len]);
+        }
+        for (j, &c) in coeff.iter().enumerate() {
+            if c == 0. {
+                continue;
+            }
+            let k = &stages[j * n + offset..j * n + offset + len];
+            if tiny {
+                for (v, &k) in v[..len].iter_mut().zip(k) {
+                    *v += c * (h * k);
+                }
+            } else {
+                let weight = weights[j];
+                for (v, &k) in v[..len].iter_mut().zip(k) {
+                    *v += weight * k;
+                }
+            }
+        }
+        out[offset..offset + len].copy_from_slice(&v[..len]);
+        offset += len;
+    }
+}
+impl DopriStageKernel {
+    fn blocked(self) -> bool {
+        matches!(
+            self,
+            Self::Block4 | Self::Block8 | Self::Block16 | Self::Block32
+        )
+    }
+    fn accumulate(
+        self,
+        base: Option<&[f64]>,
+        out: &mut [f64],
+        stages: &[f64],
+        coeff: &[f64],
+        h: f64,
+        tiny: bool,
+    ) {
+        match self {
+            Self::Block4 => block_accumulate::<4>(base, out, stages, coeff, h, tiny),
+            Self::Block8 => block_accumulate::<8>(base, out, stages, coeff, h, tiny),
+            Self::Block16 => block_accumulate::<16>(base, out, stages, coeff, h, tiny),
+            Self::Block32 => block_accumulate::<32>(base, out, stages, coeff, h, tiny),
+            _ => unreachable!(),
+        }
+    }
+}
 #[derive(Debug)]
 pub struct Dopri5Workspace {
     n: usize,
@@ -335,7 +403,20 @@ impl Dopri5Workspace {
             if stage == 6 {
                 self.stage_prev_endpoint.copy_from_slice(&self.stage_state);
             }
-            if self.kernel == DopriStageKernel::Components {
+            if self.kernel.blocked() {
+                let c = &DOPRI5_A[stage][..stage];
+                self.kernel.accumulate(
+                    Some(y),
+                    &mut self.stage_state,
+                    &self.stages,
+                    c,
+                    h,
+                    tiny_step,
+                );
+                self.stage_work.state_writes += self.n as u64;
+                self.stage_work.linear_products +=
+                    self.n as u64 * c.iter().filter(|&&v| v != 0.).count() as u64;
+            } else if self.kernel == DopriStageKernel::Components {
                 let mut weights = [0.; 7];
                 for j in 0..stage {
                     weights[j] = h * DOPRI5_A[stage][j];
@@ -404,7 +485,13 @@ impl Dopri5Workspace {
         }
         // The seventh stage is evaluated at exactly the fifth-order output.
         endpoint.copy_from_slice(&self.stage_state);
-        if self.kernel == DopriStageKernel::Components {
+        if self.kernel.blocked() {
+            self.kernel
+                .accumulate(None, error, &self.stages, &ERROR_WEIGHTS, h, tiny_step);
+            self.stage_work.error_writes += self.n as u64;
+            self.stage_work.linear_products +=
+                self.n as u64 * ERROR_WEIGHTS.iter().filter(|&&v| v != 0.).count() as u64;
+        } else if self.kernel == DopriStageKernel::Components {
             let weights = ERROR_WEIGHTS.map(|c| h * c);
             for i in 0..self.n {
                 let mut v = 0.;

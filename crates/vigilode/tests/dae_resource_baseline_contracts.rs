@@ -9050,3 +9050,447 @@ fn scalar_integral_actual_one_exponential() {
         "all scalar coefficient integrals require only one exponential"
     );
 }
+
+fn scalar_integral_fixture(
+    case: &str,
+) -> (
+    DaeSource,
+    Vec<f64>,
+    Vec<f64>,
+    Vec<[f64; 2]>,
+    EvolutionRoute,
+    Vec<f64>,
+) {
+    let src = match case {
+        "clock" => DaeSource::new(
+            vec![p(vec![
+                tr(1., vec![F::component(1, 0.)]),
+                tr(1., vec![F::clock(0.)]),
+            ])],
+            vec![p(vec![
+                tr(1., vec![F::component(1, 0.)]),
+                tr(-1., vec![F::component(0, 0.)]),
+            ])],
+        )
+        .unwrap(),
+        "equilibrium" => DaeSource::new(
+            vec![p(vec![tr(-2., vec![F::component(1, 0.)])])],
+            vec![p(vec![
+                tr(1., vec![F::component(1, 0.)]),
+                tr(-1., vec![F::component(0, 0.)]),
+            ])],
+        )
+        .unwrap(),
+        "shifted" => DaeSource::new(
+            vec![p(vec![
+                tr(0.125, vec![F::component(1, 0.)]),
+                tr(0.0625, vec![]),
+            ])],
+            vec![p(vec![
+                tr(1., vec![F::component(1, 0.), F::component(1, 0.)]),
+                tr(1., vec![F::component(1, 0.)]),
+                tr(-1., vec![F::component(0, 0.)]),
+                tr(-0.75, vec![]),
+            ])],
+        )
+        .unwrap(),
+        _ => return nonlinear_adjoint_fixture(case),
+    };
+    let shifted = case == "shifted";
+    (
+        src,
+        vec![0.],
+        vec![if shifted { 0.5 } else { 0. }],
+        vec![if shifted { [0.4375, 0.625] } else { [-1., 1.] }],
+        EvolutionRoute::WorkspaceQuery5 {
+            projection: if shifted {
+                WorkspaceProjection::Sturm
+            } else {
+                WorkspaceProjection::Affine
+            },
+            certificate: de::SlabWorkspaceRoute::Refined,
+            storage: CertificateStorage::Local,
+            query: QueryWorkspaceRoute::StreamPairs,
+        },
+        vec![0., 1.],
+    )
+}
+#[test]
+fn scalar_integral_actual_portfolio() {
+    warm();
+    let plans = [
+        ScalarAdjointRoute::Repeated16,
+        ScalarAdjointRoute::IntegralGuard16,
+        ScalarAdjointRoute::Direct16,
+        ScalarAdjointRoute::DirectBare16,
+        ScalarAdjointRoute::Adaptive,
+        ScalarAdjointRoute::FlowRatio,
+        ScalarAdjointRoute::QuadraticSeed16,
+    ];
+    let epoch = EvolutionEpoch {
+        start: 0.,
+        end: 0.125,
+        incoming_x_error: Some(0.),
+    };
+    for case in [
+        "quadratic",
+        "quartic",
+        "logistic",
+        "affine",
+        "clock",
+        "equilibrium",
+        "shifted",
+    ] {
+        let (src, x, z, b, route, goal) = scalar_integral_fixture(case);
+        let (r, _) = evolve_epoch_slab_replay_planned(
+            &src,
+            &x,
+            &z,
+            &b,
+            epoch,
+            &opts(),
+            policy(),
+            route,
+            &[0.03125, 0.0625, 0.09375],
+            engine_retention(),
+            SlabReplayRoute::Flat,
+            EnginePlan::SharedFused,
+        );
+        let r = r.unwrap();
+        assert!(r.global_qualified(), "{case} {:?}", r.reason());
+        let before_work = serde_json::to_string(r.work()).unwrap();
+        let mut w = NonlinearAdjointWorkspace::new();
+        let mut out = [Iv { lo: 0., hi: 0. }];
+        let mut results: Vec<Option<(ScalarAdjointWork, Iv, Counts)>> = vec![];
+        for candidate in plans {
+            let before = out;
+            let (res, a) = measure(|| r.scalar_adjoint_into(&goal, candidate, &mut w, &mut out));
+            match res {
+                Ok(work) => {
+                    assert_eq!(a.requests(), 0);
+                    assert_eq!(a.requested_bytes, 0);
+                    assert!(work.width_upper <= 0.1, "{case} {candidate:?} {:?}", work);
+                    assert_eq!(
+                        work.exponentials,
+                        if candidate == ScalarAdjointRoute::Repeated16 {
+                            16 * r.slabs_len()
+                        } else if candidate == ScalarAdjointRoute::FlowRatio {
+                            0
+                        } else {
+                            1
+                        }
+                    );
+                    if candidate == ScalarAdjointRoute::QuadraticSeed16 {
+                        assert_eq!(case, "shifted");
+                        assert_eq!(work.quadratic_seed_uses, work.cells + 1);
+                    }
+                    let pos = out[0];
+                    let neg = r
+                        .scalar_adjoint_into(&[0., -1.], candidate, &mut w, &mut out)
+                        .unwrap();
+                    assert!(neg.width_upper <= 0.1 && out[0].lo <= -pos.lo && out[0].hi >= -pos.hi);
+                    // Both signed goals independently enclose the same magnitude.
+                    println!(
+                        "SCALAR_SIGN {}",
+                        serde_json::json!({"case":case,"candidate":candidate,"enclosure":out[0].as_pair()})
+                    );
+                    results.push(Some((work, pos, a)));
+                }
+                Err(e) => {
+                    assert_eq!(out, before);
+                    assert!(
+                        candidate == ScalarAdjointRoute::FlowRatio
+                            && matches!(case, "clock" | "equilibrium")
+                            || candidate == ScalarAdjointRoute::QuadraticSeed16
+                                && case != "shifted",
+                        "unexpected {case} {candidate:?} {e}"
+                    );
+                    println!(
+                        "SCALAR_INTEGRAL {}",
+                        serde_json::json!({"case":case,"candidate":candidate,"qualified":false,"reason":e.to_string(),"allocation":a})
+                    );
+                    results.push(None);
+                }
+            }
+        }
+        let mut times: [Vec<u128>; 7] = std::array::from_fn(|_| vec![]);
+        for rep in 0..7 {
+            for j in 0..7 {
+                let i = (rep + j) % 7;
+                if results[i].is_none() {
+                    continue;
+                }
+                let start = std::time::Instant::now();
+                for _ in 0..8 {
+                    black_box(
+                        r.scalar_adjoint_into(&goal, plans[i], &mut w, &mut out)
+                            .unwrap(),
+                    );
+                }
+                times[i].push(start.elapsed().as_nanos() / 8);
+            }
+        }
+        for (i, r0) in results.into_iter().enumerate() {
+            if let Some((work, value, allocation)) = r0 {
+                times[i].sort_unstable();
+                println!(
+                    "SCALAR_INTEGRAL {}",
+                    serde_json::json!({"case":case,"candidate":plans[i],"qualified":true,"allocation":allocation,"work":work,"enclosure":value.as_pair(),"median_ns":times[i][3],"samples_ns":times[i],"slabs":r.slabs_len(),"primal_error":r.max_physical_error()})
+                );
+            }
+        }
+        assert_eq!(before_work, serde_json::to_string(r.work()).unwrap());
+        let raw = r.materialize().unwrap();
+        println!(
+            "SCALAR_PRIMAL {}",
+            serde_json::json!({"case":case,"qualified":raw.global_qualified,"queries":raw.accepted.iter().chain(&raw.queries).map(|q|serde_json::json!({"t":q.t,"state":q.state,"error":q.physical_error_upper})).collect::<Vec<_>>() })
+        );
+    }
+    // Nonzero incoming and nonfinite weights remain fail closed.
+    let (src, x, z, b, route, goal) = scalar_integral_fixture("quadratic");
+    let (r, _) = evolve_epoch_slab_replay_planned(
+        &src,
+        &x,
+        &z,
+        &b,
+        EvolutionEpoch {
+            incoming_x_error: Some(1e-12),
+            ..epoch
+        },
+        &opts(),
+        policy(),
+        route,
+        &[],
+        engine_retention(),
+        SlabReplayRoute::Flat,
+        EnginePlan::SharedFused,
+    );
+    let r = r.unwrap();
+    let mut w = NonlinearAdjointWorkspace::new();
+    let mut v = [Iv { lo: -7., hi: 7. }];
+    for candidate in plans {
+        assert!(
+            r.scalar_adjoint_into(&goal, candidate, &mut w, &mut v)
+                .is_err()
+        );
+        assert_eq!(v[0].as_pair(), [-7., 7.]);
+    }
+    println!(
+        "SCALAR_EDGE {}",
+        serde_json::json!({"nonzero_incoming_refused":true,"unchanged_output":true})
+    );
+}
+#[test]
+fn blocked_dopri_actual_portfolio() {
+    warm();
+    use rodas5p_core::{CoreError, WorkCounters};
+    use rodas5p_integrators::Dopri5Workspace;
+    use vigilode::DopriStageKernel as K;
+    let plans = [
+        K::Rows,
+        K::Components,
+        K::Block4,
+        K::Block8,
+        K::Block16,
+        K::Block32,
+    ];
+    let mut o = opts();
+    o.dense_output = false;
+    let sample = (0..=16).map(|i| i as f64 / 128.).collect::<Vec<_>>();
+    for case in [
+        "linear1",
+        "linear4",
+        "linear8",
+        "linear16",
+        "linear31",
+        "linear64",
+        "linear127",
+        "linear256",
+        "linear1024",
+        "logistic31",
+        "quadratic",
+        "coupled",
+        "affine",
+    ] {
+        let (p, x) = if let Some(n) = case.strip_prefix("linear") {
+            let n = n.parse::<usize>().unwrap();
+            (
+                vigilode::Problem::new(n, |t, x, out| {
+                    for (v, &x) in out.iter_mut().zip(x) {
+                        *v = -2. * x + t;
+                    }
+                    Ok(())
+                }),
+                vec![0.25; n],
+            )
+        } else if case == "logistic31" {
+            (
+                vigilode::Problem::new(31, |_, x, out| {
+                    for (v, &x) in out.iter_mut().zip(x) {
+                        *v = -x * x;
+                    }
+                    Ok(())
+                }),
+                vec![0.25; 31],
+            )
+        } else {
+            let (src, x, z, b, route, _) = nonlinear_adjoint_fixture(case);
+            let p = initialize_reduced_problem_planned(
+                &src,
+                0.,
+                &x,
+                &z,
+                &b,
+                policy(),
+                route,
+                EnginePlan::SharedFused,
+            )
+            .unwrap();
+            (p.problem, p.initial_state)
+        };
+        let rhs = |t: f64, y: &[f64], out: &mut [f64]| {
+            (p.rhs_fn())(t, y, out).map_err(|e| CoreError::InvalidInput(e.to_string()))
+        };
+        let n = x.len();
+        let mut baseline = None;
+        let mut old_step = None;
+        let mut scratch = plans
+            .iter()
+            .map(|&k| Dopri5Workspace::new_with_kernel(n, k).unwrap())
+            .collect::<Vec<_>>();
+        let mut y = vec![0.; n];
+        let mut err = vec![0.; n];
+        let mut rows = vec![];
+        for (i, candidate) in plans.iter().enumerate() {
+            let w = &mut scratch[i];
+            let (q, allocation) = measure(|| {
+                w.step_into(
+                    &rhs,
+                    0.,
+                    &x,
+                    0.001,
+                    &mut y,
+                    &mut err,
+                    &mut WorkCounters::default(),
+                )
+            });
+            q.unwrap();
+            assert_eq!(allocation.requests(), 0);
+            let bits = (
+                y.iter().map(|x| x.to_bits()).collect::<Vec<_>>(),
+                err.iter().map(|x| x.to_bits()).collect::<Vec<_>>(),
+            );
+            if let Some(b) = &old_step {
+                assert_eq!(&bits, b);
+            } else {
+                old_step = Some(bits);
+            }
+            let (r, a) = measure(|| {
+                vigilode::Dopri5::solve_dense_observed_with_kernel(
+                    &p,
+                    (0., 0.125),
+                    &x,
+                    &o,
+                    &sample,
+                    *candidate,
+                )
+            });
+            let r = r.unwrap().ensure_success().unwrap();
+            if let Some(b) = &baseline {
+                same_serialized(&r, b);
+            } else {
+                println!(
+                    "BLOCK_VALUES {}",
+                    serde_json::json!({"case":case,"n":n,"times":r.t,"values":r.y})
+                );
+                baseline = Some(r.clone());
+            }
+            rows.push((
+                w.stage_work(),
+                allocation,
+                a,
+                r.stats.counters.rhs_calls,
+                r.stats.attempts,
+                r.stats.accepted_steps,
+                r.stats.rejected_steps,
+                r.stats.fsal_reuses,
+            ));
+        }
+        let mut step_times: [Vec<u128>; 6] = std::array::from_fn(|_| vec![]);
+        let mut full_times: [Vec<u128>; 6] = std::array::from_fn(|_| vec![]);
+        let reps = if case.starts_with("linear") || case == "logistic31" {
+            2048
+        } else {
+            64
+        };
+        let mut c = WorkCounters::default();
+        for rep in 0..7 {
+            for j in 0..6 {
+                let i = (rep + j) % 6;
+                let w = &mut scratch[i];
+                let s = std::time::Instant::now();
+                for _ in 0..reps {
+                    w.step_into(&rhs, 0., &x, 0.001, &mut y, &mut err, &mut c)
+                        .unwrap();
+                    black_box(&y);
+                }
+                step_times[i].push(s.elapsed().as_nanos() / reps);
+                let s = std::time::Instant::now();
+                for _ in 0..8 {
+                    black_box(
+                        vigilode::Dopri5::solve_dense_observed_with_kernel(
+                            &p,
+                            (0., 0.125),
+                            &x,
+                            &o,
+                            &sample,
+                            plans[i],
+                        )
+                        .unwrap(),
+                    );
+                }
+                full_times[i].push(s.elapsed().as_nanos() / 8);
+            }
+        }
+        for (i, (work, fixed, allocation, rhs, attempts, steps, rejected, fsal)) in
+            rows.into_iter().enumerate()
+        {
+            step_times[i].sort_unstable();
+            full_times[i].sort_unstable();
+            println!(
+                "BLOCK_KERNEL {}",
+                serde_json::json!({"case":case,"candidate":plans[i],"qualified":true,"n":n,"allocation":allocation,"fixed_allocation":fixed,"fixed_work":work,"rhs":rhs,"attempts":attempts,"steps":steps,"rejected":rejected,"fsal":fsal,"median_ns":full_times[i][3],"samples_ns":full_times[i],"fixed_median_ns":step_times[i][3],"fixed_samples_ns":step_times[i],"identity":true})
+            );
+        }
+    }
+    let rhs = |_t: f64, _y: &[f64], o: &mut [f64]| {
+        o.fill(1e300);
+        Ok(())
+    };
+    let mut old = None;
+    for k in plans {
+        let mut w = Dopri5Workspace::new_with_kernel(31, k).unwrap();
+        let mut y = [0.; 31];
+        let mut e = [0.; 31];
+        w.step_into(
+            &rhs,
+            0.,
+            &[0.; 31],
+            1e-310,
+            &mut y,
+            &mut e,
+            &mut WorkCounters::default(),
+        )
+        .unwrap();
+        let v = (y.map(f64::to_bits), e.map(f64::to_bits));
+        if let Some(a) = old {
+            assert_eq!(a, v);
+        } else {
+            old = Some(v);
+        }
+    }
+    println!(
+        "BLOCK_EDGE {}",
+        serde_json::json!({"tiny_step_identity":true,"odd_tail":31})
+    );
+}

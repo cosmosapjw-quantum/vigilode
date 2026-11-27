@@ -54,7 +54,14 @@ fn component_kernel_retries_and_partial_identity() {
     let times = OutputSchedule::new(vec![0., 0.03125, 0.0625, 0.125]).unwrap();
     for fatal in [false, true] {
         let mut runs = vec![];
-        for k in [DopriStageKernel::Rows, DopriStageKernel::Components] {
+        for k in [
+            DopriStageKernel::Rows,
+            DopriStageKernel::Components,
+            DopriStageKernel::Block4,
+            DopriStageKernel::Block8,
+            DopriStageKernel::Block16,
+            DopriStageKernel::Block32,
+        ] {
             let failed = Cell::new(false);
             let rhs = |t: f64, y: &[f64], out: &mut [f64]| {
                 if fatal && t > 0.06 {
@@ -84,30 +91,31 @@ fn component_kernel_retries_and_partial_identity() {
             runs.push(r);
         }
         let a = &runs[0];
-        let b = &runs[1];
-        assert_eq!(a.observed.t, b.observed.t);
-        assert_eq!(a.observed.y, b.observed.y);
-        assert_eq!(a.final_state, b.final_state);
-        assert_eq!(a.final_time, b.final_time);
-        assert_eq!(a.stop_reason, b.stop_reason);
-        assert_eq!(
-            (
-                a.attempts,
-                a.accepted_steps,
-                a.rejected_steps,
-                a.rhs_completed,
-                a.fsal_reuses,
-                a.observed.counters.rhs_calls
-            ),
-            (
-                b.attempts,
-                b.accepted_steps,
-                b.rejected_steps,
-                b.rhs_completed,
-                b.fsal_reuses,
-                b.observed.counters.rhs_calls
-            )
-        );
+        for b in &runs[1..] {
+            assert_eq!(a.observed.t, b.observed.t);
+            assert_eq!(a.observed.y, b.observed.y);
+            assert_eq!(a.final_state, b.final_state);
+            assert_eq!(a.final_time, b.final_time);
+            assert_eq!(a.stop_reason, b.stop_reason);
+            assert_eq!(
+                (
+                    a.attempts,
+                    a.accepted_steps,
+                    a.rejected_steps,
+                    a.rhs_completed,
+                    a.fsal_reuses,
+                    a.observed.counters.rhs_calls
+                ),
+                (
+                    b.attempts,
+                    b.accepted_steps,
+                    b.rejected_steps,
+                    b.rhs_completed,
+                    b.fsal_reuses,
+                    b.observed.counters.rhs_calls
+                )
+            );
+        }
         println!(
             "DOPRI_RETRY fatal={} attempts={} accepted={} rejected={} rhs={} fsal={}",
             fatal,

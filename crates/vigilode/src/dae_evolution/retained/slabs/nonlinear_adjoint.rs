@@ -2,6 +2,7 @@
 //! Whole-tube and subcell bounds are deliberately distinct from numerical
 //! proposals along the interpolated primal path.
 use super::*;
+mod scalar;
 use rodas5p_core::directed::{div_up, exp_interval, sub_up};
 use rodas5p_integrators::{
     AdaptiveStepConfig, Dopri5Config, DopriStageKernel, OutputSchedule,
@@ -75,18 +76,12 @@ fn pair(v: [f64; 2]) -> CoreResult<Iv> {
 fn interval_exp(v: Iv) -> CoreResult<Iv> {
     Iv::new(exp_interval(v.lo)?.lo.max(0.), exp_interval(v.hi)?.hi)
 }
-fn bound_cell(
+fn physical_cell_box(
     src: &DaeSource,
     s: &CompactSlabView<'_>,
     theta: Iv,
     local: bool,
-    passes: usize,
-    weights: &[f64],
-    w: &mut NonlinearAdjointWorkspace,
-    a: &mut [Iv],
-    goal: &mut [Iv],
-    work: &mut NonlinearAdjointWork,
-) -> CoreResult<Iv> {
+) -> CoreResult<(Iv, Iv, [Iv; 32])> {
     let nx = src.nx();
     let nz = src.nz();
     let n = nx + nz;
@@ -148,6 +143,26 @@ fn bound_cell(
             y[i] = intersection(y[i], v.add(Iv::new(-rad, rad)?)?)?;
         }
     }
+    Ok((h, time, y))
+}
+fn bound_cell(
+    src: &DaeSource,
+    s: &CompactSlabView<'_>,
+    theta: Iv,
+    local: bool,
+    passes: usize,
+    weights: &[f64],
+    w: &mut NonlinearAdjointWorkspace,
+    a: &mut [Iv],
+    goal: &mut [Iv],
+    work: &mut NonlinearAdjointWork,
+) -> CoreResult<Iv> {
+    let n = src.nx() + src.nz();
+    let c = s
+        .certificate
+        .as_ref()
+        .ok_or_else(|| bad("adjoint certificate"))?;
+    let (h, time, y) = physical_cell_box(src, s, theta, local)?;
     let refinement = if passes > 0 {
         de::GuardColumnRefinement::AdaptiveGaussSeidel2
     } else {
@@ -252,6 +267,7 @@ pub enum ScalarAdjointRoute {
     DirectBare16,
     Adaptive,
     FlowRatio,
+    QuadraticSeed16,
 }
 #[derive(Clone, Copy, Debug, Default, Serialize)]
 pub struct ScalarAdjointWork {
@@ -264,6 +280,7 @@ pub struct ScalarAdjointWork {
     pub divisions: usize,
     pub split_evaluations: usize,
     pub cap_leaves: usize,
+    pub quadratic_seed_uses: usize,
     pub width_upper: f64,
 }
 impl SlabReplayRun {
@@ -362,26 +379,6 @@ impl SlabReplayRun {
         }
         out.copy_from_slice(&v[..n]);
         Ok(work)
-    }
-    /// RED compatibility delegate, intentionally not optimized.
-    pub fn scalar_adjoint_into(
-        &self,
-        weights: &[f64],
-        _route: ScalarAdjointRoute,
-        w: &mut NonlinearAdjointWorkspace,
-        out: &mut [Iv],
-    ) -> CoreResult<ScalarAdjointWork> {
-        let r = self.nonlinear_adjoint_into(weights, NonlinearAdjointRoute::ScalarExp16, w, out)?;
-        Ok(ScalarAdjointWork {
-            source_rows: r.schur.source_rows,
-            cells: r.cells,
-            exponentials: r.scalar_exponentials,
-            root_passes: r.schur.root_passes,
-            column_solves: r.schur.column_solves,
-            refinement_sweeps: r.schur.refinement_sweeps,
-            width_upper: r.width_upper,
-            ..Default::default()
-        })
     }
     /// Numerical proposal using the original projection/Jacobian on the
     /// native dense path. It is not the certificate. Detach work/audit so
