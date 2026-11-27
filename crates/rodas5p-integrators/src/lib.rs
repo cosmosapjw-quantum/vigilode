@@ -311,7 +311,8 @@ pub use dopri5::{
     Dopri5SpectralDiagnosis, Dopri5StopReason, Dopri5Workspace, DopriStageKernel, DopriStageWork,
     NativeSessionAdvance, NativeSessionCheckpoint, NativeSessionIdentity, NativeSessionMethod,
     NativeSessionTelemetry, StabilityModeClass, integrate_dopri5_dense_observed,
-    integrate_dopri5_dense_observed_with_norm, integrate_dopri5_observed,
+    integrate_dopri5_dense_observed_with_kernel, integrate_dopri5_dense_observed_with_norm,
+    integrate_dopri5_observed, integrate_dopri5_observed_with_kernel,
     integrate_dopri5_observed_with_norm,
 };
 pub use dopri5_dense::DOPRI5_DENSE_P;

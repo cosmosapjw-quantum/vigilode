@@ -331,23 +331,51 @@ impl Dopri5Workspace {
             if stage == 6 {
                 self.stage_prev_endpoint.copy_from_slice(&self.stage_state);
             }
-            self.stage_state.copy_from_slice(y);
-            self.stage_work.state_writes += self.n as u64;
-            // Unit-stride state updates permit vectorization without assuming
-            // that different state components of the RHS are independent.
-            for (previous, &coefficient) in DOPRI5_A[stage].iter().enumerate().take(stage) {
-                if coefficient != 0.0 {
-                    let derivative = &self.stages[previous * self.n..(previous + 1) * self.n];
-                    self.stage_work.state_writes += self.n as u64;
-                    self.stage_work.linear_products += self.n as u64;
-                    if tiny_step {
-                        for (value, &k) in self.stage_state.iter_mut().zip(derivative) {
-                            *value += coefficient * (h * k);
+            if self.kernel == DopriStageKernel::Components {
+                let mut weights = [0.; 7];
+                for j in 0..stage {
+                    weights[j] = h * DOPRI5_A[stage][j];
+                }
+                for i in 0..self.n {
+                    let mut v = y[i];
+                    for j in 0..stage {
+                        let c = DOPRI5_A[stage][j];
+                        if c != 0. {
+                            let k = self.stages[j * self.n + i];
+                            v += if tiny_step {
+                                c * (h * k)
+                            } else {
+                                weights[j] * k
+                            };
                         }
-                    } else {
-                        let weight = h * coefficient;
-                        for (value, &k) in self.stage_state.iter_mut().zip(derivative) {
-                            *value += weight * k;
+                    }
+                    self.stage_state[i] = v;
+                }
+                self.stage_work.state_writes += self.n as u64;
+                self.stage_work.linear_products += self.n as u64
+                    * DOPRI5_A[stage][..stage]
+                        .iter()
+                        .filter(|&&v| v != 0.)
+                        .count() as u64;
+            } else {
+                self.stage_state.copy_from_slice(y);
+                self.stage_work.state_writes += self.n as u64;
+                // Unit-stride state updates permit vectorization without assuming
+                // that different state components of the RHS are independent.
+                for (previous, &coefficient) in DOPRI5_A[stage].iter().enumerate().take(stage) {
+                    if coefficient != 0.0 {
+                        let derivative = &self.stages[previous * self.n..(previous + 1) * self.n];
+                        self.stage_work.state_writes += self.n as u64;
+                        self.stage_work.linear_products += self.n as u64;
+                        if tiny_step {
+                            for (value, &k) in self.stage_state.iter_mut().zip(derivative) {
+                                *value += coefficient * (h * k);
+                            }
+                        } else {
+                            let weight = h * coefficient;
+                            for (value, &k) in self.stage_state.iter_mut().zip(derivative) {
+                                *value += weight * k;
+                            }
                         }
                     }
                 }
@@ -372,21 +400,43 @@ impl Dopri5Workspace {
         }
         // The seventh stage is evaluated at exactly the fifth-order output.
         endpoint.copy_from_slice(&self.stage_state);
-        error.fill(0.0);
-        self.stage_work.error_writes += self.n as u64;
-        for (stage, &coefficient) in ERROR_WEIGHTS.iter().enumerate() {
-            if coefficient != 0.0 {
-                let derivative = &self.stages[stage * self.n..(stage + 1) * self.n];
-                self.stage_work.error_writes += self.n as u64;
-                self.stage_work.linear_products += self.n as u64;
-                if tiny_step {
-                    for (value, &k) in error.iter_mut().zip(derivative) {
-                        *value += coefficient * (h * k);
+        if self.kernel == DopriStageKernel::Components {
+            let weights = ERROR_WEIGHTS.map(|c| h * c);
+            for i in 0..self.n {
+                let mut v = 0.;
+                for j in 0..7 {
+                    let c = ERROR_WEIGHTS[j];
+                    if c != 0. {
+                        let k = self.stages[j * self.n + i];
+                        v += if tiny_step {
+                            c * (h * k)
+                        } else {
+                            weights[j] * k
+                        };
                     }
-                } else {
-                    let weight = h * coefficient;
-                    for (value, &k) in error.iter_mut().zip(derivative) {
-                        *value += weight * k;
+                }
+                error[i] = v;
+            }
+            self.stage_work.error_writes += self.n as u64;
+            self.stage_work.linear_products +=
+                self.n as u64 * ERROR_WEIGHTS.iter().filter(|&&v| v != 0.).count() as u64;
+        } else {
+            error.fill(0.0);
+            self.stage_work.error_writes += self.n as u64;
+            for (stage, &coefficient) in ERROR_WEIGHTS.iter().enumerate() {
+                if coefficient != 0.0 {
+                    let derivative = &self.stages[stage * self.n..(stage + 1) * self.n];
+                    self.stage_work.error_writes += self.n as u64;
+                    self.stage_work.linear_products += self.n as u64;
+                    if tiny_step {
+                        for (value, &k) in error.iter_mut().zip(derivative) {
+                            *value += coefficient * (h * k);
+                        }
+                    } else {
+                        let weight = h * coefficient;
+                        for (value, &k) in error.iter_mut().zip(derivative) {
+                            *value += weight * k;
+                        }
                     }
                 }
             }
@@ -549,7 +599,16 @@ pub fn integrate_dopri5_observed<F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()
     config: &Dopri5Config,
     output: &OutputSchedule,
 ) -> CoreResult<Dopri5IntegrationResult> {
-    integrate_dopri5_impl(rhs, t_span, y0, config, output, false, None)
+    integrate_dopri5_impl(
+        rhs,
+        t_span,
+        y0,
+        config,
+        output,
+        false,
+        None,
+        DopriStageKernel::Rows,
+    )
 }
 
 /// Integrate with a physical-space affine error norm. The norm's own absolute
@@ -565,7 +624,16 @@ pub fn integrate_dopri5_observed_with_norm<
     output: &OutputSchedule,
     norm: &AffineErrorNorm,
 ) -> CoreResult<Dopri5IntegrationResult> {
-    integrate_dopri5_impl(rhs, t_span, y0, config, output, false, Some(norm))
+    integrate_dopri5_impl(
+        rhs,
+        t_span,
+        y0,
+        config,
+        output,
+        false,
+        Some(norm),
+        DopriStageKernel::Rows,
+    )
 }
 
 /// Sample the quartic continuous extension of accepted DOPRI5 steps.
@@ -584,7 +652,16 @@ pub fn integrate_dopri5_dense_observed<
     config: &Dopri5Config,
     output: &OutputSchedule,
 ) -> CoreResult<Dopri5IntegrationResult> {
-    integrate_dopri5_impl(rhs, t_span, y0, config, output, true, None)
+    integrate_dopri5_impl(
+        rhs,
+        t_span,
+        y0,
+        config,
+        output,
+        true,
+        None,
+        DopriStageKernel::Rows,
+    )
 }
 
 /// Dense sampling with a physical-space affine error norm at step acceptance.
@@ -600,9 +677,43 @@ pub fn integrate_dopri5_dense_observed_with_norm<
     output: &OutputSchedule,
     norm: &AffineErrorNorm,
 ) -> CoreResult<Dopri5IntegrationResult> {
-    integrate_dopri5_impl(rhs, t_span, y0, config, output, true, Some(norm))
+    integrate_dopri5_impl(
+        rhs,
+        t_span,
+        y0,
+        config,
+        output,
+        true,
+        Some(norm),
+        DopriStageKernel::Rows,
+    )
 }
 
+/// Explicit stage accumulation candidate, same controller and observation contract.
+pub fn integrate_dopri5_observed_with_kernel<
+    F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized,
+>(
+    rhs: &F,
+    t_span: (f64, f64),
+    y0: &[f64],
+    config: &Dopri5Config,
+    output: &OutputSchedule,
+    kernel: DopriStageKernel,
+) -> CoreResult<Dopri5IntegrationResult> {
+    integrate_dopri5_impl(rhs, t_span, y0, config, output, false, None, kernel)
+}
+pub fn integrate_dopri5_dense_observed_with_kernel<
+    F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized,
+>(
+    rhs: &F,
+    t_span: (f64, f64),
+    y0: &[f64],
+    config: &Dopri5Config,
+    output: &OutputSchedule,
+    kernel: DopriStageKernel,
+) -> CoreResult<Dopri5IntegrationResult> {
+    integrate_dopri5_impl(rhs, t_span, y0, config, output, true, None, kernel)
+}
 fn integrate_dopri5_impl<F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized>(
     rhs: &F,
     t_span: (f64, f64),
@@ -611,6 +722,7 @@ fn integrate_dopri5_impl<F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Siz
     output: &OutputSchedule,
     dense: bool,
     physical_norm: Option<&AffineErrorNorm>,
+    kernel: DopriStageKernel,
 ) -> CoreResult<Dopri5IntegrationResult> {
     if let Some(norm) = physical_norm {
         norm.validate_dimension(y0.len())?;
@@ -639,7 +751,7 @@ fn integrate_dopri5_impl<F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Siz
     }
     adaptive.validate()?;
     let mut output = Dopri5OutputSession::new(&adaptive, output, t_span, y0, dense)?;
-    let mut workspace = Dopri5Workspace::new(y0.len())?;
+    let mut workspace = Dopri5Workspace::new_with_kernel(y0.len(), kernel)?;
     let mut state = y0.to_vec();
     let mut endpoint = vec![0.0; y0.len()];
     let mut error = vec![0.0; y0.len()];
