@@ -1123,3 +1123,25 @@ fn goal_escalation_actual_portfolio() {
         }
     }
 }
+
+#[test]
+fn structured_homogeneous_goal_red_green() {
+    let (src, x, z, b, c) = growth_fixture();
+    let r = run(&src, &x, &z, &b, Some(0.));
+    assert!(r.global_qualified());
+    let q = r.accepted(r.accepted_len()-1).unwrap();
+    let truth = (8.*q.t()).exp()/1024. - q.state()[0];
+    for route in [AdjointTaylorRoute::Fixed12, AdjointTaylorRoute::Fixed20, AdjointTaylorRoute::Budgeted] {
+        let mut iv = Iv::point(123.).unwrap();
+        let (work, alloc) = measure(|| r.homogeneous_goal_into(&c, route, 1e-12, &mut iv));
+        let work = work.unwrap();
+        assert_eq!(alloc.requests(), 0);
+        assert!(iv.lo <= truth+1e-15 && iv.hi >= truth-1e-15 && iv.hi-iv.lo < 1e-8);
+        println!("STRUCT_CERT {} {}", serde_json::to_string(&work).unwrap(), serde_json::to_string(&iv.as_pair()).unwrap());
+    }
+    let (src, x, z, b, c) = fixture(2);
+    let r = run(&src, &x, &z, &b, Some(0.));
+    let mut iv = Iv::point(123.).unwrap();
+    assert!(r.homogeneous_goal_into(&c, AdjointTaylorRoute::Fixed20, 1e-12, &mut iv).is_err());
+    assert_eq!(iv.as_pair(), [123.,123.]);
+}
