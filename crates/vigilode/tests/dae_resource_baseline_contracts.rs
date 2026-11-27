@@ -7072,3 +7072,218 @@ fn retained_output_arena_portfolio() {
         serde_json::json!({"physical_error":null,"qualified":false})
     );
 }
+
+fn slab_campaign_fixture(
+    case: &str,
+) -> (DaeSource, Vec<f64>, Vec<f64>, Vec<[f64; 2]>, EvolutionRoute) {
+    if case == "mixed_rates" || case == "quadratic_flow" {
+        let v = |i, w| tr(w, vec![F::component(i, 0.)]);
+        let (src, x, z, branch, projection) = if case == "mixed_rates" {
+            (
+                DaeSource::new(
+                    vec![p(vec![v(0, -32.)]), p(vec![v(1, -1.125), v(2, 0.125)])],
+                    vec![p(vec![v(2, 1.), v(0, -1.), v(1, -1.)])],
+                )
+                .unwrap(),
+                vec![0.25, 0.],
+                vec![0.25],
+                vec![[-2., 2.]],
+                WorkspaceProjection::Reuse,
+            )
+        } else {
+            (
+                DaeSource::new(
+                    vec![p(vec![v(1, 0.125)])],
+                    vec![p(vec![
+                        tr(1., vec![F::component(1, 0.), F::component(1, 0.)]),
+                        v(0, -1.),
+                        tr(-0.25, vec![]),
+                    ])],
+                )
+                .unwrap(),
+                vec![0.],
+                vec![0.5],
+                vec![[0.4375, 0.625]],
+                WorkspaceProjection::Sturm,
+            )
+        };
+        (
+            src,
+            x,
+            z,
+            branch,
+            EvolutionRoute::WorkspaceQuery5 {
+                projection,
+                certificate: de::SlabWorkspaceRoute::Refined,
+                storage: CertificateStorage::Local,
+                query: QueryWorkspaceRoute::StreamPairs,
+            },
+        )
+    } else {
+        retained_route(case)
+    }
+}
+#[test]
+fn slab_dense_power_into_actual_noalloc() {
+    warm();
+    let (src, x, z, branch, solver) = slab_campaign_fixture("stable");
+    let r = evolve_epoch(
+        &src,
+        &x,
+        &z,
+        &branch,
+        EvolutionEpoch {
+            start: 0.,
+            end: 0.125,
+            incoming_x_error: Some(0.),
+        },
+        &opts(),
+        policy(),
+        solver,
+        &[],
+    )
+    .unwrap();
+    assert!(r.global_qualified);
+    let v = r.native_packet_view(1).unwrap();
+    let expected = v.power().unwrap();
+    let mut out = expected.clone();
+    let (r, a) = measure(|| de::dense_power_rows_into(v.y0, v.y1, &v.stages, v.basis, &mut out));
+    r.unwrap();
+    assert_eq!(out, expected);
+    println!(
+        "SLAB_RED_GREEN {}",
+        serde_json::json!({"allocation":a,"rows":out.len()})
+    );
+    assert_eq!(
+        a.requests(),
+        0,
+        "native dense coefficient output already allocated"
+    );
+}
+#[test]
+fn compact_slab_driver_profile() {
+    warm();
+    for case in [
+        "stable",
+        "stiff",
+        "nonlinear",
+        "vector4",
+        "vector8",
+        "mixed_rates",
+        "quadratic_flow",
+    ] {
+        let (src, x, z, b, route) = slab_campaign_fixture(case);
+        let epoch = EvolutionEpoch {
+            start: 0.,
+            end: 0.125,
+            incoming_x_error: Some(0.),
+        };
+        let grid = (1..64).map(|i| i as f64 / 512.).collect::<Vec<_>>();
+        let retention = RetainedOutputRoute {
+            queries: QueryArenaLayout::Shared,
+            native: NativeRetention::BorrowedRows,
+        };
+        let ((run, a), allocation, heap) = measure_live(|| {
+            evolve_epoch_retained_audited(
+                &src,
+                &x,
+                &z,
+                &b,
+                epoch,
+                &opts(),
+                policy(),
+                route,
+                &grid,
+                retention,
+            )
+        });
+        let run = run.unwrap();
+        assert!(run.global_qualified(), "{case} {:?}", run.reason());
+        let run = run.materialize().unwrap();
+        let (prepared, setup) =
+            measure(|| initialize_reduced_problem(&src, 0., &x, &z, &b, policy(), route));
+        let prepared = prepared.unwrap();
+        let (driver, solve) = measure(|| {
+            vigilode::Rodas5p::solve(
+                &prepared.problem,
+                (0., 0.125),
+                &prepared.initial_state,
+                &opts(),
+            )
+        });
+        let driver = driver.unwrap();
+        assert_eq!(driver.t, run.driver().t);
+        assert_eq!(driver.y, run.driver().y);
+        let (init, ic) = measure(|| src.clone());
+        drop(init);
+        let init_route = match route {
+            EvolutionRoute::WorkspaceQuery5 {
+                projection: WorkspaceProjection::Reuse,
+                ..
+            } => InitRoute::Reuse,
+            EvolutionRoute::WorkspaceQuery5 {
+                projection: WorkspaceProjection::Affine,
+                ..
+            } => InitRoute::BoundedAffineScalar,
+            EvolutionRoute::WorkspaceQuery5 {
+                projection: WorkspaceProjection::Sturm,
+                ..
+            } => InitRoute::BoundedSturmScalar,
+            _ => InitRoute::BoundedVectorPivot,
+        };
+        let mut components = std::collections::BTreeMap::<&str, Counts>::new();
+        for (k, s) in run.slabs().iter().enumerate() {
+            let v = run.native_packet_view(k).unwrap();
+            let c = s.certificate.as_ref().unwrap();
+            let (p, ap) = measure(|| v.power());
+            let mut p = p.unwrap();
+            let (zr, ar) = measure(|| {
+                de::reconstruct(
+                    &src,
+                    s.times,
+                    &p,
+                    &prepared.report.z,
+                    &b,
+                    policy().init,
+                    init_route,
+                    None,
+                    5,
+                )
+            });
+            p.extend(zr.unwrap().0);
+            let (pairs, pp) = measure(|| {
+                p.iter()
+                    .map(|row| row.iter().map(|v| v.as_pair()).collect::<Vec<_>>())
+                    .collect::<Vec<_>>()
+            });
+            assert_eq!(pairs, s.power);
+            let (cr, ac) = measure(|| {
+                de::certify_slab_workspace(
+                    &src,
+                    s.times,
+                    &p,
+                    &b,
+                    policy().tube_radius,
+                    Some(c.incoming),
+                    policy().green,
+                    policy().init.condition_cap,
+                    de::SlabWorkspaceRoute::Refined,
+                    &mut de::SlabCertificateWorkspace::new(),
+                )
+            });
+            same_serialized(&cr.unwrap(), c);
+            for (k, v) in [
+                ("dense_power", ap),
+                ("reconstruction", ar),
+                ("retained_power", pp),
+                ("retained_certificate", ac),
+            ] {
+                components.entry(k).or_default().add(v);
+            }
+        }
+        println!(
+            "SLAB_PROFILE {}",
+            serde_json::json!({"case":case,"whole":allocation,"heap":heap,"setup":setup,"isolated_solve":solve,"source_clone":ic,"components":components,"slabs":run.slabs().len(),"max_physical_error":run.max_physical_error,"audit":a})
+        );
+    }
+}

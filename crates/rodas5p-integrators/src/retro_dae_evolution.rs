@@ -544,6 +544,24 @@ pub fn dense_power_rows(
         })
         .collect()
 }
+/// RED owning compatibility path. The output buffers already exist.
+pub fn dense_power_rows_into(
+    y0: &[f64],
+    y1: &[f64],
+    stages: &[&[f64]],
+    basis: DenseBasis,
+    out: &mut [Poly],
+) -> CoreResult<()> {
+    let r = dense_power_rows(y0, y1, stages, basis)?;
+    if out.len() != r.len() {
+        return Err(bad("dense output shape"));
+    }
+    for (o, v) in out.iter_mut().zip(r) {
+        o.clear();
+        o.extend(v);
+    }
+    Ok(())
+}
 /// Reuse the existing original physical-event component adapter and
 /// directed coefficient kernel on the actual fast native store.
 pub fn dense_power_components(s: &crate::FastDenseSegments, k: usize) -> CoreResult<Vec<Poly>> {
