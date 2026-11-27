@@ -13,6 +13,7 @@ pub use nonlinear_adjoint::*;
 pub enum SlabReplayRoute {
     ReuseOwned,
     Flat,
+    ClockWeighted(de::ClockTubePlan),
 }
 
 /// Scratch for an explicitly bounded five-node replay. The large vector
@@ -222,6 +223,33 @@ impl<'a> SlabReplayWorkspace<'a> {
             branch,
             policy.tube_radius,
             incoming,
+            policy.green,
+            policy.init.condition_cap,
+            route,
+            &mut self.proof,
+            &mut self.report,
+        )?;
+        self.stage = 3;
+        Ok(())
+    }
+    #[allow(clippy::too_many_arguments)]
+    fn certify_clock(
+        &mut self,
+        carry: &mut de::ClockTubeCarry<'_>,
+        times: [f64; 2],
+        branch: &[[f64; 2]],
+        policy: EvolutionPolicy,
+        route: de::SlabWorkspaceRoute,
+    ) -> CoreResult<()> {
+        if self.stage < 2 {
+            return Err(bad("weighted clock workspace stage"));
+        }
+        self.stage = 2;
+        carry.certify_into(
+            times,
+            &self.power,
+            branch,
+            policy.tube_radius,
             policy.green,
             policy.init.condition_cap,
             route,
@@ -522,7 +550,10 @@ impl RetainedBuild {
         e: &Engine,
         incoming: Option<f64>,
     ) -> CoreResult<Option<f64>> {
-        if self.slab_plan == Some(SlabReplayRoute::Flat) {
+        if matches!(
+            self.slab_plan,
+            Some(SlabReplayRoute::Flat | SlabReplayRoute::ClockWeighted(_))
+        ) {
             self.slab_arena = Some(SlabArena::new(
                 e.src.nx(),
                 e.src.nz(),
@@ -565,6 +596,20 @@ impl RetainedBuild {
         {
             return Err(bad("slab replay unsupported route"));
         }
+        let mut weighted = if let Some(SlabReplayRoute::ClockWeighted(plan)) = self.slab_plan {
+            if !out.initial.qualified {
+                return Err(bad("weighted clock initial authority"));
+            }
+            Some(de::ClockTubeCarry::new(
+                &e.src,
+                plan,
+                out.driver.t[0],
+                &out.initial.x,
+                incoming,
+            )?)
+        } else {
+            None
+        };
         for k in 0..out.driver.t.len() - 1 {
             let times = [out.driver.t[k], out.driver.t[k + 1]];
             let v = native_packet_view(&out.driver, k)?;
@@ -607,12 +652,19 @@ impl RetainedBuild {
                     reason: Some(err.to_string()),
                 });
                 incoming = None;
+                if let Some(c) = &mut weighted {
+                    c.invalidate();
+                }
                 continue;
             }
             for v in w.reconstruction_work().unwrap() {
                 e.work.lock().map_err(|_| bad("work lock"))?.add(v, false);
             }
-            let result = w.certify(&e.src, times, &e.branch, e.policy, incoming, route);
+            let result = if let Some(c) = &mut weighted {
+                w.certify_clock(c, times, &e.branch, e.policy, route)
+            } else {
+                w.certify(&e.src, times, &e.branch, e.policy, incoming, route)
+            };
             update_audit(&e.audit, |a| {
                 a.replay_certificate.record(result.is_ok());
                 a.replay_global_certificates +=

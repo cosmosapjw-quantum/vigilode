@@ -20,6 +20,8 @@ use rodas5p_core::{
 use serde::Serialize;
 type Iv = Interval;
 type Poly = Vec<Iv>;
+mod clock_tube;
+pub use clock_tube::{ClockTubeCarry, ClockTubePlan, ClockTubeWork};
 mod scalar_adjoint_jet;
 mod schur_adjoint;
 mod secant_goal;
