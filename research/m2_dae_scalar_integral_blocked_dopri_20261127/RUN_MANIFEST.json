@@ -1,0 +1,293 @@
+{
+  "base_commit": "1bd729e9f89fc941db4ed90c63dd6260daa51d8a",
+  "checks": [
+    "two behavior RED101 and GREEN0",
+    "41/49 scalar candidates valid,8 structural refusal,41 successful warmed noheap",
+    "41 negative goal checks",
+    "78/78 fixed noheap,13 complete adaptive identity groups",
+    "53864 independent Fraction assertions",
+    "119 prior logical,68 exact,51 timing-only",
+    "87 regression tests passed6 ignored",
+    "127 measured candidate rows32 Pareto covered",
+    "rustfmt and diff check clean"
+  ],
+  "claim_id": "M2-03d.5b.19",
+  "cleanup": {
+    "compressed_bytes": 140861,
+    "raw_bytes_removed": 3086670
+  },
+  "commands_file": "REPRODUCE.md",
+  "environment": {
+    "hardware": "AMD Ryzen9 5900X x86_64 remote host, nonexclusive",
+    "software": [
+      {
+        "name": "rustc",
+        "version": "rustc 1.94.1 (e408947bf 2026-03-25)"
+      },
+      {
+        "name": "cargo",
+        "version": "cargo 1.94.1 (29ea6fb6a 2026-03-24)"
+      },
+      {
+        "name": "MathHarness General",
+        "version": "3.1.0 verified154 files"
+      }
+    ],
+    "timing_affinity": "cpu=0"
+  },
+  "executed_commit": "d56bec2da066af48d478b3a6ccd2ede81c11bfac",
+  "exit_codes": {
+    "allocator": 0,
+    "blocked": 0,
+    "dopri_regression": 0,
+    "green_compile_failure": 101,
+    "green_scalar": 0,
+    "prior_affine": 0,
+    "prior_dopri": 0,
+    "prior_nonlinear": 0,
+    "prior_stage": 0,
+    "red_block": 101,
+    "red_scalar": 101,
+    "regression": 0,
+    "replay_verify": 0,
+    "scalar": 0,
+    "selection": 0,
+    "verify": 0
+  },
+  "guide_commit": "a1441417b0bd110348e45915a3f737cbfdf33ba2",
+  "input_artifacts": [
+    {
+      "current_sha256": "916af14365eca915feb13a970a9cb37252d60970a53d868c799c36288f2e7717",
+      "path": "crates/rodas5p-integrators/src/dopri5.rs",
+      "sha256": "916af14365eca915feb13a970a9cb37252d60970a53d868c799c36288f2e7717",
+      "source_commit": "d56bec2da066af48d478b3a6ccd2ede81c11bfac",
+      "verified_git_blob_sha256": "916af14365eca915feb13a970a9cb37252d60970a53d868c799c36288f2e7717"
+    },
+    {
+      "current_sha256": "3c2232f7d9d2657660f17d92670c3c5da57ede081d2ec104240305ec679deb83",
+      "path": "crates/rodas5p-integrators/src/retro_dae_evolution.rs",
+      "sha256": "3c2232f7d9d2657660f17d92670c3c5da57ede081d2ec104240305ec679deb83",
+      "source_commit": "d56bec2da066af48d478b3a6ccd2ede81c11bfac",
+      "verified_git_blob_sha256": "3c2232f7d9d2657660f17d92670c3c5da57ede081d2ec104240305ec679deb83"
+    },
+    {
+      "current_sha256": "7b93debadfbb76044dce6a197ae0e7adcfdb2ee720c30fa3d514daebe6160f6b",
+      "path": "crates/rodas5p-integrators/src/retro_dae_evolution/scalar_adjoint_jet.rs",
+      "sha256": "7b93debadfbb76044dce6a197ae0e7adcfdb2ee720c30fa3d514daebe6160f6b",
+      "source_commit": "d56bec2da066af48d478b3a6ccd2ede81c11bfac",
+      "verified_git_blob_sha256": "7b93debadfbb76044dce6a197ae0e7adcfdb2ee720c30fa3d514daebe6160f6b"
+    },
+    {
+      "current_sha256": "1685b19c9ce7129306bdc5f8e0292ac1cbd1d73a764f0d82528e80d5f91696bb",
+      "path": "crates/rodas5p-integrators/tests/dopri_stage_kernel_contracts.rs",
+      "sha256": "1685b19c9ce7129306bdc5f8e0292ac1cbd1d73a764f0d82528e80d5f91696bb",
+      "source_commit": "d56bec2da066af48d478b3a6ccd2ede81c11bfac",
+      "verified_git_blob_sha256": "1685b19c9ce7129306bdc5f8e0292ac1cbd1d73a764f0d82528e80d5f91696bb"
+    },
+    {
+      "current_sha256": "fa981199cbbbf2767ee6a6f395330c28cc23690adb92a6d7d7cde14d87217e0e",
+      "path": "crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint.rs",
+      "sha256": "fa981199cbbbf2767ee6a6f395330c28cc23690adb92a6d7d7cde14d87217e0e",
+      "source_commit": "d56bec2da066af48d478b3a6ccd2ede81c11bfac",
+      "verified_git_blob_sha256": "fa981199cbbbf2767ee6a6f395330c28cc23690adb92a6d7d7cde14d87217e0e"
+    },
+    {
+      "current_sha256": "31913402151ec55c8b354d407703cc0f94ca065aa6d0f2038bf1da86a4ffc618",
+      "path": "crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/scalar.rs",
+      "sha256": "31913402151ec55c8b354d407703cc0f94ca065aa6d0f2038bf1da86a4ffc618",
+      "source_commit": "d56bec2da066af48d478b3a6ccd2ede81c11bfac",
+      "verified_git_blob_sha256": "31913402151ec55c8b354d407703cc0f94ca065aa6d0f2038bf1da86a4ffc618"
+    },
+    {
+      "current_sha256": "41e306962f47df9918e51bd99d2456a1434e8daffe164515177931c229497e9c",
+      "path": "crates/vigilode/tests/dae_resource_baseline_contracts.rs",
+      "sha256": "41e306962f47df9918e51bd99d2456a1434e8daffe164515177931c229497e9c",
+      "source_commit": "d56bec2da066af48d478b3a6ccd2ede81c11bfac",
+      "verified_git_blob_sha256": "41e306962f47df9918e51bd99d2456a1434e8daffe164515177931c229497e9c"
+    },
+    {
+      "current_sha256": "ce0e2c6a5e4dfa5ccd6808f2fbbebc209f28096632c8bd3525c0d27518436c97",
+      "path": "research/m2_dae_scalar_integral_blocked_dopri_20261127/PREREGISTRATION.md",
+      "sha256": "ce0e2c6a5e4dfa5ccd6808f2fbbebc209f28096632c8bd3525c0d27518436c97",
+      "source_commit": "d56bec2da066af48d478b3a6ccd2ede81c11bfac",
+      "verified_git_blob_sha256": "ce0e2c6a5e4dfa5ccd6808f2fbbebc209f28096632c8bd3525c0d27518436c97"
+    },
+    {
+      "current_sha256": "ffeb5e5b89a63fe1d8fc5392336ec7d770accdbce43299a9532fd1358e2b5e93",
+      "path": "research/m2_dae_scalar_integral_blocked_dopri_20261127/guide.py",
+      "sha256": "ffeb5e5b89a63fe1d8fc5392336ec7d770accdbce43299a9532fd1358e2b5e93",
+      "source_commit": "a1441417b0bd110348e45915a3f737cbfdf33ba2",
+      "verified_git_blob_sha256": "ffeb5e5b89a63fe1d8fc5392336ec7d770accdbce43299a9532fd1358e2b5e93"
+    },
+    {
+      "current_sha256": "772fc8445dfab0d98c2352831147823e6ec60dc196cc5771a6e7398493781e09",
+      "path": "research/m2_dae_scalar_integral_blocked_dopri_20261127/CANDIDATES.json",
+      "sha256": "772fc8445dfab0d98c2352831147823e6ec60dc196cc5771a6e7398493781e09",
+      "source_commit": "a1441417b0bd110348e45915a3f737cbfdf33ba2",
+      "verified_git_blob_sha256": "772fc8445dfab0d98c2352831147823e6ec60dc196cc5771a6e7398493781e09"
+    },
+    {
+      "current_sha256": "803ce65aa584d5ae06af1688b3153c21366bceb61ee0e4263c020ea5b63c6da1",
+      "path": "research/m2_dae_scalar_integral_blocked_dopri_20261127/HARNESS_ROUTES.json",
+      "sha256": "803ce65aa584d5ae06af1688b3153c21366bceb61ee0e4263c020ea5b63c6da1",
+      "source_commit": "a1441417b0bd110348e45915a3f737cbfdf33ba2",
+      "verified_git_blob_sha256": "803ce65aa584d5ae06af1688b3153c21366bceb61ee0e4263c020ea5b63c6da1"
+    },
+    {
+      "current_sha256": "a671952e50bd6e180be03a60fea50d77444b142541cf2faa6707f97596216597",
+      "path": "research/m2_dae_scalar_integral_blocked_dopri_20261127/LITERATURE.md",
+      "sha256": "a671952e50bd6e180be03a60fea50d77444b142541cf2faa6707f97596216597",
+      "source_commit": "a1441417b0bd110348e45915a3f737cbfdf33ba2",
+      "verified_git_blob_sha256": "a671952e50bd6e180be03a60fea50d77444b142541cf2faa6707f97596216597"
+    }
+  ],
+  "limitations": [
+    "not universal speedup or default promotion",
+    "no total primal/driver zeroheap",
+    "no full old receipt replay or full workspace/Clippy",
+    "no independent subagent or blinded holdout",
+    "no hardware counters or SIMD proof",
+    "scalar nx=nz=1 domain, not parameter/reset/discrete gradient",
+    "timing nonexclusive host",
+    "runtime duration per test in raw logs; full manifest schema validator not run"
+  ],
+  "logs": [
+    {
+      "archive": "allocator.log.gz",
+      "archive_bytes": 824,
+      "archive_sha256": "7edbc878ecc83c828c1f177a70141ced75113d5d5c2ea705e5d19ac51e13f408",
+      "raw_bytes": 1889,
+      "raw_name": "allocator.log",
+      "raw_sha256": "0a050aadbb26d01374d8a7d27b405eb31569eb5e8d6981f49aefb78b3b46a901"
+    },
+    {
+      "archive": "blocked.log.gz",
+      "archive_bytes": 11282,
+      "archive_sha256": "4c39cd6aa6b36c7dfba9c6d355b23c762798889ad00bca0ab2eb87f728d78343",
+      "raw_bytes": 553486,
+      "raw_name": "blocked.log",
+      "raw_sha256": "ba564a941b89259b13ee7f8aaf54ea6cd09197fcff68ea63bb3023bd91acb2da"
+    },
+    {
+      "archive": "dopri_regression.log.gz",
+      "archive_bytes": 1444,
+      "archive_sha256": "5725b7deaaf99026e26b431d9321799d3209960f52abe25bacddd7b1bbdc4d75",
+      "raw_bytes": 4432,
+      "raw_name": "dopri_regression.log",
+      "raw_sha256": "4af093d9681f515d4bbadbd43eaa4da9966aba206cc781e829006fe20920ea40"
+    },
+    {
+      "archive": "green_compile_failure.log.gz",
+      "archive_bytes": 1169,
+      "archive_sha256": "b08d73ae4245922c885efefaad7fb79ac92ef3b325506f112d16bf658ceef093",
+      "raw_bytes": 2662,
+      "raw_name": "green_compile_failure.log",
+      "raw_sha256": "d7908ef7093bbc0306b76df7421fc2e44a4f67ec6072dac011409e56ae110ae9"
+    },
+    {
+      "archive": "green_scalar.log.gz",
+      "archive_bytes": 846,
+      "archive_sha256": "5e94f38f39ad41a61abbf9d307904e809904296e9b8a1e0548c2f6a9d095b3d4",
+      "raw_bytes": 1979,
+      "raw_name": "green_scalar.log",
+      "raw_sha256": "33a91b29769ed0c136b5ff207ff3bf22185e6b21a9d45b1149f3b4dfb22eda8a"
+    },
+    {
+      "archive": "harness.log.gz",
+      "archive_bytes": 72,
+      "archive_sha256": "6c9ffe34d3c7ee6d0dbc129d03ca20b4a326d090c6b3de0f084a25e485f911df",
+      "raw_bytes": 53,
+      "raw_name": "harness.log",
+      "raw_sha256": "f64d76a388fadafed143ccec99b558334b30763d25de617f81265126acb44eab"
+    },
+    {
+      "archive": "prior_affine.log.gz",
+      "archive_bytes": 4037,
+      "archive_sha256": "e0c56dff860a7f82719f51f306b00b294902555de7c2e38fe675266ef050bb15",
+      "raw_bytes": 19123,
+      "raw_name": "prior_affine.log",
+      "raw_sha256": "4d1dbe3bcdc165bbfa43b74787574352f9e55d6ee0e08566223f006d76ab710d"
+    },
+    {
+      "archive": "prior_dopri.log.gz",
+      "archive_bytes": 5495,
+      "archive_sha256": "959f67795dff3216a71c67c56e106b0274e1606638443c58caecdb008aefb52c",
+      "raw_bytes": 228517,
+      "raw_name": "prior_dopri.log",
+      "raw_sha256": "32f675174ee5855a8694cccd154c77d7e5158809826c43bd5b3a439264c76d92"
+    },
+    {
+      "archive": "prior_nonlinear.log.gz",
+      "archive_bytes": 6850,
+      "archive_sha256": "42d63701d990b04a138292c575f98bb38956f9df8136678f00ffab0447f60727",
+      "raw_bytes": 26416,
+      "raw_name": "prior_nonlinear.log",
+      "raw_sha256": "605bb39d3910d370e1836888dc728a73a37809c4bc7c85a379211078bd7e6e41"
+    },
+    {
+      "archive": "prior_stage.log.gz",
+      "archive_bytes": 2862,
+      "archive_sha256": "2135adbba1f4ede349ec78b4d1b3b7bf8d58c5d55b6a78a9339a85998bd000a1",
+      "raw_bytes": 23618,
+      "raw_name": "prior_stage.log",
+      "raw_sha256": "cff0255eab7931687df434d1a6b18fc7f9f542032d7f46665856e8cee4f05a4c"
+    },
+    {
+      "archive": "red_block.log.gz",
+      "archive_bytes": 604,
+      "archive_sha256": "954119f3608b283c3b68843fc2eed35641d84ebbff9ed1eb334f19583dfc0d47",
+      "raw_bytes": 1180,
+      "raw_name": "red_block.log",
+      "raw_sha256": "fb50048ba279791ccb485575527d570bc9ae0125e7595d010ae17773da01a1fd"
+    },
+    {
+      "archive": "red_scalar.log.gz",
+      "archive_bytes": 1051,
+      "archive_sha256": "972747d463f151d01ec9e052d20592d960e002c3c93f47c74b2f79c408bb490c",
+      "raw_bytes": 2471,
+      "raw_name": "red_scalar.log",
+      "raw_sha256": "436e432ee314584b1af94b5b66640323161e8095496a5718c83394eee1d785c3"
+    },
+    {
+      "archive": "regression.log.gz",
+      "archive_bytes": 94921,
+      "archive_sha256": "6b9309e4e133822ecafa30bda2fb58e5baa22ebab6138f9a1873aa8acfd59b14",
+      "raw_bytes": 2173043,
+      "raw_name": "regression.log",
+      "raw_sha256": "d51265c8507191b4e3f2bfa50c51f4ea98deebaf1f3d58843d024d5995c7d9f3"
+    },
+    {
+      "archive": "replay_verify.log.gz",
+      "archive_bytes": 168,
+      "archive_sha256": "e7ecc27c44dd652364b5997d19f678bf7e304298cd7b6b553ce8891587b30010",
+      "raw_bytes": 281,
+      "raw_name": "replay_verify.log",
+      "raw_sha256": "0d12749bc848a16b016df5741b0b92d9db17c518b4b19253322c4035fc07acfe"
+    },
+    {
+      "archive": "scalar.log.gz",
+      "archive_bytes": 8477,
+      "archive_sha256": "0ed3a1b425e5be9b0c75ed95ffc8a31ed767d122c48ad54435017a6974725735",
+      "raw_bytes": 43631,
+      "raw_name": "scalar.log",
+      "raw_sha256": "a49ad97cd9ddbca6df86ccdb44c047b8f920961d454c82c57d0127215cc0a785"
+    },
+    {
+      "archive": "selection.log.gz",
+      "archive_bytes": 610,
+      "archive_sha256": "f0eb24086c6a8ef9ccb4e26f81ca24d20a93af22d2d75f9af01480066dd16b38",
+      "raw_bytes": 3712,
+      "raw_name": "selection.log",
+      "raw_sha256": "dc2af33196fb7d96684d89d8065e79302ef4e9dd2951efe6d732cdd39b87ca66"
+    },
+    {
+      "archive": "verify.log.gz",
+      "archive_bytes": 149,
+      "archive_sha256": "999f2b4e7517ff226bee2c305a72e636121ce5cda6279480f329350e140ed8b7",
+      "raw_bytes": 177,
+      "raw_name": "verify.log",
+      "raw_sha256": "d65a064614934141700d0103edac02ff664b28c48818e20324edfec3969853d7"
+    }
+  ],
+  "schema_version": 2
+}
