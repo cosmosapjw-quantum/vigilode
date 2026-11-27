@@ -1,0 +1,1715 @@
+{
+  "goal": {
+    "candidates": {
+      "CostAware": {
+        "bytes": 1373982,
+        "qualified": 15,
+        "requests": 3651,
+        "rows": 15
+      },
+      "Fixed": {
+        "bytes": 11660102,
+        "qualified": 15,
+        "requests": 47809,
+        "rows": 15
+      },
+      "Predictive": {
+        "bytes": 2016159,
+        "qualified": 15,
+        "requests": 6250,
+        "rows": 15
+      },
+      "SecantReplay": {
+        "bytes": 1778070,
+        "qualified": 15,
+        "requests": 4857,
+        "rows": 15
+      },
+      "StateReplay": {
+        "bytes": 1587287,
+        "qualified": 12,
+        "requests": 7068,
+        "rows": 15
+      }
+    },
+    "pareto_count": 29,
+    "pareto_covered": 29,
+    "proposals": {
+      "mutation": 178,
+      "structure": 1870
+    },
+    "rows": 75,
+    "strata": [
+      {
+        "covered": 2,
+        "group": [
+          "clock2",
+          "loose"
+        ],
+        "pareto": [
+          {
+            "budget": "loose",
+            "candidate": "Fixed",
+            "case": "clock2",
+            "objectives": [
+              44340,
+              10403166,
+              3613597,
+              48,
+              6,
+              0,
+              5.102155764774606e-11
+            ]
+          },
+          {
+            "budget": "loose",
+            "candidate": "Predictive",
+            "case": "clock2",
+            "objectives": [
+              189,
+              57859,
+              3210224,
+              47,
+              6,
+              0,
+              7.100941080213905e-10
+            ]
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Predictive"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "clock2",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "budget": "middle",
+            "candidate": "Fixed",
+            "case": "clock2",
+            "objectives": [
+              191,
+              60172,
+              3654243,
+              48,
+              6,
+              0,
+              5.102155764774606e-11
+            ]
+          },
+          {
+            "budget": "middle",
+            "candidate": "StateReplay",
+            "case": "clock2",
+            "objectives": [
+              189,
+              57859,
+              3293432,
+              47,
+              6,
+              0,
+              7.100941080213905e-10
+            ]
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "StateReplay"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "clock2",
+          "tight"
+        ],
+        "pareto": [
+          {
+            "budget": "tight",
+            "candidate": "Fixed",
+            "case": "clock2",
+            "objectives": [
+              191,
+              60172,
+              3654174,
+              48,
+              6,
+              0,
+              5.102155764774606e-11
+            ]
+          },
+          {
+            "budget": "tight",
+            "candidate": "Predictive",
+            "case": "clock2",
+            "objectives": [
+              191,
+              137443,
+              11212994,
+              47,
+              6,
+              361,
+              7.981612823399884e-11
+            ]
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "clock4",
+          "loose"
+        ],
+        "pareto": [
+          {
+            "budget": "loose",
+            "candidate": "Fixed",
+            "case": "clock4",
+            "objectives": [
+              254,
+              72660,
+              8231310,
+              48,
+              6,
+              0,
+              1.7332979388470336e-10
+            ]
+          },
+          {
+            "budget": "loose",
+            "candidate": "SecantReplay",
+            "case": "clock4",
+            "objectives": [
+              252,
+              69259,
+              7379962,
+              47,
+              6,
+              0,
+              2.0830572625801693e-09
+            ]
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "SecantReplay"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "clock4",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "budget": "middle",
+            "candidate": "Fixed",
+            "case": "clock4",
+            "objectives": [
+              254,
+              72660,
+              8411601,
+              48,
+              6,
+              0,
+              1.7332979388470336e-10
+            ]
+          },
+          {
+            "budget": "middle",
+            "candidate": "SecantReplay",
+            "case": "clock4",
+            "objectives": [
+              254,
+              148843,
+              11728167,
+              47,
+              6,
+              142,
+              3.7328760396095707e-10
+            ]
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Fixed"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "clock4",
+          "tight"
+        ],
+        "pareto": [
+          {
+            "budget": "tight",
+            "candidate": "Fixed",
+            "case": "clock4",
+            "objectives": [
+              256,
+              152244,
+              8757645,
+              48,
+              6,
+              176,
+              3.145419575818388e-11
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "Fixed"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "clock8",
+          "loose"
+        ],
+        "pareto": [
+          {
+            "budget": "loose",
+            "candidate": "Fixed",
+            "case": "clock8",
+            "objectives": [
+              381,
+              108205,
+              22929479,
+              56,
+              7,
+              0,
+              1.1891796793612e-09
+            ]
+          },
+          {
+            "budget": "loose",
+            "candidate": "SecantReplay",
+            "case": "clock8",
+            "objectives": [
+              380,
+              176251,
+              19711258,
+              47,
+              6,
+              90,
+              8.806424421480866e-09
+            ]
+          },
+          {
+            "budget": "loose",
+            "candidate": "CostAware",
+            "case": "clock8",
+            "objectives": [
+              380,
+              176251,
+              22419044,
+              47,
+              6,
+              90,
+              1.1791844501225324e-09
+            ]
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "SecantReplay"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "clock8",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "budget": "middle",
+            "candidate": "Fixed",
+            "case": "clock8",
+            "objectives": [
+              383,
+              187789,
+              32266788,
+              56,
+              7,
+              223,
+              1.5539692884573483e-10
+            ]
+          },
+          {
+            "budget": "middle",
+            "candidate": "SecantReplay",
+            "case": "clock8",
+            "objectives": [
+              380,
+              176251,
+              39997693,
+              47,
+              6,
+              397,
+              5.963423603915925e-10
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "SecantReplay"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "clock8",
+          "tight"
+        ],
+        "pareto": [
+          {
+            "budget": "tight",
+            "candidate": "CostAware",
+            "case": "clock8",
+            "objectives": [
+              383,
+              187789,
+              55651516,
+              56,
+              7,
+              551,
+              6.092660309721308e-11
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "CostAware"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "mixed_inverse",
+          "loose"
+        ],
+        "pareto": [
+          {
+            "budget": "loose",
+            "candidate": "Fixed",
+            "case": "mixed_inverse",
+            "objectives": [
+              203,
+              60700,
+              6501172,
+              48,
+              6,
+              0,
+              5.10215578559304e-11
+            ]
+          },
+          {
+            "budget": "loose",
+            "candidate": "Predictive",
+            "case": "mixed_inverse",
+            "objectives": [
+              201,
+              58387,
+              6758839,
+              47,
+              6,
+              0,
+              7.100941084031518e-10
+            ]
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Predictive"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "mixed_inverse",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "budget": "middle",
+            "candidate": "Fixed",
+            "case": "mixed_inverse",
+            "objectives": [
+              203,
+              60700,
+              4185707,
+              48,
+              6,
+              0,
+              5.10215578559304e-11
+            ]
+          },
+          {
+            "budget": "middle",
+            "candidate": "Predictive",
+            "case": "mixed_inverse",
+            "objectives": [
+              201,
+              58387,
+              3791072,
+              47,
+              6,
+              0,
+              7.100941084031518e-10
+            ]
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Predictive"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "mixed_inverse",
+          "tight"
+        ],
+        "pareto": [
+          {
+            "budget": "tight",
+            "candidate": "Fixed",
+            "case": "mixed_inverse",
+            "objectives": [
+              203,
+              60700,
+              4255088,
+              48,
+              6,
+              0,
+              5.10215578559304e-11
+            ]
+          },
+          {
+            "budget": "tight",
+            "candidate": "SecantReplay",
+            "case": "mixed_inverse",
+            "objectives": [
+              409,
+              164512,
+              12292131,
+              94,
+              12,
+              281,
+              2.718646168719742e-11
+            ]
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "quadratic",
+          "loose"
+        ],
+        "pareto": [
+          {
+            "budget": "loose",
+            "candidate": "Fixed",
+            "case": "quadratic",
+            "objectives": [
+              189,
+              57715,
+              6307125,
+              40,
+              5,
+              0,
+              7.788834505570963e-12
+            ]
+          },
+          {
+            "budget": "loose",
+            "candidate": "SecantReplay",
+            "case": "quadratic",
+            "objectives": [
+              187,
+              54570,
+              5021727,
+              32,
+              4,
+              0,
+              4.5290942795546525e-11
+            ]
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "SecantReplay"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "quadratic",
+          "middle"
+        ],
+        "pareto": [
+          {
+            "budget": "middle",
+            "candidate": "StateReplay",
+            "case": "quadratic",
+            "objectives": [
+              187,
+              54570,
+              5055000,
+              32,
+              4,
+              0,
+              4.5290942795546525e-11
+            ]
+          },
+          {
+            "budget": "middle",
+            "candidate": "CostAware",
+            "case": "quadratic",
+            "objectives": [
+              189,
+              57715,
+              6436340,
+              40,
+              5,
+              0,
+              7.788834505570963e-12
+            ]
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "StateReplay"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "quadratic",
+          "tight"
+        ],
+        "pareto": [
+          {
+            "budget": "tight",
+            "candidate": "Fixed",
+            "case": "quadratic",
+            "objectives": [
+              189,
+              57715,
+              6431901,
+              40,
+              5,
+              0,
+              7.788834505570963e-12
+            ]
+          },
+          {
+            "budget": "tight",
+            "candidate": "SecantReplay",
+            "case": "quadratic",
+            "objectives": [
+              187,
+              54570,
+              5080768,
+              32,
+              4,
+              0,
+              4.5290942795546525e-11
+            ]
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "SecantReplay"
+      }
+    ],
+    "unique": 75
+  },
+  "scope": "finite measured replay; total replay cost not selected-run-only; no promotion",
+  "shift": {
+    "candidates": {
+      "EarlyIdentity": {
+        "bytes": 0,
+        "qualified": 20,
+        "requests": 0,
+        "rows": 20
+      },
+      "EarlyLongitude": {
+        "bytes": 1076464,
+        "qualified": 12,
+        "requests": 736,
+        "rows": 20
+      },
+      "Fourier": {
+        "bytes": 0,
+        "qualified": 20,
+        "requests": 0,
+        "rows": 20
+      },
+      "FourierTranspose": {
+        "bytes": 0,
+        "qualified": 20,
+        "requests": 0,
+        "rows": 20
+      },
+      "Identity": {
+        "bytes": 0,
+        "qualified": 20,
+        "requests": 0,
+        "rows": 20
+      },
+      "Longitude": {
+        "bytes": 1076464,
+        "qualified": 12,
+        "requests": 736,
+        "rows": 20
+      },
+      "Meridional": {
+        "bytes": 1076464,
+        "qualified": 12,
+        "requests": 736,
+        "rows": 20
+      },
+      "ShortIdentity": {
+        "bytes": 148560,
+        "qualified": 18,
+        "requests": 74,
+        "rows": 20
+      }
+    },
+    "pareto_count": 47,
+    "pareto_covered": 47,
+    "proposals": {
+      "mutation": 268,
+      "structure": 1780
+    },
+    "rows": 160,
+    "strata": [
+      {
+        "covered": 2,
+        "group": [
+          "box2",
+          4.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Identity",
+            "case": "box2",
+            "objectives": [
+              0,
+              0,
+              620282,
+              96,
+              3.1673882266991527e-15
+            ],
+            "shift": 4.0
+          },
+          {
+            "candidate": "Fourier",
+            "case": "box2",
+            "objectives": [
+              0,
+              0,
+              52199,
+              0,
+              3.701466216865512e-15
+            ],
+            "shift": 4.0
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "Fourier"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "box2",
+          32.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Fourier",
+            "case": "box2",
+            "objectives": [
+              0,
+              0,
+              52158,
+              0,
+              4.351987520356815e-16
+            ],
+            "shift": 32.0
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Fourier"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "box2",
+          256.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Identity",
+            "case": "box2",
+            "objectives": [
+              0,
+              0,
+              437517,
+              64,
+              4.0821482343500123e-17
+            ],
+            "shift": 256.0
+          },
+          {
+            "candidate": "Fourier",
+            "case": "box2",
+            "objectives": [
+              0,
+              0,
+              51046,
+              0,
+              4.90059381963448e-17
+            ],
+            "shift": 256.0
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Fourier"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "box2",
+          4096.0
+        ],
+        "pareto": [
+          {
+            "candidate": "FourierTranspose",
+            "case": "box2",
+            "objectives": [
+              0,
+              0,
+              51027,
+              0,
+              1.677707570714752e-18
+            ],
+            "shift": 4096.0
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FourierTranspose"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "box3",
+          4.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Fourier",
+            "case": "box3",
+            "objectives": [
+              0,
+              0,
+              145906,
+              0,
+              8.906937687402916e-15
+            ],
+            "shift": 4.0
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Fourier"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "box3",
+          32.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Identity",
+            "case": "box3",
+            "objectives": [
+              0,
+              0,
+              904990,
+              64,
+              9.781417890280045e-16
+            ],
+            "shift": 32.0
+          },
+          {
+            "candidate": "FourierTranspose",
+            "case": "box3",
+            "objectives": [
+              0,
+              0,
+              147459,
+              0,
+              1.0437885365061073e-15
+            ],
+            "shift": 32.0
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FourierTranspose"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "box3",
+          256.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Fourier",
+            "case": "box3",
+            "objectives": [
+              0,
+              0,
+              140636,
+              0,
+              1.0346930967184906e-16
+            ],
+            "shift": 256.0
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "Fourier"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "box3",
+          4096.0
+        ],
+        "pareto": [
+          {
+            "candidate": "ShortIdentity",
+            "case": "box3",
+            "objectives": [
+              0,
+              0,
+              237429,
+              16,
+              1.4751091184142829e-18
+            ],
+            "shift": 4096.0
+          },
+          {
+            "candidate": "FourierTranspose",
+            "case": "box3",
+            "objectives": [
+              0,
+              0,
+              141076,
+              0,
+              3.244877341812818e-18
+            ],
+            "shift": 4096.0
+          }
+        ],
+        "qualified": 5,
+        "resource_first": "FourierTranspose"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "sphere128",
+          4.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Fourier",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              51387,
+              0,
+              5.728870069304781e-15
+            ],
+            "shift": 4.0
+          }
+        ],
+        "qualified": 8,
+        "resource_first": "Fourier"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "sphere128",
+          32.0
+        ],
+        "pareto": [
+          {
+            "candidate": "FourierTranspose",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              49964,
+              0,
+              4.1676456224634933e-16
+            ],
+            "shift": 32.0
+          },
+          {
+            "candidate": "Fourier",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              49132,
+              0,
+              4.2952638414615624e-16
+            ],
+            "shift": 32.0
+          }
+        ],
+        "qualified": 8,
+        "resource_first": "Fourier"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "sphere128",
+          256.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Longitude",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              253569,
+              32,
+              2.6721371548088564e-17
+            ],
+            "shift": 256.0
+          },
+          {
+            "candidate": "FourierTranspose",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              50856,
+              0,
+              3.25326131362941e-17
+            ],
+            "shift": 256.0
+          },
+          {
+            "candidate": "Fourier",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              49864,
+              0,
+              3.556551386561163e-17
+            ],
+            "shift": 256.0
+          }
+        ],
+        "qualified": 8,
+        "resource_first": "Fourier"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "sphere128",
+          4096.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Identity",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              235565,
+              32,
+              1.0376820001246167e-18
+            ],
+            "shift": 4096.0
+          },
+          {
+            "candidate": "FourierTranspose",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              49704,
+              0,
+              1.5053064226565623e-18
+            ],
+            "shift": 4096.0
+          },
+          {
+            "candidate": "Fourier",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              49333,
+              0,
+              1.7301057208201842e-18
+            ],
+            "shift": 4096.0
+          }
+        ],
+        "qualified": 8,
+        "resource_first": "Fourier"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "sphere512",
+          4.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Fourier",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              217561,
+              0,
+              3.1109837945217204e-14
+            ],
+            "shift": 4.0
+          }
+        ],
+        "qualified": 7,
+        "resource_first": "Fourier"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "sphere512",
+          32.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Identity",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              2313671,
+              96,
+              1.4537260231237543e-15
+            ],
+            "shift": 32.0
+          },
+          {
+            "candidate": "FourierTranspose",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              218322,
+              0,
+              2.1325548302226057e-15
+            ],
+            "shift": 32.0
+          }
+        ],
+        "qualified": 8,
+        "resource_first": "FourierTranspose"
+      },
+      {
+        "covered": 4,
+        "group": [
+          "sphere512",
+          256.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Longitude",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              1018965,
+              32,
+              1.2490658219057258e-16
+            ],
+            "shift": 256.0
+          },
+          {
+            "candidate": "Meridional",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              1030527,
+              32,
+              1.2325572500593888e-16
+            ],
+            "shift": 256.0
+          },
+          {
+            "candidate": "FourierTranspose",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              220817,
+              0,
+              1.4884461128050054e-16
+            ],
+            "shift": 256.0
+          },
+          {
+            "candidate": "Fourier",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              220647,
+              0,
+              1.7602922935572385e-16
+            ],
+            "shift": 256.0
+          }
+        ],
+        "qualified": 8,
+        "resource_first": "Fourier"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "sphere512",
+          4096.0
+        ],
+        "pareto": [
+          {
+            "candidate": "ShortIdentity",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              367694,
+              16,
+              1.89663532520959e-18
+            ],
+            "shift": 4096.0
+          },
+          {
+            "candidate": "FourierTranspose",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              217991,
+              0,
+              7.701961692146232e-18
+            ],
+            "shift": 4096.0
+          },
+          {
+            "candidate": "Fourier",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              214776,
+              0,
+              8.566256845219754e-18
+            ],
+            "shift": 4096.0
+          }
+        ],
+        "qualified": 8,
+        "resource_first": "Fourier"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "sphere_odd",
+          4.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Longitude",
+            "case": "sphere_odd",
+            "objectives": [
+              0,
+              0,
+              97094,
+              32,
+              1.4952367686019152e-15
+            ],
+            "shift": 4.0
+          },
+          {
+            "candidate": "Meridional",
+            "case": "sphere_odd",
+            "objectives": [
+              0,
+              0,
+              99157,
+              32,
+              1.4696631498584134e-15
+            ],
+            "shift": 4.0
+          },
+          {
+            "candidate": "FourierTranspose",
+            "case": "sphere_odd",
+            "objectives": [
+              0,
+              0,
+              16932,
+              0,
+              1.9607254188314105e-15
+            ],
+            "shift": 4.0
+          }
+        ],
+        "qualified": 8,
+        "resource_first": "FourierTranspose"
+      },
+      {
+        "covered": 4,
+        "group": [
+          "sphere_odd",
+          32.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Longitude",
+            "case": "sphere_odd",
+            "objectives": [
+              0,
+              0,
+              97976,
+              32,
+              1.0759105471124974e-16
+            ],
+            "shift": 32.0
+          },
+          {
+            "candidate": "Meridional",
+            "case": "sphere_odd",
+            "objectives": [
+              0,
+              0,
+              99558,
+              32,
+              1.0406603776574481e-16
+            ],
+            "shift": 32.0
+          },
+          {
+            "candidate": "FourierTranspose",
+            "case": "sphere_odd",
+            "objectives": [
+              0,
+              0,
+              16952,
+              0,
+              2.1830725733372892e-16
+            ],
+            "shift": 32.0
+          },
+          {
+            "candidate": "Fourier",
+            "case": "sphere_odd",
+            "objectives": [
+              0,
+              0,
+              17062,
+              0,
+              1.976327481169704e-16
+            ],
+            "shift": 32.0
+          }
+        ],
+        "qualified": 8,
+        "resource_first": "FourierTranspose"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "sphere_odd",
+          256.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Identity",
+            "case": "sphere_odd",
+            "objectives": [
+              0,
+              0,
+              89669,
+              32,
+              7.562019212808423e-18
+            ],
+            "shift": 256.0
+          },
+          {
+            "candidate": "FourierTranspose",
+            "case": "sphere_odd",
+            "objectives": [
+              0,
+              0,
+              17082,
+              0,
+              2.096492623779706e-17
+            ],
+            "shift": 256.0
+          },
+          {
+            "candidate": "Fourier",
+            "case": "sphere_odd",
+            "objectives": [
+              0,
+              0,
+              17002,
+              0,
+              2.5740611298177302e-17
+            ],
+            "shift": 256.0
+          }
+        ],
+        "qualified": 8,
+        "resource_first": "Fourier"
+      },
+      {
+        "covered": 6,
+        "group": [
+          "sphere_odd",
+          4096.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Identity",
+            "case": "sphere_odd",
+            "objectives": [
+              0,
+              0,
+              89219,
+              32,
+              4.0296056517412723e-19
+            ],
+            "shift": 4096.0
+          },
+          {
+            "candidate": "Longitude",
+            "case": "sphere_odd",
+            "objectives": [
+              0,
+              0,
+              97555,
+              32,
+              3.439089659205099e-19
+            ],
+            "shift": 4096.0
+          },
+          {
+            "candidate": "Meridional",
+            "case": "sphere_odd",
+            "objectives": [
+              0,
+              0,
+              99659,
+              32,
+              3.2821693651629144e-19
+            ],
+            "shift": 4096.0
+          },
+          {
+            "candidate": "ShortIdentity",
+            "case": "sphere_odd",
+            "objectives": [
+              0,
+              0,
+              25638,
+              8,
+              4.02960565174635e-19
+            ],
+            "shift": 4096.0
+          },
+          {
+            "candidate": "FourierTranspose",
+            "case": "sphere_odd",
+            "objectives": [
+              0,
+              0,
+              16842,
+              0,
+              1.2622616848529943e-18
+            ],
+            "shift": 4096.0
+          },
+          {
+            "candidate": "Fourier",
+            "case": "sphere_odd",
+            "objectives": [
+              0,
+              0,
+              16381,
+              0,
+              1.513258728447052e-18
+            ],
+            "shift": 4096.0
+          }
+        ],
+        "qualified": 8,
+        "resource_first": "Fourier"
+      }
+    ],
+    "unique": 160
+  },
+  "time_first": {
+    "goal": [
+      {
+        "candidate": "Predictive",
+        "group": [
+          "clock2",
+          "loose"
+        ]
+      },
+      {
+        "candidate": "StateReplay",
+        "group": [
+          "clock2",
+          "middle"
+        ]
+      },
+      {
+        "candidate": "Fixed",
+        "group": [
+          "clock2",
+          "tight"
+        ]
+      },
+      {
+        "candidate": "SecantReplay",
+        "group": [
+          "clock4",
+          "loose"
+        ]
+      },
+      {
+        "candidate": "Fixed",
+        "group": [
+          "clock4",
+          "middle"
+        ]
+      },
+      {
+        "candidate": "Fixed",
+        "group": [
+          "clock4",
+          "tight"
+        ]
+      },
+      {
+        "candidate": "SecantReplay",
+        "group": [
+          "clock8",
+          "loose"
+        ]
+      },
+      {
+        "candidate": "Fixed",
+        "group": [
+          "clock8",
+          "middle"
+        ]
+      },
+      {
+        "candidate": "CostAware",
+        "group": [
+          "clock8",
+          "tight"
+        ]
+      },
+      {
+        "candidate": "Fixed",
+        "group": [
+          "mixed_inverse",
+          "loose"
+        ]
+      },
+      {
+        "candidate": "Predictive",
+        "group": [
+          "mixed_inverse",
+          "middle"
+        ]
+      },
+      {
+        "candidate": "Fixed",
+        "group": [
+          "mixed_inverse",
+          "tight"
+        ]
+      },
+      {
+        "candidate": "SecantReplay",
+        "group": [
+          "quadratic",
+          "loose"
+        ]
+      },
+      {
+        "candidate": "StateReplay",
+        "group": [
+          "quadratic",
+          "middle"
+        ]
+      },
+      {
+        "candidate": "SecantReplay",
+        "group": [
+          "quadratic",
+          "tight"
+        ]
+      }
+    ],
+    "shift": [
+      {
+        "candidate": "Fourier",
+        "group": [
+          "box2",
+          4.0
+        ]
+      },
+      {
+        "candidate": "Fourier",
+        "group": [
+          "box2",
+          32.0
+        ]
+      },
+      {
+        "candidate": "Fourier",
+        "group": [
+          "box2",
+          256.0
+        ]
+      },
+      {
+        "candidate": "FourierTranspose",
+        "group": [
+          "box2",
+          4096.0
+        ]
+      },
+      {
+        "candidate": "Fourier",
+        "group": [
+          "box3",
+          4.0
+        ]
+      },
+      {
+        "candidate": "FourierTranspose",
+        "group": [
+          "box3",
+          32.0
+        ]
+      },
+      {
+        "candidate": "Fourier",
+        "group": [
+          "box3",
+          256.0
+        ]
+      },
+      {
+        "candidate": "FourierTranspose",
+        "group": [
+          "box3",
+          4096.0
+        ]
+      },
+      {
+        "candidate": "Fourier",
+        "group": [
+          "sphere128",
+          4.0
+        ]
+      },
+      {
+        "candidate": "Fourier",
+        "group": [
+          "sphere128",
+          32.0
+        ]
+      },
+      {
+        "candidate": "Fourier",
+        "group": [
+          "sphere128",
+          256.0
+        ]
+      },
+      {
+        "candidate": "Fourier",
+        "group": [
+          "sphere128",
+          4096.0
+        ]
+      },
+      {
+        "candidate": "Fourier",
+        "group": [
+          "sphere512",
+          4.0
+        ]
+      },
+      {
+        "candidate": "FourierTranspose",
+        "group": [
+          "sphere512",
+          32.0
+        ]
+      },
+      {
+        "candidate": "Fourier",
+        "group": [
+          "sphere512",
+          256.0
+        ]
+      },
+      {
+        "candidate": "Fourier",
+        "group": [
+          "sphere512",
+          4096.0
+        ]
+      },
+      {
+        "candidate": "FourierTranspose",
+        "group": [
+          "sphere_odd",
+          4.0
+        ]
+      },
+      {
+        "candidate": "FourierTranspose",
+        "group": [
+          "sphere_odd",
+          32.0
+        ]
+      },
+      {
+        "candidate": "Fourier",
+        "group": [
+          "sphere_odd",
+          256.0
+        ]
+      },
+      {
+        "candidate": "Fourier",
+        "group": [
+          "sphere_odd",
+          4096.0
+        ]
+      }
+    ]
+  }
+}
