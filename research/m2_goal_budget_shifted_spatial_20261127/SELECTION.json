@@ -1,0 +1,973 @@
+{
+  "goal": {
+    "candidates": {
+      "Fixed": {
+        "bytes": 11221066,
+        "qualified": 10,
+        "requests": 46589,
+        "rows": 10
+      },
+      "Predictive": {
+        "bytes": 1520249,
+        "qualified": 10,
+        "requests": 5039,
+        "rows": 10
+      },
+      "SecantReplay": {
+        "bytes": 1282160,
+        "qualified": 10,
+        "requests": 3646,
+        "rows": 10
+      },
+      "StateReplay": {
+        "bytes": 1069281,
+        "qualified": 8,
+        "requests": 4847,
+        "rows": 10
+      }
+    },
+    "pareto_count": 18,
+    "pareto_covered": 18,
+    "proposals": {
+      "mutation": 397,
+      "structure": 1651
+    },
+    "rows": 40,
+    "strata": [
+      {
+        "covered": 2,
+        "group": [
+          "clock2",
+          "loose"
+        ],
+        "pareto": [
+          {
+            "budget": "loose",
+            "candidate": "Fixed",
+            "case": "clock2",
+            "objectives": [
+              44340,
+              10403166,
+              3096292,
+              48,
+              6,
+              0,
+              5.102155764774606e-11
+            ]
+          },
+          {
+            "budget": "loose",
+            "candidate": "StateReplay",
+            "case": "clock2",
+            "objectives": [
+              189,
+              57859,
+              2775115,
+              47,
+              6,
+              0,
+              7.100941080213905e-10
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "StateReplay"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "clock2",
+          "tight"
+        ],
+        "pareto": [
+          {
+            "budget": "tight",
+            "candidate": "Fixed",
+            "case": "clock2",
+            "objectives": [
+              191,
+              60172,
+              3195549,
+              48,
+              6,
+              0,
+              5.102155764774606e-11
+            ]
+          },
+          {
+            "budget": "tight",
+            "candidate": "SecantReplay",
+            "case": "clock2",
+            "objectives": [
+              191,
+              137443,
+              9552533,
+              47,
+              6,
+              361,
+              7.981612823399884e-11
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "Fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "clock4",
+          "loose"
+        ],
+        "pareto": [
+          {
+            "budget": "loose",
+            "candidate": "Fixed",
+            "case": "clock4",
+            "objectives": [
+              254,
+              72660,
+              7443949,
+              48,
+              6,
+              0,
+              1.7332979388470336e-10
+            ]
+          },
+          {
+            "budget": "loose",
+            "candidate": "StateReplay",
+            "case": "clock4",
+            "objectives": [
+              252,
+              69259,
+              6634258,
+              47,
+              6,
+              0,
+              2.0830572625801693e-09
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "StateReplay"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "clock4",
+          "tight"
+        ],
+        "pareto": [
+          {
+            "budget": "tight",
+            "candidate": "Fixed",
+            "case": "clock4",
+            "objectives": [
+              256,
+              152244,
+              12656960,
+              48,
+              6,
+              176,
+              3.145419575818388e-11
+            ]
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "Fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "clock8",
+          "loose"
+        ],
+        "pareto": [
+          {
+            "budget": "loose",
+            "candidate": "Fixed",
+            "case": "clock8",
+            "objectives": [
+              381,
+              108205,
+              32101599,
+              56,
+              7,
+              0,
+              1.1891796793612e-09
+            ]
+          },
+          {
+            "budget": "loose",
+            "candidate": "Predictive",
+            "case": "clock8",
+            "objectives": [
+              380,
+              176251,
+              27738704,
+              47,
+              6,
+              90,
+              8.806424421480866e-09
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "Predictive"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "clock8",
+          "tight"
+        ],
+        "pareto": [
+          {
+            "budget": "tight",
+            "candidate": "Fixed",
+            "case": "clock8",
+            "objectives": [
+              383,
+              187789,
+              84936749,
+              56,
+              7,
+              551,
+              6.092660309721308e-11
+            ]
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "Fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "mixed_inverse",
+          "loose"
+        ],
+        "pareto": [
+          {
+            "budget": "loose",
+            "candidate": "Fixed",
+            "case": "mixed_inverse",
+            "objectives": [
+              203,
+              60700,
+              2569847,
+              48,
+              6,
+              0,
+              5.10215578559304e-11
+            ]
+          },
+          {
+            "budget": "loose",
+            "candidate": "Predictive",
+            "case": "mixed_inverse",
+            "objectives": [
+              201,
+              58387,
+              2131689,
+              47,
+              6,
+              0,
+              7.100941084031518e-10
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "Predictive"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "mixed_inverse",
+          "tight"
+        ],
+        "pareto": [
+          {
+            "budget": "tight",
+            "candidate": "Fixed",
+            "case": "mixed_inverse",
+            "objectives": [
+              203,
+              60700,
+              2463365,
+              48,
+              6,
+              0,
+              5.10215578559304e-11
+            ]
+          },
+          {
+            "budget": "tight",
+            "candidate": "SecantReplay",
+            "case": "mixed_inverse",
+            "objectives": [
+              409,
+              164512,
+              7925698,
+              94,
+              12,
+              281,
+              2.718646168719742e-11
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "Fixed"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "quadratic",
+          "loose"
+        ],
+        "pareto": [
+          {
+            "budget": "loose",
+            "candidate": "Fixed",
+            "case": "quadratic",
+            "objectives": [
+              189,
+              57715,
+              3865385,
+              40,
+              5,
+              0,
+              7.788834505570963e-12
+            ]
+          },
+          {
+            "budget": "loose",
+            "candidate": "Predictive",
+            "case": "quadratic",
+            "objectives": [
+              187,
+              54570,
+              2990832,
+              32,
+              4,
+              0,
+              4.5290942795546525e-11
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "Predictive"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "quadratic",
+          "tight"
+        ],
+        "pareto": [
+          {
+            "budget": "tight",
+            "candidate": "Fixed",
+            "case": "quadratic",
+            "objectives": [
+              189,
+              57715,
+              3754176,
+              40,
+              5,
+              0,
+              7.788834505570963e-12
+            ]
+          },
+          {
+            "budget": "tight",
+            "candidate": "SecantReplay",
+            "case": "quadratic",
+            "objectives": [
+              187,
+              54570,
+              2910350,
+              32,
+              4,
+              0,
+              4.5290942795546525e-11
+            ]
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "SecantReplay"
+      }
+    ],
+    "unique": 40
+  },
+  "scope": "finite measured replay; total replay cost not selected-run-only; no promotion",
+  "shift": {
+    "candidates": {
+      "Fourier": {
+        "bytes": 0,
+        "qualified": 12,
+        "requests": 0,
+        "rows": 12
+      },
+      "Identity": {
+        "bytes": 0,
+        "qualified": 12,
+        "requests": 0,
+        "rows": 12
+      },
+      "Longitude": {
+        "bytes": 807348,
+        "qualified": 6,
+        "requests": 552,
+        "rows": 12
+      },
+      "Meridional": {
+        "bytes": 807348,
+        "qualified": 6,
+        "requests": 552,
+        "rows": 12
+      }
+    },
+    "pareto_count": 20,
+    "pareto_covered": 20,
+    "proposals": {
+      "mutation": 485,
+      "structure": 1563
+    },
+    "rows": 48,
+    "strata": [
+      {
+        "covered": 2,
+        "group": [
+          "box2",
+          4.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Identity",
+            "case": "box2",
+            "objectives": [
+              0,
+              0,
+              451102,
+              96,
+              3.1673882266991527e-15
+            ],
+            "shift": 4.0
+          },
+          {
+            "candidate": "Fourier",
+            "case": "box2",
+            "objectives": [
+              0,
+              0,
+              29987,
+              0,
+              3.701466216865512e-15
+            ],
+            "shift": 4.0
+          }
+        ],
+        "qualified": 2,
+        "resource_first": "Fourier"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "box2",
+          32.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Fourier",
+            "case": "box2",
+            "objectives": [
+              0,
+              0,
+              29937,
+              0,
+              4.351987520356815e-16
+            ],
+            "shift": 32.0
+          }
+        ],
+        "qualified": 2,
+        "resource_first": "Fourier"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "box2",
+          256.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Identity",
+            "case": "box2",
+            "objectives": [
+              0,
+              0,
+              312250,
+              64,
+              4.0821482343500123e-17
+            ],
+            "shift": 256.0
+          },
+          {
+            "candidate": "Fourier",
+            "case": "box2",
+            "objectives": [
+              0,
+              0,
+              30367,
+              0,
+              4.90059381963448e-17
+            ],
+            "shift": 256.0
+          }
+        ],
+        "qualified": 2,
+        "resource_first": "Fourier"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "box3",
+          4.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Fourier",
+            "case": "box3",
+            "objectives": [
+              0,
+              0,
+              84410,
+              0,
+              8.906937687402916e-15
+            ],
+            "shift": 4.0
+          }
+        ],
+        "qualified": 2,
+        "resource_first": "Fourier"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "box3",
+          32.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Identity",
+            "case": "box3",
+            "objectives": [
+              0,
+              0,
+              668193,
+              64,
+              9.781417890280045e-16
+            ],
+            "shift": 32.0
+          },
+          {
+            "candidate": "Fourier",
+            "case": "box3",
+            "objectives": [
+              0,
+              0,
+              85041,
+              0,
+              1.0437885365061073e-15
+            ],
+            "shift": 32.0
+          }
+        ],
+        "qualified": 2,
+        "resource_first": "Fourier"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "box3",
+          256.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Fourier",
+            "case": "box3",
+            "objectives": [
+              0,
+              0,
+              140846,
+              0,
+              1.0346930967184906e-16
+            ],
+            "shift": 256.0
+          }
+        ],
+        "qualified": 2,
+        "resource_first": "Fourier"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "sphere128",
+          4.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Fourier",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              29015,
+              0,
+              5.728870069304781e-15
+            ],
+            "shift": 4.0
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "Fourier"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "sphere128",
+          32.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Fourier",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              28804,
+              0,
+              4.2952638414615624e-16
+            ],
+            "shift": 32.0
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "Fourier"
+      },
+      {
+        "covered": 2,
+        "group": [
+          "sphere128",
+          256.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Longitude",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              186132,
+              32,
+              2.6721371548088564e-17
+            ],
+            "shift": 256.0
+          },
+          {
+            "candidate": "Fourier",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              28323,
+              0,
+              3.556551386561163e-17
+            ],
+            "shift": 256.0
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "Fourier"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "sphere512",
+          4.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Fourier",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              137590,
+              0,
+              3.1109837945217204e-14
+            ],
+            "shift": 4.0
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "Fourier"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "sphere512",
+          32.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Identity",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              1873632,
+              96,
+              1.4537260231237543e-15
+            ],
+            "shift": 32.0
+          },
+          {
+            "candidate": "Meridional",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              775506,
+              32,
+              2.196374079301589e-15
+            ],
+            "shift": 32.0
+          },
+          {
+            "candidate": "Fourier",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              132080,
+              0,
+              2.2260410145411993e-15
+            ],
+            "shift": 32.0
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "Fourier"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "sphere512",
+          256.0
+        ],
+        "pareto": [
+          {
+            "candidate": "Longitude",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              762551,
+              32,
+              1.2490658219057258e-16
+            ],
+            "shift": 256.0
+          },
+          {
+            "candidate": "Meridional",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              764675,
+              32,
+              1.2325572500593888e-16
+            ],
+            "shift": 256.0
+          },
+          {
+            "candidate": "Fourier",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              124666,
+              0,
+              1.7602922935572385e-16
+            ],
+            "shift": 256.0
+          }
+        ],
+        "qualified": 4,
+        "resource_first": "Fourier"
+      }
+    ],
+    "unique": 48
+  },
+  "time_first": {
+    "goal": [
+      {
+        "candidate": "StateReplay",
+        "group": [
+          "clock2",
+          "loose"
+        ]
+      },
+      {
+        "candidate": "Fixed",
+        "group": [
+          "clock2",
+          "tight"
+        ]
+      },
+      {
+        "candidate": "StateReplay",
+        "group": [
+          "clock4",
+          "loose"
+        ]
+      },
+      {
+        "candidate": "Fixed",
+        "group": [
+          "clock4",
+          "tight"
+        ]
+      },
+      {
+        "candidate": "Predictive",
+        "group": [
+          "clock8",
+          "loose"
+        ]
+      },
+      {
+        "candidate": "Fixed",
+        "group": [
+          "clock8",
+          "tight"
+        ]
+      },
+      {
+        "candidate": "Predictive",
+        "group": [
+          "mixed_inverse",
+          "loose"
+        ]
+      },
+      {
+        "candidate": "Fixed",
+        "group": [
+          "mixed_inverse",
+          "tight"
+        ]
+      },
+      {
+        "candidate": "Predictive",
+        "group": [
+          "quadratic",
+          "loose"
+        ]
+      },
+      {
+        "candidate": "SecantReplay",
+        "group": [
+          "quadratic",
+          "tight"
+        ]
+      }
+    ],
+    "shift": [
+      {
+        "candidate": "Fourier",
+        "group": [
+          "box2",
+          4.0
+        ]
+      },
+      {
+        "candidate": "Fourier",
+        "group": [
+          "box2",
+          32.0
+        ]
+      },
+      {
+        "candidate": "Fourier",
+        "group": [
+          "box2",
+          256.0
+        ]
+      },
+      {
+        "candidate": "Fourier",
+        "group": [
+          "box3",
+          4.0
+        ]
+      },
+      {
+        "candidate": "Fourier",
+        "group": [
+          "box3",
+          32.0
+        ]
+      },
+      {
+        "candidate": "Fourier",
+        "group": [
+          "box3",
+          256.0
+        ]
+      },
+      {
+        "candidate": "Fourier",
+        "group": [
+          "sphere128",
+          4.0
+        ]
+      },
+      {
+        "candidate": "Fourier",
+        "group": [
+          "sphere128",
+          32.0
+        ]
+      },
+      {
+        "candidate": "Fourier",
+        "group": [
+          "sphere128",
+          256.0
+        ]
+      },
+      {
+        "candidate": "Fourier",
+        "group": [
+          "sphere512",
+          4.0
+        ]
+      },
+      {
+        "candidate": "Fourier",
+        "group": [
+          "sphere512",
+          32.0
+        ]
+      },
+      {
+        "candidate": "Fourier",
+        "group": [
+          "sphere512",
+          256.0
+        ]
+      }
+    ]
+  }
+}
