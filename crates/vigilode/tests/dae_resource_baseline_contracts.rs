@@ -6224,3 +6224,42 @@ fn certificate_workspace_stack_smoke() {
         serde_json::json!({"workspace_bytes":std::mem::size_of::<de::SlabCertificateWorkspace>(),"rust_min_stack":std::env::var("RUST_MIN_STACK").ok(),"qualified":out.global_qualified})
     );
 }
+
+#[test]
+fn query_workspace_actual_query_noalloc() {
+    warm();
+    let (src, x, z, branch, solver) = certificate_fixture("stable");
+    let run = evolve_epoch(
+        &src,
+        &x,
+        &z,
+        &branch,
+        EvolutionEpoch {
+            start: 0.,
+            end: 0.125,
+            incoming_x_error: Some(0.),
+        },
+        &opts(),
+        policy(),
+        solver,
+        &[],
+    )
+    .unwrap();
+    assert!(run.global_qualified);
+    let t = 0.0625;
+    let expected = run.query(t).unwrap();
+    let mut out = run.query(0.).unwrap();
+    let mut w = QueryWorkspace::new();
+    let (r, a) = measure(|| run.query_into(t, QueryWorkspaceRoute::StreamPairs, &mut w, &mut out));
+    r.unwrap();
+    same(&out, &expected);
+    println!(
+        "QUERY_RED_GREEN {}",
+        serde_json::json!({"allocation":a,"query":out})
+    );
+    assert_eq!(
+        a.requests(),
+        0,
+        "actual full query into preallocated retained report"
+    );
+}

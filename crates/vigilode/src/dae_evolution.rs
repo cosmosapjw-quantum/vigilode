@@ -896,7 +896,30 @@ fn projected(
         physical_error_upper,
     })
 }
+/// Explicit candidate: RED compatibility path initially owns every query.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum QueryWorkspaceRoute {
+    FixedRows,
+    StreamPairs,
+    CursorPairs,
+}
+pub struct QueryWorkspace;
+impl QueryWorkspace {
+    pub const fn new() -> Self {
+        Self
+    }
+}
 impl EvolutionRun {
+    pub fn query_into(
+        &self,
+        t: f64,
+        _route: QueryWorkspaceRoute,
+        _scratch: &mut QueryWorkspace,
+        out: &mut Query,
+    ) -> CoreResult<()> {
+        *out = self.query(t)?;
+        Ok(())
+    }
     pub fn driver(&self) -> &Solution {
         &self.driver
     }
