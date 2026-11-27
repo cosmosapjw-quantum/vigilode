@@ -1,0 +1,236 @@
+{
+  "direct": {
+    "Diagonal4": {
+      "actions": 1183,
+      "qualified": 3,
+      "rows": 3,
+      "zeroheap": 3
+    },
+    "Scaled16": {
+      "actions": 3844,
+      "qualified": 3,
+      "rows": 3,
+      "zeroheap": 3
+    },
+    "Scaled4": {
+      "actions": 1183,
+      "qualified": 3,
+      "rows": 3,
+      "zeroheap": 3
+    },
+    "Scaled8": {
+      "actions": 2161,
+      "qualified": 3,
+      "rows": 3,
+      "zeroheap": 3
+    },
+    "Shifted4": {
+      "actions": 1183,
+      "qualified": 3,
+      "rows": 3,
+      "zeroheap": 3
+    },
+    "Shifted8": {
+      "actions": 2161,
+      "qualified": 3,
+      "rows": 3,
+      "zeroheap": 3
+    },
+    "Sub4Bernstein": {
+      "actions": 1183,
+      "qualified": 3,
+      "rows": 3,
+      "zeroheap": 3
+    },
+    "WholeHorner": {
+      "actions": 379,
+      "qualified": 3,
+      "rows": 3,
+      "zeroheap": 3
+    }
+  },
+  "goal": {
+    "Fixed": {
+      "accepted": 7,
+      "actions": 12184,
+      "certificates": 27,
+      "certified_true_error": 9,
+      "physical": 9,
+      "rows": 12
+    },
+    "SignedPortfolio": {
+      "accepted": 7,
+      "actions": 15693,
+      "certificates": 36,
+      "certified_true_error": 9,
+      "physical": 9,
+      "rows": 12
+    },
+    "SignedRefined": {
+      "accepted": 7,
+      "actions": 17269,
+      "certificates": 33,
+      "certified_true_error": 9,
+      "physical": 9,
+      "rows": 12
+    }
+  },
+  "native_reference": "M2.25 identical deterministic full run; M2.24 independent represented-source reference",
+  "native_replay_same_run": 28,
+  "physical": [
+    {
+      "case": "clock2",
+      "driver_success": true,
+      "end": 0.5,
+      "first": null,
+      "qualified": true,
+      "reason": null,
+      "slabs": 15
+    },
+    {
+      "case": "clock8",
+      "driver_success": true,
+      "end": 0.5,
+      "first": null,
+      "qualified": true,
+      "reason": null,
+      "slabs": 21
+    },
+    {
+      "case": "coupled_clock",
+      "driver_success": true,
+      "end": 1.0,
+      "first": null,
+      "qualified": true,
+      "reason": null,
+      "slabs": 28
+    },
+    {
+      "case": "coupled_clock",
+      "driver_success": true,
+      "end": 2.0,
+      "first": {
+        "certificate": {
+          "algebraic_defect": 2.7724871531558782e-15,
+          "branch_defect": 0.0,
+          "branch_root_box": [
+            [
+              0.4773879090315961,
+              0.49165593929440815
+            ],
+            [
+              0.27556366164165474,
+              0.29290414710784846
+            ]
+          ],
+          "condition_upper": 1.0,
+          "differential_defect": 2.7427947922858275e-10,
+          "global_qualified": false,
+          "global_reason": "physical bootstrap tube exceeded",
+          "green_used": false,
+          "incoming": 0.0004256959640495471,
+          "normalized_reduced_defect": 2.7428250960132383e-10,
+          "original_g_upper": 2.7724871531558782e-15,
+          "outgoing": 0.0012699616835179857,
+          "preconditioner": [
+            1.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          "reduced_mu_upper": 20.10744288196908,
+          "self_map_box": [
+            [
+              -1.0,
+              2.0
+            ],
+            [
+              -1.0,
+              2.0
+            ]
+          ],
+          "self_map_center": [
+            0.48452192416300244,
+            0.28423390437475016
+          ],
+          "times": [
+            1.381887144706624,
+            1.4362459201406486
+          ],
+          "tube_radius": 0.001,
+          "whole_x_error": 0.0012699616835179857,
+          "whole_z_error": 0.0012699616835207582,
+          "x_range": [
+            [
+              0.4773879090315961,
+              0.49165593929440815
+            ],
+            [
+              0.27556366164165474,
+              0.29290414710784846
+            ]
+          ],
+          "z_range": [
+            [
+              0.4783879090315961,
+              0.4906559392944087
+            ],
+            [
+              0.27656366164165475,
+              0.29190414710784557
+            ]
+          ],
+          "zx_norm_upper": 1.0
+        },
+        "index": 36,
+        "reason": null,
+        "times": [
+          1.381887144706624,
+          1.4362459201406486
+        ]
+      },
+      "qualified": false,
+      "reason": null,
+      "slabs": 46
+    }
+  ],
+  "residual": {
+    "CompactDiagonal": {
+      "admitted": 24,
+      "fallbacks": 0,
+      "rows": 40,
+      "zeroheap": 40
+    },
+    "CompactHybrid": {
+      "admitted": 28,
+      "fallbacks": 16,
+      "rows": 40,
+      "zeroheap": 40
+    },
+    "Hybrid": {
+      "admitted": 28,
+      "fallbacks": 16,
+      "rows": 40,
+      "zeroheap": 40
+    },
+    "Legacy": {
+      "admitted": 28,
+      "fallbacks": 0,
+      "rows": 40,
+      "zeroheap": 40
+    },
+    "RingLocalDiagonal": {
+      "admitted": 24,
+      "fallbacks": 0,
+      "rows": 40,
+      "zeroheap": 40
+    },
+    "RingLocalHybrid": {
+      "admitted": 28,
+      "fallbacks": 16,
+      "rows": 40,
+      "zeroheap": 40
+    }
+  },
+  "residual_rows": 240
+}

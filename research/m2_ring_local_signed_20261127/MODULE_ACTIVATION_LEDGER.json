@@ -1,0 +1,127 @@
+{
+  "modules": [
+    {
+      "consumer": "crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs::homogeneous_goal_into",
+      "evidence": "18 structured growth goal evaluations, 3 direct warm zeroheap; actual goal acceptance 6/6 per variant",
+      "source": "crates/rodas5p-integrators/src/retro_dae_evolution/terminal_adjoint.rs",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "ConstantTerminalAdjoint::from_homogeneous_source"
+    },
+    {
+      "consumer": "crates/vigilode/src/dae_evolution/retained/slabs/goal_budget.rs",
+      "evidence": "fixed12, fixed20, budgeted Taylor actual goal routes; exact signed oracle",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "TerminalAdjointProblem::enclose_into / causal_residual_allowances"
+    },
+    {
+      "consumer": "crates/vigilode/src/spatial/shifted_adjoint/residual.rs",
+      "evidence": "compact geometry diagonal and original-source fallback; 160 exact residual bounds and 21 native IVPs",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "DiffusionGrid::represented_row / directed_residual"
+    },
+    {
+      "candidate_or_evidence": "actual goal budget and direct",
+      "current_source_references": [
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/goal_budget.rs:29:                Diagonal4,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/goal_budget.rs:40:                Diagonal4,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:8:    Diagonal4,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:30:            Self::Diagonal4 | Self::Scaled4 | Self::Scaled8 | Self::Scaled16",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/dae_secant_goal_contracts.rs:259:        SecantGoalRoute::Diagonal4,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/dae_secant_goal_contracts.rs:310:                                SecantGoalRoute::Diagonal4",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/dae_secant_goal_contracts.rs:1343:                SecantGoalRoute::Diagonal4,"
+      ],
+      "observed_at_commit": "c44988a609125b08412df125ea1d14a01e6effbc",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "Diagonal4"
+    },
+    {
+      "candidate_or_evidence": "actual goal budget and direct",
+      "current_source_references": [
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/goal_budget.rs:30:                Scaled4,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/goal_budget.rs:41:                Scaled4,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:9:    Scaled4,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:30:            Self::Diagonal4 | Self::Scaled4 | Self::Scaled8 | Self::Scaled16",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:34:        if matches!(self, Self::Scaled4 | Self::Scaled8 | Self::Scaled16) {",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/dae_secant_goal_contracts.rs:260:        SecantGoalRoute::Scaled4,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/dae_secant_goal_contracts.rs:311:                                    | SecantGoalRoute::Scaled4",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/dae_secant_goal_contracts.rs:1344:                SecantGoalRoute::Scaled4,"
+      ],
+      "observed_at_commit": "c44988a609125b08412df125ea1d14a01e6effbc",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "Scaled4"
+    },
+    {
+      "candidate_or_evidence": "actual goal budget; poor width measured",
+      "current_source_references": [
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/goal_budget.rs:31:                Shifted4,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/goal_budget.rs:42:                Shifted4,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:11:    Shifted4,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:196:            if matches!(route, SecantGoalRoute::Shifted4 | SecantGoalRoute::Shifted8) {",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/dae_secant_goal_contracts.rs:262:        SecantGoalRoute::Shifted4,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/dae_secant_goal_contracts.rs:1347:                SecantGoalRoute::Shifted4,"
+      ],
+      "observed_at_commit": "c44988a609125b08412df125ea1d14a01e6effbc",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "Shifted4"
+    },
+    {
+      "candidate_or_evidence": "actual eight-cell transport",
+      "current_source_references": [
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/goal_budget.rs:37:                Scaled8,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:12:    Scaled8,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:20:            Self::Scaled8 | Self::Shifted8 => 8,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:30:            Self::Diagonal4 | Self::Scaled4 | Self::Scaled8 | Self::Scaled16",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:34:        if matches!(self, Self::Scaled4 | Self::Scaled8 | Self::Scaled16) {",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/dae_secant_goal_contracts.rs:1345:                SecantGoalRoute::Scaled8,"
+      ],
+      "observed_at_commit": "c44988a609125b08412df125ea1d14a01e6effbc",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "Scaled8"
+    },
+    {
+      "candidate_or_evidence": "actual eight-cell perturbed transport",
+      "current_source_references": [
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/goal_budget.rs:38:                Shifted8,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:13:    Shifted8,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:20:            Self::Scaled8 | Self::Shifted8 => 8,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:196:            if matches!(route, SecantGoalRoute::Shifted4 | SecantGoalRoute::Shifted8) {",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/dae_secant_goal_contracts.rs:1348:                SecantGoalRoute::Shifted8,"
+      ],
+      "observed_at_commit": "c44988a609125b08412df125ea1d14a01e6effbc",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "Shifted8"
+    },
+    {
+      "candidate_or_evidence": "40 residual conditions and 7 native IVPs",
+      "current_source_references": [
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/spatial/shifted_adjoint/residual.rs:16:    RingLocalDiagonal,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/spatial/shifted_adjoint/residual.rs:25:                | Self::RingLocalDiagonal",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/spatial/shifted_adjoint/residual.rs:161:            scratch: if plan == ResidualPlan::RingLocalDiagonal {",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/spatial/shifted_adjoint/residual.rs:450:        if self.plan == ResidualPlan::RingLocalDiagonal {",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/spatial_adjoint_contracts.rs:2077:        P::RingLocalDiagonal,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/spatial_adjoint_contracts.rs:2243:            P::RingLocalDiagonal,"
+      ],
+      "observed_at_commit": "c44988a609125b08412df125ea1d14a01e6effbc",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "RingLocalDiagonal"
+    },
+    {
+      "candidate_or_evidence": "40 residual conditions and 7 native IVPs",
+      "current_source_references": [
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/spatial/shifted_adjoint/residual.rs:17:    RingLocalHybrid,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/spatial/shifted_adjoint/residual.rs:26:                | Self::RingLocalHybrid",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/spatial/shifted_adjoint/residual.rs:456:            ResidualPlan::CompactHybrid | ResidualPlan::RingLocalHybrid",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/spatial/shifted_adjoint/residual.rs:458:            let result = if self.plan == ResidualPlan::RingLocalHybrid {",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/spatial_adjoint_contracts.rs:2078:        P::RingLocalHybrid,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/spatial_adjoint_contracts.rs:2244:            P::RingLocalHybrid,"
+      ],
+      "observed_at_commit": "c44988a609125b08412df125ea1d14a01e6effbc",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "RingLocalHybrid"
+    }
+  ],
+  "observed_at_commit": "c44988a609125b08412df125ea1d14a01e6effbc",
+  "policy": "each turn test at least one applicable underused module in an actual consumer; perturb algorithms and compare measured candidates; preserve failed/refused routes and no default promotion",
+  "previous_ledger_commit": "bbc222f555e50989d5721ef098a7c1203eda876e",
+  "scope": "incremental activation ledger; retain prior cumulative ledger"
+}
