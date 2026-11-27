@@ -8164,3 +8164,58 @@ fn reduced_source_ode_comparator() {
         }
     }
 }
+
+#[test]
+fn native_stage_triangular_skips_actual_jacobian() {
+    warm();
+    let (src, x, z, b, route) = diag_adjoint_fixture(8);
+    let epoch = EvolutionEpoch {
+        start: 0.,
+        end: 0.125,
+        incoming_x_error: Some(0.),
+    };
+    let mut goal = vec![0.; 9];
+    goal[8] = 1.;
+    let (base, a, _) = evolve_epoch_slab_stage_planned(
+        &src,
+        &x,
+        &z,
+        &b,
+        epoch,
+        &opts(),
+        policy(),
+        route,
+        &[0.0625],
+        engine_retention(),
+        NativeStagePlan::Legacy,
+        &goal,
+    );
+    let (r, c, w) = evolve_epoch_slab_stage_planned(
+        &src,
+        &x,
+        &z,
+        &b,
+        epoch,
+        &opts(),
+        policy(),
+        route,
+        &[0.0625],
+        engine_retention(),
+        NativeStagePlan::Triangular,
+        &goal,
+    );
+    let base = base.unwrap();
+    let r = r.unwrap();
+    assert!(base.global_qualified() && r.global_qualified());
+    assert_eq!(base.driver().t, r.driver().t);
+    assert_eq!(base.driver().y, r.driver().y);
+    println!(
+        "STAGE_RED_GREEN {}",
+        serde_json::json!({"old_point":a.point_projection,"new_point":c.point_projection,"work":w,"old_stats":base.driver().stats.counters,"new_stats":r.driver().stats.counters})
+    );
+    assert!(
+        w.source_jacobian_skips > 0
+            && c.point_projection.calls.started < a.point_projection.calls.started,
+        "native source-bound triangular stage must remove actual Jacobian projection calls"
+    );
+}

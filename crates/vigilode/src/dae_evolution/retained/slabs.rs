@@ -772,6 +772,55 @@ pub fn evolve_epoch_slab_replay_audited(
         EnginePlan::Legacy,
     )
 }
+/// Explicit stage candidates. RED delegates the old native driver.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum NativeStagePlan {
+    Legacy,
+    ReuseLu,
+    Triangular,
+    Reciprocal,
+    GoalUniform,
+    GoalAdjoint,
+}
+#[derive(Clone, Copy, Debug, Default, Serialize)]
+pub struct NativeStageWork {
+    pub source_jacobian_skips: usize,
+}
+#[allow(clippy::too_many_arguments)]
+pub fn evolve_epoch_slab_stage_planned(
+    src: &DaeSource,
+    x: &[f64],
+    z: &[f64],
+    branch: &[[f64; 2]],
+    epoch: EvolutionEpoch,
+    opts: &Options,
+    policy: EvolutionPolicy,
+    route: EvolutionRoute,
+    grid: &[f64],
+    retention: RetainedOutputRoute,
+    _stage: NativeStagePlan,
+    _goal: &[f64],
+) -> (
+    CoreResult<SlabReplayRun>,
+    NativeResourceAudit,
+    NativeStageWork,
+) {
+    let (r, a) = evolve_epoch_slab_replay_planned(
+        src,
+        x,
+        z,
+        branch,
+        epoch,
+        opts,
+        policy,
+        route,
+        grid,
+        retention,
+        SlabReplayRoute::Flat,
+        EnginePlan::SharedFused,
+    );
+    (r, a, NativeStageWork::default())
+}
 #[allow(clippy::too_many_arguments)]
 pub fn evolve_epoch_slab_replay_planned(
     src: &DaeSource,
