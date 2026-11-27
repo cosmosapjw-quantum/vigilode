@@ -1,10 +1,12 @@
 //! Reusable slab computation and lossless fixed-stride slab retention.
 //! Compact metadata never escapes as a legacy owning certificate.
 use super::*;
+mod goal_budget;
 mod nonlinear_adjoint;
 use de::{
     ReconstructionSeedRoute as Seed, ScalarReconstructionWorkspace, VectorReconstructionWorkspace,
 };
+pub use goal_budget::*;
 pub use nonlinear_adjoint::*;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]

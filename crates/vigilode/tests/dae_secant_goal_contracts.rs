@@ -400,3 +400,60 @@ fn secant_actual_portfolio() {
         serde_json::json!({"nonzero_incoming_refused":true,"unchanged_output":true})
     );
 }
+
+#[test]
+fn goal_budget_actual_native_endpoint() {
+    let (src, x, z, b, c) = fixture(2);
+    let opts = Options {
+        rtol: 1e-10,
+        atol: Atol::Scalar(1e-13),
+        dense_output: true,
+        interior_error: InteriorError::Off,
+        max_steps: 4096,
+        ..Default::default()
+    };
+    let policy = EvolutionPolicy {
+        init: InitPolicy {
+            mode: InitMode::ProjectAlgebraic,
+            state_tol: 1e-11,
+            residual_tol: 1e-11,
+            derivative_tol: 1e-6,
+            ..Default::default()
+        },
+        tube_radius: 1e-3,
+        global_tol: 1e-3,
+        green: true,
+    };
+    let route = EvolutionRoute::WorkspaceQuery5 {
+        projection: WorkspaceProjection::PivotedVector,
+        certificate: de::SlabWorkspaceRoute::Refined,
+        storage: CertificateStorage::Local,
+        query: QueryWorkspaceRoute::StreamPairs,
+    };
+    let r = evolve_epoch_goal_budget(
+        &src,
+        &x,
+        &z,
+        &b,
+        EvolutionEpoch {
+            start: 0.,
+            end: 0.125,
+            incoming_x_error: Some(0.),
+        },
+        &opts,
+        policy,
+        route,
+        &[],
+        RetainedOutputRoute {
+            queries: QueryArenaLayout::Shared,
+            native: NativeRetention::BorrowedRows,
+        },
+        &c,
+        GoalBudgetPolicy {
+            absolute: 1e-8,
+            plan: GoalBudgetPlan::SecantReplay,
+        },
+    )
+    .unwrap();
+    assert!(r.run.unwrap().global_qualified());
+}

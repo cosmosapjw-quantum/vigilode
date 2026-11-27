@@ -905,3 +905,30 @@ fn stiff_spatial_adjoint_actual_portfolio() {
         }
     }
 }
+
+#[test]
+fn shifted_adjoint_original_residual() {
+    use vigilode::spatial::{ShiftedAdjointRoute, ShiftedAdjointWorkspace};
+    let g = DiffusionGrid::sphere(4, 8, 1., 0.16).unwrap();
+    let n = g.dimension();
+    let b = (0..n)
+        .map(|i| ((17 * i % 29) as f64 - 14.) / 32.)
+        .collect::<Vec<_>>();
+    let mut x = vec![0.; n];
+    let mut w = ShiftedAdjointWorkspace::new(&g, ShiftedAdjointRoute::Longitude).unwrap();
+    w.prepare(4.).unwrap();
+    let a = w
+        .solve_into(&b, &mut x, &mut rodas5p_core::WorkCounters::default())
+        .unwrap();
+    assert!(a.error_l1 <= 1e-8 && a.iterations > 0);
+    let mut v = vec![0.; n];
+    g.apply_transpose_gather(&x, &mut v).unwrap();
+    assert!(
+        b.iter()
+            .zip(&x)
+            .zip(&v)
+            .map(|((&b, &x), &v)| (b - 4. * x + v).abs())
+            .sum::<f64>()
+            <= 1e-8
+    );
+}
