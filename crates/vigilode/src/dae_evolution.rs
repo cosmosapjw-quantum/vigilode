@@ -1301,6 +1301,10 @@ impl EvolutionRun {
     pub fn slabs(&self) -> &[SlabRecord] {
         &self.slabs
     }
+    /// RED compatibility implementation of full native packet access.
+    pub fn native_packet_view(&self, k: usize) -> CoreResult<NativePacket> {
+        packet(&self.driver, k)
+    }
 
     /// Fresh original-source projection, retaining no cached algebraic answer.
     /// Physical bound is available only when the containing slab is proved.

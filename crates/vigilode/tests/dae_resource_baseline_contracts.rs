@@ -6573,3 +6573,38 @@ fn integrated_query_workspace_portfolio() {
         serde_json::json!({"physical_error":out.physical_error_upper,"qualified":out.projection.qualified})
     );
 }
+
+#[test]
+fn native_packet_borrowed_view_noalloc() {
+    warm();
+    let (src, x, z, branch, solver) = certificate_fixture("stable");
+    let r = evolve_epoch(
+        &src,
+        &x,
+        &z,
+        &branch,
+        EvolutionEpoch {
+            start: 0.,
+            end: 0.125,
+            incoming_x_error: Some(0.),
+        },
+        &opts(),
+        policy(),
+        solver,
+        &[],
+    )
+    .unwrap();
+    assert!(r.global_qualified);
+    let k = r.slabs().len() - 1;
+    let (v, a) = measure(|| r.native_packet_view(k));
+    same(&v.unwrap(), &r.slabs()[k].native);
+    println!(
+        "NATIVE_VIEW_RED_GREEN {}",
+        serde_json::json!({"allocation":a,"slab":k})
+    );
+    assert_eq!(
+        a.requests(),
+        0,
+        "native packet read must borrow the actual driver data"
+    );
+}
