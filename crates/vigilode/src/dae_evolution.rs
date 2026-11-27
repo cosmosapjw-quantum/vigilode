@@ -22,6 +22,8 @@ use rodas5p_integrators::{
 use serde::Serialize;
 use std::sync::{Arc, Mutex};
 type Iv = Interval;
+mod retained;
+pub use retained::*;
 fn bad(s: impl ToString) -> CoreError {
     CoreError::InvalidInput(format!("DAE client: {}", s.to_string()))
 }
@@ -941,15 +943,14 @@ pub struct QueryWorkspaceWork {
     pub pair_rows: usize,
     pub projection_calls: usize,
 }
-pub struct QueryWorkspace {
-    vector: rodas5p_integrators::retro_dae_init::VectorProjectionWorkspace,
+/// Small scalar-only query scratch: no vector projection arrays.
+pub struct ScalarQueryWorkspace {
     cursor: Option<usize>,
     work: QueryWorkspaceWork,
 }
-impl QueryWorkspace {
+impl ScalarQueryWorkspace {
     pub const fn new() -> Self {
         Self {
-            vector: rodas5p_integrators::retro_dae_init::VectorProjectionWorkspace::new(),
             cursor: None,
             work: QueryWorkspaceWork {
                 dense_into: 0,
@@ -986,9 +987,58 @@ impl QueryWorkspace {
         slabs.partition_point(|a| a.times[1] < t)
     }
 }
+impl Default for ScalarQueryWorkspace {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+pub struct QueryWorkspace {
+    vector: rodas5p_integrators::retro_dae_init::VectorProjectionWorkspace,
+    scalar: ScalarQueryWorkspace,
+}
+impl QueryWorkspace {
+    pub const fn new() -> Self {
+        Self {
+            vector: rodas5p_integrators::retro_dae_init::VectorProjectionWorkspace::new(),
+            scalar: ScalarQueryWorkspace::new(),
+        }
+    }
+    pub fn work(&self) -> QueryWorkspaceWork {
+        self.scalar.work()
+    }
+    pub fn reset_cursor(&mut self) {
+        self.scalar.reset_cursor();
+    }
+}
 impl Default for QueryWorkspace {
     fn default() -> Self {
         Self::new()
+    }
+}
+trait QueryScratch {
+    fn scalar(&mut self) -> &mut ScalarQueryWorkspace;
+    fn vector(
+        &mut self,
+    ) -> Option<&mut rodas5p_integrators::retro_dae_init::VectorProjectionWorkspace>;
+}
+impl QueryScratch for ScalarQueryWorkspace {
+    fn scalar(&mut self) -> &mut ScalarQueryWorkspace {
+        self
+    }
+    fn vector(
+        &mut self,
+    ) -> Option<&mut rodas5p_integrators::retro_dae_init::VectorProjectionWorkspace> {
+        None
+    }
+}
+impl QueryScratch for QueryWorkspace {
+    fn scalar(&mut self) -> &mut ScalarQueryWorkspace {
+        &mut self.scalar
+    }
+    fn vector(
+        &mut self,
+    ) -> Option<&mut rodas5p_integrators::retro_dae_init::VectorProjectionWorkspace> {
+        Some(&mut self.vector)
     }
 }
 enum QueryProjection {
@@ -1073,7 +1123,7 @@ impl Engine {
         t: f64,
         x: &[f64],
         seed: &[f64],
-        w: &mut QueryWorkspace,
+        w: &mut impl QueryScratch,
     ) -> CoreResult<QueryProjection> {
         use rodas5p_integrators::retro_dae_init::InitMode;
         let nz = self.src.nz();
@@ -1156,7 +1206,9 @@ impl Engine {
                         &self.branch,
                         policy,
                         init == InitRoute::BoundedVectorEquilibrated,
-                        &mut w.vector,
+                        w.vector().ok_or_else(|| {
+                            bad("scalar query workspace cannot project vector route")
+                        })?,
                     )
                 } else {
                     self.src.initialize_bounded_vector_audited(
@@ -1166,14 +1218,16 @@ impl Engine {
                         &self.branch,
                         policy,
                         init == InitRoute::BoundedVectorRefined,
-                        &mut w.vector,
+                        w.vector().ok_or_else(|| {
+                            bad("scalar query workspace cannot project vector route")
+                        })?,
                     )
                 };
                 (r.map(QueryProjection::Vector), a)
             }
             _ => return Err(bad("query workspace projection route unsupported")),
         };
-        w.work.projection_calls += 1;
+        w.scalar().work.projection_calls += 1;
         update_audit(&self.audit, |a| {
             a.point_projection.record(&receipt, r.is_ok())
         });
@@ -1194,9 +1248,9 @@ fn fixed_query(
     accepted: Option<&[f64]>,
     slabs: &[SlabRecord],
     route: QueryWorkspaceRoute,
-    w: &mut QueryWorkspace,
+    w: &mut impl QueryScratch,
 ) -> CoreResult<FixedQuery> {
-    w.work = QueryWorkspaceWork::default();
+    w.scalar().work = QueryWorkspaceWork::default();
     let nx = e.src.nx();
     let nz = e.src.nz();
     let n = nx + nz;
@@ -1214,7 +1268,7 @@ fn fixed_query(
     } else {
         s.at_into(t, &mut raw[..nr])
             .ok_or_else(|| bad("query outside driver"))?;
-        w.work.dense_into += 1;
+        w.scalar().work.dense_into += 1;
     }
     let x = &raw[..nx];
     let seed = if mass { &raw[nx..nr] } else { &e.seed };
@@ -1228,7 +1282,7 @@ fn fixed_query(
         None
     };
     let mut physical_error_upper = None;
-    let k = w.locate(slabs, t, route);
+    let k = w.scalar().locate(slabs, t, route);
     if let Some(a) = slabs.get(k)
         && let Some(c) = a.certificate.as_ref().filter(|c| c.global_qualified)
         && t >= a.times[0]
@@ -1249,7 +1303,7 @@ fn fixed_query(
             conserved,
             route != QueryWorkspaceRoute::FixedRows,
         )?;
-        w.work.pair_rows += nx;
+        w.scalar().work.pair_rows += nx;
         physical_error_upper = Some(if conserved {
             ex
         } else {
@@ -1259,7 +1313,7 @@ fn fixed_query(
             )?)
         });
     }
-    w.cursor = Some(k);
+    w.scalar().cursor = Some(k);
     Ok(FixedQuery {
         t,
         raw,
@@ -1292,6 +1346,26 @@ impl EvolutionRun {
         t: f64,
         route: QueryWorkspaceRoute,
         w: &mut QueryWorkspace,
+    ) -> CoreResult<Query> {
+        Ok(fixed_query(&self.engine, &self.driver, t, None, &self.slabs, route, w)?.owned())
+    }
+    /// Same original source proof with scalar scratch only. Vector routes
+    /// are explicitly refused; the caller's output stays unchanged.
+    pub fn query_scalar_into(
+        &self,
+        t: f64,
+        route: QueryWorkspaceRoute,
+        w: &mut ScalarQueryWorkspace,
+        out: &mut Query,
+    ) -> CoreResult<()> {
+        fixed_query(&self.engine, &self.driver, t, None, &self.slabs, route, w)?.write(out);
+        Ok(())
+    }
+    pub fn query_scalar_owned_workspace(
+        &self,
+        t: f64,
+        route: QueryWorkspaceRoute,
+        w: &mut ScalarQueryWorkspace,
     ) -> CoreResult<Query> {
         Ok(fixed_query(&self.engine, &self.driver, t, None, &self.slabs, route, w)?.owned())
     }
