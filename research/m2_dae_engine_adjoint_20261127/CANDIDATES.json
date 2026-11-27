@@ -1,0 +1,625 @@
+{
+  "abstract_routes": 64,
+  "designs": {
+    "adjoint_ode": {
+      "fields": [
+        "case",
+        "candidate"
+      ],
+      "fixed_design": [
+        {
+          "candidate": "RodasAdjoint",
+          "case": "stiff"
+        },
+        {
+          "candidate": "DopriAdjoint",
+          "case": "stiff"
+        },
+        {
+          "candidate": "DopriForwardBlock",
+          "case": "stiff"
+        },
+        {
+          "candidate": "RodasForwardColumns",
+          "case": "stiff"
+        },
+        {
+          "candidate": "RodasAdjoint",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "DopriAdjoint",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "DopriForwardBlock",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "RodasForwardColumns",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "RodasAdjoint",
+          "case": "diag4"
+        },
+        {
+          "candidate": "DopriAdjoint",
+          "case": "diag4"
+        },
+        {
+          "candidate": "DopriForwardBlock",
+          "case": "diag4"
+        },
+        {
+          "candidate": "RodasForwardColumns",
+          "case": "diag4"
+        },
+        {
+          "candidate": "RodasAdjoint",
+          "case": "diag8"
+        },
+        {
+          "candidate": "DopriAdjoint",
+          "case": "diag8"
+        },
+        {
+          "candidate": "DopriForwardBlock",
+          "case": "diag8"
+        },
+        {
+          "candidate": "RodasForwardColumns",
+          "case": "diag8"
+        }
+      ],
+      "uct_proposals": [
+        {
+          "candidate": "RodasAdjoint",
+          "case": "stiff"
+        },
+        {
+          "candidate": "DopriAdjoint",
+          "case": "diag8"
+        },
+        {
+          "candidate": "RodasAdjoint",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "RodasForwardColumns",
+          "case": "diag4"
+        },
+        {
+          "candidate": "RodasForwardColumns",
+          "case": "stiff"
+        },
+        {
+          "candidate": "DopriAdjoint",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "RodasAdjoint",
+          "case": "diag4"
+        },
+        {
+          "candidate": "RodasAdjoint",
+          "case": "diag8"
+        },
+        {
+          "candidate": "RodasForwardColumns",
+          "case": "diag8"
+        },
+        {
+          "candidate": "DopriAdjoint",
+          "case": "stiff"
+        },
+        {
+          "candidate": "DopriForwardBlock",
+          "case": "diag4"
+        },
+        {
+          "candidate": "RodasForwardColumns",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "DopriForwardBlock",
+          "case": "stiff"
+        },
+        {
+          "candidate": "DopriForwardBlock",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "DopriAdjoint",
+          "case": "diag4"
+        },
+        {
+          "candidate": "DopriForwardBlock",
+          "case": "diag8"
+        }
+      ]
+    },
+    "engine": {
+      "fields": [
+        "case",
+        "candidate"
+      ],
+      "fixed_design": [
+        {
+          "candidate": "Legacy",
+          "case": "stable"
+        },
+        {
+          "candidate": "Shared",
+          "case": "stable"
+        },
+        {
+          "candidate": "SharedBounded",
+          "case": "stable"
+        },
+        {
+          "candidate": "SharedFused",
+          "case": "stable"
+        },
+        {
+          "candidate": "Legacy",
+          "case": "stiff"
+        },
+        {
+          "candidate": "Shared",
+          "case": "stiff"
+        },
+        {
+          "candidate": "SharedBounded",
+          "case": "stiff"
+        },
+        {
+          "candidate": "SharedFused",
+          "case": "stiff"
+        },
+        {
+          "candidate": "Legacy",
+          "case": "nonlinear"
+        },
+        {
+          "candidate": "Shared",
+          "case": "nonlinear"
+        },
+        {
+          "candidate": "SharedBounded",
+          "case": "nonlinear"
+        },
+        {
+          "candidate": "SharedFused",
+          "case": "nonlinear"
+        },
+        {
+          "candidate": "Legacy",
+          "case": "vector4"
+        },
+        {
+          "candidate": "Shared",
+          "case": "vector4"
+        },
+        {
+          "candidate": "SharedBounded",
+          "case": "vector4"
+        },
+        {
+          "candidate": "SharedFused",
+          "case": "vector4"
+        },
+        {
+          "candidate": "Legacy",
+          "case": "vector8"
+        },
+        {
+          "candidate": "Shared",
+          "case": "vector8"
+        },
+        {
+          "candidate": "SharedBounded",
+          "case": "vector8"
+        },
+        {
+          "candidate": "SharedFused",
+          "case": "vector8"
+        },
+        {
+          "candidate": "Legacy",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "Shared",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "SharedBounded",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "SharedFused",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "Legacy",
+          "case": "quadratic_flow"
+        },
+        {
+          "candidate": "Shared",
+          "case": "quadratic_flow"
+        },
+        {
+          "candidate": "SharedBounded",
+          "case": "quadratic_flow"
+        },
+        {
+          "candidate": "SharedFused",
+          "case": "quadratic_flow"
+        }
+      ],
+      "uct_proposals": [
+        {
+          "candidate": "SharedBounded",
+          "case": "stable"
+        },
+        {
+          "candidate": "SharedFused",
+          "case": "nonlinear"
+        },
+        {
+          "candidate": "Legacy",
+          "case": "vector4"
+        },
+        {
+          "candidate": "SharedBounded",
+          "case": "stiff"
+        },
+        {
+          "candidate": "SharedFused",
+          "case": "vector8"
+        },
+        {
+          "candidate": "SharedFused",
+          "case": "quadratic_flow"
+        },
+        {
+          "candidate": "Shared",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "Shared",
+          "case": "vector4"
+        },
+        {
+          "candidate": "SharedBounded",
+          "case": "nonlinear"
+        },
+        {
+          "candidate": "Legacy",
+          "case": "stable"
+        },
+        {
+          "candidate": "SharedFused",
+          "case": "stiff"
+        },
+        {
+          "candidate": "Shared",
+          "case": "vector8"
+        },
+        {
+          "candidate": "SharedBounded",
+          "case": "quadratic_flow"
+        },
+        {
+          "candidate": "SharedBounded",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "Legacy",
+          "case": "vector8"
+        },
+        {
+          "candidate": "Shared",
+          "case": "stable"
+        },
+        {
+          "candidate": "Shared",
+          "case": "nonlinear"
+        },
+        {
+          "candidate": "Shared",
+          "case": "quadratic_flow"
+        },
+        {
+          "candidate": "Legacy",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "SharedFused",
+          "case": "vector4"
+        },
+        {
+          "candidate": "Legacy",
+          "case": "stiff"
+        },
+        {
+          "candidate": "Legacy",
+          "case": "nonlinear"
+        },
+        {
+          "candidate": "SharedFused",
+          "case": "stable"
+        },
+        {
+          "candidate": "SharedBounded",
+          "case": "vector8"
+        },
+        {
+          "candidate": "SharedFused",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "Shared",
+          "case": "stiff"
+        },
+        {
+          "candidate": "Legacy",
+          "case": "quadratic_flow"
+        },
+        {
+          "candidate": "SharedBounded",
+          "case": "vector4"
+        }
+      ]
+    },
+    "forward_ode": {
+      "fields": [
+        "case",
+        "candidate"
+      ],
+      "fixed_design": [
+        {
+          "candidate": "Rodas5p",
+          "case": "stiff"
+        },
+        {
+          "candidate": "DopriLanding",
+          "case": "stiff"
+        },
+        {
+          "candidate": "DopriDense",
+          "case": "stiff"
+        },
+        {
+          "candidate": "Rodas5p",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "DopriLanding",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "DopriDense",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "Rodas5p",
+          "case": "quadratic_flow"
+        },
+        {
+          "candidate": "DopriLanding",
+          "case": "quadratic_flow"
+        },
+        {
+          "candidate": "DopriDense",
+          "case": "quadratic_flow"
+        },
+        {
+          "candidate": "Rodas5p",
+          "case": "diag4"
+        },
+        {
+          "candidate": "DopriLanding",
+          "case": "diag4"
+        },
+        {
+          "candidate": "DopriDense",
+          "case": "diag4"
+        },
+        {
+          "candidate": "Rodas5p",
+          "case": "diag8"
+        },
+        {
+          "candidate": "DopriLanding",
+          "case": "diag8"
+        },
+        {
+          "candidate": "DopriDense",
+          "case": "diag8"
+        }
+      ],
+      "uct_proposals": [
+        {
+          "candidate": "Rodas5p",
+          "case": "stiff"
+        },
+        {
+          "candidate": "Rodas5p",
+          "case": "diag8"
+        },
+        {
+          "candidate": "DopriDense",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "Rodas5p",
+          "case": "quadratic_flow"
+        },
+        {
+          "candidate": "DopriLanding",
+          "case": "diag4"
+        },
+        {
+          "candidate": "Rodas5p",
+          "case": "diag4"
+        },
+        {
+          "candidate": "DopriLanding",
+          "case": "stiff"
+        },
+        {
+          "candidate": "DopriLanding",
+          "case": "quadratic_flow"
+        },
+        {
+          "candidate": "DopriLanding",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "DopriDense",
+          "case": "diag8"
+        },
+        {
+          "candidate": "DopriDense",
+          "case": "stiff"
+        },
+        {
+          "candidate": "Rodas5p",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "DopriLanding",
+          "case": "diag8"
+        },
+        {
+          "candidate": "DopriDense",
+          "case": "diag4"
+        },
+        {
+          "candidate": "DopriDense",
+          "case": "quadratic_flow"
+        }
+      ]
+    },
+    "taylor": {
+      "fields": [
+        "case",
+        "candidate"
+      ],
+      "fixed_design": [
+        {
+          "candidate": "Fixed12",
+          "case": "stiff"
+        },
+        {
+          "candidate": "Fixed20",
+          "case": "stiff"
+        },
+        {
+          "candidate": "Budgeted",
+          "case": "stiff"
+        },
+        {
+          "candidate": "Fixed12",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "Fixed20",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "Budgeted",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "Fixed12",
+          "case": "diag4"
+        },
+        {
+          "candidate": "Fixed20",
+          "case": "diag4"
+        },
+        {
+          "candidate": "Budgeted",
+          "case": "diag4"
+        },
+        {
+          "candidate": "Fixed12",
+          "case": "diag8"
+        },
+        {
+          "candidate": "Fixed20",
+          "case": "diag8"
+        },
+        {
+          "candidate": "Budgeted",
+          "case": "diag8"
+        }
+      ],
+      "uct_proposals": [
+        {
+          "candidate": "Budgeted",
+          "case": "stiff"
+        },
+        {
+          "candidate": "Fixed20",
+          "case": "diag8"
+        },
+        {
+          "candidate": "Fixed20",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "Budgeted",
+          "case": "diag4"
+        },
+        {
+          "candidate": "Fixed12",
+          "case": "stiff"
+        },
+        {
+          "candidate": "Fixed12",
+          "case": "diag4"
+        },
+        {
+          "candidate": "Fixed12",
+          "case": "diag8"
+        },
+        {
+          "candidate": "Fixed12",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "Budgeted",
+          "case": "mixed_rates"
+        },
+        {
+          "candidate": "Fixed20",
+          "case": "stiff"
+        },
+        {
+          "candidate": "Budgeted",
+          "case": "diag8"
+        },
+        {
+          "candidate": "Fixed20",
+          "case": "diag4"
+        }
+      ]
+    }
+  },
+  "manifest_files": 154,
+  "mutation_edges": {
+    "Budgeted": "Fixed12",
+    "DopriAdjoint": "DopriForwardBlock",
+    "DopriDense": "DopriLanding",
+    "Fixed20": "Fixed12",
+    "RodasAdjoint": "RodasForwardColumns",
+    "Shared": "Legacy",
+    "SharedBounded": "Shared",
+    "SharedFused": "SharedBounded"
+  },
+  "scope": "finite measured candidate design, no synthetic speed evidence"
+}
