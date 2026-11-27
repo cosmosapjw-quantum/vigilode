@@ -22,9 +22,11 @@ type Iv = Interval;
 type Poly = Vec<Iv>;
 mod scalar_adjoint_jet;
 mod schur_adjoint;
+mod secant_goal;
 pub use scalar_adjoint_jet::{
     ScalarAdjointJet, ScalarJetWork, scalar_adjoint_jet, scalar_autonomous_source,
 };
+pub use secant_goal::{SecantCellWork, SecantCellWorkspace, SecantSlab};
 mod terminal_adjoint;
 pub use schur_adjoint::{SchurAdjointWork, SchurAdjointWorkspace};
 pub use terminal_adjoint::ConstantTerminalAdjoint;

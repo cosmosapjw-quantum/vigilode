@@ -333,7 +333,17 @@ impl SpatialAdjointWorkspace {
                 let poisson = route != SpatialAdjointRoute::Taylor18;
                 let mut cells = 1usize;
                 let total = mul_up(self.q, duration)?;
-                let cap = if poisson { 1. } else { 0.5 };
+                let wide = matches!(
+                    route,
+                    SpatialAdjointRoute::PoissonWide | SpatialAdjointRoute::PoissonWideDecay
+                );
+                let cap = if wide {
+                    4.
+                } else if poisson {
+                    1.
+                } else {
+                    0.5
+                };
                 while div_up(total, cells as f64)? > cap {
                     cells *= 2;
                     if cells > 4096 {
@@ -343,7 +353,11 @@ impl SpatialAdjointWorkspace {
                 let h = Iv::point(duration)?.div(Iv::point(cells as f64)?)?;
                 let a = h.scale(self.q)?;
                 let m = if poisson { a.hi } else { mul_up(2., a.hi)? };
-                if m > 1.000000000000001 {
+                if m > if wide {
+                    4.000000000000004
+                } else {
+                    1.000000000000001
+                } {
                     return Err(err("series norm cap"));
                 }
                 let decay = if poisson {
@@ -352,13 +366,22 @@ impl SpatialAdjointWorkspace {
                     Iv::point(1.)?
                 };
                 let mut order = 18;
-                if route == SpatialAdjointRoute::PoissonAdaptive {
+                let tail = |k: usize| -> CoreResult<f64> {
+                    let t = tail_after(m, k)?;
+                    if route == SpatialAdjointRoute::PoissonWideDecay {
+                        mul_up(t, decay.hi)
+                    } else {
+                        Ok(t)
+                    }
+                };
+                if route == SpatialAdjointRoute::PoissonAdaptive || wide {
                     let target = rodas5p_core::directed::div_down(1e-15, cells as f64)?;
-                    order = (0..=24)
-                        .find(|&k| tail_after(m, k).is_ok_and(|t| t <= target))
+                    let mut bounds = if wide { 4..=48 } else { 0..=24 };
+                    order = bounds
+                        .find(|&k| tail(k).is_ok_and(|t| t <= target))
                         .ok_or_else(|| err("Poisson tail order cap"))?;
                 }
-                let local = tail_after(m, order)?;
+                let local = tail(order)?;
                 for _ in 0..cells {
                     // Carry one l1 radius: exact semigroup is l1 contractive, so the
                     // previous truncation radius never needs componentwise inflation.
