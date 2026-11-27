@@ -544,7 +544,8 @@ pub fn dense_power_rows(
         })
         .collect()
 }
-/// RED owning compatibility path. The output buffers already exist.
+/// Directed native coefficients into preallocated rows. Compute all
+/// coefficients in bounded scratch before mutating caller output.
 pub fn dense_power_rows_into(
     y0: &[f64],
     y1: &[f64],
@@ -552,13 +553,57 @@ pub fn dense_power_rows_into(
     basis: DenseBasis,
     out: &mut [Poly],
 ) -> CoreResult<()> {
-    let r = dense_power_rows(y0, y1, stages, basis)?;
-    if out.len() != r.len() {
-        return Err(bad("dense output shape"));
+    let n = y0.len();
+    if n == 0
+        || n > 32
+        || y1.len() != n
+        || stages.len() != 8
+        || stages.iter().any(|v| v.len() != n)
+        || out.len() != n
+        || out.iter().any(|r| r.len() != 5)
+    {
+        return Err(bad("dense packet output shape"));
     }
-    for (o, v) in out.iter_mut().zip(r) {
-        o.clear();
-        o.extend(v);
+    let h = basis.coefficients()?;
+    let mut scratch = [[zero(); 5]; 32];
+    for i in 0..n {
+        let mut d = [zero(); 3];
+        for (k, v) in d.iter_mut().enumerate() {
+            for (j, u) in stages.iter().enumerate() {
+                *v = v.add(p(h[(k, j)])?.scale(u[i])?)?;
+            }
+        }
+        let a = p(y0[i])?;
+        let b = p(y1[i])?;
+        scratch[i] = [
+            a,
+            b.sub(a)?.add(d[0])?,
+            d[1].sub(d[0])?,
+            d[2].sub(d[1])?,
+            -d[2],
+        ];
+    }
+    for (o, v) in out.iter_mut().zip(&scratch[..n]) {
+        o.copy_from_slice(v);
+    }
+    Ok(())
+}
+/// Actual fast native component adapter into already allocated rows.
+pub fn dense_power_components_into(
+    s: &crate::FastDenseSegments,
+    k: usize,
+    out: &mut [Poly],
+) -> CoreResult<()> {
+    let n = s.dimension();
+    if n == 0 || n > 32 || k >= s.len() || out.len() != n || out.iter().any(|r| r.len() != 5) {
+        return Err(bad("dense component output shape"));
+    }
+    let mut scratch = [[zero(); 5]; 32];
+    for (i, v) in scratch[..n].iter_mut().enumerate() {
+        *v = crate::retro_physical_event::power(&s.represented_component(k, i)?)?;
+    }
+    for (o, v) in out.iter_mut().zip(&scratch[..n]) {
+        o.copy_from_slice(v);
     }
     Ok(())
 }
@@ -3350,6 +3395,18 @@ pub fn query_error_from_pairs(
     conserved: bool,
     stream: bool,
 ) -> CoreResult<f64> {
+    query_error_from_pair_rows(power, times, t, state, ideal, conserved, stream)
+}
+/// Generic borrowed rows preserve the original directed Horner operations.
+pub fn query_error_from_pair_rows<R: AsRef<[[f64; 2]]>>(
+    power: &[R],
+    times: [f64; 2],
+    t: f64,
+    state: &[f64],
+    ideal: f64,
+    conserved: bool,
+    stream: bool,
+) -> CoreResult<f64> {
     if !t.is_finite()
         || t < times[0]
         || t > times[1]
@@ -3359,7 +3416,9 @@ pub fn query_error_from_pairs(
         } else {
             state.len() != power.len()
         })
-        || power.iter().any(|r| r.is_empty() || r.len() > 5)
+        || power
+            .iter()
+            .any(|r| r.as_ref().is_empty() || r.as_ref().len() > 5)
     {
         return Err(bad("query pair shape"));
     }
@@ -3380,8 +3439,8 @@ pub fn query_error_from_pairs(
         }
     };
     let correction = if conserved {
-        let a = row(&power[0])?;
-        let b = row(&power[1])?;
+        let a = row(power[0].as_ref())?;
+        let b = row(power[1].as_ref())?;
         let lift = p(1.)?.sub(a)?.sub(b)?;
         [a, b, lift]
             .iter()
@@ -3391,7 +3450,7 @@ pub fn query_error_from_pairs(
             })?
     } else {
         power.iter().zip(state).try_fold(0_f64, |m, (v, &x)| {
-            Ok::<f64, CoreError>(m.max(row(v)?.sub(p(x)?)?.mag()))
+            Ok::<f64, CoreError>(m.max(row(v.as_ref())?.sub(p(x)?)?.mag()))
         })?
     };
     add_up(ideal, correction)
