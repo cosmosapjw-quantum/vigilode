@@ -6269,7 +6269,7 @@ fn query_replay_case(case: &str, run: &EvolutionRun) {
     assert!(run.global_qualified, "{case} {:?}", run.reason);
     let ts = &run.driver().t;
     let last = *ts.last().unwrap();
-    let mid = ts.len() / 2;
+    let mid = (ts.len() - 1) / 2;
     let mut clocks = vec![
         ts[0],
         (ts[0] + ts[1]) / 2.,
@@ -6502,11 +6502,18 @@ fn integrated_query_workspace_portfolio() {
     query_replay_case("mass", &mass);
     // Real guarded Robertson run, committed transitions, and final terminal
     // conserved interval. Reuse full L1 affine-lift query semantics.
-    let modes = graph(
+    // The original alternating graph has no terminal mode. Explicitly
+    // terminate after the first committed reset, retaining its full proof.
+    let mut modes = graph(
         "alternating",
         EvolutionRoute::BoundedAffine5,
         ConservationRoute::Integral4,
     );
+    for transition in &mut modes[0].transitions {
+        transition.target = 1;
+    }
+    modes[1].guards.clear();
+    modes[1].transitions.clear();
     let chain = evolve_conserved_chain(
         &modes,
         0,
