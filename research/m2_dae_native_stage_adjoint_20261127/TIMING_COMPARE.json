@@ -1,0 +1,752 @@
+{
+  "pareto": [
+    {
+      "case": "stiff",
+      "pareto": [
+        {
+          "candidate": "Legacy",
+          "objectives": [
+            216,
+            147032,
+            702,
+            58,
+            464,
+            464,
+            4.3510002918425796e-07,
+            10586306
+          ]
+        },
+        {
+          "candidate": "ReuseLu",
+          "objectives": [
+            224,
+            147632,
+            702,
+            58,
+            464,
+            464,
+            4.3510002918425796e-07,
+            10547562
+          ]
+        },
+        {
+          "candidate": "Triangular",
+          "objectives": [
+            218,
+            179032,
+            644,
+            0,
+            464,
+            464,
+            4.3510002918425796e-07,
+            9964620
+          ]
+        },
+        {
+          "candidate": "Reciprocal",
+          "objectives": [
+            218,
+            179032,
+            644,
+            0,
+            464,
+            464,
+            4.3510004629374656e-07,
+            9604520
+          ]
+        }
+      ]
+    },
+    {
+      "case": "mixed_rates",
+      "pareto": [
+        {
+          "candidate": "Legacy",
+          "objectives": [
+            210,
+            104683,
+            383,
+            29,
+            232,
+            232,
+            6.665555664970057e-07,
+            19999844
+          ]
+        },
+        {
+          "candidate": "Reciprocal",
+          "objectives": [
+            212,
+            136651,
+            354,
+            0,
+            232,
+            232,
+            6.665542773460166e-07,
+            19598105
+          ]
+        }
+      ]
+    },
+    {
+      "case": "diag4",
+      "pareto": [
+        {
+          "candidate": "Legacy",
+          "objectives": [
+            216,
+            69220,
+            130,
+            6,
+            48,
+            48,
+            3.416170421172529e-08,
+            6822018
+          ]
+        },
+        {
+          "candidate": "Reciprocal",
+          "objectives": [
+            218,
+            101028,
+            124,
+            0,
+            48,
+            48,
+            3.4161704131305324e-08,
+            9005677
+          ]
+        }
+      ]
+    },
+    {
+      "case": "diag8",
+      "pareto": [
+        {
+          "candidate": "Legacy",
+          "objectives": [
+            298,
+            121686,
+            152,
+            8,
+            64,
+            64,
+            1.7586909429024115e-07,
+            14999469
+          ]
+        },
+        {
+          "candidate": "Triangular",
+          "objectives": [
+            300,
+            152790,
+            144,
+            0,
+            64,
+            64,
+            1.7586909429024115e-07,
+            14352406
+          ]
+        }
+      ]
+    },
+    {
+      "case": "chain_weak",
+      "pareto": [
+        {
+          "candidate": "Legacy",
+          "objectives": [
+            230,
+            63082,
+            108,
+            4,
+            32,
+            32,
+            1.4984065871021658e-09,
+            9920506
+          ]
+        },
+        {
+          "candidate": "ReuseLu",
+          "objectives": [
+            238,
+            63802,
+            108,
+            4,
+            32,
+            32,
+            1.4984065871021658e-09,
+            9304812
+          ]
+        },
+        {
+          "candidate": "Reciprocal",
+          "objectives": [
+            232,
+            94890,
+            104,
+            0,
+            32,
+            32,
+            1.498406447771818e-09,
+            8664822
+          ]
+        },
+        {
+          "candidate": "GoalUniform",
+          "objectives": [
+            234,
+            99187,
+            114,
+            0,
+            40,
+            40,
+            2.5762610956639255e-10,
+            10137306
+          ]
+        }
+      ]
+    },
+    {
+      "case": "chain_stiff",
+      "pareto": [
+        {
+          "candidate": "Legacy",
+          "objectives": [
+            361,
+            203294,
+            328,
+            24,
+            192,
+            192,
+            1.3591288085503836e-07,
+            66246990
+          ]
+        },
+        {
+          "candidate": "ReuseLu",
+          "objectives": [
+            369,
+            204174,
+            328,
+            24,
+            192,
+            192,
+            1.3591288085503836e-07,
+            63559399
+          ]
+        },
+        {
+          "candidate": "Triangular",
+          "objectives": [
+            363,
+            234398,
+            304,
+            0,
+            192,
+            192,
+            1.3591288190864933e-07,
+            63627949
+          ]
+        },
+        {
+          "candidate": "Reciprocal",
+          "objectives": [
+            363,
+            234398,
+            304,
+            0,
+            192,
+            192,
+            1.359128812192727e-07,
+            68295061
+          ]
+        },
+        {
+          "candidate": "GoalUniform",
+          "objectives": [
+            363,
+            234398,
+            304,
+            0,
+            192,
+            192,
+            1.3588451671580393e-07,
+            77770448
+          ]
+        }
+      ]
+    }
+  ],
+  "rows": [
+    {
+      "candidate": "Legacy",
+      "case": "stiff",
+      "median_ns": 10586306,
+      "samples_ns": [
+        9130584,
+        10309422,
+        10586306,
+        10675294,
+        11365368
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "ReuseLu",
+      "case": "stiff",
+      "median_ns": 10547562,
+      "samples_ns": [
+        9786293,
+        10282691,
+        10547562,
+        10770734,
+        10868609
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "Triangular",
+      "case": "stiff",
+      "median_ns": 9964620,
+      "samples_ns": [
+        9256291,
+        9845285,
+        9964620,
+        9982504,
+        10268344
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "Reciprocal",
+      "case": "stiff",
+      "median_ns": 9604520,
+      "samples_ns": [
+        8144630,
+        8749743,
+        9604520,
+        9929855,
+        10296718
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "GoalUniform",
+      "case": "stiff",
+      "median_ns": 11814377,
+      "samples_ns": [
+        10815679,
+        11540470,
+        11814377,
+        12066805,
+        12182192
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "GoalAdjoint",
+      "case": "stiff",
+      "median_ns": 11963149,
+      "samples_ns": [
+        10756917,
+        11660367,
+        11963149,
+        12043761,
+        12896243
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "Legacy",
+      "case": "mixed_rates",
+      "median_ns": 19999844,
+      "samples_ns": [
+        16532057,
+        16741904,
+        19999844,
+        20710658,
+        23072362
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "ReuseLu",
+      "case": "mixed_rates",
+      "median_ns": 22432713,
+      "samples_ns": [
+        20458380,
+        22400742,
+        22432713,
+        22893274,
+        23345789
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "Triangular",
+      "case": "mixed_rates",
+      "median_ns": 21331280,
+      "samples_ns": [
+        19391714,
+        20703134,
+        21331280,
+        21358884,
+        21884486
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "Reciprocal",
+      "case": "mixed_rates",
+      "median_ns": 19598105,
+      "samples_ns": [
+        13981364,
+        14950386,
+        19598105,
+        21039219,
+        21163834
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "GoalUniform",
+      "case": "mixed_rates",
+      "median_ns": 24972535,
+      "samples_ns": [
+        22327425,
+        22446269,
+        24972535,
+        24975030,
+        25178575
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "GoalAdjoint",
+      "case": "mixed_rates",
+      "median_ns": 21500080,
+      "samples_ns": [
+        20676162,
+        21243485,
+        21500080,
+        23742670,
+        24811442
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "Legacy",
+      "case": "diag4",
+      "median_ns": 6822018,
+      "samples_ns": [
+        6162952,
+        6663138,
+        6822018,
+        8643803,
+        9526391
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "ReuseLu",
+      "case": "diag4",
+      "median_ns": 8627702,
+      "samples_ns": [
+        6125191,
+        6218087,
+        8627702,
+        9714297,
+        9818714
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "Triangular",
+      "case": "diag4",
+      "median_ns": 9223940,
+      "samples_ns": [
+        6014291,
+        6060588,
+        9223940,
+        9276970,
+        9393621
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "Reciprocal",
+      "case": "diag4",
+      "median_ns": 9005677,
+      "samples_ns": [
+        5912820,
+        8372590,
+        9005677,
+        9135663,
+        9323759
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "GoalUniform",
+      "case": "diag4",
+      "median_ns": 9956475,
+      "samples_ns": [
+        6423474,
+        6475623,
+        9956475,
+        9999416,
+        10229000
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "GoalAdjoint",
+      "case": "diag4",
+      "median_ns": 9716120,
+      "samples_ns": [
+        6398788,
+        6467758,
+        9716120,
+        9931116,
+        10198823
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "Legacy",
+      "case": "diag8",
+      "median_ns": 14999469,
+      "samples_ns": [
+        14431375,
+        14551051,
+        14999469,
+        21053365,
+        21128938
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "ReuseLu",
+      "case": "diag8",
+      "median_ns": 15742303,
+      "samples_ns": [
+        14529070,
+        15270501,
+        15742303,
+        15931962,
+        19967101
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "Triangular",
+      "case": "diag8",
+      "median_ns": 14352406,
+      "samples_ns": [
+        13994980,
+        14038532,
+        14352406,
+        14515744,
+        17998430
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "Reciprocal",
+      "case": "diag8",
+      "median_ns": 14696726,
+      "samples_ns": [
+        14059993,
+        14260312,
+        14696726,
+        15170723,
+        21127405
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "GoalUniform",
+      "case": "diag8",
+      "median_ns": 15496328,
+      "samples_ns": [
+        15146497,
+        15193837,
+        15496328,
+        15635923,
+        15753665
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "GoalAdjoint",
+      "case": "diag8",
+      "median_ns": 15686788,
+      "samples_ns": [
+        15074390,
+        15580897,
+        15686788,
+        15773343,
+        17990694
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "Legacy",
+      "case": "chain_weak",
+      "median_ns": 9920506,
+      "samples_ns": [
+        7192348,
+        9890248,
+        9920506,
+        9955733,
+        10478450
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "ReuseLu",
+      "case": "chain_weak",
+      "median_ns": 9304812,
+      "samples_ns": [
+        8326813,
+        9143297,
+        9304812,
+        9795099,
+        10505953
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "Triangular",
+      "case": "chain_weak",
+      "median_ns": 9293441,
+      "samples_ns": [
+        8851245,
+        8938049,
+        9293441,
+        9313989,
+        9990910
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "Reciprocal",
+      "case": "chain_weak",
+      "median_ns": 8664822,
+      "samples_ns": [
+        7367189,
+        8662378,
+        8664822,
+        8743531,
+        9511544
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "GoalUniform",
+      "case": "chain_weak",
+      "median_ns": 10137306,
+      "samples_ns": [
+        8331151,
+        9269716,
+        10137306,
+        10542011,
+        11135414
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "GoalAdjoint",
+      "case": "chain_weak",
+      "median_ns": 10654244,
+      "samples_ns": [
+        10529518,
+        10619919,
+        10654244,
+        10923763,
+        10980370
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "Legacy",
+      "case": "chain_stiff",
+      "median_ns": 66246990,
+      "samples_ns": [
+        49890515,
+        64176486,
+        66246990,
+        66653107,
+        71983636
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "ReuseLu",
+      "case": "chain_stiff",
+      "median_ns": 63559399,
+      "samples_ns": [
+        50025300,
+        53802191,
+        63559399,
+        70273423,
+        71683618
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "Triangular",
+      "case": "chain_stiff",
+      "median_ns": 63627949,
+      "samples_ns": [
+        49418492,
+        51335346,
+        63627949,
+        65715645,
+        70232045
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "Reciprocal",
+      "case": "chain_stiff",
+      "median_ns": 68295061,
+      "samples_ns": [
+        47172696,
+        63840860,
+        68295061,
+        68384481,
+        69242074
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "GoalUniform",
+      "case": "chain_stiff",
+      "median_ns": 77770448,
+      "samples_ns": [
+        53146201,
+        66257210,
+        77770448,
+        77931771,
+        78473646
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    },
+    {
+      "candidate": "GoalAdjoint",
+      "case": "chain_stiff",
+      "median_ns": 77293765,
+      "samples_ns": [
+        53435638,
+        68570091,
+        77293765,
+        79305128,
+        80293478
+      ],
+      "scope": "whole native dense certified compact epoch plus drop, restoration excluded"
+    }
+  ],
+  "scope": "whole actual certified compact epoch + drop, restoration excluded"
+}

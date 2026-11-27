@@ -1,0 +1,959 @@
+{
+  "ADJOINT_FD": {
+    "changed": [],
+    "count": 4,
+    "exact": 4,
+    "logical": 4
+  },
+  "ADJOINT_MODEL": {
+    "changed": [],
+    "count": 4,
+    "exact": 4,
+    "logical": 4
+  },
+  "ADJOINT_ODE": {
+    "changed": [
+      {
+        "after": {
+          "allocation": {
+            "alloc": 38,
+            "dealloc": 49,
+            "dealloc_bytes": 10742,
+            "realloc": 2,
+            "requested_bytes": 10782,
+            "zeroed": 12
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 8,
+            "peak_delta": 10727
+          },
+          "median_ns": 68500,
+          "samples_ns": [
+            64271,
+            66446,
+            68500,
+            78889,
+            87385
+          ]
+        },
+        "before": {
+          "allocation": {
+            "alloc": 38,
+            "dealloc": 49,
+            "dealloc_bytes": 10742,
+            "realloc": 2,
+            "requested_bytes": 10782,
+            "zeroed": 12
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 8,
+            "peak_delta": 10727
+          },
+          "median_ns": 64792,
+          "samples_ns": [
+            64351,
+            64622,
+            64792,
+            65473,
+            69831
+          ]
+        },
+        "candidate": "RodasAdjoint",
+        "case": "stiff"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 13,
+            "dealloc": 19,
+            "dealloc_bytes": 8893,
+            "realloc": 2,
+            "requested_bytes": 8933,
+            "zeroed": 7
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 8,
+            "peak_delta": 8893
+          },
+          "median_ns": 44594,
+          "samples_ns": [
+            44454,
+            44474,
+            44594,
+            44754,
+            45997
+          ]
+        },
+        "before": {
+          "allocation": {
+            "alloc": 13,
+            "dealloc": 19,
+            "dealloc_bytes": 8893,
+            "realloc": 2,
+            "requested_bytes": 8933,
+            "zeroed": 7
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 8,
+            "peak_delta": 8893
+          },
+          "median_ns": 45986,
+          "samples_ns": [
+            45686,
+            45726,
+            45986,
+            46107,
+            46487
+          ]
+        },
+        "candidate": "DopriAdjoint",
+        "case": "stiff"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 13,
+            "dealloc": 19,
+            "dealloc_bytes": 8893,
+            "realloc": 2,
+            "requested_bytes": 8933,
+            "zeroed": 7
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 8,
+            "peak_delta": 8893
+          },
+          "median_ns": 44414,
+          "samples_ns": [
+            43963,
+            44334,
+            44414,
+            44474,
+            44554
+          ]
+        },
+        "before": {
+          "allocation": {
+            "alloc": 13,
+            "dealloc": 19,
+            "dealloc_bytes": 8893,
+            "realloc": 2,
+            "requested_bytes": 8933,
+            "zeroed": 7
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 8,
+            "peak_delta": 8893
+          },
+          "median_ns": 46197,
+          "samples_ns": [
+            45796,
+            45856,
+            46197,
+            46638,
+            63489
+          ]
+        },
+        "candidate": "DopriForwardBlock",
+        "case": "stiff"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 38,
+            "dealloc": 49,
+            "dealloc_bytes": 10742,
+            "realloc": 2,
+            "requested_bytes": 10782,
+            "zeroed": 12
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 8,
+            "peak_delta": 10727
+          },
+          "median_ns": 64191,
+          "samples_ns": [
+            63721,
+            63790,
+            64191,
+            74210,
+            79120
+          ]
+        },
+        "before": {
+          "allocation": {
+            "alloc": 38,
+            "dealloc": 49,
+            "dealloc_bytes": 10742,
+            "realloc": 2,
+            "requested_bytes": 10782,
+            "zeroed": 12
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 8,
+            "peak_delta": 10727
+          },
+          "median_ns": 64481,
+          "samples_ns": [
+            64201,
+            64361,
+            64481,
+            65273,
+            65343
+          ]
+        },
+        "candidate": "RodasForwardColumns",
+        "case": "stiff"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 38,
+            "dealloc": 49,
+            "dealloc_bytes": 10966,
+            "realloc": 2,
+            "requested_bytes": 11014,
+            "zeroed": 12
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 16,
+            "peak_delta": 10943
+          },
+          "median_ns": 27592,
+          "samples_ns": [
+            27201,
+            27322,
+            27592,
+            28113,
+            30397
+          ]
+        },
+        "before": {
+          "allocation": {
+            "alloc": 38,
+            "dealloc": 49,
+            "dealloc_bytes": 10966,
+            "realloc": 2,
+            "requested_bytes": 11014,
+            "zeroed": 12
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 16,
+            "peak_delta": 10943
+          },
+          "median_ns": 26880,
+          "samples_ns": [
+            26630,
+            26781,
+            26880,
+            27482,
+            29255
+          ]
+        },
+        "candidate": "RodasAdjoint",
+        "case": "mixed_rates"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 13,
+            "dealloc": 19,
+            "dealloc_bytes": 9013,
+            "realloc": 2,
+            "requested_bytes": 9061,
+            "zeroed": 7
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 16,
+            "peak_delta": 9021
+          },
+          "median_ns": 17423,
+          "samples_ns": [
+            17162,
+            17323,
+            17423,
+            17473,
+            18275
+          ]
+        },
+        "before": {
+          "allocation": {
+            "alloc": 13,
+            "dealloc": 19,
+            "dealloc_bytes": 9013,
+            "realloc": 2,
+            "requested_bytes": 9061,
+            "zeroed": 7
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 16,
+            "peak_delta": 9021
+          },
+          "median_ns": 17232,
+          "samples_ns": [
+            17112,
+            17152,
+            17232,
+            17373,
+            17994
+          ]
+        },
+        "candidate": "DopriAdjoint",
+        "case": "mixed_rates"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 13,
+            "dealloc": 19,
+            "dealloc_bytes": 9253,
+            "realloc": 2,
+            "requested_bytes": 9301,
+            "zeroed": 7
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 16,
+            "peak_delta": 9261
+          },
+          "median_ns": 34425,
+          "samples_ns": [
+            33874,
+            34124,
+            34425,
+            34516,
+            34765
+          ]
+        },
+        "before": {
+          "allocation": {
+            "alloc": 13,
+            "dealloc": 19,
+            "dealloc_bytes": 9253,
+            "realloc": 2,
+            "requested_bytes": 9301,
+            "zeroed": 7
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 16,
+            "peak_delta": 9261
+          },
+          "median_ns": 35657,
+          "samples_ns": [
+            35436,
+            35477,
+            35657,
+            35848,
+            43952
+          ]
+        },
+        "candidate": "DopriForwardBlock",
+        "case": "mixed_rates"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 73,
+            "dealloc": 95,
+            "dealloc_bytes": 13372,
+            "realloc": 4,
+            "requested_bytes": 13452,
+            "zeroed": 23
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 16,
+            "peak_delta": 10943
+          },
+          "median_ns": 47970,
+          "samples_ns": [
+            47831,
+            47900,
+            47970,
+            48382,
+            49644
+          ]
+        },
+        "before": {
+          "allocation": {
+            "alloc": 73,
+            "dealloc": 95,
+            "dealloc_bytes": 13372,
+            "realloc": 4,
+            "requested_bytes": 13452,
+            "zeroed": 23
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 16,
+            "peak_delta": 10943
+          },
+          "median_ns": 48532,
+          "samples_ns": [
+            48471,
+            48491,
+            48532,
+            48742,
+            49543
+          ]
+        },
+        "candidate": "RodasForwardColumns",
+        "case": "mixed_rates"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 38,
+            "dealloc": 49,
+            "dealloc_bytes": 11510,
+            "realloc": 2,
+            "requested_bytes": 11574,
+            "zeroed": 12
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 32,
+            "peak_delta": 11471
+          },
+          "median_ns": 11912,
+          "samples_ns": [
+            11592,
+            11682,
+            11912,
+            12303,
+            14067
+          ]
+        },
+        "before": {
+          "allocation": {
+            "alloc": 38,
+            "dealloc": 49,
+            "dealloc_bytes": 11510,
+            "realloc": 2,
+            "requested_bytes": 11574,
+            "zeroed": 12
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 32,
+            "peak_delta": 11471
+          },
+          "median_ns": 11652,
+          "samples_ns": [
+            11462,
+            11481,
+            11652,
+            11933,
+            13185
+          ]
+        },
+        "candidate": "RodasAdjoint",
+        "case": "diag4"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 13,
+            "dealloc": 19,
+            "dealloc_bytes": 9253,
+            "realloc": 2,
+            "requested_bytes": 9317,
+            "zeroed": 7
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 32,
+            "peak_delta": 9277
+          },
+          "median_ns": 7845,
+          "samples_ns": [
+            7675,
+            7694,
+            7845,
+            7855,
+            8587
+          ]
+        },
+        "before": {
+          "allocation": {
+            "alloc": 13,
+            "dealloc": 19,
+            "dealloc_bytes": 9253,
+            "realloc": 2,
+            "requested_bytes": 9317,
+            "zeroed": 7
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 32,
+            "peak_delta": 9277
+          },
+          "median_ns": 7565,
+          "samples_ns": [
+            7434,
+            7484,
+            7565,
+            7634,
+            8256
+          ]
+        },
+        "candidate": "DopriAdjoint",
+        "case": "diag4"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 13,
+            "dealloc": 19,
+            "dealloc_bytes": 10693,
+            "realloc": 2,
+            "requested_bytes": 10757,
+            "zeroed": 7
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 32,
+            "peak_delta": 10717
+          },
+          "median_ns": 16661,
+          "samples_ns": [
+            16511,
+            16612,
+            16661,
+            16711,
+            17323
+          ]
+        },
+        "before": {
+          "allocation": {
+            "alloc": 13,
+            "dealloc": 19,
+            "dealloc_bytes": 10693,
+            "realloc": 2,
+            "requested_bytes": 10757,
+            "zeroed": 7
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 32,
+            "peak_delta": 10717
+          },
+          "median_ns": 17964,
+          "samples_ns": [
+            17874,
+            17904,
+            17964,
+            18144,
+            18495
+          ]
+        },
+        "candidate": "DopriForwardBlock",
+        "case": "diag4"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 143,
+            "dealloc": 187,
+            "dealloc_bytes": 20360,
+            "realloc": 8,
+            "requested_bytes": 20520,
+            "zeroed": 45
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 32,
+            "peak_delta": 11471
+          },
+          "median_ns": 57048,
+          "samples_ns": [
+            56507,
+            56877,
+            57048,
+            59973,
+            88267
+          ]
+        },
+        "before": {
+          "allocation": {
+            "alloc": 143,
+            "dealloc": 187,
+            "dealloc_bytes": 20360,
+            "realloc": 8,
+            "requested_bytes": 20520,
+            "zeroed": 45
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 32,
+            "peak_delta": 11471
+          },
+          "median_ns": 35728,
+          "samples_ns": [
+            35457,
+            35556,
+            35728,
+            35807,
+            36959
+          ]
+        },
+        "candidate": "RodasForwardColumns",
+        "case": "diag4"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 38,
+            "dealloc": 49,
+            "dealloc_bytes": 12982,
+            "realloc": 2,
+            "requested_bytes": 13078,
+            "zeroed": 12
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 64,
+            "peak_delta": 12911
+          },
+          "median_ns": 40487,
+          "samples_ns": [
+            38082,
+            38563,
+            40487,
+            42139,
+            49945
+          ]
+        },
+        "before": {
+          "allocation": {
+            "alloc": 38,
+            "dealloc": 49,
+            "dealloc_bytes": 12982,
+            "realloc": 2,
+            "requested_bytes": 13078,
+            "zeroed": 12
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 64,
+            "peak_delta": 12911
+          },
+          "median_ns": 37230,
+          "samples_ns": [
+            36469,
+            37059,
+            37230,
+            37510,
+            38793
+          ]
+        },
+        "candidate": "RodasAdjoint",
+        "case": "diag8"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 13,
+            "dealloc": 19,
+            "dealloc_bytes": 9733,
+            "realloc": 2,
+            "requested_bytes": 9829,
+            "zeroed": 7
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 64,
+            "peak_delta": 9789
+          },
+          "median_ns": 30388,
+          "samples_ns": [
+            29366,
+            29977,
+            30388,
+            34094,
+            48571
+          ]
+        },
+        "before": {
+          "allocation": {
+            "alloc": 13,
+            "dealloc": 19,
+            "dealloc_bytes": 9733,
+            "realloc": 2,
+            "requested_bytes": 9829,
+            "zeroed": 7
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 64,
+            "peak_delta": 9789
+          },
+          "median_ns": 28544,
+          "samples_ns": [
+            28464,
+            28483,
+            28544,
+            28804,
+            29355
+          ]
+        },
+        "candidate": "DopriAdjoint",
+        "case": "diag8"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 13,
+            "dealloc": 19,
+            "dealloc_bytes": 16453,
+            "realloc": 2,
+            "requested_bytes": 16549,
+            "zeroed": 7
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 64,
+            "peak_delta": 16509
+          },
+          "median_ns": 155083,
+          "samples_ns": [
+            150525,
+            154051,
+            155083,
+            159241,
+            180171
+          ]
+        },
+        "before": {
+          "allocation": {
+            "alloc": 13,
+            "dealloc": 19,
+            "dealloc_bytes": 16453,
+            "realloc": 2,
+            "requested_bytes": 16549,
+            "zeroed": 7
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 64,
+            "peak_delta": 16509
+          },
+          "median_ns": 168206,
+          "samples_ns": [
+            167655,
+            167926,
+            168206,
+            168496,
+            172976
+          ]
+        },
+        "candidate": "DopriForwardBlock",
+        "case": "diag8"
+      },
+      {
+        "after": {
+          "allocation": {
+            "alloc": 283,
+            "dealloc": 371,
+            "dealloc_bytes": 43936,
+            "realloc": 16,
+            "requested_bytes": 44256,
+            "zeroed": 89
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 64,
+            "peak_delta": 12911
+          },
+          "median_ns": 187064,
+          "samples_ns": [
+            185270,
+            185281,
+            187064,
+            193135,
+            240905
+          ]
+        },
+        "before": {
+          "allocation": {
+            "alloc": 283,
+            "dealloc": 371,
+            "dealloc_bytes": 43936,
+            "realloc": 16,
+            "requested_bytes": 44256,
+            "zeroed": 89
+          },
+          "construction": null,
+          "heap": {
+            "end_delta": 64,
+            "peak_delta": 12911
+          },
+          "median_ns": 197351,
+          "samples_ns": [
+            196279,
+            196860,
+            197351,
+            198643,
+            200507
+          ]
+        },
+        "candidate": "RodasForwardColumns",
+        "case": "diag8"
+      }
+    ],
+    "count": 16,
+    "exact": 0,
+    "logical": 16
+  },
+  "ADJOINT_REFUSAL": {
+    "changed": [],
+    "count": 1,
+    "exact": 1,
+    "logical": 1
+  },
+  "ADJOINT_TAYLOR": {
+    "changed": [],
+    "count": 12,
+    "exact": 12,
+    "logical": 12
+  },
+  "ARENA_CHAIN": {
+    "changed": [],
+    "count": 1,
+    "exact": 1,
+    "logical": 1
+  },
+  "ARENA_EPOCH": {
+    "changed": [],
+    "count": 70,
+    "exact": 70,
+    "logical": 70
+  },
+  "ARENA_REPLAY": {
+    "changed": [],
+    "count": 14,
+    "exact": 14,
+    "logical": 14
+  },
+  "ARENA_UNRESOLVED": {
+    "changed": [],
+    "count": 1,
+    "exact": 1,
+    "logical": 1
+  },
+  "COMPONENT": {
+    "changed": [],
+    "count": 360,
+    "exact": 360,
+    "logical": 360
+  },
+  "ENGINE_EPOCH": {
+    "changed": [],
+    "count": 28,
+    "exact": 28,
+    "logical": 28
+  },
+  "GUARD": {
+    "changed": [],
+    "count": 520,
+    "exact": 520,
+    "logical": 520
+  },
+  "NATIVE_VIEW": {
+    "changed": [],
+    "count": 21,
+    "exact": 21,
+    "logical": 21
+  },
+  "ODE_COMPARE": {
+    "changed": [],
+    "count": 15,
+    "exact": 15,
+    "logical": 15
+  },
+  "QUERY_CHAIN": {
+    "changed": [],
+    "count": 1,
+    "exact": 1,
+    "logical": 1
+  },
+  "QUERY_EDGE": {
+    "changed": [],
+    "count": 7,
+    "exact": 7,
+    "logical": 7
+  },
+  "QUERY_EPOCH": {
+    "changed": [],
+    "count": 40,
+    "exact": 40,
+    "logical": 40
+  },
+  "QUERY_POINT": {
+    "changed": [],
+    "count": 420,
+    "exact": 420,
+    "logical": 420
+  },
+  "QUERY_UNRESOLVED": {
+    "changed": [],
+    "count": 1,
+    "exact": 1,
+    "logical": 1
+  },
+  "SCALAR_SCRATCH": {
+    "changed": [],
+    "count": 7,
+    "exact": 7,
+    "logical": 7
+  },
+  "SLAB_ANALYTIC": {
+    "changed": [],
+    "count": 4,
+    "exact": 4,
+    "logical": 4
+  },
+  "SLAB_CHAIN": {
+    "changed": [],
+    "count": 1,
+    "exact": 1,
+    "logical": 1
+  },
+  "SLAB_EDGE": {
+    "changed": [],
+    "count": 2,
+    "exact": 2,
+    "logical": 2
+  },
+  "SLAB_EPOCH": {
+    "changed": [],
+    "count": 70,
+    "exact": 70,
+    "logical": 70
+  },
+  "SLAB_WARM": {
+    "changed": [],
+    "count": 7,
+    "exact": 7,
+    "logical": 7
+  },
+  "VECTOR": {
+    "changed": [],
+    "count": 240,
+    "exact": 240,
+    "logical": 240
+  }
+}
