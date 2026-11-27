@@ -1,0 +1,21 @@
+warning: value assigned to `residual_radius` is never read
+    --> crates/rodas5p-integrators/src/retro_dae_evolution.rs:1615:31
+     |
+1615 |     let mut residual_radius = 0.;
+     |                               ^^
+     |
+     = help: maybe it is overwritten before being read?
+     = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+    Finished `release` profile [optimized] target(s) in 0.14s
+     Running tests/dae_secant_goal_contracts.rs (/home/cosmosapjw/.cargo-targets/vigilode-stage-lattice-20261124/kschain/release/deps/dae_secant_goal_contracts-074d91f750d771e6)
+
+running 1 test
+test structured_homogeneous_goal_red_green ... STRUCT_CERT {"cells":4,"matrix_actions":48,"scalar_products":96,"maximum_order":12,"truncation_upper":1.3015814589656935e-16,"width_upper":2.4424906541753444e-14} [6.949467043493307e-13,6.949705567971254e-13]
+STRUCT_CERT {"cells":4,"matrix_actions":80,"scalar_products":160,"maximum_order":20,"truncation_upper":6.210806619123152e-31,"width_upper":3.863576125695545e-14} [6.949467043493307e-13,6.949844345849332e-13]
+STRUCT_CERT {"cells":4,"matrix_actions":40,"scalar_products":80,"maximum_order":10,"truncation_upper":2.566911463963225e-13,"width_upper":5.271338920920243e-13} [6.946505003158077e-13,6.951652795073038e-13]
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.02s
+

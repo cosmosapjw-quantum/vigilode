@@ -1,0 +1,27 @@
+{
+  "modules": [
+    {
+      "consumer": "crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs::homogeneous_goal_into",
+      "evidence": "18 structured growth goal evaluations, 3 direct warm zeroheap; actual goal acceptance 6/6 per variant",
+      "source": "crates/rodas5p-integrators/src/retro_dae_evolution/terminal_adjoint.rs",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "ConstantTerminalAdjoint::from_homogeneous_source"
+    },
+    {
+      "consumer": "crates/vigilode/src/dae_evolution/retained/slabs/goal_budget.rs",
+      "evidence": "fixed12, fixed20, budgeted Taylor actual goal routes; exact signed oracle",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "TerminalAdjointProblem::enclose_into / causal_residual_allowances"
+    },
+    {
+      "consumer": "crates/vigilode/src/spatial/shifted_adjoint/residual.rs",
+      "evidence": "compact geometry diagonal and original-source fallback; 160 exact residual bounds and 21 native IVPs",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "DiffusionGrid::represented_row / directed_residual"
+    }
+  ],
+  "observed_at_commit": "ae3966a7a2091fb03dc9dd511be6e78743395266",
+  "policy": "each turn test at least one applicable underused module in an actual consumer; perturb algorithms and compare measured candidates; preserve failed/refused routes and no default promotion",
+  "previous_ledger_commit": "9f5cbeec847ac5f1734d340b16441d544d7b13c3",
+  "scope": "incremental activation ledger; retain prior cumulative ledger"
+}

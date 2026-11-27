@@ -1,0 +1,12 @@
+Execution checkout ae3966a7a2091fb03dc9dd511be6e78743395266, rust 1.94.1, locked offline release; same source base and original input fixtures as .24.
+```sh
+export CARGO_TARGET_DIR="$HOME/.cargo-targets/vigilode-stage-lattice-20261124/kschain"
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_secant_goal_contracts --test spatial_adjoint_contracts --no-run
+taskset -c 0 cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_secant_goal_contracts structured_homogeneous_goal_red_green -- --exact --nocapture --test-threads=1
+taskset -c 0 cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_secant_goal_contracts structured_goal_actual_portfolio -- --exact --nocapture --test-threads=1
+taskset -c 0 cargo test --locked --offline --release -p vigilode --features polynomial-events --test spatial_adjoint_contracts compact_residual_actual_portfolio -- --exact --nocapture --test-threads=1
+taskset -c 0 cargo test --locked --offline --release -p vigilode --features polynomial-events --test spatial_adjoint_contracts compact_residual_native_actual_portfolio -- --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_secant_goal_contracts -- --skip goal_budget_actual_portfolio --skip cost_aware_actual_portfolio --skip goal_escalation_actual_portfolio --skip structured_goal_actual_portfolio --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test spatial_adjoint_contracts -- --skip fast_residual_actual_portfolio --skip triggered_fixed_actual_portfolio --skip fast_residual_native_actual_portfolio --skip early_native_adjoint_portfolio --skip early_shifted_actual_portfolio --skip shifted_stage_actual_portfolio --skip shifted_stage_actual_native_adjoint --skip stiff_spatial_adjoint_actual_portfolio --skip compact_residual_actual_portfolio --skip compact_residual_native_actual_portfolio --test-threads=1
+```
+Capture direct, goal, residual, native, goal-regression, spatial-regression logs. Run verify.py and guide.py select in result directory with previous .24 receipts present. Generate with guide.py generate and verified installed MathHarness archive before measurements. Independent rational reference checks and deterministic replay exclude timing. No full workspace or holdout.
