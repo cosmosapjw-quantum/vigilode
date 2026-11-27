@@ -932,3 +932,216 @@ fn shifted_adjoint_original_residual() {
             <= 1e-8
     );
 }
+fn shifted_grids() -> Vec<(&'static str, DiffusionGrid)> {
+    vec![
+        (
+            "box2",
+            DiffusionGrid::periodic_box([16, 8], [16., 8.], [512., 256.]).unwrap(),
+        ),
+        (
+            "box3",
+            DiffusionGrid::periodic_box([8, 8, 4], [8., 8., 4.], [128., 64., 32.]).unwrap(),
+        ),
+        ("sphere128", DiffusionGrid::sphere(8, 16, 1., 0.64).unwrap()),
+        (
+            "sphere512",
+            DiffusionGrid::sphere(16, 32, 1., 0.16).unwrap(),
+        ),
+    ]
+}
+#[test]
+fn shifted_stage_actual_portfolio() {
+    use rodas5p_core::WorkCounters;
+    use vigilode::spatial::{
+        ShiftedAdjointRoute as R, ShiftedAdjointWorkspace as W, shifted_adjoint_residual_into,
+    };
+    for (case, g) in shifted_grids() {
+        let n = g.dimension();
+        let b = (0..n)
+            .map(|i| ((17 * i % 29) as f64 - 14.) / 32.)
+            .collect::<Vec<_>>();
+        let mut out = vec![0.; n];
+        let mut scratch = vec![Iv::point(0.).unwrap(); n];
+        println!(
+            "SHIFT_GRID {}",
+            serde_json::json!({"case":case,"n":n,"rhs":b,"rows":(0..n).map(|i|g.represented_row(i).unwrap()).collect::<Vec<_>>()})
+        );
+        for z in [4., 32., 256.] {
+            for k in [R::Identity, R::Longitude, R::Meridional] {
+                let (r, setup) = measure(|| W::new(&g, k));
+                let mut w = match r {
+                    Ok(w) => w,
+                    Err(e) => {
+                        assert!(!case.starts_with("sphere") && k != R::Identity);
+                        println!(
+                            "SHIFT_RUN {}",
+                            serde_json::json!({"case":case,"shift":z,"candidate":k,"qualified":false,"reason":e.to_string(),"allocation":setup})
+                        );
+                        continue;
+                    }
+                };
+                let (p, prepare) = measure(|| w.prepare(z));
+                p.unwrap();
+                assert_eq!(prepare.requests(), 0);
+                let mut c = WorkCounters::default();
+                let first = w.solve_into(&b, &mut out, &mut c);
+                if let Err(e) = first {
+                    println!(
+                        "SHIFT_RUN {}",
+                        serde_json::json!({"case":case,"shift":z,"candidate":k,"qualified":false,"reason":e.to_string(),"allocation":setup,"prepare":prepare,"counters":c})
+                    );
+                    continue;
+                }
+                let mut c = WorkCounters::default();
+                let (r, a) = measure(|| w.solve_into(&b, &mut out, &mut c));
+                let r = r.unwrap();
+                assert!(r.error_l1 <= 1e-8, "{case} {z} {k:?} {r:?}");
+                let reference = out.clone();
+                let mut times = vec![];
+                for _ in 0..5 {
+                    let t = std::time::Instant::now();
+                    black_box(
+                        w.solve_into(&b, &mut out, &mut WorkCounters::default())
+                            .unwrap(),
+                    );
+                    times.push(t.elapsed().as_nanos());
+                    assert_eq!(out, reference);
+                }
+                times.sort_unstable();
+                println!(
+                    "SHIFT_RUN {}",
+                    serde_json::json!({"case":case,"shift":z,"candidate":k,"qualified":true,"allocation":a,"setup":setup,"prepare":prepare,"report":r,"counters":c,"values":out,"median_ns":times[2],"samples_ns":times})
+                );
+                let old = out.clone();
+                assert!(w.prepare(0.).is_err());
+                assert!(
+                    w.solve_into(&b, &mut out, &mut WorkCounters::default())
+                        .is_err()
+                );
+                assert_eq!(out, old);
+            }
+            let stages = g.separable_stages(0.).unwrap();
+            let (f, setup) = measure(|| stages.stage_solver(z));
+            let mut f = f.unwrap();
+            let areas = (0..n)
+                .map(|i| g.cell_measure(i).unwrap())
+                .collect::<Vec<_>>();
+            let call = |f: &mut dyn FnMut(&mut [f64]) -> Result<(), vigilode::SolveError>,
+                        out: &mut [f64],
+                        scratch: &mut [Iv]| {
+                for (i, v) in out.iter_mut().enumerate() {
+                    *v = b[i] / areas[i];
+                }
+                f(out).unwrap();
+                for (i, v) in out.iter_mut().enumerate() {
+                    *v *= areas[i];
+                }
+                shifted_adjoint_residual_into(&g, z, &b, out, scratch).unwrap()
+            };
+            call(&mut f, &mut out, &mut scratch);
+            let (r, a) = measure(|| call(&mut f, &mut out, &mut scratch));
+            assert!(r.error_l1 <= 1e-8);
+            let mut times = vec![];
+            for _ in 0..5 {
+                let t = std::time::Instant::now();
+                black_box(call(&mut f, &mut out, &mut scratch));
+                times.push(t.elapsed().as_nanos());
+            }
+            times.sort_unstable();
+            println!(
+                "SHIFT_RUN {}",
+                serde_json::json!({"case":case,"shift":z,"candidate":"Fourier","qualified":true,"allocation":a,"setup":setup,"report":r,"values":out,"median_ns":times[2],"samples_ns":times})
+            );
+        }
+    }
+}
+#[test]
+fn shifted_stage_actual_native_adjoint() {
+    use rodas5p_integrators::AdaptiveStepConfig;
+    use vigilode::spatial::{ShiftedAdjointRoute as R, solve_spatial_adjoint_shifted};
+    let o = Options {
+        rtol: 1e-8,
+        atol: Atol::Scalar(1e-10),
+        h0: 0.001,
+        dense_output: false,
+        max_steps: 4096,
+        ..Default::default()
+    };
+    let adaptive = AdaptiveStepConfig {
+        rtol: o.rtol,
+        atol: 1e-10,
+        initial_step: o.h0,
+        max_attempts: o.max_steps,
+        ..Default::default()
+    };
+    for (case, g) in shifted_grids() {
+        let n = g.dimension();
+        let mut c = vec![0.; n];
+        c[0] = 0.5;
+        c[n / 2] = -0.25;
+        c[n - 1] = 0.125;
+        let mut w = SpatialAdjointWorkspace::new(&g).unwrap();
+        let mut exact = vec![Iv::point(0.).unwrap(); n];
+        let cert = w
+            .certify_into(
+                &c,
+                &c,
+                &c,
+                DURATION,
+                SpatialAdjointRoute::PoissonWideDecay,
+                &mut exact,
+            )
+            .unwrap();
+        assert!(cert.width_upper <= 1e-6);
+        println!(
+            "SHIFT_DUAL {}",
+            serde_json::json!({"case":case,"weights":c,"duration":DURATION,"enclosure":exact.iter().map(|v|v.as_pair()).collect::<Vec<_>>(),"work":cert})
+        );
+        let p = g.adjoint_problem_gather();
+        for k in [
+            NativeRoute::Dopri,
+            NativeRoute::Paired,
+            NativeRoute::Complex,
+        ] {
+            let start = std::time::Instant::now();
+            let (r, a) = measure(|| native(&g, &p, &c, &o, k, true));
+            let elapsed = start.elapsed().as_nanos();
+            let e = max_error(&exact, &r.values);
+            assert!(e <= 1e-6);
+            println!(
+                "SHIFT_IVP {}",
+                serde_json::json!({"case":case,"candidate":k,"qualified":true,"allocation":a,"run":r,"error_upper":e,"median_ns":elapsed,"timing_repetitions":1})
+            );
+        }
+        for k in [R::Identity, R::Longitude, R::Meridional] {
+            if !case.starts_with("sphere") && k != R::Identity {
+                continue;
+            }
+            let start = std::time::Instant::now();
+            let (r, a) =
+                measure(|| solve_spatial_adjoint_shifted(&g, (0., DURATION), &c, &adaptive, k));
+            let elapsed = start.elapsed().as_nanos();
+            match r {
+                Ok((r, work)) => {
+                    let complete = r.observed.success && r.observed.t.last() == Some(&DURATION);
+                    let err = if complete {
+                        Some(max_error(&exact, r.observed.y.last().unwrap()))
+                    } else {
+                        None
+                    };
+                    if complete {
+                        assert!(err.unwrap() <= 1e-6);
+                    }
+                    println!(
+                        "SHIFT_IVP {}",
+                        serde_json::json!({"case":case,"candidate":k,"qualified":complete,"allocation":a,"work":work,"run":{"values":r.observed.y.last().unwrap(),"accepted":r.accepted_steps,"rejected":r.rejected_steps,"rhs":r.observed.counters.rhs_calls,"jvp":r.observed.counters.jvp_calls,"linear_solves":r.observed.counters.linear_solves,"linear_iterations":r.observed.counters.linear_iterations,"counters":r.observed.counters},"error_upper":err,"median_ns":elapsed,"timing_repetitions":1})
+                    );
+                }
+                Err(e) => println!(
+                    "SHIFT_IVP {}",
+                    serde_json::json!({"case":case,"candidate":k,"qualified":false,"allocation":a,"reason":e.to_string(),"median_ns":elapsed,"timing_repetitions":1})
+                ),
+            }
+        }
+    }
+}

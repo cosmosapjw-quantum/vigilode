@@ -457,3 +457,189 @@ fn goal_budget_actual_native_endpoint() {
     .unwrap();
     assert!(r.run.unwrap().global_qualified());
 }
+#[test]
+fn goal_budget_actual_portfolio() {
+    let opts = Options {
+        rtol: 1e-10,
+        atol: Atol::Scalar(1e-13),
+        dense_output: true,
+        interior_error: InteriorError::Off,
+        max_steps: 4096,
+        ..Default::default()
+    };
+    let policy = EvolutionPolicy {
+        init: InitPolicy {
+            mode: InitMode::ProjectAlgebraic,
+            state_tol: 1e-11,
+            residual_tol: 1e-11,
+            derivative_tol: 1e-6,
+            ..Default::default()
+        },
+        tube_radius: 1e-3,
+        global_tol: 1e-3,
+        green: true,
+    };
+    let route = EvolutionRoute::WorkspaceQuery5 {
+        projection: WorkspaceProjection::PivotedVector,
+        certificate: de::SlabWorkspaceRoute::Refined,
+        storage: CertificateStorage::Local,
+        query: QueryWorkspaceRoute::StreamPairs,
+    };
+    let epoch = EvolutionEpoch {
+        start: 0.,
+        end: 0.125,
+        incoming_x_error: Some(0.),
+    };
+    let retention = RetainedOutputRoute {
+        queries: QueryArenaLayout::Shared,
+        native: NativeRetention::BorrowedRows,
+    };
+    let plans = [
+        GoalBudgetPlan::Fixed,
+        GoalBudgetPlan::StateReplay,
+        GoalBudgetPlan::SecantReplay,
+        GoalBudgetPlan::Predictive,
+    ];
+    for (case, n) in [
+        ("clock2", 2),
+        ("clock4", 4),
+        ("clock8", 8),
+        ("mixed_inverse", 2),
+        ("quadratic", 2),
+    ] {
+        let (src, x, z, b, c) = if case.starts_with("clock") {
+            fixture(n)
+        } else {
+            other_fixture(case)
+        };
+        for (label, absolute) in [("loose", 1e-8), ("tight", 1e-10)] {
+            let call = |plan| {
+                evolve_epoch_goal_budget(
+                    &src,
+                    &x,
+                    &z,
+                    &b,
+                    epoch,
+                    &opts,
+                    policy,
+                    route,
+                    &[],
+                    retention,
+                    &c,
+                    GoalBudgetPolicy { absolute, plan },
+                )
+                .unwrap()
+            };
+            let mut rows = Vec::new();
+            for plan in plans {
+                let (r, a) = measure(|| call(plan));
+                let qualified = r.run.is_some();
+                assert_eq!(qualified, r.attempts.last().unwrap().accepted);
+                assert!(
+                    r.attempts[..r.attempts.len() - 1]
+                        .iter()
+                        .all(|r| !r.accepted)
+                );
+                assert!(
+                    r.attempts
+                        .windows(2)
+                        .all(|w| w[0].multiplier > w[1].multiplier)
+                );
+                assert!(r.attempts.len() <= 7);
+                if let Some(run) = &r.run {
+                    assert!(run.global_qualified());
+                    let q = run.accepted(run.accepted_len() - 1).unwrap();
+                    let a = r.attempts.last().unwrap();
+                    assert_eq!(a.terminal_state.as_deref(), Some(q.state()));
+                    assert!(a.enclosure.unwrap().iter().all(|v| v.abs() <= absolute));
+                }
+                let rhs = r.total_rhs();
+                let steps = r.total_steps();
+                assert_eq!(
+                    rhs,
+                    Some(
+                        r.attempts
+                            .iter()
+                            .map(|a| a.audit.stats.as_ref().map_or(0, |s| s.counters.rhs_calls))
+                            .sum()
+                    )
+                );
+                let actions = r
+                    .attempts
+                    .iter()
+                    .flat_map(|a| &a.certificates)
+                    .filter_map(|r| r.work)
+                    .map(|r| r.matrix_actions)
+                    .sum::<usize>();
+                rows.push((r.attempts, a, qualified, rhs, steps, actions));
+            }
+            let mut times: [Vec<u128>; 4] = std::array::from_fn(|_| vec![]);
+            for rep in 0..5 {
+                for j in 0..4 {
+                    let i = (rep + j) % 4;
+                    let s = std::time::Instant::now();
+                    black_box(call(plans[i]));
+                    times[i].push(s.elapsed().as_nanos());
+                }
+            }
+            for (i, (attempts, allocation, qualified, rhs, steps, actions)) in
+                rows.into_iter().enumerate()
+            {
+                times[i].sort_unstable();
+                println!(
+                    "GOAL_BUDGET {}",
+                    serde_json::json!({"case":case,"budget":label,"absolute":absolute,"candidate":plans[i],"qualified":qualified,"allocation":allocation,"total_rhs":rhs,"total_steps":steps,"certificate_actions":actions,"weights":c,"n":n,"attempts":attempts,"median_ns":times[i][2],"samples_ns":times[i]})
+                );
+            }
+        }
+    }
+    let (src, x, z, b, c) = fixture(2);
+    for plan in plans {
+        let r = evolve_epoch_goal_budget(
+            &src,
+            &x,
+            &z,
+            &b,
+            epoch,
+            &opts,
+            policy,
+            route,
+            &[],
+            retention,
+            &c,
+            GoalBudgetPolicy {
+                absolute: 1e-30,
+                plan,
+            },
+        )
+        .unwrap();
+        assert!(r.run.is_none() && r.attempts.iter().all(|a| !a.accepted));
+        println!(
+            "GOAL_EXHAUST {}",
+            serde_json::json!({"candidate":plan,"attempts":r.attempts,"total_rhs":r.total_rhs()})
+        );
+    }
+    assert!(
+        evolve_epoch_goal_budget(
+            &src,
+            &x,
+            &z,
+            &b,
+            EvolutionEpoch {
+                incoming_x_error: Some(1e-12),
+                ..epoch
+            },
+            &opts,
+            policy,
+            route,
+            &[],
+            retention,
+            &c,
+            GoalBudgetPolicy {
+                absolute: 1e-8,
+                plan: GoalBudgetPlan::Predictive
+            }
+        )
+        .is_err()
+    );
+}
