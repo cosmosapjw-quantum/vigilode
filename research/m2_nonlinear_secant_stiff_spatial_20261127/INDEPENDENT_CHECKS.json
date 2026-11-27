@@ -1,0 +1,331 @@
+{
+  "assertions": {
+    "goal_decomposition_corners": 64,
+    "goal_error_corners": 64,
+    "gradient_corners": 108,
+    "negative_goal_corners": 64,
+    "noncommuting_blocks": 8,
+    "numeric_gradient_corners": 72,
+    "primal_query_corners": 424,
+    "stiff_adjoint_corners": 7936,
+    "stiff_cert_error_corners": 24,
+    "stiff_goal_corners": 24,
+    "stiff_gradient_corners": 6144,
+    "stiff_native_goal_corners": 28,
+    "stiff_primal_corners": 6656,
+    "stiff_primal_dual_overlap": 4,
+    "stiff_row_edges": 6144,
+    "terminal_state_corners": 72
+  },
+  "numeric_gradient_errors": [
+    {
+      "candidate": "Rows",
+      "case": "clock2",
+      "error_upper": 2.0899670883867083e-12
+    },
+    {
+      "candidate": "Block32",
+      "case": "clock2",
+      "error_upper": 2.0899670883867083e-12
+    },
+    {
+      "candidate": "Rows",
+      "case": "clock4",
+      "error_upper": 4.865833470071671e-13
+    },
+    {
+      "candidate": "Block32",
+      "case": "clock4",
+      "error_upper": 4.865833470071671e-13
+    },
+    {
+      "candidate": "Rows",
+      "case": "clock8",
+      "error_upper": 6.6903351403138414e-12
+    },
+    {
+      "candidate": "Block32",
+      "case": "clock8",
+      "error_upper": 6.6903351403138414e-12
+    },
+    {
+      "candidate": "Rows",
+      "case": "mixed_inverse",
+      "error_upper": 2.0899670883867083e-12
+    },
+    {
+      "candidate": "Block32",
+      "case": "mixed_inverse",
+      "error_upper": 2.0899670883867083e-12
+    },
+    {
+      "candidate": "Rows",
+      "case": "quadratic",
+      "error_upper": 3.419486915845482e-14
+    },
+    {
+      "candidate": "Block32",
+      "case": "quadratic",
+      "error_upper": 3.419486915845482e-14
+    }
+  ],
+  "reference": "exact Fraction rational/log state and sensitivity; independent direct Taylor fixed-point 256-bit outward integer arithmetic, exact rational tail <=2^-180 times input norm; original represented spatial generator",
+  "secant_qualified": 32,
+  "secant_success": 32,
+  "stiff_adjoint_errors": [
+    {
+      "candidate": "Dopri",
+      "case": "stiff2",
+      "error_upper": 2.140318552040052e-11,
+      "reference_order": 148
+    },
+    {
+      "candidate": "Rodas",
+      "case": "stiff2",
+      "error_upper": 6.615375379087322e-13,
+      "reference_order": 148
+    },
+    {
+      "candidate": "Paired",
+      "case": "stiff2",
+      "error_upper": 6.611524292970653e-13,
+      "reference_order": 148
+    },
+    {
+      "candidate": "Complex",
+      "case": "stiff2",
+      "error_upper": 6.611663070848731e-13,
+      "reference_order": 148
+    },
+    {
+      "candidate": "Dopri",
+      "case": "stiff3",
+      "error_upper": 1.8225864158661537e-11,
+      "reference_order": 161
+    },
+    {
+      "candidate": "Paired",
+      "case": "stiff3",
+      "error_upper": 5.81538921674202e-13,
+      "reference_order": 161
+    },
+    {
+      "candidate": "Complex",
+      "case": "stiff3",
+      "error_upper": 5.81538921674202e-13,
+      "reference_order": 161
+    },
+    {
+      "candidate": "Dopri",
+      "case": "sphere512",
+      "error_upper": 4.2689406374049926e-11,
+      "reference_order": 244
+    },
+    {
+      "candidate": "Paired",
+      "case": "sphere512",
+      "error_upper": 1.8884427662488845e-13,
+      "reference_order": 244
+    },
+    {
+      "candidate": "Complex",
+      "case": "sphere512",
+      "error_upper": 1.8884427662488845e-13,
+      "reference_order": 244
+    },
+    {
+      "candidate": "GatherDopri",
+      "case": "sphere512",
+      "error_upper": 4.268941331294383e-11,
+      "reference_order": 244
+    },
+    {
+      "candidate": "Dopri",
+      "case": "sphere128",
+      "error_upper": 5.7932063418906036e-11,
+      "reference_order": 113
+    },
+    {
+      "candidate": "Rodas",
+      "case": "sphere128",
+      "error_upper": 1.9886468530104013e-12,
+      "reference_order": 113
+    },
+    {
+      "candidate": "Paired",
+      "case": "sphere128",
+      "error_upper": 7.245607949600057e-13,
+      "reference_order": 113
+    },
+    {
+      "candidate": "Complex",
+      "case": "sphere128",
+      "error_upper": 7.245607949600057e-13,
+      "reference_order": 113
+    },
+    {
+      "candidate": "GatherDopri",
+      "case": "sphere128",
+      "error_upper": 5.793202178554261e-11,
+      "reference_order": 113
+    }
+  ],
+  "stiff_goal_errors": [
+    {
+      "candidate": "Dopri",
+      "case": "stiff2",
+      "upper": 1.0371686148813453e-12
+    },
+    {
+      "candidate": "Rodas",
+      "case": "stiff2",
+      "upper": 3.743056212202056e-14
+    },
+    {
+      "candidate": "Paired",
+      "case": "stiff2",
+      "upper": 3.7401939184666944e-14
+    },
+    {
+      "candidate": "Complex",
+      "case": "stiff2",
+      "upper": 3.741581697247476e-14
+    },
+    {
+      "candidate": "Dopri",
+      "case": "stiff3",
+      "upper": 9.071141936017012e-13
+    },
+    {
+      "candidate": "Paired",
+      "case": "stiff3",
+      "upper": 3.178346122531192e-14
+    },
+    {
+      "candidate": "Complex",
+      "case": "stiff3",
+      "upper": 3.177635970108214e-14
+    },
+    {
+      "candidate": "Dopri",
+      "case": "sphere512",
+      "upper": 2.6024599142360216e-12
+    },
+    {
+      "candidate": "Paired",
+      "case": "sphere512",
+      "upper": 9.082318230824171e-14
+    },
+    {
+      "candidate": "Complex",
+      "case": "sphere512",
+      "upper": 9.082318230824171e-14
+    },
+    {
+      "candidate": "Dopri",
+      "case": "sphere128",
+      "upper": 3.68366795400199e-12
+    },
+    {
+      "candidate": "Rodas",
+      "case": "sphere128",
+      "upper": 1.1853018566654328e-13
+    },
+    {
+      "candidate": "Paired",
+      "case": "sphere128",
+      "upper": 1.1838099944760927e-13
+    },
+    {
+      "candidate": "Complex",
+      "case": "sphere128",
+      "upper": 1.1838099944760927e-13
+    }
+  ],
+  "stiff_primal_errors": [
+    {
+      "candidate": "Dopri",
+      "case": "stiff2",
+      "error_upper": 5.710702949330698e-12,
+      "reference_order": 148
+    },
+    {
+      "candidate": "Rodas",
+      "case": "stiff2",
+      "error_upper": 1.3077273388749072e-13,
+      "reference_order": 148
+    },
+    {
+      "candidate": "Paired",
+      "case": "stiff2",
+      "error_upper": 1.3079311688833345e-13,
+      "reference_order": 148
+    },
+    {
+      "candidate": "Complex",
+      "case": "stiff2",
+      "error_upper": 1.3072741423668083e-13,
+      "reference_order": 148
+    },
+    {
+      "candidate": "Dopri",
+      "case": "stiff3",
+      "error_upper": 6.120087946708434e-12,
+      "reference_order": 161
+    },
+    {
+      "candidate": "Paired",
+      "case": "stiff3",
+      "error_upper": 1.6252841420389157e-13,
+      "reference_order": 161
+    },
+    {
+      "candidate": "Complex",
+      "case": "stiff3",
+      "error_upper": 1.6248786504264062e-13,
+      "reference_order": 161
+    },
+    {
+      "candidate": "Dopri",
+      "case": "sphere512",
+      "error_upper": 1.760107939222219e-11,
+      "reference_order": 244
+    },
+    {
+      "candidate": "Paired",
+      "case": "sphere512",
+      "error_upper": 4.4251537061412893e-13,
+      "reference_order": 244
+    },
+    {
+      "candidate": "Complex",
+      "case": "sphere512",
+      "error_upper": 4.4251537061412893e-13,
+      "reference_order": 244
+    },
+    {
+      "candidate": "Dopri",
+      "case": "sphere128",
+      "error_upper": 1.9662290561769025e-11,
+      "reference_order": 113
+    },
+    {
+      "candidate": "Rodas",
+      "case": "sphere128",
+      "error_upper": 5.142809949528511e-13,
+      "reference_order": 113
+    },
+    {
+      "candidate": "Paired",
+      "case": "sphere128",
+      "error_upper": 5.141144614991574e-13,
+      "reference_order": 113
+    },
+    {
+      "candidate": "Complex",
+      "case": "sphere128",
+      "error_upper": 5.141144614991574e-13,
+      "reference_order": 113
+    }
+  ]
+}

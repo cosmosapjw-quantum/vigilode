@@ -1,0 +1,9 @@
+Locked offline release, polynomial-events, x86_64. RED at RED_SHA intentionally fails two focused tests; GREEN at GREEN_SHA; full actual portfolio at EXEC_SHA, exact input hashes. Capture logs named below. Timing pinned CPU0 on shared host, not bitwise reproducible.
+```sh
+export CARGO_TARGET_DIR="$HOME/.cargo-targets/vigilode-stage-lattice-20261124/kschain"
+taskset -c 0 cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_secant_goal_contracts -- --nocapture --test-threads=1
+taskset -c 0 cargo test --locked --offline --release -p vigilode --features polynomial-events --test spatial_adjoint_contracts stiff_spatial_adjoint_actual_portfolio -- --exact --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test spatial_adjoint_contracts -- --skip stiff_spatial_adjoint_actual_portfolio --nocapture --test-threads=1
+cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_general_guard_contracts --test dae_multi_guard_contracts --test dae_pending_guard_contracts --test dae_reduced_callback_contracts --test dae_interval_scratch_contracts --test dae_scalar_affine_contracts --test dae_conserved_chain_contracts --test causal_budget_contracts --test spatial_diffusion --test spatial_separable --test spatial_upwind --test spatial_portfolio --test longitude_preconditioner --test explicit_contracts --test explicit_hardening_contracts -- --nocapture --test-threads=1
+```
+Logs secant,stiff,spatial_replay,regression respectively. Focused RED/GREEN tests actual_nonlinear_secant_goal_residual and wide_poisson_actual_fewer_cells. verify.py exact rational and fixed-point checks; guide.py generate validates original MathHarness and freezes design; guide.py select measured replay. Raw or gzip logs accepted. Separate original primal authority and dual goal certification.

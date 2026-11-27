@@ -1,0 +1,265 @@
+{
+  "base_commit": "ddcf4e3be8d10234fe2a7b66eaf68ed6651681cd",
+  "checks": [
+    "RED101 GREEN0 both",
+    "32/35 valid noheap secant,3 structural refusals",
+    "15 true gradient noheap,10 numeric proposals",
+    "12 stiff certificates noheap,14 primal,16 numeric adjoint",
+    "27836 independent checks",
+    "287 prior logical,107 exact",
+    "86 regression pass10 ignored",
+    "47 measured designs30 Pareto covered",
+    "rustfmt/diff clean"
+  ],
+  "claim_id": "M2-03d.5b.21",
+  "cleanup": {
+    "compressed_bytes": 365766,
+    "duplicate_sources": [
+      {
+        "bytes": 9770,
+        "path": "secant_kernel.rs",
+        "sha256": "270ba54bcab1b26cddcc61f9a13106f1572970d71e93b19a3a60385363cfabcf",
+        "source": "crates/rodas5p-integrators/src/retro_dae_evolution/secant_goal.rs"
+      },
+      {
+        "bytes": 8201,
+        "path": "secant_facade.rs",
+        "sha256": "334d02ca060366dc82d940e7f1108daee705fbcc93b0ce05adb5b7711ef24510",
+        "source": "crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs"
+      },
+      {
+        "bytes": 9674,
+        "path": "secant_tests_append.rs",
+        "sha256": "a4ab5c90f17a90aa0f33e380c0e106b353e3043e1dbf5cbd4dcbafdc8ab51619",
+        "source": "crates/vigilode/tests/dae_secant_goal_contracts.rs"
+      },
+      {
+        "bytes": 6367,
+        "path": "stiff_tests_append.rs",
+        "sha256": "c66a36971b7f4f56accaf754166e03d3e56ab7787a14a3c0ab426177281ed26a",
+        "source": "crates/vigilode/tests/spatial_adjoint_contracts.rs"
+      }
+    ],
+    "raw_bytes_removed": 3697104
+  },
+  "commands_file": "REPRODUCE.md",
+  "environment": {
+    "hardware": "AMD Ryzen9 5900X x86_64 remote shared host",
+    "software": [
+      {
+        "name": "rustc",
+        "version": "rustc 1.94.1 (e408947bf 2026-03-25)"
+      },
+      {
+        "name": "cargo",
+        "version": "cargo 1.94.1 (29ea6fb6a 2026-03-24)"
+      },
+      {
+        "name": "MathHarness General",
+        "version": "3.1.0 verified154 files"
+      }
+    ],
+    "timing_affinity": "cpu=0"
+  },
+  "executed_commit": "584a87ae31afc18c2ad3f71e0ce07a9506e3f8f0",
+  "exit_codes": {
+    "green_secant": 0,
+    "green_wide": 0,
+    "red_secant": 101,
+    "red_wide": 101,
+    "regression": 0,
+    "secant": 0,
+    "selection": 0,
+    "spatial_replay": 0,
+    "stiff": 0,
+    "verify": 0
+  },
+  "guide_commit": "6ce853d50434ccb2699c13e26feea2f258aaaa04",
+  "input_artifacts": [
+    {
+      "current_sha256": "17e1b3f4d89bb1249591a0d915240196cb42712cfa784e3cac72f928dc464ee7",
+      "path": "crates/rodas5p-integrators/src/retro_dae_evolution.rs",
+      "sha256": "17e1b3f4d89bb1249591a0d915240196cb42712cfa784e3cac72f928dc464ee7",
+      "source_commit": "584a87ae31afc18c2ad3f71e0ce07a9506e3f8f0",
+      "verified_git_blob_sha256": "17e1b3f4d89bb1249591a0d915240196cb42712cfa784e3cac72f928dc464ee7"
+    },
+    {
+      "current_sha256": "270ba54bcab1b26cddcc61f9a13106f1572970d71e93b19a3a60385363cfabcf",
+      "path": "crates/rodas5p-integrators/src/retro_dae_evolution/secant_goal.rs",
+      "sha256": "270ba54bcab1b26cddcc61f9a13106f1572970d71e93b19a3a60385363cfabcf",
+      "source_commit": "584a87ae31afc18c2ad3f71e0ce07a9506e3f8f0",
+      "verified_git_blob_sha256": "270ba54bcab1b26cddcc61f9a13106f1572970d71e93b19a3a60385363cfabcf"
+    },
+    {
+      "current_sha256": "a333edf0e42f34bc560e5c4ead0232d4b25141fccaec12fe6a302d6b7486a3cb",
+      "path": "crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint.rs",
+      "sha256": "a333edf0e42f34bc560e5c4ead0232d4b25141fccaec12fe6a302d6b7486a3cb",
+      "source_commit": "584a87ae31afc18c2ad3f71e0ce07a9506e3f8f0",
+      "verified_git_blob_sha256": "a333edf0e42f34bc560e5c4ead0232d4b25141fccaec12fe6a302d6b7486a3cb"
+    },
+    {
+      "current_sha256": "334d02ca060366dc82d940e7f1108daee705fbcc93b0ce05adb5b7711ef24510",
+      "path": "crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs",
+      "sha256": "334d02ca060366dc82d940e7f1108daee705fbcc93b0ce05adb5b7711ef24510",
+      "source_commit": "584a87ae31afc18c2ad3f71e0ce07a9506e3f8f0",
+      "verified_git_blob_sha256": "334d02ca060366dc82d940e7f1108daee705fbcc93b0ce05adb5b7711ef24510"
+    },
+    {
+      "current_sha256": "ea9fe45fed271949636aed859ece9f5931fb02098fd7c5878d057da3c19e0b2f",
+      "path": "crates/vigilode/src/spatial/adjoint.rs",
+      "sha256": "ea9fe45fed271949636aed859ece9f5931fb02098fd7c5878d057da3c19e0b2f",
+      "source_commit": "584a87ae31afc18c2ad3f71e0ce07a9506e3f8f0",
+      "verified_git_blob_sha256": "ea9fe45fed271949636aed859ece9f5931fb02098fd7c5878d057da3c19e0b2f"
+    },
+    {
+      "current_sha256": "7554f521599efae1aebcfaebd84ccfb74067e4c3751b569266f11a367c6d97f5",
+      "path": "crates/vigilode/tests/dae_secant_goal_contracts.rs",
+      "sha256": "7554f521599efae1aebcfaebd84ccfb74067e4c3751b569266f11a367c6d97f5",
+      "source_commit": "584a87ae31afc18c2ad3f71e0ce07a9506e3f8f0",
+      "verified_git_blob_sha256": "7554f521599efae1aebcfaebd84ccfb74067e4c3751b569266f11a367c6d97f5"
+    },
+    {
+      "current_sha256": "6bbdd5f2f9d05e8f4da73b36acc0c8237946390b278b249fb8771d20db14887d",
+      "path": "crates/vigilode/tests/spatial_adjoint_contracts.rs",
+      "sha256": "6bbdd5f2f9d05e8f4da73b36acc0c8237946390b278b249fb8771d20db14887d",
+      "source_commit": "584a87ae31afc18c2ad3f71e0ce07a9506e3f8f0",
+      "verified_git_blob_sha256": "6bbdd5f2f9d05e8f4da73b36acc0c8237946390b278b249fb8771d20db14887d"
+    },
+    {
+      "current_sha256": "11955ac691815337fb2d72d73edb898d0db396203fd78dccb7913e96e63e5416",
+      "path": "research/m2_nonlinear_secant_stiff_spatial_20261127/PREREGISTRATION.md",
+      "sha256": "11955ac691815337fb2d72d73edb898d0db396203fd78dccb7913e96e63e5416",
+      "source_commit": "584a87ae31afc18c2ad3f71e0ce07a9506e3f8f0",
+      "verified_git_blob_sha256": "11955ac691815337fb2d72d73edb898d0db396203fd78dccb7913e96e63e5416"
+    },
+    {
+      "current_sha256": "9be635fafe53366b8baac7d5549507903cba50585a0e3c8335bc767f1a069da0",
+      "path": "research/m2_nonlinear_secant_stiff_spatial_20261127/guide.py",
+      "sha256": "9be635fafe53366b8baac7d5549507903cba50585a0e3c8335bc767f1a069da0",
+      "source_commit": "6ce853d50434ccb2699c13e26feea2f258aaaa04",
+      "verified_git_blob_sha256": "9be635fafe53366b8baac7d5549507903cba50585a0e3c8335bc767f1a069da0"
+    },
+    {
+      "current_sha256": "4404bbb3fdd67a04a2c2dfb8e008af2a5b39da2db5857a3cda76639f70ad6083",
+      "path": "research/m2_nonlinear_secant_stiff_spatial_20261127/LITERATURE.md",
+      "sha256": "4404bbb3fdd67a04a2c2dfb8e008af2a5b39da2db5857a3cda76639f70ad6083",
+      "source_commit": "6ce853d50434ccb2699c13e26feea2f258aaaa04",
+      "verified_git_blob_sha256": "4404bbb3fdd67a04a2c2dfb8e008af2a5b39da2db5857a3cda76639f70ad6083"
+    },
+    {
+      "current_sha256": "1b216177765ecccd3dc8e24e88b40dc662bcfb07b280c0dd2649b003ca1ce72b",
+      "path": "research/m2_nonlinear_secant_stiff_spatial_20261127/HARNESS_ROUTES.json",
+      "sha256": "1b216177765ecccd3dc8e24e88b40dc662bcfb07b280c0dd2649b003ca1ce72b",
+      "source_commit": "6ce853d50434ccb2699c13e26feea2f258aaaa04",
+      "verified_git_blob_sha256": "1b216177765ecccd3dc8e24e88b40dc662bcfb07b280c0dd2649b003ca1ce72b"
+    },
+    {
+      "current_sha256": "b3f236aad4c8cd24dbd568524984eb6c0a2b2653ba2c1f790fc7b3791a1490bc",
+      "path": "research/m2_nonlinear_secant_stiff_spatial_20261127/CANDIDATES.json",
+      "sha256": "b3f236aad4c8cd24dbd568524984eb6c0a2b2653ba2c1f790fc7b3791a1490bc",
+      "source_commit": "6ce853d50434ccb2699c13e26feea2f258aaaa04",
+      "verified_git_blob_sha256": "b3f236aad4c8cd24dbd568524984eb6c0a2b2653ba2c1f790fc7b3791a1490bc"
+    }
+  ],
+  "limitations": [
+    "no default promotion",
+    "conditional original primal proof",
+    "not arbitrary strongly coupled vector or parameter/reset/discrete gradient",
+    "no full driver zeroheap",
+    "no full workspace/Clippy or independent subagent review",
+    "no continuum PDE proof or longitude shifted adjoint solve",
+    "shared host timing",
+    "manifest schema validator not run"
+  ],
+  "logs": [
+    {
+      "archive": "green_secant.log.gz",
+      "archive_bytes": 951,
+      "archive_sha256": "6278f9cfb032c95dfaa581814d48896bf21842b1519737cde6c008bb73d17fe3",
+      "raw_bytes": 1740,
+      "raw_name": "green_secant.log",
+      "raw_sha256": "cd5eea52168690b2d808d53dd5ef9cb774f4a52d93c18d2dfd8ead1966209584"
+    },
+    {
+      "archive": "green_wide.log.gz",
+      "archive_bytes": 822,
+      "archive_sha256": "30a429c193114b133586758b0c8e7a56afba6a38b31c97db7d52c1f1008a08dd",
+      "raw_bytes": 1728,
+      "raw_name": "green_wide.log",
+      "raw_sha256": "e40ab28253763382dfa1fbc1cd3db1058729dc4b2012984db4eddf6a8108acf4"
+    },
+    {
+      "archive": "harness.log.gz",
+      "archive_bytes": 70,
+      "archive_sha256": "4c17337f14505cae5ee7675376ae322dc587c35a684397ad47dce683d7a19d86",
+      "raw_bytes": 53,
+      "raw_name": "harness.log",
+      "raw_sha256": "96a466c38fd1668ae364a87d0f33a175bf5bac701d097f4e33ba7dacaf3ea6cd"
+    },
+    {
+      "archive": "red_secant.log.gz",
+      "archive_bytes": 746,
+      "archive_sha256": "706d034ed95b7f41d0fd7d5e17c11c889f98817d91ed934b288d7de35ea2ea36",
+      "raw_bytes": 1397,
+      "raw_name": "red_secant.log",
+      "raw_sha256": "37e8a0ca3add7fa449b19c41ce1968dbbcc3fa41a92293400e612a070b683a03"
+    },
+    {
+      "archive": "red_wide.log.gz",
+      "archive_bytes": 1002,
+      "archive_sha256": "cc9d7234f0c0d1b11115caca72323fc645121b096ceb4b4e5192e33d2388d64b",
+      "raw_bytes": 2162,
+      "raw_name": "red_wide.log",
+      "raw_sha256": "93af17b61ea3d8f31536cb306505138da6eeb8a0d6fdac192e446d2e9427a0a8"
+    },
+    {
+      "archive": "regression.log.gz",
+      "archive_bytes": 98662,
+      "archive_sha256": "cee847f008e2b3985835bc1da73fb6ef593fd6b23904e0ea4177a865b06a1eb4",
+      "raw_bytes": 2190752,
+      "raw_name": "regression.log",
+      "raw_sha256": "473634e1e2dd15de58f0b76896933bcf487d343b1af1ec4a21b30e0f167bc73e"
+    },
+    {
+      "archive": "secant.log.gz",
+      "archive_bytes": 9194,
+      "archive_sha256": "87bb53ee24999034905ef472a15c623e97ce2fad2e2328157750d1b60fee9584",
+      "raw_bytes": 52631,
+      "raw_name": "secant.log",
+      "raw_sha256": "847b320ac4cdec0bd1dcb41e29c8fb8b67a9b65244b910ec4745bf6f59619073"
+    },
+    {
+      "archive": "selection.log.gz",
+      "archive_bytes": 386,
+      "archive_sha256": "f0896728a2607df675a131356108a6176867ff83f4693d5d7560098413926259",
+      "raw_bytes": 1497,
+      "raw_name": "selection.log",
+      "raw_sha256": "fd56869814af64dc4b70086cec0f06013344ec28b5dac48f615ef357e5e84f73"
+    },
+    {
+      "archive": "spatial_replay.log.gz",
+      "archive_bytes": 147503,
+      "archive_sha256": "66a4a63a202938ebd788e6ffa57b35170606d22bbc00cd029e43d944e70ea1df",
+      "raw_bytes": 1014253,
+      "raw_name": "spatial_replay.log",
+      "raw_sha256": "0eb93d52a2f3b94fe2cf73f4dbe3555f32706c400cf64bb35b5ebe32f44adb7c"
+    },
+    {
+      "archive": "stiff.log.gz",
+      "archive_bytes": 106094,
+      "archive_sha256": "abd715ff6f83630af1fd78e6fa9ee7d553eb04bd95d9893dbe94d02a4c201c0d",
+      "raw_bytes": 430231,
+      "raw_name": "stiff.log",
+      "raw_sha256": "f460450b8ac8752b5f13f8d702eb3a72f59fb413e6545fcdce75a787d6873f36"
+    },
+    {
+      "archive": "verify.log.gz",
+      "archive_bytes": 336,
+      "archive_sha256": "6b51e0872d92dedeb2aa599e2775e05a5f4f8f7ba9f376adead34be3149f9f97",
+      "raw_bytes": 660,
+      "raw_name": "verify.log",
+      "raw_sha256": "2b4c6cb9a001caf9382d41067ba866cd46ffc41dd68f96c86cb8b2e0ebbff199"
+    }
+  ],
+  "schema_version": 2
+}

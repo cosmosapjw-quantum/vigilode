@@ -1,0 +1,583 @@
+{
+  "scope": "finite measured replay; no default promotion; shifted diagnostic not selectable",
+  "secant": {
+    "candidates": {
+      "Diagonal4": {
+        "bytes": 90,
+        "qualified": 4,
+        "requests": 2,
+        "rows": 5
+      },
+      "Scaled16": {
+        "bytes": 90,
+        "qualified": 4,
+        "requests": 2,
+        "rows": 5
+      },
+      "Scaled4": {
+        "bytes": 90,
+        "qualified": 4,
+        "requests": 2,
+        "rows": 5
+      },
+      "Shifted4": {
+        "bytes": 0,
+        "qualified": 0,
+        "requests": 0,
+        "rows": 5
+      },
+      "Sub4Bernstein": {
+        "bytes": 0,
+        "qualified": 5,
+        "requests": 0,
+        "rows": 5
+      },
+      "Sub4Horner": {
+        "bytes": 0,
+        "qualified": 5,
+        "requests": 0,
+        "rows": 5
+      },
+      "WholeHorner": {
+        "bytes": 0,
+        "qualified": 5,
+        "requests": 0,
+        "rows": 5
+      }
+    },
+    "pareto_count": 20,
+    "pareto_covered": 20,
+    "proposals": {
+      "mutation": 639,
+      "structure": 1409
+    },
+    "rows": 35,
+    "strata": [
+      {
+        "covered": 4,
+        "group": [
+          "clock2"
+        ],
+        "pareto": [
+          {
+            "candidate": "WholeHorner",
+            "case": "clock2",
+            "objectives": [
+              0,
+              0,
+              103384,
+              1.606983868017312e-08,
+              19,
+              24
+            ]
+          },
+          {
+            "candidate": "Sub4Horner",
+            "case": "clock2",
+            "objectives": [
+              0,
+              0,
+              270137,
+              2.336257870028835e-09,
+              62,
+              84
+            ]
+          },
+          {
+            "candidate": "Scaled4",
+            "case": "clock2",
+            "objectives": [
+              0,
+              0,
+              824576,
+              3.6044031461585164e-10,
+              62,
+              84
+            ]
+          },
+          {
+            "candidate": "Scaled16",
+            "case": "clock2",
+            "objectives": [
+              0,
+              0,
+              3258849,
+              9.28340376249681e-11,
+              220,
+              324
+            ]
+          }
+        ],
+        "qualified": 6,
+        "resource_first": "WholeHorner"
+      },
+      {
+        "covered": 4,
+        "group": [
+          "clock4"
+        ],
+        "pareto": [
+          {
+            "candidate": "WholeHorner",
+            "case": "clock4",
+            "objectives": [
+              0,
+              0,
+              213991,
+              3.365363128427103e-08,
+              20,
+              48
+            ]
+          },
+          {
+            "candidate": "Sub4Horner",
+            "case": "clock4",
+            "objectives": [
+              0,
+              0,
+              559579,
+              4.938456097208523e-09,
+              62,
+              168
+            ]
+          },
+          {
+            "candidate": "Scaled4",
+            "case": "clock4",
+            "objectives": [
+              0,
+              0,
+              1632921,
+              6.493396809739528e-10,
+              62,
+              168
+            ]
+          },
+          {
+            "candidate": "Scaled16",
+            "case": "clock4",
+            "objectives": [
+              0,
+              0,
+              6527568,
+              1.719236470300532e-10,
+              222,
+              648
+            ]
+          }
+        ],
+        "qualified": 6,
+        "resource_first": "WholeHorner"
+      },
+      {
+        "covered": 4,
+        "group": [
+          "clock8"
+        ],
+        "pareto": [
+          {
+            "candidate": "WholeHorner",
+            "case": "clock8",
+            "objectives": [
+              0,
+              0,
+              728005,
+              1.1963637135180814e-07,
+              21,
+              96
+            ]
+          },
+          {
+            "candidate": "Sub4Horner",
+            "case": "clock8",
+            "objectives": [
+              0,
+              0,
+              1908057,
+              1.7982182214444218e-08,
+              69,
+              336
+            ]
+          },
+          {
+            "candidate": "Scaled4",
+            "case": "clock8",
+            "objectives": [
+              0,
+              0,
+              3647248,
+              1.9439103951980357e-09,
+              69,
+              336
+            ]
+          },
+          {
+            "candidate": "Scaled16",
+            "case": "clock8",
+            "objectives": [
+              0,
+              0,
+              13626816,
+              5.20144100751257e-10,
+              239,
+              1296
+            ]
+          }
+        ],
+        "qualified": 6,
+        "resource_first": "WholeHorner"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "mixed_inverse"
+        ],
+        "pareto": [
+          {
+            "candidate": "WholeHorner",
+            "case": "mixed_inverse",
+            "objectives": [
+              0,
+              0,
+              141385,
+              1.60698465035998e-08,
+              19,
+              24
+            ]
+          },
+          {
+            "candidate": "Sub4Horner",
+            "case": "mixed_inverse",
+            "objectives": [
+              0,
+              0,
+              365755,
+              2.336257870490458e-09,
+              62,
+              84
+            ]
+          },
+          {
+            "candidate": "Sub4Bernstein",
+            "case": "mixed_inverse",
+            "objectives": [
+              0,
+              0,
+              1066799,
+              3.6044330736771934e-10,
+              62,
+              84
+            ]
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "WholeHorner"
+      },
+      {
+        "covered": 5,
+        "group": [
+          "quadratic"
+        ],
+        "pareto": [
+          {
+            "candidate": "WholeHorner",
+            "case": "quadratic",
+            "objectives": [
+              0,
+              0,
+              85380,
+              2.690094235418763e-10,
+              25,
+              20
+            ]
+          },
+          {
+            "candidate": "Sub4Horner",
+            "case": "quadratic",
+            "objectives": [
+              0,
+              0,
+              238076,
+              4.4762501838395817e-11,
+              76,
+              68
+            ]
+          },
+          {
+            "candidate": "Diagonal4",
+            "case": "quadratic",
+            "objectives": [
+              0,
+              0,
+              606577,
+              8.162254796503232e-12,
+              76,
+              68
+            ]
+          },
+          {
+            "candidate": "Scaled4",
+            "case": "quadratic",
+            "objectives": [
+              0,
+              0,
+              609122,
+              8.157958796341204e-12,
+              76,
+              68
+            ]
+          },
+          {
+            "candidate": "Scaled16",
+            "case": "quadratic",
+            "objectives": [
+              0,
+              0,
+              2367018,
+              2.0002263803995093e-12,
+              240,
+              260
+            ]
+          }
+        ],
+        "qualified": 6,
+        "resource_first": "WholeHorner"
+      }
+    ],
+    "unique": 35
+  },
+  "spatial": {
+    "candidates": {
+      "PoissonAdaptive": {
+        "bytes": 0,
+        "qualified": 4,
+        "requests": 0,
+        "rows": 4
+      },
+      "PoissonWide": {
+        "bytes": 0,
+        "qualified": 4,
+        "requests": 0,
+        "rows": 4
+      },
+      "PoissonWideDecay": {
+        "bytes": 0,
+        "qualified": 4,
+        "requests": 0,
+        "rows": 4
+      }
+    },
+    "pareto_count": 10,
+    "pareto_covered": 10,
+    "proposals": {
+      "mutation": 759,
+      "structure": 1289
+    },
+    "rows": 12,
+    "strata": [
+      {
+        "covered": 3,
+        "group": [
+          "sphere128"
+        ],
+        "pareto": [
+          {
+            "candidate": "PoissonAdaptive",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              5390909,
+              136,
+              8.909539772616881e-15,
+              1.3859243599723102e-16
+            ]
+          },
+          {
+            "candidate": "PoissonWide",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              2217609,
+              58,
+              4.6629367034256575e-15,
+              2.547520087949662e-16
+            ]
+          },
+          {
+            "candidate": "PoissonWideDecay",
+            "case": "sphere128",
+            "objectives": [
+              0,
+              0,
+              2051057,
+              54,
+              5.10702591327572e-15,
+              5.037552544113932e-16
+            ]
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "PoissonWideDecay"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "sphere512"
+        ],
+        "pareto": [
+          {
+            "candidate": "PoissonAdaptive",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              91893912,
+              544,
+              3.833044992518353e-14,
+              2.6246261009623403e-16
+            ]
+          },
+          {
+            "candidate": "PoissonWide",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              38451960,
+              232,
+              1.6014967130217883e-14,
+              2.913307081060761e-16
+            ]
+          },
+          {
+            "candidate": "PoissonWideDecay",
+            "case": "sphere512",
+            "objectives": [
+              0,
+              0,
+              35944819,
+              216,
+              1.6459056340067946e-14,
+              7.234849609288192e-16
+            ]
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "PoissonWideDecay"
+      },
+      {
+        "covered": 1,
+        "group": [
+          "stiff2"
+        ],
+        "pareto": [
+          {
+            "candidate": "PoissonWideDecay",
+            "case": "stiff2",
+            "objectives": [
+              0,
+              0,
+              3145118,
+              104,
+              8.951173136040325e-16,
+              1.0939147106535546e-16
+            ]
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "PoissonWideDecay"
+      },
+      {
+        "covered": 3,
+        "group": [
+          "stiff3"
+        ],
+        "pareto": [
+          {
+            "candidate": "PoissonAdaptive",
+            "case": "stiff3",
+            "objectives": [
+              0,
+              0,
+              31872171,
+              272,
+              8.118505867571457e-16,
+              1.2556199426758633e-16
+            ]
+          },
+          {
+            "candidate": "PoissonWide",
+            "case": "stiff3",
+            "objectives": [
+              0,
+              0,
+              13911418,
+              116,
+              6.739400704169896e-16,
+              2.079004757221665e-16
+            ]
+          },
+          {
+            "candidate": "PoissonWideDecay",
+            "case": "stiff3",
+            "objectives": [
+              0,
+              0,
+              13301844,
+              108,
+              1.1518563880486e-15,
+              4.498179456819697e-16
+            ]
+          }
+        ],
+        "qualified": 3,
+        "resource_first": "PoissonWideDecay"
+      }
+    ],
+    "unique": 12
+  },
+  "time_first": {
+    "secant": [
+      {
+        "candidate": "WholeHorner",
+        "case": "clock2"
+      },
+      {
+        "candidate": "WholeHorner",
+        "case": "clock4"
+      },
+      {
+        "candidate": "WholeHorner",
+        "case": "clock8"
+      },
+      {
+        "candidate": "WholeHorner",
+        "case": "mixed_inverse"
+      },
+      {
+        "candidate": "WholeHorner",
+        "case": "quadratic"
+      }
+    ],
+    "spatial": [
+      {
+        "candidate": "PoissonWideDecay",
+        "case": "sphere128"
+      },
+      {
+        "candidate": "PoissonWideDecay",
+        "case": "sphere512"
+      },
+      {
+        "candidate": "PoissonWideDecay",
+        "case": "stiff2"
+      },
+      {
+        "candidate": "PoissonWideDecay",
+        "case": "stiff3"
+      }
+    ]
+  }
+}
