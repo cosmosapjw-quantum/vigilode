@@ -252,11 +252,15 @@ impl SlabReplayRun {
             || e.warp.is_some()
             || e.conservation.is_some()
             || r.route == EvolutionRoute::Mass
-            || !r.epoch.is_some_and(|a| {
+            || !r.driver.is_success()
+            // Legacy zero-origin, zero-incoming epochs omit this metadata
+            // by design. Do not alter the existing serialized contract.
+            || !r.epoch.map_or(r.driver.t.first()==Some(&0.),|a| {
                 a.incoming_x_error == Some(0.)
                     && r.driver.t.first() == Some(&a.start)
                     && r.driver.t.last() == Some(&a.end)
             })
+            || !r.slabs.first().and_then(|s|s.certificate.as_ref()).is_some_and(|c|c.global_qualified&&c.incoming==0.)
             || self.slabs_len() == 0
             || weights.len() != e.src.nx() + e.src.nz()
             || weights.iter().any(|w| !w.is_finite())
