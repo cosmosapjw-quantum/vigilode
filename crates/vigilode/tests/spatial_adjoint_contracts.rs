@@ -1471,3 +1471,370 @@ fn fused_residual_fast_and_fallback() {
     println!("FALLBACK_RED_GREEN {:?}", a);
     assert!(a.admitted && a.fast_checks == 1 && a.interval_checks == 1 && a.fallbacks == 1);
 }
+fn residual_grids() -> Vec<(&'static str, DiffusionGrid)> {
+    let mut grids = early_grids();
+    grids.push((
+        "box2_strong",
+        DiffusionGrid::periodic_box([8, 4], [8., 4.], [4096., 2048.]).unwrap(),
+    ));
+    grids.push((
+        "sphere1024",
+        DiffusionGrid::sphere(16, 64, 1., 0.04).unwrap(),
+    ));
+    grids
+}
+#[test]
+fn fast_residual_actual_portfolio() {
+    use rodas5p_core::WorkCounters;
+    use vigilode::spatial::{
+        ResidualPlan as P, ResidualWorkspace as W, ShiftedAdjointRoute as R,
+        ShiftedAdjointWorkspace as SW,
+    };
+    let plans = [
+        P::Legacy,
+        P::PackedInterval,
+        P::FusedEdges,
+        P::FusedDiagonal,
+        P::Hybrid,
+    ];
+    let mut grids = residual_grids();
+    grids.push((
+        "duplicate",
+        DiffusionGrid::periodic_box([2, 2, 2], [2., 2., 2.], [1., 2., 4.]).unwrap(),
+    ));
+    for (case, g) in grids {
+        let n = g.dimension();
+        let base = (0..n)
+            .map(|i| ((17 * i % 29) as f64 - 14.) / 32.)
+            .collect::<Vec<_>>();
+        let mut x = vec![0.; n];
+        let mut solver = SW::new(&g, R::FourierTranspose).unwrap();
+        solver.prepare(256.).unwrap();
+        solver
+            .solve_into(&base, &mut x, &mut WorkCounters::default())
+            .unwrap();
+        println!(
+            "RES_GRID {}",
+            serde_json::json!({"case":case,"n":n,"rows":(0..n).map(|i|g.represented_row(i).unwrap()).collect::<Vec<_>>()})
+        );
+        let mut workspaces = vec![];
+        let mut setups = vec![];
+        for plan in plans {
+            let (r, a) = measure(|| W::new(&g, plan));
+            workspaces.push(r.unwrap());
+            setups.push(a);
+        }
+        for scenario in ["nominal", "perturbed", "cancellation", "subnormal", "large"] {
+            let (z, b, v) = match scenario {
+                "nominal" => (256., base.clone(), x.clone()),
+                "perturbed" => {
+                    let mut v = x.clone();
+                    v[n / 2] += 2f64.powi(-20);
+                    (256., base.clone(), v)
+                }
+                "cancellation" => {
+                    let z = 2f64.powi(-20);
+                    (z, vec![z; n], vec![1.; n])
+                }
+                "subnormal" => {
+                    let eta = f64::from_bits(1);
+                    (
+                        0.5,
+                        (0..n).map(|i| eta * ((i % 11) as f64 - 5.)).collect(),
+                        (0..n).map(|i| eta * ((i % 7) as f64 - 3.)).collect(),
+                    )
+                }
+                _ => (
+                    256.,
+                    base.iter().map(|v| v * 2f64.powi(800)).collect(),
+                    x.iter().map(|v| v * 2f64.powi(800)).collect(),
+                ),
+            };
+            println!(
+                "RES_INPUT {}",
+                serde_json::json!({"case":case,"scenario":scenario,"shift":z,"b":b,"x":v})
+            );
+            let mut preps = vec![];
+            let mut receipts = vec![];
+            for w in &mut workspaces {
+                let (p, a) = measure(|| w.prepare(z));
+                p.unwrap();
+                assert_eq!(a.requests(), 0);
+                preps.push(a);
+                w.evaluate(&b, &v).unwrap();
+                let (r, a) = measure(|| w.evaluate(&b, &v));
+                let r = r.unwrap();
+                assert_eq!(a.requests(), 0);
+                receipts.push((r, a));
+            }
+            assert_eq!(receipts[0].0.residual_l1, receipts[1].0.residual_l1);
+            let mut samples: [Vec<u128>; 5] = std::array::from_fn(|_| vec![]);
+            for rep in 0..5 {
+                for j in 0..5 {
+                    let i = (rep + j) % 5;
+                    let start = std::time::Instant::now();
+                    for _ in 0..32 {
+                        black_box(workspaces[i].evaluate(&b, &v).unwrap());
+                    }
+                    samples[i].push(start.elapsed().as_nanos() / 32);
+                }
+            }
+            for (i, (r, a)) in receipts.into_iter().enumerate() {
+                samples[i].sort_unstable();
+                println!(
+                    "RES_CERT {}",
+                    serde_json::json!({"case":case,"scenario":scenario,"candidate":plans[i],"qualified":true,"receipt":r,"allocation":a,"setup":setups[i],"prepare":preps[i],"median_ns":samples[i][2],"samples_ns":samples[i]})
+                );
+            }
+        }
+    }
+    let g = DiffusionGrid::periodic_box([2, 2], [2., 2.], [1., 1.]).unwrap();
+    let n = g.dimension();
+    for p in plans {
+        let mut w = W::new(&g, p).unwrap();
+        assert!(w.evaluate(&vec![1.; n], &vec![1.; n]).is_err());
+        w.prepare(4.).unwrap();
+        assert!(w.evaluate(&vec![f64::NAN; n], &vec![1.; n]).is_err());
+        assert!(w.evaluate(&vec![1.; n], &vec![f64::MAX; n]).is_err());
+        assert!(w.prepare(0.).is_err());
+        assert!(w.evaluate(&vec![1.; n], &vec![1.; n]).is_err());
+    }
+    println!(
+        "RES_EDGE {}",
+        serde_json::json!({"overflow_refused":true,"nonfinite_refused":true,"invalidated_prepare":true})
+    );
+}
+#[test]
+fn fast_residual_native_actual_portfolio() {
+    use rodas5p_integrators::AdaptiveStepConfig;
+    use vigilode::spatial::{
+        ResidualPlan as P, ShiftedAdjointRoute as R, solve_spatial_adjoint_shifted,
+        solve_spatial_adjoint_shifted_with_residual,
+    };
+    let o = Options {
+        rtol: 1e-8,
+        atol: Atol::Scalar(1e-10),
+        h0: 0.001,
+        dense_output: false,
+        max_steps: 4096,
+        ..Default::default()
+    };
+    let adaptive = AdaptiveStepConfig {
+        rtol: o.rtol,
+        atol: 1e-10,
+        initial_step: o.h0,
+        max_attempts: o.max_steps,
+        ..Default::default()
+    };
+    for (case, g) in residual_grids() {
+        let n = g.dimension();
+        let mut c = vec![0.; n];
+        c[0] = 0.5;
+        c[n / 2] = -0.25;
+        c[n - 1] = 0.125;
+        let mut w = SpatialAdjointWorkspace::new(&g).unwrap();
+        let mut exact = vec![Iv::point(0.).unwrap(); n];
+        let cert = w
+            .certify_into(
+                &c,
+                &c,
+                &c,
+                DURATION,
+                SpatialAdjointRoute::PoissonWideDecay,
+                &mut exact,
+            )
+            .unwrap();
+        assert!(cert.width_upper <= 1e-6);
+        println!(
+            "FAST_DUAL {}",
+            serde_json::json!({"case":case,"n":n,"rows":(0..n).map(|i|g.represented_row(i).unwrap()).collect::<Vec<_>>(),"weights":c,"duration":DURATION,"enclosure":exact.iter().map(|v|v.as_pair()).collect::<Vec<_>>() })
+        );
+        let p = g.adjoint_problem_gather();
+        for k in [NativeRoute::Dopri, NativeRoute::Paired] {
+            let (r, a) = measure(|| native(&g, &p, &c, &o, k, true));
+            let e = max_error(&exact, &r.values);
+            assert!(e <= 1e-6);
+            let mut samples = vec![];
+            for _ in 0..3 {
+                let start = std::time::Instant::now();
+                let v = native(&g, &p, &c, &o, k, true);
+                samples.push(start.elapsed().as_nanos());
+                assert_eq!(v.values, r.values);
+            }
+            samples.sort_unstable();
+            println!(
+                "FAST_IVP {}",
+                serde_json::json!({"case":case,"candidate":k,"qualified":true,"allocation":a,"run":r,"error_upper":e,"median_ns":samples[1],"samples_ns":samples})
+            );
+        }
+        let plans = [
+            P::Legacy,
+            P::PackedInterval,
+            P::FusedEdges,
+            P::FusedDiagonal,
+            P::Hybrid,
+        ];
+        let call =
+            |k| solve_spatial_adjoint_shifted_with_residual(&g, (0., DURATION), &c, &adaptive, k);
+        let mut receipts = vec![];
+        for plan in plans {
+            let (r, a) = measure(|| call(plan));
+            receipts.push((r, a));
+        }
+        let mut samples: [Vec<u128>; 5] = std::array::from_fn(|_| vec![]);
+        let mut profiles: [Vec<serde_json::Value>; 5] = std::array::from_fn(|_| vec![]);
+        for rep in 0..3 {
+            for j in 0..5 {
+                let i = (rep + j) % 5;
+                if let Ok((r, _)) = &receipts[i].0 {
+                    if r.observed.success {
+                        let start = std::time::Instant::now();
+                        let (v, work) = call(plans[i]).unwrap();
+                        samples[i].push(start.elapsed().as_nanos());
+                        assert_eq!(v.observed.y, r.observed.y);
+                        profiles[i].push(serde_json::to_value(work.residual_profile).unwrap());
+                    }
+                }
+            }
+        }
+        let mut old = None;
+        for (i, (r, a)) in receipts.into_iter().enumerate() {
+            match r {
+                Ok((r, work)) => {
+                    let complete = r.observed.success && r.observed.t.last() == Some(&DURATION);
+                    let e = if complete {
+                        Some(max_error(&exact, r.observed.y.last().unwrap()))
+                    } else {
+                        None
+                    };
+                    if complete {
+                        assert!(e.unwrap() <= 1e-6);
+                        assert_eq!(work.solves as u64, r.observed.counters.linear_solves);
+                        assert_eq!(work.returned, work.solves);
+                        if i == 0 {
+                            old = Some(r.observed.y.clone());
+                        } else {
+                            assert_eq!(old.as_ref(), Some(&r.observed.y));
+                        }
+                    }
+                    samples[i].sort_unstable();
+                    println!(
+                        "FAST_IVP {}",
+                        serde_json::json!({"case":case,"candidate":plans[i],"qualified":complete,"allocation":a,"work":work,"profiles":profiles[i],"run":{"values":r.observed.y.last().unwrap(),"accepted":r.accepted_steps,"rejected":r.rejected_steps,"rhs":r.observed.counters.rhs_calls,"linear_solves":r.observed.counters.linear_solves,"linear_iterations":r.observed.counters.linear_iterations,"counters":r.observed.counters},"error_upper":e,"median_ns":samples[i].get(1),"samples_ns":samples[i]})
+                    );
+                }
+                Err(e) => println!(
+                    "FAST_IVP {}",
+                    serde_json::json!({"case":case,"candidate":plans[i],"qualified":false,"allocation":a,"reason":e.to_string()})
+                ),
+            }
+        }
+        // Existing per-column and previously unused projected-trigger paths.
+        // Separate comparison strata, not a new default.
+        if matches!(case, "box2" | "sphere128" | "sphere512") {
+            let routes = if case.starts_with("sphere") {
+                vec![
+                    R::EarlyIdentity,
+                    R::TriggeredIdentity,
+                    R::EarlyLongitude,
+                    R::TriggeredLongitude,
+                ]
+            } else {
+                vec![R::EarlyIdentity, R::TriggeredIdentity]
+            };
+            for k in routes {
+                let call = || solve_spatial_adjoint_shifted(&g, (0., DURATION), &c, &adaptive, k);
+                let (r, a) = measure(call);
+                match r {
+                    Ok((r, work)) => {
+                        let complete = r.observed.success && r.observed.t.last() == Some(&DURATION);
+                        let e = if complete {
+                            Some(max_error(&exact, r.observed.y.last().unwrap()))
+                        } else {
+                            None
+                        };
+                        let mut samples = vec![];
+                        if complete {
+                            assert!(e.unwrap() <= 1e-6);
+                            assert_eq!(work.solves as u64, r.observed.counters.linear_solves);
+                            for _ in 0..3 {
+                                let s = std::time::Instant::now();
+                                let (v, _) = call().unwrap();
+                                samples.push(s.elapsed().as_nanos());
+                                assert_eq!(v.observed.y, r.observed.y);
+                            }
+                            samples.sort_unstable();
+                        }
+                        println!(
+                            "TRIGGER_IVP {}",
+                            serde_json::json!({"case":case,"candidate":k,"qualified":complete,"allocation":a,"work":work,"run":{"values":r.observed.y.last().unwrap(),"accepted":r.accepted_steps,"rejected":r.rejected_steps,"rhs":r.observed.counters.rhs_calls,"linear_solves":r.observed.counters.linear_solves,"linear_iterations":r.observed.counters.linear_iterations,"counters":r.observed.counters},"error_upper":e,"median_ns":samples.get(1),"samples_ns":samples})
+                        );
+                    }
+                    Err(e) => println!(
+                        "TRIGGER_IVP {}",
+                        serde_json::json!({"case":case,"candidate":k,"qualified":false,"allocation":a,"reason":e.to_string()})
+                    ),
+                }
+            }
+        }
+    }
+}
+#[test]
+fn triggered_fixed_actual_portfolio() {
+    use rodas5p_core::WorkCounters;
+    use vigilode::spatial::{ShiftedAdjointRoute as R, ShiftedAdjointWorkspace as W};
+    for (case, g) in early_grids() {
+        if !matches!(case, "box2" | "sphere128" | "sphere512") {
+            continue;
+        }
+        let n = g.dimension();
+        let b = (0..n)
+            .map(|i| ((17 * i % 29) as f64 - 14.) / 32.)
+            .collect::<Vec<_>>();
+        let mut out = vec![0.; n];
+        let routes = if case.starts_with("sphere") {
+            vec![
+                R::EarlyIdentity,
+                R::TriggeredIdentity,
+                R::EarlyLongitude,
+                R::TriggeredLongitude,
+            ]
+        } else {
+            vec![R::EarlyIdentity, R::TriggeredIdentity]
+        };
+        for z in [4., 4096.] {
+            for &k in &routes {
+                let mut w = W::new(&g, k).unwrap();
+                w.prepare(z).unwrap();
+                let first = w.solve_into(&b, &mut out, &mut WorkCounters::default());
+                if let Err(e) = first {
+                    println!(
+                        "TRIGGER_FIXED {}",
+                        serde_json::json!({"case":case,"shift":z,"candidate":k,"qualified":false,"reason":e.to_string()})
+                    );
+                    continue;
+                }
+                let mut c = WorkCounters::default();
+                let (r, a) = measure(|| w.solve_into(&b, &mut out, &mut c));
+                let r = r.unwrap();
+                assert!(r.error_l1 <= 1e-8);
+                let expected = out.clone();
+                let mut samples = vec![];
+                for _ in 0..5 {
+                    let s = std::time::Instant::now();
+                    black_box(
+                        w.solve_into(&b, &mut out, &mut WorkCounters::default())
+                            .unwrap(),
+                    );
+                    samples.push(s.elapsed().as_nanos());
+                    assert_eq!(out, expected);
+                }
+                samples.sort_unstable();
+                println!(
+                    "TRIGGER_FIXED {}",
+                    serde_json::json!({"case":case,"shift":z,"candidate":k,"qualified":true,"allocation":a,"report":r,"counters":c,"b":b,"values":out,"median_ns":samples[2],"samples_ns":samples})
+                );
+            }
+        }
+    }
+}

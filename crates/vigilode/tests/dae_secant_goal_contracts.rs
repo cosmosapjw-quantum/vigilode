@@ -948,3 +948,178 @@ fn tiered_goal_uses_intermediate_tolerance() {
     assert_eq!(r.attempts[0].multiplier, 8.);
     assert!(r.run.is_some());
 }
+fn growth_fixture() -> (DaeSource, Vec<f64>, Vec<f64>, Vec<[f64; 2]>, Vec<f64>) {
+    let f = vec![
+        p(vec![tr(8., vec![F::component(2, 0.)])]),
+        p(vec![tr(1., vec![F::component(2, 0.)])]),
+    ];
+    let g = (0..2)
+        .map(|i| {
+            p(vec![
+                tr(1., vec![F::component(i + 2, 0.)]),
+                tr(-1., vec![F::component(i, 0.)]),
+            ])
+        })
+        .collect();
+    let x = vec![1. / 1024., 0.];
+    (
+        DaeSource::new(f, g).unwrap(),
+        x.clone(),
+        x,
+        vec![[-1., 4.]; 2],
+        vec![1., 0., 0., 0.],
+    )
+}
+fn coupled_clock_fixture() -> (DaeSource, Vec<f64>, Vec<f64>, Vec<[f64; 2]>, Vec<f64>) {
+    // u=x+y, v=y; x'= -t*x^2, y'=t*x. Both represented f depend on u,v.
+    let t = F::clock(0.);
+    let u = F::component(2, 0.);
+    let v = F::component(3, 0.);
+    let f = vec![
+        p(vec![
+            tr(-1., vec![t.clone(), u.clone(), u.clone()]),
+            tr(2., vec![t.clone(), u.clone(), v.clone()]),
+            tr(-1., vec![t.clone(), v.clone(), v.clone()]),
+            tr(1., vec![t.clone(), u.clone()]),
+            tr(-1., vec![t.clone(), v.clone()]),
+        ]),
+        p(vec![
+            tr(1., vec![t.clone(), u.clone()]),
+            tr(-1., vec![t.clone(), v.clone()]),
+        ]),
+    ];
+    let g = (0..2)
+        .map(|i| {
+            p(vec![
+                tr(1., vec![F::component(i + 2, 0.)]),
+                tr(-1., vec![F::component(i, 0.)]),
+            ])
+        })
+        .collect();
+    let x = vec![0.3125, 0.0625];
+    (
+        DaeSource::new(f, g).unwrap(),
+        x.clone(),
+        x,
+        vec![[-1., 2.]; 2],
+        vec![0., 1., 0.5, 0.],
+    )
+}
+#[test]
+fn goal_escalation_actual_portfolio() {
+    let opts = Options {
+        rtol: 1e-10,
+        atol: Atol::Scalar(1e-13),
+        dense_output: true,
+        interior_error: InteriorError::Off,
+        max_steps: 4096,
+        ..Default::default()
+    };
+    let policy = EvolutionPolicy {
+        init: InitPolicy {
+            mode: InitMode::ProjectAlgebraic,
+            state_tol: 1e-11,
+            residual_tol: 1e-11,
+            derivative_tol: 1e-6,
+            ..Default::default()
+        },
+        tube_radius: 1e-3,
+        global_tol: 1e-3,
+        green: true,
+    };
+    let route = EvolutionRoute::WorkspaceQuery5 {
+        projection: WorkspaceProjection::PivotedVector,
+        certificate: de::SlabWorkspaceRoute::Refined,
+        storage: CertificateStorage::Local,
+        query: QueryWorkspaceRoute::StreamPairs,
+    };
+    let retention = RetainedOutputRoute {
+        queries: QueryArenaLayout::Shared,
+        native: NativeRetention::BorrowedRows,
+    };
+    let plans = [
+        GoalBudgetPlan::Fixed,
+        GoalBudgetPlan::CostAware,
+        GoalBudgetPlan::TieredCost,
+    ];
+    for (case, n, end) in [
+        ("clock2", 2, 0.5),
+        ("clock8", 8, 0.5),
+        ("growth2", 2, 0.75),
+        ("growth2", 2, 1.),
+        ("coupled_clock", 2, 1.),
+        ("coupled_clock", 2, 2.),
+    ] {
+        let (src, x, z, b, c) = if case == "growth2" {
+            growth_fixture()
+        } else if case == "coupled_clock" {
+            coupled_clock_fixture()
+        } else {
+            fixture(n)
+        };
+        let epoch = EvolutionEpoch {
+            start: 0.,
+            end,
+            incoming_x_error: Some(0.),
+        };
+        for (label, absolute) in [("loose", 1e-8), ("middle", 1e-9), ("tight", 1e-10)] {
+            let call = |plan| {
+                evolve_epoch_goal_budget(
+                    &src,
+                    &x,
+                    &z,
+                    &b,
+                    epoch,
+                    &opts,
+                    policy,
+                    route,
+                    &[],
+                    retention,
+                    &c,
+                    GoalBudgetPolicy { absolute, plan },
+                )
+                .unwrap()
+            };
+            let mut receipts = vec![];
+            for k in plans {
+                let (r, a) = measure(|| call(k));
+                let qualified = r.run.is_some();
+                assert_eq!(qualified, r.attempts.last().unwrap().accepted);
+                assert!(
+                    r.attempts
+                        .windows(2)
+                        .all(|w| w[0].multiplier > w[1].multiplier)
+                );
+                assert!(r.attempts.len() <= 2);
+                let rhs = r.total_rhs();
+                let steps = r.total_steps();
+                let actions = r
+                    .attempts
+                    .iter()
+                    .flat_map(|a| &a.certificates)
+                    .filter_map(|r| r.work)
+                    .map(|r| r.matrix_actions)
+                    .sum::<usize>();
+                receipts.push((r.attempts, a, qualified, rhs, steps, actions));
+            }
+            let mut samples: [Vec<u128>; 3] = std::array::from_fn(|_| vec![]);
+            for rep in 0..3 {
+                for j in 0..3 {
+                    let i = (rep + j) % 3;
+                    let start = std::time::Instant::now();
+                    black_box(call(plans[i]));
+                    samples[i].push(start.elapsed().as_nanos());
+                }
+            }
+            for (i, (attempts, a, qualified, rhs, steps, actions)) in
+                receipts.into_iter().enumerate()
+            {
+                samples[i].sort_unstable();
+                println!(
+                    "ESC_GOAL {}",
+                    serde_json::json!({"case":case,"end":end,"n":n,"budget":label,"absolute":absolute,"candidate":plans[i],"qualified":qualified,"weights":c,"attempts":attempts,"allocation":a,"total_rhs":rhs,"total_steps":steps,"certificate_actions":actions,"median_ns":samples[i][1],"samples_ns":samples[i]})
+                );
+            }
+        }
+    }
+}
