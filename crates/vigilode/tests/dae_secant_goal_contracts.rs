@@ -2196,3 +2196,54 @@ fn tiny_log_actual_portfolio() {
     assert!(de::structured_clock_adjoint_into(&wrong, 0., 1., &x, &c, &mut grad).is_err());
     assert!(grad.iter().all(|x| *x == Iv::point(17.).unwrap()));
 }
+
+#[test]
+fn polynomial_clock_fused_contract() {
+    use de::{PolynomialClockRoute as C, TriangularGoalRoute as T};
+    let f = vec![
+        p(vec![
+            tr(-1., vec![F::component(2, 0.), F::component(2, 0.)]),
+            tr(
+                -0.5,
+                vec![F::clock(0.), F::component(2, 0.), F::component(2, 0.)],
+            ),
+        ]),
+        p(vec![
+            tr(0.75, vec![F::component(2, 0.)]),
+            tr(0.375, vec![F::clock(0.), F::component(2, 0.)]),
+        ]),
+    ];
+    let g = (0..2)
+        .map(|i| {
+            p(vec![
+                tr(1., vec![F::component(i + 2, 0.)]),
+                tr(-1., vec![F::component(i, 0.)]),
+            ])
+        })
+        .collect();
+    let src = DaeSource::new(f, g).unwrap();
+    let x = [0.25, 0.0625];
+    let weights = [0., 1., 0.5, 0.];
+    let mut grad = [Iv::point(17.).unwrap(); 2];
+    let mut goal = Iv::point(17.).unwrap();
+    let (res, a) = measure(|| {
+        de::polynomial_clock_fused_into(
+            &src,
+            0.,
+            1.,
+            &x,
+            &[0.; 4],
+            &weights,
+            C::Factored,
+            T::TinyAdaptive,
+            &mut grad,
+            &mut goal,
+        )
+    });
+    assert_eq!(res.unwrap().blocks, 1);
+    assert_eq!(a.requests(), 0);
+    let m = 1.25;
+    let d = 1. + 0.25 * m;
+    assert!(grad[0].contains(0.5 / (d * d) + 0.75 * m / d));
+    assert!(grad[1].contains(1.));
+}
