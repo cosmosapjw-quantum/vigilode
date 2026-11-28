@@ -4802,3 +4802,16 @@ fn bounded_checkpoint_capture_generic_ode() {
         }
     }
 }
+
+#[test]
+fn compact_forward_only_setup_contract() {
+    use vigilode::spatial::SpatialCompactReplayWorkspace as W;
+    let g = DiffusionGrid::sphere(16, 32, 1., 0.16).unwrap();
+    let (w, a) = measure(|| W::new(&g, DURATION, 256).unwrap());
+    assert!(
+        a.requested_bytes < 1_650_000,
+        "unused primal cache allocation: {}",
+        a.requested_bytes
+    );
+    std::hint::black_box(w);
+}
