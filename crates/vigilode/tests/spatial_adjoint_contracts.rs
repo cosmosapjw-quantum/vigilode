@@ -3006,3 +3006,34 @@ fn flat_arena_generic_ode() {
         }
     }
 }
+
+#[test]
+fn shared_spatial_adjoint_contract() {
+    use vigilode::spatial::{SpatialAdjointBatchWorkspace, SpatialBatchPlan};
+    let g = DiffusionGrid::periodic_box([8, 4], [8., 4.], [0.125, 0.25]).unwrap();
+    let n = g.dimension();
+    let c = vec![1.; n];
+    let y = vec![0.25; 2 * n];
+    let mut w = SpatialAdjointBatchWorkspace::new(&g, 2).unwrap();
+    let mut out = vec![Iv::point(17.).unwrap(); n];
+    let mut receipts = [vigilode::spatial::SpatialAdjointWork::default(); 2];
+    let (r, a) = measure(|| {
+        w.certify_batch_into(
+            &c,
+            &y,
+            &y,
+            0.125,
+            SpatialAdjointRoute::ModeResidual,
+            SpatialBatchPlan::SharedL1,
+            &mut out,
+            &mut receipts,
+        )
+    });
+    assert_eq!(r.unwrap().actions, 1);
+    assert_eq!(a.requests(), 0);
+    assert!(
+        receipts
+            .iter()
+            .all(|r| r.signed_goal_error[0] <= 0. && r.signed_goal_error[1] >= 0.)
+    );
+}

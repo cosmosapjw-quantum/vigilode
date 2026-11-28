@@ -2531,3 +2531,52 @@ fn polynomial_clock_refusals() {
         serde_json::json!({"one_ulp_mismatch":true,"negative_rate":true,"extra_power":true,"late_block_transaction":true})
     );
 }
+
+#[test]
+fn adaptive_block_parameter_contract() {
+    use de::{
+        ClockTubePlan as CP, ParameterCovectorRoute as R, PolynomialClockRoute as C,
+        TriangularGoalRoute as T,
+    };
+    let (src, x, z, b, c) = polynomial_fixture(
+        &[[1., 0.5, 0.], [0.25, 0.5, 0.125]],
+        &[[0.75, 0.375, 0.], [-0.125, -0.25, -0.0625]],
+    );
+    let (opts, policy, route, retention) = weighted_settings();
+    let (run, _) = evolve_epoch_slab_replay_planned(
+        &src,
+        &x,
+        &z,
+        &b,
+        EvolutionEpoch {
+            start: 0.,
+            end: 0.5,
+            incoming_x_error: Some(0.),
+        },
+        &opts,
+        policy,
+        route,
+        &[],
+        retention,
+        SlabReplayRoute::ClockWeighted(CP::BlockAdaptiveMean),
+        EnginePlan::SharedFused,
+    );
+    let run = run.unwrap();
+    assert!(run.global_qualified());
+    let mut out = [Iv::point(17.).unwrap(); 8];
+    let (r, a) = measure(|| {
+        run.polynomial_parameter_covector_into(
+            &c,
+            C::Termwise,
+            T::TinyAdaptive,
+            R::Factored,
+            &mut out,
+        )
+    });
+    assert_eq!(r.unwrap().blocks, 2);
+    assert_eq!(a.requests(), 0);
+    let m = 0.5625;
+    let d = 1. + 0.25 * m;
+    assert!(out[0].contains(0.5 * (-0.5 * 0.25 * 0.25 / (d * d) + 0.75 * 0.25 / d)));
+    assert!(out[3].contains((1.0_f64 + 0.25 * m).ln()));
+}
