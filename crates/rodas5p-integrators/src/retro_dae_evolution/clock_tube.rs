@@ -18,6 +18,8 @@ pub enum ClockTubePlan {
     BlockSplitDecay1,
     BlockSplitDecay4,
     BlockSplitRational4,
+    BlockSplitDecay2,
+    BlockSplitRational2,
 }
 impl ClockTubePlan {
     fn block(self) -> bool {
@@ -29,12 +31,18 @@ impl ClockTubePlan {
                 | Self::BlockSplitDecay1
                 | Self::BlockSplitDecay4
                 | Self::BlockSplitRational4
+                | Self::BlockSplitDecay2
+                | Self::BlockSplitRational2
         )
     }
     fn decay(self) -> bool {
         matches!(
             self,
-            Self::BlockSplitDecay1 | Self::BlockSplitDecay4 | Self::BlockSplitRational4
+            Self::BlockSplitDecay1
+                | Self::BlockSplitDecay4
+                | Self::BlockSplitRational4
+                | Self::BlockSplitDecay2
+                | Self::BlockSplitRational2
         )
     }
     fn weight(self) -> f64 {
@@ -293,10 +301,10 @@ impl BlockCarry {
                 if beta < 0. {
                     return Err(bad("block decay dissipativity not proved"));
                 }
-                let cells = if plan == ClockTubePlan::BlockSplitDecay1 {
-                    1
-                } else {
-                    4
+                let cells = match plan {
+                    ClockTubePlan::BlockSplitDecay1 => 1,
+                    ClockTubePlan::BlockSplitDecay2 | ClockTubePlan::BlockSplitRational2 => 2,
+                    _ => 4,
                 };
                 let width = 1. / cells as f64;
                 let mut ep = add_up(self.radius[j], sp)?;
@@ -324,8 +332,14 @@ impl BlockCarry {
                     } else {
                         subcell_integral(&a, left, width, h)?
                     };
-                    let (decay, phi) =
-                        decay_factors(beta, mass, plan == ClockTubePlan::BlockSplitRational4)?;
+                    let (decay, phi) = decay_factors(
+                        beta,
+                        mass,
+                        matches!(
+                            plan,
+                            ClockTubePlan::BlockSplitRational4 | ClockTubePlan::BlockSplitRational2
+                        ),
+                    )?;
                     let epeak = add_up(ep, pr)?;
                     let drift = mul_up(mul_up(c.ratio.mag(), phi)?, epeak)?;
                     eq = add_up(add_up(eq, qr)?, drift)?;

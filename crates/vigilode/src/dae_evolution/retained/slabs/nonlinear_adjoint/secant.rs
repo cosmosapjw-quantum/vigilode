@@ -254,6 +254,52 @@ impl SlabReplayRun {
         }
         Ok(w.work())
     }
+    /// Continuous parameter covector at an actual committed verified
+    /// dense request time. Initial state and source authority are unchanged.
+    pub fn polynomial_dense_parameter_covector_into(
+        &self,
+        sampler: &de::ClockDenseSampler<'_>,
+        request: usize,
+        weights: &[f64],
+        measure: de::PolynomialClockRoute,
+        log: de::TriangularGoalRoute,
+        route: de::ParameterCovectorRoute,
+        out: &mut [Iv],
+    ) -> CoreResult<de::ParameterCovectorWork> {
+        let e = self.adjoint_admission(weights)?;
+        let initial = self.initial();
+        let start = self
+            .accepted(0)
+            .ok_or_else(|| bad("dense parameter initial endpoint"))?;
+        let end = self
+            .accepted(self.accepted_len().saturating_sub(1))
+            .ok_or_else(|| bad("dense parameter terminal endpoint"))?;
+        if !initial.qualified
+            || initial.x.len() != e.src.nx()
+            || start.state()[..e.src.nx()] != initial.x[..]
+            || start.t() != initial.t
+            || self.driver().t.last() != Some(&end.t())
+            || !sampler.matches(&e.src, (start.t(), end.t()), &initial.x, start.state())
+            || !sampler.complete()
+        {
+            return Err(bad("dense parameter authority"));
+        }
+        let (ts, _, _) = sampler.view();
+        let time = *ts
+            .get(request)
+            .ok_or_else(|| bad("dense parameter request index"))?;
+        de::polynomial_parameter_covector_into(
+            &e.src,
+            start.t(),
+            time,
+            &initial.x,
+            weights,
+            measure,
+            log,
+            route,
+            out,
+        )
+    }
     /// Exact parameter covector in the common-rate family, with original physical admission.
     pub fn polynomial_parameter_covector_into(
         &self,

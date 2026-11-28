@@ -2470,9 +2470,9 @@ impl ReusableFastClientWorkspace {
         if n == 0 {
             return Err(CoreError::InvalidInput("empty reusable client".into()));
         }
-        Ok(Self {
-            work: Workspace::new_client(n, client)?,
-        })
+        let mut work = Workspace::new_client(n, client)?;
+        work.atol_vector = vec![0.; n];
+        Ok(Self { work })
     }
     pub fn solve(
         &mut self,

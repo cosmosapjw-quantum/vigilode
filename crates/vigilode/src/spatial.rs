@@ -286,3 +286,9 @@ pub use adjoint::{
 
 mod shifted_adjoint;
 pub use shifted_adjoint::*;
+
+mod primal_replay;
+pub use primal_replay::{
+    SpatialPrimalPair, SpatialPrimalReplayPlan, SpatialPrimalReplayPolicy, SpatialPrimalReplayWork,
+    SpatialPrimalReplayWorkspace,
+};

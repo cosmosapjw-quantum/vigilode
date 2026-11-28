@@ -3272,3 +3272,339 @@ fn decay_goal_budget_portfolio() {
         }
     }
 }
+
+#[test]
+fn split_decay_cost_and_dense_parameter_portfolio() {
+    use de::{
+        ClockTubePlan as CP, ParameterCovectorRoute as R, PolynomialClockRoute as C,
+        TriangularGoalRoute as T,
+    };
+    use rodas5p_integrators::OutputSchedule;
+    let (opts, policy, route, retention) = weighted_settings();
+    let cases = [
+        (
+            "affine",
+            vec![[1., 0.5, 0.]],
+            vec![[0.75, 0.375, 0.]],
+            0.,
+            0.5,
+        ),
+        (
+            "quadratic",
+            vec![[0.25, 0.5, 0.125]],
+            vec![[-0.125, -0.25, -0.0625]],
+            0.125,
+            1.,
+        ),
+        (
+            "ratio_third",
+            vec![[3., 1.5, 0.75]],
+            vec![[1., 0.5, 0.25]],
+            0.125,
+            0.5,
+        ),
+        (
+            "long",
+            vec![[0.5, 0.5, 0.125]],
+            vec![[0.75, 0.75, 0.1875]],
+            0.,
+            2.,
+        ),
+        (
+            "block4",
+            vec![[0.25, 0.5, 0.125], [0.5, 0., 0.25]],
+            vec![[-0.125, -0.25, -0.0625], [0.75, 0., 0.375]],
+            0.125,
+            0.5,
+        ),
+        (
+            "zero_q",
+            vec![[0.25, 0.25, 0.125]],
+            vec![[0., 0., 0.]],
+            0.,
+            0.5,
+        ),
+        (
+            "coupled_clock",
+            vec![[0., 1., 0.]],
+            vec![[0., 1., 0.]],
+            0.,
+            1.,
+        ),
+        (
+            "holdout_block6",
+            vec![[1., 0.25, 0.125], [0.125, 0.5, 0.25], [0.5, 0., 0.25]],
+            vec![[0.25, 0.0625, 0.03125], [-0.25, -1., -0.5], [0., 0., 0.]],
+            0.25,
+            1.5,
+        ),
+        (
+            "zero_p",
+            vec![[1., 0.5, 0.]],
+            vec![[0.75, 0.375, 0.]],
+            0.,
+            0.5,
+        ),
+        (
+            "fast_rate",
+            vec![[32., 8., 2.]],
+            vec![[4., 1., 0.25]],
+            0.,
+            0.5,
+        ),
+    ];
+    let plans = [
+        CP::BlockSplit,
+        CP::BlockSplitDecay1,
+        CP::BlockSplitDecay2,
+        CP::BlockSplitRational2,
+        CP::BlockSplitDecay4,
+        CP::BlockSplitRational4,
+    ];
+    for (case, a, b, start, end) in cases {
+        let (src, mut x, mut z, branch, c) = if case == "coupled_clock" {
+            coupled_clock_fixture()
+        } else {
+            polynomial_fixture(&a, &b)
+        };
+        if case == "zero_p" {
+            x[0] = 0.;
+            z[0] = 0.;
+        }
+        let epoch = EvolutionEpoch {
+            start,
+            end,
+            incoming_x_error: Some(0.),
+        };
+        let call = |replay| {
+            evolve_epoch_slab_replay_planned(
+                &src,
+                &x,
+                &z,
+                &branch,
+                epoch,
+                &opts,
+                policy,
+                route,
+                &[],
+                retention,
+                replay,
+                EnginePlan::SharedFused,
+            )
+        };
+        let (flat, audit) = call(SlabReplayRoute::Flat);
+        let flat = flat.unwrap();
+        let rhs = audit.stats.as_ref().unwrap().counters.rhs_calls;
+        let mut rows = vec![];
+        for k in 0..flat.slabs_len() {
+            let sl = flat.slab(k).unwrap();
+            let power: Vec<Vec<Iv>> = match sl.power {
+                RetainedPowerRows::Owned(a) => a
+                    .iter()
+                    .map(|r| r.iter().map(|p| Iv::new(p[0], p[1]).unwrap()).collect())
+                    .collect(),
+                RetainedPowerRows::Flat(a) => a
+                    .iter()
+                    .map(|r| r.iter().map(|p| Iv::new(p[0], p[1]).unwrap()).collect())
+                    .collect(),
+            };
+            rows.push((sl.times, power));
+        }
+        println!(
+            "DECAY_COST_MODEL {}",
+            serde_json::json!({"case":case,"a":a,"b":b,"initial":x,"start":start,"end":end,"weights":c,"rhs":rhs})
+        );
+        let (mut scratch, mut out) = (
+            de::SlabCertificateWorkspace::new(),
+            de::SlabCertificate::workspace_output(x.len(), x.len()).unwrap(),
+        );
+        let mut results = vec![];
+        let mut selected = None;
+        for candidate in plans {
+            let ((run, audit), alloc) = measure(|| call(SlabReplayRoute::ClockWeighted(candidate)));
+            let run = run.unwrap();
+            assert!(
+                run.global_qualified(),
+                "{case} {candidate:?} {:?}",
+                run.reason()
+            );
+            assert_eq!(run.driver().t, flat.driver().t);
+            assert_eq!(run.driver().y, flat.driver().y);
+            assert_eq!(audit.stats.as_ref().unwrap().counters.rhs_calls, rhs);
+            let (mut carry, setup) =
+                measure(|| de::ClockTubeCarry::new(&src, candidate, start, &x, Some(0.)).unwrap());
+            let mut slab_results = Vec::with_capacity(rows.len());
+            let ((), warm) = measure(|| {
+                for (i, (times, power)) in rows.iter().enumerate() {
+                    let w = carry
+                        .certify_into(
+                            *times,
+                            power,
+                            &branch,
+                            policy.tube_radius,
+                            policy.green,
+                            policy.init.condition_cap,
+                            de::SlabWorkspaceRoute::Refined,
+                            &mut scratch,
+                            &mut out,
+                        )
+                        .unwrap();
+                    let actual = run.slab(i).unwrap();
+                    let ac = actual.certificate.as_ref().unwrap();
+                    assert!(out.global_qualified);
+                    assert_eq!(out.whole_x_error, *ac.whole_x_error);
+                    assert_eq!(out.outgoing, *ac.outgoing);
+                    assert!(out.outgoing.unwrap() <= out.whole_x_error.unwrap());
+                    slab_results.push((
+                        w,
+                        out.whole_x_error.unwrap(),
+                        out.whole_z_error.unwrap(),
+                        out.outgoing.unwrap(),
+                    ));
+                }
+            });
+            assert_eq!(warm.requests(), 0);
+            for (k, ((times, power), (w, ex, ez, ep))) in rows.iter().zip(&slab_results).enumerate()
+            {
+                println!(
+                    "DECAY_COST_SLAB {}",
+                    serde_json::json!({"case":case,"candidate":candidate,"index":k,"times":times,"power":power.iter().map(|r|r.iter().map(|v|v.as_pair()).collect::<Vec<_>>()).collect::<Vec<_>>(),"work":w,"x_error":ex,"z_error":ez,"outgoing":ep})
+                );
+            }
+            let term = run.accepted(run.accepted_len() - 1).unwrap();
+            let val = (
+                term.physical_error_upper().unwrap(),
+                run.max_physical_error().unwrap(),
+                term.state().to_vec(),
+                setup,
+                warm,
+                alloc,
+                slab_results.last().unwrap().3,
+            );
+            results.push(val);
+            if candidate == CP::BlockSplitDecay2 {
+                selected = Some(run);
+            }
+        }
+        // Balanced cyclic order, one candidate in each position across six repeats.
+        // Only direct carry certification is timed; row conversion/setup are excluded.
+        let mut samples: [Vec<u128>; 6] = std::array::from_fn(|_| Vec::with_capacity(6));
+        for rep in 0..6 {
+            for j in 0..6 {
+                let i = (rep + j) % 6;
+                let candidate = plans[i];
+                let mut carry =
+                    de::ClockTubeCarry::new(&src, candidate, start, &x, Some(0.)).unwrap();
+                let t = std::time::Instant::now();
+                for (times, power) in &rows {
+                    let r = carry
+                        .certify_into(
+                            *times,
+                            power,
+                            &branch,
+                            policy.tube_radius,
+                            policy.green,
+                            policy.init.condition_cap,
+                            de::SlabWorkspaceRoute::Refined,
+                            &mut scratch,
+                            &mut out,
+                        )
+                        .unwrap();
+                    std::hint::black_box(r);
+                }
+                samples[i].push(t.elapsed().as_nanos());
+                assert!(out.global_qualified);
+                assert_eq!(out.outgoing.unwrap(), results[i].6);
+            }
+        }
+        for (i, candidate) in plans.iter().enumerate() {
+            let v = &results[i];
+            let mut sorted = samples[i].clone();
+            sorted.sort_unstable();
+            println!(
+                "DECAY_COST {}",
+                serde_json::json!({"case":case,"candidate":candidate,"qualified":true,"rhs":rhs,"terminal_bound":v.0,"whole_bound":v.1,"terminal":v.2,"setup":v.3,"allocation":v.4,"full_allocation":v.5,"slabs":rows.len(),"median_ns":(sorted[2]+sorted[3])/2,"samples_ns":samples[i]})
+            );
+        }
+        let run = selected.unwrap();
+        let ts = vec![
+            start,
+            start + (end - start) * 0.25,
+            start + (end - start) * 0.75,
+            end,
+        ];
+        let sched = OutputSchedule::new(ts).unwrap();
+        let mut dense = run
+            .verified_clock_dense_workspace(&sched, C::Termwise, T::TinyRootReduced)
+            .unwrap();
+        let (res, alloc) = measure(|| run.replay_verified_clock_dense_into(&mut dense));
+        assert!(res.is_ok());
+        assert_eq!(alloc.requests(), 0);
+        let (times, centers, radii) = dense.view();
+        let mut grad = vec![Iv::point(17.).unwrap(); 2 * x.len()];
+        let mut terminal = grad.clone();
+        run.polynomial_parameter_covector_into(
+            &c,
+            C::Termwise,
+            T::TinyRootReduced,
+            R::Intersection,
+            &mut terminal,
+        )
+        .unwrap();
+        for (i, &t) in times.iter().enumerate() {
+            for candidate in [R::Separate, R::Factored, R::Intersection] {
+                let (r, allocation) = measure(|| {
+                    run.polynomial_dense_parameter_covector_into(
+                        &dense,
+                        i,
+                        &c,
+                        C::Termwise,
+                        T::TinyRootReduced,
+                        candidate,
+                        &mut grad,
+                    )
+                });
+                let work = r.unwrap();
+                assert_eq!(allocation.requests(), 0);
+                if i == 0 {
+                    assert!(grad.iter().all(|v| v.contains(0.)));
+                }
+                if i + 1 == times.len() && candidate == R::Intersection {
+                    assert_eq!(grad, terminal);
+                }
+                println!(
+                    "DENSE_PARAMETER {}",
+                    serde_json::json!({"case":case,"request":i,"time":t,"candidate":candidate,"qualified":true,"center":centers[i],"radius":radii[i],"gradient":grad.iter().map(|v|v.as_pair()).collect::<Vec<_>>(),"allocation":allocation,"work":work})
+                );
+            }
+        }
+        grad.fill(Iv::point(17.).unwrap());
+        assert!(
+            run.polynomial_dense_parameter_covector_into(
+                &dense,
+                times.len(),
+                &c,
+                C::Termwise,
+                T::TinyRootReduced,
+                R::Intersection,
+                &mut grad
+            )
+            .is_err()
+        );
+        assert!(grad.iter().all(|v| *v == Iv::point(17.).unwrap()));
+        dense.reset().unwrap();
+        assert!(
+            run.polynomial_dense_parameter_covector_into(
+                &dense,
+                0,
+                &c,
+                C::Termwise,
+                T::TinyRootReduced,
+                R::Intersection,
+                &mut grad
+            )
+            .is_err()
+        );
+        assert!(grad.iter().all(|v| *v == Iv::point(17.).unwrap()));
+    }
+}

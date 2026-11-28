@@ -3521,3 +3521,148 @@ fn source_owned_primal_replay_contract() {
     assert_eq!(endpoint, old);
     assert_eq!(rec[0].signed_goal_error, old_rec);
 }
+
+#[test]
+fn source_owned_primal_replay_portfolio() {
+    use rodas5p_integrators::AdaptiveStepConfig;
+    use vigilode::spatial::{
+        SpatialAdjointWork, SpatialPrimalReplayPlan as P, SpatialPrimalReplayPolicy as Policy,
+        SpatialPrimalReplayWorkspace as W,
+    };
+    let opts = Options {
+        rtol: 1e-9,
+        atol: Atol::Scalar(1e-11),
+        h0: 0.001,
+        dense_output: false,
+        ..Default::default()
+    };
+    let adaptive = AdaptiveStepConfig {
+        rtol: opts.rtol,
+        atol: 1e-11,
+        initial_step: opts.h0,
+        max_attempts: opts.max_steps,
+        ..Default::default()
+    };
+    let grids = [
+        (
+            "box2_small",
+            DiffusionGrid::periodic_box([8, 4], [8., 4.], [0.125, 0.25]).unwrap(),
+        ),
+        (
+            "box3_small",
+            DiffusionGrid::periodic_box([4, 4, 4], [4., 4., 4.], [0.125, 0.25, 0.0625]).unwrap(),
+        ),
+        ("sphere_odd", DiffusionGrid::sphere(5, 9, 1., 0.64).unwrap()),
+        ("sphere128", DiffusionGrid::sphere(8, 16, 1., 0.64).unwrap()),
+        (
+            "sphere512",
+            DiffusionGrid::sphere(16, 32, 1., 0.16).unwrap(),
+        ),
+        (
+            "holdout_sphere153",
+            DiffusionGrid::sphere(9, 17, 1., 0.20).unwrap(),
+        ),
+    ];
+    for (case, g) in grids {
+        let n = g.dimension();
+        let problem = g.problem(SpatialRows::Serial);
+        let mut initial = vec![];
+        let mut old_endpoint = vec![];
+        for trial in 0..4 {
+            let u = match trial {
+                0 => vec![32.; n],
+                1 => vec![-16.; n],
+                2 => (0..n)
+                    .map(|i| 32. + ((17 * i % 29) as f64 - 14.) / 1024.)
+                    .collect(),
+                _ => (0..n)
+                    .map(|i| if i == n / 2 { -15.5 } else { -16. })
+                    .collect(),
+            };
+            let r = native(&g, &problem, &u, &opts, NativeRoute::Paired, false);
+            initial.extend(u);
+            old_endpoint.extend(r.values);
+        }
+        println!(
+            "REPLAY_GRID {}",
+            serde_json::json!({"case":case,"n":n,"duration":DURATION,"rows":(0..n).map(|i|g.represented_row(i).unwrap()).collect::<Vec<_>>(),"initial":initial,"old_endpoint":old_endpoint})
+        );
+        let (w, setup) = measure(|| W::new(&g, DURATION, 4).unwrap());
+        let mut w = w;
+        println!(
+            "REPLAY_SETUP {}",
+            serde_json::json!({"case":case,"allocation":setup})
+        );
+        let mut endpoint = vec![17.; 4 * n];
+        let mut rec = [SpatialAdjointWork::default(); 4];
+        for goal in ["mass", "local"] {
+            let c = if goal == "mass" {
+                (0..n)
+                    .map(|i| g.cell_measure(i).unwrap())
+                    .collect::<Vec<_>>()
+            } else {
+                let mut c = vec![0.; n];
+                c[0] = 0.5;
+                c[n / 2] = -0.25;
+                c[n - 1] = 0.125;
+                c
+            };
+            for budget in [1e-8, 1e-10] {
+                for (candidate, plan, replays) in [
+                    ("Baseline", P::FixedSelective, 0),
+                    ("FixedUniform", P::FixedUniform, 3),
+                    ("FixedSelective", P::FixedSelective, 3),
+                    ("GuidedSelective", P::GuidedSelective, 3),
+                    ("CenteredSelective", P::CenteredSelective, 3),
+                    ("CenteredFirst", P::CenteredFirst, 3),
+                ] {
+                    endpoint.fill(17.);
+                    rec.fill(SpatialAdjointWork::default());
+                    let (r, a) = measure(|| {
+                        w.solve_budgeted_into(
+                            &initial,
+                            &c,
+                            &adaptive,
+                            Policy {
+                                budget,
+                                max_replays: replays,
+                                min_scale: 1e-4,
+                                plan,
+                            },
+                            &mut endpoint,
+                            &mut rec,
+                        )
+                    });
+                    let r = r.unwrap();
+                    assert_eq!(a.requests(), 0);
+                    assert_eq!(r.solves, 4 + r.replays);
+                    assert_eq!(r.accepted, r.accepted_pairs == 4);
+                    let pairs = (0..4).map(|i| w.last_pair(i).unwrap()).collect::<Vec<_>>();
+                    if candidate == "Baseline" {
+                        for (i, p) in pairs.iter().enumerate() {
+                            assert_eq!(
+                                p.endpoint,
+                                &old_endpoint[i * n..(i + 1) * n],
+                                "{case} old native baseline"
+                            );
+                        }
+                    }
+                    if r.accepted {
+                        for (i, p) in pairs.iter().enumerate() {
+                            assert!(p.accepted);
+                            assert_eq!(p.endpoint, &endpoint[i * n..(i + 1) * n]);
+                            assert_eq!(p.receipt.signed_goal_error, rec[i].signed_goal_error);
+                        }
+                    } else {
+                        assert!(endpoint.iter().all(|v| *v == 17.));
+                        assert!(rec.iter().all(|v| v.actions == 0));
+                    }
+                    println!(
+                        "PRIMAL_REPLAY {}",
+                        serde_json::json!({"case":case,"goal":goal,"weights":c,"budget":budget,"candidate":candidate,"qualified":r.accepted,"allocation":a,"work":r,"pairs":pairs})
+                    );
+                }
+            }
+        }
+    }
+}
