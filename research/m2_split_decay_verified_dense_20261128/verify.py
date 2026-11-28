@@ -165,7 +165,14 @@ for key,r in ix.items():
  goal_ref=[]
  for i,v in enumerate(r['receipts']):
   u=list(map(Q,g['initial'][i*n:(i+1)*n]));y=list(map(Q,g['endpoint'][i*n:(i+1)*n]))
-  l,h=dot_box(ref,u);j=sum((x*z for x,z in zip(c,y)),Q(0))
+  # Exact constant initial state is an invariant of the represented
+  # difference generator. Componentwise Taylor boxes do not preserve
+  # its exact dual dot product, so use the independent exact forward
+  # identity (not any production result) on this input stratum.
+  if all(x==u[0] for x in u):
+   l=h=u[0]*sum(c,Q(0));checks['exact_constant_forward_goals']+=1
+  else:l,h=dot_box(ref,u)
+  j=sum((x*z for x,z in zip(c,y)),Q(0))
   contains(v['exact_goal'],(l,h),key);contains(v['signed_goal_error'],(l-j,h-j),key);checks['spatial_goal_pairs']+=1;goal_ref.append((l-j,h-j))
  truths[key]=goal_ref
  old=ix[(*key[:-1],'SharedL1')]
@@ -184,5 +191,5 @@ for r in budget:
   if ok:assert max(map(abs,truth))<=b
   elif truth[0]>b or truth[1]<-b:s['true_failure_pairs']+=1
   elif max(map(abs,truth))<=b:s['conservative_refusal_pairs']+=1
-summary={'rows':{'tube':len(runs),'slabs':len(slabs),'dense':len(dense),'spatial':len(batch),'budget':len(budget),'native':len(native),'policy':len(policies)},'checks':checks,'policy':ps,'tube':tube,'max_sample_error_ratio':worst,'max_endpoint_error_ratio':endpoint_worst,'dense':ds,'spatial':bs,'budget':gs,'max_native_adjoint_error':float(max_native),'reference':'Exact represented binary64 rational polynomial clock and scaled positive atanh log enclosure; 1024-bit fixed-point direct Taylor semigroup with rigorous rational geometric tail; finite samples, not continuum discretization error.'}
+summary={'rows':{'tube':len(runs),'slabs':len(slabs),'dense':len(dense),'spatial':len(batch),'budget':len(budget),'native':len(native),'policy':len(policies)},'checks':checks,'policy':ps,'tube':tube,'max_sample_error_ratio':worst,'max_endpoint_error_ratio':endpoint_worst,'dense':ds,'spatial':bs,'budget':gs,'max_native_adjoint_error':float(max_native),'reference':'Exact represented binary64 rational polynomial clock and scaled positive atanh log enclosure; 1024-bit fixed-point direct Taylor semigroup with rigorous rational geometric tail, exact constant-state forward invariant; finite samples, not continuum discretization error.'}
 dump('INDEPENDENT_CHECKS.json',summary);print('VERIFIED',json.dumps(summary,sort_keys=True))
