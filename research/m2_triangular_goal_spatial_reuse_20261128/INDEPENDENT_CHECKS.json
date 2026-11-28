@@ -1,0 +1,201 @@
+{
+  "direct_and_arithmetic": {
+    "Adaptive": {
+      "roots": 0,
+      "rows": 10,
+      "terms": 199,
+      "zeroheap": 10
+    },
+    "Atanh12": {
+      "roots": 0,
+      "rows": 10,
+      "terms": 132,
+      "zeroheap": 10
+    },
+    "Atanh24": {
+      "roots": 0,
+      "rows": 10,
+      "terms": 264,
+      "zeroheap": 10
+    },
+    "RootReduced": {
+      "roots": 7,
+      "rows": 10,
+      "terms": 132,
+      "zeroheap": 10
+    }
+  },
+  "goal_rows": 99,
+  "goals": {
+    "EconomySigned": {
+      "accepted": 7,
+      "actions": 11376,
+      "direct": 0,
+      "physical": 9,
+      "refusals": 0,
+      "roots": 0,
+      "rows": 15,
+      "terms": 0
+    },
+    "Fixed": {
+      "accepted": 7,
+      "actions": 12184,
+      "direct": 0,
+      "physical": 9,
+      "refusals": 0,
+      "roots": 0,
+      "rows": 15,
+      "terms": 0
+    },
+    "Triangular12": {
+      "accepted": 15,
+      "actions": 0,
+      "direct": 12,
+      "physical": 15,
+      "refusals": 0,
+      "roots": 0,
+      "rows": 15,
+      "terms": 252
+    },
+    "Triangular24": {
+      "accepted": 15,
+      "actions": 0,
+      "direct": 12,
+      "physical": 15,
+      "refusals": 0,
+      "roots": 0,
+      "rows": 15,
+      "terms": 504
+    },
+    "TriangularAdaptive": {
+      "accepted": 15,
+      "actions": 0,
+      "direct": 12,
+      "physical": 15,
+      "refusals": 0,
+      "roots": 0,
+      "rows": 15,
+      "terms": 169
+    },
+    "TriangularRootReduced": {
+      "accepted": 15,
+      "actions": 0,
+      "direct": 12,
+      "physical": 15,
+      "refusals": 0,
+      "roots": 8,
+      "rows": 15,
+      "terms": 136
+    },
+    "WeightedAdaptiveSigned": {
+      "accepted": 7,
+      "actions": 21583,
+      "direct": 0,
+      "physical": 9,
+      "refusals": 0,
+      "roots": 0,
+      "rows": 9,
+      "terms": 0
+    }
+  },
+  "physical_goal_refusals": [
+    {
+      "absolute": 1e-10,
+      "case": "clock8",
+      "enclosure": [
+        -1.3165161603073266e-10,
+        3.278846571211893e-10
+      ],
+      "end": 0.5,
+      "plan": "Fixed",
+      "true_error": [
+        9.280276738397805e-11,
+        9.280276738397805e-11
+      ]
+    },
+    {
+      "absolute": 1e-10,
+      "case": "clock8",
+      "enclosure": [
+        -1.3165161603073266e-10,
+        3.278846571211893e-10
+      ],
+      "end": 0.5,
+      "plan": "EconomySigned",
+      "true_error": [
+        9.280276738397805e-11,
+        9.280276738397805e-11
+      ]
+    },
+    {
+      "absolute": 1e-10,
+      "case": "coupled_clock",
+      "enclosure": [
+        -4.4251456312777394e-11,
+        1.147510960262774e-10
+      ],
+      "end": 1.0,
+      "plan": "Fixed",
+      "true_error": [
+        3.2754595078549245e-11,
+        3.2754595078549245e-11
+      ]
+    },
+    {
+      "absolute": 1e-10,
+      "case": "coupled_clock",
+      "enclosure": [
+        -4.4251456312777394e-11,
+        1.147510960262774e-10
+      ],
+      "end": 1.0,
+      "plan": "EconomySigned",
+      "true_error": [
+        3.2754595078549245e-11,
+        3.2754595078549245e-11
+      ]
+    },
+    {
+      "absolute": 1e-10,
+      "case": "coupled_clock",
+      "enclosure": [
+        -4.425138807868126e-11,
+        1.1475102143174282e-10
+      ],
+      "end": 1.0,
+      "plan": "WeightedAdaptiveSigned",
+      "true_error": [
+        3.2754595078549245e-11,
+        3.2754595078549245e-11
+      ]
+    },
+    {
+      "absolute": 1e-10,
+      "case": "coupled_clock",
+      "enclosure": [
+        -4.870985726488755e-10,
+        5.852468958599765e-10
+      ],
+      "end": 2.0,
+      "plan": "WeightedAdaptiveSigned",
+      "true_error": [
+        3.76689932291219e-11,
+        3.76689932291219e-11
+      ]
+    }
+  ],
+  "reference": "exact binary64 fractions; rational range scaling by powers of two and positive atanh series with geometric tail (small x alternating bounds); same physical state, spatial deterministic comparison with M2.26 independent source baseline for trial0",
+  "spatial": {
+    "Fresh": {
+      "requested_bytes": 3852200,
+      "requests": 2836,
+      "rows": 42
+    },
+    "Reusable": {
+      "requested_bytes": 313686,
+      "requests": 378,
+      "rows": 42
+    }
+  },
+  "spatial_equal_pairs": 42
+}
