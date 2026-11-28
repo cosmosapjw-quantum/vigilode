@@ -5245,3 +5245,70 @@ fn defect_budget_actual_portfolio() {
         }
     }
 }
+
+#[test]
+fn subset_cache_repeated_adaptive_contract() {
+    use rodas5p_integrators::AdaptiveStepConfig;
+    use vigilode::spatial::{
+        SpatialAdjointWork, SpatialBoundaryDualPlan as D, SpatialCompactPartition as P,
+        SpatialCompactPolicy as Policy, SpatialCompactRefinement as R,
+        SpatialCompactReplayWorkspace as W,
+    };
+    let g = DiffusionGrid::sphere(16, 32, 1., 0.16).unwrap();
+    let n = g.dimension();
+    let mut u = vec![-16.; n];
+    u[n / 2] = -15.5;
+    let mut c = vec![0.; n];
+    c[0] = 0.5;
+    c[n / 2] = -0.25;
+    c[n - 1] = 0.125;
+    let base = AdaptiveStepConfig {
+        rtol: 1e-9,
+        atol: 1e-11,
+        initial_step: 0.001,
+        ..Default::default()
+    };
+    let p = Policy {
+        budget: 1e-11,
+        max_replays: 3,
+        min_scale: 1e-4,
+        partition: P::DefectAdaptive,
+        dual: D::SubsetStationaryChain,
+        refinement: R::Model4,
+    };
+    let mut w = W::new_with_storage(&g, DURATION, 256, 1, 16).unwrap();
+    let mut out = vec![17.; n];
+    let mut rec = SpatialAdjointWork::default();
+    let (r, a) = measure(|| w.solve_into(&u, &c, &base, p, &mut out, &mut rec));
+    let r = r.unwrap();
+    assert!(r.accepted);
+    assert!(r.splits + r.merges > 0);
+    assert!(r.adjoint_actions > 0);
+    assert_eq!(a.requests(), 0);
+    let old = (
+        out.clone(),
+        rec.signed_goal_error,
+        w.times().to_vec(),
+        r.counters,
+    );
+    let (r, a) = measure(|| w.solve_into(&u, &c, &base, p, &mut out, &mut rec));
+    let r = r.unwrap();
+    assert!(r.accepted);
+    assert_eq!(r.adjoint_actions, 0);
+    assert!(r.dual_cache_hit);
+    assert_eq!(a.requests(), 0);
+    assert_eq!(out, old.0);
+    assert_eq!(rec.signed_goal_error, old.1);
+    assert_eq!(w.times(), old.2);
+    assert_eq!(r.counters, old.3);
+    c[0] = c[0].next_up();
+    let (r, a) = measure(|| w.solve_into(&u, &c, &base, p, &mut out, &mut rec));
+    let r = r.unwrap();
+    assert!(r.adjoint_actions > 0);
+    assert!(!r.dual_cache_hit);
+    assert_eq!(a.requests(), 0);
+    w.clear_dual_cache();
+    let (r, a) = measure(|| w.solve_into(&u, &c, &base, p, &mut out, &mut rec));
+    assert!(r.unwrap().adjoint_actions > 0);
+    assert_eq!(a.requests(), 0);
+}
