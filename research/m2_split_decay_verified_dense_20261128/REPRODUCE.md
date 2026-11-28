@@ -1,0 +1,13 @@
+# M2.32 reproduction
+Frozen source/candidate design 3d5c0d516ebe1fd23b2bcca5d1188659108fa8de. Rust 1.94.1 expected from project toolchain; use RUN_MANIFEST for measured version. Locked offline release, polynomial-events. CARGO_TARGET_DIR=$HOME/.cargo-targets/vigilode-stage-lattice-20261124/kschain. Check EXEC_INPUT_SHA256SUMS before/after. Record exact test count (1, not 0) in focused output.
+For each pair use taskset -c 0 cargo test --locked --offline --release -p vigilode --features polynomial-events --test <bin> <name> -- --exact --nocapture --test-threads=1:
+- dae_secant_goal_contracts decay_and_verified_dense_contract -> clock-contract.log
+- dae_secant_goal_contracts verified_clock_dense_late_refusal -> refusal.log
+- dae_secant_goal_contracts split_decay_dense_actual_portfolio -> clock.log
+- dae_secant_goal_contracts decay_goal_budget_portfolio -> policy.log
+- spatial_adjoint_contracts centered_batch_adjoint_contract -> spatial-contract.log
+- spatial_adjoint_contracts centered_batch_actual_portfolio -> spatial.log
+Run python3 research/m2_split_decay_verified_dense_20261128/verify.py and python3 research/m2_split_decay_verified_dense_20261128/guide.py select. Candidate generation preceded checkpoint. Raw logs may be gzip. All numerical comparisons are containment/work/allocation tests, no timing authority.
+Regression: cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_secant_goal_contracts --test spatial_adjoint_contracts -- --test-threads=1. Native output staging unit contracts: use cargo test --locked --offline --release -p rodas5p-integrators --features polynomial-events --lib output::transactional_dense_output_tests -- --test-threads=1 (verify actual filter names and test counts). Read actual exits and RUN_MANIFEST, do not infer full workspace verification.
+Reference correction f4c870ef4e24143183d3258f263e7a872e6f7958: the exact constant initial state forward invariant replaces the artificially inflated componentwise Taylor goal reference for constant inputs. Original frozen verifier bytes and source hashes are preserved in EXEC_INPUT_SHA256SUMS, final verifier in ORACLE_INPUT_SHA256SUMS, final combined identity in FINAL_INPUT_SHA256SUMS. The experiment sources are unchanged. The original six focused Rust runs used 3d5c0d51; the corrected oracle reads their unchanged receipts.
+Additional regression: cargo test --locked --offline --release -p rodas5p-integrators --features polynomial-events --test client_stage_system_contracts --test accept_control_contracts --test fast_vector_atol_contracts --test output_observer_contracts -- --test-threads=1.
