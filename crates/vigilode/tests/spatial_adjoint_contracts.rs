@@ -3455,3 +3455,69 @@ fn centered_batch_actual_portfolio() {
         }
     }
 }
+
+#[test]
+fn source_owned_primal_replay_contract() {
+    use rodas5p_integrators::AdaptiveStepConfig;
+    use vigilode::spatial::{
+        SpatialAdjointWork, SpatialPrimalReplayPlan as P, SpatialPrimalReplayPolicy as Policy,
+        SpatialPrimalReplayWorkspace as W,
+    };
+    let g = DiffusionGrid::sphere(16, 32, 1., 0.16).unwrap();
+    let n = g.dimension();
+    let mut u = vec![-16.; n];
+    u[n / 2] = -15.5;
+    let mut c = vec![0.; n];
+    c[0] = 0.5;
+    c[n / 2] = -0.25;
+    c[n - 1] = 0.125;
+    let adaptive = AdaptiveStepConfig {
+        rtol: 1e-9,
+        atol: 1e-11,
+        initial_step: 0.001,
+        ..Default::default()
+    };
+    let mut w = W::new(&g, DURATION, 1).unwrap();
+    let mut endpoint = vec![17.; n];
+    let mut rec = [SpatialAdjointWork::default(); 1];
+    let (r, a) = measure(|| {
+        w.solve_budgeted_into(
+            &u,
+            &c,
+            &adaptive,
+            Policy {
+                budget: 1e-10,
+                max_replays: 3,
+                min_scale: 1e-4,
+                plan: P::CenteredSelective,
+            },
+            &mut endpoint,
+            &mut rec,
+        )
+    });
+    let r = r.unwrap();
+    assert!(r.accepted);
+    assert!(r.solves > 0);
+    assert_eq!(a.requests(), 0);
+    assert!(rec[0].signed_goal_error.iter().all(|v| v.abs() <= 1e-10));
+    let old = endpoint.clone();
+    let old_rec = rec[0].signed_goal_error;
+    let r = w
+        .solve_budgeted_into(
+            &u,
+            &c,
+            &adaptive,
+            Policy {
+                budget: 1e-30,
+                max_replays: 0,
+                min_scale: 1e-4,
+                plan: P::FixedSelective,
+            },
+            &mut endpoint,
+            &mut rec,
+        )
+        .unwrap();
+    assert!(!r.accepted);
+    assert_eq!(endpoint, old);
+    assert_eq!(rec[0].signed_goal_error, old_rec);
+}

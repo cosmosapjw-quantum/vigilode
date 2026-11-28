@@ -1,0 +1,23 @@
+warning: value assigned to `residual_radius` is never read
+    --> crates/rodas5p-integrators/src/retro_dae_evolution.rs:1629:31
+     |
+1629 |     let mut residual_radius = 0.;
+     |                               ^^
+     |
+     = help: maybe it is overwritten before being read?
+     = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-m2-async-20261126/crates/vigilode)
+error[E0432]: unresolved imports `vigilode::spatial::SpatialPrimalReplayPlan`, `vigilode::spatial::SpatialPrimalReplayPolicy`, `vigilode::spatial::SpatialPrimalReplayWorkspace`
+    --> crates/vigilode/tests/spatial_adjoint_contracts.rs:3463:29
+     |
+3463 | ...   SpatialAdjointWork, SpatialPrimalReplayPlan as P, SpatialPrimalReplayPolicy as Policy,
+     |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `SpatialPrimalReplayPolicy` in `spatial`
+     |                           |
+     |                           no `SpatialPrimalReplayPlan` in `spatial`
+3464 | ...   SpatialPrimalReplayWorkspace as W,
+     |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `SpatialPrimalReplayWorkspace` in `spatial`
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `vigilode` (test "spatial_adjoint_contracts") due to 1 previous error
