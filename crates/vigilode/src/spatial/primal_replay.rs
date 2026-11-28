@@ -853,12 +853,14 @@ impl SpatialLocalReplayWorkspace {
             }
             work.replay_rounds += 1;
             work.prefix_cells_reused += start;
-            work.replayed_cells += 4 - start;
             work.completed = false;
             work.signed_goal_error = None;
             work.max_signed_error_upper = f64::MAX;
             self.last_receipt = None;
-            if !self.run_suffix(start, goal, base, &mut work)? {
+            let before = work.solves;
+            let complete = self.run_suffix(start, goal, base, &mut work)?;
+            work.replayed_cells += work.solves - before;
+            if !complete {
                 break;
             }
         }
