@@ -2014,3 +2014,27 @@ fn triangular_goal_arithmetic_and_refusals() {
         serde_json::json!({"unsupported":true,"altered_source":true,"negative_p":true,"negative_start":true,"transactional":true})
     );
 }
+
+#[test]
+fn structured_clock_adjoint_contract() {
+    let (src, x, _, _, c) = fixture(2);
+    let mut out = [Iv::point(17.).unwrap(); 2];
+    let (w, a) = measure(|| de::structured_clock_adjoint_into(&src, 0., 1., &x, &c, &mut out));
+    assert_eq!(w.unwrap().blocks, 1);
+    assert_eq!(a.requests(), 0);
+    assert!(out[0].contains(0.5 / (1.125 * 1.125) + 0.5 / 1.125));
+    assert!(out[1].contains(1.));
+    let mut iv = Iv::point(0.).unwrap();
+    let w = de::triangular_clock_goal(
+        &src,
+        0.,
+        1.,
+        &[f64::from_bits(1), 0.],
+        &[0.; 4],
+        &[1., 1., 0., 0.],
+        de::TriangularGoalRoute::TinyAdaptive,
+        &mut iv,
+    )
+    .unwrap();
+    assert_eq!(w.series_terms, 0);
+}

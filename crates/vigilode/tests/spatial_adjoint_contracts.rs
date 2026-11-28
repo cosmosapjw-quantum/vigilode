@@ -2417,3 +2417,37 @@ fn reusable_spatial_native_portfolio() {
         }
     }
 }
+
+#[test]
+fn native_arena_zeroheap_contract() {
+    use rodas5p_integrators::{AdaptiveStepConfig, FastArenaPlan, FastOutputArena, OutputSchedule};
+    use vigilode::spatial::{ResidualPlan, SpatialAdjointDriverWorkspace};
+    let g = DiffusionGrid::sphere(8, 16, 1., 0.04).unwrap();
+    let n = g.dimension();
+    let mut y = vec![0.; n];
+    y[0] = 0.5;
+    let span = (0., DURATION);
+    let a = AdaptiveStepConfig {
+        rtol: 1e-8,
+        atol: 1e-10,
+        initial_step: 0.001,
+        max_attempts: 4096,
+        ..Default::default()
+    };
+    let mut w =
+        SpatialAdjointDriverWorkspace::new(&g, span, ResidualPlan::RingLocalHybrid).unwrap();
+    let sched = OutputSchedule::new(vec![span.0, span.1]).unwrap();
+    let mut arena = FastOutputArena::new(n, 2).unwrap();
+    let (old, _) = w.solve(&y, &a).unwrap();
+    w.solve_into(&y, &a, &sched, FastArenaPlan::Legacy, &mut arena)
+        .unwrap();
+    let ((r, _), alloc) = measure(|| {
+        w.solve_into(&y, &a, &sched, FastArenaPlan::Legacy, &mut arena)
+            .unwrap()
+    });
+    assert!(r.receipt.success);
+    assert_eq!(r.states, old.observed.y.as_slice());
+    assert_eq!(r.times, old.observed.t.as_slice());
+    assert_eq!(r.receipt.counters, old.observed.counters);
+    assert_eq!(alloc.requests(), 0);
+}

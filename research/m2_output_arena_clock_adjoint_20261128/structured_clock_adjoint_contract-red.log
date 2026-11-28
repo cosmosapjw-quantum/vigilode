@@ -1,0 +1,32 @@
+warning: value assigned to `residual_radius` is never read
+    --> crates/rodas5p-integrators/src/retro_dae_evolution.rs:1619:31
+     |
+1619 |     let mut residual_radius = 0.;
+     |                               ^^
+     |
+     = help: maybe it is overwritten before being read?
+     = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-m2-async-20261126/crates/vigilode)
+error[E0425]: cannot find function `structured_clock_adjoint_into` in module `de`
+    --> crates/vigilode/tests/dae_secant_goal_contracts.rs:2022:33
+     |
+2022 | ...re(|| de::structured_clock_adjoint_into(&src, 0., 1., &x, &c, &mut ...
+     |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in `de`
+
+error[E0599]: no variant or associated item named `TinyAdaptive` found for enum `TriangularGoalRoute` in the current scope
+    --> crates/vigilode/tests/dae_secant_goal_contracts.rs:2035:34
+     |
+2035 |         de::TriangularGoalRoute::TinyAdaptive,
+     |                                  ^^^^^^^^^^^^ variant or associated item not found in `TriangularGoalRoute`
+     |
+help: there is a variant with a similar name
+     |
+2035 -         de::TriangularGoalRoute::TinyAdaptive,
+2035 +         de::TriangularGoalRoute::Adaptive,
+     |
+
+Some errors have detailed explanations: E0425, E0599.
+For more information about an error, try `rustc --explain E0425`.
+error: could not compile `vigilode` (test "dae_secant_goal_contracts") due to 2 previous errors
