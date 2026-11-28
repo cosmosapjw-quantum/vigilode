@@ -2329,3 +2329,91 @@ fn reusable_spatial_native_contract() {
     assert_eq!(old.observed.counters, new.observed.counters);
     assert!(after.requested_bytes < before.requested_bytes);
 }
+
+#[test]
+fn reusable_spatial_native_portfolio() {
+    use rodas5p_integrators::AdaptiveStepConfig;
+    use vigilode::spatial::{
+        ResidualPlan as P, SpatialAdjointDriverWorkspace as W,
+        solve_spatial_adjoint_shifted_with_residual,
+    };
+    let a = AdaptiveStepConfig {
+        rtol: 1e-8,
+        atol: 1e-10,
+        initial_step: 0.001,
+        max_attempts: 4096,
+        ..Default::default()
+    };
+    for (case, g) in residual_grids() {
+        let n = g.dimension();
+        let mut c = vec![0.; n];
+        c[0] = 0.5;
+        c[n / 2] = -0.25;
+        c[n - 1] = 0.125;
+        for plan in [P::Hybrid, P::RingLocalDiagonal, P::RingLocalHybrid] {
+            let (w, setup) = measure(|| W::new(&g, (0., DURATION), plan));
+            let mut w = w.unwrap();
+            w.solve(&c, &a).unwrap(); // warm
+            let partial = AdaptiveStepConfig {
+                max_attempts: 1,
+                ..a.clone()
+            };
+            let (p, _) = w.solve(&c, &partial).unwrap();
+            assert!(!p.observed.success);
+            assert!(w.solve(&c[..n - 1], &a).is_err());
+            for trial in 0..2 {
+                let v = if trial == 0 {
+                    c.clone()
+                } else {
+                    c.iter().map(|&x| -0.5 * x).collect()
+                };
+                let ((old, ow), before) = measure(|| {
+                    solve_spatial_adjoint_shifted_with_residual(&g, (0., DURATION), &v, &a, plan)
+                        .unwrap()
+                });
+                let ((new, nw), after) = measure(|| w.solve(&v, &a).unwrap());
+                assert!(old.observed.success && new.observed.success);
+                assert_eq!(old.observed.t, new.observed.t);
+                assert_eq!(old.observed.y, new.observed.y);
+                assert_eq!(old.observed.counters, new.observed.counters);
+                assert_eq!(
+                    (
+                        old.attempts,
+                        old.accepted_steps,
+                        old.rejected_steps,
+                        old.jacobian_reuses
+                    ),
+                    (
+                        new.attempts,
+                        new.accepted_steps,
+                        new.rejected_steps,
+                        new.jacobian_reuses
+                    )
+                );
+                assert_eq!(
+                    (
+                        ow.solves,
+                        ow.returned,
+                        ow.preparations,
+                        ow.max_error_l1,
+                        ow.max_residual_l1
+                    ),
+                    (
+                        nw.solves,
+                        nw.returned,
+                        nw.preparations,
+                        nw.max_error_l1,
+                        nw.max_residual_l1
+                    )
+                );
+                assert!(after.requested_bytes < before.requested_bytes);
+                for (candidate, r, alloc) in [("Fresh", old, before), ("Reusable", new, after)] {
+                    println!(
+                        "REUSE_IVP {}",
+                        serde_json::json!({"case":case,"trial":trial,"plan":plan,"candidate":candidate,"qualified":r.observed.success,"allocation":alloc,"setup":setup,"run":{"values":r.observed.y.last().unwrap(),"accepted":r.accepted_steps,"rejected":r.rejected_steps,"rhs":r.observed.counters.rhs_calls,"linear_solves":r.observed.counters.linear_solves,"linear_iterations":r.observed.counters.linear_iterations,"counters":r.observed.counters}})
+                    );
+                }
+            }
+        }
+    }
+}

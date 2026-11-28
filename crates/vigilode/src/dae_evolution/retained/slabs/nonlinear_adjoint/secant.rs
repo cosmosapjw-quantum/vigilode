@@ -108,6 +108,46 @@ fn power(s: &CompactSlabView<'_>, n: usize, out: &mut [[Iv; 5]]) -> CoreResult<(
     Ok(())
 }
 impl SlabReplayRun {
+    /// Source-proved closed-form triangular terminal goal on the retained
+    /// physical trajectory; the underlying numerical state is unchanged.
+    pub fn triangular_goal_into(
+        &self,
+        weights: &[f64],
+        route: de::TriangularGoalRoute,
+        out: &mut Iv,
+    ) -> CoreResult<de::TriangularGoalWork> {
+        let e = self.adjoint_admission(weights)?;
+        let initial = self.initial();
+        let start = self
+            .accepted(0)
+            .ok_or_else(|| bad("triangular initial endpoint"))?;
+        let end = self
+            .accepted(self.accepted_len().saturating_sub(1))
+            .ok_or_else(|| bad("triangular terminal endpoint"))?;
+        let nx = e.src.nx();
+        if !initial.qualified
+            || initial.x.len() != nx
+            || start.state().len() != weights.len()
+            || end.state().len() != weights.len()
+            || start.state()[..nx] != initial.x[..]
+            || start.t() != initial.t
+            || self.driver().t.last() != Some(&end.t())
+            || self.accepted_len() != self.slabs_len() + 1
+        {
+            return Err(bad("triangular retained endpoint authority"));
+        }
+        de::triangular_clock_goal(
+            &e.src,
+            start.t(),
+            end.t(),
+            &initial.x,
+            end.state(),
+            weights,
+            route,
+            out,
+        )
+    }
+
     /// Exact terminal goal difference for a homogeneous constant reduced
     /// source, using the retained physical endpoint (not its projected gradient).
     /// Initial differential state is exact under adjoint_admission.

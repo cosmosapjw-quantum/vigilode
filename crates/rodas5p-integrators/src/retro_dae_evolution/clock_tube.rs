@@ -24,9 +24,9 @@ pub struct ClockTubeWork {
     pub incoming: f64,
     pub outgoing: f64,
 }
-// Exact syntactic source check; unit factors only. Codes 0=time, 1..4=x0,x1,z0,z1.
+// Exact syntactic source check; unit factors only. Codes 0=time, 1..32=source state index+1.
 // Do not replace with a numerical fit or rounded polynomial comparison.
-fn matches_terms(eq: &DeclaredPolynomial, want: &[(f64, &[u8])]) -> bool {
+pub(super) fn matches_terms(eq: &DeclaredPolynomial, want: &[(f64, &[u8])]) -> bool {
     if eq.terms().len() != want.len() || want.len() > 16 {
         return false;
     }
@@ -42,7 +42,8 @@ fn matches_terms(eq: &DeclaredPolynomial, want: &[(f64, &[u8])]) -> bool {
             }
             *v = if f.time == 1. && f.state.is_empty() {
                 0
-            } else if f.time == 0. && f.state.len() == 1 && f.state[0].1 == 1. && f.state[0].0 < 4 {
+            } else if f.time == 0. && f.state.len() == 1 && f.state[0].1 == 1. && f.state[0].0 < 32
+            {
                 1 + f.state[0].0 as u8
             } else {
                 return false;
@@ -61,7 +62,7 @@ fn matches_terms(eq: &DeclaredPolynomial, want: &[(f64, &[u8])]) -> bool {
     }
     true
 }
-fn source_kind(src: &DaeSource) -> Option<bool> {
+pub(super) fn source_kind(src: &DaeSource) -> Option<bool> {
     if src.nx() != 2
         || src.nz() != 2
         || !matches_terms(&src.g[0], &[(1., &[3]), (-1., &[1])])

@@ -7,8 +7,8 @@ use rodas5p_core::{
     directed::{Interval as Iv, add_up, div_up, mul_up},
 };
 use rodas5p_integrators::{
-    AdaptiveStepConfig, OdeProblem, OutputSchedule, Rodas5pFastResult, StageLinearSystem,
-    integrate_rodas5p_fast_client_observed_with_atol,
+    AdaptiveStepConfig, OdeProblem, OutputSchedule, ReusableFastClientWorkspace, Rodas5pFastResult,
+    StageLinearSystem, integrate_rodas5p_fast_client_observed_with_atol,
 };
 use rodas5p_krylov::{
     CapacityGrowth, GmresCapacity, GmresConfig, GmresMonitorDecision, GmresWorkspace,
@@ -584,26 +584,7 @@ fn solve_spatial_adjoint_impl(
     route: ShiftedAdjointRoute,
     residual: Option<ResidualPlan>,
 ) -> CoreResult<(Rodas5pFastResult, ShiftedNativeWork)> {
-    let g = grid.clone();
-    let j = grid.clone();
-    let p = OdeProblem::new(
-        "represented spatial transpose",
-        grid.dimension(),
-        Arc::new(move |_, v, o| {
-            g.apply_transpose_gather(v, o)
-                .map_err(|e| err(&e.to_string()))
-        }),
-        None,
-        None,
-        Some(Arc::new(move |_, _, v, o| {
-            j.apply_transpose_gather(v, o)
-                .map_err(|e| err(&e.to_string()))
-        })),
-        None,
-        true,
-        None,
-        None,
-    )?;
+    let p = spatial_transpose_problem(grid)?;
     let report = Arc::new(Mutex::new(ShiftedNativeWork::default()));
     let client = Client {
         w: ShiftedAdjointWorkspace::new_impl(grid, route, residual)?,
@@ -621,4 +602,81 @@ fn solve_spatial_adjoint_impl(
     )?;
     let w = *report.lock().unwrap();
     Ok((r, w))
+}
+
+// Keep callback/source identity fixed for all repeated native solves.
+fn spatial_transpose_problem(grid: &DiffusionGrid) -> CoreResult<OdeProblem> {
+    let g = grid.clone();
+    let j = grid.clone();
+    OdeProblem::new(
+        "represented spatial transpose",
+        grid.dimension(),
+        Arc::new(move |_, v, o| {
+            g.apply_transpose_gather(v, o)
+                .map_err(|e| err(&e.to_string()))
+        }),
+        None,
+        None,
+        Some(Arc::new(move |_, _, v, o| {
+            j.apply_transpose_gather(v, o)
+                .map_err(|e| err(&e.to_string()))
+        })),
+        None,
+        true,
+        None,
+        None,
+    )
+}
+/// Reuse native stage buffers, exact-source Fourier client, schedule and
+/// tolerance vector for repeated spatial adjoint IVPs on one grid/span.
+/// Each solve still returns an owning observation; no full-driver zeroheap claim.
+pub struct SpatialAdjointDriverWorkspace {
+    problem: OdeProblem,
+    driver: ReusableFastClientWorkspace,
+    report: Arc<Mutex<ShiftedNativeWork>>,
+    span: (f64, f64),
+    schedule: OutputSchedule,
+    atol: Vec<f64>,
+}
+impl SpatialAdjointDriverWorkspace {
+    pub fn new(grid: &DiffusionGrid, span: (f64, f64), plan: ResidualPlan) -> CoreResult<Self> {
+        let problem = spatial_transpose_problem(grid)?;
+        let report = Arc::new(Mutex::new(ShiftedNativeWork::default()));
+        let client = Client {
+            w: ShiftedAdjointWorkspace::new_with_residual(
+                grid,
+                ShiftedAdjointRoute::FourierTranspose,
+                plan,
+            )?,
+            report: report.clone(),
+        };
+        let driver = ReusableFastClientWorkspace::new(Box::new(client))?;
+        let schedule = OutputSchedule::new(vec![span.0, span.1])?;
+        Ok(Self {
+            problem,
+            driver,
+            report,
+            span,
+            schedule,
+            atol: vec![0.; grid.dimension()],
+        })
+    }
+    pub fn solve(
+        &mut self,
+        initial: &[f64],
+        adaptive: &AdaptiveStepConfig,
+    ) -> CoreResult<(Rodas5pFastResult, ShiftedNativeWork)> {
+        *self.report.lock().unwrap() = ShiftedNativeWork::default();
+        self.atol.fill(adaptive.atol);
+        let (r, _partial) = self.driver.solve(
+            &self.problem,
+            self.span,
+            initial,
+            adaptive,
+            &self.schedule,
+            &self.atol,
+        )?;
+        let w = *self.report.lock().unwrap();
+        Ok((r, w))
+    }
 }

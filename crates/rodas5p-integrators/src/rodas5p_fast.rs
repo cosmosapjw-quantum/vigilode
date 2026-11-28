@@ -2457,6 +2457,53 @@ pub fn integrate_rodas5p_fast_client_observed_with_atol_and_control(
     )
 }
 
+/// Caller-owned stage buffers and client for repeated native integrations.
+/// The returned observation and accepted state remain owning allocations.
+/// Each call starts a fresh controller and forces the first linearization;
+/// no factors or controller history are assumed valid across runs.
+pub struct ReusableFastClientWorkspace {
+    work: Workspace,
+}
+impl ReusableFastClientWorkspace {
+    pub fn new(client: Box<dyn StageLinearSystem>) -> CoreResult<Self> {
+        let n = client.dimension();
+        if n == 0 {
+            return Err(CoreError::InvalidInput("empty reusable client".into()));
+        }
+        Ok(Self {
+            work: Workspace::new_client(n, client)?,
+        })
+    }
+    pub fn solve(
+        &mut self,
+        problem: &OdeProblem,
+        t_span: (f64, f64),
+        y0: &[f64],
+        adaptive: &AdaptiveStepConfig,
+        output: &OutputSchedule,
+        atol: &[f64],
+    ) -> CoreResult<(Rodas5pFastResult, Option<DriverPartial>)> {
+        require_atol_vector(problem.dimension, atol)?;
+        if self.work.n != problem.dimension {
+            return Err(CoreError::InvalidInput("reusable client dimension".into()));
+        }
+        validate_fast_run(problem, t_span, y0, adaptive, atol)?;
+        let (r, _, partial) = integrate_fast_in(
+            &mut self.work,
+            problem,
+            t_span,
+            y0,
+            adaptive,
+            output,
+            Rodas5pFastOptions::default(),
+            None,
+            atol,
+            &mut NoSink,
+        )?;
+        Ok((r, partial))
+    }
+}
+
 /// The client run of [`integrate_rodas5p_fast_client_observed_with_atol`]
 /// under `sink`.
 #[allow(clippy::too_many_arguments)]
@@ -2623,7 +2670,11 @@ fn integrate_fast_in<S: StepSink>(
     sink: &mut S,
 ) -> CoreResult<(Rodas5pFastResult, Option<BandedWork>, Option<DriverPartial>)> {
     let (mut t, tf) = t_span;
-    work.atol_vector = atol_vector.to_vec();
+    if work.atol_vector.len() == atol_vector.len() {
+        work.atol_vector.copy_from_slice(atol_vector);
+    } else {
+        work.atol_vector = atol_vector.to_vec();
+    }
     let mut y = y0.to_vec();
     let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut controller = AdaptiveControllerState::default();

@@ -16,8 +16,22 @@ pub enum GoalBudgetPlan {
     AdaptiveSigned,
     EconomySigned,
     WeightedAdaptiveSigned,
+    Triangular12,
+    Triangular24,
+    TriangularAdaptive,
+    TriangularRootReduced,
 }
 impl GoalBudgetPlan {
+    fn triangular(self) -> Option<de::TriangularGoalRoute> {
+        use de::TriangularGoalRoute::*;
+        match self {
+            Self::Triangular12 => Some(Atanh12),
+            Self::Triangular24 => Some(Atanh24),
+            Self::TriangularAdaptive => Some(Adaptive),
+            Self::TriangularRootReduced => Some(RootReduced),
+            _ => None,
+        }
+    }
     fn signed(self) -> bool {
         matches!(
             self,
@@ -98,6 +112,10 @@ pub struct GoalBudgetAttempt {
     pub structured_work: Option<AdjointTaylorWork>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub structured_refusal: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub triangular_work: Option<de::TriangularGoalWork>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub triangular_refusal: Option<String>,
     pub enclosure: Option<[f64; 2]>,
     pub accepted: bool,
     pub reason: Option<String>,
@@ -172,6 +190,7 @@ pub fn evolve_epoch_goal_budget(
     let mut mult = if budget.plan == GoalBudgetPlan::Fixed
         || budget.plan.structured().is_some()
         || budget.plan.signed()
+        || budget.plan.triangular().is_some()
         || (budget.plan == GoalBudgetPlan::CostAware && budget.absolute < nominal)
     {
         1.
@@ -208,6 +227,18 @@ pub fn evolve_epoch_goal_budget(
             retention,
             if budget.plan == GoalBudgetPlan::WeightedAdaptiveSigned {
                 SlabReplayRoute::ClockWeighted(de::ClockTubePlan::Mean4)
+            } else if budget.plan.triangular().is_some() {
+                let cp = if epoch.end > 2. {
+                    de::ClockTubePlan::Mean8
+                } else {
+                    de::ClockTubePlan::Mean4
+                };
+                if de::ClockTubeCarry::new(src, cp, epoch.start, x, epoch.incoming_x_error).is_ok()
+                {
+                    SlabReplayRoute::ClockWeighted(cp)
+                } else {
+                    SlabReplayRoute::Flat
+                }
             } else {
                 SlabReplayRoute::Flat
             },
@@ -224,6 +255,8 @@ pub fn evolve_epoch_goal_budget(
             certificates: vec![],
             structured_work: None,
             structured_refusal: None,
+            triangular_work: None,
+            triangular_refusal: None,
             enclosure: None,
             accepted: false,
             reason: None,
@@ -277,6 +310,27 @@ pub fn evolve_epoch_goal_budget(
                                         }
                                     }
                                     Err(e) => rec.structured_refusal = Some(e.to_string()),
+                                }
+                            }
+                        }
+                        if bound.is_some_and(|b| b.mag() > budget.absolute) {
+                            if let Some(route) = budget.plan.triangular() {
+                                let mut iv = Iv::point(0.)?;
+                                match r.triangular_goal_into(goal, route, &mut iv) {
+                                    Ok(work) => {
+                                        rec.triangular_work = Some(work);
+                                        let b = bound.unwrap();
+                                        match Iv::new(b.lo.max(iv.lo), b.hi.min(iv.hi)) {
+                                            Ok(q) => bound = Some(q),
+                                            Err(_) => {
+                                                bound = None;
+                                                rec.reason = Some(
+                                                    "disjoint independent goal certificates".into(),
+                                                );
+                                            }
+                                        }
+                                    }
+                                    Err(e) => rec.triangular_refusal = Some(e.to_string()),
                                 }
                             }
                         }

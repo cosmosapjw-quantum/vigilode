@@ -1791,3 +1791,226 @@ fn triangular_goal_actual_contract() {
         new.attempts.last().unwrap().terminal_state
     );
 }
+
+#[test]
+fn triangular_goal_actual_portfolio() {
+    use de::TriangularGoalRoute as T;
+    let (opts, policy, route, retention) = weighted_settings();
+    let plans = [
+        GoalBudgetPlan::Fixed,
+        GoalBudgetPlan::EconomySigned,
+        GoalBudgetPlan::WeightedAdaptiveSigned,
+        GoalBudgetPlan::Triangular12,
+        GoalBudgetPlan::Triangular24,
+        GoalBudgetPlan::TriangularAdaptive,
+        GoalBudgetPlan::TriangularRootReduced,
+    ];
+    for (case, end) in [
+        ("clock2", 0.5),
+        ("clock8", 0.5),
+        ("coupled_clock", 1.),
+        ("coupled_clock", 2.),
+        ("coupled_clock", 3.),
+    ] {
+        let (src, x, z, b, c) = if case == "coupled_clock" {
+            coupled_clock_fixture()
+        } else {
+            fixture(if case == "clock8" { 8 } else { 2 })
+        };
+        let epoch = EvolutionEpoch {
+            start: 0.,
+            end,
+            incoming_x_error: Some(0.),
+        };
+        for absolute in [1e-8, 1e-9, 1e-10] {
+            for plan in plans {
+                if plan == GoalBudgetPlan::WeightedAdaptiveSigned && (case == "clock8" || end == 3.)
+                {
+                    continue;
+                }
+                let (r, a) = measure(|| {
+                    evolve_epoch_goal_budget(
+                        &src,
+                        &x,
+                        &z,
+                        &b,
+                        epoch,
+                        &opts,
+                        policy,
+                        route,
+                        &[],
+                        retention,
+                        &c,
+                        GoalBudgetPolicy { absolute, plan },
+                    )
+                    .unwrap()
+                });
+                let last = r.attempts.last().unwrap();
+                let is_tri = matches!(
+                    plan,
+                    GoalBudgetPlan::Triangular12
+                        | GoalBudgetPlan::Triangular24
+                        | GoalBudgetPlan::TriangularAdaptive
+                        | GoalBudgetPlan::TriangularRootReduced
+                );
+                if is_tri {
+                    assert!(
+                        last.physical_qualified,
+                        "{case} {end} {plan:?} {:?}",
+                        last.reason
+                    );
+                    if end <= 2. {
+                        assert!(
+                            last.accepted,
+                            "{case} {end} {absolute} {plan:?} {:?}",
+                            last.reason
+                        );
+                    }
+                }
+                println!(
+                    "TRI_GOAL {}",
+                    serde_json::json!({"case":case,"end":end,"absolute":absolute,"plan":plan,"qualified":last.accepted,"attempt":last,"weights":c,"allocation":a,"rhs":r.total_rhs(),"steps":r.total_steps()})
+                );
+            }
+        }
+        let replay = if case == "clock8" {
+            SlabReplayRoute::Flat
+        } else {
+            SlabReplayRoute::ClockWeighted(if end > 2. {
+                de::ClockTubePlan::Mean8
+            } else {
+                de::ClockTubePlan::Mean4
+            })
+        };
+        let (r, _) = evolve_epoch_slab_replay_planned(
+            &src,
+            &x,
+            &z,
+            &b,
+            epoch,
+            &opts,
+            policy,
+            route,
+            &[],
+            retention,
+            replay,
+            EnginePlan::SharedFused,
+        );
+        let r = r.unwrap();
+        assert!(r.global_qualified());
+        let terminal = r.accepted(r.accepted_len() - 1).unwrap();
+        for candidate in [T::Atanh12, T::Atanh24, T::Adaptive, T::RootReduced] {
+            let mut iv = Iv::point(0.).unwrap();
+            let (w, a) = measure(|| r.triangular_goal_into(&c, candidate, &mut iv));
+            let work = w.unwrap();
+            assert_eq!(a.requests(), 0);
+            assert_eq!(work.signed_error, iv.as_pair());
+            println!(
+                "TRI_DIRECT {}",
+                serde_json::json!({"case":case,"end":end,"candidate":candidate,"terminal":terminal.state(),"weights":c,"allocation":a,"work":work,"qualified":true})
+            );
+        }
+    }
+}
+#[test]
+fn triangular_goal_arithmetic_and_refusals() {
+    use de::TriangularGoalRoute as T;
+    let (src, _, _, _, _) = fixture(2);
+    let (wrong, xw, zw, _, cw) = growth_fixture();
+    let mut iv = Iv::point(17.).unwrap();
+    let mut endpoint = xw.clone();
+    endpoint.extend(&zw);
+    assert!(
+        de::triangular_clock_goal(&wrong, 0., 1., &xw, &endpoint, &cw, T::Adaptive, &mut iv)
+            .is_err()
+    );
+    assert_eq!(iv, Iv::point(17.).unwrap());
+    assert!(
+        de::triangular_clock_goal(
+            &src,
+            0.,
+            1.,
+            &[-0.25, 0.],
+            &[0.; 4],
+            &[1.; 4],
+            T::Adaptive,
+            &mut iv
+        )
+        .is_err()
+    );
+    assert!(
+        de::triangular_clock_goal(
+            &src,
+            -1.,
+            1.,
+            &[0.25, 0.],
+            &[0.; 4],
+            &[1.; 4],
+            T::Adaptive,
+            &mut iv
+        )
+        .is_err()
+    );
+    assert_eq!(iv, Iv::point(17.).unwrap());
+    // Additional exact source perturbation: q' uses a different coefficient.
+    let badsrc = DaeSource::new(
+        vec![
+            p(vec![tr(
+                -1.,
+                vec![F::clock(0.), F::component(2, 0.), F::component(2, 0.)],
+            )]),
+            p(vec![tr(
+                1.0000000000000002,
+                vec![F::clock(0.), F::component(2, 0.)],
+            )]),
+        ],
+        (0..2)
+            .map(|i| {
+                p(vec![
+                    tr(1., vec![F::component(i + 2, 0.)]),
+                    tr(-1., vec![F::component(i, 0.)]),
+                ])
+            })
+            .collect(),
+    )
+    .unwrap();
+    assert!(
+        de::triangular_clock_goal(
+            &badsrc,
+            0.,
+            1.,
+            &[0.25, 0.],
+            &[0.; 4],
+            &[1.; 4],
+            T::Adaptive,
+            &mut iv
+        )
+        .is_err()
+    );
+    assert_eq!(iv, Iv::point(17.).unwrap());
+    for (case, start, end, x) in [
+        ("zero_p", 0., 1., [0., 0.125]),
+        ("zero_duration", 1., 1., [0.25, 0.125]),
+        ("nonzero_start", 0.25, 1., [0.25, 0.125]),
+        ("tiny", 0., 1., [f64::from_bits(1), 0.]),
+        ("large", 0., 16., [0.25, 0.125]),
+    ] {
+        let y = [0.; 4];
+        let c = [1., 1., 0., 0.];
+        for candidate in [T::Atanh12, T::Atanh24, T::Adaptive, T::RootReduced] {
+            let (r, a) = measure(|| {
+                de::triangular_clock_goal(&src, start, end, &x, &y, &c, candidate, &mut iv)
+            });
+            let work = r.unwrap();
+            assert_eq!(a.requests(), 0);
+            println!(
+                "TRI_ARITH {}",
+                serde_json::json!({"case":case,"start":start,"end":end,"initial":x,"terminal":y,"weights":c,"candidate":candidate,"allocation":a,"work":work,"qualified":true})
+            );
+        }
+    }
+    println!(
+        "TRI_NEGATIVE {}",
+        serde_json::json!({"unsupported":true,"altered_source":true,"negative_p":true,"negative_start":true,"transactional":true})
+    );
+}
