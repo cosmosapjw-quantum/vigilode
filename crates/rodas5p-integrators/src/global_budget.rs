@@ -582,13 +582,23 @@ fn allocation_bounds(
     counts: &[u64],
     limits: AllocationLimits,
 ) -> Result<(f64, f64), AllocationError> {
-    if blocks.len() != counts.len() {
+    let mut scratch = vec![(0, 0.); blocks.len()];
+    allocation_bounds_scratch(blocks, order, counts, limits, &mut scratch)
+}
+fn allocation_bounds_scratch(
+    blocks: &[AllocationBlock],
+    order: u32,
+    counts: &[u64],
+    limits: AllocationLimits,
+    scratch: &mut [(u64, f64)],
+) -> Result<(f64, f64), AllocationError> {
+    if blocks.len() != counts.len() || scratch.len() < blocks.len() {
         return Err(AllocationError::Invalid("count dimension"));
     }
     let (mut work, mut total) = (0.0, 0u64);
     let mut pointwise_error = Ok(0.0);
-    let mut grouped = Vec::with_capacity(blocks.len());
-    for (b, &n) in blocks.iter().zip(counts) {
+    let grouped = &mut scratch[..blocks.len()];
+    for (i, (b, &n)) in blocks.iter().zip(counts).enumerate() {
         if n == 0 || n > limits.max_steps_per_block {
             return Err(AllocationError::ResourceLimit);
         }
@@ -601,7 +611,7 @@ fn allocation_bounds(
             term = div_up(term, n as f64)?;
         }
         pointwise_error = pointwise_error.and_then(|sum| add_up(sum, term));
-        grouped.push((n, b.error_coefficient));
+        grouped[i] = (n, b.error_coefficient);
         work = add_up(work, mul_up(b.step_cost_upper, n as f64)?)?;
     }
     // Equal exact integer denominators permit sum(A_j)/n^p. Summing before
@@ -676,25 +686,90 @@ pub fn allocate_global_work(
     limits: AllocationLimits,
 ) -> Result<ValidatedWorkAllocation, AllocationError> {
     validate_allocation_input(blocks, order, budget, limits)?;
+    let mut logs = vec![0.; blocks.len()];
+    let mut counts = vec![0; blocks.len()];
+    let mut grouped = vec![(0, 0.); blocks.len()];
+    let r = allocate_kernel(
+        blocks,
+        order,
+        budget,
+        limits,
+        &mut logs,
+        &mut counts,
+        &mut grouped,
+    )?;
+    Ok(ValidatedWorkAllocation {
+        blocks: blocks.to_vec(),
+        counts,
+        order,
+        budget,
+        error_upper: r.error_upper,
+        work_upper: r.work_upper,
+        refinements: r.refinements,
+    })
+}
+/// Directed certificate of the supplied algebraic model only, not an ODE proof.
+#[derive(Clone, Copy, Debug, Default, Serialize)]
+pub struct WorkAllocationSummary {
+    pub error_upper: f64,
+    pub work_upper: f64,
+    pub refinements: u32,
+}
+/// Fixed-capacity variant of the existing allocator; identical seed and
+/// directed bounds. No heap on valid calls with at most eight blocks.
+pub fn allocate_small_work_into(
+    blocks: &[AllocationBlock],
+    order: u32,
+    budget: f64,
+    limits: AllocationLimits,
+    out: &mut [u64],
+) -> Result<WorkAllocationSummary, AllocationError> {
+    validate_allocation_input(blocks, order, budget, limits)?;
+    let n = blocks.len();
+    if n > 8 || out.len() != n {
+        return Err(AllocationError::Invalid("small allocation shape"));
+    }
+    let mut logs = [0.; 8];
+    let mut counts = [0; 8];
+    let mut grouped = [(0, 0.); 8];
+    let r = allocate_kernel(
+        blocks,
+        order,
+        budget,
+        limits,
+        &mut logs[..n],
+        &mut counts[..n],
+        &mut grouped[..n],
+    )?;
+    out.copy_from_slice(&counts[..n]);
+    Ok(r)
+}
+fn allocate_kernel(
+    blocks: &[AllocationBlock],
+    order: u32,
+    budget: f64,
+    limits: AllocationLimits,
+    logs: &mut [f64],
+    counts: &mut [u64],
+    grouped: &mut [(u64, f64)],
+) -> Result<WorkAllocationSummary, AllocationError> {
     let p = order as f64;
-    let logs: Vec<_> = blocks
-        .iter()
-        .map(|b| {
+    for (v, b) in logs.iter_mut().zip(blocks) {
+        *v = {
             if b.error_coefficient == 0.0 {
                 f64::NEG_INFINITY
             } else {
                 (b.error_coefficient.ln() + p * b.step_cost_upper.ln()) / (p + 1.0)
             }
-        })
-        .collect();
+        };
+    }
     let max = logs.iter().copied().fold(f64::NEG_INFINITY, f64::max);
     let log_s = if max.is_finite() {
         max + logs.iter().map(|x| (*x - max).exp()).sum::<f64>().ln()
     } else {
         f64::NEG_INFINITY
     };
-    let mut counts = Vec::with_capacity(blocks.len());
-    for b in blocks {
+    for (count, b) in counts.iter_mut().zip(blocks) {
         let n = if b.error_coefficient == 0.0 {
             1.0
         } else {
@@ -707,16 +782,13 @@ pub fn allocate_global_work(
         if !n.is_finite() || n > limits.max_steps_per_block as f64 {
             return Err(AllocationError::ResourceLimit);
         }
-        counts.push(n as u64);
+        *count = n as u64;
     }
     for refinement in 0..=limits.max_refinements {
-        let (error_upper, work_upper) = allocation_bounds(blocks, order, &counts, limits)?;
+        let (error_upper, work_upper) =
+            allocation_bounds_scratch(blocks, order, counts, limits, grouped)?;
         if error_upper <= budget {
-            return Ok(ValidatedWorkAllocation {
-                blocks: blocks.to_vec(),
-                counts,
-                order,
-                budget,
+            return Ok(WorkAllocationSummary {
                 error_upper,
                 work_upper,
                 refinements: refinement,
@@ -728,7 +800,7 @@ pub fn allocate_global_work(
                 budget,
             });
         }
-        for (b, n) in blocks.iter().zip(&mut counts) {
+        for (b, n) in blocks.iter().zip(counts.iter_mut()) {
             if b.error_coefficient > 0.0 {
                 *n = if refinement == 0 {
                     n.checked_add(1)

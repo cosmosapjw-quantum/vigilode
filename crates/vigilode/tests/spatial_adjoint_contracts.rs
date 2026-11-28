@@ -4815,3 +4815,433 @@ fn compact_forward_only_setup_contract() {
     );
     std::hint::black_box(w);
 }
+
+#[test]
+fn small_work_allocator_contract() {
+    use rodas5p_integrators::global_budget::{
+        AllocationBlock as B, AllocationLimits as L, allocate_global_work, allocate_small_work_into,
+    };
+    for n in 1..=8 {
+        for p in [1, 2, 4, 8] {
+            let blocks = (0..n)
+                .map(|i| B {
+                    error_coefficient: if i % 3 == 0 {
+                        0.
+                    } else {
+                        (i + 1) as f64 * 0.125
+                    },
+                    step_cost_upper: (i + 1) as f64,
+                })
+                .collect::<Vec<_>>();
+            for budget in [0.03125, 0.5, 4.] {
+                let mut counts = vec![17; n];
+                let old = allocate_global_work(&blocks, p, budget, L::default()).unwrap();
+                let (r, a) = measure(|| {
+                    allocate_small_work_into(&blocks, p, budget, L::default(), &mut counts)
+                });
+                let r = r.unwrap();
+                assert_eq!(counts, old.counts());
+                assert_eq!(r.error_upper, old.error_upper());
+                assert_eq!(r.work_upper, old.work_upper());
+                assert_eq!(r.refinements, old.refinements());
+                assert_eq!(a.requests(), 0);
+                println!(
+                    "SMALL_ALLOC {}",
+                    serde_json::json!({"n":n,"order":p,"budget":budget,"blocks":blocks,"counts":counts,"work":r,"allocation":a,"qualified":true})
+                );
+            }
+        }
+    }
+    let blocks = [B {
+        error_coefficient: 1.,
+        step_cost_upper: 1.,
+    }; 2];
+    let mut out = [17; 2];
+    let (r, a) = measure(|| {
+        allocate_small_work_into(
+            &blocks,
+            1,
+            1e-30,
+            L {
+                max_steps_per_block: 2,
+                max_total_steps: 4,
+                max_refinements: 1,
+            },
+            &mut out,
+        )
+    });
+    assert!(r.is_err());
+    assert_eq!(out, [17; 2]);
+    assert_eq!(a.requests(), 0);
+}
+
+#[test]
+fn compact_model_fallback_partial_contract() {
+    use rodas5p_integrators::AdaptiveStepConfig;
+    use vigilode::spatial::{
+        SpatialAdjointWork, SpatialBoundaryDualPlan as D, SpatialCompactPartition as P,
+        SpatialCompactPolicy as Policy, SpatialCompactRefinement as R,
+        SpatialCompactReplayWorkspace as W,
+    };
+    let g = DiffusionGrid::sphere(16, 32, 1., 0.16).unwrap();
+    let n = g.dimension();
+    let mut u = vec![-16.; n];
+    u[n / 2] = -15.5;
+    let mut c = vec![0.; n];
+    c[0] = 0.5;
+    c[n / 2] = -0.25;
+    c[n - 1] = 0.125;
+    let base = AdaptiveStepConfig {
+        rtol: 1e-9,
+        atol: 1e-11,
+        initial_step: 0.001,
+        ..Default::default()
+    };
+    let policy = Policy {
+        budget: 1e-11,
+        max_replays: 1,
+        min_scale: 1e-4,
+        partition: P::Accepted4,
+        dual: D::StationaryChain,
+        refinement: R::Model4Fallback,
+    };
+    let mut w = W::new(&g, DURATION, 256).unwrap();
+    let mut endpoint = vec![17.; n];
+    let mut rec = SpatialAdjointWork::default();
+    let (r, a) = measure(|| w.solve_into(&u, &c, &base, policy, &mut endpoint, &mut rec));
+    let r = r.unwrap();
+    assert!(r.completed);
+    assert_eq!(r.global_fallbacks, 1);
+    assert_eq!(r.replayed_cells, 1);
+    assert_eq!(r.solves, 2);
+    assert_eq!(a.requests(), 0);
+    assert_eq!(w.states()[..n], u);
+    assert_eq!(w.times(), &[0., DURATION]);
+    if r.accepted {
+        assert_eq!(endpoint, w.states()[n..]);
+    } else {
+        assert!(endpoint.iter().all(|v| *v == 17.));
+    }
+    let cap = w.pilot_times().len() - 1;
+    let mut w = W::new(&g, DURATION, cap).unwrap();
+    endpoint.fill(17.);
+    rec = SpatialAdjointWork::default();
+    let (r, a) = measure(|| {
+        w.solve_into(
+            &u,
+            &c,
+            &base,
+            Policy {
+                budget: 1e-14,
+                ..policy
+            },
+            &mut endpoint,
+            &mut rec,
+        )
+    });
+    let r = r.unwrap();
+    assert!(!r.accepted && !r.completed);
+    assert_eq!(r.global_fallbacks, 1);
+    assert_eq!(r.replayed_cells, 1);
+    assert_eq!(r.primal_stops, 1);
+    assert_eq!(a.requests(), 0);
+    assert!(endpoint.iter().all(|v| *v == 17.));
+    assert!(w.last_receipt().is_none());
+    assert_eq!(w.times(), &[0.]);
+    println!(
+        "FALLBACK_EDGE {}",
+        serde_json::json!({"cap":cap,"work":r,"allocation":a})
+    );
+}
+
+#[test]
+fn defect_budget_actual_portfolio() {
+    use rodas5p_integrators::AdaptiveStepConfig;
+    use vigilode::spatial::{
+        SpatialAdjointWork, SpatialBoundaryDualPlan as D, SpatialCompactPartition as P,
+        SpatialCompactPolicy as Policy, SpatialCompactRefinement as R,
+        SpatialCompactReplayWorkspace as W, SpatialPrimalReplayPlan as GR,
+        SpatialPrimalReplayPolicy as GP, SpatialPrimalReplayWorkspace as G,
+        SpatialReplayCachePlan as K,
+    };
+    let base = AdaptiveStepConfig {
+        rtol: 1e-9,
+        atol: 1e-11,
+        initial_step: 0.001,
+        ..Default::default()
+    };
+    let grids = [
+        (
+            "box2_small",
+            DiffusionGrid::periodic_box([8, 4], [8., 4.], [0.125, 0.25]).unwrap(),
+        ),
+        (
+            "box3_small",
+            DiffusionGrid::periodic_box([4, 4, 4], [4., 4., 4.], [0.125, 0.25, 0.0625]).unwrap(),
+        ),
+        ("sphere_odd", DiffusionGrid::sphere(5, 9, 1., 0.64).unwrap()),
+        ("sphere128", DiffusionGrid::sphere(8, 16, 1., 0.64).unwrap()),
+        (
+            "sphere512",
+            DiffusionGrid::sphere(16, 32, 1., 0.16).unwrap(),
+        ),
+        (
+            "holdout_sphere153",
+            DiffusionGrid::sphere(9, 17, 1., 0.20).unwrap(),
+        ),
+    ];
+    let plans = [
+        ("OldCost", P::Accepted4, R::MultiCost, 3),
+        ("Model1", P::Accepted4, R::Model1, 3),
+        ("Model2", P::Accepted4, R::Model2, 3),
+        ("Model4", P::Accepted4, R::Model4, 3),
+        ("AdaptiveModel2", P::DefectAdaptive, R::Model2, 3),
+        ("AdaptiveModel4", P::DefectAdaptive, R::Model4, 3),
+        ("AdaptiveFallback", P::DefectAdaptive, R::Model4Fallback, 3),
+        ("FallbackOne", P::Accepted4, R::Model4Fallback, 1),
+        ("Pilot", P::Accepted4, R::MultiCost, 0),
+        ("AdaptivePilot", P::DefectAdaptive, R::MultiCost, 0),
+    ];
+    for (case, g) in grids {
+        let n = g.dimension();
+        println!(
+            "BUDGET_GRID {}",
+            serde_json::json!({"case":case,"n":n,"duration":DURATION,"rows":(0..n).map(|i|g.represented_row(i).unwrap()).collect::<Vec<_>>()})
+        );
+        // Warm native library initialization is shared by all setup comparisons.
+        let init = G::new(&g, DURATION, 1).unwrap();
+        drop(init);
+        let (mut w, setup) = measure(|| W::new(&g, DURATION, 256).unwrap());
+        println!(
+            "SLIM_SETUP {}",
+            serde_json::json!({"case":case,"allocation":setup})
+        );
+        let mut endpoint = vec![17.; n];
+        let mut rec = SpatialAdjointWork::default();
+        for goal in ["mass", "local"] {
+            let c = if goal == "mass" {
+                (0..n)
+                    .map(|i| g.cell_measure(i).unwrap())
+                    .collect::<Vec<_>>()
+            } else {
+                let mut c = vec![0.; n];
+                c[0] = 0.5;
+                c[n / 2] = -0.25;
+                c[n - 1] = 0.125;
+                c
+            };
+            for input in ["offset", "signed"] {
+                let u = if input == "offset" {
+                    let mut u = vec![-16.; n];
+                    u[n / 2] = -15.5;
+                    u
+                } else {
+                    (0..n).map(|i| ((13 * i % 17) as f64 - 8.) / 64.).collect()
+                };
+                for budget in [1e-10, 1e-11] {
+                    let mut global = G::new(&g, DURATION, 1).unwrap();
+                    let gp = GP {
+                        budget,
+                        max_replays: 3,
+                        min_scale: 1e-4,
+                        plan: GR::GuidedSelective,
+                    };
+                    endpoint.fill(17.);
+                    rec = SpatialAdjointWork::default();
+                    let (r, a) = measure(|| {
+                        global.solve_cached_budgeted_into(
+                            &u,
+                            &c,
+                            &base,
+                            gp,
+                            K::GoalOnly,
+                            &mut endpoint,
+                            std::slice::from_mut(&mut rec),
+                        )
+                    });
+                    let r = r.unwrap();
+                    assert_eq!(a.requests(), 0);
+                    let pair = global.last_pair(0).unwrap();
+                    let end = pair.endpoint.to_vec();
+                    let certificate = pair.receipt;
+                    let (warm, alloc) = measure(|| {
+                        global.solve_cached_budgeted_into(
+                            &u,
+                            &c,
+                            &base,
+                            gp,
+                            K::GoalOnly,
+                            &mut endpoint,
+                            std::slice::from_mut(&mut rec),
+                        )
+                    });
+                    let warm = warm.unwrap();
+                    assert_eq!(alloc.requests(), 0);
+                    assert_eq!(warm.adjoint_actions, 0);
+                    assert_eq!(warm.counters, r.counters);
+                    assert_eq!(global.last_pair(0).unwrap().endpoint, end);
+                    assert_eq!(
+                        global.last_pair(0).unwrap().receipt.signed_goal_error,
+                        certificate.signed_goal_error
+                    );
+                    println!(
+                        "GLOBAL_BUDGET {}",
+                        serde_json::json!({"case":case,"goal":goal,"input":input,"budget":budget,"candidate":"GlobalGuided","initial":u,"weights":c,"qualified":r.accepted,"allocation":a,"warm_allocation":alloc,"work":r,"warm_work":warm,"endpoint":end,"receipt":certificate})
+                    );
+                    for (candidate, partition, refinement, max_replays) in plans {
+                        let policy = Policy {
+                            budget,
+                            max_replays,
+                            min_scale: 1e-4,
+                            partition,
+                            dual: D::StationaryChain,
+                            refinement,
+                        };
+                        w.clear_dual_cache();
+                        endpoint.fill(17.);
+                        rec = SpatialAdjointWork::default();
+                        let (r, a) = measure(|| {
+                            w.solve_into(&u, &c, &base, policy, &mut endpoint, &mut rec)
+                        });
+                        let r = r.unwrap();
+                        assert!(r.completed, "{case} {candidate} {r:?}");
+                        assert_eq!(a.requests(), 0);
+                        assert_eq!(r.solves, r.initial_solves + r.replayed_cells);
+                        assert_eq!(w.times().len(), r.cells + 1);
+                        if r.accepted {
+                            assert_eq!(endpoint, w.states()[r.cells * n..]);
+                        } else {
+                            assert!(endpoint.iter().all(|v| *v == 17.));
+                            assert_eq!(rec.actions, 0);
+                        }
+                        let first = (
+                            w.times().to_vec(),
+                            w.states().to_vec(),
+                            w.projections().to_vec(),
+                            w.defects().to_vec(),
+                        );
+                        let (warm, alloc) = measure(|| {
+                            w.solve_into(&u, &c, &base, policy, &mut endpoint, &mut rec)
+                        });
+                        let warm = warm.unwrap();
+                        assert_eq!(alloc.requests(), 0);
+                        assert_eq!(warm.counters, r.counters);
+                        assert_eq!(warm.accepted, r.accepted);
+                        assert_eq!(warm.signed_goal_error, r.signed_goal_error);
+                        assert_eq!(w.times(), first.0);
+                        assert_eq!(w.states(), first.1);
+                        assert_eq!(w.projections(), first.2);
+                        assert_eq!(w.defects(), first.3);
+                        if r.splits + r.merges + r.global_fallbacks == 0 {
+                            assert_eq!(warm.adjoint_actions, 0);
+                        }
+                        println!(
+                            "MODEL_BUDGET {}",
+                            serde_json::json!({"case":case,"goal":goal,"input":input,"budget":budget,"candidate":candidate,"partition":partition,"refinement":refinement,"qualified":r.accepted,"initial":u,"weights":c,"allocation":a,"warm_allocation":alloc,"work":r,"warm_work":warm,"times":w.times(),"states":w.states(),"anchor":w.anchor(),"projections":w.projections().iter().map(|v|v.as_pair()).collect::<Vec<_>>(),"defects":w.defects().iter().map(|v|v.as_pair()).collect::<Vec<_>>(),"scales":w.scales(),"pilot_times":w.pilot_times(),"pilot_indices":w.pilot_indices(),"receipt":w.last_receipt().unwrap()})
+                        );
+                    }
+                }
+            }
+            // Paired CPU0 timings at the previous difficult offset input and
+            // tight budget. Setup excluded, cold certificate key truly empty.
+            let mut u = vec![-16.; n];
+            u[n / 2] = -15.5;
+            let budget = 1e-11;
+            let gp = GP {
+                budget,
+                max_replays: 3,
+                min_scale: 1e-4,
+                plan: GR::GuidedSelective,
+            };
+            let timing_plans = [
+                Policy {
+                    budget,
+                    max_replays: 3,
+                    min_scale: 1e-4,
+                    partition: P::Accepted4,
+                    dual: D::StationaryChain,
+                    refinement: R::MultiCost,
+                },
+                Policy {
+                    budget,
+                    max_replays: 3,
+                    min_scale: 1e-4,
+                    partition: P::Accepted4,
+                    dual: D::StationaryChain,
+                    refinement: R::Model2,
+                },
+                Policy {
+                    budget,
+                    max_replays: 3,
+                    min_scale: 1e-4,
+                    partition: P::DefectAdaptive,
+                    dual: D::StationaryChain,
+                    refinement: R::Model4,
+                },
+            ];
+            let names = ["GlobalGuided", "OldCost", "Model2", "AdaptiveModel4"];
+            let mut cold: [Vec<u128>; 4] = std::array::from_fn(|_| Vec::with_capacity(4));
+            let mut warm: [Vec<u128>; 4] = std::array::from_fn(|_| Vec::with_capacity(4));
+            let mut admissions = [false; 4];
+            let mut warm_actions = [0; 4];
+            for rep in 0..4 {
+                for j in 0..4 {
+                    let i = (rep + j) % 4;
+                    if i == 0 {
+                        let mut gws = G::new(&g, DURATION, 1).unwrap();
+                        let t = std::time::Instant::now();
+                        let r = gws
+                            .solve_cached_budgeted_into(
+                                &u,
+                                &c,
+                                &base,
+                                gp,
+                                K::GoalOnly,
+                                &mut endpoint,
+                                std::slice::from_mut(&mut rec),
+                            )
+                            .unwrap();
+                        cold[i].push(t.elapsed().as_nanos());
+                        admissions[i] = r.accepted;
+                        let t = std::time::Instant::now();
+                        let r = gws
+                            .solve_cached_budgeted_into(
+                                &u,
+                                &c,
+                                &base,
+                                gp,
+                                K::GoalOnly,
+                                &mut endpoint,
+                                std::slice::from_mut(&mut rec),
+                            )
+                            .unwrap();
+                        warm[i].push(t.elapsed().as_nanos());
+                        assert_eq!(r.accepted, admissions[i]);
+                        warm_actions[i] = r.adjoint_actions;
+                    } else {
+                        w.clear_dual_cache();
+                        let t = std::time::Instant::now();
+                        let r = w
+                            .solve_into(&u, &c, &base, timing_plans[i - 1], &mut endpoint, &mut rec)
+                            .unwrap();
+                        cold[i].push(t.elapsed().as_nanos());
+                        admissions[i] = r.accepted;
+                        let t = std::time::Instant::now();
+                        let r = w
+                            .solve_into(&u, &c, &base, timing_plans[i - 1], &mut endpoint, &mut rec)
+                            .unwrap();
+                        warm[i].push(t.elapsed().as_nanos());
+                        assert_eq!(r.accepted, admissions[i]);
+                        warm_actions[i] = r.adjoint_actions;
+                    }
+                }
+            }
+            for i in 0..4 {
+                println!(
+                    "BUDGET_TIME {}",
+                    serde_json::json!({"case":case,"goal":goal,"candidate":names[i],"qualified":admissions[i],"cold_ns":cold[i],"warm_ns":warm[i],"warm_actions":warm_actions[i]})
+                );
+            }
+        }
+    }
+}

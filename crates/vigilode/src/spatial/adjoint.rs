@@ -847,6 +847,9 @@ impl SpatialBoundaryDual {
             preparation: BoundaryPreparation::default(),
         })
     }
+    pub(super) fn invalidate(&mut self) {
+        self.count = 0;
+    }
     pub fn prepare(
         &mut self,
         goal: &[f64],

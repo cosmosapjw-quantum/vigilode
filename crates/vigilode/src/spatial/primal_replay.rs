@@ -925,6 +925,8 @@ pub enum SpatialCompactPartition {
     Accepted4,
     /// Eight groups of actual pilot steps, capped by actual step count.
     Accepted8,
+    /// Refusal-driven split/coarsen of actual retained pilot groups.
+    DefectAdaptive,
 }
 /// Choose one or multiple local cells for the next suffix retry.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -937,6 +939,14 @@ pub enum SpatialCompactRefinement {
     MultiMagnitude,
     /// Cost-weighted selection with multiple eligible large defects.
     MultiCost,
+    /// Algebraic work allocation with model order one.
+    Model1,
+    /// Algebraic work allocation with model order two.
+    Model2,
+    /// Algebraic work allocation with model order four.
+    Model4,
+    /// Model4, reserving the last replay for one global attempt.
+    Model4Fallback,
 }
 #[derive(Clone, Copy, Debug, Serialize)]
 /// Bounded compact replay policy; the final signed budget is fixed.
@@ -1003,6 +1013,23 @@ pub struct SpatialCompactWork {
     pub max_signed_error_upper: f64,
     /// Per-cell refinement counts.
     pub selected: [usize; 8],
+    /// Number of pilot boundaries inserted/removed.
+    pub splits: usize,
+    pub merges: usize,
+    /// Calls to the algebraic allocator, including refusals.
+    pub model_calls: usize,
+    pub model_refusals: usize,
+    /// Final successful model proposal (not physical error authority).
+    pub model_order: u32,
+    pub model_cells: usize,
+    pub model_budget: f64,
+    pub model_coeff: [f64; 8],
+    pub model_cost: [f64; 8],
+    pub model_counts: [u64; 8],
+    pub model_error_upper: f64,
+    pub model_work_upper: f64,
+    /// Actual global replay attempts.
+    pub global_fallbacks: usize,
 }
 /// A single bounded accepted-checkpoint buffer and one boundary propagator.
 /// No full dense stage packets are retained: the integrated residual uses
@@ -1199,6 +1226,189 @@ impl SpatialCompactReplayWorkspace {
         }
         Ok(())
     }
+    fn prepare_boundary(
+        &mut self,
+        goal: &[f64],
+        route: SpatialBoundaryDualPlan,
+        w: &mut SpatialCompactWork,
+    ) -> CoreResult<()> {
+        let p = self.dual.prepare(goal, &self.times[..=self.cells], route)?;
+        w.adjoint_actions += p.actions;
+        w.dual_cache_hit = p.cache_hit && w.adjoint_actions == 0;
+        w.stationary_used = p.stationary;
+        w.stationary_residual = p.stationary_residual;
+        Ok(())
+    }
+    /// Explicitly evict only the prepared dual key (used in cold comparisons).
+    pub fn clear_dual_cache(&mut self) {
+        self.dual.invalidate();
+    }
+    fn repartition_pilot(
+        &mut self,
+        budget: f64,
+        goal: &[f64],
+        route: SpatialBoundaryDualPlan,
+        w: &mut SpatialCompactWork,
+    ) -> CoreResult<()> {
+        if self.cells < 2 {
+            return Ok(());
+        }
+        let old = self.cells;
+        let mut index = [0usize; 9];
+        let mut count = 0;
+        index[0] = 0;
+        let mag = self.defects[..old]
+            .iter()
+            .map(|x| x.mag())
+            .fold(0., f64::max);
+        let target = budget / (2. * old as f64);
+        let mut i = 0;
+        while i < old {
+            let begin = self.pilot_indices[i];
+            let end = self.pilot_indices[i + 1];
+            if i + 1 < old
+                && self.defects[i].mag() + self.defects[i + 1].mag() <= target
+                && old - w.merges > 2
+            {
+                count += 1;
+                index[count] = self.pilot_indices[i + 2];
+                w.merges += 1;
+                i += 2;
+                continue;
+            }
+            if end - begin >= 2
+                && self.defects[i].mag() > target
+                && self.defects[i].mag() >= 0.5 * mag
+                && count + old - i < 8
+            {
+                count += 1;
+                index[count] = begin + (end - begin) / 2;
+                w.splits += 1;
+            }
+            count += 1;
+            index[count] = end;
+            i += 1;
+        }
+        if w.splits == 0 && w.merges == 0 {
+            return Ok(());
+        }
+        let n = self.primal.n;
+        self.cells = count;
+        self.valid_cells = count;
+        w.cells = count;
+        self.pilot_indices = index;
+        for i in 0..=count {
+            let j = index[i];
+            self.times[i] = self.capture.times()[j];
+            self.states[i * n..(i + 1) * n].copy_from_slice(self.capture.state(j).unwrap());
+            if i > 0 {
+                self.steps[i - 1] = j - index[i - 1];
+            }
+        }
+        self.prepare_boundary(goal, route, w)?;
+        self.project_suffix(0, w)
+    }
+    fn model_proposal(
+        &self,
+        policy: SpatialCompactPolicy,
+        w: &mut SpatialCompactWork,
+    ) -> Option<[u64; 8]> {
+        use rodas5p_integrators::global_budget::{
+            AllocationBlock, AllocationLimits, allocate_small_work_into,
+        };
+        let order = match policy.refinement {
+            SpatialCompactRefinement::Model1 => 1,
+            SpatialCompactRefinement::Model2 => 2,
+            SpatialCompactRefinement::Model4 | SpatialCompactRefinement::Model4Fallback => 4,
+            _ => return None,
+        };
+        w.model_calls += 1;
+        let mut blocks = [AllocationBlock {
+            error_coefficient: 0.,
+            step_cost_upper: 1.,
+        }; 8];
+        for i in 0..self.cells {
+            blocks[i] = AllocationBlock {
+                error_coefficient: self.defects[i].mag(),
+                step_cost_upper: self.steps[i].max(1) as f64,
+            };
+        }
+        let mut counts = [1; 8];
+        let budget = 0.5 * policy.budget;
+        let limits = AllocationLimits {
+            max_steps_per_block: 4096,
+            max_total_steps: 32768,
+            max_refinements: 16,
+        };
+        match allocate_small_work_into(
+            &blocks[..self.cells],
+            order,
+            budget,
+            limits,
+            &mut counts[..self.cells],
+        ) {
+            Ok(r) => {
+                w.model_order = order;
+                w.model_cells = self.cells;
+                w.model_budget = budget;
+                for i in 0..8 {
+                    w.model_coeff[i] = blocks[i].error_coefficient;
+                    w.model_cost[i] = blocks[i].step_cost_upper;
+                }
+                w.model_counts = counts;
+                w.model_error_upper = r.error_upper;
+                w.model_work_upper = r.work_upper;
+                Some(counts)
+            }
+            Err(_) => {
+                w.model_refusals += 1;
+                None
+            }
+        }
+    }
+    fn fallback(
+        &mut self,
+        initial: &[f64],
+        goal: &[f64],
+        base: &AdaptiveStepConfig,
+        policy: SpatialCompactPolicy,
+        signed: Iv,
+        w: &mut SpatialCompactWork,
+    ) -> CoreResult<bool> {
+        let n = self.primal.n;
+        let duration = self.primal.duration;
+        let min = self.scales[..self.cells].iter().copied().fold(1., f64::min);
+        let scale = (min * (0.25 * policy.budget / signed.mag()).clamp(0.015625, 0.25))
+            .max(policy.min_scale);
+        w.global_fallbacks += 1;
+        w.replay_rounds += 1;
+        w.completed = false;
+        w.signed_goal_error = None;
+        w.max_signed_error_upper = f64::MAX;
+        self.last_receipt = None;
+        // No stale macro diagnostics survive the global retry.
+        self.cells = 1;
+        w.cells = 1;
+        self.valid_cells = 0;
+        self.times[0] = 0.;
+        self.times[1] = duration;
+        self.scales[0] = scale;
+        self.states[..n].copy_from_slice(initial);
+        self.primal.centered.copy_from_slice(initial);
+        if !self.pilot_times.is_empty() {
+            self.pilot_indices[1] = self.pilot_times.len() - 1;
+        }
+        self.prepare_boundary(goal, policy.dual, w)?;
+        self.project_suffix(0, w)?;
+        if !self.native(0., duration, scale, base, w, true)? {
+            return Ok(false);
+        }
+        self.states[n..2 * n].copy_from_slice(self.capture.state(self.capture.len()).unwrap());
+        self.valid_cells = 1;
+        self.steps[0] = self.capture.len();
+        self.project_suffix(1, w)?;
+        Ok(true)
+    }
     /// Preserve prefix states exactly; any modified cell forces suffix replay.
     /// The directed common-anchor terminal difference, not the proposal,
     /// determines acceptance. Caller output stays unchanged on refusal.
@@ -1282,14 +1492,13 @@ impl SpatialCompactReplayWorkspace {
             }
             self.valid_cells = self.cells;
         }
-        let prep = self
-            .dual
-            .prepare(goal, &self.times[..=self.cells], policy.dual)?;
-        w.adjoint_actions = prep.actions;
-        w.dual_cache_hit = prep.cache_hit;
-        w.stationary_used = prep.stationary;
-        w.stationary_residual = prep.stationary_residual;
+        self.prepare_boundary(goal, policy.dual, &mut w)?;
         self.project_suffix(0, &mut w)?;
+        if policy.partition == SpatialCompactPartition::DefectAdaptive
+            && self.projections[0].sub(self.projections[self.cells])?.mag() > policy.budget
+        {
+            self.repartition_pilot(policy.budget, goal, policy.dual, &mut w)?;
+        }
         self.has_initial = true;
         for round in 0..=policy.max_replays {
             let r = self.dual.receipt(
@@ -1311,6 +1520,15 @@ impl SpatialCompactReplayWorkspace {
             if round == policy.max_replays {
                 break;
             }
+            if policy.refinement == SpatialCompactRefinement::Model4Fallback
+                && round + 1 == policy.max_replays
+            {
+                if !self.fallback(initial, goal, base, policy, signed, &mut w)? {
+                    break;
+                }
+                continue;
+            }
+            let model = self.model_proposal(policy, &mut w);
             let mut best = None;
             let mut best_score = -1.;
             for i in 0..self.cells {
@@ -1346,13 +1564,24 @@ impl SpatialCompactReplayWorkspace {
                     SpatialCompactRefinement::MultiCost => {
                         i == best || mag > target && mag >= 0.125 * self.defects[best].mag()
                     }
+                    _ => model.map_or(i == best || mag > target, |counts| {
+                        counts[i] > 1 || i == best
+                    }),
                 };
                 if !chosen {
                     continue;
                 }
-                let factor = match policy.refinement {
-                    SpatialCompactRefinement::Single | SpatialCompactRefinement::Uniform => 0.25,
-                    _ => (0.5 * target / mag.max(f64::MIN_POSITIVE)).clamp(0.015625, 0.25),
+                let factor = if let Some(counts) = model {
+                    (counts[i] as f64)
+                        .powi(-(w.model_order as i32))
+                        .clamp(0.00390625, 0.5)
+                } else {
+                    match policy.refinement {
+                        SpatialCompactRefinement::Single | SpatialCompactRefinement::Uniform => {
+                            0.25
+                        }
+                        _ => (0.5 * target / mag.max(f64::MIN_POSITIVE)).clamp(0.015625, 0.25),
+                    }
                 };
                 let next = (self.scales[i] * factor).max(policy.min_scale);
                 if next < self.scales[i] {
