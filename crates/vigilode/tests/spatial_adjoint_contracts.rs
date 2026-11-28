@@ -5804,3 +5804,63 @@ fn sparse_checkpoint_generic_ode_portfolio() {
         }
     }
 }
+
+#[test]
+fn virtual_terminal_small_pool_contract() {
+    use rodas5p_integrators::AdaptiveStepConfig;
+    use rodas5p_integrators::FastCheckpointDensity as C;
+    use vigilode::spatial::{
+        SpatialAdjointWork, SpatialBoundaryDualPlan as D, SpatialBoundaryPoolPolicy as E,
+        SpatialCompactPartition as P, SpatialCompactPolicy as Policy,
+        SpatialCompactRefinement as R, SpatialCompactReplayWorkspace as W,
+    };
+    let g = DiffusionGrid::sphere(16, 32, 1., 0.16).unwrap();
+    let n = g.dimension();
+    let mut u = vec![-16.; n];
+    u[n / 2] = -15.5;
+    let mut c: Vec<f64> = vec![0.; n];
+    c[0] = 0.5;
+    c[n / 2] = -0.25;
+    c[n - 1] = 0.125;
+    let base = AdaptiveStepConfig {
+        rtol: 1e-9,
+        atol: 1e-11,
+        initial_step: 0.001,
+        ..Default::default()
+    };
+    let p = Policy {
+        budget: 1e-10,
+        max_replays: 3,
+        min_scale: 1e-4,
+        partition: P::Accepted4,
+        dual: D::SubsetStationaryChain,
+        refinement: R::MultiCost,
+    };
+    let mut old = W::new_with_storage(&g, DURATION, 256, 1, 4).unwrap();
+    let mut w = W::new_with_density_policy(&g, DURATION, 256, C::Stride(1), 4, E::Lru).unwrap();
+    let mut out = vec![17.; n];
+    let mut rec = SpatialAdjointWork::default();
+    for _ in 0..2 {
+        let r = old
+            .solve_into(&u, &c, &base, p, &mut out, &mut rec)
+            .unwrap();
+        assert!(r.accepted);
+        assert!(r.adjoint_actions > 0);
+    }
+    let first = w.solve_into(&u, &c, &base, p, &mut out, &mut rec).unwrap();
+    assert!(first.accepted);
+    let previous = out.clone();
+    let bounds = rec.signed_goal_error;
+    let (r, a) = measure(|| w.solve_into(&u, &c, &base, p, &mut out, &mut rec));
+    let r = r.unwrap();
+    assert!(r.accepted);
+    assert_eq!(r.adjoint_actions, 0);
+    assert_eq!(r.boundary_built, 0);
+    assert_eq!(a.requests(), 0);
+    assert_eq!(out, previous);
+    assert_eq!(rec.signed_goal_error, bounds);
+    c[0] = c[0].next_up();
+    let (r, a) = measure(|| w.solve_into(&u, &c, &base, p, &mut out, &mut rec));
+    assert!(r.unwrap().adjoint_actions > 0);
+    assert_eq!(a.requests(), 0);
+}
