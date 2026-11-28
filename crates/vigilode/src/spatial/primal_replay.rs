@@ -125,6 +125,63 @@ impl Default for PairState {
         }
     }
 }
+// Forward-only native driver; compact replay does not allocate batch caches.
+struct SpatialForwardCore {
+    n: usize,
+    duration: f64,
+    problem: OdeProblem,
+    driver: ReusableFastClientWorkspace,
+    report: Arc<Mutex<SeparableReport>>,
+    report_template: SeparableReport,
+    schedule: OutputSchedule,
+    arena: FastFlatOutputArena,
+    atol: Vec<f64>,
+    centered: Vec<f64>,
+}
+impl SpatialForwardCore {
+    fn new(grid: &DiffusionGrid, duration: f64) -> CoreResult<Self> {
+        let n = grid.dimension();
+        if !duration.is_finite() || duration <= 0. {
+            return Err(err("forward duration"));
+        }
+        let g = grid.clone();
+        let j = grid.clone();
+        let problem = OdeProblem::new(
+            "represented spatial forward",
+            n,
+            Arc::new(move |_, u, o| {
+                g.apply(u, o, SpatialRows::Serial)
+                    .map_err(|e| err(&e.to_string()))
+            }),
+            None,
+            None,
+            Some(Arc::new(move |_, _, v, o| {
+                j.apply(v, o, SpatialRows::Serial)
+                    .map_err(|e| err(&e.to_string()))
+            })),
+            None,
+            true,
+            None,
+            None,
+        )?;
+        let stages = grid.separable_stages(0.).map_err(|e| err(&e.to_string()))?;
+        let report = Arc::new(Mutex::new(SeparableReport::default()));
+        let driver = ReusableFastClientWorkspace::new(stages.client(report.clone()))?;
+        let report_template = *report.lock().unwrap();
+        Ok(Self {
+            n,
+            duration,
+            problem,
+            driver,
+            report,
+            report_template,
+            schedule: OutputSchedule::new(vec![0., duration])?,
+            arena: FastFlatOutputArena::new(n, 2)?,
+            atol: vec![0.; n],
+            centered: vec![0.; n],
+        })
+    }
+}
 /// Fixed source, Fourier stage client, adjoint certificate and reusable storage.
 pub struct SpatialPrimalReplayWorkspace {
     n: usize,
@@ -160,30 +217,18 @@ impl SpatialPrimalReplayWorkspace {
         let size = n
             .checked_mul(capacity)
             .ok_or_else(|| err("batch dimension overflow"))?;
-        let g = grid.clone();
-        let j = grid.clone();
-        let problem = OdeProblem::new(
-            "represented spatial forward",
+        let SpatialForwardCore {
             n,
-            Arc::new(move |_, u, o| {
-                g.apply(u, o, SpatialRows::Serial)
-                    .map_err(|e| err(&e.to_string()))
-            }),
-            None,
-            None,
-            Some(Arc::new(move |_, _, v, o| {
-                j.apply(v, o, SpatialRows::Serial)
-                    .map_err(|e| err(&e.to_string()))
-            })),
-            None,
-            true,
-            None,
-            None,
-        )?;
-        let stages = grid.separable_stages(0.).map_err(|e| err(&e.to_string()))?;
-        let report = Arc::new(Mutex::new(SeparableReport::default()));
-        let driver = ReusableFastClientWorkspace::new(stages.client(report.clone()))?;
-        let report_template = *report.lock().unwrap();
+            duration,
+            problem,
+            driver,
+            report,
+            report_template,
+            schedule,
+            arena,
+            atol,
+            centered,
+        } = SpatialForwardCore::new(grid, duration)?;
         Ok(Self {
             n,
             capacity,
@@ -192,10 +237,10 @@ impl SpatialPrimalReplayWorkspace {
             driver,
             report,
             report_template,
-            schedule: OutputSchedule::new(vec![0., duration])?,
-            arena: FastFlatOutputArena::new(n, 2)?,
-            atol: vec![0.; n],
-            centered: vec![0.; n],
+            schedule,
+            arena,
+            atol,
+            centered,
             endpoints: vec![0.; size],
             receipts: vec![SpatialAdjointWork::default(); capacity],
             states: vec![PairState::default(); capacity],
@@ -963,7 +1008,7 @@ pub struct SpatialCompactWork {
 /// No full dense stage packets are retained: the integrated residual uses
 /// their exact endpoint identity, already established on the native method.
 pub struct SpatialCompactReplayWorkspace {
-    primal: SpatialPrimalReplayWorkspace,
+    primal: SpatialForwardCore,
     capture: rodas5p_integrators::FastCheckpointCapture,
     dual: super::adjoint::SpatialBoundaryDual,
     times: [f64; 9],
@@ -984,7 +1029,7 @@ impl SpatialCompactReplayWorkspace {
     /// Allocate fixed checkpoint and boundary storage.
     pub fn new(g: &DiffusionGrid, duration: f64, capacity: usize) -> CoreResult<Self> {
         let n = g.dimension();
-        let primal = SpatialPrimalReplayWorkspace::new(g, duration, 1)?;
+        let primal = SpatialForwardCore::new(g, duration)?;
         Ok(Self {
             primal,
             capture: rodas5p_integrators::FastCheckpointCapture::new(n, capacity)?,
