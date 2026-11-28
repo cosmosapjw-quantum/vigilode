@@ -1,0 +1,9 @@
+# M2.31 reproduce
+Frozen source and candidate design e143bcdf5083de6b6373357fa9a30323161de410, corrected independent oracle 3e823e2a1a5db6564a62879d80f0a90afa20a7ba. Original EXEC_INPUT_SHA256SUMS references old verifier; verify original bytes at exec SHA, other files unchanged, corrected verify.py via ORACLE_INPUT_SHA256SUMS. Rust 1.94.1, release locked offline, feature polynomial-events. CARGO_TARGET_DIR=$HOME/.cargo-targets/vigilode-stage-lattice-20261124/kschain.
+Run taskset -c 0 cargo test --locked --offline --release -p vigilode --features polynomial-events --test <bin> <name> -- --exact --nocapture --test-threads=1:
+- dae_secant_goal_contracts adaptive_block_parameter_contract -> parameter-contract.log
+- spatial_adjoint_contracts shared_spatial_adjoint_contract -> spatial-contract.log
+- dae_secant_goal_contracts parameter_covector_refusal_and_zero -> refusal.log
+- dae_secant_goal_contracts adaptive_block_actual_portfolio -> clock.log
+- spatial_adjoint_contracts shared_spatial_adjoint_actual_portfolio -> spatial.log
+Actual first four focused runs used release executables from build.log; spatial rerun used current cargo command after stale binary refusal. Regression on frozen source repeats all tests. Initial verifier 256-bit fixed point width refusal retained; corrected verify.py 1024-bit reference passes unchanged width gate. Run python3 research/m2_adaptive_block_parameter_20261128/verify.py; python3 research/m2_adaptive_block_parameter_20261128/guide.py select. Logs may be gzip. Candidate generation preceded execution checkpoint. No wall-clock comparison. Regression commands taskset -c 0 cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_secant_goal_contracts -- --test-threads=1 and same for spatial_adjoint_contracts. Read actual exit and RUN_MANIFEST.
