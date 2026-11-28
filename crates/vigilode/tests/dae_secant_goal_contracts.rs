@@ -2863,3 +2863,50 @@ fn parameter_covector_refusal_and_zero() {
         serde_json::json!({"late_block":true,"zero_p":true,"allocation":a})
     );
 }
+
+#[test]
+fn decay_and_verified_dense_contract() {
+    use de::{ClockTubePlan as CP, PolynomialClockRoute as C, TriangularGoalRoute as T};
+    use rodas5p_integrators::OutputSchedule;
+    let (src, x, z, b, c) = polynomial_fixture(&[[1., 0.5, 0.]], &[[0.75, 0.375, 0.]]);
+    let (opts, policy, route, retention) = weighted_settings();
+    let (r, _) = evolve_epoch_slab_replay_planned(
+        &src,
+        &x,
+        &z,
+        &b,
+        EvolutionEpoch {
+            start: 0.,
+            end: 0.5,
+            incoming_x_error: Some(0.),
+        },
+        &opts,
+        policy,
+        route,
+        &[],
+        retention,
+        SlabReplayRoute::ClockWeighted(CP::BlockSplitDecay4),
+        EnginePlan::SharedFused,
+    );
+    let r = r.unwrap();
+    assert!(r.global_qualified());
+    let sched = OutputSchedule::new(vec![0., 0.01, 0.02, 0.125, 0.5]).unwrap();
+    let mut w = r
+        .verified_clock_dense_workspace(&sched, C::Termwise, T::TinyRootReduced)
+        .unwrap();
+    let (v, a) = measure(|| r.replay_verified_clock_dense_into(&mut w));
+    assert!(v.is_ok());
+    assert_eq!(a.requests(), 0);
+    let (t, y, rad) = w.view();
+    assert_eq!(t, sched.times());
+    assert_eq!(y.len(), 5);
+    assert_eq!(rad.len(), 5);
+    assert_eq!(
+        y.last().unwrap(),
+        r.accepted(r.accepted_len() - 1).unwrap().state()
+    );
+    let m = 0.5625;
+    let d = 1. + 0.25 * m;
+    assert!((y[4][0] - 0.25 / d).abs() <= rad[4][0] + 1e-16);
+    assert_eq!(c.len(), 4);
+}
