@@ -15,12 +15,26 @@ pub enum ClockTubePlan {
     BlockAdaptiveMean,
     BlockAdaptiveHybrid,
     BlockSplit,
+    BlockSplitDecay1,
+    BlockSplitDecay4,
+    BlockSplitRational4,
 }
 impl ClockTubePlan {
     fn block(self) -> bool {
         matches!(
             self,
-            Self::BlockAdaptiveMean | Self::BlockAdaptiveHybrid | Self::BlockSplit
+            Self::BlockAdaptiveMean
+                | Self::BlockAdaptiveHybrid
+                | Self::BlockSplit
+                | Self::BlockSplitDecay1
+                | Self::BlockSplitDecay4
+                | Self::BlockSplitRational4
+        )
+    }
+    fn decay(self) -> bool {
+        matches!(
+            self,
+            Self::BlockSplitDecay1 | Self::BlockSplitDecay4 | Self::BlockSplitRational4
         )
     }
     fn weight(self) -> f64 {
@@ -135,6 +149,53 @@ fn bound(a: &ScratchPoly, plan: ClockTubePlan) -> CoreResult<f64> {
         Ok(b)
     }
 }
+// Exact represented dyadic subcells. Residual polynomials are in normalized
+// slab time, so their absolute integrals acquire only the subcell width.
+fn restrict_poly(a: &ScratchPoly, left: f64, width: f64) -> CoreResult<ScratchPoly> {
+    let mut coeff = a.slice().iter().rev();
+    let mut v = ScratchPoly::new(&[*coeff.next().ok_or_else(|| bad("empty decay residual"))?])?;
+    let t = [p(left)?, p(width)?];
+    for &c in coeff {
+        v = v.mul(&t)?.add(&[c])?;
+    }
+    Ok(v)
+}
+fn subcell_integral(a: &ScratchPoly, left: f64, width: f64, h: Iv) -> CoreResult<Iv> {
+    let a = restrict_poly(a, left, width)?;
+    let mut m = zero();
+    for (i, &v) in a.slice().iter().enumerate() {
+        m = m.add(v.div(p((i + 1) as f64)?)?)?;
+    }
+    super::triangular_goal::positive(m.scale(width)?.mul(h)?)
+}
+// P>=0 and beta<=p_exact+p_hat. For a cell,
+// E_p(end)<=exp(-beta*M)*E_in+R, E_p(prefix)<=E_in+R.
+// Integral P*|e_p| <= (E_in+R)*phi_beta(M).
+fn decay_factors(beta: f64, m: Iv, rational: bool) -> CoreResult<(f64, f64)> {
+    use rodas5p_core::{
+        directed::{mul_down, sub_up},
+        polynomial_action::exp_neg_enclosure,
+    };
+    if beta == 0. || m.hi == 0. {
+        return Ok((1., m.hi));
+    }
+    let z = mul_down(beta, m.lo)?.max(0.);
+    let decay = if rational {
+        p(1.)?.div(p(1.)?.add(p(z)?)?)?.hi.min(1.)
+    } else {
+        exp_neg_enclosure(z.min(700.))?.hi.min(1.)
+    };
+    let zhi = mul_up(beta, m.hi)?;
+    let mut phi = m.hi;
+    // Avoid reciprocal overflow and cancellation at vanishing damping.
+    if zhi > 1. {
+        phi = phi.min(div_up(1., beta)?);
+    }
+    if !rational && zhi >= 2f64.powi(-20) && zhi <= 700. {
+        phi = phi.min(div_up(sub_up(1., exp_neg_enclosure(zhi)?.lo)?, beta)?);
+    }
+    Ok((decay, phi))
+}
 // Fixed-capacity per-block carry. A changing norm is converted at the
 // seam, never silently reinterpreted. Split carries two component radii.
 #[derive(Clone, Copy)]
@@ -197,6 +258,7 @@ impl BlockCarry {
         }
         let mut next = *self;
         let mut physical = 0_f64;
+        let mut endpoint_physical = 0_f64;
         let mut max_weight = 1_f64;
         let mut min_p = f64::INFINITY;
         let mut seam_max = 0_f64;
@@ -224,10 +286,73 @@ impl BlockCarry {
             let b = ClockPolynomial::normalized(c.b, times[0], h)?;
             let rp = derivative(&pp)?.add(a.mul(pp.slice())?.mul(pp.slice())?.scale(h)?.slice())?;
             let rq = derivative(&q)?.add(b.mul(pp.slice())?.scale(h.scale(-1.)?)?.slice())?;
-            let rp = bound(&rp, plan)?;
-            let rq = bound(&rq, plan)?;
             let sp = self.previous[i].sub(pp.a[0])?.mag();
             let sq = self.previous[i + 1].sub(q.a[0])?.mag();
+            if plan.decay() {
+                let beta = rodas5p_core::directed::add_down(exact_lower, approx_lower)?;
+                if beta < 0. {
+                    return Err(bad("block decay dissipativity not proved"));
+                }
+                let cells = if plan == ClockTubePlan::BlockSplitDecay1 {
+                    1
+                } else {
+                    4
+                };
+                let width = 1. / cells as f64;
+                let mut ep = add_up(self.radius[j], sp)?;
+                let mut eq = add_up(self.q_radius[j], sq)?;
+                let mut peak = if self.coupled {
+                    add_up(ep, eq)?
+                } else {
+                    ep.max(eq)
+                };
+                let mut residual = 0.;
+                for k in 0..cells {
+                    let left = k as f64 * width;
+                    let pr = if cells == 1 {
+                        bound(&rp, plan)?
+                    } else {
+                        mul_up(width, bound(&restrict_poly(&rp, left, width)?, plan)?)?
+                    };
+                    let qr = if cells == 1 {
+                        bound(&rq, plan)?
+                    } else {
+                        mul_up(width, bound(&restrict_poly(&rq, left, width)?, plan)?)?
+                    };
+                    let mass = if cells == 1 {
+                        c.measure(times[0], times[1], super::PolynomialClockRoute::Factored)?
+                    } else {
+                        subcell_integral(&a, left, width, h)?
+                    };
+                    let (decay, phi) =
+                        decay_factors(beta, mass, plan == ClockTubePlan::BlockSplitRational4)?;
+                    let epeak = add_up(ep, pr)?;
+                    let drift = mul_up(mul_up(c.ratio.mag(), phi)?, epeak)?;
+                    eq = add_up(add_up(eq, qr)?, drift)?;
+                    peak = peak.max(if self.coupled {
+                        add_up(epeak, eq)?
+                    } else {
+                        epeak.max(eq)
+                    });
+                    ep = epeak.min(add_up(mul_up(decay, ep)?, pr)?);
+                    residual = add_up(residual, add_up(add_up(pr, qr)?, drift)?)?;
+                }
+                next.radius[j] = ep;
+                next.q_radius[j] = eq;
+                endpoint_physical = endpoint_physical.max(if self.coupled {
+                    add_up(ep, eq)?
+                } else {
+                    ep.max(eq)
+                });
+                physical = physical.max(peak);
+                seam_max = seam_max.max(add_up(sp, sq)?);
+                res_max = res_max.max(residual);
+                next.previous[i] = eval(pp.slice(), p(1.)?)?;
+                next.previous[i + 1] = eval(q.slice(), p(1.)?)?;
+                continue;
+            }
+            let rp = bound(&rp, plan)?;
+            let rq = bound(&rq, plan)?;
             if plan == ClockTubePlan::BlockSplit {
                 // e_p'=-P(p_exact+p_hat)e_p-r_p. Its scalar log norm
                 // is nonpositive if both trajectories' sum is nonnegative.
@@ -271,10 +396,13 @@ impl BlockCarry {
             next.previous[i] = eval(pp.slice(), p(1.)?)?;
             next.previous[i + 1] = eval(q.slice(), p(1.)?)?;
         }
+        if !plan.decay() {
+            endpoint_physical = physical;
+        }
         let ez = add_up(out.algebraic_defect, mul_up(out.zx_norm_upper, physical)?)?;
         let qualified = physical < tube;
         out.incoming = incoming;
-        out.outgoing = Some(physical);
+        out.outgoing = Some(endpoint_physical);
         out.whole_x_error = Some(physical);
         out.whole_z_error = Some(ez);
         out.green_used = false;
@@ -291,7 +419,7 @@ impl BlockCarry {
             seam: seam_max,
             residual_integral_upper: res_max,
             incoming,
-            outgoing: physical,
+            outgoing: endpoint_physical,
         })
     }
 }

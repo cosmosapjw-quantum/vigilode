@@ -151,6 +151,109 @@ impl SlabReplayRun {
             goal,
         )
     }
+    /// Construct a reusable, source-bound physical dense output sampler.
+    pub fn verified_clock_dense_workspace<'a>(
+        &'a self,
+        schedule: &rodas5p_integrators::OutputSchedule,
+        measure: de::PolynomialClockRoute,
+        log: de::TriangularGoalRoute,
+    ) -> CoreResult<de::ClockDenseSampler<'a>> {
+        let dim = self.initial().x.len() * 2;
+        if dim > 32 {
+            return Err(bad("clock dense capacity"));
+        }
+        let e = self.adjoint_admission(&[0.; 32][..dim])?;
+        let initial = self.initial();
+        let start = self
+            .accepted(0)
+            .ok_or_else(|| bad("clock dense initial endpoint"))?;
+        let end = self
+            .accepted(self.accepted_len().saturating_sub(1))
+            .ok_or_else(|| bad("clock dense terminal endpoint"))?;
+        let nx = e.src.nx();
+        if !initial.qualified
+            || initial.x.len() != nx
+            || start.state().len() != dim
+            || start.state()[..nx] != initial.x[..]
+            || start.t() != initial.t
+            || self.driver().t.last() != Some(&end.t())
+            || self.accepted_len() != self.slabs_len() + 1
+        {
+            return Err(bad("clock dense retained endpoint authority"));
+        }
+        de::ClockDenseSampler::new(
+            &e.src,
+            (start.t(), end.t()),
+            &initial.x,
+            start.state(),
+            schedule,
+            measure,
+            log,
+        )
+    }
+    /// Replay actual retained coefficients and accepted physical endpoints;
+    /// no new primal integration. All staging buffers were allocated in new.
+    pub fn replay_verified_clock_dense_into(
+        &self,
+        w: &mut de::ClockDenseSampler<'_>,
+    ) -> CoreResult<de::ClockDenseWork> {
+        let dim = self.initial().x.len() * 2;
+        if dim > 32 {
+            return Err(bad("clock dense capacity"));
+        }
+        let e = self.adjoint_admission(&[0.; 32][..dim])?;
+        let initial = self.initial();
+        let start = self.accepted(0).ok_or_else(|| bad("clock dense start"))?;
+        let end = self
+            .accepted(self.accepted_len().saturating_sub(1))
+            .ok_or_else(|| bad("clock dense end"))?;
+        if !w.matches(&e.src, (start.t(), end.t()), &initial.x, start.state())
+            || self.accepted_len() != self.slabs_len() + 1
+        {
+            return Err(bad("clock dense source identity"));
+        }
+        w.reset()?;
+        let mut rows = [[Iv { lo: 0., hi: 0. }; 5]; 32];
+        for k in 0..self.slabs_len() {
+            let s = self.slab(k)?;
+            if !s.certificate.as_ref().is_some_and(|c| *c.global_qualified) {
+                return Err(bad("clock dense unqualified slab"));
+            }
+            match s.power {
+                RetainedPowerRows::Flat(a) => {
+                    if a.len() != dim {
+                        return Err(bad("clock dense power shape"));
+                    }
+                    for (i, r) in a.iter().enumerate() {
+                        for (j, p) in r.iter().enumerate() {
+                            rows[i][j] = Iv::new(p[0], p[1])?;
+                        }
+                    }
+                }
+                RetainedPowerRows::Owned(a) => {
+                    if a.len() != dim || a.iter().any(|r| r.len() != 5) {
+                        return Err(bad("clock dense power shape"));
+                    }
+                    for (i, r) in a.iter().enumerate() {
+                        for (j, p) in r.iter().enumerate() {
+                            rows[i][j] = Iv::new(p[0], p[1])?;
+                        }
+                    }
+                }
+            }
+            let q = self
+                .accepted(k + 1)
+                .ok_or_else(|| bad("clock dense endpoint"))?;
+            if q.t() != s.times[1] {
+                return Err(bad("clock dense endpoint time"));
+            }
+            w.advance(s.times, &rows[..dim], q.state())?;
+        }
+        if !w.complete() {
+            return Err(bad("clock dense incomplete"));
+        }
+        Ok(w.work())
+    }
     /// Exact parameter covector in the common-rate family, with original physical admission.
     pub fn polynomial_parameter_covector_into(
         &self,

@@ -3270,3 +3270,188 @@ fn centered_batch_adjoint_contract() {
     assert_eq!(grad, old);
     assert_eq!(rec[0].signed_goal_error, old_rec);
 }
+
+#[test]
+fn centered_batch_actual_portfolio() {
+    use rodas5p_integrators::{
+        AdaptiveStepConfig, FastArenaPlan, FastFlatOutputArena, OutputSchedule,
+    };
+    use vigilode::spatial::{
+        ResidualPlan, SpatialAdjointBatchWorkspace as B, SpatialAdjointDriverWorkspace as W,
+        SpatialAdjointRoute as R, SpatialBatchPlan as P,
+    };
+    let opts = Options {
+        rtol: 1e-9,
+        atol: Atol::Scalar(1e-11),
+        h0: 0.001,
+        dense_output: false,
+        ..Default::default()
+    };
+    let adaptive = AdaptiveStepConfig {
+        rtol: 1e-9,
+        atol: 1e-11,
+        initial_step: 0.001,
+        max_attempts: 4096,
+        ..Default::default()
+    };
+    let grids = [
+        (
+            "box2_small",
+            DiffusionGrid::periodic_box([8, 4], [8., 4.], [0.125, 0.25]).unwrap(),
+        ),
+        (
+            "box3_small",
+            DiffusionGrid::periodic_box([4, 4, 4], [4., 4., 4.], [0.125, 0.25, 0.0625]).unwrap(),
+        ),
+        ("sphere_odd", DiffusionGrid::sphere(5, 9, 1., 0.64).unwrap()),
+        ("sphere128", DiffusionGrid::sphere(8, 16, 1., 0.64).unwrap()),
+        (
+            "sphere512",
+            DiffusionGrid::sphere(16, 32, 1., 0.16).unwrap(),
+        ),
+    ];
+    for (case, g) in grids {
+        let n = g.dimension();
+        let problem = g.problem(SpatialRows::Serial);
+        let mut initial = vec![];
+        let mut endpoint = vec![];
+        for trial in 0..4 {
+            let u = match trial {
+                0 => vec![32.; n],
+                1 => vec![-16.; n],
+                2 => (0..n)
+                    .map(|i| 32. + ((17 * i % 29) as f64 - 14.) / 1024.)
+                    .collect(),
+                _ => (0..n)
+                    .map(|i| if i == n / 2 { -15.5 } else { -16. })
+                    .collect(),
+            };
+            let r = native(&g, &problem, &u, &opts, NativeRoute::Paired, false);
+            initial.extend(u);
+            endpoint.extend(r.values);
+        }
+        println!(
+            "CENTER_GRID {}",
+            serde_json::json!({"case":case,"n":n,"duration":DURATION,"rows":(0..n).map(|i|g.represented_row(i).unwrap()).collect::<Vec<_>>(),"initial":initial,"endpoint":endpoint})
+        );
+        let mut w = B::new(&g, 4).unwrap();
+        let mut native_w = W::new(&g, (0., DURATION), ResidualPlan::RingLocalHybrid).unwrap();
+        let schedule = OutputSchedule::new(vec![0., DURATION / 2., DURATION]).unwrap();
+        let mut arena = FastFlatOutputArena::new(n, 3).unwrap();
+        let mut gradient = vec![Iv::point(0.).unwrap(); n];
+        for goal_name in ["mass", "local"] {
+            let c = if goal_name == "mass" {
+                (0..n)
+                    .map(|i| g.cell_measure(i).unwrap())
+                    .collect::<Vec<_>>()
+            } else {
+                let mut c = vec![0.; n];
+                c[0] = 0.5;
+                c[n / 2] = -0.25;
+                c[n - 1] = 0.125;
+                c
+            };
+            native_w
+                .solve_flat_into(&c, &adaptive, &schedule, FastArenaPlan::Legacy, &mut arena)
+                .unwrap();
+            let ((adj, nw), alloc) = measure(|| {
+                native_w
+                    .solve_flat_into(&c, &adaptive, &schedule, FastArenaPlan::Legacy, &mut arena)
+                    .unwrap()
+            });
+            assert!(adj.receipt.success);
+            assert_eq!(alloc.requests(), 0);
+            println!(
+                "CENTER_NATIVE {}",
+                serde_json::json!({"case":case,"goal":goal_name,"weights":c,"times":adj.times,"values":adj.states,"allocation":alloc,"counters":adj.receipt.counters,"work":nw})
+            );
+            for route in [R::ModeResidual, R::PoissonWideDecay] {
+                for k in [2, 4] {
+                    let mut old = None;
+                    for candidate in [P::SharedL1, P::SharedCentered, P::SharedCenteredIntersect] {
+                        let mut receipts =
+                            vec![vigilode::spatial::SpatialAdjointWork::default(); k];
+                        let (v, a) = measure(|| {
+                            w.certify_batch_into(
+                                &c,
+                                &initial[..k * n],
+                                &endpoint[..k * n],
+                                DURATION,
+                                route,
+                                candidate,
+                                &mut gradient,
+                                &mut receipts,
+                            )
+                        });
+                        let work = v.unwrap();
+                        assert_eq!(a.requests(), 0);
+                        if candidate == P::SharedL1 {
+                            old = Some((gradient.clone(), receipts.clone()));
+                        } else {
+                            let (grad, prev) = old.as_ref().unwrap();
+                            assert_eq!(&gradient, grad);
+                            if candidate == P::SharedCenteredIntersect {
+                                for (p, q) in prev.iter().zip(&receipts) {
+                                    assert!(
+                                        q.exact_goal[0] >= p.exact_goal[0]
+                                            && q.exact_goal[1] <= p.exact_goal[1]
+                                    );
+                                }
+                            }
+                        }
+                        println!(
+                            "CENTER_BATCH {}",
+                            serde_json::json!({"case":case,"goal":goal_name,"route":route,"pairs":k,"candidate":candidate,"qualified":true,"allocation":a,"work":work,"gradient":gradient.iter().map(|x|x.as_pair()).collect::<Vec<_>>(),"receipts":receipts})
+                        );
+                        for budget in [1e-8, 1e-10] {
+                            let mut out = vec![vigilode::spatial::SpatialAdjointWork::default(); k];
+                            let mut grad = vec![Iv::point(17.).unwrap(); n];
+                            let (v, a) = measure(|| {
+                                w.certify_batch_budgeted_into(
+                                    &c,
+                                    &initial[..k * n],
+                                    &endpoint[..k * n],
+                                    DURATION,
+                                    route,
+                                    candidate,
+                                    budget,
+                                    &mut grad,
+                                    &mut out,
+                                )
+                            });
+                            let b = v.unwrap();
+                            assert_eq!(a.requests(), 0);
+                            assert_eq!(
+                                b.accepted_pairs,
+                                receipts
+                                    .iter()
+                                    .filter(|r| r
+                                        .signed_goal_error
+                                        .iter()
+                                        .all(|x| x.abs() <= budget))
+                                    .count()
+                            );
+                            assert_eq!(b.accepted, b.accepted_pairs == k);
+                            assert_eq!(b.work.actions, work.actions);
+                            if b.accepted {
+                                assert_eq!(grad, gradient);
+                                assert!(
+                                    out.iter()
+                                        .zip(&receipts)
+                                        .all(|(a, b)| a.signed_goal_error == b.signed_goal_error)
+                                );
+                            } else {
+                                assert!(grad.iter().all(|v| *v == Iv::point(17.).unwrap()));
+                                assert!(out.iter().all(|v| v.actions == 0));
+                            }
+                            println!(
+                                "CENTER_BUDGET {}",
+                                serde_json::json!({"case":case,"goal":goal_name,"route":route,"pairs":k,"candidate":candidate,"budget":budget,"qualified":b.accepted,"allocation":a,"work":b})
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

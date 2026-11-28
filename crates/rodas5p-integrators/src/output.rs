@@ -1015,6 +1015,32 @@ impl OutputCollector {
         Ok(self)
     }
 
+    // Reinitialize a previously allocated verified collector. No row growth.
+    pub(crate) fn reset_verified_prefix(
+        &mut self,
+        center: &[f64],
+        radius: &[f64],
+    ) -> CoreResult<()> {
+        if !self.verified_mode
+            || center.len() != self.states[0].len()
+            || radius.len() != center.len()
+            || center.iter().any(|v| !v.is_finite())
+            || radius.iter().any(|v| !v.is_finite() || *v < 0.)
+        {
+            return Err(CoreError::InvalidInput(
+                "verified output reset shape".into(),
+            ));
+        }
+        self.states[0].copy_from_slice(center);
+        self.radii[0].copy_from_slice(radius);
+        self.times[0] = self.schedule.times[0];
+        self.next_index = 1;
+        self.prepared_count = 0;
+        self.prepared_valid = false;
+        self.clipped_steps = 0;
+        Ok(())
+    }
+
     #[inline]
     pub(crate) fn limit_step(&self, t: f64, proposed_h: f64, tf: f64) -> CoreResult<(f64, bool)> {
         if !(t.is_finite() && proposed_h.is_finite() && proposed_h > 0.0 && tf.is_finite()) {

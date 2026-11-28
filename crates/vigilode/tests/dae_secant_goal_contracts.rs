@@ -2910,3 +2910,365 @@ fn decay_and_verified_dense_contract() {
     assert!((y[4][0] - 0.25 / d).abs() <= rad[4][0] + 1e-16);
     assert_eq!(c.len(), 4);
 }
+
+#[test]
+fn split_decay_dense_actual_portfolio() {
+    use de::{ClockTubePlan as CP, PolynomialClockRoute as C, TriangularGoalRoute as T};
+    use rodas5p_integrators::OutputSchedule;
+    let (opts, policy, route, retention) = weighted_settings();
+    let cases = [
+        (
+            "affine",
+            vec![[1., 0.5, 0.]],
+            vec![[0.75, 0.375, 0.]],
+            0.,
+            0.5,
+        ),
+        (
+            "quadratic",
+            vec![[0.25, 0.5, 0.125]],
+            vec![[-0.125, -0.25, -0.0625]],
+            0.125,
+            1.,
+        ),
+        (
+            "ratio_third",
+            vec![[3., 1.5, 0.75]],
+            vec![[1., 0.5, 0.25]],
+            0.125,
+            0.5,
+        ),
+        (
+            "long",
+            vec![[0.5, 0.5, 0.125]],
+            vec![[0.75, 0.75, 0.1875]],
+            0.,
+            2.,
+        ),
+        (
+            "block4",
+            vec![[0.25, 0.5, 0.125], [0.5, 0., 0.25]],
+            vec![[-0.125, -0.25, -0.0625], [0.75, 0., 0.375]],
+            0.125,
+            0.5,
+        ),
+        (
+            "zero_q",
+            vec![[0.25, 0.25, 0.125]],
+            vec![[0., 0., 0.]],
+            0.,
+            0.5,
+        ),
+        (
+            "coupled_clock",
+            vec![[0., 1., 0.]],
+            vec![[0., 1., 0.]],
+            0.,
+            1.,
+        ),
+        (
+            "holdout_block6",
+            vec![[1., 0.25, 0.125], [0.125, 0.5, 0.25], [0.5, 0., 0.25]],
+            vec![[0.25, 0.0625, 0.03125], [-0.25, -1., -0.5], [0., 0., 0.]],
+            0.25,
+            1.5,
+        ),
+        (
+            "zero_p",
+            vec![[1., 0.5, 0.]],
+            vec![[0.75, 0.375, 0.]],
+            0.,
+            0.5,
+        ),
+        (
+            "fast_rate",
+            vec![[32., 8., 2.]],
+            vec![[4., 1., 0.25]],
+            0.,
+            0.5,
+        ),
+    ];
+    for (case, a, b, start, end) in cases {
+        let (src, mut x, mut z, branch, c) = if case == "coupled_clock" {
+            coupled_clock_fixture()
+        } else {
+            polynomial_fixture(&a, &b)
+        };
+        if case == "zero_p" {
+            x[0] = 0.;
+            z[0] = 0.;
+        }
+        let epoch = EvolutionEpoch {
+            start,
+            end,
+            incoming_x_error: Some(0.),
+        };
+        let call = |replay| {
+            evolve_epoch_slab_replay_planned(
+                &src,
+                &x,
+                &z,
+                &branch,
+                epoch,
+                &opts,
+                policy,
+                route,
+                &[],
+                retention,
+                replay,
+                EnginePlan::SharedFused,
+            )
+        };
+        let ((flat, audit), alloc) = measure(|| call(SlabReplayRoute::Flat));
+        let flat = flat.unwrap();
+        let term = flat.accepted(flat.accepted_len() - 1).unwrap();
+        println!(
+            "DECAY_RUN {}",
+            serde_json::json!({"case":case,"candidate":"Flat","qualified":flat.global_qualified(),"rhs":audit.stats.as_ref().unwrap().counters.rhs_calls,"allocation":alloc,"terminal":term.state(),"terminal_bound":term.physical_error_upper(),"a":a,"b":b,"initial":x,"start":start,"end":end,"weights":c,"whole_bound":flat.max_physical_error()})
+        );
+        let mut retained = None;
+        for candidate in [
+            CP::BlockSplit,
+            CP::BlockSplitDecay1,
+            CP::BlockSplitDecay4,
+            CP::BlockSplitRational4,
+        ] {
+            let ((r, audit), alloc) = measure(|| call(SlabReplayRoute::ClockWeighted(candidate)));
+            let r = r.unwrap();
+            assert_eq!(r.driver().t, flat.driver().t);
+            assert_eq!(r.driver().y, flat.driver().y);
+            let mut carry = de::ClockTubeCarry::new(&src, candidate, start, &x, Some(0.)).unwrap();
+            let mut scratch = de::SlabCertificateWorkspace::new();
+            let mut out = de::SlabCertificate::workspace_output(x.len(), x.len()).unwrap();
+            let mut good = 0;
+            for k in 0..flat.slabs_len() {
+                let sl = flat.slab(k).unwrap();
+                let rows: Vec<Vec<Iv>> = match sl.power {
+                    RetainedPowerRows::Owned(a) => a
+                        .iter()
+                        .map(|r| r.iter().map(|p| Iv::new(p[0], p[1]).unwrap()).collect())
+                        .collect(),
+                    RetainedPowerRows::Flat(a) => a
+                        .iter()
+                        .map(|r| r.iter().map(|p| Iv::new(p[0], p[1]).unwrap()).collect())
+                        .collect(),
+                };
+                let (v, allocation) = measure(|| {
+                    carry.certify_into(
+                        sl.times,
+                        &rows,
+                        &branch,
+                        policy.tube_radius,
+                        policy.green,
+                        policy.init.condition_cap,
+                        de::SlabWorkspaceRoute::Refined,
+                        &mut scratch,
+                        &mut out,
+                    )
+                });
+                let actual = r.slab(k).unwrap();
+                match v {
+                    Ok(work) => {
+                        let ac = actual.certificate.as_ref().unwrap();
+                        assert_eq!(out.global_qualified, *ac.global_qualified);
+                        assert_eq!(out.whole_x_error, *ac.whole_x_error);
+                        assert_eq!(out.outgoing, *ac.outgoing);
+                        if !out.global_qualified {
+                            break;
+                        }
+                        assert_eq!(allocation.requests(), 0);
+                        good += 1;
+                        assert!(out.outgoing.unwrap() <= out.whole_x_error.unwrap());
+                        println!(
+                            "DECAY_SLAB {}",
+                            serde_json::json!({"case":case,"candidate":candidate,"index":k,"times":sl.times,"power":rows.iter().map(|r|r.iter().map(|v|v.as_pair()).collect::<Vec<_>>()).collect::<Vec<_>>(),"work":work,"allocation":allocation,"x_error":out.whole_x_error,"z_error":out.whole_z_error,"outgoing":out.outgoing})
+                        );
+                    }
+                    Err(e) => {
+                        assert!(!out.global_qualified && out.whole_x_error.is_none());
+                        assert!(actual.certificate.is_none());
+                        println!(
+                            "DECAY_REFUSAL {}",
+                            serde_json::json!({"case":case,"candidate":candidate,"index":k,"reason":e.to_string()})
+                        );
+                        break;
+                    }
+                }
+            }
+            let term = r.accepted(r.accepted_len() - 1).unwrap();
+            println!(
+                "DECAY_RUN {}",
+                serde_json::json!({"case":case,"candidate":candidate,"qualified":r.global_qualified(),"rhs":audit.stats.as_ref().unwrap().counters.rhs_calls,"allocation":alloc,"terminal":term.state(),"terminal_bound":term.physical_error_upper(),"a":a,"b":b,"initial":x,"start":start,"end":end,"weights":c,"whole_bound":r.max_physical_error(),"qualified_slabs":good})
+            );
+            if r.global_qualified() && retained.is_none() {
+                retained = Some(r);
+            }
+        }
+        let r = retained.unwrap_or(flat);
+        assert!(r.global_qualified(), "{case} no qualified trajectory");
+        let mut ts = vec![start, end];
+        for k in 0..r.slabs_len() {
+            let [l, h] = r.slab(k).unwrap().times;
+            for t in [l + (h - l) * 0.25, l + (h - l) * 0.75, h] {
+                if t > l && t <= h {
+                    ts.push(t);
+                }
+            }
+        }
+        ts.sort_by(f64::total_cmp);
+        ts.dedup();
+        let sched = OutputSchedule::new(ts).unwrap();
+        let mut baseline = None;
+        for candidate in [C::Termwise, C::Factored, C::Intersection] {
+            for log in [T::TinyAdaptive, T::TinyRootReduced] {
+                let mut w = r
+                    .verified_clock_dense_workspace(&sched, candidate, log)
+                    .unwrap();
+                r.replay_verified_clock_dense_into(&mut w).unwrap(); // warm
+                let (v, allocation) = measure(|| r.replay_verified_clock_dense_into(&mut w));
+                let work = v.unwrap();
+                assert_eq!(allocation.requests(), 0);
+                let (ts, ys, rad) = w.view();
+                assert_eq!(ts, sched.times());
+                assert_eq!(work.requests, ts.len() - 1);
+                if let Some(ref old) = baseline {
+                    assert_eq!(ys, old);
+                } else {
+                    baseline = Some(ys.to_vec());
+                }
+                for k in 0..r.accepted_len() {
+                    let q = r.accepted(k).unwrap();
+                    let j = ts.binary_search_by(|t| t.total_cmp(&q.t())).unwrap();
+                    assert_eq!(ys[j], q.state());
+                }
+                println!(
+                    "CLOCK_DENSE {}",
+                    serde_json::json!({"case":case,"candidate":candidate,"log":log,"qualified":true,"allocation":allocation,"times":ts,"centers":ys,"radii":rad,"work":work})
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn verified_clock_dense_late_refusal() {
+    use de::{ClockDenseSampler, PolynomialClockRoute as C, TriangularGoalRoute as T};
+    use rodas5p_integrators::OutputSchedule;
+    let (src, x, z, _, _) = polynomial_fixture(&[[1., 0.5, 0.]], &[[0.75, 0.375, 0.]]);
+    let mut center = x.clone();
+    center.extend(z);
+    let sched = OutputSchedule::new(vec![0., 0.125, 0.875, 1.]).unwrap();
+    let mut w = ClockDenseSampler::new(
+        &src,
+        (0., 1.),
+        &x,
+        &center,
+        &sched,
+        C::Termwise,
+        T::TinyRootReduced,
+    )
+    .unwrap();
+    let mut rows = [[Iv::point(0.).unwrap(); 5]; 4];
+    rows[0][1] = Iv::point(f64::MAX).unwrap();
+    rows[0][2] = Iv::point(f64::MAX).unwrap();
+    assert!(w.advance([0., 1.], &rows, &center).is_err());
+    assert_eq!(w.view().0, &[0.]);
+    assert_eq!(w.view().1[0], center);
+    assert_eq!(w.work().requests, 0);
+    let rows = [[Iv::point(0.).unwrap(); 5]; 4];
+    let (r, a) = measure(|| w.advance([0., 1.], &rows, &center));
+    assert!(r.is_ok());
+    assert_eq!(a.requests(), 0);
+    assert!(w.complete());
+    assert_eq!(w.view().0, sched.times());
+    w.reset().unwrap();
+    assert_eq!(w.view().0, &[0.]);
+    println!(
+        "DENSE_REFUSAL {}",
+        serde_json::json!({"late_overflow":true,"unchanged_prefix":true,"retry_zeroheap":true,"reset":true})
+    );
+}
+
+#[test]
+fn decay_goal_budget_portfolio() {
+    let (opts, policy, route, retention) = weighted_settings();
+    for (case, a, b, start, end) in [
+        (
+            "long",
+            vec![[0.5, 0.5, 0.125]],
+            vec![[0.75, 0.75, 0.1875]],
+            0.,
+            2.,
+        ),
+        (
+            "block4",
+            vec![[0.25, 0.5, 0.125], [0.5, 0., 0.25]],
+            vec![[-0.125, -0.25, -0.0625], [0.75, 0., 0.375]],
+            0.125,
+            0.5,
+        ),
+        (
+            "zero_p",
+            vec![[1., 0.5, 0.]],
+            vec![[0.75, 0.375, 0.]],
+            0.,
+            0.5,
+        ),
+        (
+            "fast_rate",
+            vec![[32., 8., 2.]],
+            vec![[4., 1., 0.25]],
+            0.,
+            0.5,
+        ),
+    ] {
+        let (src, mut x, mut z, branch, c) = polynomial_fixture(&a, &b);
+        if case == "zero_p" {
+            x[0] = 0.;
+            z[0] = 0.;
+        }
+        let epoch = EvolutionEpoch {
+            start,
+            end,
+            incoming_x_error: Some(0.),
+        };
+        for absolute in [1e-8, 1e-10] {
+            let mut old = None;
+            for plan in [
+                GoalBudgetPlan::PolynomialBlockSplit,
+                GoalBudgetPlan::PolynomialBlockDecay1,
+                GoalBudgetPlan::PolynomialBlockDecay4,
+                GoalBudgetPlan::PolynomialBlockRational4,
+            ] {
+                let (r, alloc) = measure(|| {
+                    evolve_epoch_goal_budget(
+                        &src,
+                        &x,
+                        &z,
+                        &branch,
+                        epoch,
+                        &opts,
+                        policy,
+                        route,
+                        &[],
+                        retention,
+                        &c,
+                        GoalBudgetPolicy { absolute, plan },
+                    )
+                    .unwrap()
+                });
+                let last = r.attempts.last().unwrap();
+                let ident = (r.total_rhs(), r.total_steps());
+                if let Some(ref v) = old {
+                    assert_eq!(&ident, v);
+                } else {
+                    old = Some(ident);
+                }
+                println!(
+                    "DECAY_POLICY {}",
+                    serde_json::json!({"case":case,"candidate":plan,"absolute":absolute,"qualified":last.accepted,"attempt":last,"rhs":r.total_rhs(),"steps":r.total_steps(),"allocation":alloc})
+                );
+            }
+        }
+    }
+}

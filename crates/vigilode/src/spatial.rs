@@ -281,7 +281,7 @@ pub use portfolio::{EndpointRequest, adaptive_endpoint, adaptive_stage};
 mod adjoint;
 pub use adjoint::{
     SpatialAdjointBatchWorkspace, SpatialAdjointRoute, SpatialAdjointWork, SpatialAdjointWorkspace,
-    SpatialBatchPlan, SpatialBatchWork,
+    SpatialBatchBudgetWork, SpatialBatchPlan, SpatialBatchWork,
 };
 
 mod shifted_adjoint;

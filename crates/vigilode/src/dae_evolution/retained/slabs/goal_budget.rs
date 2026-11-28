@@ -28,6 +28,9 @@ pub enum GoalBudgetPlan {
     PolynomialBlockAdaptive,
     PolynomialBlockHybrid,
     PolynomialBlockSplit,
+    PolynomialBlockDecay1,
+    PolynomialBlockDecay4,
+    PolynomialBlockRational4,
 }
 impl GoalBudgetPlan {
     fn triangular(self) -> Option<de::TriangularGoalRoute> {
@@ -48,7 +51,11 @@ impl GoalBudgetPlan {
                 Some(Factored)
             }
             Self::PolynomialHybrid4 | Self::PolynomialBlockHybrid => Some(Intersection),
-            Self::PolynomialBlockAdaptive | Self::PolynomialBlockSplit => Some(Termwise),
+            Self::PolynomialBlockAdaptive
+            | Self::PolynomialBlockSplit
+            | Self::PolynomialBlockDecay1
+            | Self::PolynomialBlockDecay4
+            | Self::PolynomialBlockRational4 => Some(Termwise),
             _ => None,
         }
     }
@@ -60,6 +67,9 @@ impl GoalBudgetPlan {
             Self::PolynomialBlockAdaptive => Some(de::ClockTubePlan::BlockAdaptiveMean),
             Self::PolynomialBlockHybrid => Some(de::ClockTubePlan::BlockAdaptiveHybrid),
             Self::PolynomialBlockSplit => Some(de::ClockTubePlan::BlockSplit),
+            Self::PolynomialBlockDecay1 => Some(de::ClockTubePlan::BlockSplitDecay1),
+            Self::PolynomialBlockDecay4 => Some(de::ClockTubePlan::BlockSplitDecay4),
+            Self::PolynomialBlockRational4 => Some(de::ClockTubePlan::BlockSplitRational4),
             _ => None,
         }
     }

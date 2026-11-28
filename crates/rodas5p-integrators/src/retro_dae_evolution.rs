@@ -30,6 +30,8 @@ pub use polynomial_clock::{
     ParameterCovectorRoute, ParameterCovectorWork, PolynomialClockRoute, PolynomialClockWork,
     polynomial_clock_fused_into, polynomial_parameter_covector_into,
 };
+mod clock_dense;
+pub use clock_dense::{ClockDenseSampler, ClockDenseWork};
 mod clock_tube;
 pub use clock_tube::{ClockTubeCarry, ClockTubePlan, ClockTubeWork};
 mod scalar_adjoint_jet;

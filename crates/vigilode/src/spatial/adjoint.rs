@@ -438,6 +438,10 @@ pub enum SpatialBatchPlan {
     SharedL1,
     /// Dot the componentwise inflated covector with each initial state.
     SharedComponent,
+    /// Subtract the represented constant mode before applying the tail.
+    SharedCentered,
+    /// Intersect constant-mode and original single-tail goal certificates.
+    SharedCenteredIntersect,
 }
 #[derive(Clone, Copy, Debug, Default, Serialize)]
 /// Actual aggregate batch work, rather than the per-pair inherited receipt.
@@ -450,6 +454,18 @@ pub struct SpatialBatchWork {
     pub max_goal_width: f64,
     /// Largest initial covector component width.
     pub max_gradient_width: f64,
+}
+/// Signed budget gate, distinct from the existence of a valid enclosure.
+#[derive(Clone, Copy, Debug, Default, Serialize)]
+pub struct SpatialBatchBudgetWork {
+    /// Actual batch matrix work (including a refused budget).
+    pub work: SpatialBatchWork,
+    /// Count of pairs whose signed error magnitude is within the budget.
+    pub accepted_pairs: usize,
+    /// All pairs met the original signed absolute error budget.
+    pub accepted: bool,
+    /// Maximum signed error magnitude across pairs.
+    pub max_signed_error_upper: f64,
 }
 /// Source-owned reusable storage for a bounded batch.
 pub struct SpatialAdjointBatchWorkspace {
@@ -483,14 +499,83 @@ impl SpatialAdjointBatchWorkspace {
         gradient: &mut [Iv],
         out: &mut [SpatialAdjointWork],
     ) -> CoreResult<SpatialBatchWork> {
+        let work = self.compute_batch(
+            goal,
+            initial,
+            endpoint,
+            duration,
+            route,
+            plan,
+            gradient.len(),
+            out.len(),
+        )?;
+        gradient.copy_from_slice(&self.grad);
+        out.copy_from_slice(&self.receipts[..out.len()]);
+        Ok(work)
+    }
+    /// Accept only when every signed terminal goal error fits the given
+    /// absolute budget. Caller outputs remain unchanged on rejection/error.
+    pub fn certify_batch_budgeted_into(
+        &mut self,
+        goal: &[f64],
+        initial: &[f64],
+        endpoint: &[f64],
+        duration: f64,
+        route: SpatialAdjointRoute,
+        plan: SpatialBatchPlan,
+        budget: f64,
+        gradient: &mut [Iv],
+        out: &mut [SpatialAdjointWork],
+    ) -> CoreResult<SpatialBatchBudgetWork> {
+        if !budget.is_finite() || budget <= 0. {
+            return Err(err("batch signed budget"));
+        }
+        let work = self.compute_batch(
+            goal,
+            initial,
+            endpoint,
+            duration,
+            route,
+            plan,
+            gradient.len(),
+            out.len(),
+        )?;
+        let mut r = SpatialBatchBudgetWork {
+            work,
+            ..Default::default()
+        };
+        for v in &self.receipts[..out.len()] {
+            let mag = v.signed_goal_error[0]
+                .abs()
+                .max(v.signed_goal_error[1].abs());
+            r.max_signed_error_upper = r.max_signed_error_upper.max(mag);
+            r.accepted_pairs += usize::from(mag <= budget);
+        }
+        r.accepted = r.accepted_pairs == out.len();
+        if r.accepted {
+            gradient.copy_from_slice(&self.grad);
+            out.copy_from_slice(&self.receipts[..out.len()]);
+        }
+        Ok(r)
+    }
+    fn compute_batch(
+        &mut self,
+        goal: &[f64],
+        initial: &[f64],
+        endpoint: &[f64],
+        duration: f64,
+        route: SpatialAdjointRoute,
+        plan: SpatialBatchPlan,
+        gradient_len: usize,
+        k: usize,
+    ) -> CoreResult<SpatialBatchWork> {
         let n = self.inner.grid.dimension();
-        let k = out.len();
         if k == 0
             || k > self.receipts.len()
             || n.checked_mul(k) != Some(initial.len())
             || initial.len() != endpoint.len()
             || goal.len() != n
-            || gradient.len() != n
+            || gradient_len != n
             || !duration.is_finite()
             || duration < 0.
             || goal
@@ -530,14 +615,43 @@ impl SpatialAdjointBatchWorkspace {
                 first
             } else {
                 let mut r = first;
-                let exact = if plan == SpatialBatchPlan::SharedComponent {
-                    dot(&self.grad, u)?
-                } else {
+                let plain = || -> CoreResult<Iv> {
                     let radius = mul_up(
                         r.l1_tail_upper,
                         u.iter().map(|x| x.abs()).fold(0., f64::max),
                     )?;
-                    dot(&self.inner.state, u)?.add(Iv::new(-radius, radius)?)?
+                    dot(&self.inner.state, u)?.add(Iv::new(-radius, radius)?)
+                };
+                let exact = match plan {
+                    SpatialBatchPlan::SharedComponent => dot(&self.grad, u)?,
+                    SpatialBatchPlan::SharedCentered
+                    | SpatialBatchPlan::SharedCenteredIntersect => {
+                        // For the exact represented generator L*1=0.
+                        // Choose a represented shift; enclose every subtraction.
+                        let lo = u.iter().copied().fold(f64::INFINITY, f64::min);
+                        let hi = u.iter().copied().fold(f64::NEG_INFINITY, f64::max);
+                        let shift = 0.5 * lo + 0.5 * hi;
+                        let constant = goal
+                            .iter()
+                            .try_fold(Z, |s, &c| s.add(Iv::point(c)?))?
+                            .scale(shift)?;
+                        let mut norm = 0_f64;
+                        let mut value = constant;
+                        for (&v, &c) in u.iter().zip(&self.inner.state) {
+                            let centered = Iv::point(v)?.sub(Iv::point(shift)?)?;
+                            norm = norm.max(centered.mag());
+                            value = value.add(c.mul(centered)?)?;
+                        }
+                        let rad = mul_up(r.l1_tail_upper, norm)?;
+                        let centered = value.add(Iv::new(-rad, rad)?)?;
+                        if plan == SpatialBatchPlan::SharedCenteredIntersect {
+                            let p = plain()?;
+                            Iv::new(p.lo.max(centered.lo), p.hi.min(centered.hi))?
+                        } else {
+                            centered
+                        }
+                    }
+                    _ => plain()?,
                 };
                 let numeric = goal
                     .iter()
@@ -553,8 +667,6 @@ impl SpatialAdjointBatchWorkspace {
             work.max_gradient_width = work.max_gradient_width.max(rec.width_upper);
             self.receipts[i] = rec;
         }
-        gradient.copy_from_slice(&self.grad);
-        out.copy_from_slice(&self.receipts[..k]);
         Ok(work)
     }
 }
