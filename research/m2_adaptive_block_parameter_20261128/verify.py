@@ -111,8 +111,10 @@ for r in policies:
  if a['accepted']:assert max(map(abs,a['enclosure']))<=r['absolute']
 assert read(P/'refusal.log','PARAM_REFUSAL')[0]['late_block']
 # Independent fixed-point Taylor reference reused from prior spatial work:
-# 256-bit directed integer grid, exact geometric full-horizon tail.
-S=1<<256
+# 1024-bit directed integer grid, exact geometric full-horizon tail.
+# 256-bit reference failed width gate at large full-horizon matrix norm.
+# Maximum M=218.403: possible cancellation amplification exp(M)~2^316.
+S=1<<1024
 def floor(x):return x.numerator//x.denominator
 def ceil(x):return -floor(-x)
 def fixed(x):return floor(Q(x)*S),ceil(Q(x)*S)
@@ -174,5 +176,5 @@ for r in batch:
   contains(v['exact_goal'],(l,h),key);contains(v['signed_goal_error'],(l-j,h-j),key);checks['spatial_goal_pairs']+=1
  if r['candidate']=='SharedL1':assert r['receipts']==old[key]['receipts']
  s=bs[r['candidate']];s['rows']+=1;s['zeroheap']+=1;s['actions']+=r['work']['actions'];s['max_width']=max(s['max_width'],r['work']['max_goal_width'])
-summary={'rows':{'tube':len(runs),'slabs':len(slabs),'parameter':len(params),'policy':len(policies),'spatial':len(batch),'native':len(native)},'checks':checks,'tube':tube,'max_sample_error_ratio':worst,'parameter':ps,'policy':gs,'spatial':bs,'max_native_adjoint_error':float(max_native),'max_analytic_central_difference_error':float(fdmax),'reference':'Exact binary64 rational polynomial clock, 40-term scaled atanh enclosure, independent 256-bit fixed-point directed direct Taylor spatial semigroup and rational tail; finite samples not continuum proof.'}
+summary={'rows':{'tube':len(runs),'slabs':len(slabs),'parameter':len(params),'policy':len(policies),'spatial':len(batch),'native':len(native)},'checks':checks,'tube':tube,'max_sample_error_ratio':worst,'parameter':ps,'policy':gs,'spatial':bs,'max_native_adjoint_error':float(max_native),'max_analytic_central_difference_error':float(fdmax),'reference':'Exact binary64 rational polynomial clock, 40-term scaled atanh enclosure, independent 1024-bit fixed-point directed direct Taylor spatial semigroup and rational tail; finite samples not continuum proof.'}
 dump('INDEPENDENT_CHECKS.json',summary);print('VERIFIED',json.dumps(summary,sort_keys=True))
