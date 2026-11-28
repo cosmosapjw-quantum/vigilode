@@ -1,0 +1,8 @@
+# M2.37 reproduction
+Base 2117e8a6e6afd6f49883e4b76d3c2c9fb8be33d3; frozen source b8b1dc02f4c3c8db3ff29e03153e5cc162325f43. Missing API compile refusal 854ba869 (also ambiguous next_up type); focused green after implementation. Opt-in, no default promotion.
+Rust locked offline release, CARGO_TARGET_DIR=$HOME/.cargo-targets/vigilode-stage-lattice-20261124/kschain. Verify EXEC_INPUT_SHA256SUMS before/after. For each test run taskset -c 0 cargo test --locked --offline --release -p vigilode --features polynomial-events --test spatial_adjoint_contracts <name> -- --exact --nocapture --test-threads=1:
+subset_cache_repeated_adaptive_contract -> contract.log
+sparse_checkpoint_local_partial_contract -> partial.log
+sparse_checkpoint_generic_ode_portfolio -> ode.log
+subset_sparse_actual_portfolio -> portfolio.log
+Then python3 research/m2_boundary_subset_sparse_checkpoints_20261128/verify.py and python3 research/m2_boundary_subset_sparse_checkpoints_20261128/guide.py select. Exact counts and independent reference in manifests; raw logs may be gzip. Cold and immediate repeats, CPU0, five cyclic repeats for five candidates on12 offset tight-budget strata, setup excluded. Regression: cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_secant_goal_contracts --test spatial_adjoint_contracts -- --test-threads=1; cargo test --locked --offline --release -p rodas5p-integrators --features polynomial-events --test global_budget_contracts --test client_stage_system_contracts --test accept_control_contracts --test fast_vector_atol_contracts --test output_observer_contracts -- --test-threads=1.
