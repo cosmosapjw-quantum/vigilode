@@ -27,7 +27,8 @@ pub use triangular_goal::{
 };
 mod polynomial_clock;
 pub use polynomial_clock::{
-    PolynomialClockRoute, PolynomialClockWork, polynomial_clock_fused_into,
+    ParameterCovectorRoute, ParameterCovectorWork, PolynomialClockRoute, PolynomialClockWork,
+    polynomial_clock_fused_into, polynomial_parameter_covector_into,
 };
 mod clock_tube;
 pub use clock_tube::{ClockTubeCarry, ClockTubePlan, ClockTubeWork};

@@ -427,3 +427,134 @@ impl SpatialAdjointWorkspace {
         Ok(w)
     }
 }
+
+/// Reuse one source-bound adjoint action for multiple physical terminal goals
+/// with identical covector and duration, and distinct initial/endpoint vectors.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum SpatialBatchPlan {
+    /// Independently repeat each certified action.
+    Repeated,
+    /// Reuse the full center and a single global l1 tail.
+    SharedL1,
+    /// Dot the componentwise inflated covector with each initial state.
+    SharedComponent,
+}
+#[derive(Clone, Copy, Debug, Default, Serialize)]
+/// Actual aggregate batch work, rather than the per-pair inherited receipt.
+pub struct SpatialBatchWork {
+    /// Number of initial/endpoint pairs.
+    pub pairs: usize,
+    /// Actual sparse actions across the batch.
+    pub actions: usize,
+    /// Largest signed goal interval width.
+    pub max_goal_width: f64,
+    /// Largest initial covector component width.
+    pub max_gradient_width: f64,
+}
+/// Source-owned reusable storage for a bounded batch.
+pub struct SpatialAdjointBatchWorkspace {
+    inner: SpatialAdjointWorkspace,
+    grad: Vec<Iv>,
+    receipts: Vec<SpatialAdjointWork>,
+}
+impl SpatialAdjointBatchWorkspace {
+    /// Allocate once for the given represented grid and maximum batch size.
+    pub fn new(grid: &DiffusionGrid, capacity: usize) -> CoreResult<Self> {
+        if capacity == 0 || capacity > 4096 {
+            return Err(err("batch capacity"));
+        }
+        Ok(Self {
+            inner: SpatialAdjointWorkspace::new(grid)?,
+            grad: vec![Z; grid.dimension()],
+            receipts: vec![SpatialAdjointWork::default(); capacity],
+        })
+    }
+    /// Flat pair-major inputs. Each supplied endpoint belongs to the
+    /// respective initial condition; no claim about its primal accuracy.
+    /// A refusal leaves both caller-owned output slices unchanged.
+    pub fn certify_batch_into(
+        &mut self,
+        goal: &[f64],
+        initial: &[f64],
+        endpoint: &[f64],
+        duration: f64,
+        route: SpatialAdjointRoute,
+        plan: SpatialBatchPlan,
+        gradient: &mut [Iv],
+        out: &mut [SpatialAdjointWork],
+    ) -> CoreResult<SpatialBatchWork> {
+        let n = self.inner.grid.dimension();
+        let k = out.len();
+        if k == 0
+            || k > self.receipts.len()
+            || n.checked_mul(k) != Some(initial.len())
+            || initial.len() != endpoint.len()
+            || goal.len() != n
+            || gradient.len() != n
+            || !duration.is_finite()
+            || duration < 0.
+            || goal
+                .iter()
+                .chain(initial)
+                .chain(endpoint)
+                .any(|x| !x.is_finite())
+        {
+            return Err(err("batch adjoint shape/clock"));
+        }
+        let mut work = SpatialBatchWork {
+            pairs: k,
+            ..Default::default()
+        };
+        let first = self.inner.certify_into(
+            goal,
+            &initial[..n],
+            &endpoint[..n],
+            duration,
+            route,
+            &mut self.grad,
+        )?;
+        work.actions = first.actions;
+        self.receipts[0] = first;
+        for i in 0..k {
+            let u = &initial[i * n..(i + 1) * n];
+            let v = &endpoint[i * n..(i + 1) * n];
+            let rec = if plan == SpatialBatchPlan::Repeated && i > 0 {
+                let r = self
+                    .inner
+                    .certify_into(goal, u, v, duration, route, &mut self.grad)?;
+                work.actions += r.actions;
+                r
+            } else if plan == SpatialBatchPlan::SharedL1 && i == 0
+                || plan == SpatialBatchPlan::Repeated
+            {
+                first
+            } else {
+                let mut r = first;
+                let exact = if plan == SpatialBatchPlan::SharedComponent {
+                    dot(&self.grad, u)?
+                } else {
+                    let radius = mul_up(
+                        r.l1_tail_upper,
+                        u.iter().map(|x| x.abs()).fold(0., f64::max),
+                    )?;
+                    dot(&self.inner.state, u)?.add(Iv::new(-radius, radius)?)?
+                };
+                let numeric = goal
+                    .iter()
+                    .zip(v)
+                    .try_fold(Z, |s, (&c, &x)| s.add(Iv::point(c)?.scale(x)?))?;
+                r.exact_goal = exact.as_pair();
+                r.signed_goal_error = exact.sub(numeric)?.as_pair();
+                r
+            };
+            work.max_goal_width = work
+                .max_goal_width
+                .max(sub_up(rec.signed_goal_error[1], rec.signed_goal_error[0])?);
+            work.max_gradient_width = work.max_gradient_width.max(rec.width_upper);
+            self.receipts[i] = rec;
+        }
+        gradient.copy_from_slice(&self.grad);
+        out.copy_from_slice(&self.receipts[..k]);
+        Ok(work)
+    }
+}

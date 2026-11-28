@@ -151,6 +151,47 @@ impl SlabReplayRun {
             goal,
         )
     }
+    /// Exact parameter covector in the common-rate family, with original physical admission.
+    pub fn polynomial_parameter_covector_into(
+        &self,
+        weights: &[f64],
+        measure: de::PolynomialClockRoute,
+        log: de::TriangularGoalRoute,
+        route: de::ParameterCovectorRoute,
+        out: &mut [Iv],
+    ) -> CoreResult<de::ParameterCovectorWork> {
+        let e = self.adjoint_admission(weights)?;
+        let initial = self.initial();
+        let start = self
+            .accepted(0)
+            .ok_or_else(|| bad("parameter initial endpoint"))?;
+        let end = self
+            .accepted(self.accepted_len().saturating_sub(1))
+            .ok_or_else(|| bad("parameter terminal endpoint"))?;
+        let nx = e.src.nx();
+        if !initial.qualified
+            || initial.x.len() != nx
+            || start.state().len() != weights.len()
+            || end.state().len() != weights.len()
+            || start.state()[..nx] != initial.x[..]
+            || start.t() != initial.t
+            || self.driver().t.last() != Some(&end.t())
+            || self.accepted_len() != self.slabs_len() + 1
+        {
+            return Err(bad("parameter retained endpoint authority"));
+        }
+        de::polynomial_parameter_covector_into(
+            &e.src,
+            start.t(),
+            end.t(),
+            &initial.x,
+            weights,
+            measure,
+            log,
+            route,
+            out,
+        )
+    }
     /// Exact initial-state continuous covector of a source-proved monomial
     /// clock system, after the original physical trajectory admission.
     pub fn structured_clock_adjoint_into(

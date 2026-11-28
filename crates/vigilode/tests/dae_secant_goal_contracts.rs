@@ -2580,3 +2580,286 @@ fn adaptive_block_parameter_contract() {
     assert!(out[0].contains(0.5 * (-0.5 * 0.25 * 0.25 / (d * d) + 0.75 * 0.25 / d)));
     assert!(out[3].contains((1.0_f64 + 0.25 * m).ln()));
 }
+
+#[test]
+fn adaptive_block_actual_portfolio() {
+    use de::{
+        ClockTubePlan as CP, ParameterCovectorRoute as R, PolynomialClockRoute as C,
+        TriangularGoalRoute as T,
+    };
+    let (opts, policy, route, retention) = weighted_settings();
+    let cases = [
+        (
+            "affine",
+            vec![[1., 0.5, 0.]],
+            vec![[0.75, 0.375, 0.]],
+            0.,
+            0.5,
+        ),
+        (
+            "quadratic",
+            vec![[0.25, 0.5, 0.125]],
+            vec![[-0.125, -0.25, -0.0625]],
+            0.125,
+            1.,
+        ),
+        (
+            "ratio_third",
+            vec![[3., 1.5, 0.75]],
+            vec![[1., 0.5, 0.25]],
+            0.125,
+            0.5,
+        ),
+        (
+            "long",
+            vec![[0.5, 0.5, 0.125]],
+            vec![[0.75, 0.75, 0.1875]],
+            0.,
+            2.,
+        ),
+        (
+            "block4",
+            vec![[0.25, 0.5, 0.125], [0.5, 0., 0.25]],
+            vec![[-0.125, -0.25, -0.0625], [0.75, 0., 0.375]],
+            0.125,
+            0.5,
+        ),
+        (
+            "zero_q",
+            vec![[0.25, 0.25, 0.125]],
+            vec![[0., 0., 0.]],
+            0.,
+            0.5,
+        ),
+        (
+            "coupled_clock",
+            vec![[0., 1., 0.]],
+            vec![[0., 1., 0.]],
+            0.,
+            1.,
+        ),
+        (
+            "holdout_block6",
+            vec![[1., 0.25, 0.125], [0.125, 0.5, 0.25], [0.5, 0., 0.25]],
+            vec![[0.25, 0.0625, 0.03125], [-0.25, -1., -0.5], [0., 0., 0.]],
+            0.25,
+            1.5,
+        ),
+    ];
+    for (case, a, b, start, end) in cases {
+        let (src, x, z, branch, c) = if case == "coupled_clock" {
+            coupled_clock_fixture()
+        } else {
+            polynomial_fixture(&a, &b)
+        };
+        let epoch = EvolutionEpoch {
+            start,
+            end,
+            incoming_x_error: Some(0.),
+        };
+        let call = |replay| {
+            evolve_epoch_slab_replay_planned(
+                &src,
+                &x,
+                &z,
+                &branch,
+                epoch,
+                &opts,
+                policy,
+                route,
+                &[],
+                retention,
+                replay,
+                EnginePlan::SharedFused,
+            )
+        };
+        let ((flat, audit), alloc) = measure(|| call(SlabReplayRoute::Flat));
+        let flat = flat.unwrap();
+        let term = flat.accepted(flat.accepted_len() - 1).unwrap();
+        println!(
+            "BLOCK_RUN {}",
+            serde_json::json!({"case":case,"candidate":"Flat","qualified":flat.global_qualified(),"bound":flat.max_physical_error(),"rhs":audit.stats.as_ref().unwrap().counters.rhs_calls,"allocation":alloc,"terminal":term.state(),"terminal_bound":term.physical_error_upper(),"a":a,"b":b,"initial":x,"start":start,"end":end,"weights":c})
+        );
+        let mut retained = None;
+        for candidate in [
+            CP::PolynomialMean4,
+            CP::PolynomialMean8,
+            CP::BlockAdaptiveMean,
+            CP::BlockAdaptiveHybrid,
+            CP::BlockSplit,
+        ] {
+            if x.len() != 2 && matches!(candidate, CP::PolynomialMean4 | CP::PolynomialMean8) {
+                continue;
+            }
+            let ((r, audit), alloc) = measure(|| call(SlabReplayRoute::ClockWeighted(candidate)));
+            let r = r.unwrap();
+            assert_eq!(r.driver().t, flat.driver().t);
+            assert_eq!(r.driver().y, flat.driver().y);
+            let mut carry = de::ClockTubeCarry::new(&src, candidate, start, &x, Some(0.)).unwrap();
+            let mut scratch = de::SlabCertificateWorkspace::new();
+            let mut out = de::SlabCertificate::workspace_output(x.len(), x.len()).unwrap();
+            let mut good = 0;
+            for k in 0..flat.slabs_len() {
+                let sl = flat.slab(k).unwrap();
+                let rows: Vec<Vec<Iv>> = match sl.power {
+                    RetainedPowerRows::Owned(a) => a
+                        .iter()
+                        .map(|r| r.iter().map(|p| Iv::new(p[0], p[1]).unwrap()).collect())
+                        .collect(),
+                    RetainedPowerRows::Flat(a) => a
+                        .iter()
+                        .map(|r| r.iter().map(|p| Iv::new(p[0], p[1]).unwrap()).collect())
+                        .collect(),
+                };
+                let (v, allocation) = measure(|| {
+                    carry.certify_into(
+                        sl.times,
+                        &rows,
+                        &branch,
+                        policy.tube_radius,
+                        policy.green,
+                        policy.init.condition_cap,
+                        de::SlabWorkspaceRoute::Refined,
+                        &mut scratch,
+                        &mut out,
+                    )
+                });
+                let actual = r.slab(k).unwrap();
+                match v {
+                    Ok(work) => {
+                        let ac = actual.certificate.as_ref().unwrap();
+                        assert_eq!(out.global_qualified, *ac.global_qualified);
+                        assert_eq!(out.whole_x_error, *ac.whole_x_error);
+                        if !out.global_qualified {
+                            break;
+                        }
+                        assert_eq!(allocation.requests(), 0);
+                        good += 1;
+                        println!(
+                            "BLOCK_SLAB {}",
+                            serde_json::json!({"case":case,"candidate":candidate,"index":k,"times":sl.times,"power":rows.iter().map(|r|r.iter().map(|v|v.as_pair()).collect::<Vec<_>>()).collect::<Vec<_>>(),"work":work,"allocation":allocation,"x_error":out.whole_x_error,"z_error":out.whole_z_error})
+                        );
+                    }
+                    Err(e) => {
+                        assert!(!out.global_qualified && out.whole_x_error.is_none());
+                        assert!(actual.certificate.is_none());
+                        println!(
+                            "BLOCK_REFUSAL {}",
+                            serde_json::json!({"case":case,"candidate":candidate,"index":k,"reason":e.to_string()})
+                        );
+                        break;
+                    }
+                }
+            }
+            let terminal = r.accepted(r.accepted_len() - 1).unwrap();
+            println!(
+                "BLOCK_RUN {}",
+                serde_json::json!({"case":case,"candidate":candidate,"qualified":r.global_qualified(),"bound":r.max_physical_error(),"rhs":audit.stats.as_ref().unwrap().counters.rhs_calls,"allocation":alloc,"terminal":terminal.state(),"terminal_bound":terminal.physical_error_upper(),"a":a,"b":b,"initial":x,"start":start,"end":end,"weights":c,"qualified_slabs":good})
+            );
+            if r.global_qualified() && retained.is_none() {
+                retained = Some(r);
+            }
+        }
+        let r = retained.unwrap_or(flat);
+        assert!(r.global_qualified(), "{case}");
+        let mut out = vec![Iv::point(17.).unwrap(); 2 * x.len()];
+        for candidate in [R::Separate, R::Factored, R::Intersection] {
+            for measure_route in [C::Termwise, C::Factored] {
+                let (v, alloc) = measure(|| {
+                    r.polynomial_parameter_covector_into(
+                        &c,
+                        measure_route,
+                        T::TinyRootReduced,
+                        candidate,
+                        &mut out,
+                    )
+                });
+                let work = v.unwrap();
+                assert_eq!(alloc.requests(), 0);
+                println!(
+                    "PARAM_COV {}",
+                    serde_json::json!({"case":case,"candidate":candidate,"measure":measure_route,"qualified":true,"a":a,"b":b,"initial":x,"weights":c,"start":start,"end":end,"gradient":out.iter().map(|v|v.as_pair()).collect::<Vec<_>>(),"allocation":alloc,"work":work})
+                );
+            }
+        }
+        for absolute in [1e-8, 1e-10] {
+            for plan in [
+                GoalBudgetPlan::PolynomialFlatTermwise,
+                GoalBudgetPlan::PolynomialBlockAdaptive,
+                GoalBudgetPlan::PolynomialBlockHybrid,
+                GoalBudgetPlan::PolynomialBlockSplit,
+            ] {
+                let (r, alloc) = measure(|| {
+                    evolve_epoch_goal_budget(
+                        &src,
+                        &x,
+                        &z,
+                        &branch,
+                        epoch,
+                        &opts,
+                        policy,
+                        route,
+                        &[],
+                        retention,
+                        &c,
+                        GoalBudgetPolicy { absolute, plan },
+                    )
+                    .unwrap()
+                });
+                let last = r.attempts.last().unwrap();
+                println!(
+                    "BLOCK_POLICY {}",
+                    serde_json::json!({"case":case,"candidate":plan,"absolute":absolute,"qualified":last.accepted,"a":a,"b":b,"initial":x,"weights":c,"start":start,"end":end,"attempt":last,"rhs":r.total_rhs(),"steps":r.total_steps(),"allocation":alloc})
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn parameter_covector_refusal_and_zero() {
+    use de::{ParameterCovectorRoute as R, PolynomialClockRoute as C, TriangularGoalRoute as T};
+    let (src, x, _, _, c) = polynomial_fixture(
+        &[[1., 0.5, 0.], [1., 0.5, 0.]],
+        &[[0.75, 0.375, 0.], [0.75, 0.375f64.next_up(), 0.]],
+    );
+    let mut out = [Iv::point(17.).unwrap(); 8];
+    assert!(
+        de::polynomial_parameter_covector_into(
+            &src,
+            0.,
+            1.,
+            &x,
+            &c,
+            C::Factored,
+            T::TinyAdaptive,
+            R::Intersection,
+            &mut out
+        )
+        .is_err()
+    );
+    assert!(out.iter().all(|v| *v == Iv::point(17.).unwrap()));
+    let (src, mut x, _, _, c) = polynomial_fixture(&[[1., 0.5, 0.]], &[[0.75, 0.375, 0.]]);
+    x[0] = 0.;
+    let mut out = [Iv::point(17.).unwrap(); 4];
+    let (r, a) = measure(|| {
+        de::polynomial_parameter_covector_into(
+            &src,
+            0.,
+            1.,
+            &x,
+            &c,
+            C::Termwise,
+            T::TinyRootReduced,
+            R::Intersection,
+            &mut out,
+        )
+    });
+    assert!(r.is_ok());
+    assert_eq!(a.requests(), 0);
+    assert!(out.iter().all(|v| v.contains(0.)));
+    println!(
+        "PARAM_REFUSAL {}",
+        serde_json::json!({"late_block":true,"zero_p":true,"allocation":a})
+    );
+}

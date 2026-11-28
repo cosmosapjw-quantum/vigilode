@@ -104,14 +104,19 @@ impl ClockPolynomial {
             ratio: p(b[pivot])?.div(p(a[pivot])?)?,
         })
     }
-    fn coupled() -> Self {
+    pub(super) fn coupled() -> Self {
         Self {
             a: [0., 1., 0.],
             b: [0., 1., 0.],
             ratio: Iv { lo: 1., hi: 1. },
         }
     }
-    fn measure(self, start: f64, end: f64, route: PolynomialClockRoute) -> CoreResult<Iv> {
+    pub(super) fn measure(
+        self,
+        start: f64,
+        end: f64,
+        route: PolynomialClockRoute,
+    ) -> CoreResult<Iv> {
         let termwise = || -> CoreResult<Iv> {
             let mut m = zero();
             for (k, a) in self.a.iter().enumerate() {
@@ -232,4 +237,81 @@ mod tests {
         assert_ne!(product_key(f64::from_bits(1), 0.5), product_key(0., 1.));
         assert_ne!(product_key(0.75f64.next_up(), 0.5), product_key(0.375, 1.));
     }
+}
+
+/// Parameter chart (a0,a1,a2,r) for each block, Q=rP, fixed x0.
+/// At a coefficient boundary this is the derivative of the smooth local
+/// extension, not permission to take infeasible negative-rate steps.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum ParameterCovectorRoute {
+    Separate,
+    Factored,
+    Intersection,
+}
+#[derive(Clone, Copy, Debug, Default, Serialize)]
+pub struct ParameterCovectorWork {
+    pub blocks: usize,
+    pub max_width: f64,
+    pub log_work: TriangularGoalWork,
+}
+pub fn polynomial_parameter_covector_into(
+    src: &DaeSource,
+    start: f64,
+    end: f64,
+    initial: &[f64],
+    weights: &[f64],
+    measure: PolynomialClockRoute,
+    log: TriangularGoalRoute,
+    route: ParameterCovectorRoute,
+    out: &mut [Iv],
+) -> CoreResult<ParameterCovectorWork> {
+    let coupled = clock_partition(src, initial, weights, start, end)?;
+    let n = src.nx();
+    if out.len() != 2 * n {
+        return Err(bad("parameter covector shape"));
+    }
+    let mut result = [zero(); 32];
+    let mut work = ParameterCovectorWork::default();
+    let moments = [
+        clock_measure(start, end, 0)?,
+        clock_measure(start, end, 1)?,
+        clock_measure(start, end, 2)?,
+    ];
+    for i in (0..n).step_by(2) {
+        let c = if coupled {
+            ClockPolynomial::coupled()
+        } else {
+            ClockPolynomial::parse(src, i)?
+        };
+        let (p0, _) = initial_block(initial, i, coupled)?;
+        let m = c.measure(start, end, measure)?;
+        let v = positive(p0.mul(m)?)?;
+        let d = p(1.)?.add(v)?;
+        let pe = p0.div(d)?;
+        let wp = p(weights[i])?.add(p(weights[n + i])?)?;
+        let wv = p(weights[i + 1])?.add(p(weights[n + i + 1])?)?;
+        let wq = if coupled { wp.add(wv)? } else { wv };
+        let drift = wq.mul(c.ratio)?;
+        let separate = || -> CoreResult<Iv> { drift.mul(pe)?.sub(wp.mul(pe)?.mul(pe)?) };
+        let factored = || -> CoreResult<Iv> { pe.mul(drift.sub(wp.mul(pe)?)?) };
+        let slope = match route {
+            ParameterCovectorRoute::Separate => separate()?,
+            ParameterCovectorRoute::Factored => factored()?,
+            ParameterCovectorRoute::Intersection => {
+                let a = separate()?;
+                let b = factored()?;
+                Iv::new(a.lo.max(b.lo), a.hi.min(b.hi))?
+            }
+        };
+        for k in 0..3 {
+            result[2 * i + k] = moments[k].mul(slope)?;
+        }
+        result[2 * i + 3] = wq.mul(log1p(v, log, &mut work.log_work)?)?;
+        work.blocks += 1;
+    }
+    for v in &result[..2 * n] {
+        work.max_width = work.max_width.max(sub_up(v.hi, v.lo)?);
+    }
+    out.copy_from_slice(&result[..2 * n]);
+    Ok(work)
 }

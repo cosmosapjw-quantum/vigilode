@@ -12,8 +12,17 @@ pub enum ClockTubePlan {
     PolynomialMean4,
     PolynomialMean8,
     PolynomialHybrid4,
+    BlockAdaptiveMean,
+    BlockAdaptiveHybrid,
+    BlockSplit,
 }
 impl ClockTubePlan {
+    fn block(self) -> bool {
+        matches!(
+            self,
+            Self::BlockAdaptiveMean | Self::BlockAdaptiveHybrid | Self::BlockSplit
+        )
+    }
     fn weight(self) -> f64 {
         if matches!(self, Self::Mean8 | Self::PolynomialMean8) {
             8.
@@ -115,13 +124,175 @@ fn bound(a: &ScratchPoly, plan: ClockTubePlan) -> CoreResult<f64> {
     let b = bernstein_magnitude(a.slice(), plan != ClockTubePlan::Sup4)?;
     if matches!(
         plan,
-        ClockTubePlan::Hybrid4 | ClockTubePlan::PolynomialHybrid4
+        ClockTubePlan::Hybrid4
+            | ClockTubePlan::PolynomialHybrid4
+            | ClockTubePlan::BlockAdaptiveHybrid
     ) {
         // Reuse prior spectral enclosure on the *same* normalized polynomial.
         // |P_j|<=1 gives a second upper bound on its absolute integral.
         Ok(b.min(legendre_norm(&power_legendre(a.slice())?)?))
     } else {
         Ok(b)
+    }
+}
+// Fixed-capacity per-block carry. A changing norm is converted at the
+// seam, never silently reinterpreted. Split carries two component radii.
+#[derive(Clone, Copy)]
+struct BlockCarry {
+    n: usize,
+    coupled: bool,
+    start: f64,
+    initial: [Iv; 16],
+    previous: [Iv; 16],
+    clocks: [ClockPolynomial; 8],
+    weights: [f64; 8],
+    radius: [f64; 8],
+    q_radius: [f64; 8],
+}
+impl BlockCarry {
+    fn new(src: &DaeSource, start: f64, x: &[f64]) -> CoreResult<Self> {
+        let n = src.nx();
+        if n > 16 || src.nz() != n {
+            return Err(bad("block clock partition"));
+        }
+        let coupled =
+            super::triangular_goal::clock_partition(src, x, &[0.; 32][..2 * n], start, start)?;
+        let mut a = Self {
+            n,
+            coupled,
+            start,
+            initial: [zero(); 16],
+            previous: [zero(); 16],
+            clocks: [ClockPolynomial::coupled(); 8],
+            weights: [1.; 8],
+            radius: [0.; 8],
+            q_radius: [0.; 8],
+        };
+        for i in (0..n).step_by(2) {
+            a.clocks[i / 2] = if coupled {
+                ClockPolynomial::coupled()
+            } else {
+                ClockPolynomial::parse(src, i)?
+            };
+            let (pp, q) = super::triangular_goal::initial_block(x, i, coupled)?;
+            a.initial[i] = pp;
+            a.initial[i + 1] = q;
+            a.previous[i] = pp;
+            a.previous[i + 1] = q;
+        }
+        Ok(a)
+    }
+    fn step(
+        &mut self,
+        plan: ClockTubePlan,
+        times: [f64; 2],
+        y: &[Poly],
+        tube: f64,
+        incoming: f64,
+        out: &mut SlabCertificate,
+    ) -> CoreResult<ClockTubeWork> {
+        let h = p(times[1])?.sub(p(times[0])?)?;
+        if h.lo <= 0. || y.len() != 2 * self.n {
+            return Err(bad("block clock slab shape/clock"));
+        }
+        let mut next = *self;
+        let mut physical = 0_f64;
+        let mut max_weight = 1_f64;
+        let mut min_p = f64::INFINITY;
+        let mut seam_max = 0_f64;
+        let mut res_max = 0_f64;
+        for i in (0..self.n).step_by(2) {
+            let j = i / 2;
+            let c = self.clocks[j];
+            let u = ScratchPoly::new(&y[i])?;
+            let q = ScratchPoly::new(&y[i + 1])?;
+            let pp = if self.coupled {
+                u.add(q.scale(p(-1.)?)?.slice())?
+            } else {
+                u
+            };
+            let m = c.measure(self.start, times[1], super::PolynomialClockRoute::Factored)?;
+            let p0 = self.initial[i];
+            let exact_lower = p0
+                .div(p(1.)?.add(super::triangular_goal::positive(p0.mul(m)?)?)?)?
+                .lo
+                .max(0.);
+            let approx_lower = range(pp.slice())?.lo;
+            let lower = exact_lower.min(approx_lower);
+            min_p = min_p.min(lower);
+            let a = ClockPolynomial::normalized(c.a, times[0], h)?;
+            let b = ClockPolynomial::normalized(c.b, times[0], h)?;
+            let rp = derivative(&pp)?.add(a.mul(pp.slice())?.mul(pp.slice())?.scale(h)?.slice())?;
+            let rq = derivative(&q)?.add(b.mul(pp.slice())?.scale(h.scale(-1.)?)?.slice())?;
+            let rp = bound(&rp, plan)?;
+            let rq = bound(&rq, plan)?;
+            let sp = self.previous[i].sub(pp.a[0])?.mag();
+            let sq = self.previous[i + 1].sub(q.a[0])?.mag();
+            if plan == ClockTubePlan::BlockSplit {
+                // e_p'=-P(p_exact+p_hat)e_p-r_p. Its scalar log norm
+                // is nonpositive if both trajectories' sum is nonnegative.
+                if rodas5p_core::directed::add_down(exact_lower, approx_lower)? < 0. {
+                    return Err(bad("block split dissipativity not proved"));
+                }
+                let ep = add_up(add_up(self.radius[j], sp)?, rp)?;
+                let measure =
+                    c.measure(times[0], times[1], super::PolynomialClockRoute::Factored)?;
+                let drift = mul_up(mul_up(c.ratio.mag(), measure.hi)?, ep)?;
+                let eq = add_up(add_up(add_up(self.q_radius[j], sq)?, rq)?, drift)?;
+                next.radius[j] = ep;
+                next.q_radius[j] = eq;
+                physical = physical.max(if self.coupled {
+                    add_up(ep, eq)?
+                } else {
+                    ep.max(eq)
+                });
+                seam_max = seam_max.max(add_up(sp, sq)?);
+                res_max = res_max.max(add_up(add_up(rp, rq)?, drift)?);
+            } else {
+                if lower < 0. || lower == 0. && c.ratio.mag() > 0. {
+                    return Err(bad("block adaptive positive lower bound"));
+                }
+                let w = if c.ratio.mag() == 0. {
+                    1.
+                } else {
+                    div_up(div_up(c.ratio.mag(), lower)?, 2.)?.max(1.)
+                };
+                let converted = mul_up(self.radius[j], div_up(w, self.weights[j])?.max(1.))?;
+                let seam = add_up(mul_up(w, sp)?, sq)?;
+                let res = add_up(mul_up(w, rp)?, rq)?;
+                let r = add_up(add_up(converted, seam)?, res)?;
+                next.radius[j] = r;
+                next.weights[j] = w;
+                physical = physical.max(r);
+                max_weight = max_weight.max(w);
+                seam_max = seam_max.max(seam);
+                res_max = res_max.max(res);
+            }
+            next.previous[i] = eval(pp.slice(), p(1.)?)?;
+            next.previous[i + 1] = eval(q.slice(), p(1.)?)?;
+        }
+        let ez = add_up(out.algebraic_defect, mul_up(out.zx_norm_upper, physical)?)?;
+        let qualified = physical < tube;
+        out.incoming = incoming;
+        out.outgoing = Some(physical);
+        out.whole_x_error = Some(physical);
+        out.whole_z_error = Some(ez);
+        out.green_used = false;
+        out.global_qualified = qualified;
+        out.global_reason =
+            (!qualified).then(|| "block clock strict bootstrap tube exceeded".into());
+        if qualified {
+            *self = next;
+        }
+        Ok(ClockTubeWork {
+            plan,
+            weight: max_weight,
+            p_lower: min_p,
+            seam: seam_max,
+            residual_integral_upper: res_max,
+            incoming,
+            outgoing: physical,
+        })
     }
 }
 /// Single-epoch, source-bound carry. The constructor accepts only the
@@ -131,6 +302,7 @@ pub struct ClockTubeCarry<'a> {
     plan: ClockTubePlan,
     coupled: bool,
     polynomial: Option<ClockPolynomial>,
+    block: Option<BlockCarry>,
     t: f64,
     previous: [Iv; 2],
     radius: f64,
@@ -144,6 +316,23 @@ impl<'a> ClockTubeCarry<'a> {
         x: &[f64],
         incoming: Option<f64>,
     ) -> CoreResult<Self> {
+        if plan.block() {
+            if incoming != Some(0.) {
+                return Err(bad("block clock requires zero incoming"));
+            }
+            let block = BlockCarry::new(src, start, x)?;
+            return Ok(Self {
+                src,
+                plan,
+                coupled: block.coupled,
+                polynomial: None,
+                block: Some(block),
+                t: start,
+                previous: [zero(); 2],
+                radius: 0.,
+                valid: true,
+            });
+        }
         let polynomial_plan = matches!(
             plan,
             ClockTubePlan::PolynomialMean4
@@ -179,6 +368,7 @@ impl<'a> ClockTubeCarry<'a> {
             plan,
             coupled,
             polynomial,
+            block: None,
             t: start,
             previous: [p(x[0])?, p(x[1])?],
             radius: 0.,
@@ -234,6 +424,15 @@ impl<'a> ClockTubeCarry<'a> {
         out.outgoing = None;
         out.whole_x_error = None;
         out.whole_z_error = None;
+        if let Some(block) = self.block.as_mut() {
+            let work = block.step(self.plan, times, y, tube, self.radius, out)?;
+            if out.global_qualified {
+                self.radius = work.outgoing;
+                self.t = times[1];
+                self.valid = true;
+            }
+            return Ok(work);
+        }
         let w = self.plan.weight();
         let h = p(times[1])?.sub(p(times[0])?)?;
         let u = ScratchPoly::new(&y[0])?;
