@@ -20,6 +20,11 @@ pub enum GoalBudgetPlan {
     Triangular24,
     TriangularAdaptive,
     TriangularRootReduced,
+    PolynomialFlatTermwise,
+    PolynomialFlatFactored,
+    PolynomialMean4,
+    PolynomialMean8,
+    PolynomialHybrid4,
 }
 impl GoalBudgetPlan {
     fn triangular(self) -> Option<de::TriangularGoalRoute> {
@@ -29,6 +34,25 @@ impl GoalBudgetPlan {
             Self::Triangular24 => Some(Atanh24),
             Self::TriangularAdaptive => Some(Adaptive),
             Self::TriangularRootReduced => Some(RootReduced),
+            _ => None,
+        }
+    }
+    fn polynomial(self) -> Option<de::PolynomialClockRoute> {
+        use de::PolynomialClockRoute::*;
+        match self {
+            Self::PolynomialFlatTermwise => Some(Termwise),
+            Self::PolynomialFlatFactored | Self::PolynomialMean4 | Self::PolynomialMean8 => {
+                Some(Factored)
+            }
+            Self::PolynomialHybrid4 => Some(Intersection),
+            _ => None,
+        }
+    }
+    fn polynomial_tube(self) -> Option<de::ClockTubePlan> {
+        match self {
+            Self::PolynomialMean4 => Some(de::ClockTubePlan::PolynomialMean4),
+            Self::PolynomialMean8 => Some(de::ClockTubePlan::PolynomialMean8),
+            Self::PolynomialHybrid4 => Some(de::ClockTubePlan::PolynomialHybrid4),
             _ => None,
         }
     }
@@ -116,6 +140,10 @@ pub struct GoalBudgetAttempt {
     pub triangular_work: Option<de::TriangularGoalWork>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub triangular_refusal: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub polynomial_work: Option<de::PolynomialClockWork>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub polynomial_refusal: Option<String>,
     pub enclosure: Option<[f64; 2]>,
     pub accepted: bool,
     pub reason: Option<String>,
@@ -191,6 +219,7 @@ pub fn evolve_epoch_goal_budget(
         || budget.plan.structured().is_some()
         || budget.plan.signed()
         || budget.plan.triangular().is_some()
+        || budget.plan.polynomial().is_some()
         || (budget.plan == GoalBudgetPlan::CostAware && budget.absolute < nominal)
     {
         1.
@@ -227,6 +256,13 @@ pub fn evolve_epoch_goal_budget(
             retention,
             if budget.plan == GoalBudgetPlan::WeightedAdaptiveSigned {
                 SlabReplayRoute::ClockWeighted(de::ClockTubePlan::Mean4)
+            } else if let Some(cp) = budget.plan.polynomial_tube() {
+                if de::ClockTubeCarry::new(src, cp, epoch.start, x, epoch.incoming_x_error).is_ok()
+                {
+                    SlabReplayRoute::ClockWeighted(cp)
+                } else {
+                    SlabReplayRoute::Flat
+                }
             } else if budget.plan.triangular().is_some() {
                 let cp = if epoch.end > 2. {
                     de::ClockTubePlan::Mean8
@@ -257,6 +293,8 @@ pub fn evolve_epoch_goal_budget(
             structured_refusal: None,
             triangular_work: None,
             triangular_refusal: None,
+            polynomial_work: None,
+            polynomial_refusal: None,
             enclosure: None,
             accepted: false,
             reason: None,
@@ -331,6 +369,40 @@ pub fn evolve_epoch_goal_budget(
                                         }
                                     }
                                     Err(e) => rec.triangular_refusal = Some(e.to_string()),
+                                }
+                            }
+                        }
+                        if bound.is_some_and(|b| b.mag() > budget.absolute) {
+                            if let Some(route) = budget.plan.polynomial() {
+                                let mut iv = Iv::point(0.)?;
+                                let mut gradient = [Iv { lo: 0., hi: 0. }; 16];
+                                if src.nx() <= gradient.len() {
+                                    match r.polynomial_clock_fused_into(
+                                        goal,
+                                        route,
+                                        de::TriangularGoalRoute::TinyRootReduced,
+                                        &mut gradient[..src.nx()],
+                                        &mut iv,
+                                    ) {
+                                        Ok(work) => {
+                                            rec.polynomial_work = Some(work);
+                                            let b = bound.unwrap();
+                                            match Iv::new(b.lo.max(iv.lo), b.hi.min(iv.hi)) {
+                                                Ok(q) => bound = Some(q),
+                                                Err(_) => {
+                                                    bound = None;
+                                                    rec.reason = Some(
+                                                        "disjoint independent goal certificates"
+                                                            .into(),
+                                                    );
+                                                }
+                                            }
+                                        }
+                                        Err(e) => rec.polynomial_refusal = Some(e.to_string()),
+                                    }
+                                } else {
+                                    rec.polynomial_refusal =
+                                        Some("polynomial clock gradient capacity".into());
                                 }
                             }
                         }

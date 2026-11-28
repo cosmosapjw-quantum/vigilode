@@ -108,6 +108,49 @@ fn power(s: &CompactSlabView<'_>, n: usize, out: &mut [[Iv; 5]]) -> CoreResult<(
     Ok(())
 }
 impl SlabReplayRun {
+    /// Source-bound joint exact-flow covector and signed terminal goal.
+    /// Requires the original retained physical epoch authority.
+    pub fn polynomial_clock_fused_into(
+        &self,
+        weights: &[f64],
+        route: de::PolynomialClockRoute,
+        log: de::TriangularGoalRoute,
+        gradient: &mut [Iv],
+        goal: &mut Iv,
+    ) -> CoreResult<de::PolynomialClockWork> {
+        let e = self.adjoint_admission(weights)?;
+        let initial = self.initial();
+        let start = self
+            .accepted(0)
+            .ok_or_else(|| bad("polynomial clock initial endpoint"))?;
+        let end = self
+            .accepted(self.accepted_len().saturating_sub(1))
+            .ok_or_else(|| bad("polynomial clock terminal endpoint"))?;
+        let nx = e.src.nx();
+        if !initial.qualified
+            || initial.x.len() != nx
+            || start.state().len() != weights.len()
+            || end.state().len() != weights.len()
+            || start.state()[..nx] != initial.x[..]
+            || start.t() != initial.t
+            || self.driver().t.last() != Some(&end.t())
+            || self.accepted_len() != self.slabs_len() + 1
+        {
+            return Err(bad("polynomial clock retained endpoint authority"));
+        }
+        de::polynomial_clock_fused_into(
+            &e.src,
+            start.t(),
+            end.t(),
+            &initial.x,
+            end.state(),
+            weights,
+            route,
+            log,
+            gradient,
+            goal,
+        )
+    }
     /// Exact initial-state continuous covector of a source-proved monomial
     /// clock system, after the original physical trajectory admission.
     pub fn structured_clock_adjoint_into(

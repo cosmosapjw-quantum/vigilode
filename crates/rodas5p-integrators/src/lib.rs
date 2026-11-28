@@ -154,7 +154,8 @@ pub mod stage_clients;
 
 // Loop L1 node V22 (owner decision OD-L1-9): banded entry points that take the kernel.
 pub use rodas5p_fast::{
-    FastArenaPlan, FastArenaReceipt, FastArenaRun, FastOutputArena, ReusableFastClientWorkspace,
+    FastArenaPlan, FastArenaReceipt, FastArenaRun, FastFlatArenaRun, FastFlatOutputArena,
+    FastOutputArena, ReusableFastClientWorkspace,
     integrate_rodas5p_fast_banded_observed_with_atol_and_kernel,
 };
 pub use rodas5p_fast_dense::{

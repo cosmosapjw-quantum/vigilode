@@ -2716,3 +2716,293 @@ fn flat_arena_native_contract() {
     }
     assert_eq!(r.receipt.counters, old.observed.counters);
 }
+
+#[test]
+fn flat_arena_actual_portfolio() {
+    use rodas5p_integrators::{
+        AdaptiveStepConfig, FastArenaPlan as A, FastArenaReceipt, FastFlatOutputArena,
+        FastOutputArena, OutputSchedule,
+    };
+    use vigilode::spatial::{ResidualPlan as P, SpatialAdjointDriverWorkspace as W};
+    let span = (0., DURATION);
+    let base = AdaptiveStepConfig {
+        rtol: 1e-8,
+        atol: 1e-10,
+        initial_step: 0.001,
+        max_attempts: 4096,
+        ..Default::default()
+    };
+    let mut grids = residual_grids();
+    grids.push((
+        "holdout_box3",
+        DiffusionGrid::periodic_box([16, 8, 8], [16., 8., 8.], [64., 32., 16.]).unwrap(),
+    ));
+    grids.push((
+        "holdout_sphere2048",
+        DiffusionGrid::sphere(32, 64, 1., 0.01).unwrap(),
+    ));
+    let candidates = [
+        "RowLegacy",
+        "RowPrevalidated",
+        "FlatLegacy",
+        "FlatPrevalidated",
+    ];
+    for (case, g) in grids {
+        let n = g.dimension();
+        let mut c = vec![0.; n];
+        c[0] = 0.5;
+        c[n / 2] = -0.25;
+        c[n - 1] = 0.125;
+        let schedules = [
+            OutputSchedule::new(vec![0., DURATION]).unwrap(),
+            OutputSchedule::new((0..=16).map(|i| DURATION * i as f64 / 16.).collect()).unwrap(),
+        ];
+        for plan in [P::Hybrid, P::RingLocalHybrid] {
+            let mut w = W::new(&g, span, plan).unwrap();
+            let (mut row, row_setup) = measure(|| FastOutputArena::new(n, 17).unwrap());
+            let (mut flat, flat_setup) = measure(|| FastFlatOutputArena::new(n, 17).unwrap());
+            w.solve_into(&c, &base, &schedules[0], A::Legacy, &mut row)
+                .unwrap();
+            w.solve_flat_into(&c, &base, &schedules[0], A::Legacy, &mut flat)
+                .unwrap();
+            let mut small = FastFlatOutputArena::new(n, 1).unwrap();
+            assert!(
+                w.solve_flat_into(&c, &base, &schedules[0], A::Legacy, &mut small)
+                    .is_err()
+            );
+            assert!(
+                w.solve_flat_into(&c[..n - 1], &base, &schedules[0], A::Legacy, &mut flat)
+                    .is_err()
+            );
+            for (schedule_index, schedule) in schedules.iter().enumerate() {
+                for partial in [false, true] {
+                    let a = if partial {
+                        AdaptiveStepConfig {
+                            max_attempts: 1,
+                            ..base.clone()
+                        }
+                    } else {
+                        base.clone()
+                    };
+                    let (old, stop, ow) = w.solve_with_schedule(&c, &a, schedule).unwrap();
+                    assert_eq!(old.observed.success, !partial);
+                    let expected = stop
+                        .as_ref()
+                        .map(|x| x.y.as_slice())
+                        .unwrap_or(old.observed.y.last().unwrap());
+                    let expected_t = stop.as_ref().map(|x| x.t).unwrap_or(span.1);
+                    let check =
+                        |receipt: FastArenaReceipt,
+                         times: &[f64],
+                         last: &[f64],
+                         nw: vigilode::spatial::ShiftedNativeWork| {
+                            assert_eq!(receipt.success, old.observed.success);
+                            assert_eq!(times, old.observed.t.as_slice());
+                            assert_eq!(last, expected);
+                            assert_eq!(receipt.counters, old.observed.counters);
+                            assert_eq!(receipt.last_t, expected_t);
+                            assert_eq!(receipt.stop, stop.as_ref().map(|x| x.reason));
+                            assert_eq!(
+                                receipt.last_failure,
+                                stop.as_ref().and_then(|x| x.last_failure)
+                            );
+                            assert_eq!(
+                                (
+                                    receipt.attempts,
+                                    receipt.accepted_steps,
+                                    receipt.rejected_steps,
+                                    receipt.jacobian_reuses,
+                                    receipt.output_clipped_steps
+                                ),
+                                (
+                                    old.attempts,
+                                    old.accepted_steps,
+                                    old.rejected_steps,
+                                    old.jacobian_reuses,
+                                    old.observed.output_clipped_steps
+                                )
+                            );
+                            assert_eq!(
+                                (
+                                    nw.solves,
+                                    nw.returned,
+                                    nw.preparations,
+                                    nw.max_error_l1,
+                                    nw.max_residual_l1
+                                ),
+                                (
+                                    ow.solves,
+                                    ow.returned,
+                                    ow.preparations,
+                                    ow.max_error_l1,
+                                    ow.max_residual_l1
+                                )
+                            );
+                        };
+                    let mut counts = [Counts::default(); 4];
+                    let mut samples: [Vec<u128>; 4] =
+                        std::array::from_fn(|_| Vec::with_capacity(8));
+                    for (i, candidate) in [A::Legacy, A::Prevalidated].iter().enumerate() {
+                        let ((r, nw), alloc) = measure(|| {
+                            w.solve_into(&c, &a, schedule, *candidate, &mut row)
+                                .unwrap()
+                        });
+                        check(r.receipt, r.times, r.last_state, nw);
+                        assert_eq!(r.states, old.observed.y.as_slice());
+                        assert_eq!(alloc.requests(), 0);
+                        counts[i] = alloc;
+                        let ((r, nw), alloc) = measure(|| {
+                            w.solve_flat_into(&c, &a, schedule, *candidate, &mut flat)
+                                .unwrap()
+                        });
+                        check(r.receipt, r.times, r.last_state, nw);
+                        assert_eq!(r.states.len(), old.observed.y.len() * n);
+                        for (v, expected) in r.states.chunks_exact(n).zip(&old.observed.y) {
+                            assert_eq!(v, expected);
+                        }
+                        assert_eq!(alloc.requests(), 0);
+                        counts[i + 2] = alloc;
+                    }
+                    // Balanced cyclic order: each candidate occupies each position twice.
+                    for rep in 0..8 {
+                        for k in 0..4 {
+                            let i = (rep + k) % 4;
+                            let controller = if i % 2 == 0 {
+                                A::Legacy
+                            } else {
+                                A::Prevalidated
+                            };
+                            let start = std::time::Instant::now();
+                            if i < 2 {
+                                let (r, _) = w
+                                    .solve_into(&c, &a, schedule, controller, &mut row)
+                                    .unwrap();
+                                black_box(r.last_state);
+                                black_box(r.receipt);
+                            } else {
+                                let (r, _) = w
+                                    .solve_flat_into(&c, &a, schedule, controller, &mut flat)
+                                    .unwrap();
+                                black_box(r.last_state);
+                                black_box(r.receipt);
+                            }
+                            samples[i].push(start.elapsed().as_nanos());
+                        }
+                    }
+                    let run = serde_json::json!({"times":old.observed.t,"states":old.observed.y,"last_state":expected,"last_t":expected_t,"success":old.observed.success,"stop":stop.as_ref().map(|x|x.reason),"last_failure":stop.as_ref().and_then(|x|x.last_failure),"counters":old.observed.counters,"attempts":old.attempts,"accepted":old.accepted_steps,"rejected":old.rejected_steps,"reuses":old.jacobian_reuses,"clipped":old.observed.output_clipped_steps,"solves":ow.solves,"returned":ow.returned,"preparations":ow.preparations,"max_error":ow.max_error_l1,"max_residual":ow.max_residual_l1});
+                    for i in 0..4 {
+                        let mut sorted = samples[i].clone();
+                        sorted.sort_unstable();
+                        println!(
+                            "FLAT_IVP {}",
+                            serde_json::json!({"case":case,"schedule":schedule_index,"partial":partial,"plan":plan,"candidate":candidates[i],"qualified":true,"allocation":counts[i],"setup":if i<2{row_setup}else{flat_setup},"median_ns":(sorted[3]+sorted[4])/2,"samples_ns":samples[i],"run":run})
+                        );
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn flat_arena_generic_ode() {
+    use rodas5p_core::{CoreResult, WorkCounters};
+    use rodas5p_integrators::{
+        AdaptiveStepConfig, FastArenaPlan as A, FastFlatOutputArena, OdeProblem, OutputSchedule,
+        ReusableFastClientWorkspace, StageLinearSystem,
+    };
+    use std::sync::Arc;
+    struct Diagonal {
+        n: usize,
+        shift: f64,
+    }
+    impl StageLinearSystem for Diagonal {
+        fn dimension(&self) -> usize {
+            self.n
+        }
+        fn linearize(
+            &mut self,
+            _: &OdeProblem,
+            _: f64,
+            _: &[f64],
+            _: &mut WorkCounters,
+        ) -> CoreResult<()> {
+            Ok(())
+        }
+        fn factor(&mut self, z: f64, c: &mut WorkCounters) -> CoreResult<()> {
+            self.shift = z;
+            c.direct_factorizations += 1;
+            Ok(())
+        }
+        fn solve_in_place(&mut self, b: &mut [f64], c: &mut WorkCounters) -> CoreResult<()> {
+            for (i, v) in b.iter_mut().enumerate() {
+                *v /= self.shift + (i + 1) as f64;
+            }
+            c.direct_solve_calls += 1;
+            Ok(())
+        }
+    }
+    let a = AdaptiveStepConfig {
+        rtol: 1e-9,
+        atol: 1e-12,
+        initial_step: 0.005,
+        max_attempts: 4096,
+        ..Default::default()
+    };
+    for n in [1, 3, 32] {
+        let p = OdeProblem::new(
+            "diagonal decay",
+            n,
+            Arc::new(|_, y, o| {
+                for (i, (v, w)) in y.iter().zip(o).enumerate() {
+                    *w = -(i as f64 + 1.) * v;
+                }
+                Ok(())
+            }),
+            None,
+            None,
+            Some(Arc::new(|_, _, v, out| {
+                for (i, (x, w)) in v.iter().zip(out).enumerate() {
+                    *w = -(i as f64 + 1.) * x;
+                }
+                Ok(())
+            })),
+            None,
+            true,
+            None,
+            None,
+        )
+        .unwrap();
+        let span = (0., 0.125);
+        let schedule = OutputSchedule::new(vec![0., 0.03125, 0.0625, 0.125]).unwrap();
+        let y = vec![1.; n];
+        let atol = vec![a.atol; n];
+        let mut w = ReusableFastClientWorkspace::new(Box::new(Diagonal { n, shift: 0. })).unwrap();
+        let mut arena = FastFlatOutputArena::new(n, 4).unwrap();
+        let (old, _) = w.solve(&p, span, &y, &a, &schedule, &atol).unwrap();
+        for candidate in [A::Legacy, A::Prevalidated] {
+            let (r, alloc) = measure(|| {
+                w.solve_flat_into(&p, span, &y, &a, &schedule, &atol, candidate, &mut arena)
+                    .unwrap()
+            });
+            assert_eq!(alloc.requests(), 0);
+            assert!(r.receipt.success);
+            assert_eq!(r.states.len(), old.observed.y.len() * n);
+            for (v, expected) in r.states.chunks_exact(n).zip(&old.observed.y) {
+                assert_eq!(v, expected);
+            }
+            assert_eq!(r.receipt.counters, old.observed.counters);
+            let error = r
+                .last_state
+                .iter()
+                .enumerate()
+                .map(|(i, v)| (v - (-((i + 1) as f64) * span.1).exp()).abs())
+                .fold(0., f64::max);
+            assert!(error <= 1e-8);
+            println!(
+                "FLAT_ODE {}",
+                serde_json::json!({"case":n,"candidate":candidate,"qualified":true,"allocation":alloc,"max_error":error,"counters":r.receipt.counters})
+            );
+        }
+    }
+}

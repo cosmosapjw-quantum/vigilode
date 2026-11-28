@@ -683,6 +683,28 @@ impl SpatialAdjointDriverWorkspace {
         )?;
         Ok((r, p, *self.report.lock().unwrap()))
     }
+    pub fn solve_flat_into<'a>(
+        &mut self,
+        initial: &[f64],
+        adaptive: &AdaptiveStepConfig,
+        schedule: &OutputSchedule,
+        plan: rodas5p_integrators::FastArenaPlan,
+        arena: &'a mut rodas5p_integrators::FastFlatOutputArena,
+    ) -> CoreResult<(rodas5p_integrators::FastFlatArenaRun<'a>, ShiftedNativeWork)> {
+        *self.report.lock().unwrap() = ShiftedNativeWork::default();
+        self.atol.fill(adaptive.atol);
+        let r = self.driver.solve_flat_into(
+            &self.problem,
+            self.span,
+            initial,
+            adaptive,
+            schedule,
+            &self.atol,
+            plan,
+            arena,
+        )?;
+        Ok((r, *self.report.lock().unwrap()))
+    }
     pub fn solve_into<'a>(
         &mut self,
         initial: &[f64],

@@ -22,7 +22,7 @@ pub struct TriangularGoalWork {
     pub signed_error: [f64; 2],
     pub width_upper: f64,
 }
-fn positive(v: Iv) -> CoreResult<Iv> {
+pub(super) fn positive(v: Iv) -> CoreResult<Iv> {
     Iv::new(v.lo.max(0.), v.hi)
 }
 // Evaluate monotonic log1p at represented scalar endpoints; avoid dependency
@@ -100,7 +100,11 @@ fn log_point(x: f64, route: TriangularGoalRoute, w: &mut TriangularGoalWork) -> 
     }
     unreachable!()
 }
-fn log1p(v: Iv, route: TriangularGoalRoute, w: &mut TriangularGoalWork) -> CoreResult<Iv> {
+pub(super) fn log1p(
+    v: Iv,
+    route: TriangularGoalRoute,
+    w: &mut TriangularGoalWork,
+) -> CoreResult<Iv> {
     if v.lo < 0. {
         return Err(bad("triangular log negative interval"));
     }
@@ -209,7 +213,7 @@ pub struct StructuredClockWork {
     pub max_gradient_width: f64,
     pub clock_powers: [usize; 3],
 }
-fn clock_partition(
+pub(super) fn clock_partition(
     src: &DaeSource,
     initial: &[f64],
     weights: &[f64],
@@ -266,7 +270,7 @@ fn block_clock(src: &DaeSource, i: usize, coupled: bool) -> CoreResult<(f64, f64
     }
     Err(bad("structured clock unsupported monomial source"))
 }
-fn clock_measure(start: f64, end: f64, k: usize) -> CoreResult<Iv> {
+pub(super) fn clock_measure(start: f64, end: f64, k: usize) -> CoreResult<Iv> {
     let t = p(end)?;
     let s = p(start)?;
     let d = t.sub(s)?;
@@ -279,7 +283,7 @@ fn clock_measure(start: f64, end: f64, k: usize) -> CoreResult<Iv> {
         _ => return Err(bad("structured clock power")),
     })
 }
-fn initial_block(initial: &[f64], i: usize, coupled: bool) -> CoreResult<(Iv, Iv)> {
+pub(super) fn initial_block(initial: &[f64], i: usize, coupled: bool) -> CoreResult<(Iv, Iv)> {
     let q = p(initial[i + 1])?;
     let pp = if coupled {
         p(initial[i])?.sub(q)?

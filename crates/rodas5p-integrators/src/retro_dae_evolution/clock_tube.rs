@@ -1,6 +1,7 @@
 //! Opt-in exact-source, two-dimensional clock reduction. The carry is in
 //! a fixed weighted norm dominating the original coordinate infinity norm.
 //! Original local branch/condition proof is mandatory on every slab.
+use super::polynomial_clock::ClockPolynomial;
 use super::*;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub enum ClockTubePlan {
@@ -8,10 +9,17 @@ pub enum ClockTubePlan {
     Mean4,
     Mean8,
     Hybrid4,
+    PolynomialMean4,
+    PolynomialMean8,
+    PolynomialHybrid4,
 }
 impl ClockTubePlan {
     fn weight(self) -> f64 {
-        if self == Self::Mean8 { 8. } else { 4. }
+        if matches!(self, Self::Mean8 | Self::PolynomialMean8) {
+            8.
+        } else {
+            4.
+        }
     }
 }
 #[derive(Clone, Copy, Debug, Serialize)]
@@ -105,7 +113,10 @@ fn transform_norm(u: Iv, v: Iv, coupled: bool, w: f64) -> CoreResult<f64> {
 }
 fn bound(a: &ScratchPoly, plan: ClockTubePlan) -> CoreResult<f64> {
     let b = bernstein_magnitude(a.slice(), plan != ClockTubePlan::Sup4)?;
-    if plan == ClockTubePlan::Hybrid4 {
+    if matches!(
+        plan,
+        ClockTubePlan::Hybrid4 | ClockTubePlan::PolynomialHybrid4
+    ) {
         // Reuse prior spectral enclosure on the *same* normalized polynomial.
         // |P_j|<=1 gives a second upper bound on its absolute integral.
         Ok(b.min(legendre_norm(&power_legendre(a.slice())?)?))
@@ -119,6 +130,7 @@ pub struct ClockTubeCarry<'a> {
     src: &'a DaeSource,
     plan: ClockTubePlan,
     coupled: bool,
+    polynomial: Option<ClockPolynomial>,
     t: f64,
     previous: [Iv; 2],
     radius: f64,
@@ -132,7 +144,31 @@ impl<'a> ClockTubeCarry<'a> {
         x: &[f64],
         incoming: Option<f64>,
     ) -> CoreResult<Self> {
-        let coupled = source_kind(src).ok_or_else(|| bad("weighted clock source unsupported"))?;
+        let polynomial_plan = matches!(
+            plan,
+            ClockTubePlan::PolynomialMean4
+                | ClockTubePlan::PolynomialMean8
+                | ClockTubePlan::PolynomialHybrid4
+        );
+        let (coupled, polynomial) = if polynomial_plan {
+            if src.nx() != 2
+                || src.nz() != 2
+                || !matches_terms(&src.g[0], &[(1., &[3]), (-1., &[1])])
+                || !matches_terms(&src.g[1], &[(1., &[4]), (-1., &[2])])
+            {
+                return Err(bad("polynomial weighted graph"));
+            }
+            if source_kind(src) == Some(true) {
+                (true, None)
+            } else {
+                (false, Some(ClockPolynomial::parse(src, 0)?))
+            }
+        } else {
+            (
+                source_kind(src).ok_or_else(|| bad("weighted clock source unsupported"))?,
+                None,
+            )
+        };
         if !start.is_finite() || start < 0. || x.len() != 2 || incoming != Some(0.) {
             return Err(bad(
                 "weighted clock requires zero incoming nonnegative epoch",
@@ -142,6 +178,7 @@ impl<'a> ClockTubeCarry<'a> {
             src,
             plan,
             coupled,
+            polynomial,
             t: start,
             previous: [p(x[0])?, p(x[1])?],
             radius: 0.,
@@ -212,15 +249,29 @@ impl<'a> ClockTubeCarry<'a> {
             range(pp.slice())?.lo,
             mul_up(if self.coupled { 2. } else { 1. }, tube)?,
         )?;
-        if lower < 1. / (2. * w) {
+        let required = if let Some(poly) = self.polynomial {
+            div_up(poly.ratio.mag(), 2. * w)?
+        } else {
+            1. / (2. * w)
+        };
+        if lower < required {
             return Err(bad("weighted clock positivity/contraction not proved"));
         }
-        let clock = ScratchPoly::new(&[p(times[0])?, h])?;
-        let tp = clock.mul(pp.slice())?;
-        // Reduced exact graph z=x. Normalized residuals: p_u+h*t*p^2,
-        // q_u-h*t*p. Their weighted absolute integral bounds each prefix.
-        let rp = derivative(&pp)?.add(tp.mul(pp.slice())?.scale(h)?.slice())?;
-        let rq = derivative(&v)?.add(tp.scale(-h)?.slice())?;
+        let (rp, rq) = if let Some(poly) = self.polynomial {
+            let a = ClockPolynomial::normalized(poly.a, times[0], h)?;
+            let b = ClockPolynomial::normalized(poly.b, times[0], h)?;
+            (
+                derivative(&pp)?.add(a.mul(pp.slice())?.mul(pp.slice())?.scale(h)?.slice())?,
+                derivative(&v)?.add(b.mul(pp.slice())?.scale(h.scale(-1.)?)?.slice())?,
+            )
+        } else {
+            let clock = ScratchPoly::new(&[p(times[0])?, h])?;
+            let tp = clock.mul(pp.slice())?;
+            (
+                derivative(&pp)?.add(tp.mul(pp.slice())?.scale(h)?.slice())?,
+                derivative(&v)?.add(tp.scale(-h)?.slice())?,
+            )
+        };
         let res = add_up(mul_up(w, bound(&rp, self.plan)?)?, bound(&rq, self.plan)?)?;
         let seam = transform_norm(
             self.previous[0].sub(u.a[0])?,

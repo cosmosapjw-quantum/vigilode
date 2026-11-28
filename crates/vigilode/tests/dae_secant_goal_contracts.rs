@@ -2247,3 +2247,287 @@ fn polynomial_clock_fused_contract() {
     assert!(grad[0].contains(0.5 / (d * d) + 0.75 * m / d));
     assert!(grad[1].contains(1.));
 }
+
+fn polynomial_fixture(
+    a: &[[f64; 3]],
+    b: &[[f64; 3]],
+) -> (DaeSource, Vec<f64>, Vec<f64>, Vec<[f64; 2]>, Vec<f64>) {
+    let n = 2 * a.len();
+    assert_eq!(a.len(), b.len());
+    let mut f = vec![];
+    let mut weights = vec![0.; 2 * n];
+    let mut x = vec![];
+    for j in 0..a.len() {
+        let i = 2 * j;
+        let terms = |c: [f64; 3], power: usize| -> Vec<T> {
+            let mut rows = vec![];
+            // reverse degree order exercises order-independent exact matcher
+            for k in (0..3).rev() {
+                if c[k] != 0. {
+                    let mut factors = vec![F::clock(0.); k];
+                    factors.extend((0..power).map(|_| F::component(n + i, 0.)));
+                    factors.reverse();
+                    rows.push(tr(c[k], factors));
+                }
+            }
+            if rows.is_empty() {
+                rows.push(tr(0., vec![F::component(n + i, 0.); power]));
+            }
+            rows
+        };
+        f.push(p(terms(a[j].map(|x| -x), 2)));
+        f.push(p(terms(b[j], 1)));
+        x.extend([0.25, 0.0625]);
+        weights[i + 1] = if j % 2 == 0 { 1. } else { -0.5 };
+        weights[n + i] = 0.5;
+    }
+    let g = (0..n)
+        .map(|i| {
+            p(vec![
+                tr(1., vec![F::component(n + i, 0.)]),
+                tr(-1., vec![F::component(i, 0.)]),
+            ])
+        })
+        .collect();
+    (
+        DaeSource::new(f, g).unwrap(),
+        x.clone(),
+        x,
+        vec![[-2., 3.]; n],
+        weights,
+    )
+}
+#[test]
+fn polynomial_clock_actual_portfolio() {
+    use de::{ClockTubePlan as CP, PolynomialClockRoute as C, TriangularGoalRoute as T};
+    let (opts, policy, route, retention) = weighted_settings();
+    let cases = [
+        (
+            "affine",
+            vec![[1., 0.5, 0.]],
+            vec![[0.75, 0.375, 0.]],
+            0.,
+            0.5,
+        ),
+        (
+            "quadratic",
+            vec![[0.25, 0.5, 0.125]],
+            vec![[-0.125, -0.25, -0.0625]],
+            0.125,
+            1.,
+        ),
+        (
+            "ratio_third",
+            vec![[3., 1.5, 0.75]],
+            vec![[1., 0.5, 0.25]],
+            0.125,
+            0.5,
+        ),
+        (
+            "long",
+            vec![[0.5, 0.5, 0.125]],
+            vec![[0.75, 0.75, 0.1875]],
+            0.,
+            2.,
+        ),
+        (
+            "block4",
+            vec![[0.25, 0.5, 0.125], [0.5, 0., 0.25]],
+            vec![[-0.125, -0.25, -0.0625], [0.75, 0., 0.375]],
+            0.125,
+            0.5,
+        ),
+        (
+            "zero_q",
+            vec![[0.25, 0.25, 0.125]],
+            vec![[0., 0., 0.]],
+            0.,
+            0.5,
+        ),
+        (
+            "coupled_clock",
+            vec![[0., 1., 0.]],
+            vec![[0., 1., 0.]],
+            0.,
+            1.,
+        ),
+    ];
+    for (case, a, b, start, end) in cases {
+        let (src, x, z, branch, c) = if case == "coupled_clock" {
+            coupled_clock_fixture()
+        } else {
+            polynomial_fixture(&a, &b)
+        };
+        let epoch = EvolutionEpoch {
+            start,
+            end,
+            incoming_x_error: Some(0.),
+        };
+        let mut retained = None;
+        let mut baseline = None;
+        for (name, plan) in [
+            ("Flat", SlabReplayRoute::Flat),
+            ("Mean4", SlabReplayRoute::ClockWeighted(CP::PolynomialMean4)),
+            ("Mean8", SlabReplayRoute::ClockWeighted(CP::PolynomialMean8)),
+            (
+                "Hybrid4",
+                SlabReplayRoute::ClockWeighted(CP::PolynomialHybrid4),
+            ),
+        ] {
+            if x.len() != 2 && name != "Flat" {
+                continue;
+            }
+            let ((r, audit), alloc) = measure(|| {
+                evolve_epoch_slab_replay_planned(
+                    &src,
+                    &x,
+                    &z,
+                    &branch,
+                    epoch,
+                    &opts,
+                    policy,
+                    route,
+                    &[],
+                    retention,
+                    plan,
+                    EnginePlan::SharedFused,
+                )
+            });
+            let r = r.unwrap();
+            let state = r.driver().y.last().unwrap();
+            let identity = (r.driver().t.clone(), r.driver().y.clone());
+            if let Some(old) = &baseline {
+                assert_eq!(&identity, old);
+            } else {
+                baseline = Some(identity);
+            }
+            let terminal = r.accepted(r.accepted_len() - 1).unwrap();
+            let qualified = r.global_qualified();
+            println!(
+                "POLY_TUBE {}",
+                serde_json::json!({"case":case,"candidate":name,"qualified":qualified,"a":a,"b":b,"start":start,"end":end,"initial":x,"weights":c,"terminal":terminal.state(),"bound":terminal.physical_error_upper(),"rhs":audit.stats.as_ref().unwrap().counters.rhs_calls,"allocation":alloc,"driver_last":state,"reason":r.reason()})
+            );
+            if qualified && retained.is_none() {
+                retained = Some(r);
+            }
+        }
+        let r = retained.expect("at least one physical route");
+        let term = r.accepted(r.accepted_len() - 1).unwrap();
+        let mut output = vec![Iv::point(17.).unwrap(); x.len()];
+        let mut goal = Iv::point(17.).unwrap();
+        for candidate in [C::Termwise, C::Factored, C::Intersection] {
+            for log in [T::TinyAdaptive, T::TinyRootReduced] {
+                let (res, alloc) = measure(|| {
+                    r.polynomial_clock_fused_into(&c, candidate, log, &mut output, &mut goal)
+                });
+                let work = res.unwrap();
+                assert_eq!(alloc.requests(), 0);
+                println!(
+                    "POLY_DIRECT {}",
+                    serde_json::json!({"case":case,"candidate":candidate,"log":log,"qualified":true,"a":a,"b":b,"start":start,"end":end,"initial":x,"weights":c,"terminal":term.state(),"gradient":output.iter().map(|v|v.as_pair()).collect::<Vec<_>>(),"allocation":alloc,"work":work})
+                );
+            }
+        }
+        let mut w = NonlinearAdjointWorkspace::new();
+        for candidate in [
+            NonlinearAdjointRoute::Whole,
+            NonlinearAdjointRoute::Sub4,
+            NonlinearAdjointRoute::Contracted16,
+        ] {
+            let (res, alloc) =
+                measure(|| r.nonlinear_adjoint_into(&c, candidate, &mut w, &mut output));
+            match res {
+                Ok(work) => println!(
+                    "POLY_GRAD {}",
+                    serde_json::json!({"case":case,"candidate":candidate,"qualified":true,"a":a,"b":b,"start":start,"end":end,"initial":x,"weights":c,"gradient":output.iter().map(|v|v.as_pair()).collect::<Vec<_>>(),"allocation":alloc,"width":work.width_upper,"actions":work.matrix_actions})
+                ),
+                Err(e) => println!(
+                    "POLY_GRAD {}",
+                    serde_json::json!({"case":case,"candidate":candidate,"qualified":false,"allocation":alloc,"reason":e.to_string()})
+                ),
+            }
+        }
+        for absolute in [1e-8, 1e-10] {
+            for plan in [
+                GoalBudgetPlan::Fixed,
+                GoalBudgetPlan::EconomySigned,
+                GoalBudgetPlan::PolynomialFlatTermwise,
+                GoalBudgetPlan::PolynomialFlatFactored,
+                GoalBudgetPlan::PolynomialMean4,
+                GoalBudgetPlan::PolynomialMean8,
+                GoalBudgetPlan::PolynomialHybrid4,
+            ] {
+                if x.len() != 2
+                    && matches!(
+                        plan,
+                        GoalBudgetPlan::PolynomialMean4
+                            | GoalBudgetPlan::PolynomialMean8
+                            | GoalBudgetPlan::PolynomialHybrid4
+                    )
+                {
+                    continue;
+                }
+                let (run, alloc) = measure(|| {
+                    evolve_epoch_goal_budget(
+                        &src,
+                        &x,
+                        &z,
+                        &branch,
+                        epoch,
+                        &opts,
+                        policy,
+                        route,
+                        &[],
+                        retention,
+                        &c,
+                        GoalBudgetPolicy { absolute, plan },
+                    )
+                    .unwrap()
+                });
+                let last = run.attempts.last().unwrap();
+                println!(
+                    "POLY_POLICY {}",
+                    serde_json::json!({"case":case,"candidate":plan,"absolute":absolute,"qualified":last.accepted,"a":a,"b":b,"start":start,"end":end,"initial":x,"weights":c,"allocation":alloc,"attempt":last,"rhs":run.total_rhs(),"steps":run.total_steps()})
+                );
+            }
+        }
+    }
+}
+#[test]
+fn polynomial_clock_refusals() {
+    use de::{PolynomialClockRoute as C, TriangularGoalRoute as T};
+    for (a, b) in [
+        (vec![[1., 0.5, 0.]], vec![[0.75, 0.375f64.next_up(), 0.]]),
+        (vec![[1., -0.5, 0.]], vec![[0.75, -0.375, 0.]]),
+        (vec![[1., 0.5, 0.]], vec![[0.75, 0.375, 0.125]]),
+        (
+            vec![[1., 0.5, 0.], [1., 0.5, 0.]],
+            vec![[0.75, 0.375, 0.], [0.75, 0.375f64.next_up(), 0.]],
+        ),
+    ] {
+        let (src, x, _, _, c) = polynomial_fixture(&a, &b);
+        let mut grad = vec![Iv::point(17.).unwrap(); x.len()];
+        let mut goal = Iv::point(17.).unwrap();
+        assert!(
+            de::polynomial_clock_fused_into(
+                &src,
+                0.,
+                1.,
+                &x,
+                &vec![0.; 2 * x.len()],
+                &c,
+                C::Factored,
+                T::TinyRootReduced,
+                &mut grad,
+                &mut goal
+            )
+            .is_err()
+        );
+        assert_eq!(goal, Iv::point(17.).unwrap());
+        assert!(grad.iter().all(|v| *v == goal));
+    }
+    println!(
+        "POLY_REFUSAL {}",
+        serde_json::json!({"one_ulp_mismatch":true,"negative_rate":true,"extra_power":true,"late_block_transaction":true})
+    );
+}

@@ -732,12 +732,18 @@ pub struct ObservedIntegrationResult {
     pub output_clipped_steps: usize,
 }
 
+struct FlatRows {
+    values: Vec<f64>,
+    dimension: usize,
+    capacity: usize,
+}
 pub(crate) struct OutputCollector {
     schedule: OutputSchedule,
     end: f64,
     next_index: usize,
     times: Vec<f64>,
     states: Vec<Vec<f64>>,
+    flat_rows: Option<FlatRows>,
     clipped_steps: usize,
     max_step: StepCap,
     // Contract-tested staging for the pending generic verified-output driver.
@@ -794,6 +800,7 @@ impl OutputCollector {
             next_index: 1,
             times,
             states,
+            flat_rows: None,
             clipped_steps: 0,
             max_step: StepCap::NONE,
             prepared_centers,
@@ -821,6 +828,58 @@ impl OutputCollector {
         Ok(c)
     }
 
+    // Contiguous observation arena. This private collector mode is only
+    // exposed through the borrowed native loop; never through owning finish.
+    pub(crate) fn new_flat_reusable(n: usize, capacity: usize) -> CoreResult<Self> {
+        let size = n
+            .checked_mul(capacity)
+            .filter(|v| *v > 0 && *v <= isize::MAX as usize / size_of::<f64>())
+            .ok_or_else(|| CoreError::InvalidInput("flat output arena shape".into()))?;
+        let mut values = Vec::new();
+        values
+            .try_reserve_exact(size)
+            .map_err(|_| CoreError::InvalidInput("flat output allocation refused".into()))?;
+        values.resize(size, 0.);
+        let mut times = Vec::new();
+        times
+            .try_reserve_exact(capacity)
+            .map_err(|_| CoreError::InvalidInput("flat time allocation refused".into()))?;
+        let mut schedule = Vec::new();
+        schedule
+            .try_reserve_exact(capacity)
+            .map_err(|_| CoreError::InvalidInput("flat schedule allocation refused".into()))?;
+        Ok(Self {
+            schedule: OutputSchedule { times: schedule },
+            end: 0.,
+            next_index: 0,
+            times,
+            states: Vec::new(),
+            flat_rows: Some(FlatRows {
+                values,
+                dimension: n,
+                capacity,
+            }),
+            clipped_steps: 0,
+            max_step: StepCap::NONE,
+            prepared_centers: Vec::new(),
+            prepared_radii: Vec::new(),
+            prepared_times: Vec::new(),
+            prepared_count: 0,
+            radii: Vec::new(),
+            prepared_valid: false,
+            verified_mode: false,
+        })
+    }
+    pub(crate) fn flat_view(&self) -> CoreResult<(&[f64], &[f64])> {
+        let f = self
+            .flat_rows
+            .as_ref()
+            .ok_or_else(|| CoreError::InvalidInput("not a flat output arena".into()))?;
+        Ok((
+            &self.times[..self.next_index],
+            &f.values[..self.next_index * f.dimension],
+        ))
+    }
     // All checks precede mutation. Capacity is logical, not allocator slack.
     pub(crate) fn reset_reusable(
         &mut self,
@@ -830,9 +889,14 @@ impl OutputCollector {
         cap: StepCap,
     ) -> CoreResult<()> {
         schedule.validate_span(span.0, span.1)?;
-        if y.len() != self.states[0].len()
+        let (dimension, capacity) = if let Some(f) = &self.flat_rows {
+            (f.dimension, f.capacity)
+        } else {
+            (self.states[0].len(), self.states.len())
+        };
+        if y.len() != dimension
             || y.iter().any(|v| !v.is_finite())
-            || schedule.times.len() > self.states.len()
+            || schedule.times.len() > capacity
         {
             return Err(CoreError::InvalidInput(
                 "output arena dimension/capacity".into(),
@@ -842,7 +906,11 @@ impl OutputCollector {
         self.schedule.times.extend_from_slice(schedule.times());
         self.times.clear();
         self.times.push(schedule.times[0]);
-        self.states[0].copy_from_slice(y);
+        if let Some(f) = &mut self.flat_rows {
+            f.values[..f.dimension].copy_from_slice(y);
+        } else {
+            self.states[0].copy_from_slice(y);
+        }
         self.next_index = 1;
         self.end = span.1;
         self.clipped_steps = 0;
@@ -1051,7 +1119,12 @@ impl OutputCollector {
         let Some(next) = self.due(self.next_index) else {
             return Ok(());
         };
-        if y.len() != self.states[0].len() {
+        if y.len()
+            != self
+                .flat_rows
+                .as_ref()
+                .map_or_else(|| self.states[0].len(), |f| f.dimension)
+        {
             return Err(CoreError::Dimension(
                 "accepted output state has the wrong dimension".into(),
             ));
@@ -1066,7 +1139,10 @@ impl OutputCollector {
         }
         if t == next {
             self.times.push(self.schedule.times[self.next_index]);
-            if let Some(row) = self.states.get_mut(self.next_index) {
+            if let Some(f) = &mut self.flat_rows {
+                let start = self.next_index * f.dimension;
+                f.values[start..start + f.dimension].copy_from_slice(y);
+            } else if let Some(row) = self.states.get_mut(self.next_index) {
                 row.copy_from_slice(y);
             } else {
                 self.states.push(y.to_vec());

@@ -25,6 +25,10 @@ pub use triangular_goal::{
     StructuredClockWork, TriangularGoalRoute, TriangularGoalWork, structured_clock_adjoint_into,
     structured_clock_goal_into, triangular_clock_goal,
 };
+mod polynomial_clock;
+pub use polynomial_clock::{
+    PolynomialClockRoute, PolynomialClockWork, polynomial_clock_fused_into,
+};
 mod clock_tube;
 pub use clock_tube::{ClockTubeCarry, ClockTubePlan, ClockTubeWork};
 mod scalar_adjoint_jet;
