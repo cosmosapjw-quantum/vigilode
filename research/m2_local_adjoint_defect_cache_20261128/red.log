@@ -1,0 +1,90 @@
+warning: value assigned to `residual_radius` is never read
+    --> crates/rodas5p-integrators/src/retro_dae_evolution.rs:1629:31
+     |
+1629 |     let mut residual_radius = 0.;
+     |                               ^^
+     |
+     = help: maybe it is overwritten before being read?
+     = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+   Compiling vigilode v0.2.0 (/home/cosmosapjw/worktrees/vigilode-m2-async-20261126/crates/vigilode)
+error[E0432]: unresolved imports `vigilode::spatial::SpatialLocalReplayPlan`, `vigilode::spatial::SpatialLocalReplayPolicy`, `vigilode::spatial::SpatialLocalReplayWorkspace`, `vigilode::spatial::SpatialReplayCachePlan`
+    --> crates/vigilode/tests/spatial_adjoint_contracts.rs:3794:29
+     |
+3794 | ...   SpatialAdjointWork, SpatialLocalReplayPlan as LP, SpatialLocalReplayPolicy as LPolicy,
+     |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `SpatialLocalReplayPolicy` in `spatial`
+     |                           |
+     |                           no `SpatialLocalReplayPlan` in `spatial`
+3795 | ...   SpatialLocalReplayWorkspace as L, SpatialPrimalReplayPlan as P,
+     |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `SpatialLocalReplayWorkspace` in `spatial`
+3796 | ...   SpatialPrimalReplayPolicy as Policy, SpatialPrimalReplayWorkspace as W,
+3797 | ...   SpatialReplayCachePlan as K,
+     |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^ no `SpatialReplayCachePlan` in `spatial`
+     |
+help: a similar name exists in the module
+     |
+3794 -         SpatialAdjointWork, SpatialLocalReplayPlan as LP, SpatialLocalReplayPolicy as LPolicy,
+3794 +         SpatialAdjointWork, SpatialPrimalReplayPlan as LP, SpatialLocalReplayPolicy as LPolicy,
+     |
+help: a similar name exists in the module
+     |
+3794 -         SpatialAdjointWork, SpatialLocalReplayPlan as LP, SpatialLocalReplayPolicy as LPolicy,
+3794 +         SpatialAdjointWork, SpatialLocalReplayPlan as LP, SpatialPrimalReplayPolicy as LPolicy,
+     |
+help: a similar name exists in the module
+     |
+3795 -         SpatialLocalReplayWorkspace as L, SpatialPrimalReplayPlan as P,
+3795 +         SpatialPrimalReplayWorkspace as L, SpatialPrimalReplayPlan as P,
+     |
+
+error[E0599]: no method named `solve_cached_budgeted_into` found for struct `SpatialPrimalReplayWorkspace` in the current scope
+    --> crates/vigilode/tests/spatial_adjoint_contracts.rs:3820:11
+     |
+3820 | ...   w.solve_cached_budgeted_into(&u, &c, &adaptive, p, K::GoalOnly, ...
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: there is a method `solve_budgeted_into` with a similar name, but with different arguments
+    --> crates/vigilode/src/spatial/primal_replay.rs:296:5
+     |
+ 296 | /     pub fn solve_budgeted_into(
+ 297 | |         &mut self,
+ 298 | |         initial: &[f64],
+ 299 | |         goal: &[f64],
+...    |
+ 303 | |         receipts: &mut [SpatialAdjointWork],
+ 304 | |     ) -> CoreResult<SpatialPrimalReplayWork> {
+     | |____________________________________________^
+
+error[E0599]: no method named `solve_cached_budgeted_into` found for struct `SpatialPrimalReplayWorkspace` in the current scope
+    --> crates/vigilode/tests/spatial_adjoint_contracts.rs:3827:11
+     |
+3827 | ...   w.solve_cached_budgeted_into(&u, &c, &adaptive, p, K::GoalOnly, ...
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+help: there is a method `solve_budgeted_into` with a similar name, but with different arguments
+    --> crates/vigilode/src/spatial/primal_replay.rs:296:5
+     |
+ 296 | /     pub fn solve_budgeted_into(
+ 297 | |         &mut self,
+ 298 | |         initial: &[f64],
+ 299 | |         goal: &[f64],
+...    |
+ 303 | |         receipts: &mut [SpatialAdjointWork],
+ 304 | |     ) -> CoreResult<SpatialPrimalReplayWork> {
+     | |____________________________________________^
+
+error[E0282]: type annotations needed
+    --> crates/vigilode/tests/spatial_adjoint_contracts.rs:3855:41
+     |
+3855 |     assert!(local.defects().iter().all(|v| v.contains(0.)));
+     |                                         ^  - type must be known at this point
+     |
+help: consider giving this closure parameter an explicit type
+     |
+3855 |     assert!(local.defects().iter().all(|v: /* Type */| v.contains(0.)));
+     |                                          ++++++++++++
+
+Some errors have detailed explanations: E0282, E0432, E0599.
+For more information about an error, try `rustc --explain E0282`.
+error: could not compile `vigilode` (test "spatial_adjoint_contracts") due to 4 previous errors

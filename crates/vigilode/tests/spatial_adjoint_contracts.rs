@@ -3786,3 +3786,71 @@ fn source_owned_primal_replay_floor_and_partial_contract() {
         serde_json::json!({"case":"inexact_shift_fallback","allocation":a,"work":r})
     );
 }
+
+#[test]
+fn exact_cache_and_local_replay_contract() {
+    use rodas5p_integrators::AdaptiveStepConfig;
+    use vigilode::spatial::{
+        SpatialAdjointWork, SpatialLocalReplayPlan as LP, SpatialLocalReplayPolicy as LPolicy,
+        SpatialLocalReplayWorkspace as L, SpatialPrimalReplayPlan as P,
+        SpatialPrimalReplayPolicy as Policy, SpatialPrimalReplayWorkspace as W,
+        SpatialReplayCachePlan as K,
+    };
+    let g = DiffusionGrid::periodic_box([8, 4], [8., 4.], [0.125, 0.25]).unwrap();
+    let n = g.dimension();
+    let u = vec![0.25; n];
+    let mut c = vec![0.; n];
+    c[0] = 1.;
+    let adaptive = AdaptiveStepConfig {
+        rtol: 1e-9,
+        atol: 1e-11,
+        initial_step: 0.001,
+        ..Default::default()
+    };
+    let mut w = W::new(&g, DURATION, 1).unwrap();
+    let p = Policy {
+        budget: 1e-10,
+        max_replays: 0,
+        min_scale: 1e-4,
+        plan: P::FixedSelective,
+    };
+    let mut endpoint = vec![17.; n];
+    let mut rec = [SpatialAdjointWork::default(); 1];
+    let (a, alloc) = measure(|| {
+        w.solve_cached_budgeted_into(&u, &c, &adaptive, p, K::GoalOnly, &mut endpoint, &mut rec)
+    });
+    let a = a.unwrap();
+    assert!(a.accepted);
+    assert!(a.adjoint_actions > 0);
+    assert_eq!(alloc.requests(), 0);
+    let (b, alloc) = measure(|| {
+        w.solve_cached_budgeted_into(&u, &c, &adaptive, p, K::GoalOnly, &mut endpoint, &mut rec)
+    });
+    let b = b.unwrap();
+    assert!(b.accepted);
+    assert_eq!(b.adjoint_actions, 0);
+    assert!(b.cache_hit);
+    assert_eq!(alloc.requests(), 0);
+    let mut local = L::new(&g, DURATION, 128).unwrap();
+    let (r, a) = measure(|| {
+        local.solve_into(
+            &u,
+            &c,
+            &adaptive,
+            LPolicy {
+                budget: 1e-10,
+                max_replays: 1,
+                min_scale: 1e-4,
+                plan: LP::MaxMagnitude,
+            },
+            &mut endpoint,
+            &mut rec[0],
+        )
+    });
+    let r = r.unwrap();
+    assert!(r.accepted);
+    assert_eq!(a.requests(), 0);
+    assert!(r.dense_packets > 0);
+    assert_eq!(local.defects().len(), 4);
+    assert!(local.defects().iter().all(|v| v.contains(0.)));
+}
