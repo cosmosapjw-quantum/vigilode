@@ -3216,3 +3216,57 @@ fn shared_spatial_adjoint_actual_portfolio() {
         assert!(receipts.iter().all(|v| v.actions == 0));
     }
 }
+
+#[test]
+fn centered_batch_adjoint_contract() {
+    use vigilode::spatial::{
+        SpatialAdjointBatchWorkspace as B, SpatialAdjointRoute as R, SpatialBatchPlan as P,
+    };
+    let g = DiffusionGrid::periodic_box([4, 4], [4., 4.], [0.125, 0.25]).unwrap();
+    let n = g.dimension();
+    let mut c = vec![0.; n];
+    c[0] = 1.;
+    let u = vec![32.; n];
+    let mut w = B::new(&g, 1).unwrap();
+    let mut grad = vec![Iv::point(9.).unwrap(); n];
+    let mut rec = vec![vigilode::spatial::SpatialAdjointWork::default(); 1];
+    let (v, a) = measure(|| {
+        w.certify_batch_budgeted_into(
+            &c,
+            &u,
+            &u,
+            DURATION,
+            R::ModeResidual,
+            P::SharedCenteredIntersect,
+            1e-12,
+            &mut grad,
+            &mut rec,
+        )
+    });
+    let v = v.unwrap();
+    assert!(v.accepted);
+    assert_eq!(v.accepted_pairs, 1);
+    assert_eq!(v.work.actions, 1);
+    assert_eq!(a.requests(), 0);
+    assert_eq!(rec[0].signed_goal_error, [0., 0.]);
+    let mut bad = u.clone();
+    bad[0] += 1.;
+    let old = grad.clone();
+    let old_rec = rec[0].signed_goal_error;
+    let v = w
+        .certify_batch_budgeted_into(
+            &c,
+            &u,
+            &bad,
+            DURATION,
+            R::ModeResidual,
+            P::SharedCenteredIntersect,
+            1e-12,
+            &mut grad,
+            &mut rec,
+        )
+        .unwrap();
+    assert!(!v.accepted);
+    assert_eq!(grad, old);
+    assert_eq!(rec[0].signed_goal_error, old_rec);
+}
