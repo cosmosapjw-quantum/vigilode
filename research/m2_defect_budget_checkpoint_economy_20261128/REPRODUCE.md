@@ -1,0 +1,8 @@
+# M2.36 reproduction
+Base 290d7e2ad2df9f0e434192cf0453b2a9e9d40188. Frozen execution 1a08f73252af9dbdebaa97ac0ad1dbb37d8fd4c0. Behavioral setup RED 7a9c2602; slim fix 5cf77ea4faff69b56bcc6d961b690aa39c6f0d05. No default promotion. Rust locked offline release; CARGO_TARGET_DIR=$HOME/.cargo-targets/vigilode-stage-lattice-20261124/kschain. Verify EXEC_INPUT_SHA256SUMS before/after.
+taskset -c 0 cargo test --locked --offline --release -p vigilode --features polynomial-events --test spatial_adjoint_contracts compact_forward_only_setup_contract -- --exact --nocapture --test-threads=1
+Repeat with small_work_allocator_contract, compact_model_fallback_partial_contract, defect_budget_actual_portfolio; logs setup.log, allocator.log, fallback.log, portfolio.log, respectively.
+python3 research/m2_defect_budget_checkpoint_economy_20261128/verify.py
+python3 research/m2_defect_budget_checkpoint_economy_20261128/guide.py select
+Reference prior M2.35 represented sources and exact numerical baseline. Logs may be gzip. Timing: CPU0, four cyclic repeats per four policies on 12 offset/tight-budget strata; cold key explicitly empty, immediate repeat recorded (not necessarily a cache hit); setup excluded; paired admitted results only. No universal timing claim.
+Regression: cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_secant_goal_contracts --test spatial_adjoint_contracts -- --test-threads=1; cargo test --locked --offline --release -p rodas5p-integrators --features polynomial-events --test global_budget_contracts --test client_stage_system_contracts --test accept_control_contracts --test fast_vector_atol_contracts --test output_observer_contracts -- --test-threads=1. Read actual exits and RUN_MANIFEST.
