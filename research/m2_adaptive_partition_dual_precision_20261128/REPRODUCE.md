@@ -1,0 +1,9 @@
+# M2.35 reproduction
+Frozen source and candidate input: 7c8ea2d072d61e91f7798d18289b1b58500355b5. Base 308b75ca23e45e56a0a632f6675a56ee452c90a0. Behavioral RED cc290262, counter fix 4e33560b. Original API retained; new compact path opt-in. No production default promotion.
+Rust locked offline release, polynomial-events. CARGO_TARGET_DIR=$HOME/.cargo-targets/vigilode-stage-lattice-20261124/kschain. Check EXEC_INPUT_SHA256SUMS before and after. Focused commands:
+taskset -c 0 cargo test --locked --offline --release -p vigilode --features polynomial-events --test spatial_adjoint_contracts partial_suffix_accounting_regression -- --exact --nocapture --test-threads=1
+Repeat with compact_boundary_replay_contract, bounded_checkpoint_capture_generic_ode, compact_adaptive_partition_portfolio; output logs partial.log, contract.log, ode.log, portfolio.log. Check exact one-test execution.
+python3 research/m2_adaptive_partition_dual_precision_20261128/verify.py
+python3 research/m2_adaptive_partition_dual_precision_20261128/guide.py select
+Reference prior M2.34 source rows and actual fixed pilot states. Raw logs may be compressed. Candidate generation before freeze. No time benchmark claim; actual sparse/native counters and setup allocation bytes, cold-equivalent boundary actions grouped by exact source, route, goal and time key. Warm reruns explicitly verify unchanged numerical results and zero new actions.
+Regression: cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_secant_goal_contracts --test spatial_adjoint_contracts -- --test-threads=1; cargo test --locked --offline --release -p rodas5p-integrators --features polynomial-events --test client_stage_system_contracts --test accept_control_contracts --test fast_vector_atol_contracts --test output_observer_contracts -- --test-threads=1. Use actual RUN_MANIFEST and exit records.
