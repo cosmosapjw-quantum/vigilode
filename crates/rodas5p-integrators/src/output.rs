@@ -806,6 +806,56 @@ impl OutputCollector {
         })
     }
 
+    // Preallocate all observation rows; ordinary collectors still append.
+    pub(crate) fn new_reusable(n: usize, capacity: usize) -> CoreResult<Self> {
+        if n == 0 || capacity == 0 || n.checked_mul(capacity).is_none() {
+            return Err(CoreError::InvalidInput("output arena shape".into()));
+        }
+        let mut c = Self::new(&OutputSchedule::new(vec![0.])?, (0., 0.), &vec![0.; n])?;
+        c.schedule.times.reserve_exact(capacity.saturating_sub(1));
+        c.times.reserve_exact(capacity.saturating_sub(1));
+        c.states.reserve_exact(capacity.saturating_sub(1));
+        c.states.resize_with(capacity, || vec![0.; n]);
+        c.next_index = 0;
+        c.times.clear();
+        Ok(c)
+    }
+
+    // All checks precede mutation. Capacity is logical, not allocator slack.
+    pub(crate) fn reset_reusable(
+        &mut self,
+        schedule: &OutputSchedule,
+        span: (f64, f64),
+        y: &[f64],
+        cap: StepCap,
+    ) -> CoreResult<()> {
+        schedule.validate_span(span.0, span.1)?;
+        if y.len() != self.states[0].len()
+            || y.iter().any(|v| !v.is_finite())
+            || schedule.times.len() > self.states.len()
+        {
+            return Err(CoreError::InvalidInput(
+                "output arena dimension/capacity".into(),
+            ));
+        }
+        self.schedule.times.clear();
+        self.schedule.times.extend_from_slice(schedule.times());
+        self.times.clear();
+        self.times.push(schedule.times[0]);
+        self.states[0].copy_from_slice(y);
+        self.next_index = 1;
+        self.end = span.1;
+        self.clipped_steps = 0;
+        self.max_step = cap;
+        Ok(())
+    }
+    pub(crate) fn reusable_view(&self) -> (&[f64], &[Vec<f64>]) {
+        (
+            &self.times[..self.next_index],
+            &self.states[..self.next_index],
+        )
+    }
+
     /// Hard maximum on represented steps (an adaptive driver's `max_step`).
     pub(crate) fn with_max_step(mut self, max_step: StepCap) -> Self {
         self.max_step = max_step;
@@ -1016,7 +1066,11 @@ impl OutputCollector {
         }
         if t == next {
             self.times.push(self.schedule.times[self.next_index]);
-            self.states.push(y.to_vec());
+            if let Some(row) = self.states.get_mut(self.next_index) {
+                row.copy_from_slice(y);
+            } else {
+                self.states.push(y.to_vec());
+            }
             self.next_index += 1;
         }
         Ok(())

@@ -2504,6 +2504,80 @@ impl ReusableFastClientWorkspace {
     }
 }
 
+/// Caller-owned reusable output and accepted-state storage. No growth on solve.
+pub struct FastOutputArena {
+    collector: OutputCollector,
+    state: Vec<f64>,
+}
+impl FastOutputArena {
+    pub fn new(dimension: usize, capacity: usize) -> CoreResult<Self> {
+        Ok(Self {
+            collector: OutputCollector::new_reusable(dimension, capacity)?,
+            state: vec![0.; dimension],
+        })
+    }
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum FastArenaPlan {
+    Legacy,
+    Prevalidated,
+}
+/// Borrowed outputs and last accepted state, including a partial prefix.
+pub struct FastArenaRun<'a> {
+    pub times: &'a [f64],
+    pub states: &'a [Vec<f64>],
+    pub last_state: &'a [f64],
+    pub receipt: FastArenaReceipt,
+}
+impl ReusableFastClientWorkspace {
+    /// Same numerical loop and source/client contract as solve. The caller
+    /// must provide a matching client and problem; output storage is bounded.
+    pub fn solve_into<'a>(
+        &mut self,
+        problem: &OdeProblem,
+        t_span: (f64, f64),
+        y0: &[f64],
+        adaptive: &AdaptiveStepConfig,
+        output: &OutputSchedule,
+        atol: &[f64],
+        plan: FastArenaPlan,
+        arena: &'a mut FastOutputArena,
+    ) -> CoreResult<FastArenaRun<'a>> {
+        require_atol_vector(problem.dimension, atol)?;
+        if self.work.n != problem.dimension || arena.state.len() != problem.dimension {
+            return Err(CoreError::InvalidInput("reusable arena dimension".into()));
+        }
+        validate_fast_run(problem, t_span, y0, adaptive, atol)?;
+        arena
+            .collector
+            .reset_reusable(output, t_span, y0, adaptive.step_cap())?;
+        arena.state.copy_from_slice(y0);
+        let options = Rodas5pFastOptions {
+            prevalidated_controller: plan == FastArenaPlan::Prevalidated,
+            ..Default::default()
+        };
+        let receipt = integrate_fast_loop(
+            &mut self.work,
+            problem,
+            t_span,
+            &mut arena.state,
+            adaptive,
+            &mut arena.collector,
+            options,
+            None,
+            atol,
+            &mut NoSink,
+        )?;
+        let (times, states) = arena.collector.reusable_view();
+        Ok(FastArenaRun {
+            times,
+            states,
+            last_state: &arena.state,
+            receipt,
+        })
+    }
+}
+
 /// The client run of [`integrate_rodas5p_fast_client_observed_with_atol`]
 /// under `sink`.
 #[allow(clippy::too_many_arguments)]
@@ -2665,22 +2739,114 @@ fn integrate_fast_in<S: StepSink>(
     adaptive: &AdaptiveStepConfig,
     output: &OutputSchedule,
     options: Rodas5pFastOptions,
-    mut telemetry: Option<&mut ControllerTelemetry>,
+    telemetry: Option<&mut ControllerTelemetry>,
     atol_vector: &[f64],
     sink: &mut S,
 ) -> CoreResult<(Rodas5pFastResult, Option<BandedWork>, Option<DriverPartial>)> {
+    let mut y = y0.to_vec();
+    let mut collector =
+        OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.step_cap());
+    let receipt = integrate_fast_loop(
+        work,
+        problem,
+        t_span,
+        &mut y,
+        adaptive,
+        &mut collector,
+        options,
+        telemetry,
+        atol_vector,
+        sink,
+    )?;
+    let partial = receipt.stop.map(|reason| DriverPartial {
+        t: receipt.last_t,
+        y: y.to_vec(),
+        reason,
+        last_failure: receipt.last_failure,
+        h_next: receipt.h_next,
+    });
+    let (times, states, output_clipped_steps) = if receipt.success {
+        collector.finish()?
+    } else {
+        collector.finish_partial()
+    };
+    let banded = work.band.as_ref().map(|band| band.work);
+    let result = Rodas5pFastResult {
+        observed: ObservedIntegrationResult {
+            t: times,
+            y: states,
+            success: receipt.success,
+            message: if receipt.success {
+                "success".into()
+            } else if receipt.stop == Some(DriverStopReason::FatalCallback) {
+                "fatal callback; accepted prefix retained".into()
+            } else if receipt.stop == Some(DriverStopReason::ClientStop) {
+                "stopped by the client's accept control".into()
+            } else {
+                "maximum step count or minimum step reached".into()
+            },
+            counters: receipt.counters,
+            internal_steps: receipt.internal_steps,
+            output_clipped_steps,
+        },
+        attempts: receipt.attempts,
+        accepted_steps: receipt.accepted_steps,
+        rejected_steps: receipt.rejected_steps,
+        jacobian_reuses: receipt.jacobian_reuses,
+        lu: work.lu_kind,
+        driver: match (work.lu_kind, work.band.as_ref().map(|band| band.kernel)) {
+            (Rodas5pFastLu::Client, _) => RODAS5P_FAST_CLIENT_DRIVER_ID,
+            (_, Some(BandedKernel::Slices)) => RODAS5P_FAST_BANDED_SLICES_DRIVER_ID,
+            (_, Some(BandedKernel::FixedWidth2)) => RODAS5P_FAST_BANDED_FIXED2_DRIVER_ID,
+            (_, Some(BandedKernel::FixedWidth2ExactCache)) => {
+                RODAS5P_FAST_BANDED_FIXED2_EXACT_CACHE_DRIVER_ID
+            }
+            _ => options.driver_id(banded.is_some()),
+        },
+    };
+    Ok((result, banded, partial))
+}
+
+/// Fixed-size receipt; no owning message or partial-state allocation.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+pub struct FastArenaReceipt {
+    pub success: bool,
+    pub last_t: f64,
+    pub stop: Option<DriverStopReason>,
+    pub last_failure: Option<AdaptiveFailureKind>,
+    pub h_next: Option<f64>,
+    pub counters: WorkCounters,
+    pub internal_steps: usize,
+    pub output_clipped_steps: usize,
+    pub attempts: usize,
+    pub accepted_steps: usize,
+    pub rejected_steps: usize,
+    pub jacobian_reuses: usize,
+}
+
+/// One shared numerical loop for the owning and reusable paths.
+#[allow(clippy::too_many_arguments)]
+fn integrate_fast_loop<S: StepSink>(
+    work: &mut Workspace,
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y: &mut [f64],
+    adaptive: &AdaptiveStepConfig,
+    collector: &mut OutputCollector,
+    options: Rodas5pFastOptions,
+    mut telemetry: Option<&mut ControllerTelemetry>,
+    atol_vector: &[f64],
+    sink: &mut S,
+) -> CoreResult<FastArenaReceipt> {
     let (mut t, tf) = t_span;
     if work.atol_vector.len() == atol_vector.len() {
         work.atol_vector.copy_from_slice(atol_vector);
     } else {
         work.atol_vector = atol_vector.to_vec();
     }
-    let mut y = y0.to_vec();
     let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut controller = AdaptiveControllerState::default();
     let mut counters = WorkCounters::default();
-    let mut collector =
-        OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.step_cap());
     let (mut attempts, mut accepted_steps, mut rejected_steps, mut reuses) = (0, 0, 0, 0);
     let mut internal_steps = 0_usize;
     // Whether the Jacobian, f(t, y) and f_t in the workspace belong to (t, y).
@@ -2715,7 +2881,7 @@ fn integrate_fast_in<S: StepSink>(
         let outcome = work.attempt(
             problem,
             t,
-            &y,
+            y,
             trial_h,
             !fresh_state,
             adaptive.atol,
@@ -2733,7 +2899,7 @@ fn integrate_fast_in<S: StepSink>(
                     problem,
                     work,
                     t,
-                    &y,
+                    y,
                     trial_h,
                     error,
                     adaptive.atol,
@@ -2773,9 +2939,9 @@ fn integrate_fast_in<S: StepSink>(
                 y.copy_from_slice(&work.y_new);
                 if options.fused_landing {
                     // `y_new` was checked finite by the attempt.
-                    collector.accept_prechecked(t, &y, clipped)?;
+                    collector.accept_prechecked(t, y, clipped)?;
                 } else {
-                    collector.accept(t, &y, clipped)?;
+                    collector.accept(t, y, clipped)?;
                 }
                 internal_steps += 1;
                 sink.accepted(work, t);
@@ -2838,7 +3004,7 @@ fn integrate_fast_in<S: StepSink>(
             let h_next = h.min(adaptive.max_step);
             let view = AcceptedStepView {
                 t,
-                y: &y,
+                y: y,
                 h_used: trial_h,
                 h_next,
                 accepted_steps,
@@ -2852,60 +3018,36 @@ fn integrate_fast_in<S: StepSink>(
         }
     }
     let success = t >= tf;
-    let mut partial =
-        DriverPartial::after_loop(t, tf, &y, attempts, adaptive.max_attempts, last_failure);
-    if fatal_callback {
-        partial
-            .as_mut()
-            .expect("fatal trial leaves an accepted prefix")
-            .reason = DriverStopReason::FatalCallback;
-    }
-    // A stop before `tf` is the client's, even on the budget's last attempt;
-    // a stop at `tf` leaves the completed run a success.
-    if let (Some(partial), Some(h_next)) = (partial.as_mut(), client_stop) {
-        partial.reason = DriverStopReason::ClientStop;
-        partial.h_next = Some(h_next);
-    }
-    let (times, states, output_clipped_steps) = if success {
-        collector.finish()?
+    let stop = if success {
+        None
+    } else if fatal_callback {
+        Some(DriverStopReason::FatalCallback)
+    } else if client_stop.is_some() {
+        Some(DriverStopReason::ClientStop)
+    } else if attempts >= adaptive.max_attempts {
+        Some(DriverStopReason::AttemptBudget)
     } else {
-        collector.finish_partial()
+        Some(DriverStopReason::MinimumStep)
     };
-    let banded = work.band.as_ref().map(|band| band.work);
-    let result = Rodas5pFastResult {
-        observed: ObservedIntegrationResult {
-            t: times,
-            y: states,
-            success,
-            message: if success {
-                "success".into()
-            } else if fatal_callback {
-                "fatal callback; accepted prefix retained".into()
-            } else if client_stop.is_some() {
-                "stopped by the client's accept control".into()
-            } else {
-                "maximum step count or minimum step reached".into()
-            },
-            counters,
-            internal_steps,
-            output_clipped_steps,
-        },
+    if success && !collector.is_complete() {
+        return Err(CoreError::InvalidInput(
+            "integration ended before all requested outputs were recorded".into(),
+        ));
+    }
+    Ok(FastArenaReceipt {
+        success,
+        last_t: t,
+        stop,
+        last_failure,
+        h_next: if success { None } else { client_stop },
+        counters,
+        internal_steps,
+        output_clipped_steps: collector.output_clipped_steps(),
         attempts,
         accepted_steps,
         rejected_steps,
         jacobian_reuses: reuses,
-        lu: work.lu_kind,
-        driver: match (work.lu_kind, work.band.as_ref().map(|band| band.kernel)) {
-            (Rodas5pFastLu::Client, _) => RODAS5P_FAST_CLIENT_DRIVER_ID,
-            (_, Some(BandedKernel::Slices)) => RODAS5P_FAST_BANDED_SLICES_DRIVER_ID,
-            (_, Some(BandedKernel::FixedWidth2)) => RODAS5P_FAST_BANDED_FIXED2_DRIVER_ID,
-            (_, Some(BandedKernel::FixedWidth2ExactCache)) => {
-                RODAS5P_FAST_BANDED_FIXED2_EXACT_CACHE_DRIVER_ID
-            }
-            _ => options.driver_id(banded.is_some()),
-        },
-    };
-    Ok((result, banded, partial))
+    })
 }
 
 #[cfg(test)]

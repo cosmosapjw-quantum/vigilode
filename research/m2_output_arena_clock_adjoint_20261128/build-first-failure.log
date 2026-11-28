@@ -1,0 +1,214 @@
+   Compiling rodas5p-integrators v0.2.0 (/home/cosmosapjw/worktrees/vigilode-m2-async-20261126/crates/rodas5p-integrators)
+error[E0308]: `?` operator has incompatible types
+   --> crates/rodas5p-integrators/src/output.rs:657:32
+    |
+657 | ...c = Self::new(&OutputSchedule::new(vec![0.])?, (0., 0.), &vec![0.; n...
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `OutputSamplingPlan`, found `OutputSchedule`
+    |
+    = note: `?` operator cannot convert from `OutputSchedule` to `OutputSamplingPlan`
+
+error[E0061]: this function takes 2 arguments but 3 arguments were supplied
+   --> crates/rodas5p-integrators/src/output.rs:657:21
+    |
+657 | ... = Self::new(&OutputSchedule::new(vec![0.])?, (0., 0.), &vec![0.; n])?;
+    |       ^^^^^^^^^                                            ------------ unexpected argument #3 of type `&Vec<{float}>`
+    |
+note: associated function defined here
+   --> crates/rodas5p-integrators/src/output.rs:643:19
+    |
+643 |     pub(crate) fn new(plan: &OutputSamplingPlan, t_span: (f64, f64)) ->...
+    |                   ^^^
+help: remove the extra argument
+    |
+657 -         let mut c = Self::new(&OutputSchedule::new(vec![0.])?, (0., 0.), &vec![0.; n])?;
+657 +         let mut c = Self::new(&OutputSchedule::new(vec![0.])?, (0., 0.))?;
+    |
+
+error[E0609]: no field `schedule` on type `HardStopCursor`
+   --> crates/rodas5p-integrators/src/output.rs:658:11
+    |
+658 |         c.schedule.times.reserve_exact(capacity.saturating_sub(1));
+    |           ^^^^^^^^ unknown field
+    |
+    = note: available fields are: `stops`, `next_index`, `max_step`
+
+error[E0609]: no field `times` on type `HardStopCursor`
+   --> crates/rodas5p-integrators/src/output.rs:659:11
+    |
+659 |         c.times.reserve_exact(capacity.saturating_sub(1));
+    |           ^^^^^ unknown field
+    |
+    = note: available fields are: `stops`, `next_index`, `max_step`
+
+error[E0609]: no field `states` on type `HardStopCursor`
+   --> crates/rodas5p-integrators/src/output.rs:660:11
+    |
+660 |         c.states.reserve_exact(capacity.saturating_sub(1));
+    |           ^^^^^^ unknown field
+    |
+    = note: available fields are: `stops`, `next_index`, `max_step`
+
+error[E0609]: no field `states` on type `HardStopCursor`
+   --> crates/rodas5p-integrators/src/output.rs:661:11
+    |
+661 |         c.states.resize_with(capacity, || vec![0.; n]);
+    |           ^^^^^^ unknown field
+    |
+    = note: available fields are: `stops`, `next_index`, `max_step`
+
+error[E0609]: no field `times` on type `HardStopCursor`
+   --> crates/rodas5p-integrators/src/output.rs:663:11
+    |
+663 |         c.times.clear();
+    |           ^^^^^ unknown field
+    |
+    = note: available fields are: `stops`, `next_index`, `max_step`
+
+error[E0609]: no field `states` on type `&mut HardStopCursor`
+   --> crates/rodas5p-integrators/src/output.rs:676:28
+    |
+676 |         if y.len() != self.states[0].len()
+    |                            ^^^^^^ unknown field
+    |
+    = note: available fields are: `stops`, `next_index`, `max_step`
+
+error[E0609]: no field `states` on type `&mut HardStopCursor`
+   --> crates/rodas5p-integrators/src/output.rs:678:44
+    |
+678 |             || schedule.times.len() > self.states.len()
+    |                                            ^^^^^^ unknown field
+    |
+    = note: available fields are: `stops`, `next_index`, `max_step`
+
+error[E0609]: no field `schedule` on type `&mut HardStopCursor`
+   --> crates/rodas5p-integrators/src/output.rs:684:14
+    |
+684 |         self.schedule.times.clear();
+    |              ^^^^^^^^ unknown field
+    |
+    = note: available fields are: `stops`, `next_index`, `max_step`
+
+error[E0609]: no field `schedule` on type `&mut HardStopCursor`
+   --> crates/rodas5p-integrators/src/output.rs:685:14
+    |
+685 |         self.schedule.times.extend_from_slice(schedule.times());
+    |              ^^^^^^^^ unknown field
+    |
+    = note: available fields are: `stops`, `next_index`, `max_step`
+
+error[E0609]: no field `times` on type `&mut HardStopCursor`
+   --> crates/rodas5p-integrators/src/output.rs:686:14
+    |
+686 |         self.times.clear();
+    |              ^^^^^ unknown field
+    |
+    = note: available fields are: `stops`, `next_index`, `max_step`
+
+error[E0609]: no field `times` on type `&mut HardStopCursor`
+   --> crates/rodas5p-integrators/src/output.rs:687:14
+    |
+687 |         self.times.push(schedule.times[0]);
+    |              ^^^^^ unknown field
+    |
+    = note: available fields are: `stops`, `next_index`, `max_step`
+
+error[E0609]: no field `states` on type `&mut HardStopCursor`
+   --> crates/rodas5p-integrators/src/output.rs:688:14
+    |
+688 |         self.states[0].copy_from_slice(y);
+    |              ^^^^^^ unknown field
+    |
+    = note: available fields are: `stops`, `next_index`, `max_step`
+
+error[E0609]: no field `end` on type `&mut HardStopCursor`
+   --> crates/rodas5p-integrators/src/output.rs:690:14
+    |
+690 |         self.end = span.1;
+    |              ^^^ unknown field
+    |
+    = note: available fields are: `stops`, `next_index`, `max_step`
+
+error[E0609]: no field `clipped_steps` on type `&mut HardStopCursor`
+   --> crates/rodas5p-integrators/src/output.rs:691:14
+    |
+691 |         self.clipped_steps = 0;
+    |              ^^^^^^^^^^^^^ unknown field
+    |
+    = note: available fields are: `stops`, `next_index`, `max_step`
+
+error[E0609]: no field `times` on type `&HardStopCursor`
+   --> crates/rodas5p-integrators/src/output.rs:697:19
+    |
+697 |             &self.times[..self.next_index],
+    |                   ^^^^^ unknown field
+    |
+    = note: available fields are: `stops`, `next_index`, `max_step`
+
+error[E0609]: no field `states` on type `&HardStopCursor`
+   --> crates/rodas5p-integrators/src/output.rs:698:19
+    |
+698 |             &self.states[..self.next_index],
+    |                   ^^^^^^ unknown field
+    |
+    = note: available fields are: `stops`, `next_index`, `max_step`
+
+error[E0599]: no function or associated item named `new_reusable` found for struct `OutputCollector` in the current scope
+    --> crates/rodas5p-integrators/src/rodas5p_fast.rs:2515:41
+     |
+2515 | ...or: OutputCollector::new_reusable(dimension, capacity)?,
+     |                         ^^^^^^^^^^^^ function or associated item not found in `OutputCollector`
+     |
+    ::: crates/rodas5p-integrators/src/output.rs:785:1
+     |
+ 785 | pub(crate) struct OutputCollector {
+     | --------------------------------- function or associated item `new_reusable` not found for this struct
+     |
+note: if you're trying to build a new `OutputCollector`, consider using `OutputCollector::new` which returns `Result<OutputCollector, CoreError>`
+    --> crates/rodas5p-integrators/src/output.rs:824:5
+     |
+ 824 | /     pub(crate) fn new(
+ 825 | |         schedule: &OutputSchedule,
+ 826 | |         t_span: (f64, f64),
+ 827 | |         y0: &[f64],
+ 828 | |     ) -> CoreResult<Self> {
+     | |_________________________^
+
+error[E0599]: no method named `reset_reusable` found for struct `OutputCollector` in the current scope
+    --> crates/rodas5p-integrators/src/rodas5p_fast.rs:2553:14
+     |
+2551 | /         arena
+2552 | |             .collector
+2553 | |             .reset_reusable(output, t_span, y0, adaptive.step_cap())?;
+     | |             -^^^^^^^^^^^^^^ method not found in `OutputCollector`
+     | |_____________|
+     |
+     |
+    ::: crates/rodas5p-integrators/src/output.rs:785:1
+     |
+ 785 |   pub(crate) struct OutputCollector {
+     |   --------------------------------- method `reset_reusable` not found for this struct
+
+error[E0599]: no method named `reusable_view` found for struct `OutputCollector` in the current scope
+    --> crates/rodas5p-integrators/src/rodas5p_fast.rs:2571:47
+     |
+2571 |         let (times, states) = arena.collector.reusable_view();
+     |                                               ^^^^^^^^^^^^^ method not found in `OutputCollector`
+     |
+    ::: crates/rodas5p-integrators/src/output.rs:785:1
+     |
+ 785 | pub(crate) struct OutputCollector {
+     | --------------------------------- method `reusable_view` not found for this struct
+
+warning: value assigned to `residual_radius` is never read
+    --> crates/rodas5p-integrators/src/retro_dae_evolution.rs:1622:31
+     |
+1622 |     let mut residual_radius = 0.;
+     |                               ^^
+     |
+     = help: maybe it is overwritten before being read?
+     = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+
+Some errors have detailed explanations: E0061, E0308, E0599, E0609.
+For more information about an error, try `rustc --explain E0061`.
+warning: `rodas5p-integrators` (lib) generated 1 warning
+error: could not compile `rodas5p-integrators` (lib) due to 21 previous errors; 1 warning emitted

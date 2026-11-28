@@ -661,6 +661,50 @@ impl SpatialAdjointDriverWorkspace {
             atol: vec![0.; grid.dimension()],
         })
     }
+    pub fn solve_with_schedule(
+        &mut self,
+        initial: &[f64],
+        adaptive: &AdaptiveStepConfig,
+        schedule: &OutputSchedule,
+    ) -> CoreResult<(
+        Rodas5pFastResult,
+        Option<rodas5p_integrators::DriverPartial>,
+        ShiftedNativeWork,
+    )> {
+        *self.report.lock().unwrap() = ShiftedNativeWork::default();
+        self.atol.fill(adaptive.atol);
+        let (r, p) = self.driver.solve(
+            &self.problem,
+            self.span,
+            initial,
+            adaptive,
+            schedule,
+            &self.atol,
+        )?;
+        Ok((r, p, *self.report.lock().unwrap()))
+    }
+    pub fn solve_into<'a>(
+        &mut self,
+        initial: &[f64],
+        adaptive: &AdaptiveStepConfig,
+        schedule: &OutputSchedule,
+        plan: rodas5p_integrators::FastArenaPlan,
+        arena: &'a mut rodas5p_integrators::FastOutputArena,
+    ) -> CoreResult<(rodas5p_integrators::FastArenaRun<'a>, ShiftedNativeWork)> {
+        *self.report.lock().unwrap() = ShiftedNativeWork::default();
+        self.atol.fill(adaptive.atol);
+        let r = self.driver.solve_into(
+            &self.problem,
+            self.span,
+            initial,
+            adaptive,
+            schedule,
+            &self.atol,
+            plan,
+            arena,
+        )?;
+        Ok((r, *self.report.lock().unwrap()))
+    }
     pub fn solve(
         &mut self,
         initial: &[f64],

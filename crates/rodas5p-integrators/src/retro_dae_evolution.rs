@@ -21,7 +21,10 @@ use serde::Serialize;
 type Iv = Interval;
 type Poly = Vec<Iv>;
 mod triangular_goal;
-pub use triangular_goal::{TriangularGoalRoute, TriangularGoalWork, triangular_clock_goal};
+pub use triangular_goal::{
+    StructuredClockWork, TriangularGoalRoute, TriangularGoalWork, structured_clock_adjoint_into,
+    structured_clock_goal_into, triangular_clock_goal,
+};
 mod clock_tube;
 pub use clock_tube::{ClockTubeCarry, ClockTubePlan, ClockTubeWork};
 mod scalar_adjoint_jet;

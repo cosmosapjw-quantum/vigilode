@@ -108,6 +108,73 @@ fn power(s: &CompactSlabView<'_>, n: usize, out: &mut [[Iv; 5]]) -> CoreResult<(
     Ok(())
 }
 impl SlabReplayRun {
+    /// Exact initial-state continuous covector of a source-proved monomial
+    /// clock system, after the original physical trajectory admission.
+    pub fn structured_clock_adjoint_into(
+        &self,
+        weights: &[f64],
+        out: &mut [Iv],
+    ) -> CoreResult<de::StructuredClockWork> {
+        let e = self.adjoint_admission(weights)?;
+        let initial = self.initial();
+        let start = self
+            .accepted(0)
+            .ok_or_else(|| bad("structured initial endpoint"))?;
+        let end = self
+            .accepted(self.accepted_len().saturating_sub(1))
+            .ok_or_else(|| bad("structured terminal endpoint"))?;
+        let nx = e.src.nx();
+        if !initial.qualified
+            || initial.x.len() != nx
+            || start.state().len() != weights.len()
+            || end.state().len() != weights.len()
+            || start.state()[..nx] != initial.x[..]
+            || start.t() != initial.t
+            || self.driver().t.last() != Some(&end.t())
+            || self.accepted_len() != self.slabs_len() + 1
+        {
+            return Err(bad("structured retained endpoint authority"));
+        }
+        de::structured_clock_adjoint_into(&e.src, start.t(), end.t(), &initial.x, weights, out)
+    }
+    pub fn structured_clock_goal_into(
+        &self,
+        weights: &[f64],
+        route: de::TriangularGoalRoute,
+        out: &mut Iv,
+    ) -> CoreResult<de::TriangularGoalWork> {
+        let e = self.adjoint_admission(weights)?;
+        let initial = self.initial();
+        let start = self
+            .accepted(0)
+            .ok_or_else(|| bad("structured initial endpoint"))?;
+        let end = self
+            .accepted(self.accepted_len().saturating_sub(1))
+            .ok_or_else(|| bad("structured terminal endpoint"))?;
+        let nx = e.src.nx();
+        if !initial.qualified
+            || initial.x.len() != nx
+            || start.state().len() != weights.len()
+            || end.state().len() != weights.len()
+            || start.state()[..nx] != initial.x[..]
+            || start.t() != initial.t
+            || self.driver().t.last() != Some(&end.t())
+            || self.accepted_len() != self.slabs_len() + 1
+        {
+            return Err(bad("structured retained endpoint authority"));
+        }
+        de::structured_clock_goal_into(
+            &e.src,
+            start.t(),
+            end.t(),
+            &initial.x,
+            end.state(),
+            weights,
+            route,
+            out,
+        )
+    }
+
     /// Source-proved closed-form triangular terminal goal on the retained
     /// physical trajectory; the underlying numerical state is unchanged.
     pub fn triangular_goal_into(

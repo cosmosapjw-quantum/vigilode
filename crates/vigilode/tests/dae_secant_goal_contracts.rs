@@ -2038,3 +2038,161 @@ fn structured_clock_adjoint_contract() {
     .unwrap();
     assert_eq!(w.series_terms, 0);
 }
+
+fn monomial_fixture(
+    k: usize,
+    bcoef: f64,
+) -> (DaeSource, Vec<f64>, Vec<f64>, Vec<[f64; 2]>, Vec<f64>) {
+    let mut f = vec![];
+    let n = 2;
+    let mut pf = vec![F::clock(0.); k];
+    pf.extend([F::component(n, 0.), F::component(n, 0.)]);
+    let mut qf = vec![F::clock(0.); k];
+    qf.push(F::component(n, 0.));
+    f.push(p(vec![tr(-1.5, pf)]));
+    f.push(p(vec![tr(bcoef, qf)]));
+    let g = (0..n)
+        .map(|i| {
+            p(vec![
+                tr(1., vec![F::component(n + i, 0.)]),
+                tr(-1., vec![F::component(i, 0.)]),
+            ])
+        })
+        .collect();
+    let x = vec![0.25, 0.0625];
+    (
+        DaeSource::new(f, g).unwrap(),
+        x.clone(),
+        x,
+        vec![[-1., 2.]; n],
+        vec![0., 1., 0.5, 0.],
+    )
+}
+#[test]
+fn structured_clock_actual_portfolio() {
+    use de::TriangularGoalRoute as T;
+    let (opts, policy, route, retention) = weighted_settings();
+    for (case, k, bcoef, start, end) in [
+        ("clock2", 1, 1., 0., 0.5),
+        ("clock8", 1, 1., 0., 0.5),
+        ("coupled_clock", 1, 1., 0., 1.),
+        ("mono0", 0, -0.75, 0.125, 0.5),
+        ("mono1", 1, 1.25, 0.125, 0.5),
+        ("mono2", 2, 0.5, 0.125, 0.5),
+    ] {
+        let (src, x, z, b, c) = match case {
+            "clock2" => fixture(2),
+            "clock8" => fixture(8),
+            "coupled_clock" => coupled_clock_fixture(),
+            _ => monomial_fixture(k, bcoef),
+        };
+        let epoch = EvolutionEpoch {
+            start,
+            end,
+            incoming_x_error: Some(0.),
+        };
+        let (r, _) = evolve_epoch_slab_replay_planned(
+            &src,
+            &x,
+            &z,
+            &b,
+            epoch,
+            &opts,
+            policy,
+            route,
+            &[],
+            retention,
+            SlabReplayRoute::Flat,
+            EnginePlan::SharedFused,
+        );
+        let r = r.unwrap();
+        assert!(r.global_qualified(), "{case}");
+        let term = r.accepted(r.accepted_len() - 1).unwrap();
+        let mut output = vec![Iv::point(17.).unwrap(); x.len()];
+        let mut w = NonlinearAdjointWorkspace::new();
+        for candidate in [
+            NonlinearAdjointRoute::Whole,
+            NonlinearAdjointRoute::Sub4,
+            NonlinearAdjointRoute::Contracted16,
+        ] {
+            let (res, a) = measure(|| r.nonlinear_adjoint_into(&c, candidate, &mut w, &mut output));
+            match res {
+                Ok(work) => println!(
+                    "CLOCK_GRAD {}",
+                    serde_json::json!({"case":case,"k":k,"b":bcoef,"start":start,"end":end,"initial":x,"weights":c,"candidate":candidate,"qualified":true,"allocation":a,"gradient":output.iter().map(|v|v.as_pair()).collect::<Vec<_>>(),"width":work.width_upper,"actions":work.matrix_actions})
+                ),
+                Err(e) => println!(
+                    "CLOCK_GRAD {}",
+                    serde_json::json!({"case":case,"candidate":candidate,"qualified":false,"allocation":a,"reason":e.to_string()})
+                ),
+            }
+        }
+        let (res, a) = measure(|| r.structured_clock_adjoint_into(&c, &mut output));
+        let work = res.unwrap();
+        assert_eq!(a.requests(), 0);
+        println!(
+            "CLOCK_GRAD {}",
+            serde_json::json!({"case":case,"k":k,"b":bcoef,"start":start,"end":end,"initial":x,"weights":c,"candidate":"Structured","qualified":true,"allocation":a,"gradient":output.iter().map(|v|v.as_pair()).collect::<Vec<_>>(),"width":work.max_gradient_width,"actions":0})
+        );
+        for candidate in [
+            T::Adaptive,
+            T::RootReduced,
+            T::TinyAdaptive,
+            T::TinyRootReduced,
+        ] {
+            let mut iv = Iv::point(17.).unwrap();
+            let (res, a) = measure(|| r.structured_clock_goal_into(&c, candidate, &mut iv));
+            let work = res.unwrap();
+            assert_eq!(a.requests(), 0);
+            println!(
+                "CLOCK_GOAL {}",
+                serde_json::json!({"case":case,"k":k,"b":bcoef,"start":start,"end":end,"initial":x,"weights":c,"terminal":term.state(),"candidate":candidate,"qualified":true,"allocation":a,"work":work})
+            );
+        }
+    }
+}
+#[test]
+fn tiny_log_actual_portfolio() {
+    use de::TriangularGoalRoute as T;
+    let (src, _, _, _, _) = fixture(2);
+    for (case, p0, end) in [
+        ("subnormal", f64::from_bits(1), 1.),
+        ("minnormal", f64::MIN_POSITIVE, 1.),
+        ("tiny", 2f64.powi(-70), 1.),
+        ("threshold", 2f64.powi(-51), 1.),
+        ("above", 2f64.powi(-50), 1.),
+        ("ordinary", 0.25, 1.),
+        ("large", 0.25, 16.),
+    ] {
+        let x = [p0, 0.];
+        let y = [0.; 4];
+        let c = [0., 1., 0., 0.];
+        for candidate in [
+            T::Adaptive,
+            T::RootReduced,
+            T::TinyAdaptive,
+            T::TinyRootReduced,
+        ] {
+            let mut iv = Iv::point(17.).unwrap();
+            let (res, a) = measure(|| {
+                de::triangular_clock_goal(&src, 0., end, &x, &y, &c, candidate, &mut iv)
+            });
+            let work = res.unwrap();
+            assert_eq!(a.requests(), 0);
+            if matches!(candidate, T::TinyAdaptive | T::TinyRootReduced)
+                && p0 <= 2f64.powi(-51)
+                && end == 1.
+            {
+                assert_eq!(work.series_terms, 0);
+            }
+            println!(
+                "TINY_LOG {}",
+                serde_json::json!({"case":case,"start":0.,"end":end,"initial":x,"weights":c,"terminal":y,"candidate":candidate,"qualified":true,"allocation":a,"work":work})
+            );
+        }
+    }
+    let (wrong, x, _, _, c) = growth_fixture();
+    let mut grad = vec![Iv::point(17.).unwrap(); x.len()];
+    assert!(de::structured_clock_adjoint_into(&wrong, 0., 1., &x, &c, &mut grad).is_err());
+    assert!(grad.iter().all(|x| *x == Iv::point(17.).unwrap()));
+}
