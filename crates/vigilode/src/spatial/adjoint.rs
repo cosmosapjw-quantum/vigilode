@@ -271,6 +271,97 @@ impl SpatialAdjointWorkspace {
             scratch: vec![Z; n],
         })
     }
+    // Propagate a previously enclosed center with an independent scalar l1
+    // tail. Exact transpose semigroup is l1 contractive. The interval clock
+    // encloses the exact represented difference, not a rounded duration.
+    fn propagate_series(
+        &mut self,
+        duration: Iv,
+        route: SpatialAdjointRoute,
+        w: &mut SpatialAdjointWork,
+    ) -> CoreResult<()> {
+        if duration.lo < 0. || duration.hi < duration.lo {
+            return Err(err("series clock"));
+        }
+        if duration.hi == 0. || self.q == 0. {
+            return Ok(());
+        }
+        let n = self.state.len();
+        let poisson = route != SpatialAdjointRoute::Taylor18;
+        let mut cells = 1usize;
+        let total = mul_up(self.q, duration.hi)?;
+        let wide = matches!(
+            route,
+            SpatialAdjointRoute::PoissonWide | SpatialAdjointRoute::PoissonWideDecay
+        );
+        let cap = if wide {
+            4.
+        } else if poisson {
+            1.
+        } else {
+            0.5
+        };
+        while div_up(total, cells as f64)? > cap {
+            cells *= 2;
+            if cells > 4096 {
+                return Err(err("subcell cap"));
+            }
+        }
+        let h = duration.div(Iv::point(cells as f64)?)?;
+        let a = h.scale(self.q)?;
+        let m = if poisson { a.hi } else { mul_up(2., a.hi)? };
+        if m > if wide {
+            4.000000000000004
+        } else {
+            1.000000000000001
+        } {
+            return Err(err("series norm cap"));
+        }
+        let decay = if poisson {
+            exp_neg_interval_enclosure(a)?
+        } else {
+            Iv::point(1.)?
+        };
+        let mut order = 18;
+        let tail = |k: usize| -> CoreResult<f64> {
+            let t = tail_after(m, k)?;
+            if route == SpatialAdjointRoute::PoissonWideDecay {
+                mul_up(t, decay.hi)
+            } else {
+                Ok(t)
+            }
+        };
+        if route == SpatialAdjointRoute::PoissonAdaptive || wide {
+            let target = rodas5p_core::directed::div_down(1e-15, cells as f64)?;
+            let mut bounds = if wide { 4..=48 } else { 0..=24 };
+            order = bounds
+                .find(|&k| tail(k).is_ok_and(|t| t <= target))
+                .ok_or_else(|| err("Poisson tail order cap"))?;
+        }
+        let local = tail(order)?;
+        for _ in 0..cells {
+            // Carry one l1 radius: exact semigroup is l1 contractive, so the
+            // previous truncation radius never needs componentwise inflation.
+            w.l1_tail_upper = add_up(w.l1_tail_upper, mul_up(local, l1(&self.state)?)?)?;
+            self.term.copy_from_slice(&self.state);
+            self.sum.copy_from_slice(&self.state);
+            for k in 1..=order {
+                apply(&self.rows, &self.term, &mut self.scratch, poisson)?;
+                let coef = if poisson { a } else { h }.div(Iv::point(k as f64)?)?;
+                for i in 0..n {
+                    self.term[i] = self.scratch[i].mul(coef)?;
+                    self.sum[i] = self.sum[i].add(self.term[i])?;
+                }
+                w.actions += 1;
+            }
+            for i in 0..n {
+                self.state[i] = self.sum[i].mul(decay)?;
+            }
+        }
+        w.cells += cells;
+        w.max_order = w.max_order.max(order);
+        Ok(())
+    }
     /// Bound the true semidiscrete terminal goal and the gradient with respect
     /// to the represented initial vector. Endpoint is the actual numerical
     /// result supplied by the caller; report encloses exact minus numerical
@@ -330,79 +421,7 @@ impl SpatialAdjointWorkspace {
                     *o = gain.scale(c)?;
                 }
             } else {
-                let poisson = route != SpatialAdjointRoute::Taylor18;
-                let mut cells = 1usize;
-                let total = mul_up(self.q, duration)?;
-                let wide = matches!(
-                    route,
-                    SpatialAdjointRoute::PoissonWide | SpatialAdjointRoute::PoissonWideDecay
-                );
-                let cap = if wide {
-                    4.
-                } else if poisson {
-                    1.
-                } else {
-                    0.5
-                };
-                while div_up(total, cells as f64)? > cap {
-                    cells *= 2;
-                    if cells > 4096 {
-                        return Err(err("subcell cap"));
-                    }
-                }
-                let h = Iv::point(duration)?.div(Iv::point(cells as f64)?)?;
-                let a = h.scale(self.q)?;
-                let m = if poisson { a.hi } else { mul_up(2., a.hi)? };
-                if m > if wide {
-                    4.000000000000004
-                } else {
-                    1.000000000000001
-                } {
-                    return Err(err("series norm cap"));
-                }
-                let decay = if poisson {
-                    exp_neg_interval_enclosure(a)?
-                } else {
-                    Iv::point(1.)?
-                };
-                let mut order = 18;
-                let tail = |k: usize| -> CoreResult<f64> {
-                    let t = tail_after(m, k)?;
-                    if route == SpatialAdjointRoute::PoissonWideDecay {
-                        mul_up(t, decay.hi)
-                    } else {
-                        Ok(t)
-                    }
-                };
-                if route == SpatialAdjointRoute::PoissonAdaptive || wide {
-                    let target = rodas5p_core::directed::div_down(1e-15, cells as f64)?;
-                    let mut bounds = if wide { 4..=48 } else { 0..=24 };
-                    order = bounds
-                        .find(|&k| tail(k).is_ok_and(|t| t <= target))
-                        .ok_or_else(|| err("Poisson tail order cap"))?;
-                }
-                let local = tail(order)?;
-                for _ in 0..cells {
-                    // Carry one l1 radius: exact semigroup is l1 contractive, so the
-                    // previous truncation radius never needs componentwise inflation.
-                    w.l1_tail_upper = add_up(w.l1_tail_upper, mul_up(local, l1(&self.state)?)?)?;
-                    self.term.copy_from_slice(&self.state);
-                    self.sum.copy_from_slice(&self.state);
-                    for k in 1..=order {
-                        apply(&self.rows, &self.term, &mut self.scratch, poisson)?;
-                        let coef = if poisson { a } else { h }.div(Iv::point(k as f64)?)?;
-                        for i in 0..n {
-                            self.term[i] = self.scratch[i].mul(coef)?;
-                            self.sum[i] = self.sum[i].add(self.term[i])?;
-                        }
-                        w.actions += 1;
-                    }
-                    for i in 0..n {
-                        self.state[i] = self.sum[i].mul(decay)?;
-                    }
-                }
-                w.cells = cells;
-                w.max_order = order;
+                self.propagate_series(Iv::point(duration)?, route, &mut w)?;
             }
         }
         let radius = mul_up(
@@ -763,5 +782,197 @@ impl SpatialDualCache {
             )?
             .as_pair();
         Ok(r)
+    }
+}
+
+/// Boundary covector construction for compact goal-directed replay.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum SpatialBoundaryDualPlan {
+    /// Independent actions from the original terminal covector.
+    Independent,
+    /// Backward semigroup recurrence carrying a single l1 truncation bound.
+    Chain,
+    /// Near-stationary residual certificate when eligible, otherwise Chain.
+    StationaryChain,
+}
+#[derive(Clone, Copy, Debug, Default, Serialize)]
+pub(super) struct BoundaryPreparation {
+    pub actions: usize,
+    pub cache_hit: bool,
+    pub stationary: bool,
+    pub stationary_residual: f64,
+}
+// Pairwise outward summation reduces the accumulation width without an
+// allocating reduction tree. The inputs remain exact represented numbers.
+fn pairwise_point_sum(v: &[f64]) -> CoreResult<Iv> {
+    if v.len() <= 1 {
+        return Iv::point(v.first().copied().unwrap_or(0.));
+    }
+    let (a, b) = v.split_at(v.len() / 2);
+    pairwise_point_sum(a)?.add(pairwise_point_sum(b)?)
+}
+fn pairwise_shifted_dot(c: &[Iv], u: &[f64], s: f64) -> CoreResult<Iv> {
+    if c.is_empty() {
+        return Ok(Z);
+    }
+    if c.len() == 1 {
+        return c[0].mul(Iv::point(u[0])?.sub(Iv::point(s)?)?);
+    }
+    let m = c.len() / 2;
+    pairwise_shifted_dot(&c[..m], &u[..m], s)?.add(pairwise_shifted_dot(&c[m..], &u[m..], s)?)
+}
+/// One source-owned propagator plus a flat table of boundary enclosures.
+/// All cached covectors have the same exact terminal goal and time grid.
+pub(super) struct SpatialBoundaryDual {
+    inner: SpatialAdjointWorkspace,
+    key: Vec<f64>,
+    centers: Vec<Iv>,
+    works: [SpatialAdjointWork; 9],
+    times: [f64; 9],
+    count: usize,
+    route: SpatialBoundaryDualPlan,
+    preparation: BoundaryPreparation,
+}
+impl SpatialBoundaryDual {
+    pub fn new(g: &DiffusionGrid) -> CoreResult<Self> {
+        let n = g.dimension();
+        Ok(Self {
+            inner: SpatialAdjointWorkspace::new(g)?,
+            key: vec![0.; n],
+            centers: vec![Z; 9 * n],
+            works: [SpatialAdjointWork::default(); 9],
+            times: [0.; 9],
+            count: 0,
+            route: SpatialBoundaryDualPlan::Independent,
+            preparation: BoundaryPreparation::default(),
+        })
+    }
+    pub fn prepare(
+        &mut self,
+        goal: &[f64],
+        times: &[f64],
+        route: SpatialBoundaryDualPlan,
+    ) -> CoreResult<BoundaryPreparation> {
+        let n = self.key.len();
+        let m = times.len();
+        if m < 2
+            || m > 9
+            || goal.len() != n
+            || goal.iter().chain(times).any(|x| !x.is_finite())
+            || times[0] < 0.
+            || times.windows(2).any(|v| v[0] >= v[1])
+        {
+            return Err(err("boundary key"));
+        }
+        if self.count == m
+            && self.route == route
+            && self.times[..m]
+                .iter()
+                .zip(times)
+                .all(|(a, b)| a.to_bits() == b.to_bits())
+            && self
+                .key
+                .iter()
+                .zip(goal)
+                .all(|(a, b)| a.to_bits() == b.to_bits())
+        {
+            return Ok(BoundaryPreparation {
+                actions: 0,
+                cache_hit: true,
+                ..self.preparation
+            });
+        }
+        self.count = 0;
+        let tf = times[m - 1];
+        let mut receipt = BoundaryPreparation::default();
+        for (x, &c) in self.inner.state.iter_mut().zip(goal) {
+            *x = Iv::point(c)?;
+        }
+        self.centers[(m - 1) * n..m * n].copy_from_slice(&self.inner.state);
+        self.works[m - 1] = SpatialAdjointWork::default();
+        if route == SpatialBoundaryDualPlan::StationaryChain {
+            apply(
+                &self.inner.rows,
+                &self.inner.state,
+                &mut self.inner.scratch,
+                false,
+            )?;
+            receipt.actions += 1;
+            receipt.stationary_residual = l1(&self.inner.scratch)?;
+            // Selection threshold is heuristic, certificate below is exact
+            // even for nonzero represented stationarity residual.
+            receipt.stationary = receipt.stationary_residual <= 1e-10 * l1(&self.inner.state)?;
+        }
+        let mut w = SpatialAdjointWork::default();
+        for k in (0..m - 1).rev() {
+            if receipt.stationary {
+                w = SpatialAdjointWork {
+                    actions: 1,
+                    l1_tail_upper: mul_up(
+                        Iv::point(tf)?.sub(Iv::point(times[k])?)?.hi,
+                        receipt.stationary_residual,
+                    )?,
+                    ..Default::default()
+                };
+            } else {
+                let dt = if route == SpatialBoundaryDualPlan::Independent {
+                    for (v, &c) in self.inner.state.iter_mut().zip(goal) {
+                        *v = Iv::point(c)?;
+                    }
+                    w = SpatialAdjointWork::default();
+                    Iv::point(tf)?.sub(Iv::point(times[k])?)?
+                } else {
+                    Iv::point(times[k + 1])?.sub(Iv::point(times[k])?)?
+                };
+                let old = w.actions;
+                self.inner
+                    .propagate_series(dt, SpatialAdjointRoute::PoissonWideDecay, &mut w)?;
+                receipt.actions += w.actions - old;
+            }
+            self.centers[k * n..(k + 1) * n].copy_from_slice(&self.inner.state);
+            let mut r = w;
+            let tail = Iv::new(-w.l1_tail_upper, w.l1_tail_upper)?;
+            for v in &self.inner.state {
+                let a = v.add(tail)?;
+                r.width_upper = r.width_upper.max(sub_up(a.hi, a.lo)?);
+            }
+            self.works[k] = r;
+        }
+        self.key.copy_from_slice(goal);
+        self.times[..m].copy_from_slice(times);
+        self.route = route;
+        self.count = m;
+        self.preparation = receipt;
+        Ok(receipt)
+    }
+    /// Projection after removing the same scalar anchor at every boundary.
+    /// L*1=0 gives a common constant which cancels from every signed defect.
+    pub fn project(&self, k: usize, u: &[f64], anchor: f64) -> CoreResult<Iv> {
+        let n = self.key.len();
+        if k >= self.count
+            || u.len() != n
+            || !anchor.is_finite()
+            || u.iter().any(|x| !x.is_finite())
+        {
+            return Err(err("boundary projection"));
+        }
+        let c = &self.centers[k * n..(k + 1) * n];
+        let mut norm = 0_f64;
+        for &x in u {
+            norm = norm.max(Iv::point(x)?.sub(Iv::point(anchor)?)?.mag());
+        }
+        let radius = mul_up(self.works[k].l1_tail_upper, norm)?;
+        pairwise_shifted_dot(c, u, anchor)?.add(Iv::new(-radius, radius)?)
+    }
+    pub fn receipt(&self, anchor: f64, start: Iv, end: Iv) -> CoreResult<SpatialAdjointWork> {
+        if self.count < 2 {
+            return Err(err("boundary receipt"));
+        }
+        let mut w = self.works[0];
+        w.exact_goal = start
+            .add(pairwise_point_sum(&self.key)?.scale(anchor)?)?
+            .as_pair();
+        w.signed_goal_error = start.sub(end)?.as_pair();
+        Ok(w)
     }
 }

@@ -281,7 +281,7 @@ pub use portfolio::{EndpointRequest, adaptive_endpoint, adaptive_stage};
 mod adjoint;
 pub use adjoint::{
     SpatialAdjointBatchWorkspace, SpatialAdjointRoute, SpatialAdjointWork, SpatialAdjointWorkspace,
-    SpatialBatchBudgetWork, SpatialBatchPlan, SpatialBatchWork,
+    SpatialBatchBudgetWork, SpatialBatchPlan, SpatialBatchWork, SpatialBoundaryDualPlan,
 };
 
 mod shifted_adjoint;
@@ -289,8 +289,9 @@ pub use shifted_adjoint::*;
 
 mod primal_replay;
 pub use primal_replay::{
-    SpatialLocalReplayPlan, SpatialLocalReplayPolicy, SpatialLocalReplayWork,
-    SpatialLocalReplayWorkspace, SpatialPrimalPair, SpatialPrimalReplayPlan,
-    SpatialPrimalReplayPolicy, SpatialPrimalReplayWork, SpatialPrimalReplayWorkspace,
-    SpatialReplayCachePlan,
+    SpatialCompactPartition, SpatialCompactPolicy, SpatialCompactRefinement,
+    SpatialCompactReplayWorkspace, SpatialCompactWork, SpatialLocalReplayPlan,
+    SpatialLocalReplayPolicy, SpatialLocalReplayWork, SpatialLocalReplayWorkspace,
+    SpatialPrimalPair, SpatialPrimalReplayPlan, SpatialPrimalReplayPolicy, SpatialPrimalReplayWork,
+    SpatialPrimalReplayWorkspace, SpatialReplayCachePlan,
 };

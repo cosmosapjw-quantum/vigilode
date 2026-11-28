@@ -867,3 +867,472 @@ impl SpatialLocalReplayWorkspace {
         Ok(work)
     }
 }
+
+/// Partition proposal; accepted-step partitions start from an uninterrupted
+/// native pilot and introduce no additional hard stops in that pilot.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum SpatialCompactPartition {
+    /// Four prescribed macro intervals.
+    Fixed4,
+    /// Two groups of actual pilot steps.
+    Accepted2,
+    /// Four groups of actual pilot steps.
+    Accepted4,
+    /// Eight groups of actual pilot steps, capped by actual step count.
+    Accepted8,
+}
+/// Choose one or multiple local cells for the next suffix retry.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum SpatialCompactRefinement {
+    /// Tighten one largest defect.
+    Single,
+    /// Tighten all eligible cells.
+    Uniform,
+    /// Tighten multiple cells above a budget share.
+    MultiMagnitude,
+    /// Cost-weighted selection with multiple eligible large defects.
+    MultiCost,
+}
+#[derive(Clone, Copy, Debug, Serialize)]
+/// Bounded compact replay policy; the final signed budget is fixed.
+pub struct SpatialCompactPolicy {
+    /// Unchanged absolute signed terminal goal budget.
+    pub budget: f64,
+    /// Maximum extra suffix rounds.
+    pub max_replays: usize,
+    /// Smallest tolerance multiplier.
+    pub min_scale: f64,
+    /// Initial partition proposal.
+    pub partition: SpatialCompactPartition,
+    /// Boundary enclosure construction.
+    pub dual: SpatialBoundaryDualPlan,
+    /// Cell selection proposal.
+    pub refinement: SpatialCompactRefinement,
+}
+#[derive(Clone, Copy, Debug, Default, Serialize)]
+/// Actual work, including the initial pilot and all replayed IVPs.
+pub struct SpatialCompactWork {
+    /// All terminal acceptance conditions met.
+    pub accepted: bool,
+    /// A complete numerical proposal is available.
+    pub completed: bool,
+    /// Number of macro cells.
+    pub cells: usize,
+    /// Actual native IVPs executed.
+    pub solves: usize,
+    /// Actual initial IVPs, including pilot.
+    pub initial_solves: usize,
+    /// Actual extra native IVPs, including partial stops.
+    pub replayed_cells: usize,
+    /// Number of suffix replay rounds attempted.
+    pub replay_rounds: usize,
+    /// Number of tolerance reductions.
+    pub refined_cells: usize,
+    /// Preserved cells summed over replay rounds.
+    pub prefix_cells_reused: usize,
+    /// Accepted native checkpoints, including discarded proposals.
+    pub accepted_packets: usize,
+    /// Accepted checkpoints of the uninterrupted pilot.
+    pub pilot_packets: usize,
+    /// New sparse adjoint actions.
+    pub adjoint_actions: usize,
+    /// Exact goal and boundary time key reused.
+    pub dual_cache_hit: bool,
+    /// Near-stationary residual route admitted.
+    pub stationary_used: bool,
+    /// Outward l1 original transpose residual.
+    pub stationary_residual: f64,
+    /// Actual directed boundary projections.
+    pub projections: usize,
+    /// No admissible tighter tolerance.
+    pub floor_refusals: usize,
+    /// Native partial stops.
+    pub primal_stops: usize,
+    /// Actual accumulated native counters.
+    pub counters: WorkCounters,
+    /// Actual native stage solves.
+    pub stage_solves: usize,
+    /// Direct signed centered terminal error, if complete.
+    pub signed_goal_error: Option<[f64; 2]>,
+    /// Upper magnitude, or MAX on incomplete.
+    pub max_signed_error_upper: f64,
+    /// Per-cell refinement counts.
+    pub selected: [usize; 8],
+}
+/// A single bounded accepted-checkpoint buffer and one boundary propagator.
+/// No full dense stage packets are retained: the integrated residual uses
+/// their exact endpoint identity, already established on the native method.
+pub struct SpatialCompactReplayWorkspace {
+    primal: SpatialPrimalReplayWorkspace,
+    capture: rodas5p_integrators::FastCheckpointCapture,
+    dual: super::adjoint::SpatialBoundaryDual,
+    times: [f64; 9],
+    states: Vec<f64>,
+    projections: [Iv; 9],
+    defects: [Iv; 8],
+    scales: [f64; 8],
+    steps: [usize; 8],
+    pilot_times: Vec<f64>,
+    pilot_indices: [usize; 9],
+    cells: usize,
+    valid_cells: usize,
+    has_initial: bool,
+    anchor: f64,
+    last_receipt: Option<SpatialAdjointWork>,
+}
+impl SpatialCompactReplayWorkspace {
+    /// Allocate fixed checkpoint and boundary storage.
+    pub fn new(g: &DiffusionGrid, duration: f64, capacity: usize) -> CoreResult<Self> {
+        let n = g.dimension();
+        let primal = SpatialPrimalReplayWorkspace::new(g, duration, 1)?;
+        Ok(Self {
+            primal,
+            capture: rodas5p_integrators::FastCheckpointCapture::new(n, capacity)?,
+            dual: super::adjoint::SpatialBoundaryDual::new(g)?,
+            times: [0.; 9],
+            states: vec![0.; 9 * n],
+            projections: [Iv::point(0.)?; 9],
+            defects: [Iv::point(0.)?; 8],
+            scales: [1.; 8],
+            steps: [0; 8],
+            pilot_times: Vec::with_capacity(capacity + 1),
+            pilot_indices: [0; 9],
+            cells: 0,
+            valid_cells: 0,
+            has_initial: false,
+            anchor: 0.,
+            last_receipt: None,
+        })
+    }
+    /// Valid represented boundary times.
+    pub fn times(&self) -> &[f64] {
+        if self.has_initial {
+            &self.times[..=self.valid_cells]
+        } else {
+            &[]
+        }
+    }
+    /// Valid physical boundary states in flat storage.
+    pub fn states(&self) -> &[f64] {
+        if self.has_initial {
+            &self.states[..(self.valid_cells + 1) * self.primal.n]
+        } else {
+            &[]
+        }
+    }
+    /// Common-anchor directed boundary projections.
+    pub fn projections(&self) -> &[Iv] {
+        if self.has_initial {
+            &self.projections[..=self.valid_cells]
+        } else {
+            &[]
+        }
+    }
+    /// Signed integrated macro-cell defects.
+    pub fn defects(&self) -> &[Iv] {
+        if self.has_initial {
+            &self.defects[..self.valid_cells]
+        } else {
+            &[]
+        }
+    }
+    /// Current per-cell native tolerance scales.
+    pub fn scales(&self) -> &[f64] {
+        &self.scales[..self.cells]
+    }
+    /// Actual uninterrupted pilot checkpoint times.
+    pub fn pilot_times(&self) -> &[f64] {
+        &self.pilot_times
+    }
+    /// Indices of selected actual pilot checkpoints.
+    pub fn pilot_indices(&self) -> &[usize] {
+        if self.pilot_times.is_empty() {
+            &[]
+        } else {
+            &self.pilot_indices[..=self.cells]
+        }
+    }
+    /// One represented constant removed from every projection.
+    pub fn anchor(&self) -> f64 {
+        self.anchor
+    }
+    /// Last complete proposal certificate, even when budget-refused.
+    pub fn last_receipt(&self) -> Option<SpatialAdjointWork> {
+        self.last_receipt
+    }
+    fn native(
+        &mut self,
+        start: f64,
+        end: f64,
+        scale: f64,
+        base: &AdaptiveStepConfig,
+        work: &mut SpatialCompactWork,
+        replay: bool,
+    ) -> CoreResult<bool> {
+        let mut cfg = base.clone();
+        cfg.rtol *= scale;
+        cfg.atol *= scale;
+        cfg.validate()?;
+        self.primal.atol.fill(cfg.atol);
+        self.primal.schedule.reset_pair(start, end)?;
+        *self.primal.report.lock().unwrap() = self.primal.report_template;
+        let r = self.primal.driver.solve_flat_checkpoints_into(
+            &self.primal.problem,
+            (start, end),
+            &self.primal.centered,
+            &cfg,
+            &self.primal.schedule,
+            &self.primal.atol,
+            FastArenaPlan::Legacy,
+            &mut self.primal.arena,
+            &mut self.capture,
+        )?;
+        work.solves += 1;
+        if replay {
+            work.replayed_cells += 1;
+        } else {
+            work.initial_solves += 1;
+        }
+        work.counters.accumulate(r.receipt.counters);
+        work.stage_solves += self.primal.report.lock().unwrap().solves;
+        work.accepted_packets += self.capture.len();
+        if !r.receipt.success {
+            work.primal_stops += 1;
+            return Ok(false);
+        }
+        if self.capture.len() != r.receipt.accepted_steps
+            || self.capture.is_empty()
+            || self.capture.times()[0] != start
+            || self.capture.times()[self.capture.len()] != end
+            || self.capture.state(0) != Some(&self.primal.centered[..])
+            || self.capture.state(self.capture.len()) != Some(r.last_state)
+        {
+            return Err(err("checkpoint identity"));
+        }
+        Ok(true)
+    }
+    fn suffix(
+        &mut self,
+        start: usize,
+        base: &AdaptiveStepConfig,
+        work: &mut SpatialCompactWork,
+        replay: bool,
+    ) -> CoreResult<bool> {
+        let n = self.primal.n;
+        self.valid_cells = start;
+        for i in start..self.cells {
+            self.primal
+                .centered
+                .copy_from_slice(&self.states[i * n..(i + 1) * n]);
+            if !self.native(
+                self.times[i],
+                self.times[i + 1],
+                self.scales[i],
+                base,
+                work,
+                replay,
+            )? {
+                return Ok(false);
+            }
+            self.steps[i] = self.capture.len();
+            self.states[(i + 1) * n..(i + 2) * n]
+                .copy_from_slice(self.capture.state(self.capture.len()).unwrap());
+            self.valid_cells = i + 1;
+        }
+        Ok(true)
+    }
+    fn project_suffix(&mut self, start: usize, work: &mut SpatialCompactWork) -> CoreResult<()> {
+        let n = self.primal.n;
+        for i in start..=self.valid_cells {
+            self.projections[i] =
+                self.dual
+                    .project(i, &self.states[i * n..(i + 1) * n], self.anchor)?;
+            work.projections += 1;
+            if i > 0 {
+                self.defects[i - 1] = self.projections[i - 1].sub(self.projections[i])?;
+            }
+        }
+        Ok(())
+    }
+    /// Preserve prefix states exactly; any modified cell forces suffix replay.
+    /// The directed common-anchor terminal difference, not the proposal,
+    /// determines acceptance. Caller output stays unchanged on refusal.
+    pub fn solve_into(
+        &mut self,
+        initial: &[f64],
+        goal: &[f64],
+        base: &AdaptiveStepConfig,
+        policy: SpatialCompactPolicy,
+        endpoint: &mut [f64],
+        out: &mut SpatialAdjointWork,
+    ) -> CoreResult<SpatialCompactWork> {
+        self.has_initial = false;
+        self.valid_cells = 0;
+        self.cells = 0;
+        self.last_receipt = None;
+        self.pilot_times.clear();
+        let n = self.primal.n;
+        if initial.len() != n
+            || goal.len() != n
+            || endpoint.len() != n
+            || initial.iter().chain(goal).any(|v| !v.is_finite())
+            || !policy.budget.is_finite()
+            || policy.budget <= 0.
+            || !policy.min_scale.is_finite()
+            || policy.min_scale <= 0.
+            || policy.min_scale > 1.
+            || policy.max_replays > 32
+        {
+            return Err(err("compact input/policy"));
+        }
+        base.validate()?;
+        let mut w = SpatialCompactWork {
+            max_signed_error_upper: f64::MAX,
+            ..Default::default()
+        };
+        self.scales = [1.; 8];
+        self.steps = [0; 8];
+        self.pilot_indices = [0; 9];
+        let lo = initial.iter().copied().fold(f64::INFINITY, f64::min);
+        let hi = initial.iter().copied().fold(f64::NEG_INFINITY, f64::max);
+        self.anchor = 0.5 * lo + 0.5 * hi;
+        self.states[..n].copy_from_slice(initial);
+        self.times[0] = 0.;
+        let duration = self.primal.duration;
+        if policy.partition == SpatialCompactPartition::Fixed4 {
+            self.cells = 4;
+            for i in 1..=4 {
+                self.times[i] = duration * (i as f64 * 0.25);
+            }
+            if self.times[..=4].windows(2).any(|t| t[0] >= t[1]) {
+                return Err(err("compact fixed clock"));
+            }
+            w.cells = 4;
+            if !self.suffix(0, base, &mut w, false)? {
+                return Ok(w);
+            }
+        } else {
+            let desired = match policy.partition {
+                SpatialCompactPartition::Accepted2 => 2,
+                SpatialCompactPartition::Accepted8 => 8,
+                _ => 4,
+            };
+            self.primal.centered.copy_from_slice(initial);
+            if !self.native(0., duration, 1., base, &mut w, false)? {
+                return Ok(w);
+            }
+            let m = self.capture.len();
+            w.pilot_packets = m;
+            self.pilot_times.extend_from_slice(self.capture.times());
+            self.cells = desired.min(m);
+            w.cells = self.cells;
+            for i in 0..=self.cells {
+                let j = i * m / self.cells;
+                self.pilot_indices[i] = j;
+                self.times[i] = self.capture.times()[j];
+                self.states[i * n..(i + 1) * n].copy_from_slice(self.capture.state(j).unwrap());
+                if i > 0 {
+                    self.steps[i - 1] = j - self.pilot_indices[i - 1];
+                }
+            }
+            self.valid_cells = self.cells;
+        }
+        let prep = self
+            .dual
+            .prepare(goal, &self.times[..=self.cells], policy.dual)?;
+        w.adjoint_actions = prep.actions;
+        w.dual_cache_hit = prep.cache_hit;
+        w.stationary_used = prep.stationary;
+        w.stationary_residual = prep.stationary_residual;
+        self.project_suffix(0, &mut w)?;
+        self.has_initial = true;
+        for round in 0..=policy.max_replays {
+            let r = self.dual.receipt(
+                self.anchor,
+                self.projections[0],
+                self.projections[self.cells],
+            )?;
+            let signed = Iv::new(r.signed_goal_error[0], r.signed_goal_error[1])?;
+            w.completed = true;
+            w.signed_goal_error = Some(signed.as_pair());
+            w.max_signed_error_upper = signed.mag();
+            self.last_receipt = Some(r);
+            if signed.mag() <= policy.budget {
+                w.accepted = true;
+                endpoint.copy_from_slice(&self.states[self.cells * n..(self.cells + 1) * n]);
+                *out = r;
+                break;
+            }
+            if round == policy.max_replays {
+                break;
+            }
+            let mut best = None;
+            let mut best_score = -1.;
+            for i in 0..self.cells {
+                if self.scales[i] <= policy.min_scale {
+                    continue;
+                }
+                let score = if policy.refinement == SpatialCompactRefinement::MultiCost {
+                    self.defects[i].mag()
+                        / self.steps[i..self.cells].iter().sum::<usize>().max(1) as f64
+                } else {
+                    self.defects[i].mag()
+                };
+                if score > best_score {
+                    best_score = score;
+                    best = Some(i);
+                }
+            }
+            let Some(best) = best else {
+                w.floor_refusals += 1;
+                break;
+            };
+            let target = policy.budget / (2. * self.cells as f64);
+            let mut first = self.cells;
+            for i in 0..self.cells {
+                if self.scales[i] <= policy.min_scale {
+                    continue;
+                }
+                let mag = self.defects[i].mag();
+                let chosen = match policy.refinement {
+                    SpatialCompactRefinement::Single => i == best,
+                    SpatialCompactRefinement::Uniform => true,
+                    SpatialCompactRefinement::MultiMagnitude => i == best || mag > target,
+                    SpatialCompactRefinement::MultiCost => {
+                        i == best || mag > target && mag >= 0.125 * self.defects[best].mag()
+                    }
+                };
+                if !chosen {
+                    continue;
+                }
+                let factor = match policy.refinement {
+                    SpatialCompactRefinement::Single | SpatialCompactRefinement::Uniform => 0.25,
+                    _ => (0.5 * target / mag.max(f64::MIN_POSITIVE)).clamp(0.015625, 0.25),
+                };
+                let next = (self.scales[i] * factor).max(policy.min_scale);
+                if next < self.scales[i] {
+                    self.scales[i] = next;
+                    w.refined_cells += 1;
+                    w.selected[i] += 1;
+                    first = first.min(i);
+                }
+            }
+            if first == self.cells {
+                w.floor_refusals += 1;
+                break;
+            }
+            w.replay_rounds += 1;
+            w.prefix_cells_reused += first;
+            w.completed = false;
+            w.signed_goal_error = None;
+            w.max_signed_error_upper = f64::MAX;
+            self.last_receipt = None;
+            if !self.suffix(first, base, &mut w, true)? {
+                self.project_suffix(first + 1, &mut w)?;
+                break;
+            }
+            self.project_suffix(first + 1, &mut w)?;
+        }
+        Ok(w)
+    }
+}

@@ -453,6 +453,85 @@ impl StepSink for FastDenseCapture {
         }
     }
 }
+/// Bounded state-only capture of actual native accepted checkpoints.
+pub struct FastCheckpointCapture {
+    n: usize,
+    capacity: usize,
+    times: Vec<f64>,
+    states: Vec<f64>,
+}
+impl FastCheckpointCapture {
+    /// Allocate once, without retaining the eight stage rows per step.
+    pub fn new(n: usize, capacity: usize) -> CoreResult<Self> {
+        if n == 0
+            || capacity == 0
+            || capacity > 4096
+            || n.checked_mul(capacity + 1)
+                .is_none_or(|v| v > isize::MAX as usize / 8)
+        {
+            return Err(CoreError::InvalidInput("checkpoint capacity".into()));
+        }
+        Ok(Self {
+            n,
+            capacity,
+            times: Vec::with_capacity(capacity + 1),
+            states: Vec::with_capacity(n * (capacity + 1)),
+        })
+    }
+    pub(crate) fn reset(&mut self, t: f64, y: &[f64]) -> CoreResult<()> {
+        if y.len() != self.n {
+            return Err(CoreError::InvalidInput("checkpoint dimension".into()));
+        }
+        self.times.clear();
+        self.states.clear();
+        self.times.push(t);
+        self.states.extend_from_slice(y);
+        Ok(())
+    }
+    /// Accepted represented time sequence including initial time.
+    pub fn times(&self) -> &[f64] {
+        &self.times
+    }
+    /// Number of recorded accepted steps.
+    pub fn len(&self) -> usize {
+        self.times.len().saturating_sub(1)
+    }
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+    /// State at an actual accepted checkpoint.
+    pub fn state(&self, k: usize) -> Option<&[f64]> {
+        (k < self.times.len()).then(|| &self.states[k * self.n..(k + 1) * self.n])
+    }
+}
+impl StepSink for FastCheckpointCapture {
+    fn after_attempt(
+        &mut self,
+        _problem: &OdeProblem,
+        _work: &mut Workspace,
+        _t: f64,
+        _y: &[f64],
+        _h: f64,
+        error: f64,
+        _atol: f64,
+        _rtol: f64,
+        _counters: &mut WorkCounters,
+    ) -> CoreResult<f64> {
+        Ok(error)
+    }
+    fn accepted(&mut self, work: &Workspace, t_new: f64) {
+        debug_assert!(self.len() < self.capacity);
+        self.times.push(t_new);
+        self.states.extend_from_slice(&work.y_new);
+    }
+    fn accept_control(&mut self, _view: &AcceptedStepView<'_>) -> AcceptControl {
+        if self.len() >= self.capacity {
+            AcceptControl::Stop
+        } else {
+            AcceptControl::Continue
+        }
+    }
+}
 impl FastDenseSegments {
     /// Exact represented quartic power coefficient enclosure, normalized
     /// time on the stored accepted interval. No physical error claim.

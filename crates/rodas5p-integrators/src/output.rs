@@ -516,6 +516,19 @@ impl OutputSchedule {
         Ok(Self { times })
     }
 
+    /// Reuse exactly two existing endpoint slots for a new finite span.
+    /// Invalid input leaves the previous schedule unchanged.
+    pub fn reset_pair(&mut self, start: f64, end: f64) -> CoreResult<()> {
+        if self.times.len() != 2 || !start.is_finite() || !end.is_finite() || end <= start {
+            return Err(CoreError::InvalidInput(
+                "invalid reusable endpoint schedule".into(),
+            ));
+        }
+        self.times[0] = start;
+        self.times[1] = end;
+        Ok(())
+    }
+
     pub fn uniform(start: f64, end: f64, spacing: f64) -> CoreResult<Self> {
         if !start.is_finite()
             || !end.is_finite()

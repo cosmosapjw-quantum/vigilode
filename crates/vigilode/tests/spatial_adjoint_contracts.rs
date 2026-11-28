@@ -4387,3 +4387,418 @@ fn partial_suffix_accounting_regression() {
         serde_json::json!({"cap":cap,"allocation":a,"work":r})
     );
 }
+
+#[test]
+fn compact_boundary_replay_contract() {
+    use rodas5p_integrators::AdaptiveStepConfig;
+    use vigilode::spatial::{
+        SpatialAdjointWork, SpatialBoundaryDualPlan as D, SpatialCompactPartition as P,
+        SpatialCompactPolicy as Policy, SpatialCompactRefinement as R,
+        SpatialCompactReplayWorkspace as W,
+    };
+    let g = DiffusionGrid::sphere(16, 32, 1., 0.16).unwrap();
+    let n = g.dimension();
+    let mut u = vec![-16.; n];
+    u[n / 2] = -15.5;
+    let c = (0..n)
+        .map(|i| g.cell_measure(i).unwrap())
+        .collect::<Vec<_>>();
+    let base = AdaptiveStepConfig {
+        rtol: 1e-9,
+        atol: 1e-11,
+        initial_step: 0.001,
+        ..Default::default()
+    };
+    let policy = Policy {
+        budget: 1e-11,
+        max_replays: 3,
+        min_scale: 1e-4,
+        partition: P::Accepted4,
+        dual: D::StationaryChain,
+        refinement: R::MultiMagnitude,
+    };
+    let mut w = W::new(&g, DURATION, 256).unwrap();
+    let mut out = vec![17.; n];
+    let mut rec = SpatialAdjointWork::default();
+    let (r, a) = measure(|| w.solve_into(&u, &c, &base, policy, &mut out, &mut rec));
+    let r = r.unwrap();
+    assert!(r.accepted, "{r:?}");
+    assert!(r.stationary_used);
+    assert_eq!(r.adjoint_actions, 1);
+    assert_eq!(a.requests(), 0);
+    assert_eq!(w.states()[..n], u);
+    assert_eq!(w.states()[(w.times().len() - 1) * n..], out);
+    let first = out.clone();
+    let old = rec.signed_goal_error;
+    let (r, a) = measure(|| w.solve_into(&u, &c, &base, policy, &mut out, &mut rec));
+    let r = r.unwrap();
+    assert!(r.accepted && r.dual_cache_hit);
+    assert_eq!(r.adjoint_actions, 0);
+    assert_eq!(a.requests(), 0);
+    assert_eq!(out, first);
+    assert_eq!(rec.signed_goal_error, old);
+    let mut g1 = c.clone();
+    g1[0] = g1[0].next_up();
+    let (r, a) = measure(|| w.solve_into(&u, &g1, &base, policy, &mut out, &mut rec));
+    let r = r.unwrap();
+    assert!(!r.dual_cache_hit);
+    assert!(r.adjoint_actions > 0);
+    assert_eq!(a.requests(), 0);
+    let old = out.clone();
+    let oldrec = rec.signed_goal_error;
+    let mut cap = W::new(&g, DURATION, 1).unwrap();
+    let (r, a) = measure(|| cap.solve_into(&u, &c, &base, policy, &mut out, &mut rec));
+    let r = r.unwrap();
+    assert!(!r.completed && !r.accepted);
+    assert_eq!(r.primal_stops, 1);
+    assert_eq!(r.accepted_packets, 1);
+    assert_eq!(a.requests(), 0);
+    assert_eq!(out, old);
+    assert_eq!(rec.signed_goal_error, oldrec);
+    assert!(cap.times().is_empty());
+}
+
+#[test]
+fn compact_adaptive_partition_portfolio() {
+    use rodas5p_integrators::AdaptiveStepConfig;
+    use vigilode::spatial::{
+        SpatialAdjointWork, SpatialBoundaryDualPlan as D, SpatialCompactPartition as P,
+        SpatialCompactPolicy as Policy, SpatialCompactRefinement as R,
+        SpatialCompactReplayWorkspace as W, SpatialLocalReplayWorkspace,
+    };
+    let base = AdaptiveStepConfig {
+        rtol: 1e-9,
+        atol: 1e-11,
+        initial_step: 0.001,
+        ..Default::default()
+    };
+    let grids = [
+        (
+            "box2_small",
+            DiffusionGrid::periodic_box([8, 4], [8., 4.], [0.125, 0.25]).unwrap(),
+        ),
+        (
+            "box3_small",
+            DiffusionGrid::periodic_box([4, 4, 4], [4., 4., 4.], [0.125, 0.25, 0.0625]).unwrap(),
+        ),
+        ("sphere_odd", DiffusionGrid::sphere(5, 9, 1., 0.64).unwrap()),
+        ("sphere128", DiffusionGrid::sphere(8, 16, 1., 0.64).unwrap()),
+        (
+            "sphere512",
+            DiffusionGrid::sphere(16, 32, 1., 0.16).unwrap(),
+        ),
+        (
+            "holdout_sphere153",
+            DiffusionGrid::sphere(9, 17, 1., 0.20).unwrap(),
+        ),
+    ];
+    let plans = [
+        (
+            "Fixed4IndependentUniform",
+            P::Fixed4,
+            D::Independent,
+            R::Uniform,
+            3,
+        ),
+        (
+            "Fixed4ChainMulti",
+            P::Fixed4,
+            D::Chain,
+            R::MultiMagnitude,
+            3,
+        ),
+        (
+            "Accepted2ChainMulti",
+            P::Accepted2,
+            D::Chain,
+            R::MultiMagnitude,
+            3,
+        ),
+        (
+            "Accepted4IndependentMulti",
+            P::Accepted4,
+            D::Independent,
+            R::MultiMagnitude,
+            3,
+        ),
+        (
+            "Accepted4ChainMulti",
+            P::Accepted4,
+            D::Chain,
+            R::MultiMagnitude,
+            3,
+        ),
+        (
+            "Accepted8ChainMulti",
+            P::Accepted8,
+            D::Chain,
+            R::MultiMagnitude,
+            3,
+        ),
+        (
+            "Accepted4StationaryMulti",
+            P::Accepted4,
+            D::StationaryChain,
+            R::MultiMagnitude,
+            3,
+        ),
+        (
+            "Accepted4StationaryCost",
+            P::Accepted4,
+            D::StationaryChain,
+            R::MultiCost,
+            3,
+        ),
+        (
+            "Accepted4StationarySingle",
+            P::Accepted4,
+            D::StationaryChain,
+            R::Single,
+            3,
+        ),
+        (
+            "Accepted4Pilot",
+            P::Accepted4,
+            D::StationaryChain,
+            R::MultiMagnitude,
+            0,
+        ),
+        (
+            "Fixed4Pilot",
+            P::Fixed4,
+            D::StationaryChain,
+            R::MultiMagnitude,
+            0,
+        ),
+        (
+            "Accepted2Pilot",
+            P::Accepted2,
+            D::StationaryChain,
+            R::MultiMagnitude,
+            0,
+        ),
+        (
+            "Accepted8Pilot",
+            P::Accepted8,
+            D::StationaryChain,
+            R::MultiMagnitude,
+            0,
+        ),
+    ];
+    for (case, g) in grids {
+        let n = g.dimension();
+        println!(
+            "COMPACT_GRID {}",
+            serde_json::json!({"case":case,"n":n,"duration":DURATION,"rows":(0..n).map(|i|g.represented_row(i).unwrap()).collect::<Vec<_>>()})
+        );
+        let (legacy, legacy_setup) =
+            measure(|| SpatialLocalReplayWorkspace::new(&g, DURATION, 128).unwrap());
+        let (mut w, setup) = measure(|| W::new(&g, DURATION, 256).unwrap());
+        drop(legacy);
+        println!(
+            "COMPACT_SETUP {}",
+            serde_json::json!({"case":case,"allocation":setup,"legacy_allocation":legacy_setup})
+        );
+        let mut endpoint = vec![17.; n];
+        let mut rec = SpatialAdjointWork::default();
+        for goal in ["mass", "local"] {
+            let c = if goal == "mass" {
+                (0..n)
+                    .map(|i| g.cell_measure(i).unwrap())
+                    .collect::<Vec<_>>()
+            } else {
+                let mut c = vec![0.; n];
+                c[0] = 0.5;
+                c[n / 2] = -0.25;
+                c[n - 1] = 0.125;
+                c
+            };
+            for input in ["offset", "signed"] {
+                let u = if input == "offset" {
+                    let mut u = vec![-16.; n];
+                    u[n / 2] = -15.5;
+                    u
+                } else {
+                    (0..n).map(|i| ((13 * i % 17) as f64 - 8.) / 64.).collect()
+                };
+                for budget in [1e-10, 1e-11] {
+                    for (candidate, partition, dual, refinement, max_replays) in plans {
+                        endpoint.fill(17.);
+                        rec = SpatialAdjointWork::default();
+                        let policy = Policy {
+                            budget,
+                            max_replays,
+                            min_scale: 1e-4,
+                            partition,
+                            dual,
+                            refinement,
+                        };
+                        let (r, a) = measure(|| {
+                            w.solve_into(&u, &c, &base, policy, &mut endpoint, &mut rec)
+                        });
+                        let r = r.unwrap();
+                        assert_eq!(a.requests(), 0);
+                        assert!(r.completed, "{case} {candidate} {r:?}");
+                        assert_eq!(r.solves, r.initial_solves + r.replayed_cells);
+                        assert_eq!(w.times().len(), r.cells + 1);
+                        assert_eq!(w.defects().len(), r.cells);
+                        assert_eq!(w.states()[..n], u);
+                        if r.accepted {
+                            assert_eq!(endpoint, w.states()[r.cells * n..]);
+                            assert_eq!(rec.signed_goal_error, r.signed_goal_error.unwrap());
+                        } else {
+                            assert!(endpoint.iter().all(|v| *v == 17.));
+                            assert_eq!(rec.actions, 0);
+                        }
+                        let first = (
+                            r,
+                            w.times().to_vec(),
+                            w.states().to_vec(),
+                            w.projections().to_vec(),
+                            w.defects().to_vec(),
+                        );
+                        // Recompute native trajectory, but reuse exact-key boundary cache.
+                        let (warm, allocation) = measure(|| {
+                            w.solve_into(&u, &c, &base, policy, &mut endpoint, &mut rec)
+                        });
+                        let warm = warm.unwrap();
+                        assert_eq!(allocation.requests(), 0);
+                        assert!(warm.dual_cache_hit);
+                        assert_eq!(warm.adjoint_actions, 0);
+                        assert_eq!(warm.accepted, r.accepted);
+                        assert_eq!(warm.signed_goal_error, r.signed_goal_error);
+                        assert_eq!(warm.counters, r.counters);
+                        assert_eq!(warm.solves, r.solves);
+                        assert_eq!(w.times(), first.1);
+                        assert_eq!(w.states(), first.2);
+                        assert_eq!(w.projections(), first.3);
+                        assert_eq!(w.defects(), first.4);
+                        println!(
+                            "COMPACT_RUN {}",
+                            serde_json::json!({"case":case,"goal":goal,"input":input,"budget":budget,"candidate":candidate,"partition":partition,"dual":dual,"refinement":refinement,"qualified":r.accepted,"allocation":a,"warm_allocation":allocation,"work":r,"warm_work":warm,"initial":u,"weights":c,"times":w.times(),"states":w.states(),"anchor":w.anchor(),"projections":w.projections().iter().map(|v|v.as_pair()).collect::<Vec<_>>(),"defects":w.defects().iter().map(|v|v.as_pair()).collect::<Vec<_>>(),"scales":w.scales(),"pilot_times":w.pilot_times(),"pilot_indices":w.pilot_indices(),"receipt":w.last_receipt().unwrap()})
+                        );
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn bounded_checkpoint_capture_generic_ode() {
+    use rodas5p_core::{CoreResult, WorkCounters};
+    use rodas5p_integrators::{
+        AdaptiveStepConfig, FastArenaPlan as A, FastCheckpointCapture, FastFlatOutputArena,
+        OdeProblem, OutputSchedule, ReusableFastClientWorkspace, StageLinearSystem,
+    };
+    use std::sync::Arc;
+    struct Diagonal {
+        n: usize,
+        shift: f64,
+    }
+    impl StageLinearSystem for Diagonal {
+        fn dimension(&self) -> usize {
+            self.n
+        }
+        fn linearize(
+            &mut self,
+            _: &OdeProblem,
+            _: f64,
+            _: &[f64],
+            _: &mut WorkCounters,
+        ) -> CoreResult<()> {
+            Ok(())
+        }
+        fn factor(&mut self, z: f64, c: &mut WorkCounters) -> CoreResult<()> {
+            self.shift = z;
+            c.direct_factorizations += 1;
+            Ok(())
+        }
+        fn solve_in_place(&mut self, b: &mut [f64], c: &mut WorkCounters) -> CoreResult<()> {
+            for (i, v) in b.iter_mut().enumerate() {
+                *v /= self.shift + (i + 1) as f64;
+            }
+            c.direct_solve_calls += 1;
+            Ok(())
+        }
+    }
+    let a = AdaptiveStepConfig {
+        rtol: 1e-9,
+        atol: 1e-12,
+        initial_step: 0.005,
+        max_attempts: 4096,
+        ..Default::default()
+    };
+    for n in [1, 3, 32] {
+        let p = OdeProblem::new(
+            "diagonal decay",
+            n,
+            Arc::new(|_, y, o| {
+                for (i, (v, w)) in y.iter().zip(o).enumerate() {
+                    *w = -(i as f64 + 1.) * v;
+                }
+                Ok(())
+            }),
+            None,
+            None,
+            Some(Arc::new(|_, _, v, out| {
+                for (i, (x, w)) in v.iter().zip(out).enumerate() {
+                    *w = -(i as f64 + 1.) * x;
+                }
+                Ok(())
+            })),
+            None,
+            true,
+            None,
+            None,
+        )
+        .unwrap();
+        let span = (0., 0.125);
+        let schedule = OutputSchedule::new(vec![0., 0.03125, 0.0625, 0.125]).unwrap();
+        let y = vec![1.; n];
+        let atol = vec![a.atol; n];
+        let mut w = ReusableFastClientWorkspace::new(Box::new(Diagonal { n, shift: 0. })).unwrap();
+        let mut arena = FastFlatOutputArena::new(n, 4).unwrap();
+        let mut capture = FastCheckpointCapture::new(n, 128).unwrap();
+        let (old, _) = w.solve(&p, span, &y, &a, &schedule, &atol).unwrap();
+        for candidate in [A::Legacy, A::Prevalidated] {
+            let (r, alloc) = measure(|| {
+                w.solve_flat_checkpoints_into(
+                    &p,
+                    span,
+                    &y,
+                    &a,
+                    &schedule,
+                    &atol,
+                    candidate,
+                    &mut arena,
+                    &mut capture,
+                )
+                .unwrap()
+            });
+            assert_eq!(alloc.requests(), 0);
+            assert!(r.receipt.success);
+            assert_eq!(r.states.len(), old.observed.y.len() * n);
+            for (v, expected) in r.states.chunks_exact(n).zip(&old.observed.y) {
+                assert_eq!(v, expected);
+            }
+            assert_eq!(r.receipt.counters, old.observed.counters);
+            let seg = &capture;
+            assert_eq!(seg.len(), r.receipt.accepted_steps);
+            assert_eq!(seg.state(0), Some(y.as_slice()));
+            assert_eq!(seg.state(seg.len()), Some(r.last_state));
+            assert!(seg.times().windows(2).all(|x| x[0] < x[1]));
+            let error = r
+                .last_state
+                .iter()
+                .enumerate()
+                .map(|(i, v)| (v - (-((i + 1) as f64) * span.1).exp()).abs())
+                .fold(0., f64::max);
+            assert!(error <= 1e-8);
+            println!(
+                "CHECKPOINT_ODE {}",
+                serde_json::json!({"case":n,"candidate":candidate,"qualified":true,"allocation":alloc,"max_error":error,"packets":seg.len(),"counters":r.receipt.counters})
+            );
+        }
+    }
+}
