@@ -6372,3 +6372,78 @@ fn online_checkpoint_generic_ode_portfolio() {
         }
     }
 }
+
+#[test]
+fn embedded_goal_monitor_contract() {
+    use rodas5p_integrators::{
+        AdaptiveStepConfig, FastCheckpointDensity as C, FastGoalMonitor as M,
+    };
+    use vigilode::spatial::{
+        SpatialAdjointWork, SpatialBoundaryDualPlan as D, SpatialBoundaryPoolPolicy as E,
+        SpatialCompactPartition as P, SpatialCompactPolicy as Policy,
+        SpatialCompactRefinement as R, SpatialCompactReplayWorkspace as W,
+    };
+    let g = DiffusionGrid::sphere(8, 16, 1., 0.64).unwrap();
+    let n = g.dimension();
+    let mut u = vec![-16.; n];
+    u[n / 2] = -15.5;
+    let mut c: Vec<f64> = vec![0.; n];
+    c[0] = 0.5;
+    c[n / 2] = -0.25;
+    c[n - 1] = 0.125;
+    let base = AdaptiveStepConfig {
+        rtol: 1e-9,
+        atol: 1e-11,
+        initial_step: 0.001,
+        ..Default::default()
+    };
+    let p = Policy {
+        budget: 1e-11,
+        max_replays: 3,
+        min_scale: 1e-4,
+        partition: P::DefectAdaptive,
+        dual: D::SubsetStationaryChain,
+        refinement: R::Model4,
+    };
+    let mut w = W::new_with_density_policy(
+        &g,
+        DURATION,
+        256,
+        C::OnlineGoal(8, M::AdjointSigned),
+        16,
+        E::PinnedCost,
+    )
+    .unwrap();
+    let mut out = vec![17.; n];
+    let mut rec = SpatialAdjointWork::default();
+    let (r, a) = measure(|| w.solve_into(&u, &c, &base, p, &mut out, &mut rec));
+    let r = r.unwrap();
+    assert!(r.accepted);
+    assert!(r.monitor_adjoint_actions > 0);
+    assert_eq!(a.requests(), 0);
+    assert_eq!(w.pilot_monitor_scores().len(), r.pilot_packets);
+    assert!(w.pilot_monitor_scores().iter().any(|&x| x > 0.));
+    let old = (
+        out.clone(),
+        rec.signed_goal_error,
+        w.pilot_monitor_scores().to_vec(),
+        w.pilot_indices().to_vec(),
+    );
+    let (r, a) = measure(|| w.solve_into(&u, &c, &base, p, &mut out, &mut rec));
+    let r = r.unwrap();
+    assert!(r.accepted);
+    assert_eq!(r.monitor_adjoint_actions, 0);
+    assert_eq!(r.adjoint_actions, 0);
+    assert_eq!(a.requests(), 0);
+    assert_eq!(out, old.0);
+    assert_eq!(rec.signed_goal_error, old.1);
+    assert_eq!(w.pilot_monitor_scores(), old.2);
+    assert_eq!(w.pilot_indices(), old.3);
+    c.fill(0.);
+    let (r, a) = measure(|| w.solve_into(&u, &c, &base, p, &mut out, &mut rec));
+    let r = r.unwrap();
+    assert!(r.accepted);
+    assert_eq!(a.requests(), 0);
+    assert!(w.pilot_monitor_scores().iter().all(|&v| v == 0.));
+    assert_eq!(r.signed_goal_error, Some([0., 0.]));
+}
