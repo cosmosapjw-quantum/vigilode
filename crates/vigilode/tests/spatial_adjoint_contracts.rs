@@ -3854,3 +3854,466 @@ fn exact_cache_and_local_replay_contract() {
     assert_eq!(local.defects().len(), 4);
     assert!(local.defects().iter().all(|v| v.contains(0.)));
 }
+
+#[test]
+fn cross_call_cache_and_local_actual_portfolio() {
+    use rodas5p_integrators::AdaptiveStepConfig;
+    use vigilode::spatial::{
+        SpatialAdjointWork, SpatialLocalReplayPlan as LP, SpatialLocalReplayPolicy as LPolicy,
+        SpatialLocalReplayWorkspace as L, SpatialPrimalReplayPlan as P,
+        SpatialPrimalReplayPolicy as Policy, SpatialPrimalReplayWorkspace as W,
+        SpatialReplayCachePlan as K,
+    };
+    let base = AdaptiveStepConfig {
+        rtol: 1e-9,
+        atol: 1e-11,
+        initial_step: 0.001,
+        ..Default::default()
+    };
+    let grids = [
+        (
+            "box2_small",
+            DiffusionGrid::periodic_box([8, 4], [8., 4.], [0.125, 0.25]).unwrap(),
+        ),
+        (
+            "box3_small",
+            DiffusionGrid::periodic_box([4, 4, 4], [4., 4., 4.], [0.125, 0.25, 0.0625]).unwrap(),
+        ),
+        ("sphere_odd", DiffusionGrid::sphere(5, 9, 1., 0.64).unwrap()),
+        ("sphere128", DiffusionGrid::sphere(8, 16, 1., 0.64).unwrap()),
+        (
+            "sphere512",
+            DiffusionGrid::sphere(16, 32, 1., 0.16).unwrap(),
+        ),
+        (
+            "holdout_sphere153",
+            DiffusionGrid::sphere(9, 17, 1., 0.20).unwrap(),
+        ),
+    ];
+    for (case, g) in grids {
+        let n = g.dimension();
+        println!(
+            "LOCAL_GRID {}",
+            serde_json::json!({"case":case,"n":n,"duration":DURATION,"rows":(0..n).map(|i|g.represented_row(i).unwrap()).collect::<Vec<_>>()})
+        );
+        let mut u = vec![];
+        for trial in 0..4 {
+            u.extend(match trial {
+                0 => vec![32.; n],
+                1 => vec![-16.; n],
+                2 => (0..n)
+                    .map(|i| 32. + ((17 * i % 29) as f64 - 14.) / 1024.)
+                    .collect(),
+                _ => (0..n)
+                    .map(|i| if i == n / 2 { -15.5 } else { -16. })
+                    .collect(),
+            });
+        }
+        let mut c: Vec<f64> = vec![0.; n];
+        c[0] = 0.5;
+        c[n / 2] = -0.25;
+        c[n - 1] = 0.125;
+        let p = Policy {
+            budget: 1e-10,
+            max_replays: 3,
+            min_scale: 1e-4,
+            plan: P::GuidedSelective,
+        };
+        let plans = [K::Off, K::ExactBatch, K::GoalOnly];
+        let mut workspaces: Vec<W> = plans
+            .iter()
+            .map(|_| W::new(&g, DURATION, 4).unwrap())
+            .collect();
+        let mut endpoint = vec![17.; 4 * n];
+        let mut rec = [SpatialAdjointWork::default(); 4];
+        let mut changed = u.clone();
+        changed[3 * n + 1] = changed[3 * n + 1].next_up();
+        let mut changed_goal = c.clone();
+        changed_goal[0] = changed_goal[0].next_up();
+        for seq in 0..6 {
+            let (initial, goal) = match seq {
+                3 => (&changed, &c),
+                4 => (&u, &changed_goal),
+                _ => (&u, &c),
+            };
+            let cfg = if seq == 2 {
+                AdaptiveStepConfig {
+                    rtol: base.rtol * 0.5,
+                    atol: base.atol * 0.5,
+                    ..base.clone()
+                }
+            } else {
+                base.clone()
+            };
+            let mut old = None;
+            for (j, cache) in plans.into_iter().enumerate() {
+                endpoint.fill(17.);
+                rec.fill(SpatialAdjointWork::default());
+                let w = &mut workspaces[j];
+                let (r, a) = measure(|| {
+                    w.solve_cached_budgeted_into(
+                        initial,
+                        goal,
+                        &cfg,
+                        p,
+                        cache,
+                        &mut endpoint,
+                        &mut rec,
+                    )
+                });
+                let r = r.unwrap();
+                assert_eq!(a.requests(), 0);
+                let hit = match cache {
+                    K::Off => false,
+                    K::ExactBatch => seq == 1 || seq == 2,
+                    K::GoalOnly => seq == 1 || seq == 2 || seq == 3,
+                };
+                assert_eq!(r.cache_hit, hit);
+                assert_eq!(r.adjoint_actions == 0, hit);
+                let pairs = (0..4).map(|i| w.last_pair(i).unwrap()).collect::<Vec<_>>();
+                let actual = (
+                    pairs
+                        .iter()
+                        .flat_map(|v| v.endpoint.iter().copied())
+                        .collect::<Vec<_>>(),
+                    pairs
+                        .iter()
+                        .map(|v| v.receipt.signed_goal_error)
+                        .collect::<Vec<_>>(),
+                    r.accepted,
+                    r.counters,
+                );
+                if let Some(ref v) = old {
+                    assert_eq!(&actual, v);
+                } else {
+                    old = Some(actual);
+                }
+                println!(
+                    "CACHE_RUN {}",
+                    serde_json::json!({"case":case,"seq":seq,"candidate":cache,"qualified":r.accepted,"initial":initial,"weights":goal,"budget":p.budget,"allocation":a,"work":r,"pairs":pairs})
+                );
+            }
+        }
+        // Same warm key for each path, cyclic paired execution, native plus cert.
+        let mut samples: [Vec<u128>; 3] = std::array::from_fn(|_| Vec::with_capacity(6));
+        for rep in 0..6 {
+            for j in 0..3 {
+                let i = (rep + j) % 3;
+                let start = std::time::Instant::now();
+                let r = workspaces[i]
+                    .solve_cached_budgeted_into(&u, &c, &base, p, plans[i], &mut endpoint, &mut rec)
+                    .unwrap();
+                std::hint::black_box(r);
+                samples[i].push(start.elapsed().as_nanos());
+                assert!(r.accepted);
+                assert_eq!(r.cache_hit, i != 0);
+            }
+        }
+        for (i, cache) in plans.into_iter().enumerate() {
+            let mut sorted = samples[i].clone();
+            sorted.sort_unstable();
+            println!(
+                "CACHE_TIME {}",
+                serde_json::json!({"case":case,"candidate":cache,"samples_ns":samples[i],"median_ns":(sorted[2]+sorted[3])/2})
+            );
+        }
+        let (mut local, setup) = measure(|| L::new(&g, DURATION, 128).unwrap());
+        let mut global = W::new(&g, DURATION, 1).unwrap();
+        let mut output = vec![17.; n];
+        let mut receipt = SpatialAdjointWork::default();
+        println!(
+            "LOCAL_SETUP {}",
+            serde_json::json!({"case":case,"allocation":setup})
+        );
+        for goal_name in ["mass", "local"] {
+            let goal = if goal_name == "mass" {
+                (0..n)
+                    .map(|i| g.cell_measure(i).unwrap())
+                    .collect::<Vec<_>>()
+            } else {
+                c.clone()
+            };
+            for input in ["offset", "signed"] {
+                let initial = if input == "offset" {
+                    u[3 * n..4 * n].to_vec()
+                } else {
+                    (0..n).map(|i| ((13 * i % 17) as f64 - 8.) / 64.).collect()
+                };
+                for budget in [1e-10, 1e-11] {
+                    output.fill(17.);
+                    receipt = SpatialAdjointWork::default();
+                    let (r, a) = measure(|| {
+                        global.solve_budgeted_into(
+                            &initial,
+                            &goal,
+                            &base,
+                            Policy { budget, ..p },
+                            &mut output,
+                            std::slice::from_mut(&mut receipt),
+                        )
+                    });
+                    let r = r.unwrap();
+                    assert_eq!(a.requests(), 0);
+                    let pair = global.last_pair(0).unwrap();
+                    println!(
+                        "GLOBAL_LOCAL {}",
+                        serde_json::json!({"case":case,"goal":goal_name,"input":input,"budget":budget,"candidate":"GlobalGuided","initial":initial,"weights":goal,"qualified":r.accepted,"allocation":a,"work":r,"endpoint":pair.endpoint,"signed_goal_error":pair.receipt.signed_goal_error})
+                    );
+                    for (name, plan, rounds) in [
+                        ("Segmented", LP::Uniform, 0),
+                        ("Uniform", LP::Uniform, 3),
+                        ("MaxMagnitude", LP::MaxMagnitude, 3),
+                        ("SignedAligned", LP::SignedAligned, 3),
+                        ("SuffixWeighted", LP::SuffixWeighted, 3),
+                    ] {
+                        output.fill(17.);
+                        receipt = SpatialAdjointWork::default();
+                        let (r, a) = measure(|| {
+                            local.solve_into(
+                                &initial,
+                                &goal,
+                                &base,
+                                LPolicy {
+                                    budget,
+                                    max_replays: rounds,
+                                    min_scale: 1e-4,
+                                    plan,
+                                },
+                                &mut output,
+                                &mut receipt,
+                            )
+                        });
+                        let r = r.unwrap();
+                        assert_eq!(a.requests(), 0);
+                        assert!(r.completed, "{case} {name} capacity/native stop");
+                        assert_eq!(r.solves, 4 + r.replayed_cells);
+                        assert_eq!(local.defects().len(), 4);
+                        if r.accepted {
+                            assert_eq!(output, &local.states()[4 * n..]);
+                            assert_eq!(receipt.signed_goal_error, r.signed_goal_error.unwrap());
+                        } else {
+                            assert!(output.iter().all(|&v| v == 17.));
+                            assert_eq!(receipt.actions, 0);
+                        }
+                        let mut packet_count = 0;
+                        let mut samples = vec![];
+                        for k in 0..4 {
+                            let seg = local.dense_cell(k).unwrap();
+                            packet_count += seg.len();
+                            assert_eq!(seg.state(0), &local.states()[k * n..(k + 1) * n]);
+                            assert_eq!(
+                                seg.state(seg.len()),
+                                &local.states()[(k + 1) * n..(k + 2) * n]
+                            );
+                            // Actual captured native quartic, not a surrogate path.
+                            for j in 0..seg.len() {
+                                let coord = n / 2;
+                                let (power, a) = measure(|| seg.power_component(j, coord).unwrap());
+                                assert_eq!(a.requests(), 0);
+                                assert!(power[0].contains(seg.state(j)[coord]));
+                                let end = power
+                                    .iter()
+                                    .try_fold(Iv::point(0.).unwrap(), |a, b| a.add(*b))
+                                    .unwrap();
+                                assert!(end.contains(seg.state(j + 1)[coord]));
+                                if j == 0 || j + 1 == seg.len() {
+                                    samples.push(serde_json::json!({"cell":k,"step":j,"times":[seg.t_old(j),seg.t_new(j)],"y0":seg.state(j)[coord],"y1":seg.state(j+1)[coord],"stage":(0..8).map(|q|seg.stage_rows(j)[q*n+coord]).collect::<Vec<_>>(),"power":power.map(|v|v.as_pair())}));
+                                }
+                            }
+                        }
+                        let h = &rodas5p_core::rodas5p_coefficients().unwrap().dense_h;
+                        let dense_h = (0..3)
+                            .map(|i| (0..8).map(|j| h[(i, j)]).collect::<Vec<_>>())
+                            .collect::<Vec<_>>();
+                        println!(
+                            "LOCAL_REPLAY {}",
+                            serde_json::json!({"case":case,"goal":goal_name,"input":input,"budget":budget,"candidate":name,"initial":initial,"weights":goal,"qualified":r.accepted,"allocation":a,"work":r,"times":local.times(),"states":local.states(),"projections":local.projections().iter().map(|v|v.as_pair()).collect::<Vec<_>>(),"defects":local.defects().iter().map(|v|v.as_pair()).collect::<Vec<_>>(),"scales":local.scales(),"packet_count":packet_count,"dense_h":dense_h,"samples":samples})
+                        );
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn local_capture_capacity_and_cache_edges() {
+    use rodas5p_integrators::AdaptiveStepConfig;
+    use vigilode::spatial::{
+        SpatialAdjointWork, SpatialLocalReplayPlan as P, SpatialLocalReplayPolicy as Policy,
+        SpatialLocalReplayWorkspace as L,
+    };
+    let g = DiffusionGrid::periodic_box([8, 4], [8., 4.], [0.125, 0.25]).unwrap();
+    let n = g.dimension();
+    let mut u = vec![0.; n];
+    u[0] = 1.;
+    let mut c = vec![0.; n];
+    c[0] = 1.;
+    let base = AdaptiveStepConfig {
+        rtol: 1e-9,
+        atol: 1e-11,
+        initial_step: 0.001,
+        ..Default::default()
+    };
+    let mut local = L::new(&g, DURATION, 1).unwrap();
+    let mut out = vec![17.; n];
+    let mut rec = SpatialAdjointWork::default();
+    let (r, a) = measure(|| {
+        local.solve_into(
+            &u,
+            &c,
+            &base,
+            Policy {
+                budget: 1e-10,
+                max_replays: 0,
+                min_scale: 1e-4,
+                plan: P::MaxMagnitude,
+            },
+            &mut out,
+            &mut rec,
+        )
+    });
+    let r = r.unwrap();
+    assert!(!r.accepted && !r.completed);
+    assert_eq!(r.primal_stops, 1);
+    assert_eq!(r.dense_packets, 1);
+    assert_eq!(a.requests(), 0);
+    assert!(out.iter().all(|v| *v == 17.));
+    assert!(local.last_receipt().is_none());
+    assert!(local.dense_cell(0).is_none());
+    println!(
+        "LOCAL_EDGE {}",
+        serde_json::json!({"case":"capture_cap","allocation":a,"work":r})
+    );
+}
+
+#[test]
+fn bounded_dense_capture_generic_ode() {
+    use rodas5p_core::{CoreResult, WorkCounters};
+    use rodas5p_integrators::{
+        AdaptiveStepConfig, FastArenaPlan as A, FastDenseCapture, FastFlatOutputArena, OdeProblem,
+        OutputSchedule, ReusableFastClientWorkspace, StageLinearSystem,
+    };
+    use std::sync::Arc;
+    struct Diagonal {
+        n: usize,
+        shift: f64,
+    }
+    impl StageLinearSystem for Diagonal {
+        fn dimension(&self) -> usize {
+            self.n
+        }
+        fn linearize(
+            &mut self,
+            _: &OdeProblem,
+            _: f64,
+            _: &[f64],
+            _: &mut WorkCounters,
+        ) -> CoreResult<()> {
+            Ok(())
+        }
+        fn factor(&mut self, z: f64, c: &mut WorkCounters) -> CoreResult<()> {
+            self.shift = z;
+            c.direct_factorizations += 1;
+            Ok(())
+        }
+        fn solve_in_place(&mut self, b: &mut [f64], c: &mut WorkCounters) -> CoreResult<()> {
+            for (i, v) in b.iter_mut().enumerate() {
+                *v /= self.shift + (i + 1) as f64;
+            }
+            c.direct_solve_calls += 1;
+            Ok(())
+        }
+    }
+    let a = AdaptiveStepConfig {
+        rtol: 1e-9,
+        atol: 1e-12,
+        initial_step: 0.005,
+        max_attempts: 4096,
+        ..Default::default()
+    };
+    for n in [1, 3, 32] {
+        let p = OdeProblem::new(
+            "diagonal decay",
+            n,
+            Arc::new(|_, y, o| {
+                for (i, (v, w)) in y.iter().zip(o).enumerate() {
+                    *w = -(i as f64 + 1.) * v;
+                }
+                Ok(())
+            }),
+            None,
+            None,
+            Some(Arc::new(|_, _, v, out| {
+                for (i, (x, w)) in v.iter().zip(out).enumerate() {
+                    *w = -(i as f64 + 1.) * x;
+                }
+                Ok(())
+            })),
+            None,
+            true,
+            None,
+            None,
+        )
+        .unwrap();
+        let span = (0., 0.125);
+        let schedule = OutputSchedule::new(vec![0., 0.03125, 0.0625, 0.125]).unwrap();
+        let y = vec![1.; n];
+        let atol = vec![a.atol; n];
+        let mut w = ReusableFastClientWorkspace::new(Box::new(Diagonal { n, shift: 0. })).unwrap();
+        let mut arena = FastFlatOutputArena::new(n, 4).unwrap();
+        let mut capture = FastDenseCapture::new(n, 128).unwrap();
+        let (old, _) = w.solve(&p, span, &y, &a, &schedule, &atol).unwrap();
+        for candidate in [A::Legacy, A::Prevalidated] {
+            let (r, alloc) = measure(|| {
+                w.solve_flat_dense_into(
+                    &p,
+                    span,
+                    &y,
+                    &a,
+                    &schedule,
+                    &atol,
+                    candidate,
+                    &mut arena,
+                    &mut capture,
+                )
+                .unwrap()
+            });
+            assert_eq!(alloc.requests(), 0);
+            assert!(r.receipt.success);
+            assert_eq!(r.states.len(), old.observed.y.len() * n);
+            for (v, expected) in r.states.chunks_exact(n).zip(&old.observed.y) {
+                assert_eq!(v, expected);
+            }
+            assert_eq!(r.receipt.counters, old.observed.counters);
+            let seg = capture.segments();
+            assert_eq!(seg.len(), r.receipt.accepted_steps);
+            assert_eq!(seg.state(0), y);
+            assert_eq!(seg.state(seg.len()), r.last_state);
+            for j in 0..seg.len() {
+                for i in 0..n {
+                    let coeff = seg.power_component(j, i).unwrap();
+                    assert!(coeff[0].contains(seg.state(j)[i]));
+                    assert!(
+                        coeff
+                            .iter()
+                            .try_fold(Iv::point(0.).unwrap(), |a, b| a.add(*b))
+                            .unwrap()
+                            .contains(seg.state(j + 1)[i])
+                    );
+                }
+            }
+            let error = r
+                .last_state
+                .iter()
+                .enumerate()
+                .map(|(i, v)| (v - (-((i + 1) as f64) * span.1).exp()).abs())
+                .fold(0., f64::max);
+            assert!(error <= 1e-8);
+            println!(
+                "DENSE_CAPTURE_ODE {}",
+                serde_json::json!({"case":n,"candidate":candidate,"qualified":true,"allocation":alloc,"max_error":error,"packets":seg.len(),"counters":r.receipt.counters})
+            );
+        }
+    }
+}

@@ -2598,6 +2598,54 @@ pub struct FastFlatArenaRun<'a> {
     pub receipt: FastArenaReceipt,
 }
 impl ReusableFastClientWorkspace {
+    /// Borrowed flat output and bounded accepted native dense packets.
+    /// Capture capacity can cause a typed ClientStop partial.
+    pub fn solve_flat_dense_into<'a>(
+        &mut self,
+        problem: &OdeProblem,
+        t_span: (f64, f64),
+        y0: &[f64],
+        adaptive: &AdaptiveStepConfig,
+        output: &OutputSchedule,
+        atol: &[f64],
+        plan: FastArenaPlan,
+        arena: &'a mut FastFlatOutputArena,
+        capture: &mut crate::FastDenseCapture,
+    ) -> CoreResult<FastFlatArenaRun<'a>> {
+        require_atol_vector(problem.dimension, atol)?;
+        if self.work.n != problem.dimension || arena.state.len() != problem.dimension {
+            return Err(CoreError::InvalidInput("flat dense arena dimension".into()));
+        }
+        validate_fast_run(problem, t_span, y0, adaptive, atol)?;
+        capture.reset(t_span.0, y0)?;
+        arena
+            .collector
+            .reset_reusable(output, t_span, y0, adaptive.step_cap())?;
+        arena.state.copy_from_slice(y0);
+        let options = Rodas5pFastOptions {
+            prevalidated_controller: plan == FastArenaPlan::Prevalidated,
+            ..Default::default()
+        };
+        let receipt = integrate_fast_loop(
+            &mut self.work,
+            problem,
+            t_span,
+            &mut arena.state,
+            adaptive,
+            &mut arena.collector,
+            options,
+            None,
+            atol,
+            capture,
+        )?;
+        let (times, states) = arena.collector.flat_view()?;
+        Ok(FastFlatArenaRun {
+            times,
+            states,
+            last_state: &arena.state,
+            receipt,
+        })
+    }
     /// Uses the same native loop and endpoint landing as the row arena.
     pub fn solve_flat_into<'a>(
         &mut self,

@@ -386,6 +386,103 @@ fn polynomial_component(y_old: f64, y_new: f64, [d0, d1, d2]: [f64; 3], theta: f
 /// The step sink of the fast dense drivers.
 type DenseAcceptFn<'a> = dyn FnMut(&FastDenseSegments) -> AcceptControl + 'a;
 
+/// Bounded native dense packet capture; allocation occurs only at construction.
+/// Stops after the last capacity-owned accepted step if the run is unfinished.
+pub struct FastDenseCapture {
+    segments: FastDenseSegments,
+    capacity: usize,
+}
+impl FastDenseCapture {
+    /// Allocate bounded packet storage for one native IVP.
+    pub fn new(n: usize, capacity: usize) -> CoreResult<Self> {
+        if n == 0
+            || capacity == 0
+            || capacity > 4096
+            || n.checked_mul(capacity)
+                .and_then(|v| v.checked_mul(8))
+                .is_none_or(|v| v > isize::MAX as usize / 8)
+        {
+            return Err(CoreError::InvalidInput("dense capture shape".into()));
+        }
+        let mut segments = FastDenseSegments::new(0., &vec![0.; n], capacity)?;
+        segments
+            .t
+            .reserve_exact((capacity + 1).saturating_sub(segments.t.len()));
+        Ok(Self { segments, capacity })
+    }
+    pub(crate) fn reset(&mut self, t: f64, y: &[f64]) -> CoreResult<()> {
+        if y.len() != self.segments.n {
+            return Err(CoreError::InvalidInput("dense capture dimension".into()));
+        }
+        self.segments.t.clear();
+        self.segments.t.push(t);
+        self.segments.states.clear();
+        self.segments.states.extend_from_slice(y);
+        self.segments.stages.clear();
+        Ok(())
+    }
+    /// Retained accepted prefix of the most recent run.
+    pub fn segments(&self) -> &FastDenseSegments {
+        &self.segments
+    }
+}
+impl StepSink for FastDenseCapture {
+    fn after_attempt(
+        &mut self,
+        _problem: &OdeProblem,
+        _work: &mut Workspace,
+        _t: f64,
+        _y: &[f64],
+        _h: f64,
+        error: f64,
+        _atol: f64,
+        _rtol: f64,
+        _counters: &mut WorkCounters,
+    ) -> CoreResult<f64> {
+        Ok(error)
+    }
+    fn accepted(&mut self, work: &Workspace, t_new: f64) {
+        debug_assert!(self.segments.len() < self.capacity);
+        self.segments.push(t_new, &work.y_new, &work.u);
+    }
+    fn accept_control(&mut self, _view: &AcceptedStepView<'_>) -> AcceptControl {
+        if self.segments.len() >= self.capacity {
+            AcceptControl::Stop
+        } else {
+            AcceptControl::Continue
+        }
+    }
+}
+impl FastDenseSegments {
+    /// Exact represented quartic power coefficient enclosure, normalized
+    /// time on the stored accepted interval. No physical error claim.
+    pub fn power_component(
+        &self,
+        k: usize,
+        c: usize,
+    ) -> CoreResult<[rodas5p_core::directed::Interval; 5]> {
+        use rodas5p_core::directed::Interval as I;
+        if k >= self.len() || c >= self.n {
+            return Err(CoreError::InvalidInput("dense power index".into()));
+        }
+        let mut d = [I::point(0.)?; 3];
+        let stages = self.stage_rows(k);
+        for (i, h) in self.dense_h.iter().enumerate() {
+            for j in 0..STAGES {
+                d[i] = d[i].add(I::point(h[j])?.scale(stages[j * self.n + c])?)?;
+            }
+        }
+        let y0 = I::point(self.state(k)[c])?;
+        let y1 = I::point(self.state(k + 1)[c])?;
+        Ok([
+            y0,
+            y1.sub(y0)?.add(d[0])?,
+            d[1].sub(d[0])?,
+            d[2].sub(d[1])?,
+            -d[2],
+        ])
+    }
+}
 struct DenseSink<'a> {
     control: FastInteriorControl,
     segments: FastDenseSegments,

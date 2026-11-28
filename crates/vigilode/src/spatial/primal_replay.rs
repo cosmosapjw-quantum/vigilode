@@ -1,5 +1,6 @@
 //! Source-owned native forward replay with a certified terminal goal budget.
 //! Tolerance changes are proposals; only the actual signed error is authority.
+use super::adjoint::SpatialDualCache;
 use super::*;
 use rodas5p_core::{CoreError, CoreResult, WorkCounters, directed::Interval as Iv};
 use rodas5p_integrators::{
@@ -24,6 +25,16 @@ pub enum SpatialPrimalReplayPlan {
     CenteredSelective,
     /// Center from the first solve; tighten only refused pairs.
     CenteredFirst,
+}
+/// Cross-call reuse policy. Source and duration are owned by the workspace.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum SpatialReplayCachePlan {
+    /// Original one-action-per-batch path.
+    Off,
+    /// Reuse exact projected goals only for identical ordered input bits.
+    ExactBatch,
+    /// Reuse certified covector for identical goal, reproject new initial data.
+    GoalOnly,
 }
 #[derive(Clone, Copy, Debug, Serialize)]
 /// Bounded replay policy. min_scale multiplies the supplied native tolerances.
@@ -56,6 +67,10 @@ pub struct SpatialPrimalReplayWork {
     pub floor_refusals: usize,
     /// Actual sparse actions in the cached certificate.
     pub adjoint_actions: usize,
+    /// Exact-key certificate cache hit.
+    pub cache_hit: bool,
+    /// Goal projections actually evaluated this call.
+    pub goal_projections: usize,
     /// Largest final signed error magnitude; MAX if incomplete.
     pub max_signed_error_upper: f64,
     /// Smallest tolerance multiplier executed.
@@ -129,6 +144,11 @@ pub struct SpatialPrimalReplayWorkspace {
     last_count: usize,
     adjoint: SpatialAdjointBatchWorkspace,
     gradient: Vec<Iv>,
+    dual_cache: SpatialDualCache,
+    cached_goal: Vec<f64>,
+    cached_initial: Vec<f64>,
+    cached_receipts: Vec<SpatialAdjointWork>,
+    cached_count: usize,
 }
 impl SpatialPrimalReplayWorkspace {
     /// Setup allocates the fixed-size arena and the solver buffers.
@@ -182,6 +202,11 @@ impl SpatialPrimalReplayWorkspace {
             last_count: 0,
             adjoint: SpatialAdjointBatchWorkspace::new(grid, capacity)?,
             gradient: vec![Iv::point(0.)?; n],
+            dual_cache: SpatialDualCache::new(grid)?,
+            cached_goal: vec![0.; n],
+            cached_initial: vec![0.; size],
+            cached_receipts: vec![SpatialAdjointWork::default(); capacity],
+            cached_count: 0,
         })
     }
     fn solve_pair(
@@ -302,6 +327,27 @@ impl SpatialPrimalReplayWorkspace {
         endpoint: &mut [f64],
         receipts: &mut [SpatialAdjointWork],
     ) -> CoreResult<SpatialPrimalReplayWork> {
+        self.solve_cached_budgeted_into(
+            initial,
+            goal,
+            base,
+            policy,
+            SpatialReplayCachePlan::Off,
+            endpoint,
+            receipts,
+        )
+    }
+    /// Opt-in cross-call cache; all original endpoint and budget semantics remain.
+    pub fn solve_cached_budgeted_into(
+        &mut self,
+        initial: &[f64],
+        goal: &[f64],
+        base: &AdaptiveStepConfig,
+        policy: SpatialPrimalReplayPolicy,
+        cache: SpatialReplayCachePlan,
+        endpoint: &mut [f64],
+        receipts: &mut [SpatialAdjointWork],
+    ) -> CoreResult<SpatialPrimalReplayWork> {
         self.last_count = 0;
         let k = receipts.len();
         if k == 0
@@ -327,17 +373,57 @@ impl SpatialPrimalReplayWorkspace {
         self.states[..k].fill(PairState::default());
         // Exactly one shared action for this source, goal and duration.
         // The temporary endpoint equals initial only to obtain exact_goal.
-        let a = self.adjoint.certify_batch_into(
-            goal,
-            initial,
-            initial,
-            self.duration,
-            SpatialAdjointRoute::PoissonWideDecay,
-            SpatialBatchPlan::SharedCenteredIntersect,
-            &mut self.gradient,
-            &mut self.receipts[..k],
-        )?;
-        work.adjoint_actions = a.actions;
+        match cache {
+            SpatialReplayCachePlan::GoalOnly => {
+                let (actions, hit) = self.dual_cache.prepare(goal, self.duration)?;
+                work.adjoint_actions = actions;
+                work.cache_hit = hit;
+                work.goal_projections = k;
+                for i in 0..k {
+                    self.receipts[i] = self
+                        .dual_cache
+                        .project(&initial[i * self.n..(i + 1) * self.n])?;
+                }
+            }
+            SpatialReplayCachePlan::ExactBatch
+                if self.cached_count == k
+                    && self
+                        .cached_goal
+                        .iter()
+                        .zip(goal)
+                        .all(|(a, b)| a.to_bits() == b.to_bits())
+                    && self.cached_initial[..initial.len()]
+                        .iter()
+                        .zip(initial)
+                        .all(|(a, b)| a.to_bits() == b.to_bits()) =>
+            {
+                self.receipts[..k].copy_from_slice(&self.cached_receipts[..k]);
+                work.cache_hit = true;
+            }
+            _ => {
+                if cache == SpatialReplayCachePlan::ExactBatch {
+                    self.cached_count = 0;
+                }
+                let a = self.adjoint.certify_batch_into(
+                    goal,
+                    initial,
+                    initial,
+                    self.duration,
+                    SpatialAdjointRoute::PoissonWideDecay,
+                    SpatialBatchPlan::SharedCenteredIntersect,
+                    &mut self.gradient,
+                    &mut self.receipts[..k],
+                )?;
+                work.adjoint_actions = a.actions;
+                work.goal_projections = k;
+                if cache == SpatialReplayCachePlan::ExactBatch {
+                    self.cached_goal.copy_from_slice(goal);
+                    self.cached_initial[..initial.len()].copy_from_slice(initial);
+                    self.cached_receipts[..k].copy_from_slice(&self.receipts[..k]);
+                    self.cached_count = k;
+                }
+            }
+        }
         for i in 0..k {
             self.states[i].centered = policy.plan == SpatialPrimalReplayPlan::CenteredFirst;
             self.solve_pair(i, initial, base, &mut work)?;
@@ -393,6 +479,389 @@ impl SpatialPrimalReplayWorkspace {
             receipts.copy_from_slice(&self.receipts[..k]);
         }
         self.last_count = k;
+        Ok(work)
+    }
+}
+
+/// Four exact represented macro cells; native accepted dense packets are
+/// retained within each. Each retry replaces a suffix from a shared endpoint.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum SpatialLocalReplayPlan {
+    /// Uniform tolerance reduction on all cells.
+    Uniform,
+    /// Refine the largest magnitude integrated dual defect.
+    MaxMagnitude,
+    /// Prefer a contribution aligned with the total signed goal error.
+    SignedAligned,
+    /// Divide the magnitude score by the observed suffix step cost.
+    SuffixWeighted,
+}
+#[derive(Clone, Copy, Debug, Serialize)]
+pub struct SpatialLocalReplayPolicy {
+    /// Unchanged signed absolute terminal budget.
+    pub budget: f64,
+    /// Maximum additional suffix rounds.
+    pub max_replays: usize,
+    /// Minimum multiplier of native tolerances.
+    pub min_scale: f64,
+    /// Local refinement proposal.
+    pub plan: SpatialLocalReplayPlan,
+}
+#[derive(Clone, Copy, Debug, Default, Serialize)]
+pub struct SpatialLocalReplayWork {
+    /// Completed and signed budget accepted.
+    pub accepted: bool,
+    /// Actual final numerical endpoint available.
+    pub completed: bool,
+    /// Actual macro IVP solves.
+    pub solves: usize,
+    /// Additional suffix rounds executed.
+    pub replay_rounds: usize,
+    /// Count of tolerance reductions.
+    pub refined_cells: usize,
+    /// Additional macro IVPs executed.
+    pub replayed_cells: usize,
+    /// Sum of preserved macro cells over replay rounds.
+    pub prefix_cells_reused: usize,
+    /// Actual accepted packets, including discarded proposals.
+    pub dense_packets: usize,
+    /// New certified semigroup sparse actions.
+    pub adjoint_actions: usize,
+    /// Prepared boundary covectors reused.
+    pub cache_hits: usize,
+    /// Boundary projections computed.
+    pub projections: usize,
+    /// Refusal because no tighter tolerance is admitted.
+    pub floor_refusals: usize,
+    /// Native stops including bounded packet capacity.
+    pub primal_stops: usize,
+    /// Accumulated native work.
+    pub counters: WorkCounters,
+    /// Accumulated Fourier stage solves.
+    pub stage_solves: usize,
+    /// Final direct signed error if completed.
+    pub signed_goal_error: Option<[f64; 2]>,
+    /// Final magnitude upper or MAX on incomplete.
+    pub max_signed_error_upper: f64,
+    /// Per-cell tolerance refinement counts.
+    pub selected: [usize; 4],
+}
+/// Fixed-source, bounded native packet and dual projection workspace.
+/// Local replay starts from a retained represented prefix, not an exact
+/// physical restart; the original initial condition and final gate stay fixed.
+pub struct SpatialLocalReplayWorkspace {
+    primal: SpatialPrimalReplayWorkspace,
+    times: [f64; 5],
+    schedules: Vec<OutputSchedule>,
+    captures: Vec<rodas5p_integrators::FastDenseCapture>,
+    dual: Vec<SpatialDualCache>,
+    states: Vec<f64>,
+    projections: [Iv; 5],
+    defects: [Iv; 4],
+    scales: [f64; 4],
+    steps: [usize; 4],
+    valid_cells: usize,
+    has_initial: bool,
+    last_receipt: Option<SpatialAdjointWork>,
+}
+impl SpatialLocalReplayWorkspace {
+    /// Allocate four bounded native packet arenas and exact dual caches.
+    pub fn new(
+        grid: &DiffusionGrid,
+        duration: f64,
+        max_packets_per_cell: usize,
+    ) -> CoreResult<Self> {
+        if !duration.is_finite() || duration <= 0. {
+            return Err(err("local duration"));
+        }
+        let times = [
+            0.,
+            duration * 0.25,
+            duration * 0.5,
+            duration * 0.75,
+            duration,
+        ];
+        if times.windows(2).any(|x| x[0] >= x[1]) {
+            return Err(err("local degenerate macro clock"));
+        }
+        for &t in &times {
+            let d = Iv::point(duration)?.sub(Iv::point(t)?)?;
+            if d.lo != d.hi {
+                return Err(err("local nonrepresentable adjoint duration"));
+            }
+        }
+        let n = grid.dimension();
+        let size = n.checked_mul(5).ok_or_else(|| err("local state size"))?;
+        let mut schedules = Vec::with_capacity(4);
+        let mut captures = Vec::with_capacity(4);
+        let mut dual = Vec::with_capacity(4);
+        for j in 0..4 {
+            schedules.push(OutputSchedule::new(vec![times[j], times[j + 1]])?);
+            captures.push(rodas5p_integrators::FastDenseCapture::new(
+                n,
+                max_packets_per_cell,
+            )?);
+            dual.push(SpatialDualCache::new(grid)?);
+        }
+        Ok(Self {
+            primal: SpatialPrimalReplayWorkspace::new(grid, duration, 1)?,
+            times,
+            schedules,
+            captures,
+            dual,
+            states: vec![0.; size],
+            projections: [Iv::point(0.)?; 5],
+            defects: [Iv::point(0.)?; 4],
+            scales: [1.; 4],
+            steps: [0; 4],
+            valid_cells: 0,
+            has_initial: false,
+            last_receipt: None,
+        })
+    }
+    /// Committed macro prefix times.
+    pub fn times(&self) -> &[f64] {
+        if self.has_initial {
+            &self.times[..=self.valid_cells]
+        } else {
+            &[]
+        }
+    }
+    /// Flat committed macro prefix states.
+    pub fn states(&self) -> &[f64] {
+        if self.has_initial {
+            &self.states[..(self.valid_cells + 1) * self.primal.n]
+        } else {
+            &[]
+        }
+    }
+    /// Directed dual projections of the prefix.
+    pub fn projections(&self) -> &[Iv] {
+        if self.has_initial {
+            &self.projections[..=self.valid_cells]
+        } else {
+            &[]
+        }
+    }
+    /// Directed integrated residual contributions for completed cells.
+    pub fn defects(&self) -> &[Iv] {
+        &self.defects[..self.valid_cells]
+    }
+    /// Actual current tolerance multipliers.
+    pub fn scales(&self) -> [f64; 4] {
+        self.scales
+    }
+    /// Native dense packets of a completed cell.
+    pub fn dense_cell(&self, k: usize) -> Option<&rodas5p_integrators::FastDenseSegments> {
+        (k < self.valid_cells).then(|| self.captures[k].segments())
+    }
+    /// Last completed numerical proposal certificate, not necessarily accepted.
+    pub fn last_receipt(&self) -> Option<SpatialAdjointWork> {
+        self.last_receipt
+    }
+    fn run_suffix(
+        &mut self,
+        start: usize,
+        goal: &[f64],
+        base: &AdaptiveStepConfig,
+        work: &mut SpatialLocalReplayWork,
+    ) -> CoreResult<bool> {
+        let n = self.primal.n;
+        self.valid_cells = start;
+        for k in start..4 {
+            let mut cfg = base.clone();
+            cfg.rtol *= self.scales[k];
+            cfg.atol *= self.scales[k];
+            cfg.validate()?;
+            self.primal.atol.fill(cfg.atol);
+            *self.primal.report.lock().unwrap() = self.primal.report_template;
+            let (prefix, suffix) = self.states.split_at_mut((k + 1) * n);
+            let input = &prefix[k * n..(k + 1) * n];
+            let run = self.primal.driver.solve_flat_dense_into(
+                &self.primal.problem,
+                (self.times[k], self.times[k + 1]),
+                input,
+                &cfg,
+                &self.schedules[k],
+                &self.primal.atol,
+                FastArenaPlan::Legacy,
+                &mut self.primal.arena,
+                &mut self.captures[k],
+            )?;
+            let receipt = run.receipt;
+            let report = *self.primal.report.lock().unwrap();
+            work.solves += 1;
+            work.counters.accumulate(receipt.counters);
+            work.stage_solves += report.solves;
+            let seg = self.captures[k].segments();
+            work.dense_packets += seg.len();
+            if !receipt.success {
+                work.primal_stops += 1;
+                return Ok(false);
+            }
+            if seg.len() != receipt.accepted_steps
+                || seg.is_empty()
+                || seg.state(0) != input
+                || seg.state(seg.len()) != run.last_state
+                || seg.times()[0] != self.times[k]
+                || seg.times()[seg.len()] != self.times[k + 1]
+            {
+                return Err(err("native dense packet identity"));
+            }
+            suffix[..n].copy_from_slice(run.last_state);
+            self.steps[k] = seg.len();
+            let end = if k == 3 {
+                goal.iter()
+                    .zip(&suffix[..n])
+                    .try_fold(Iv::point(0.)?, |a, (&c, &x)| a.add(Iv::point(c)?.scale(x)?))?
+            } else {
+                let r = self.dual[k + 1].project(&suffix[..n])?;
+                Iv::new(r.exact_goal[0], r.exact_goal[1])?
+            };
+            work.projections += 1;
+            self.projections[k + 1] = end;
+            self.defects[k] = self.projections[k].sub(end)?;
+            self.valid_cells = k + 1;
+        }
+        Ok(true)
+    }
+    /// Final direct signed budget remains authority. Diagnostic local defects
+    /// enclose the integrated continuous adjoint residual over each macro cell.
+    pub fn solve_into(
+        &mut self,
+        initial: &[f64],
+        goal: &[f64],
+        base: &AdaptiveStepConfig,
+        policy: SpatialLocalReplayPolicy,
+        endpoint: &mut [f64],
+        out: &mut SpatialAdjointWork,
+    ) -> CoreResult<SpatialLocalReplayWork> {
+        let n = self.primal.n;
+        self.valid_cells = 0;
+        self.has_initial = false;
+        self.last_receipt = None;
+        if initial.len() != n
+            || goal.len() != n
+            || endpoint.len() != n
+            || initial.iter().chain(goal).any(|x| !x.is_finite())
+            || !policy.budget.is_finite()
+            || policy.budget <= 0.
+            || !policy.min_scale.is_finite()
+            || policy.min_scale <= 0.
+            || policy.min_scale > 1.
+            || policy.max_replays > 32
+        {
+            return Err(err("local input/policy"));
+        }
+        base.validate()?;
+        let mut work = SpatialLocalReplayWork {
+            max_signed_error_upper: f64::MAX,
+            ..Default::default()
+        };
+        for k in 0..4 {
+            let d = Iv::point(self.times[4])?.sub(Iv::point(self.times[k])?)?;
+            if d.lo != d.hi {
+                return Err(err("local adjoint clock"));
+            }
+            let (actions, hit) = self.dual[k].prepare(goal, d.lo)?;
+            work.adjoint_actions += actions;
+            work.cache_hits += usize::from(hit);
+        }
+        self.states[..n].copy_from_slice(initial);
+        self.scales = [1.; 4];
+        self.steps = [0; 4];
+        let mut rec = self.dual[0].project(initial)?;
+        self.projections[0] = Iv::new(rec.exact_goal[0], rec.exact_goal[1])?;
+        work.projections = 1;
+        self.has_initial = true;
+        if !self.run_suffix(0, goal, base, &mut work)? {
+            return Ok(work);
+        }
+        for round in 0..=policy.max_replays {
+            let signed = self.projections[0].sub(self.projections[4])?;
+            work.completed = true;
+            work.max_signed_error_upper = signed.mag();
+            work.signed_goal_error = Some(signed.as_pair());
+            rec.signed_goal_error = signed.as_pair();
+            self.last_receipt = Some(rec);
+            if signed.mag() <= policy.budget {
+                work.accepted = true;
+                endpoint.copy_from_slice(&self.states[4 * n..5 * n]);
+                *out = rec;
+                break;
+            }
+            if round == policy.max_replays {
+                break;
+            }
+            let start;
+            if policy.plan == SpatialLocalReplayPlan::Uniform {
+                let mut first = None;
+                for i in 0..4 {
+                    let next = (0.25 * self.scales[i]).max(policy.min_scale);
+                    if next < self.scales[i] {
+                        self.scales[i] = next;
+                        work.refined_cells += 1;
+                        work.selected[i] += 1;
+                        first.get_or_insert(i);
+                    }
+                }
+                let Some(i) = first else {
+                    work.floor_refusals += 1;
+                    break;
+                };
+                start = i;
+            } else {
+                let mut best = None;
+                let mut best_score = -1.;
+                for i in 0..4 {
+                    if self.scales[i] <= policy.min_scale {
+                        continue;
+                    }
+                    let v = self.defects[i];
+                    let score = match policy.plan {
+                        SpatialLocalReplayPlan::SignedAligned if signed.lo > 0. => v.lo.max(0.),
+                        SpatialLocalReplayPlan::SignedAligned if signed.hi < 0. => (-v.hi).max(0.),
+                        SpatialLocalReplayPlan::SuffixWeighted => {
+                            v.mag() / (self.steps[i..].iter().sum::<usize>().max(1) as f64)
+                        }
+                        _ => v.mag(),
+                    };
+                    if score > best_score {
+                        best_score = score;
+                        best = Some(i);
+                    }
+                }
+                let Some(mut i) = best else {
+                    work.floor_refusals += 1;
+                    break;
+                };
+                if best_score == 0. {
+                    i = (0..4)
+                        .filter(|&j| self.scales[j] > policy.min_scale)
+                        .max_by(|&a, &b| self.defects[a].mag().total_cmp(&self.defects[b].mag()))
+                        .unwrap_or(i);
+                }
+                let next = (self.scales[i] * 0.25).max(policy.min_scale);
+                if next >= self.scales[i] {
+                    work.floor_refusals += 1;
+                    break;
+                }
+                self.scales[i] = next;
+                work.selected[i] += 1;
+                work.refined_cells += 1;
+                start = i;
+            }
+            work.replay_rounds += 1;
+            work.prefix_cells_reused += start;
+            work.replayed_cells += 4 - start;
+            work.completed = false;
+            work.signed_goal_error = None;
+            work.max_signed_error_upper = f64::MAX;
+            self.last_receipt = None;
+            if !self.run_suffix(start, goal, base, &mut work)? {
+                break;
+            }
+        }
         Ok(work)
     }
 }

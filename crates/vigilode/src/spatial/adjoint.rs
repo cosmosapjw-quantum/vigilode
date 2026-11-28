@@ -670,3 +670,98 @@ impl SpatialAdjointBatchWorkspace {
         Ok(work)
     }
 }
+
+// Source-owned, exact-key reuse of a terminal covector. Its interval center
+// and single l1 tail remain private; only directed goal projections escape.
+pub(super) struct SpatialDualCache {
+    inner: SpatialAdjointWorkspace,
+    key: Vec<f64>,
+    zero: Vec<f64>,
+    gradient: Vec<Iv>,
+    duration: Option<u64>,
+    work: SpatialAdjointWork,
+}
+impl SpatialDualCache {
+    pub(super) fn new(grid: &DiffusionGrid) -> CoreResult<Self> {
+        let n = grid.dimension();
+        Ok(Self {
+            inner: SpatialAdjointWorkspace::new(grid)?,
+            key: vec![0.; n],
+            zero: vec![0.; n],
+            gradient: vec![Z; n],
+            duration: None,
+            work: SpatialAdjointWork::default(),
+        })
+    }
+    pub(super) fn prepare(&mut self, goal: &[f64], duration: f64) -> CoreResult<(usize, bool)> {
+        if goal.len() != self.key.len()
+            || goal.iter().any(|v| !v.is_finite())
+            || !duration.is_finite()
+            || duration < 0.
+        {
+            return Err(err("dual cache key"));
+        }
+        if self.duration == Some(duration.to_bits())
+            && self
+                .key
+                .iter()
+                .zip(goal)
+                .all(|(a, b)| a.to_bits() == b.to_bits())
+        {
+            return Ok((0, true));
+        }
+        self.duration = None;
+        let work = self.inner.certify_into(
+            goal,
+            &self.zero,
+            &self.zero,
+            duration,
+            SpatialAdjointRoute::PoissonWideDecay,
+            &mut self.gradient,
+        )?;
+        self.key.copy_from_slice(goal);
+        self.work = work;
+        self.duration = Some(duration.to_bits());
+        Ok((work.actions, false))
+    }
+    pub(super) fn project(&self, u: &[f64]) -> CoreResult<SpatialAdjointWork> {
+        if self.duration.is_none() || u.len() != self.key.len() || u.iter().any(|v| !v.is_finite())
+        {
+            return Err(err("unprepared dual projection"));
+        }
+        let mut r = self.work;
+        let lo = u.iter().copied().fold(f64::INFINITY, f64::min);
+        let hi = u.iter().copied().fold(f64::NEG_INFINITY, f64::max);
+        let s = 0.5 * lo + 0.5 * hi;
+        let constant = self
+            .key
+            .iter()
+            .try_fold(Z, |a, &c| a.add(Iv::point(c)?))?
+            .scale(s)?;
+        let mut value = constant;
+        let mut norm = 0_f64;
+        for (&v, &c) in u.iter().zip(&self.inner.state) {
+            let d = Iv::point(v)?.sub(Iv::point(s)?)?;
+            norm = norm.max(d.mag());
+            value = value.add(c.mul(d)?)?;
+        }
+        let radius = mul_up(r.l1_tail_upper, norm)?;
+        let centered = value.add(Iv::new(-radius, radius)?)?;
+        let radius = mul_up(
+            r.l1_tail_upper,
+            u.iter().map(|x| x.abs()).fold(0., f64::max),
+        )?;
+        let plain = dot(&self.inner.state, u)?.add(Iv::new(-radius, radius)?)?;
+        let exact = Iv::new(plain.lo.max(centered.lo), plain.hi.min(centered.hi))?;
+        r.exact_goal = exact.as_pair();
+        r.signed_goal_error = exact
+            .sub(
+                self.key
+                    .iter()
+                    .zip(u)
+                    .try_fold(Z, |a, (&c, &x)| a.add(Iv::point(c)?.scale(x)?))?,
+            )?
+            .as_pair();
+        Ok(r)
+    }
+}
