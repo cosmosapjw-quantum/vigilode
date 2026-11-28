@@ -1,0 +1,11 @@
+# M2.38 reproduction
+Base 2e74006292418f975a542e5b0cde5e005c81afa5; execution source/candidate freeze f92e3e61da64e84c143113c2fe597cf607351d2c. Initial API compile refusal 321eb4b0; focused test-after green, not behavioral RED. Original computation finished on 2026-11-28 between approximately 18:12 and 18:22 KST, recovered at 21:51 KST. Closeout adds analysis only, no change to original inputs or native algorithm.
+Rust locked offline release, polynomial-events; CARGO_TARGET_DIR=$HOME/.cargo-targets/vigilode-stage-lattice-20261124/kschain. Verify EXEC_INPUT_SHA256SUMS before/after. For each focused command:
+taskset -c 0 cargo test --locked --offline --release -p vigilode --features polynomial-events --test spatial_adjoint_contracts <name> -- --exact --nocapture --test-threads=1
+virtual_terminal_small_pool_contract -> contract.log
+online_checkpoint_generic_ode_portfolio -> ode.log
+density_pool_actual_portfolio -> portfolio.log
+python3 research/m2_cost_aware_density_boundary_pool_20261128/verify.py
+python3 research/m2_cost_aware_density_boundary_pool_20261128/guide.py select
+Closeout adds python3 research/m2_cost_aware_density_boundary_pool_20261128/posthoc.py (reads original measured logs, no simulated native solves or new timings). The two focused contracts were independently rerun on the unchanged execution source in the closeout, with closeout-contract and closeout-ode logs. The larger portfolio and regression suites were not rerun in the closeout because original complete exits and raw logs exist, verified input hashes match, and no code changed. Logs may be compressed with gzip. Timing CPU0, six cyclic repeats of six candidates on 14 offset tight-budget strata, 504 cold and 504 repeated runs, setup excluded. Descriptive paired timing.
+Regression: cargo test --locked --offline --release -p vigilode --features polynomial-events --test dae_secant_goal_contracts --test spatial_adjoint_contracts -- --test-threads=1; cargo test --locked --offline --release -p rodas5p-integrators --features polynomial-events --test global_budget_contracts --test client_stage_system_contracts --test accept_control_contracts --test fast_vector_atol_contracts --test output_observer_contracts -- --test-threads=1.
