@@ -1,0 +1,788 @@
+{
+  "deferred_this_slice": [
+    {
+      "next": "scope-specific adaptive partition/dual precision",
+      "reason": "exact linear endpoint identity covers integrated residual; nonlinear source and arbitrary discontinuities need separate proof",
+      "symbol": "general local continuous residual quadrature"
+    }
+  ],
+  "modules": [
+    {
+      "consumer": "crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs::homogeneous_goal_into",
+      "evidence": "18 structured growth goal evaluations, 3 direct warm zeroheap; actual goal acceptance 6/6 per variant",
+      "source": "crates/rodas5p-integrators/src/retro_dae_evolution/terminal_adjoint.rs",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "ConstantTerminalAdjoint::from_homogeneous_source"
+    },
+    {
+      "consumer": "crates/vigilode/src/dae_evolution/retained/slabs/goal_budget.rs",
+      "evidence": "fixed12, fixed20, budgeted Taylor actual goal routes; exact signed oracle",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "TerminalAdjointProblem::enclose_into / causal_residual_allowances"
+    },
+    {
+      "consumer": "crates/vigilode/src/spatial/shifted_adjoint/residual.rs",
+      "evidence": "compact geometry diagonal and original-source fallback; 160 exact residual bounds and 21 native IVPs",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "DiffusionGrid::represented_row / directed_residual"
+    },
+    {
+      "candidate_or_evidence": "actual goal budget and direct",
+      "current_source_references": [
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/goal_budget.rs:29:                Diagonal4,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/goal_budget.rs:40:                Diagonal4,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:8:    Diagonal4,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:30:            Self::Diagonal4 | Self::Scaled4 | Self::Scaled8 | Self::Scaled16",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/dae_secant_goal_contracts.rs:259:        SecantGoalRoute::Diagonal4,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/dae_secant_goal_contracts.rs:310:                                SecantGoalRoute::Diagonal4",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/dae_secant_goal_contracts.rs:1343:                SecantGoalRoute::Diagonal4,"
+      ],
+      "observed_at_commit": "c44988a609125b08412df125ea1d14a01e6effbc",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "Diagonal4"
+    },
+    {
+      "candidate_or_evidence": "actual goal budget and direct",
+      "current_source_references": [
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/goal_budget.rs:30:                Scaled4,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/goal_budget.rs:41:                Scaled4,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:9:    Scaled4,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:30:            Self::Diagonal4 | Self::Scaled4 | Self::Scaled8 | Self::Scaled16",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:34:        if matches!(self, Self::Scaled4 | Self::Scaled8 | Self::Scaled16) {",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/dae_secant_goal_contracts.rs:260:        SecantGoalRoute::Scaled4,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/dae_secant_goal_contracts.rs:311:                                    | SecantGoalRoute::Scaled4",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/dae_secant_goal_contracts.rs:1344:                SecantGoalRoute::Scaled4,"
+      ],
+      "observed_at_commit": "c44988a609125b08412df125ea1d14a01e6effbc",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "Scaled4"
+    },
+    {
+      "candidate_or_evidence": "actual goal budget; poor width measured",
+      "current_source_references": [
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/goal_budget.rs:31:                Shifted4,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/goal_budget.rs:42:                Shifted4,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:11:    Shifted4,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:196:            if matches!(route, SecantGoalRoute::Shifted4 | SecantGoalRoute::Shifted8) {",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/dae_secant_goal_contracts.rs:262:        SecantGoalRoute::Shifted4,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/dae_secant_goal_contracts.rs:1347:                SecantGoalRoute::Shifted4,"
+      ],
+      "observed_at_commit": "c44988a609125b08412df125ea1d14a01e6effbc",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "Shifted4"
+    },
+    {
+      "candidate_or_evidence": "actual eight-cell transport",
+      "current_source_references": [
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/goal_budget.rs:37:                Scaled8,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:12:    Scaled8,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:20:            Self::Scaled8 | Self::Shifted8 => 8,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:30:            Self::Diagonal4 | Self::Scaled4 | Self::Scaled8 | Self::Scaled16",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:34:        if matches!(self, Self::Scaled4 | Self::Scaled8 | Self::Scaled16) {",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/dae_secant_goal_contracts.rs:1345:                SecantGoalRoute::Scaled8,"
+      ],
+      "observed_at_commit": "c44988a609125b08412df125ea1d14a01e6effbc",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "Scaled8"
+    },
+    {
+      "candidate_or_evidence": "actual eight-cell perturbed transport",
+      "current_source_references": [
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/goal_budget.rs:38:                Shifted8,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:13:    Shifted8,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:20:            Self::Scaled8 | Self::Shifted8 => 8,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:196:            if matches!(route, SecantGoalRoute::Shifted4 | SecantGoalRoute::Shifted8) {",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/dae_secant_goal_contracts.rs:1348:                SecantGoalRoute::Shifted8,"
+      ],
+      "observed_at_commit": "c44988a609125b08412df125ea1d14a01e6effbc",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "Shifted8"
+    },
+    {
+      "candidate_or_evidence": "40 residual conditions and 7 native IVPs",
+      "current_source_references": [
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/spatial/shifted_adjoint/residual.rs:16:    RingLocalDiagonal,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/spatial/shifted_adjoint/residual.rs:25:                | Self::RingLocalDiagonal",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/spatial/shifted_adjoint/residual.rs:161:            scratch: if plan == ResidualPlan::RingLocalDiagonal {",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/spatial/shifted_adjoint/residual.rs:450:        if self.plan == ResidualPlan::RingLocalDiagonal {",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/spatial_adjoint_contracts.rs:2077:        P::RingLocalDiagonal,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/spatial_adjoint_contracts.rs:2243:            P::RingLocalDiagonal,"
+      ],
+      "observed_at_commit": "c44988a609125b08412df125ea1d14a01e6effbc",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "RingLocalDiagonal"
+    },
+    {
+      "candidate_or_evidence": "40 residual conditions and 7 native IVPs",
+      "current_source_references": [
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/spatial/shifted_adjoint/residual.rs:17:    RingLocalHybrid,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/spatial/shifted_adjoint/residual.rs:26:                | Self::RingLocalHybrid",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/spatial/shifted_adjoint/residual.rs:456:            ResidualPlan::CompactHybrid | ResidualPlan::RingLocalHybrid",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/src/spatial/shifted_adjoint/residual.rs:458:            let result = if self.plan == ResidualPlan::RingLocalHybrid {",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/spatial_adjoint_contracts.rs:2078:        P::RingLocalHybrid,",
+        "c44988a609125b08412df125ea1d14a01e6effbc:crates/vigilode/tests/spatial_adjoint_contracts.rs:2244:            P::RingLocalHybrid,"
+      ],
+      "observed_at_commit": "c44988a609125b08412df125ea1d14a01e6effbc",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "RingLocalHybrid"
+    },
+    {
+      "candidate_or_evidence": "absolute residual integral mean on actual clock certificate",
+      "current_source_references": [
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/retro_dae_evolution.rs:153:fn bernstein_magnitude(a: &[Iv], mean: bool) -> CoreResult<f64> {",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/retro_dae_evolution.rs:6420:                    let m = bernstein_magnitude(q.slice(), route != ConservationRoute::Max)?;",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/retro_dae_evolution.rs:6911:                    bernstein_magnitude(&c, false).unwrap().to_bits(),",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/retro_dae_evolution.rs:6915:                    bernstein_magnitude(&c, true).unwrap().to_bits(),",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:106:    let b = bernstein_magnitude(a.slice(), plan != ClockTubePlan::Sup4)?;"
+      ],
+      "observed_at_commit": "98b2ac862b195e0cd1758a68c6b171fa7571f1df",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "bernstein_magnitude"
+    },
+    {
+      "candidate_or_evidence": "hybrid spectral residual bound in actual weighted physical proof",
+      "current_source_references": [
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/retro_dae_evolution.rs:246:fn power_legendre(a: &[Iv]) -> CoreResult<ScratchPoly> {",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/retro_dae_evolution.rs:332:            *slot = power_legendre(power.slice())?;",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/retro_dae_evolution.rs:429:                du = power_legendre(du.slice())?;",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:110:        Ok(b.min(legendre_norm(&power_legendre(a.slice())?)?))"
+      ],
+      "observed_at_commit": "98b2ac862b195e0cd1758a68c6b171fa7571f1df",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "power_legendre"
+    },
+    {
+      "candidate_or_evidence": "hybrid min bound measured; ties Mean4",
+      "current_source_references": [
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/retro_dae_evolution.rs:262:fn legendre_norm(a: &ScratchPoly) -> CoreResult<f64> {",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/retro_dae_evolution.rs:402:                legendre_norm(a)",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:110:        Ok(b.min(legendre_norm(&power_legendre(a.slice())?)?))"
+      ],
+      "observed_at_commit": "98b2ac862b195e0cd1758a68c6b171fa7571f1df",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "legendre_norm"
+    },
+    {
+      "candidate_or_evidence": "source bound nonexpansive carry 939 successful direct and actual full replay",
+      "current_source_references": [
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/retro_dae_evolution.rs:24:pub use clock_tube::{ClockTubeCarry, ClockTubePlan, ClockTubeWork};",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:117:pub struct ClockTubeCarry<'a> {",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:126:impl<'a> ClockTubeCarry<'a> {",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/vigilode/src/dae_evolution/retained/slabs.rs:238:        carry: &mut de::ClockTubeCarry<'_>,",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/vigilode/src/dae_evolution/retained/slabs.rs:603:            Some(de::ClockTubeCarry::new(",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/vigilode/tests/dae_secant_goal_contracts.rs:1518:    use de::{ClockTubeCarry as Carry, ClockTubePlan as P};"
+      ],
+      "observed_at_commit": "98b2ac862b195e0cd1758a68c6b171fa7571f1df",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "ClockTubeCarry"
+    },
+    {
+      "candidate_or_evidence": "actual per-slab adaptive signed certificate in goal replay",
+      "current_source_references": [
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/vigilode/src/dae_evolution/retained/slabs/goal_budget.rs:59:                BudgetedEconomy,",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:15:    BudgetedEconomy,",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:19:        matches!(self, Self::Budgeted | Self::BudgetedEconomy)",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:40:                | Self::BudgetedEconomy",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:46:            Self::Scaled4 | Self::Scaled8 | Self::Scaled16 | Self::Budgeted | Self::BudgetedEconomy",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:286:                let (a, b) = if route == SecantGoalRoute::BudgetedEconomy {",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/vigilode/tests/dae_secant_goal_contracts.rs:1668:                        SecantGoalRoute::BudgetedEconomy,",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/vigilode/tests/dae_secant_goal_contracts.rs:1671:                            SecantGoalRoute::Budgeted | SecantGoalRoute::BudgetedEconomy => {"
+      ],
+      "observed_at_commit": "98b2ac862b195e0cd1758a68c6b171fa7571f1df",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "BudgetedEconomy"
+    },
+    {
+      "candidate_or_evidence": "actual per-slab adaptive signed certificate",
+      "current_source_references": [
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/exponential.rs:686:pub enum Pexprb54s4BudgetedLevel2PrefixOutcome {",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/exponential.rs:695:pub enum Pexprb54s4AccountedBudgetedLevel2PrefixOutcome {",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/exponential.rs:795:struct Pexprb54s4BudgetedOperator {",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/exponential.rs:800:impl Pexprb54s4BudgetedOperator {",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/exponential.rs:806:impl LinearOperator for Pexprb54s4BudgetedOperator {",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/exponential.rs:866:) -> Pexprb54s4AccountedBudgetedLevel2PrefixOutcome {",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/exponential.rs:868:    Pexprb54s4AccountedBudgetedLevel2PrefixOutcome::BudgetExhausted(Box::new(",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/exponential.rs:880:) -> Pexprb54s4AccountedBudgetedLevel2PrefixOutcome {",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/exponential.rs:881:    Pexprb54s4AccountedBudgetedLevel2PrefixOutcome::Failed(Box::new(Pexprb54s4FailedPrefixReport {",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/exponential.rs:2891:) -> CoreResult<Pexprb54s4AccountedBudgetedLevel2PrefixOutcome> {",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/exponential.rs:2919:    let guarded_operator = Arc::new(Pexprb54s4BudgetedOperator::new(",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/exponential.rs:3126:    Ok(Pexprb54s4AccountedBudgetedLevel2PrefixOutcome::Complete(",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/exponential.rs:3156:) -> CoreResult<Pexprb54s4BudgetedLevel2PrefixOutcome> {",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/exponential.rs:3168:        Pexprb54s4AccountedBudgetedLevel2PrefixOutcome::Complete(prefix) => {",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/exponential.rs:3169:            Ok(Pexprb54s4BudgetedLevel2PrefixOutcome::Complete(prefix))",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/exponential.rs:3171:        Pexprb54s4AccountedBudgetedLevel2PrefixOutcome::BudgetExhausted(report) => Ok(",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/exponential.rs:3172:            Pexprb54s4BudgetedLevel2PrefixOutcome::BudgetExhausted(report),",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/exponential.rs:3174:        Pexprb54s4AccountedBudgetedLevel2PrefixOutcome::Failed(report) => Err(report.error),",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/exponential.rs:3512:        Some(budget) => Arc::new(Pexprb54s4BudgetedOperator::new(",
+        "98b2ac862b195e0cd1758a68c6b171fa7571f1df:crates/rodas5p-integrators/src/exponential.rs:3788:    ) -> (Pexprb54s4BudgetedOperator, Arc<Pexprb54s4JvpBudget>) {"
+      ],
+      "observed_at_commit": "98b2ac862b195e0cd1758a68c6b171fa7571f1df",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "Budgeted"
+    },
+    {
+      "candidate_or_evidence": "existing exact source matcher extended to independent multi-block terminal certificate",
+      "current_source_references": [
+        "f66799c8be9cc2bb180b1a104dcb5ab1ad364946:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:29:pub(super) fn matches_terms(eq: &DeclaredPolynomial, want: &[(f64, &[u8])]) -> bool {",
+        "f66799c8be9cc2bb180b1a104dcb5ab1ad364946:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:68:        || !matches_terms(&src.g[0], &[(1., &[3]), (-1., &[1])])",
+        "f66799c8be9cc2bb180b1a104dcb5ab1ad364946:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:69:        || !matches_terms(&src.g[1], &[(1., &[4]), (-1., &[2])])",
+        "f66799c8be9cc2bb180b1a104dcb5ab1ad364946:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:73:    if matches_terms(&src.f[0], &[(-1., &[0, 3, 3])]) && matches_terms(&src.f[1], &[(1., &[0, 3])])",
+        "f66799c8be9cc2bb180b1a104dcb5ab1ad364946:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:77:    if matches_terms(",
+        "f66799c8be9cc2bb180b1a104dcb5ab1ad364946:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:86:    ) && matches_terms(&src.f[1], &[(1., &[0, 3]), (-1., &[0, 4])])",
+        "f66799c8be9cc2bb180b1a104dcb5ab1ad364946:crates/rodas5p-integrators/src/retro_dae_evolution/triangular_goal.rs:4:use super::clock_tube::{matches_terms, source_kind};",
+        "f66799c8be9cc2bb180b1a104dcb5ab1ad364946:crates/rodas5p-integrators/src/retro_dae_evolution/triangular_goal.rs:129:        if !matches_terms(",
+        "f66799c8be9cc2bb180b1a104dcb5ab1ad364946:crates/rodas5p-integrators/src/retro_dae_evolution/triangular_goal.rs:152:                || !matches_terms(eq, &[(-a, &[0, j, j])])",
+        "f66799c8be9cc2bb180b1a104dcb5ab1ad364946:crates/rodas5p-integrators/src/retro_dae_evolution/triangular_goal.rs:153:                || !matches_terms(&src.f[i + 1], &[(1., &[0, j])])"
+      ],
+      "observed_at_commit": "f66799c8be9cc2bb180b1a104dcb5ab1ad364946",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "matches_terms"
+    },
+    {
+      "candidate_or_evidence": "existing native driver reused across repeated integrations, no duplicate stepping loop",
+      "current_source_references": [
+        "f66799c8be9cc2bb180b1a104dcb5ab1ad364946:crates/rodas5p-integrators/src/rodas5p_fast.rs:2491:        let (r, _, partial) = integrate_fast_in(",
+        "f66799c8be9cc2bb180b1a104dcb5ab1ad364946:crates/rodas5p-integrators/src/rodas5p_fast.rs:2534:    let (result, _, partial) = integrate_fast_in(",
+        "f66799c8be9cc2bb180b1a104dcb5ab1ad364946:crates/rodas5p-integrators/src/rodas5p_fast.rs:2642:    integrate_fast_in(",
+        "f66799c8be9cc2bb180b1a104dcb5ab1ad364946:crates/rodas5p-integrators/src/rodas5p_fast.rs:2660:fn integrate_fast_in<S: StepSink>("
+      ],
+      "observed_at_commit": "f66799c8be9cc2bb180b1a104dcb5ab1ad364946",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "integrate_fast_in"
+    },
+    {
+      "candidate_or_evidence": "weighted source admission reused in triangular goal gate, Mean8 at T3",
+      "current_source_references": [
+        "f66799c8be9cc2bb180b1a104dcb5ab1ad364946:crates/vigilode/src/dae_evolution/retained/slabs/goal_budget.rs:236:                if de::ClockTubeCarry::new(src, cp, epoch.start, x, epoch.incoming_x_error).is_ok()"
+      ],
+      "observed_at_commit": "f66799c8be9cc2bb180b1a104dcb5ab1ad364946",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "ClockTubeCarry"
+    },
+    {
+      "candidate_or_evidence": "new source-bound terminal certificate",
+      "current_source_references": [
+        "f66799c8be9cc2bb180b1a104dcb5ab1ad364946:crates/rodas5p-integrators/src/retro_dae_evolution/triangular_goal.rs:98:pub fn triangular_clock_goal("
+      ],
+      "observed_at_commit": "f66799c8be9cc2bb180b1a104dcb5ab1ad364946",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "triangular_clock_goal"
+    },
+    {
+      "candidate_or_evidence": "new reusable native stage workspace",
+      "current_source_references": [
+        "f66799c8be9cc2bb180b1a104dcb5ab1ad364946:crates/rodas5p-integrators/src/rodas5p_fast.rs:2464:pub struct ReusableFastClientWorkspace {",
+        "f66799c8be9cc2bb180b1a104dcb5ab1ad364946:crates/rodas5p-integrators/src/rodas5p_fast.rs:2467:impl ReusableFastClientWorkspace {"
+      ],
+      "observed_at_commit": "f66799c8be9cc2bb180b1a104dcb5ab1ad364946",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "ReusableFastClientWorkspace"
+    },
+    {
+      "candidate_or_evidence": "activate existing prevalidated controller via measured arena variant without fused landing",
+      "current_source_references": [
+        "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4:crates/rodas5p-integrators/src/rodas5p_fast.rs:50:    adaptive::rodas_next_step_after_attempt_prevalidated, output::OutputCollector,",
+        "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4:crates/rodas5p-integrators/src/rodas5p_fast.rs:2968:            rodas_next_step_after_attempt_prevalidated("
+      ],
+      "observed_at_commit": "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "rodas_next_step_after_attempt_prevalidated"
+    },
+    {
+      "candidate_or_evidence": "reuse source-bound endpoint collector landing, validation and accepted-state transaction with bounded rows",
+      "current_source_references": [
+        "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4:crates/rodas5p-integrators/src/output.rs:735:pub(crate) struct OutputCollector {",
+        "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4:crates/rodas5p-integrators/src/output.rs:769:impl OutputCollector {",
+        "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4:crates/rodas5p-integrators/src/output.rs:1342:        let mut collector = OutputCollector::new(&schedule, (0.0, 1.0), &[2.0])",
+        "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4:crates/rodas5p-integrators/src/output.rs:1403:        let mut collector = OutputCollector::new(&schedule, (0.0, 1.0), &[1.0])",
+        "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4:crates/rodas5p-integrators/src/output.rs:1430:        let mut collector = OutputCollector::new(&schedule, (0.0, 1.0), &[1.0])",
+        "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4:crates/rodas5p-integrators/src/output.rs:1460:        let mut collector = OutputCollector::new(&schedule, (0.0, 1.0), &[1.0])",
+        "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4:crates/rodas5p-integrators/src/output.rs:1495:        let collector = OutputCollector::new(&schedule, (0.0, 1.0), &[1.0]).unwrap();",
+        "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4:crates/rodas5p-integrators/src/output.rs:1624:            let collector = OutputCollector::new(&schedule, (t0, tf), &[1.0])"
+      ],
+      "observed_at_commit": "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "OutputCollector"
+    },
+    {
+      "candidate_or_evidence": "shared native loop for owning and borrowed output",
+      "current_source_references": [
+        "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4:crates/rodas5p-integrators/src/rodas5p_fast.rs:2559:        let receipt = integrate_fast_loop(",
+        "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4:crates/rodas5p-integrators/src/rodas5p_fast.rs:2749:    let receipt = integrate_fast_loop(",
+        "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4:crates/rodas5p-integrators/src/rodas5p_fast.rs:2829:fn integrate_fast_loop<S: StepSink>("
+      ],
+      "observed_at_commit": "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "integrate_fast_loop"
+    },
+    {
+      "candidate_or_evidence": "exact matcher generalized monomial blocks for exact gradient and terminal goal",
+      "current_source_references": [
+        "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4:crates/rodas5p-integrators/src/retro_dae_evolution/triangular_goal.rs:4:use super::clock_tube::{matches_terms, source_kind};",
+        "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4:crates/rodas5p-integrators/src/retro_dae_evolution/triangular_goal.rs:148:        if !matches_terms(",
+        "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4:crates/rodas5p-integrators/src/retro_dae_evolution/triangular_goal.rs:171:                || !matches_terms(eq, &[(-a, &[0, j, j])])",
+        "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4:crates/rodas5p-integrators/src/retro_dae_evolution/triangular_goal.rs:172:                || !matches_terms(&src.f[i + 1], &[(1., &[0, j])])",
+        "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4:crates/rodas5p-integrators/src/retro_dae_evolution/triangular_goal.rs:236:        if !matches_terms(",
+        "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4:crates/rodas5p-integrators/src/retro_dae_evolution/triangular_goal.rs:261:        if matches_terms(&src.f[i], &[(-a, &pf[..k + 2])])",
+        "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4:crates/rodas5p-integrators/src/retro_dae_evolution/triangular_goal.rs:262:            && matches_terms(&src.f[i + 1], &[(b, &qf[..k + 1])])"
+      ],
+      "observed_at_commit": "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "matches_terms"
+    },
+    {
+      "candidate_or_evidence": "actual true-flow gradient qualified retained DAE facade",
+      "current_source_references": [
+        "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:113:    pub fn structured_clock_adjoint_into(",
+        "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:138:        de::structured_clock_adjoint_into(&e.src, start.t(), end.t(), &initial.x, weights, out)"
+      ],
+      "observed_at_commit": "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "structured_clock_adjoint_into"
+    },
+    {
+      "candidate_or_evidence": "new bounded output arena used by spatial/native generic ODE",
+      "current_source_references": [
+        "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4:crates/rodas5p-integrators/src/rodas5p_fast.rs:2508:pub struct FastOutputArena {",
+        "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4:crates/rodas5p-integrators/src/rodas5p_fast.rs:2512:impl FastOutputArena {",
+        "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4:crates/rodas5p-integrators/src/rodas5p_fast.rs:2544:        arena: &'a mut FastOutputArena,"
+      ],
+      "observed_at_commit": "415e5bac800f4ef6fc1d1d1ab3b8b267b2093db4",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "FastOutputArena"
+    },
+    {
+      "candidate_or_evidence": "existing exact source matcher applied to generalized multivariate coefficient proof",
+      "current_source_references": [
+        "bc0d208ea4aff04d1f5cd25cea797e64640f5bdd:crates/rodas5p-integrators/src/retro_dae_evolution/polynomial_clock.rs:2:use super::clock_tube::matches_terms;",
+        "bc0d208ea4aff04d1f5cd25cea797e64640f5bdd:crates/rodas5p-integrators/src/retro_dae_evolution/polynomial_clock.rs:79:    if !matches_terms(eq, &want[..n]) {"
+      ],
+      "observed_at_commit": "bc0d208ea4aff04d1f5cd25cea797e64640f5bdd",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "matches_terms"
+    },
+    {
+      "candidate_or_evidence": "reuse previous monomial measure as actual termwise polynomial candidate",
+      "current_source_references": [
+        "bc0d208ea4aff04d1f5cd25cea797e64640f5bdd:crates/rodas5p-integrators/src/retro_dae_evolution/polynomial_clock.rs:4:    TriangularGoalRoute, TriangularGoalWork, clock_measure, clock_partition, initial_block, log1p,",
+        "bc0d208ea4aff04d1f5cd25cea797e64640f5bdd:crates/rodas5p-integrators/src/retro_dae_evolution/polynomial_clock.rs:119:                    m = m.add(clock_measure(start, end, k)?.scale(*a)?)?;"
+      ],
+      "observed_at_commit": "bc0d208ea4aff04d1f5cd25cea797e64640f5bdd",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "clock_measure"
+    },
+    {
+      "candidate_or_evidence": "old spectral hybrid integrated against generalized polynomial weighted residual",
+      "current_source_references": [
+        "bc0d208ea4aff04d1f5cd25cea797e64640f5bdd:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:122:        Ok(b.min(legendre_norm(&power_legendre(a.slice())?)?))"
+      ],
+      "observed_at_commit": "bc0d208ea4aff04d1f5cd25cea797e64640f5bdd",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "power_legendre"
+    },
+    {
+      "candidate_or_evidence": "reuse tiny and range-reduced directed log on generalized clock",
+      "current_source_references": [
+        "bc0d208ea4aff04d1f5cd25cea797e64640f5bdd:crates/rodas5p-integrators/src/retro_dae_evolution/polynomial_clock.rs:4:    TriangularGoalRoute, TriangularGoalWork, clock_measure, clock_partition, initial_block, log1p,",
+        "bc0d208ea4aff04d1f5cd25cea797e64640f5bdd:crates/rodas5p-integrators/src/retro_dae_evolution/polynomial_clock.rs:199:        let qe = q0.add(log1p(v, log, &mut w.goal)?.mul(c.ratio)?)?;"
+      ],
+      "observed_at_commit": "bc0d208ea4aff04d1f5cd25cea797e64640f5bdd",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "log1p"
+    },
+    {
+      "candidate_or_evidence": "existing local branch and residual carry extended to polynomial clock",
+      "current_source_references": [
+        "bc0d208ea4aff04d1f5cd25cea797e64640f5bdd:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:129:pub struct ClockTubeCarry<'a> {",
+        "bc0d208ea4aff04d1f5cd25cea797e64640f5bdd:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:139:impl<'a> ClockTubeCarry<'a> {"
+      ],
+      "observed_at_commit": "bc0d208ea4aff04d1f5cd25cea797e64640f5bdd",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "ClockTubeCarry"
+    },
+    {
+      "candidate_or_evidence": "same native output and controller loop for contiguous arena",
+      "current_source_references": [
+        "bc0d208ea4aff04d1f5cd25cea797e64640f5bdd:crates/rodas5p-integrators/src/rodas5p_fast.rs:2559:        let receipt = integrate_fast_loop(",
+        "bc0d208ea4aff04d1f5cd25cea797e64640f5bdd:crates/rodas5p-integrators/src/rodas5p_fast.rs:2626:        let receipt = integrate_fast_loop(",
+        "bc0d208ea4aff04d1f5cd25cea797e64640f5bdd:crates/rodas5p-integrators/src/rodas5p_fast.rs:2816:    let receipt = integrate_fast_loop(",
+        "bc0d208ea4aff04d1f5cd25cea797e64640f5bdd:crates/rodas5p-integrators/src/rodas5p_fast.rs:2896:fn integrate_fast_loop<S: StepSink>("
+      ],
+      "observed_at_commit": "bc0d208ea4aff04d1f5cd25cea797e64640f5bdd",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "integrate_fast_loop"
+    },
+    {
+      "candidate_or_evidence": "new bounded flat storage, actual spatial and generic ODE",
+      "current_source_references": [
+        "bc0d208ea4aff04d1f5cd25cea797e64640f5bdd:crates/rodas5p-integrators/src/rodas5p_fast.rs:2582:pub struct FastFlatOutputArena {",
+        "bc0d208ea4aff04d1f5cd25cea797e64640f5bdd:crates/rodas5p-integrators/src/rodas5p_fast.rs:2586:impl FastFlatOutputArena {",
+        "bc0d208ea4aff04d1f5cd25cea797e64640f5bdd:crates/rodas5p-integrators/src/rodas5p_fast.rs:2611:        arena: &'a mut FastFlatOutputArena,"
+      ],
+      "observed_at_commit": "bc0d208ea4aff04d1f5cd25cea797e64640f5bdd",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "FastFlatOutputArena"
+    },
+    {
+      "candidate_or_evidence": "new joint exact true-flow gradient and goal on physically qualified retained source",
+      "current_source_references": [
+        "bc0d208ea4aff04d1f5cd25cea797e64640f5bdd:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:113:    pub fn polynomial_clock_fused_into(",
+        "bc0d208ea4aff04d1f5cd25cea797e64640f5bdd:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:141:        de::polynomial_clock_fused_into("
+      ],
+      "observed_at_commit": "bc0d208ea4aff04d1f5cd25cea797e64640f5bdd",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "polynomial_clock_fused_into"
+    },
+    {
+      "candidate_or_evidence": "exact source parser and measure now applied to per-block adaptive and split carries",
+      "current_source_references": [
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:4:use super::polynomial_clock::ClockPolynomial;",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:147:    clocks: [ClockPolynomial; 8],",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:166:            clocks: [ClockPolynomial::coupled(); 8],",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:173:                ClockPolynomial::coupled()",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:175:                ClockPolynomial::parse(src, i)?",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:223:            let a = ClockPolynomial::normalized(c.a, times[0], h)?;",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:224:            let b = ClockPolynomial::normalized(c.b, times[0], h)?;",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:304:    polynomial: Option<ClockPolynomial>,",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:353:                (false, Some(ClockPolynomial::parse(src, 0)?))",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:460:            let a = ClockPolynomial::normalized(poly.a, times[0], h)?;",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:461:            let b = ClockPolynomial::normalized(poly.b, times[0], h)?;"
+      ],
+      "observed_at_commit": "e143bcdf5083de6b6373357fa9a30323161de410",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "ClockPolynomial"
+    },
+    {
+      "candidate_or_evidence": "spectral hybrid reused within adaptive block proof",
+      "current_source_references": [
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:133:        Ok(b.min(legendre_norm(&power_legendre(a.slice())?)?))"
+      ],
+      "observed_at_commit": "e143bcdf5083de6b6373357fa9a30323161de410",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "power_legendre"
+    },
+    {
+      "candidate_or_evidence": "prior exact monomial measures reused for parameter coordinate moments",
+      "current_source_references": [
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/rodas5p-integrators/src/retro_dae_evolution/polynomial_clock.rs:4:    TriangularGoalRoute, TriangularGoalWork, clock_measure, clock_partition, initial_block, log1p,",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/rodas5p-integrators/src/retro_dae_evolution/polynomial_clock.rs:124:                    m = m.add(clock_measure(start, end, k)?.scale(*a)?)?;",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/rodas5p-integrators/src/retro_dae_evolution/polynomial_clock.rs:276:        clock_measure(start, end, 0)?,",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/rodas5p-integrators/src/retro_dae_evolution/polynomial_clock.rs:277:        clock_measure(start, end, 1)?,",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/rodas5p-integrators/src/retro_dae_evolution/polynomial_clock.rs:278:        clock_measure(start, end, 2)?,"
+      ],
+      "observed_at_commit": "e143bcdf5083de6b6373357fa9a30323161de410",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "clock_measure"
+    },
+    {
+      "candidate_or_evidence": "new bounded per-block error carrier",
+      "current_source_references": [
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:141:struct BlockCarry {",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:152:impl BlockCarry {",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:305:    block: Option<BlockCarry>,",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:323:            let block = BlockCarry::new(src, start, x)?;"
+      ],
+      "observed_at_commit": "e143bcdf5083de6b6373357fa9a30323161de410",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "BlockCarry"
+    },
+    {
+      "candidate_or_evidence": "actual retained parameter adjoint API",
+      "current_source_references": [
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:155:    pub fn polynomial_parameter_covector_into(",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:183:        de::polynomial_parameter_covector_into("
+      ],
+      "observed_at_commit": "e143bcdf5083de6b6373357fa9a30323161de410",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "polynomial_parameter_covector_into"
+    },
+    {
+      "candidate_or_evidence": "actual shared spatial semigroup action candidate",
+      "current_source_references": [
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/vigilode/src/spatial/adjoint.rs:157:    PoissonWideDecay,",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/vigilode/src/spatial/adjoint.rs:338:                    SpatialAdjointRoute::PoissonWide | SpatialAdjointRoute::PoissonWideDecay",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/vigilode/src/spatial/adjoint.rs:371:                    if route == SpatialAdjointRoute::PoissonWideDecay {"
+      ],
+      "observed_at_commit": "e143bcdf5083de6b6373357fa9a30323161de410",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "PoissonWideDecay"
+    },
+    {
+      "candidate_or_evidence": "new shared l1 and component tail candidates",
+      "current_source_references": [
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/vigilode/src/spatial/adjoint.rs:455:pub struct SpatialAdjointBatchWorkspace {",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/vigilode/src/spatial/adjoint.rs:460:impl SpatialAdjointBatchWorkspace {"
+      ],
+      "observed_at_commit": "e143bcdf5083de6b6373357fa9a30323161de410",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "SpatialAdjointBatchWorkspace"
+    },
+    {
+      "candidate_or_evidence": "reuse prior native flat output arena on actual batch adjoint goals",
+      "current_source_references": [
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/vigilode/tests/spatial_adjoint_contracts.rs:2708:        w.solve_flat_into(&y, &a, &schedule, A::Legacy, &mut arena)",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/vigilode/tests/spatial_adjoint_contracts.rs:2766:            w.solve_flat_into(&c, &base, &schedules[0], A::Legacy, &mut flat)",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/vigilode/tests/spatial_adjoint_contracts.rs:2770:                w.solve_flat_into(&c, &base, &schedules[0], A::Legacy, &mut small)",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/vigilode/tests/spatial_adjoint_contracts.rs:2774:                w.solve_flat_into(&c[..n - 1], &base, &schedules[0], A::Legacy, &mut flat)",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/vigilode/tests/spatial_adjoint_contracts.rs:2855:                            w.solve_flat_into(&c, &a, schedule, *candidate, &mut flat)",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/vigilode/tests/spatial_adjoint_contracts.rs:2884:                                    .solve_flat_into(&c, &a, schedule, controller, &mut flat)",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/vigilode/tests/spatial_adjoint_contracts.rs:2985:                w.solve_flat_into(&p, span, &y, &a, &schedule, &atol, candidate, &mut arena)",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/vigilode/tests/spatial_adjoint_contracts.rs:3120:                .solve_flat_into(&c, &adaptive, &schedule, FastArenaPlan::Legacy, &mut arena)",
+        "e143bcdf5083de6b6373357fa9a30323161de410:crates/vigilode/tests/spatial_adjoint_contracts.rs:3124:                    .solve_flat_into(&c, &adaptive, &schedule, FastArenaPlan::Legacy, &mut arena)"
+      ],
+      "observed_at_commit": "e143bcdf5083de6b6373357fa9a30323161de410",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "solve_flat_into"
+    },
+    {
+      "candidate_or_evidence": "reuse directed decay enclosure in actual subcell residual carry",
+      "current_source_references": [
+        "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:177:        polynomial_action::exp_neg_enclosure,",
+        "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:186:        exp_neg_enclosure(z.min(700.))?.hi.min(1.)",
+        "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:195:        phi = phi.min(div_up(sub_up(1., exp_neg_enclosure(zhi)?.lo)?, beta)?);"
+      ],
+      "observed_at_commit": "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "exp_neg_enclosure"
+    },
+    {
+      "candidate_or_evidence": "original residual integration on restricted normalized polynomial",
+      "current_source_references": [
+        "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:138:    let b = bernstein_magnitude(a.slice(), plan != ClockTubePlan::Sup4)?;"
+      ],
+      "observed_at_commit": "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "bernstein_magnitude"
+    },
+    {
+      "candidate_or_evidence": "activate existing previously dormant verified output transaction in actual retained replay",
+      "current_source_references": [
+        "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de:crates/rodas5p-integrators/src/retro_dae_evolution/clock_dense.rs:189:        self.collector.prepare_dense_interval_with_radii("
+      ],
+      "observed_at_commit": "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "prepare_dense_interval_with_radii"
+    },
+    {
+      "candidate_or_evidence": "actual source-bound verified dense output commit",
+      "current_source_references": [
+        "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de:crates/rodas5p-integrators/src/retro_dae_evolution/clock_dense.rs:233:        self.collector.commit_prepared_dense_interval();"
+      ],
+      "observed_at_commit": "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "commit_prepared_dense_interval"
+    },
+    {
+      "candidate_or_evidence": "fixed reusable staging storage initialized once",
+      "current_source_references": [
+        "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de:crates/rodas5p-integrators/src/retro_dae_evolution/clock_dense.rs:104:            .with_verified_radii(&initial_radius[..2 * n])?;"
+      ],
+      "observed_at_commit": "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "with_verified_radii"
+    },
+    {
+      "candidate_or_evidence": "new exact time source-bound radius sampling",
+      "current_source_references": [
+        "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de:crates/rodas5p-integrators/src/retro_dae_evolution/clock_dense.rs:21:pub struct ClockDenseSampler<'a> {",
+        "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de:crates/rodas5p-integrators/src/retro_dae_evolution/clock_dense.rs:68:impl<'a> ClockDenseSampler<'a> {"
+      ],
+      "observed_at_commit": "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "ClockDenseSampler"
+    },
+    {
+      "candidate_or_evidence": "new constant mode tail refinement",
+      "current_source_references": [
+        "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de:crates/vigilode/src/spatial/adjoint.rs:444:    SharedCenteredIntersect,",
+        "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de:crates/vigilode/src/spatial/adjoint.rs:628:                    | SpatialBatchPlan::SharedCenteredIntersect => {",
+        "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de:crates/vigilode/src/spatial/adjoint.rs:647:                        if plan == SpatialBatchPlan::SharedCenteredIntersect {"
+      ],
+      "observed_at_commit": "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "SharedCenteredIntersect"
+    },
+    {
+      "candidate_or_evidence": "new signed goal all-pair gate",
+      "current_source_references": [
+        "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de:crates/vigilode/src/spatial/adjoint.rs:518:    pub fn certify_batch_budgeted_into("
+      ],
+      "observed_at_commit": "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "certify_batch_budgeted_into"
+    },
+    {
+      "candidate_or_evidence": "native flat adjoint reused at multiple observation times",
+      "current_source_references": [
+        "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de:crates/vigilode/tests/spatial_adjoint_contracts.rs:2708:        w.solve_flat_into(&y, &a, &schedule, A::Legacy, &mut arena)",
+        "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de:crates/vigilode/tests/spatial_adjoint_contracts.rs:2766:            w.solve_flat_into(&c, &base, &schedules[0], A::Legacy, &mut flat)",
+        "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de:crates/vigilode/tests/spatial_adjoint_contracts.rs:2770:                w.solve_flat_into(&c, &base, &schedules[0], A::Legacy, &mut small)",
+        "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de:crates/vigilode/tests/spatial_adjoint_contracts.rs:2774:                w.solve_flat_into(&c[..n - 1], &base, &schedules[0], A::Legacy, &mut flat)",
+        "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de:crates/vigilode/tests/spatial_adjoint_contracts.rs:2855:                            w.solve_flat_into(&c, &a, schedule, *candidate, &mut flat)",
+        "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de:crates/vigilode/tests/spatial_adjoint_contracts.rs:2884:                                    .solve_flat_into(&c, &a, schedule, controller, &mut flat)",
+        "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de:crates/vigilode/tests/spatial_adjoint_contracts.rs:2985:                w.solve_flat_into(&p, span, &y, &a, &schedule, &atol, candidate, &mut arena)",
+        "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de:crates/vigilode/tests/spatial_adjoint_contracts.rs:3120:                .solve_flat_into(&c, &adaptive, &schedule, FastArenaPlan::Legacy, &mut arena)",
+        "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de:crates/vigilode/tests/spatial_adjoint_contracts.rs:3124:                    .solve_flat_into(&c, &adaptive, &schedule, FastArenaPlan::Legacy, &mut arena)",
+        "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de:crates/vigilode/tests/spatial_adjoint_contracts.rs:3355:                .solve_flat_into(&c, &adaptive, &schedule, FastArenaPlan::Legacy, &mut arena)",
+        "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de:crates/vigilode/tests/spatial_adjoint_contracts.rs:3359:                    .solve_flat_into(&c, &adaptive, &schedule, FastArenaPlan::Legacy, &mut arena)"
+      ],
+      "observed_at_commit": "3d5c0d516ebe1fd23b2bcca5d1188659108fa8de",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "solve_flat_into"
+    },
+    {
+      "candidate_or_evidence": "existing verified separable Fourier forward client now reused across native primal replay",
+      "current_source_references": [
+        "d2e570339c2a709af1c356b974e00e312a868c5b:crates/vigilode/src/spatial/primal_replay.rs:165:        let driver = ReusableFastClientWorkspace::new(stages.client(report.clone()))?;"
+      ],
+      "observed_at_commit": "d2e570339c2a709af1c356b974e00e312a868c5b",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "stages.client"
+    },
+    {
+      "candidate_or_evidence": "existing bounded contiguous arena applied to actual forward replay",
+      "current_source_references": [
+        "d2e570339c2a709af1c356b974e00e312a868c5b:crates/vigilode/src/spatial/primal_replay.rs:227:        let run = self.driver.solve_flat_into("
+      ],
+      "observed_at_commit": "d2e570339c2a709af1c356b974e00e312a868c5b",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "solve_flat_into"
+    },
+    {
+      "candidate_or_evidence": "previous shared adjoint goal proof reused across all primal proposals",
+      "current_source_references": [
+        "d2e570339c2a709af1c356b974e00e312a868c5b:crates/vigilode/src/spatial/primal_replay.rs:336:            SpatialBatchPlan::SharedCenteredIntersect,"
+      ],
+      "observed_at_commit": "d2e570339c2a709af1c356b974e00e312a868c5b",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "SharedCenteredIntersect"
+    },
+    {
+      "candidate_or_evidence": "source-owned replay with all-pair signed acceptance",
+      "current_source_references": [
+        "d2e570339c2a709af1c356b974e00e312a868c5b:crates/vigilode/src/spatial/primal_replay.rs:114:pub struct SpatialPrimalReplayWorkspace {",
+        "d2e570339c2a709af1c356b974e00e312a868c5b:crates/vigilode/src/spatial/primal_replay.rs:133:impl SpatialPrimalReplayWorkspace {"
+      ],
+      "observed_at_commit": "d2e570339c2a709af1c356b974e00e312a868c5b",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "SpatialPrimalReplayWorkspace"
+    },
+    {
+      "candidate_or_evidence": "new dyadic two-cell decay",
+      "current_source_references": [
+        "d2e570339c2a709af1c356b974e00e312a868c5b:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:21:    BlockSplitDecay2,",
+        "d2e570339c2a709af1c356b974e00e312a868c5b:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:34:                | Self::BlockSplitDecay2",
+        "d2e570339c2a709af1c356b974e00e312a868c5b:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:44:                | Self::BlockSplitDecay2",
+        "d2e570339c2a709af1c356b974e00e312a868c5b:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:306:                    ClockTubePlan::BlockSplitDecay2 | ClockTubePlan::BlockSplitRational2 => 2,"
+      ],
+      "observed_at_commit": "d2e570339c2a709af1c356b974e00e312a868c5b",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "BlockSplitDecay2"
+    },
+    {
+      "candidate_or_evidence": "new dyadic two-cell rational factor",
+      "current_source_references": [
+        "d2e570339c2a709af1c356b974e00e312a868c5b:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:22:    BlockSplitRational2,",
+        "d2e570339c2a709af1c356b974e00e312a868c5b:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:35:                | Self::BlockSplitRational2",
+        "d2e570339c2a709af1c356b974e00e312a868c5b:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:45:                | Self::BlockSplitRational2",
+        "d2e570339c2a709af1c356b974e00e312a868c5b:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:306:                    ClockTubePlan::BlockSplitDecay2 | ClockTubePlan::BlockSplitRational2 => 2,",
+        "d2e570339c2a709af1c356b974e00e312a868c5b:crates/rodas5p-integrators/src/retro_dae_evolution/clock_tube.rs:340:                            ClockTubePlan::BlockSplitRational4 | ClockTubePlan::BlockSplitRational2"
+      ],
+      "observed_at_commit": "d2e570339c2a709af1c356b974e00e312a868c5b",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "BlockSplitRational2"
+    },
+    {
+      "candidate_or_evidence": "reuse prior verified dense source identity and exact parameter covector at actual request",
+      "current_source_references": [
+        "d2e570339c2a709af1c356b974e00e312a868c5b:crates/vigilode/src/dae_evolution/retained/slabs/nonlinear_adjoint/secant.rs:259:    pub fn polynomial_dense_parameter_covector_into("
+      ],
+      "observed_at_commit": "d2e570339c2a709af1c356b974e00e312a868c5b",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "polynomial_dense_parameter_covector_into"
+    },
+    {
+      "candidate_or_evidence": "actual bounded accepted dense storage on native forward local replay",
+      "current_source_references": [
+        "bbdabf330888171401c99c10888acd0d5d717e12:crates/rodas5p-integrators/src/rodas5p_fast_dense.rs:10://!   ([`FastDenseSegments`]);",
+        "bbdabf330888171401c99c10888acd0d5d717e12:crates/rodas5p-integrators/src/rodas5p_fast_dense.rs:108:pub struct FastDenseSegments {",
+        "bbdabf330888171401c99c10888acd0d5d717e12:crates/rodas5p-integrators/src/rodas5p_fast_dense.rs:117:impl FastDenseSegments {",
+        "bbdabf330888171401c99c10888acd0d5d717e12:crates/rodas5p-integrators/src/rodas5p_fast_dense.rs:379:/// used by [`FastDenseSegments::evaluate_into`] and the estimate's midpoint.",
+        "bbdabf330888171401c99c10888acd0d5d717e12:crates/rodas5p-integrators/src/rodas5p_fast_dense.rs:387:type DenseAcceptFn<'a> = dyn FnMut(&FastDenseSegments) -> AcceptControl + 'a;",
+        "bbdabf330888171401c99c10888acd0d5d717e12:crates/rodas5p-integrators/src/rodas5p_fast_dense.rs:392:    segments: FastDenseSegments,",
+        "bbdabf330888171401c99c10888acd0d5d717e12:crates/rodas5p-integrators/src/rodas5p_fast_dense.rs:407:        let mut segments = FastDenseSegments::new(0., &vec![0.; n], capacity)?;",
+        "bbdabf330888171401c99c10888acd0d5d717e12:crates/rodas5p-integrators/src/rodas5p_fast_dense.rs:425:    pub fn segments(&self) -> &FastDenseSegments {",
+        "bbdabf330888171401c99c10888acd0d5d717e12:crates/rodas5p-integrators/src/rodas5p_fast_dense.rs:456:impl FastDenseSegments {",
+        "bbdabf330888171401c99c10888acd0d5d717e12:crates/rodas5p-integrators/src/rodas5p_fast_dense.rs:488:    segments: FastDenseSegments,",
+        "bbdabf330888171401c99c10888acd0d5d717e12:crates/rodas5p-integrators/src/rodas5p_fast_dense.rs:509:            segments: FastDenseSegments::new(t0, y0, 2)?,",
+        "bbdabf330888171401c99c10888acd0d5d717e12:crates/rodas5p-integrators/src/rodas5p_fast_dense.rs:619:    pub segments: FastDenseSegments,",
+        "bbdabf330888171401c99c10888acd0d5d717e12:crates/rodas5p-integrators/src/rodas5p_fast_dense.rs:991:        let mut segments = FastDenseSegments::new(t, &y0, 1).unwrap();"
+      ],
+      "observed_at_commit": "bbdabf330888171401c99c10888acd0d5d717e12",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "FastDenseSegments"
+    },
+    {
+      "candidate_or_evidence": "exact normalized quartic from actual native H and stage inputs",
+      "current_source_references": [
+        "bbdabf330888171401c99c10888acd0d5d717e12:crates/rodas5p-integrators/src/rodas5p_fast_dense.rs:459:    pub fn power_component("
+      ],
+      "observed_at_commit": "bbdabf330888171401c99c10888acd0d5d717e12",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "power_component"
+    },
+    {
+      "candidate_or_evidence": "new bounded zeroheap accepted packet sink",
+      "current_source_references": [
+        "bbdabf330888171401c99c10888acd0d5d717e12:crates/rodas5p-integrators/src/rodas5p_fast_dense.rs:391:pub struct FastDenseCapture {",
+        "bbdabf330888171401c99c10888acd0d5d717e12:crates/rodas5p-integrators/src/rodas5p_fast_dense.rs:395:impl FastDenseCapture {",
+        "bbdabf330888171401c99c10888acd0d5d717e12:crates/rodas5p-integrators/src/rodas5p_fast_dense.rs:429:impl StepSink for FastDenseCapture {"
+      ],
+      "observed_at_commit": "bbdabf330888171401c99c10888acd0d5d717e12",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "FastDenseCapture"
+    },
+    {
+      "candidate_or_evidence": "reuse native loop and flat arena with dense capture",
+      "current_source_references": [
+        "bbdabf330888171401c99c10888acd0d5d717e12:crates/rodas5p-integrators/src/rodas5p_fast.rs:2603:    pub fn solve_flat_dense_into<'a>("
+      ],
+      "observed_at_commit": "bbdabf330888171401c99c10888acd0d5d717e12",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "solve_flat_dense_into"
+    },
+    {
+      "candidate_or_evidence": "actual certified covector reused by exact bit key",
+      "current_source_references": [
+        "bbdabf330888171401c99c10888acd0d5d717e12:crates/vigilode/src/spatial/adjoint.rs:676:pub(super) struct SpatialDualCache {",
+        "bbdabf330888171401c99c10888acd0d5d717e12:crates/vigilode/src/spatial/adjoint.rs:684:impl SpatialDualCache {"
+      ],
+      "observed_at_commit": "bbdabf330888171401c99c10888acd0d5d717e12",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "SpatialDualCache"
+    },
+    {
+      "candidate_or_evidence": "exact projected goal cache uses previous certificate authority",
+      "current_source_references": [
+        "bbdabf330888171401c99c10888acd0d5d717e12:crates/vigilode/src/spatial/primal_replay.rs:413:                    SpatialBatchPlan::SharedCenteredIntersect,"
+      ],
+      "observed_at_commit": "bbdabf330888171401c99c10888acd0d5d717e12",
+      "status": "ACTIVATED_ADDITIONAL_PATH",
+      "symbol": "SharedCenteredIntersect"
+    },
+    {
+      "candidate_or_evidence": "actual integrated adjoint defect suffix replay",
+      "current_source_references": [
+        "bbdabf330888171401c99c10888acd0d5d717e12:crates/vigilode/src/spatial/primal_replay.rs:552:pub struct SpatialLocalReplayWorkspace {",
+        "bbdabf330888171401c99c10888acd0d5d717e12:crates/vigilode/src/spatial/primal_replay.rs:567:impl SpatialLocalReplayWorkspace {"
+      ],
+      "observed_at_commit": "bbdabf330888171401c99c10888acd0d5d717e12",
+      "status": "ACTIVATED_NEW_KERNEL",
+      "symbol": "SpatialLocalReplayWorkspace"
+    }
+  ],
+  "observed_at_commit": "bbdabf330888171401c99c10888acd0d5d717e12",
+  "policy": "each turn test at least one applicable underused module in an actual consumer; perturb algorithms and compare measured candidates; preserve failed/refused routes and no default promotion",
+  "previous_ledger_commit": "528ed15f1e506911eb1b5564ed4b48d02a6e9d37",
+  "scope": "incremental activation ledger; retain prior cumulative ledger"
+}
