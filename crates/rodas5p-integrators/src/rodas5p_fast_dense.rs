@@ -457,15 +457,23 @@ impl StepSink for FastDenseCapture {
 pub struct FastCheckpointCapture {
     n: usize,
     capacity: usize,
+    stride: usize,
     times: Vec<f64>,
     states: Vec<f64>,
 }
 impl FastCheckpointCapture {
     /// Allocate once, without retaining the eight stage rows per step.
     pub fn new(n: usize, capacity: usize) -> CoreResult<Self> {
+        Self::with_stride(n, capacity, 1)
+    }
+    /// Retain all accepted times but only initial, stride-multiple and latest states.
+    /// Capacity still limits actual accepted steps, not retained state rows.
+    pub fn with_stride(n: usize, capacity: usize, stride: usize) -> CoreResult<Self> {
         if n == 0
             || capacity == 0
             || capacity > 4096
+            || stride == 0
+            || stride > 4096
             || n.checked_mul(capacity + 1)
                 .is_none_or(|v| v > isize::MAX as usize / 8)
         {
@@ -474,8 +482,9 @@ impl FastCheckpointCapture {
         Ok(Self {
             n,
             capacity,
+            stride,
             times: Vec::with_capacity(capacity + 1),
-            states: Vec::with_capacity(n * (capacity + 1)),
+            states: Vec::with_capacity(n * (capacity.div_ceil(stride) + 1)),
         })
     }
     pub(crate) fn reset(&mut self, t: f64, y: &[f64]) -> CoreResult<()> {
@@ -499,9 +508,21 @@ impl FastCheckpointCapture {
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
-    /// State at an actual accepted checkpoint.
+    /// Number of retained physical state rows, including initial/latest.
+    pub fn retained_count(&self) -> usize {
+        self.states.len() / self.n
+    }
+    /// Actual accepted index of a retained physical state row.
+    pub fn retained_index(&self, row: usize) -> Option<usize> {
+        (row < self.retained_count()).then(|| (row * self.stride).min(self.len()))
+    }
+    /// Physical state only if its accepted index was retained.
     pub fn state(&self, k: usize) -> Option<&[f64]> {
-        (k < self.times.len()).then(|| &self.states[k * self.n..(k + 1) * self.n])
+        if k >= self.times.len() || (k % self.stride != 0 && k != self.len()) {
+            return None;
+        }
+        let row = k.div_ceil(self.stride);
+        Some(&self.states[row * self.n..(row + 1) * self.n])
     }
 }
 impl StepSink for FastCheckpointCapture {
@@ -521,8 +542,14 @@ impl StepSink for FastCheckpointCapture {
     }
     fn accepted(&mut self, work: &Workspace, t_new: f64) {
         debug_assert!(self.len() < self.capacity);
+        let old = self.len();
         self.times.push(t_new);
-        self.states.extend_from_slice(&work.y_new);
+        if old % self.stride == 0 {
+            self.states.extend_from_slice(&work.y_new);
+        } else {
+            let k = self.states.len() - self.n;
+            self.states[k..].copy_from_slice(&work.y_new);
+        }
     }
     fn accept_control(&mut self, _view: &AcceptedStepView<'_>) -> AcceptControl {
         if self.len() >= self.capacity {

@@ -1030,6 +1030,12 @@ pub struct SpatialCompactWork {
     pub model_work_upper: f64,
     /// Actual global replay attempts.
     pub global_fallbacks: usize,
+    /// Actual cached boundary rows reused, built, and evicted.
+    pub boundary_reused: usize,
+    pub boundary_built: usize,
+    pub boundary_evicted: usize,
+    /// Physical pilot states retained, including initial and latest.
+    pub pilot_retained: usize,
 }
 /// A single bounded accepted-checkpoint buffer and one boundary propagator.
 /// No full dense stage packets are retained: the integrated residual uses
@@ -1055,12 +1061,23 @@ pub struct SpatialCompactReplayWorkspace {
 impl SpatialCompactReplayWorkspace {
     /// Allocate fixed checkpoint and boundary storage.
     pub fn new(g: &DiffusionGrid, duration: f64, capacity: usize) -> CoreResult<Self> {
+        Self::new_with_storage(g, duration, capacity, 1, 0)
+    }
+    /// Opt-in sparse accepted states and bounded individual boundary cache.
+    /// Stride one retains all states; zero pool slots retains legacy key only.
+    pub fn new_with_storage(
+        g: &DiffusionGrid,
+        duration: f64,
+        capacity: usize,
+        stride: usize,
+        pool_slots: usize,
+    ) -> CoreResult<Self> {
         let n = g.dimension();
         let primal = SpatialForwardCore::new(g, duration)?;
         Ok(Self {
             primal,
-            capture: rodas5p_integrators::FastCheckpointCapture::new(n, capacity)?,
-            dual: super::adjoint::SpatialBoundaryDual::new(g)?,
+            capture: rodas5p_integrators::FastCheckpointCapture::with_stride(n, capacity, stride)?,
+            dual: super::adjoint::SpatialBoundaryDual::with_pool(g, pool_slots)?,
             times: [0.; 9],
             states: vec![0.; 9 * n],
             projections: [Iv::point(0.)?; 9],
@@ -1234,6 +1251,9 @@ impl SpatialCompactReplayWorkspace {
     ) -> CoreResult<()> {
         let p = self.dual.prepare(goal, &self.times[..=self.cells], route)?;
         w.adjoint_actions += p.actions;
+        w.boundary_reused += p.reused;
+        w.boundary_built += p.built;
+        w.boundary_evicted += p.evicted;
         w.dual_cache_hit = p.cache_hit && w.adjoint_actions == 0;
         w.stationary_used = p.stationary;
         w.stationary_residual = p.stationary_residual;
@@ -1281,9 +1301,15 @@ impl SpatialCompactReplayWorkspace {
                 && self.defects[i].mag() >= 0.5 * mag
                 && count + old - i < 8
             {
-                count += 1;
-                index[count] = begin + (end - begin) / 2;
-                w.splits += 1;
+                let mid = begin + (end - begin) / 2;
+                if let Some(j) = (begin + 1..end)
+                    .filter(|&j| self.capture.state(j).is_some())
+                    .min_by_key(|&j| j.abs_diff(mid))
+                {
+                    count += 1;
+                    index[count] = j;
+                    w.splits += 1;
+                }
             }
             count += 1;
             index[count] = end;
@@ -1479,10 +1505,15 @@ impl SpatialCompactReplayWorkspace {
             let m = self.capture.len();
             w.pilot_packets = m;
             self.pilot_times.extend_from_slice(self.capture.times());
-            self.cells = desired.min(m);
+            w.pilot_retained = self.capture.retained_count();
+            let retained = w.pilot_retained - 1;
+            self.cells = desired.min(retained);
             w.cells = self.cells;
             for i in 0..=self.cells {
-                let j = i * m / self.cells;
+                let j = self
+                    .capture
+                    .retained_index(i * retained / self.cells)
+                    .unwrap();
                 self.pilot_indices[i] = j;
                 self.times[i] = self.capture.times()[j];
                 self.states[i * n..(i + 1) * n].copy_from_slice(self.capture.state(j).unwrap());
