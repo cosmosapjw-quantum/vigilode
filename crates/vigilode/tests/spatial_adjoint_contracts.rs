@@ -3666,3 +3666,123 @@ fn source_owned_primal_replay_portfolio() {
         }
     }
 }
+
+#[test]
+fn source_owned_primal_replay_floor_and_partial_contract() {
+    use rodas5p_integrators::AdaptiveStepConfig;
+    use vigilode::spatial::{
+        SpatialAdjointWork, SpatialPrimalReplayPlan as P, SpatialPrimalReplayPolicy as Policy,
+        SpatialPrimalReplayWorkspace as W,
+    };
+    let g = DiffusionGrid::sphere(8, 16, 1., 0.64).unwrap();
+    let n = g.dimension();
+    let mut u = vec![-16.; n];
+    u[n / 2] = -15.5;
+    let mut c = vec![0.; n];
+    c[0] = 0.5;
+    c[n / 2] = -0.25;
+    c[n - 1] = 0.125;
+    let adaptive = AdaptiveStepConfig {
+        rtol: 1e-9,
+        atol: 1e-11,
+        initial_step: 0.001,
+        ..Default::default()
+    };
+    let mut w = W::new(&g, DURATION, 1).unwrap();
+    let mut endpoint = vec![17.; n];
+    let mut rec = [SpatialAdjointWork::default(); 1];
+    let (r, a) = measure(|| {
+        w.solve_budgeted_into(
+            &u,
+            &c,
+            &adaptive,
+            Policy {
+                budget: 1e-30,
+                max_replays: 3,
+                min_scale: 1.,
+                plan: P::GuidedSelective,
+            },
+            &mut endpoint,
+            &mut rec,
+        )
+    });
+    let r = r.unwrap();
+    assert!(!r.accepted);
+    assert_eq!(r.solves, 1);
+    assert_eq!(r.floor_refusals, 1);
+    assert_eq!(r.replays, 0);
+    assert_eq!(a.requests(), 0);
+    assert!(endpoint.iter().all(|v| *v == 17.));
+    assert_eq!(rec[0].actions, 0);
+    assert!(!w.last_pair(0).unwrap().accepted);
+    println!(
+        "REPLAY_EDGE {}",
+        serde_json::json!({"case":"floor","allocation":a,"work":r})
+    );
+    let partial = AdaptiveStepConfig {
+        max_attempts: 1,
+        ..adaptive.clone()
+    };
+    let (r, a) = measure(|| {
+        w.solve_budgeted_into(
+            &u,
+            &c,
+            &partial,
+            Policy {
+                budget: 1e-10,
+                max_replays: 0,
+                min_scale: 1e-4,
+                plan: P::FixedSelective,
+            },
+            &mut endpoint,
+            &mut rec,
+        )
+    });
+    let r = r.unwrap();
+    assert!(!r.accepted);
+    assert_eq!(r.solves, 1);
+    assert_eq!(r.primal_stops, 1);
+    assert_eq!(a.requests(), 0);
+    assert!(endpoint.iter().all(|v| *v == 17.));
+    assert_eq!(rec[0].actions, 0);
+    assert!(w.last_pair(0).is_none());
+    println!(
+        "REPLAY_EDGE {}",
+        serde_json::json!({"case":"partial","allocation":a,"work":r})
+    );
+    let mut raw = vec![1.; n];
+    raw[0] = 1e-20;
+    let policy = Policy {
+        budget: 1e-7,
+        max_replays: 0,
+        min_scale: 1e-4,
+        plan: P::CenteredFirst,
+    };
+    let (r, a) =
+        measure(|| w.solve_budgeted_into(&raw, &c, &adaptive, policy, &mut endpoint, &mut rec));
+    let r = r.unwrap();
+    assert!(r.accepted);
+    assert_eq!(r.centered_solves, 0);
+    assert!(!w.last_pair(0).unwrap().centered);
+    assert_eq!(a.requests(), 0);
+    let old = endpoint.clone();
+    let r0 = w
+        .solve_budgeted_into(
+            &raw,
+            &c,
+            &adaptive,
+            Policy {
+                plan: P::FixedSelective,
+                ..policy
+            },
+            &mut endpoint,
+            &mut rec,
+        )
+        .unwrap();
+    assert!(r0.accepted);
+    assert_eq!(endpoint, old);
+    println!(
+        "REPLAY_EDGE {}",
+        serde_json::json!({"case":"inexact_shift_fallback","allocation":a,"work":r})
+    );
+}
