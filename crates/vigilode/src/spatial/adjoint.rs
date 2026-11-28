@@ -828,6 +828,18 @@ fn pairwise_shifted_dot(c: &[Iv], u: &[f64], s: f64) -> CoreResult<Iv> {
     let m = c.len() / 2;
     pairwise_shifted_dot(&c[..m], &u[..m], s)?.add(pairwise_shifted_dot(&c[m..], &u[m..], s)?)
 }
+/// Replacement policy for the bounded source-owned boundary pool.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
+pub enum SpatialBoundaryPoolPolicy {
+    /// Original FIFO, including terminal row storage.
+    Fifo,
+    /// Prefetch matching rows, implicit terminal, least recently used.
+    Lru,
+    /// Prefer rows with larger observed marginal sparse action cost.
+    Cost,
+    /// Cost policy with the initial boundary preferentially protected.
+    PinnedCost,
+}
 // Bounded FIFO pool. Active boundary rows are copied out, so eviction never
 // destroys authority of a prepared projection. Exact goal/route/terminal
 // namespace is held by the owning SpatialBoundaryDual.
@@ -840,9 +852,13 @@ struct BoundaryPool {
     terminal: Option<u64>,
     stationary: bool,
     residual: f64,
+    policy: SpatialBoundaryPoolPolicy,
+    ages: [u64; 32],
+    costs: [usize; 32],
+    clock: u64,
 }
 impl BoundaryPool {
-    fn new(n: usize, slots: usize) -> CoreResult<Self> {
+    fn new(n: usize, slots: usize, policy: SpatialBoundaryPoolPolicy) -> CoreResult<Self> {
         if slots > 32 {
             return Err(err("boundary pool slots"));
         }
@@ -855,12 +871,19 @@ impl BoundaryPool {
             terminal: None,
             stationary: false,
             residual: 0.,
+            policy,
+            ages: [0; 32],
+            costs: [0; 32],
+            clock: 0,
         })
     }
     fn clear(&mut self) {
         self.times.fill(None);
         self.terminal = None;
         self.next = 0;
+        self.ages.fill(0);
+        self.costs.fill(0);
+        self.clock = 0;
     }
     fn find(&self, t: f64) -> Option<usize> {
         self.times[..self.slots]
@@ -874,6 +897,37 @@ impl BoundaryPool {
             .filter_map(|(i, v)| v.map(|b| (i, f64::from_bits(b))))
             .filter(|&(_, x)| x > t && x < upper)
             .min_by(|a, b| a.1.total_cmp(&b.1))
+    }
+    fn touch(&mut self, i: usize) {
+        self.clock = self.clock.saturating_add(1);
+        self.ages[i] = self.clock;
+    }
+    // Cost is measured incremental action work, not historical proof size.
+    fn put_smart(&mut self, t: f64, c: &[Iv], w: SpatialAdjointWork, cost: usize) -> bool {
+        let slot = self.times[..self.slots]
+            .iter()
+            .position(Option::is_none)
+            .unwrap_or_else(|| {
+                (0..self.slots)
+                    .min_by_key(|&i| match self.policy {
+                        SpatialBoundaryPoolPolicy::Lru => (0, 0, self.ages[i]),
+                        SpatialBoundaryPoolPolicy::PinnedCost => (
+                            usize::from(self.times[i] == Some(0f64.to_bits())),
+                            self.costs[i],
+                            self.ages[i],
+                        ),
+                        _ => (0, self.costs[i], self.ages[i]),
+                    })
+                    .unwrap()
+            });
+        let evicted = self.times[slot].is_some();
+        self.times[slot] = Some(t.to_bits());
+        self.works[slot] = w;
+        self.costs[slot] = cost;
+        let n = c.len();
+        self.centers[slot * n..(slot + 1) * n].copy_from_slice(c);
+        self.touch(slot);
+        evicted
     }
     fn put(&mut self, t: f64, c: &[Iv], w: SpatialAdjointWork) -> bool {
         let slot = self.times[..self.slots]
@@ -910,6 +964,13 @@ impl SpatialBoundaryDual {
         Self::with_pool(g, 0)
     }
     pub(super) fn with_pool(g: &DiffusionGrid, slots: usize) -> CoreResult<Self> {
+        Self::with_pool_policy(g, slots, SpatialBoundaryPoolPolicy::Fifo)
+    }
+    pub(super) fn with_pool_policy(
+        g: &DiffusionGrid,
+        slots: usize,
+        policy: SpatialBoundaryPoolPolicy,
+    ) -> CoreResult<Self> {
         let n = g.dimension();
         Ok(Self {
             inner: SpatialAdjointWorkspace::new(g)?,
@@ -920,7 +981,7 @@ impl SpatialBoundaryDual {
             count: 0,
             route: SpatialBoundaryDualPlan::Independent,
             preparation: BoundaryPreparation::default(),
-            pool: BoundaryPool::new(n, slots)?,
+            pool: BoundaryPool::new(n, slots, policy)?,
         })
     }
     pub(super) fn invalidate(&mut self) {
@@ -1074,6 +1135,9 @@ impl SpatialBoundaryDual {
         }
         receipt.stationary = self.pool.stationary;
         receipt.stationary_residual = self.pool.residual;
+        if self.pool.policy != SpatialBoundaryPoolPolicy::Fifo {
+            return self.prepare_smart(goal, times, route, receipt);
+        }
         for k in (0..m).rev() {
             let t = times[k];
             if let Some(i) = self.pool.find(t) {
@@ -1138,6 +1202,99 @@ impl SpatialBoundaryDual {
             self.works[k] = w;
             receipt.built += 1;
             receipt.evicted += usize::from(self.pool.put(t, &self.inner.state, w));
+        }
+        self.times[..m].copy_from_slice(times);
+        self.count = m;
+        receipt.cache_hit = receipt.built == 0 && receipt.actions == 0;
+        self.preparation = receipt;
+        Ok(receipt)
+    }
+    fn prepare_smart(
+        &mut self,
+        goal: &[f64],
+        times: &[f64],
+        route: SpatialBoundaryDualPlan,
+        mut receipt: BoundaryPreparation,
+    ) -> CoreResult<BoundaryPreparation> {
+        let n = goal.len();
+        let m = times.len();
+        let tf = times[m - 1];
+        let mut ready = [false; 9];
+        // Terminal is exact input. Stationary certificates share the exact
+        // goal center and cached residual, so neither needs a pool slot.
+        for (k, &t) in times.iter().enumerate() {
+            if k == m - 1 || receipt.stationary {
+                for (v, &c) in self.centers[k * n..(k + 1) * n].iter_mut().zip(goal) {
+                    *v = Iv::point(c)?;
+                }
+                let mut w = SpatialAdjointWork::default();
+                if k < m - 1 {
+                    w.actions = 1;
+                    w.l1_tail_upper = mul_up(
+                        Iv::point(tf)?.sub(Iv::point(t)?)?.hi,
+                        receipt.stationary_residual,
+                    )?;
+                    let tail = Iv::new(-w.l1_tail_upper, w.l1_tail_upper)?;
+                    for &v in &self.centers[k * n..(k + 1) * n] {
+                        let a = v.add(tail)?;
+                        w.width_upper = w.width_upper.max(sub_up(a.hi, a.lo)?);
+                    }
+                }
+                self.works[k] = w;
+                ready[k] = true;
+            } else if let Some(i) = self.pool.find(t) {
+                self.centers[k * n..(k + 1) * n]
+                    .copy_from_slice(&self.pool.centers[i * n..(i + 1) * n]);
+                self.works[k] = self.pool.works[i];
+                self.pool.touch(i);
+                ready[k] = true;
+                receipt.reused += 1;
+            }
+        }
+        for k in (0..m - 1).rev() {
+            if ready[k] {
+                continue;
+            }
+            let t = times[k];
+            let mut w = SpatialAdjointWork::default();
+            let mut anchor = tf;
+            if route == SpatialBoundaryDualPlan::SubsetStationaryIndependent {
+                for (v, &c) in self.inner.state.iter_mut().zip(goal) {
+                    *v = Iv::point(c)?;
+                }
+            } else {
+                anchor = times[k + 1];
+                w = self.works[k + 1];
+                if let Some((i, v)) = self.pool.later(t, anchor) {
+                    anchor = v;
+                    w = self.pool.works[i];
+                    self.inner
+                        .state
+                        .copy_from_slice(&self.pool.centers[i * n..(i + 1) * n]);
+                    self.pool.touch(i);
+                } else {
+                    self.inner
+                        .state
+                        .copy_from_slice(&self.centers[(k + 1) * n..(k + 2) * n]);
+                }
+            }
+            let old = w.actions;
+            self.inner.propagate_series(
+                Iv::point(anchor)?.sub(Iv::point(t)?)?,
+                SpatialAdjointRoute::PoissonWideDecay,
+                &mut w,
+            )?;
+            let cost = w.actions - old;
+            receipt.actions += cost;
+            let tail = Iv::new(-w.l1_tail_upper, w.l1_tail_upper)?;
+            for &v in &self.inner.state {
+                let a = v.add(tail)?;
+                w.width_upper = w.width_upper.max(sub_up(a.hi, a.lo)?);
+            }
+            self.centers[k * n..(k + 1) * n].copy_from_slice(&self.inner.state);
+            self.works[k] = w;
+            receipt.built += 1;
+            receipt.evicted += usize::from(self.pool.put_smart(t, &self.inner.state, w, cost));
         }
         self.times[..m].copy_from_slice(times);
         self.count = m;

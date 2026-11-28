@@ -282,6 +282,7 @@ mod adjoint;
 pub use adjoint::{
     SpatialAdjointBatchWorkspace, SpatialAdjointRoute, SpatialAdjointWork, SpatialAdjointWorkspace,
     SpatialBatchBudgetWork, SpatialBatchPlan, SpatialBatchWork, SpatialBoundaryDualPlan,
+    SpatialBoundaryPoolPolicy,
 };
 
 mod shifted_adjoint;

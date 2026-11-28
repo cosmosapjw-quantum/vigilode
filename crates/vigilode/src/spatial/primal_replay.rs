@@ -1072,12 +1072,36 @@ impl SpatialCompactReplayWorkspace {
         stride: usize,
         pool_slots: usize,
     ) -> CoreResult<Self> {
+        Self::new_with_density_policy(
+            g,
+            duration,
+            capacity,
+            rodas5p_integrators::FastCheckpointDensity::Stride(stride),
+            pool_slots,
+            super::adjoint::SpatialBoundaryPoolPolicy::Fifo,
+        )
+    }
+    /// Fixed storage capacity and opt-in online checkpoint/eviction policies.
+    pub fn new_with_density_policy(
+        g: &DiffusionGrid,
+        duration: f64,
+        capacity: usize,
+        density: rodas5p_integrators::FastCheckpointDensity,
+        pool_slots: usize,
+        pool_policy: super::adjoint::SpatialBoundaryPoolPolicy,
+    ) -> CoreResult<Self> {
         let n = g.dimension();
         let primal = SpatialForwardCore::new(g, duration)?;
         Ok(Self {
             primal,
-            capture: rodas5p_integrators::FastCheckpointCapture::with_stride(n, capacity, stride)?,
-            dual: super::adjoint::SpatialBoundaryDual::with_pool(g, pool_slots)?,
+            capture: rodas5p_integrators::FastCheckpointCapture::with_density(
+                n, capacity, density,
+            )?,
+            dual: super::adjoint::SpatialBoundaryDual::with_pool_policy(
+                g,
+                pool_slots,
+                pool_policy,
+            )?,
             times: [0.; 9],
             states: vec![0.; 9 * n],
             projections: [Iv::point(0.)?; 9],

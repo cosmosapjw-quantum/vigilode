@@ -453,11 +453,24 @@ impl StepSink for FastDenseCapture {
         }
     }
 }
+/// Accepted-state retention policy; no interpolation or pilot restarts.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
+pub enum FastCheckpointDensity {
+    /// Fixed accepted-index stride.
+    Stride(usize),
+    /// Bounded online rows; minimize local squared-time-gap increase.
+    OnlineTime(usize),
+    /// Bounded online rows; combine time and normalized state motion gaps.
+    OnlineMotion(usize),
+}
 /// Bounded state-only capture of actual native accepted checkpoints.
 pub struct FastCheckpointCapture {
     n: usize,
     capacity: usize,
-    stride: usize,
+    density: FastCheckpointDensity,
+    row_cap: usize,
+    indices: Vec<usize>,
+    motion: Vec<f64>,
     times: Vec<f64>,
     states: Vec<f64>,
 }
@@ -469,22 +482,47 @@ impl FastCheckpointCapture {
     /// Retain all accepted times but only initial, stride-multiple and latest states.
     /// Capacity still limits actual accepted steps, not retained state rows.
     pub fn with_stride(n: usize, capacity: usize, stride: usize) -> CoreResult<Self> {
+        Self::with_density(n, capacity, FastCheckpointDensity::Stride(stride))
+    }
+    /// Allocate an online or fixed-stride capture without hot allocation.
+    pub fn with_density(
+        n: usize,
+        capacity: usize,
+        density: FastCheckpointDensity,
+    ) -> CoreResult<Self> {
+        let row_cap = match density {
+            FastCheckpointDensity::Stride(s) if s > 0 && s <= 4096 => capacity.div_ceil(s) + 1,
+            FastCheckpointDensity::OnlineTime(r) | FastCheckpointDensity::OnlineMotion(r)
+                if r >= 3 && r <= 4097 =>
+            {
+                r.min(capacity + 1)
+            }
+            _ => return Err(CoreError::InvalidInput("checkpoint density".into())),
+        };
         if n == 0
             || capacity == 0
             || capacity > 4096
-            || stride == 0
-            || stride > 4096
-            || n.checked_mul(capacity + 1)
+            || n.checked_mul(row_cap)
                 .is_none_or(|v| v > isize::MAX as usize / 8)
         {
             return Err(CoreError::InvalidInput("checkpoint capacity".into()));
         }
+        let online = !matches!(density, FastCheckpointDensity::Stride(_));
         Ok(Self {
             n,
             capacity,
-            stride,
+            density,
+            row_cap,
             times: Vec::with_capacity(capacity + 1),
-            states: Vec::with_capacity(n * (capacity.div_ceil(stride) + 1)),
+            states: Vec::with_capacity(n * row_cap),
+            indices: Vec::with_capacity(if online { row_cap } else { 0 }),
+            motion: Vec::with_capacity(
+                if matches!(density, FastCheckpointDensity::OnlineMotion(_)) {
+                    capacity + 1
+                } else {
+                    0
+                },
+            ),
         })
     }
     pub(crate) fn reset(&mut self, t: f64, y: &[f64]) -> CoreResult<()> {
@@ -493,6 +531,14 @@ impl FastCheckpointCapture {
         }
         self.times.clear();
         self.states.clear();
+        self.indices.clear();
+        self.motion.clear();
+        if !matches!(self.density, FastCheckpointDensity::Stride(_)) {
+            self.indices.push(0);
+        }
+        if matches!(self.density, FastCheckpointDensity::OnlineMotion(_)) {
+            self.motion.push(0.);
+        }
         self.times.push(t);
         self.states.extend_from_slice(y);
         Ok(())
@@ -514,15 +560,79 @@ impl FastCheckpointCapture {
     }
     /// Actual accepted index of a retained physical state row.
     pub fn retained_index(&self, row: usize) -> Option<usize> {
-        (row < self.retained_count()).then(|| (row * self.stride).min(self.len()))
+        if row >= self.retained_count() {
+            return None;
+        }
+        Some(match self.density {
+            FastCheckpointDensity::Stride(s) => (row * s).min(self.len()),
+            _ => self.indices[row],
+        })
     }
     /// Physical state only if its accepted index was retained.
     pub fn state(&self, k: usize) -> Option<&[f64]> {
-        if k >= self.times.len() || (k % self.stride != 0 && k != self.len()) {
+        if k >= self.times.len() {
             return None;
         }
-        let row = k.div_ceil(self.stride);
+        let row = match self.density {
+            FastCheckpointDensity::Stride(s) => {
+                if k % s != 0 && k != self.len() {
+                    return None;
+                }
+                k.div_ceil(s)
+            }
+            _ => self.indices.binary_search(&k).ok()?,
+        };
         Some(&self.states[row * self.n..(row + 1) * self.n])
+    }
+    // Selection metric is not a certified error bound. Normalize both monitors
+    // on the current prefix and remove the cheapest interior row. All states
+    // copied are actual accepted native states, never interpolants.
+    fn append_online(&mut self, k: usize, y: &[f64]) {
+        if matches!(self.density, FastCheckpointDensity::OnlineMotion(_)) {
+            let prev = &self.states[self.states.len() - self.n..];
+            let delta = prev
+                .iter()
+                .zip(y)
+                .map(|(&a, &b)| ((0.5 * a - 0.5 * b).abs()) / a.abs().max(b.abs()).max(1.))
+                .fold(0., f64::max);
+            self.motion
+                .push(self.motion.last().copied().unwrap() + delta);
+        }
+        if self.indices.len() == self.row_cap {
+            let span = (0.5 * self.times[k] - 0.5 * self.times[0])
+                .abs()
+                .max(f64::MIN_POSITIVE);
+            let total = self.motion.last().copied().unwrap_or(0.);
+            let gap = |a: usize, b: usize| {
+                let dt = (0.5 * self.times[b] - 0.5 * self.times[a]).abs() / span;
+                let dm = if total > 0. {
+                    (self.motion[b] - self.motion[a]) / total
+                } else {
+                    0.
+                };
+                dt + dm
+            };
+            // The previous latest becomes an eligible interior row when
+            // appending k. Endpoints 0 and k are never eviction candidates.
+            let i = (1..self.indices.len())
+                .min_by(|&a, &b| {
+                    let score = |i: usize| {
+                        gap(self.indices[i - 1], self.indices[i])
+                            * gap(
+                                self.indices[i],
+                                self.indices.get(i + 1).copied().unwrap_or(k),
+                            )
+                    };
+                    score(a).total_cmp(&score(b))
+                })
+                .unwrap();
+            self.indices.remove(i);
+            let end = self.states.len();
+            self.states.copy_within((i + 1) * self.n..end, i * self.n);
+            self.states.truncate(end - self.n);
+        }
+        self.indices.push(k);
+        self.states.extend_from_slice(y);
     }
 }
 impl StepSink for FastCheckpointCapture {
@@ -544,11 +654,16 @@ impl StepSink for FastCheckpointCapture {
         debug_assert!(self.len() < self.capacity);
         let old = self.len();
         self.times.push(t_new);
-        if old % self.stride == 0 {
-            self.states.extend_from_slice(&work.y_new);
-        } else {
-            let k = self.states.len() - self.n;
-            self.states[k..].copy_from_slice(&work.y_new);
+        match self.density {
+            FastCheckpointDensity::Stride(s) => {
+                if old % s == 0 {
+                    self.states.extend_from_slice(&work.y_new);
+                } else {
+                    let k = self.states.len() - self.n;
+                    self.states[k..].copy_from_slice(&work.y_new);
+                }
+            }
+            _ => self.append_online(old + 1, &work.y_new),
         }
     }
     fn accept_control(&mut self, _view: &AcceptedStepView<'_>) -> AcceptControl {
