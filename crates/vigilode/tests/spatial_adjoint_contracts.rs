@@ -4317,3 +4317,73 @@ fn bounded_dense_capture_generic_ode() {
         }
     }
 }
+
+#[test]
+fn partial_suffix_accounting_regression() {
+    use rodas5p_integrators::AdaptiveStepConfig;
+    use vigilode::spatial::{
+        SpatialAdjointWork, SpatialLocalReplayPlan as P, SpatialLocalReplayPolicy as Policy,
+        SpatialLocalReplayWorkspace as L,
+    };
+    let g = DiffusionGrid::sphere(8, 16, 1., 0.64).unwrap();
+    let n = g.dimension();
+    let mut u = vec![-16.; n];
+    u[n / 2] = -15.5;
+    let mut c = vec![0.; n];
+    c[0] = 0.5;
+    c[n / 2] = -0.25;
+    c[n - 1] = 0.125;
+    let base = AdaptiveStepConfig {
+        rtol: 1e-9,
+        atol: 1e-11,
+        initial_step: 0.001,
+        ..Default::default()
+    };
+    let mut probe = L::new(&g, DURATION, 128).unwrap();
+    let mut out = vec![17.; n];
+    let mut rec = SpatialAdjointWork::default();
+    let p = Policy {
+        budget: 1e-14,
+        max_replays: 0,
+        min_scale: 1e-4,
+        plan: P::Uniform,
+    };
+    let r = probe
+        .solve_into(&u, &c, &base, p, &mut out, &mut rec)
+        .unwrap();
+    assert!(r.completed && !r.accepted);
+    let cap = (0..4)
+        .map(|i| probe.dense_cell(i).unwrap().len())
+        .max()
+        .unwrap();
+    let mut w = L::new(&g, DURATION, cap).unwrap();
+    let (r, a) = measure(|| {
+        w.solve_into(
+            &u,
+            &c,
+            &base,
+            Policy {
+                max_replays: 3,
+                ..p
+            },
+            &mut out,
+            &mut rec,
+        )
+    });
+    let r = r.unwrap();
+    assert!(!r.completed && !r.accepted);
+    assert_eq!(r.primal_stops, 1);
+    assert!(r.replay_rounds > 0);
+    assert_eq!(
+        r.replayed_cells,
+        r.solves - 4,
+        "actual suffix IVPs, not planned cells"
+    );
+    assert_eq!(a.requests(), 0);
+    assert!(out.iter().all(|&v| v == 17.));
+    assert!(w.last_receipt().is_none());
+    println!(
+        "PARTIAL_SUFFIX {}",
+        serde_json::json!({"cap":cap,"allocation":a,"work":r})
+    );
+}
