@@ -2665,6 +2665,7 @@ impl ReusableFastClientWorkspace {
             return Err(CoreError::InvalidInput("flat dense arena dimension".into()));
         }
         validate_fast_run(problem, t_span, y0, adaptive, atol)?;
+        capture.validate_monitor_span(t_span)?;
         capture.reset(t_span.0, y0)?;
         arena
             .collector

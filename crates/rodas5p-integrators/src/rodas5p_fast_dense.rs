@@ -453,6 +453,32 @@ impl StepSink for FastDenseCapture {
         }
     }
 }
+/// Proposal monitor using the native accepted embedded error, not a certificate.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
+pub enum FastGoalMonitor {
+    /// Absolute value of the signed dot with terminal covector.
+    TerminalSigned,
+    /// Componentwise absolute terminal weighting.
+    TerminalAbs,
+    /// Signed dot with piecewise-linear approximate adjoint.
+    AdjointSigned,
+    /// Componentwise absolute approximate adjoint weighting.
+    AdjointAbs,
+    /// Signed approximate adjoint, with reduced time-gap weight.
+    AdjointStrong,
+}
+impl FastGoalMonitor {
+    /// Requires left and midpoint approximate adjoint weights.
+    pub fn uses_adjoint(self) -> bool {
+        matches!(
+            self,
+            Self::AdjointSigned | Self::AdjointAbs | Self::AdjointStrong
+        )
+    }
+    fn componentwise(self) -> bool {
+        matches!(self, Self::TerminalAbs | Self::AdjointAbs)
+    }
+}
 /// Accepted-state retention policy; no interpolation or pilot restarts.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
 pub enum FastCheckpointDensity {
@@ -462,6 +488,8 @@ pub enum FastCheckpointDensity {
     OnlineTime(usize),
     /// Bounded online rows; combine time and normalized state motion gaps.
     OnlineMotion(usize),
+    /// Bounded online rows, normalized time plus accepted embedded goal monitor.
+    OnlineGoal(usize, FastGoalMonitor),
 }
 /// Bounded state-only capture of actual native accepted checkpoints.
 pub struct FastCheckpointCapture {
@@ -473,6 +501,9 @@ pub struct FastCheckpointCapture {
     motion: Vec<f64>,
     times: Vec<f64>,
     states: Vec<f64>,
+    weights: Vec<f64>,
+    monitor_span: Option<(f64, f64)>,
+    goal_scores: Vec<f64>,
 }
 impl FastCheckpointCapture {
     /// Allocate once, without retaining the eight stage rows per step.
@@ -492,7 +523,9 @@ impl FastCheckpointCapture {
     ) -> CoreResult<Self> {
         let row_cap = match density {
             FastCheckpointDensity::Stride(s) if s > 0 && s <= 4096 => capacity.div_ceil(s) + 1,
-            FastCheckpointDensity::OnlineTime(r) | FastCheckpointDensity::OnlineMotion(r)
+            FastCheckpointDensity::OnlineTime(r)
+            | FastCheckpointDensity::OnlineMotion(r)
+            | FastCheckpointDensity::OnlineGoal(r, _)
                 if r >= 3 && r <= 4097 =>
             {
                 r.min(capacity + 1)
@@ -517,13 +550,128 @@ impl FastCheckpointCapture {
             states: Vec::with_capacity(n * row_cap),
             indices: Vec::with_capacity(if online { row_cap } else { 0 }),
             motion: Vec::with_capacity(
-                if matches!(density, FastCheckpointDensity::OnlineMotion(_)) {
+                if matches!(
+                    density,
+                    FastCheckpointDensity::OnlineMotion(_) | FastCheckpointDensity::OnlineGoal(..)
+                ) {
                     capacity + 1
                 } else {
                     0
                 },
             ),
+            weights: vec![
+                0.;
+                if matches!(density, FastCheckpointDensity::OnlineGoal(..)) {
+                    3 * n
+                } else {
+                    0
+                }
+            ],
+            monitor_span: None,
+            goal_scores: Vec::with_capacity(
+                if matches!(density, FastCheckpointDensity::OnlineGoal(..)) {
+                    capacity
+                } else {
+                    0
+                },
+            ),
         })
+    }
+    /// Configured proposal monitor, if any.
+    pub fn goal_monitor(&self) -> Option<FastGoalMonitor> {
+        match self.density {
+            FastCheckpointDensity::OnlineGoal(_, m) => Some(m),
+            _ => None,
+        }
+    }
+    /// Prepare finite weight rows at start, midpoint and end. All three rows
+    /// share a normalization max(1, max absolute weight). The monitor is
+    /// explicitly heuristic; the caller owns the meaning of these weights.
+    /// Invalid input invalidates the previous preparation.
+    pub fn configure_goal_monitor(
+        &mut self,
+        span: (f64, f64),
+        left: &[f64],
+        mid: &[f64],
+        right: &[f64],
+    ) -> CoreResult<()> {
+        self.monitor_span = None;
+        self.goal_scores.clear();
+        if self.goal_monitor().is_none()
+            || left.len() != self.n
+            || mid.len() != self.n
+            || right.len() != self.n
+            || !span.0.is_finite()
+            || !span.1.is_finite()
+            || span.1 <= span.0
+            || !(span.1 - span.0).is_finite()
+            || left.iter().chain(mid).chain(right).any(|v| !v.is_finite())
+        {
+            return Err(CoreError::InvalidInput(
+                "embedded goal monitor weights/span".into(),
+            ));
+        }
+        let scale = left
+            .iter()
+            .chain(mid)
+            .chain(right)
+            .map(|v| v.abs())
+            .fold(1., f64::max);
+        for (out, &v) in self
+            .weights
+            .iter_mut()
+            .zip(left.iter().chain(mid).chain(right))
+        {
+            *out = v / scale;
+        }
+        self.monitor_span = Some(span);
+        Ok(())
+    }
+    /// Accepted scores of the current actual IVP, in accepted-step order.
+    pub fn goal_scores(&self) -> &[f64] {
+        &self.goal_scores
+    }
+    pub(crate) fn validate_monitor_span(&self, span: (f64, f64)) -> CoreResult<()> {
+        if self.goal_monitor().is_some()
+            && !self
+                .monitor_span
+                .is_some_and(|s| s.0 <= span.0 && span.1 <= s.1)
+        {
+            return Err(CoreError::InvalidInput(
+                "unprepared embedded goal monitor".into(),
+            ));
+        }
+        Ok(())
+    }
+    fn embedded_score(&self, work: &Workspace, t: f64) -> f64 {
+        let m = self.goal_monitor().unwrap();
+        let n = self.n;
+        let span = self.monitor_span.unwrap();
+        let x = ((t - span.0) / (span.1 - span.0)).clamp(0., 1.);
+        let (row, w) = if x <= 0.5 {
+            (0, 2. * x)
+        } else {
+            (1, 2. * x - 1.)
+        };
+        let e = &work.u[(work.s - 1) * n..work.s * n];
+        let mut sum = 0.;
+        for (i, &v) in e.iter().enumerate() {
+            let weight = if m.uses_adjoint() {
+                (1. - w) * self.weights[row * n + i] + w * self.weights[(row + 1) * n + i]
+            } else {
+                self.weights[2 * n + i]
+            };
+            let term = weight * (v / (n as f64));
+            sum += if m.componentwise() { term.abs() } else { term };
+        }
+        // Keep the cumulative nonnegative proposal monitor finite even for
+        // extreme represented input. No saturation enters the native solver.
+        let cap = f64::MAX / (2. * (self.capacity as f64 + 1.));
+        if sum.is_finite() {
+            sum.abs().min(cap)
+        } else {
+            cap
+        }
     }
     pub(crate) fn reset(&mut self, t: f64, y: &[f64]) -> CoreResult<()> {
         if y.len() != self.n {
@@ -533,10 +681,14 @@ impl FastCheckpointCapture {
         self.states.clear();
         self.indices.clear();
         self.motion.clear();
+        self.goal_scores.clear();
         if !matches!(self.density, FastCheckpointDensity::Stride(_)) {
             self.indices.push(0);
         }
-        if matches!(self.density, FastCheckpointDensity::OnlineMotion(_)) {
+        if matches!(
+            self.density,
+            FastCheckpointDensity::OnlineMotion(_) | FastCheckpointDensity::OnlineGoal(..)
+        ) {
             self.motion.push(0.);
         }
         self.times.push(t);
@@ -587,7 +739,7 @@ impl FastCheckpointCapture {
     // Selection metric is not a certified error bound. Normalize both monitors
     // on the current prefix and remove the cheapest interior row. All states
     // copied are actual accepted native states, never interpolants.
-    fn append_online(&mut self, k: usize, y: &[f64]) {
+    fn append_online(&mut self, k: usize, y: &[f64], goal_score: Option<f64>) {
         if matches!(self.density, FastCheckpointDensity::OnlineMotion(_)) {
             let prev = &self.states[self.states.len() - self.n..];
             let delta = prev
@@ -597,6 +749,10 @@ impl FastCheckpointCapture {
                 .fold(0., f64::max);
             self.motion
                 .push(self.motion.last().copied().unwrap() + delta);
+        }
+        if let Some(v) = goal_score {
+            self.goal_scores.push(v);
+            self.motion.push(self.motion.last().copied().unwrap() + v);
         }
         if self.indices.len() == self.row_cap {
             let span = (0.5 * self.times[k] - 0.5 * self.times[0])
@@ -610,7 +766,16 @@ impl FastCheckpointCapture {
                 } else {
                     0.
                 };
-                dt + dm
+                let time_weight = if matches!(
+                    self.density,
+                    FastCheckpointDensity::OnlineGoal(_, FastGoalMonitor::AdjointStrong)
+                ) && total > 0.
+                {
+                    0.25
+                } else {
+                    1.
+                };
+                time_weight * dt + dm
             };
             // The previous latest becomes an eligible interior row when
             // appending k. Endpoints 0 and k are never eviction candidates.
@@ -663,7 +828,12 @@ impl StepSink for FastCheckpointCapture {
                     self.states[k..].copy_from_slice(&work.y_new);
                 }
             }
-            _ => self.append_online(old + 1, &work.y_new),
+            _ => {
+                let score = self
+                    .goal_monitor()
+                    .map(|_| self.embedded_score(work, t_new));
+                self.append_online(old + 1, &work.y_new, score);
+            }
         }
     }
     fn accept_control(&mut self, _view: &AcceptedStepView<'_>) -> AcceptControl {

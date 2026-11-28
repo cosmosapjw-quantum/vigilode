@@ -1302,6 +1302,18 @@ impl SpatialBoundaryDual {
         self.preparation = receipt;
         Ok(receipt)
     }
+    /// Copy the midpoint of a currently prepared directed center for a
+    /// proposal-only monitor. This is not a certified covector enclosure.
+    pub(super) fn copy_monitor_center(&self, k: usize, out: &mut [f64]) -> CoreResult<()> {
+        let n = self.key.len();
+        if k >= self.count || out.len() != n {
+            return Err(err("monitor center"));
+        }
+        for (v, c) in out.iter_mut().zip(&self.centers[k * n..(k + 1) * n]) {
+            *v = 0.5 * c.lo + 0.5 * c.hi;
+        }
+        Ok(())
+    }
     /// Projection after removing the same scalar anchor at every boundary.
     /// L*1=0 gives a common constant which cancels from every signed defect.
     pub fn project(&self, k: usize, u: &[f64], anchor: f64) -> CoreResult<Iv> {

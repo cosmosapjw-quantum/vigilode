@@ -158,7 +158,9 @@ pub use rodas5p_fast::{
     FastOutputArena, ReusableFastClientWorkspace,
     integrate_rodas5p_fast_banded_observed_with_atol_and_kernel,
 };
-pub use rodas5p_fast_dense::{FastCheckpointCapture, FastCheckpointDensity, FastDenseCapture};
+pub use rodas5p_fast_dense::{
+    FastCheckpointCapture, FastCheckpointDensity, FastDenseCapture, FastGoalMonitor,
+};
 pub use rodas5p_fast_dense::{
     RODAS5P_FAST_BANDED_DENSE_FIXED2_DRIVER_ID, RODAS5P_FAST_BANDED_DENSE_SLICES_DRIVER_ID,
     integrate_rodas5p_fast_banded_dense_observed_with_atol_and_kernel,

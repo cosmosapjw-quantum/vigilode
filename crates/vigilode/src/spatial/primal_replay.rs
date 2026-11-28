@@ -1036,6 +1036,8 @@ pub struct SpatialCompactWork {
     pub boundary_evicted: usize,
     /// Physical pilot states retained, including initial and latest.
     pub pilot_retained: usize,
+    /// Additional sparse actions to prepare proposal-only adjoint weights.
+    pub monitor_adjoint_actions: usize,
 }
 /// A single bounded accepted-checkpoint buffer and one boundary propagator.
 /// No full dense stage packets are retained: the integrated residual uses
@@ -1051,6 +1053,8 @@ pub struct SpatialCompactReplayWorkspace {
     scales: [f64; 8],
     steps: [usize; 8],
     pilot_times: Vec<f64>,
+    pilot_monitor_scores: Vec<f64>,
+    monitor_seed: Vec<f64>,
     pilot_indices: [usize; 9],
     cells: usize,
     valid_cells: usize,
@@ -1109,6 +1113,25 @@ impl SpatialCompactReplayWorkspace {
             scales: [1.; 8],
             steps: [0; 8],
             pilot_times: Vec::with_capacity(capacity + 1),
+            pilot_monitor_scores: Vec::with_capacity(
+                if matches!(
+                    density,
+                    rodas5p_integrators::FastCheckpointDensity::OnlineGoal(..)
+                ) {
+                    capacity
+                } else {
+                    0
+                },
+            ),
+            monitor_seed: vec![
+                0.;
+                if matches!(density,rodas5p_integrators::FastCheckpointDensity::OnlineGoal(_,m) if m.uses_adjoint())
+                {
+                    2 * n
+                } else {
+                    0
+                }
+            ],
             pilot_indices: [0; 9],
             cells: 0,
             valid_cells: 0,
@@ -1156,6 +1179,10 @@ impl SpatialCompactReplayWorkspace {
     /// Actual uninterrupted pilot checkpoint times.
     pub fn pilot_times(&self) -> &[f64] {
         &self.pilot_times
+    }
+    /// Actual accepted embedded monitor scores of the uninterrupted pilot.
+    pub fn pilot_monitor_scores(&self) -> &[f64] {
+        &self.pilot_monitor_scores
     }
     /// Indices of selected actual pilot checkpoints.
     pub fn pilot_indices(&self) -> &[usize] {
@@ -1459,6 +1486,35 @@ impl SpatialCompactReplayWorkspace {
         self.project_suffix(1, w)?;
         Ok(true)
     }
+    fn configure_monitor(
+        &mut self,
+        goal: &[f64],
+        route: SpatialBoundaryDualPlan,
+        w: &mut SpatialCompactWork,
+    ) -> CoreResult<()> {
+        let Some(m) = self.capture.goal_monitor() else {
+            return Ok(());
+        };
+        let t = self.primal.duration;
+        if m.uses_adjoint() {
+            // These existing certified centers are used only as an
+            // approximate, linearly interpolated proposal covector.
+            let p = self.dual.prepare(goal, &[0., 0.5 * t, t], route)?;
+            w.monitor_adjoint_actions = p.actions;
+            w.adjoint_actions += p.actions;
+            w.boundary_reused += p.reused;
+            w.boundary_built += p.built;
+            w.boundary_evicted += p.evicted;
+            let (a, b) = self.monitor_seed.split_at_mut(goal.len());
+            self.dual.copy_monitor_center(0, a)?;
+            self.dual.copy_monitor_center(1, b)?;
+            self.capture.configure_goal_monitor((0., t), a, b, goal)?;
+        } else {
+            self.capture
+                .configure_goal_monitor((0., t), goal, goal, goal)?;
+        }
+        Ok(())
+    }
     /// Preserve prefix states exactly; any modified cell forces suffix replay.
     /// The directed common-anchor terminal difference, not the proposal,
     /// determines acceptance. Caller output stays unchanged on refusal.
@@ -1476,6 +1532,7 @@ impl SpatialCompactReplayWorkspace {
         self.cells = 0;
         self.last_receipt = None;
         self.pilot_times.clear();
+        self.pilot_monitor_scores.clear();
         let n = self.primal.n;
         if initial.len() != n
             || goal.len() != n
@@ -1504,6 +1561,7 @@ impl SpatialCompactReplayWorkspace {
         self.states[..n].copy_from_slice(initial);
         self.times[0] = 0.;
         let duration = self.primal.duration;
+        self.configure_monitor(goal, policy.dual, &mut w)?;
         if policy.partition == SpatialCompactPartition::Fixed4 {
             self.cells = 4;
             for i in 1..=4 {
@@ -1529,6 +1587,8 @@ impl SpatialCompactReplayWorkspace {
             let m = self.capture.len();
             w.pilot_packets = m;
             self.pilot_times.extend_from_slice(self.capture.times());
+            self.pilot_monitor_scores
+                .extend_from_slice(self.capture.goal_scores());
             w.pilot_retained = self.capture.retained_count();
             let retained = w.pilot_retained - 1;
             self.cells = desired.min(retained);
